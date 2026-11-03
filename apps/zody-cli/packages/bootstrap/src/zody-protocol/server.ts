@@ -274,10 +274,10 @@ export class ZodyProtocolAgentServer {
   private nextClientRequestId = 1;
 
   constructor(deps: ZodyProtocolAgentDependencies) {
-    this.runtimeResources = new ProtocolRuntimeResources(deps.createZCodeApp);
+    this.runtimeResources = new ProtocolRuntimeResources(deps.createZodyApp);
     const resolvedDeps = {
       ...deps,
-      createZCodeApp: this.runtimeResources.create,
+      createZodyApp: this.runtimeResources.create,
       // 默认 turn 窗口保留策略。
       createSessionEventStore:
         deps.createSessionEventStore ?? (() => createInMemorySessionEventStore()),

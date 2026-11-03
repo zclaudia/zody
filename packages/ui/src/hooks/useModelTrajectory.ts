@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ZodyModelTrajectory } from "@zody/services";
 import { logger } from "@/logger.js";
-import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
+import { useZodyTaskService } from "@/hooks/useZodyTaskService.js";
 
 export interface ModelTrajectoryState {
   loading: boolean;
@@ -33,7 +33,7 @@ export function useModelTrajectory(
   taskId: string | null,
   workspaceIdentity?: string,
 ): ModelTrajectoryState & { refresh: () => void } {
-  const zcodeTaskService = useZCodeTaskService(workspacePath, undefined, workspaceIdentity);
+  const zodyTaskService = useZodyTaskService(workspacePath, undefined, workspaceIdentity);
   const [state, setState] = useState<ModelTrajectoryState>(INITIAL_STATE);
   const [reloadToken, setReloadToken] = useState(0);
   const requestVersionRef = useRef(0);
@@ -57,7 +57,7 @@ export function useModelTrajectory(
     requestVersionRef.current = requestVersion;
     setState({ loading: true, data: null, error: null });
 
-    void zcodeTaskService
+    void zodyTaskService
       .getModelTrajectory({ taskId })
       .then((data) => {
         if (disposed || requestVersionRef.current !== requestVersion) {
@@ -82,7 +82,7 @@ export function useModelTrajectory(
     return () => {
       disposed = true;
     };
-  }, [zcodeTaskService, taskId, workspaceIdentity, workspacePath, reloadToken]);
+  }, [zodyTaskService, taskId, workspaceIdentity, workspacePath, reloadToken]);
 
   return { ...state, refresh };
 }

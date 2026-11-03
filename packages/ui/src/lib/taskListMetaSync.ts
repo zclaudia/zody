@@ -1,5 +1,5 @@
 import type { InputId, ZodyProvider, ZodyTaskMeta } from "@zody/shared";
-import { getTaskMeta, resolveWorkspaceStateKey, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { getTaskMeta, resolveWorkspaceStateKey, useZodySessionStore } from "@/store/zodySessionStore.js";
 import {
   mergeTaskMetaCandidates,
   mergeTaskWithOptimisticMeta,
@@ -101,7 +101,7 @@ export function syncTaskMetaToTaskCaches(params: {
   preserveListMembership?: boolean;
   applyQueryCacheMutation?: boolean;
 }): void {
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   const previousTask = getTaskMeta(workspaceState, params.task.taskId);
   const queryTask = useTaskQueryCacheStore.getState().taskMetaByEntityKey[
@@ -204,7 +204,7 @@ export function removeTaskFromTaskCaches(params: {
   workspaceIdentity?: string;
   taskId: string;
 }): boolean {
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   if (workspaceState.taskListCache) {
     store.setTaskListCache(
@@ -223,7 +223,7 @@ export function patchTaskMetaInTaskCaches(params: {
   taskId: string;
   patch: (task: ZodyTaskMeta) => Partial<ZodyTaskMeta>;
 }): ZodyTaskMeta | null {
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   const identityWorkspaceState = params.workspaceIdentity
     ? store.workspaces[resolveWorkspaceStateKey(params.workspacePath, params.workspaceIdentity)]
@@ -299,7 +299,7 @@ export function initializeBackgroundTaskInTaskCaches(params: {
   provider: ZodyProvider;
   activeInputId: InputId;
 }): void {
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   const previousTask = getTaskMeta(workspaceState, params.task.taskId);
   const task = previousTask

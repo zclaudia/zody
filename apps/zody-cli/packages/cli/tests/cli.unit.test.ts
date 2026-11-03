@@ -151,7 +151,7 @@ const loadTuiStartup = async (options: TuiOptions): Promise<TuiOptions> => ({
 
 const createPromptDeps = (): RunDependencies => ({
   createModelAdapter: () => ({}) as never,
-  createZCodeApp: () =>
+  createZodyApp: () =>
     ({
       getModel: () => "openai/gpt-test",
       getLocale: () => "en-US",
@@ -359,7 +359,7 @@ test("passes configured TUI theme into the TUI", async () => {
   const ctx = createContext([]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         getLocale: () => "en-US",
         getModel: () => "openai/gpt-test",
@@ -422,7 +422,7 @@ test("enables session title generation for TUI sessions", async () => {
   const ctx = createContext(["tui"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual(options?.runtimeConfig?.titleGeneration, {});
       assert.equal(options?.runtimeConfig?.memory?.extractionEnabled, undefined);
       return {
@@ -451,7 +451,7 @@ test("passes --disallowedTools into TUI runtime config", async () => {
   const ctx = createContext(["tui", "--disallowedTools", "Bash", "Edit,web_search"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual(options?.runtimeConfig?.toolDisallowlist, ["Bash", "Edit", "WebSearch"]);
       return {
         getLocale: () => "en-US",
@@ -479,7 +479,7 @@ test("passes force MCS into TUI runtime config", async () => {
   const ctx = createContext(["tui", "--force-mcs"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual((options?.runtimeConfig as any)?.midConversationSystem, {
         mode: "force",
       });
@@ -509,7 +509,7 @@ test("does not enable session title generation for headless prompts", async () =
   const ctx = createContext(["--prompt", "hello"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.runtimeConfig?.titleGeneration, undefined);
       return {
         sessionId: "session-test",
@@ -535,7 +535,7 @@ test("disables automatic Memory Extraction for headless prompts", async () => {
   const ctx = createContext(["-p", "hello Memory"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual(options?.runtimeConfig?.memory, {
         extractionEnabled: false,
       });
@@ -594,7 +594,7 @@ test("borrows one process provider registry for a headless prompt and disposes i
         },
       } as never;
     },
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.providerRegistry, providerRegistry);
       assert.equal(Object.hasOwn(options ?? {}, "workspaceProviderCompatibilityMode"), false);
       assert.deepEqual(options?.configuredDefaultModelSelection, {
@@ -628,7 +628,7 @@ test("shows a non-blocking model-setup notice when no model is available", async
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
     // 可选模型改由 Registry 推导：没有可用模型时模型目录只有被禁用的选项。
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         getLocale: () => "en-US",
         getModel: () => undefined,
@@ -668,7 +668,7 @@ test("honors configured locale before app creation when no model is available", 
       cwd: () => tempRoot,
       env: {},
       // 可选模型改由 App 推导；App 在启动屏首帧之后才创建，这里模拟没有可用模型。
-      createZCodeApp: () => {
+      createZodyApp: () => {
         appCreated = true;
         return {
           listModels: () => [],
@@ -718,7 +718,7 @@ test("passes detected auto locale into the app and TUI", async () => {
   const ctx = createContext(["--locale", "auto"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.uiLocale, "auto");
       assert.equal(options?.uiDetectedLocale, "zh-CN");
       return {
@@ -751,7 +751,7 @@ test("TUI locale command updates later app creation locale", async () => {
   let activeLocale: "en-US" | "zh-CN" = "en-US";
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       createdLocales.push(options?.uiLocale);
       return {
         getLocale: () => activeLocale,
@@ -969,7 +969,7 @@ test("zcode login is not a CLI command", async () => {
   const ctx = createContext(["login"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () => {
+    createZodyApp: () => {
       throw new Error("login must not create an app");
     },
   });
@@ -999,8 +999,8 @@ test("headless prompt submits a resolvable custom command as raw text", async ()
   let submitted: unknown;
   const exitCode = await run(ctx, {
     ...base,
-    createZCodeApp: (options) => {
-      const app = base.createZCodeApp?.(options) as {
+    createZodyApp: (options) => {
+      const app = base.createZodyApp?.(options) as {
         submitPrompt: (prompt: unknown, submitOptions?: unknown) => Promise<unknown>;
       };
       return {
@@ -1036,8 +1036,8 @@ test("headless prompt keeps a facade-reserved custom command name on the command
   let submitted: unknown;
   const exitCode = await run(ctx, {
     ...base,
-    createZCodeApp: (options) => {
-      const app = base.createZCodeApp?.(options) as {
+    createZodyApp: (options) => {
+      const app = base.createZodyApp?.(options) as {
         submitPrompt: (prompt: unknown, submitOptions?: unknown) => Promise<unknown>;
       };
       return {
@@ -1112,7 +1112,7 @@ test("wires TUI input recall skip into the active app", async () => {
   const recalledSkips: Array<number | undefined> = [];
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         sessionId: "session-test",
         traceId: "trace-test",
@@ -1148,7 +1148,7 @@ test("wires TUI slash command history recording into the active app", async () =
   const recorded: Array<{ input: unknown; kind: unknown }> = [];
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         getModel: () => "openai/gpt-main",
         listModels: () => [],
@@ -1188,7 +1188,7 @@ test("TUI bare skill command lists skills when startup metadata is unavailable",
   let listed = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () => {
+    createZodyApp: () => {
       appCreationAttempts += 1;
       throw new Error("app is unavailable");
     },
@@ -1455,7 +1455,7 @@ test("TUI startup migration failures return before entering fullscreen UI", asyn
 
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () => {
+    createZodyApp: () => {
       throw migrationError;
     },
     // 新启动流程先绘制启动屏，再在 loadStartupOptions 中创建运行时；真实 runTui 在启动数据
@@ -1629,7 +1629,7 @@ test("wires TUI approval requests into the runtime permission broker", async () 
   let approvalSeen = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.ok(options?.permissionBroker);
       return {
         listModels: selectableTestModels,
@@ -1679,7 +1679,7 @@ test("wires TUI sendInput approval requests into the runtime permission broker",
   let approvalSeen = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.ok(options?.permissionBroker);
       return {
         sessionId: "session-test",
@@ -1737,7 +1737,7 @@ test("wires TUI mode display and switching into runtime config", async () => {
   const runtimeModeUpdates: string[] = [];
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       // 启动屏首帧后按 CLI --mode 创建 App；此后的模式切换都作用于活动 App。
       assert.equal(options?.runtimeConfig?.mode, "plan");
       appMode = options?.runtimeConfig?.mode ?? "build";
@@ -1808,7 +1808,7 @@ test("wires TUI edit mode switching into runtime config", async () => {
   const runtimeModeUpdates: string[] = [];
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       // 启动屏首帧后按 CLI --mode 创建 App；edit 切换经活动 App 的 runtime config 生效。
       assert.equal(options?.runtimeConfig?.mode, "build");
       appMode = options?.runtimeConfig?.mode ?? "build";
@@ -1891,7 +1891,7 @@ test("wires TUI model command into app server state", async () => {
         },
         runtime: { registryService: {} },
       }) as never,
-    createZCodeApp: () => {
+    createZodyApp: () => {
       return {
         getCurrentModelOption: () =>
           modelOptions.find(
@@ -1970,7 +1970,7 @@ test("wires TUI effort command into app server state", async () => {
   const requestedLevels: string[] = [];
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () => {
+    createZodyApp: () => {
       return {
         getModel: () => "openai/gpt-main",
         getThoughtLevel: () => thoughtLevel,
@@ -2041,7 +2041,7 @@ test("wires TUI fork command into a new active app", async () => {
   let forkTarget: string | undefined;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       const appSessionId = options?.sessionId ?? "sess_parent";
       createdSessionIds.push(options?.sessionId);
       return {
@@ -2093,7 +2093,7 @@ test("wires TUI new command into a fresh active app", async () => {
   const closedSessionIds: string[] = [];
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       const appSessionId = options?.sessionId ?? `sess_new_${createdSessionIds.length}`;
       createdSessionIds.push(options?.sessionId);
       return {
@@ -2145,11 +2145,11 @@ test("keeps shared telemetry alive across TUI session replacement and shuts it d
   let telemetryShutdownCount = 0;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    prepareZCodeTelemetryEnv: async (env) => {
+    prepareZodyTelemetryEnv: async (env) => {
       telemetryPrepareCount += 1;
       return env;
     },
-    shutdownZCodeTelemetry: async () => {
+    shutdownZodyTelemetry: async () => {
       telemetryShutdownCount += 1;
     },
     runTui: async (options) => {
@@ -2178,11 +2178,11 @@ test("closes the active TUI app on process shutdown signals", async () => {
 
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    prepareZCodeTelemetryEnv: async (env) => env,
-    shutdownZCodeTelemetry: async () => {
+    prepareZodyTelemetryEnv: async (env) => env,
+    shutdownZodyTelemetry: async () => {
       telemetryShutdownCount += 1;
     },
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         close: async () => {
           closeCount += 1;
@@ -4267,7 +4267,7 @@ test("prints slash help for prompt help command without creating an app", async 
   const ctx = createContext(["--prompt", "/help"]);
   let appCreated = false;
   const exitCode = await run(ctx, {
-    createZCodeApp: () => {
+    createZodyApp: () => {
       appCreated = true;
       throw new Error("app should not be created");
     },
@@ -4332,7 +4332,7 @@ test("lists skills for bare prompt skill command", async () => {
   let listed = false;
   let appCreated = false;
   const exitCode = await run(ctx, {
-    createZCodeApp: () => {
+    createZodyApp: () => {
       appCreated = true;
       throw new Error("app should not be created");
     },
@@ -4453,7 +4453,7 @@ test("loads dotenv before creating the prompt app", async () => {
   let appEnv: NodeJS.ProcessEnv | undefined;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       appEnv = options?.env;
       return {
         sessionId: "session-test",
@@ -4501,7 +4501,7 @@ test("passes the CLI version into app creation for prompt runs", async () => {
   let appVersion: string | undefined;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       appVersion = options?.version;
       return {
         getModel: () => "openai/gpt-test",
@@ -4538,7 +4538,7 @@ test("passes prompt attachments into the app API", async () => {
   let submitted: unknown;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         sessionId: "session-test",
         traceId: "trace-test",
@@ -4573,7 +4573,7 @@ test("rewrites skill slash commands for single prompts", async () => {
   let submitted = "";
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         sessionId: "session-test",
         traceId: "trace-test",
@@ -4611,7 +4611,7 @@ test("runs goal command without prompt", async () => {
   let continued = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual(options?.runtimeConfig?.memory, {
         extractionEnabled: false,
       });
@@ -4656,7 +4656,7 @@ test("passes force MCS into target runtime config", async () => {
   let continued = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual((options?.runtimeConfig as any)?.midConversationSystem, {
         mode: "force",
       });
@@ -4709,7 +4709,7 @@ test("rejects combining target with prompt", async () => {
   const ctx = createContext(["--prompt", "hello target", "--target", "Ship target MVP"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         sessionId: "session-test",
         traceId: "trace-test",
@@ -4730,7 +4730,7 @@ test("closes the app after a headless prompt", async () => {
   let closeCount = 0;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         sessionId: "session-test",
         traceId: "trace-test",
@@ -4758,8 +4758,8 @@ test("shuts down prepared telemetry after a headless prompt", async () => {
   let telemetryShutdownCount = 0;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    prepareZCodeTelemetryEnv: async (env) => env,
-    shutdownZCodeTelemetry: async () => {
+    prepareZodyTelemetryEnv: async (env) => env,
+    shutdownZodyTelemetry: async () => {
       telemetryShutdownCount += 1;
     },
   });
@@ -4773,11 +4773,11 @@ test("shuts down prepared telemetry when headless app creation fails", async () 
   let telemetryShutdownCount = 0;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () => {
+    createZodyApp: () => {
       throw new Error("app creation failed");
     },
-    prepareZCodeTelemetryEnv: async (env) => env,
-    shutdownZCodeTelemetry: async () => {
+    prepareZodyTelemetryEnv: async (env) => env,
+    shutdownZodyTelemetry: async () => {
       telemetryShutdownCount += 1;
     },
   });
@@ -4796,7 +4796,7 @@ test("aborts and closes the headless app on process shutdown signals", async () 
 
   const runPromise = run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         close: async () => {
           closeCount += 1;
@@ -4845,7 +4845,7 @@ test("closes a late async app without submitting after shutdown during initializ
     ...createPromptDeps(),
     shutdownProcess,
     exitProcess: (code) => exited.resolve(code),
-    createZCodeApp: async () => {
+    createZodyApp: async () => {
       started.resolve();
       await release.promise;
       return {
@@ -4878,7 +4878,7 @@ test("TUI closes an app that finishes initialization after handler shutdown", as
   const handler = createTuiSubmitPrompt(
     {
       ...createPromptDeps(),
-      createZCodeApp: async () => {
+      createZodyApp: async () => {
         started.resolve();
         await release.promise;
         return {
@@ -4906,7 +4906,7 @@ test("rejects headless goal replacement without explicit target-replace", async 
   const ctx = createContext(["--target", "New target"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         clearTarget: async () => true,
         continueActiveTarget: async () => null,
@@ -4945,7 +4945,7 @@ test("replaces an existing goal for headless goal commands when target-replace i
   let continued = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         clearTarget: async () => true,
         continueActiveTarget: async () => {
@@ -4996,7 +4996,7 @@ test("runs slash goal commands directly in headless prompt mode", async () => {
   let continued = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         clearTarget: async () => false,
         continueActiveTarget: async () => {
@@ -5036,7 +5036,7 @@ test("rejects interactive goal replacement prompts in headless mode", async () =
   const ctx = createContext(["--prompt", "/goal New target"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         clearTarget: async () => true,
         continueActiveTarget: async () => null,
@@ -5073,7 +5073,7 @@ test("defaults headless prompts to yolo mode", async () => {
   const ctx = createContext(["--prompt", "hello default mode"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.runtimeConfig?.mode, "yolo");
       assert.equal(options?.runtimeConfig?.presentationSurface, "terminal");
       return {
@@ -5099,7 +5099,7 @@ test("passes the Desktop presentation surface into headless runtime config", asy
   const ctx = createContext(["--surface", "desktop", "--prompt", "hello desktop"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.runtimeConfig?.presentationSurface, "zcode_desktop");
       assert.equal(options?.sourceTitle, undefined);
       return {
@@ -5146,7 +5146,7 @@ test("passes prompt mode override into runtime config", async () => {
   const ctx = createContext(["--prompt", "hello mode", "--mode", "plan"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.runtimeConfig?.mode, "plan");
       return {
         sessionId: "session-test",
@@ -5171,7 +5171,7 @@ test("passes force MCS into headless runtime config", async () => {
   const ctx = createContext(["--force-mcs", "--prompt", "hello force mcs"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual((options?.runtimeConfig as any)?.midConversationSystem, {
         mode: "force",
       });
@@ -5203,7 +5203,7 @@ test("passes --disallowedTools into headless runtime config", async () => {
   ]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual(options?.runtimeConfig?.toolDisallowlist, [
         "Bash(git *)",
         "Edit",
@@ -5232,7 +5232,7 @@ test("supports the prompt short alias with --disallowedTools", async () => {
   const ctx = createContext(["-p", "hello short prompt", "--disallowedTools", "Bash"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual(options?.runtimeConfig?.toolDisallowlist, ["Bash"]);
       return {
         sessionId: "session-test",
@@ -5263,7 +5263,7 @@ test("supports dashed disallowed tools alias before the prompt option", async ()
   ]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.deepEqual(options?.runtimeConfig?.toolDisallowlist, ["Bash", "Edit"]);
       return {
         sessionId: "session-test",
@@ -5288,7 +5288,7 @@ test("passes edit prompt mode override into runtime config", async () => {
   const ctx = createContext(["--prompt", "hello edit mode", "--mode", "edit"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.runtimeConfig?.mode, "edit");
       return {
         sessionId: "session-test",
@@ -5315,7 +5315,7 @@ test("passes the CLI cwd into prompt runtime config", async () => {
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
     cwd: () => cwd,
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.runtimeConfig?.workingDirectory, cwd);
       return {
         sessionId: "session-test",
@@ -5347,7 +5347,7 @@ test("passes explicit resume session into prompt app creation", async () => {
   const ctx = createContext(["--resume", "sess_existing", "--prompt", "hello resume"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.resume, true);
       assert.equal(options?.sessionId, "sess_existing");
       return {
@@ -5381,7 +5381,7 @@ test("resolves latest session for continue prompts", async () => {
       assert.equal(options.directory, cwd);
       return { id: "sess_latest" } as never;
     },
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.resume, true);
       assert.equal(options?.sessionId, "sess_latest");
       return {
@@ -5443,7 +5443,7 @@ test("prints provider token usage in prompt JSON", async () => {
   const ctx = createContext(["--prompt", "hello usage", "--json"]);
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         sessionId: "session-test",
         traceId: "trace-test",
@@ -5809,7 +5809,7 @@ test("injects and closes the managed CDP port for headless prompt", async () => 
         },
       };
     },
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.browserControlPort, browserControlPort);
       return {
         close: async () => {
@@ -5849,7 +5849,7 @@ test("continues managed browser cleanup when app close never settles", async () 
         browserCloseCount += 1;
       },
     }),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         close: async () => {
           appCloseCount += 1;
@@ -5890,7 +5890,7 @@ test("returns from a headless prompt when managed browser close never settles", 
         await new Promise<void>(() => undefined);
       },
     }),
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         close: async () => {
           appCloseCount += 1;
@@ -5940,7 +5940,7 @@ test("injects one managed CDP runtime into TUI app lifecycle and closes it", asy
         runtimeClosed += 1;
       },
     }),
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       assert.equal(options?.browserControlPort, browserControlPort);
       return {
         close: async () => {
@@ -6009,7 +6009,7 @@ test("reuses one process provider registry across TUI app replacements", async (
         },
       } as never;
     },
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       appCreations += 1;
       assert.equal(options?.providerRegistry, providerRegistry);
       assert.equal(Object.hasOwn(options ?? {}, "workspaceProviderCompatibilityMode"), false);
@@ -6065,7 +6065,7 @@ test("rejects an invalid explicit browser executable before creating the app", a
   let appCreated = false;
   const exitCode = await run(ctx, {
     ...createPromptDeps(),
-    createZCodeApp: () => {
+    createZodyApp: () => {
       appCreated = true;
       throw new Error("app must not be created");
     },
@@ -6155,7 +6155,7 @@ test("headless prompt reports exact Workspace Hook pretrust diagnostics without 
   const deps = createPromptDeps();
   const exitCode = await run(ctx, {
     ...deps,
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         getModel: () => "openai/gpt-test",
         getLocale: () => "en-US",
@@ -6211,7 +6211,7 @@ test("headless rollout-off diagnostics preserve the runtime feature-disabled rea
   const deps = createPromptDeps();
   const exitCode = await run(ctx, {
     ...deps,
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         getModel: () => "openai/gpt-test",
         getLocale: () => "en-US",

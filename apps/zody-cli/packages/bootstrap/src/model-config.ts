@@ -27,7 +27,7 @@ export function createRuntimeAiSdkModelExecutionConfig(
 ): AiSdkModelExecutionConfig {
   const network = normalizeAiSdkNetworkConfig(options.network);
   return {
-    defaultHeaders: buildCliZCodeSourceHeaders(env, options),
+    defaultHeaders: buildCliZodySourceHeaders(env, options),
     env,
     ...(network ? { network } : {}),
   };
@@ -44,7 +44,7 @@ function normalizeAiSdkNetworkConfig(
   };
 }
 
-export function buildCliZCodeSourceHeaders(
+export function buildCliZodySourceHeaders(
   env: EnvRecord,
   options: Pick<RuntimeExecutionConfigOptions, "appVersion" | "sourceTitle"> = {},
 ): Record<string, string> {
@@ -54,9 +54,9 @@ export function buildCliZCodeSourceHeaders(
   const timezone = normalizePrintableHeaderValue(Intl.DateTimeFormat().resolvedOptions().timeZone);
   // fork（F3.1）：端点未配置（空）时不发送 HTTP-Referer，避免空 header；
   // 也不再通过默认常量回落到官方地址。
-  const zcodeEndpointOrigin = resolveRuntimeZodyEndpointOrigin(env);
+  const zodyEndpointOrigin = resolveRuntimeZodyEndpointOrigin(env);
   return {
-    ...(zcodeEndpointOrigin ? { "HTTP-Referer": zcodeEndpointOrigin } : {}),
+    ...(zodyEndpointOrigin ? { "HTTP-Referer": zodyEndpointOrigin } : {}),
     "User-Agent": `Zody/${appVersion ?? "unknown"}`,
     ...(appVersion ? { "X-Zody-App-Version": appVersion } : {}),
     "X-Title": `Zody@${sourceTitle}`,

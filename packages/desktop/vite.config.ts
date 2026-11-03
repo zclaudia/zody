@@ -56,7 +56,7 @@ export const desktopRendererDependencyAliases = {
   "lucide-react": resolveInstalledPackageRoot("lucide-react"),
 } as const;
 
-function resolveZCodeEnv(value: string | undefined): "test" | "production" {
+function resolveZodyEnv(value: string | undefined): "test" | "production" {
   return value?.trim().toLowerCase() === "production" ? "production" : "test";
 }
 
@@ -154,23 +154,23 @@ export default defineConfig(({ mode }) => {
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
   const env = loadEnv(mode, "../..", "");
   const repoRoot = resolve(__dirname, "../..");
-  const zcodeEnv = resolveZCodeEnv(env.ZCODE_ENV);
+  const zodyEnv = resolveZodyEnv(env.ZCODE_ENV);
   // 安装包身份与后端环境分轴；renderer 用它决定是否展示更新入口。
-  const zcodeProductFlavor = resolveDesktopProductFlavor({
+  const zodyProductFlavor = resolveDesktopProductFlavor({
     ...process.env,
     ...env,
-    ZCODE_ENV: zcodeEnv,
+    ZCODE_ENV: zodyEnv,
   });
   const e2eCoverageEnabled =
     env.ZCODE_E2E_COVERAGE === "1" || process.env.ZCODE_E2E_COVERAGE === "1";
   const e2eStoreBridgeEnabled =
     env.VITE_ZCODE_E2E_STORE_BRIDGE === "1" || process.env.VITE_ZCODE_E2E_STORE_BRIDGE === "1";
-  const zcodeEndpointOrigin = resolveZodyEndpointOrigin({
-    env: zcodeEnv,
+  const zodyEndpointOrigin = resolveZodyEndpointOrigin({
+    env: zodyEnv,
     envBaseOrigin:
       env.ZCODE_BASE_URL ??
       env.ZCODE_ENDPOINT_ORIGIN ??
-      (zcodeEnv === "production" ? env.ZCODE_PRODUCTION_BASE_URL : env.ZCODE_TEST_BASE_URL),
+      (zodyEnv === "production" ? env.ZCODE_PRODUCTION_BASE_URL : env.ZCODE_TEST_BASE_URL),
   });
   const plugins = [
     ...(e2eCoverageEnabled ? [createE2EUIRendererCoveragePlugin(repoRoot)] : []),
@@ -202,13 +202,13 @@ export default defineConfig(({ mode }) => {
       __ZCODE_VERSION__: JSON.stringify(buildMetadata.appVersion),
       __ZCODE_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
       __ZCODE_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
-      __ZCODE_ENV__: JSON.stringify(zcodeEnv),
-      __ZCODE_PRODUCT_FLAVOR__: JSON.stringify(zcodeProductFlavor),
+      __ZCODE_ENV__: JSON.stringify(zodyEnv),
+      __ZCODE_PRODUCT_FLAVOR__: JSON.stringify(zodyProductFlavor),
       ...buildTimeConfigDefines,
       __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__: JSON.stringify(mode !== "production"),
-      "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify(zcodeEndpointOrigin),
+      "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify(zodyEndpointOrigin),
       // 兼容旧 renderer 读取名；新代码统一读 VITE_ZCODE_BASE_URL。
-      "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify(zcodeEndpointOrigin),
+      "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify(zodyEndpointOrigin),
       // fork（F4.4/F4.5）：VITE_REWARDS_WEBVIEW_ORIGIN 与 VITE_CODING_PLAN_WEBVIEW_ORIGIN
       // define 随购买 webview 全链路删除。
       // Bugfix: E2E store bridge 只能由 WDIO 专用变量打开，避免把 ZCODE_ENV=test 产品环境误当成测试运行态。

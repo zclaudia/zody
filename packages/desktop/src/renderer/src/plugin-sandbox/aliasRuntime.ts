@@ -165,7 +165,7 @@ export function createPluginSandboxAliasRuntime(options: {
   const whenReady = <T>(run: () => Promise<T>): Promise<T> => ready().then(run);
 
   const hostContext = () => app.getHostContext() ?? null;
-  const zcodeTarget: ZodyAliasApi = {
+  const zodyTarget: ZodyAliasApi = {
     get toolInput() {
       return toolInput;
     },
@@ -294,11 +294,11 @@ export function createPluginSandboxAliasRuntime(options: {
         return Reflect.get(object, key, receiver);
       },
     });
-  const zcode = lazy(zcodeTarget);
-  const openai = lazy(createOpenAiCompatApi(zcodeTarget));
+  const zody = lazy(zodyTarget);
+  const openai = lazy(createOpenAiCompatApi(zodyTarget));
 
   return {
-    zcode,
+    zcode: zody,
     openai,
     get connecting() {
       return connectPromise !== null;

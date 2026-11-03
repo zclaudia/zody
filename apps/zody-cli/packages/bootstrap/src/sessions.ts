@@ -28,7 +28,7 @@ export async function resolveLatestSession(
   }
 }
 
-export async function listZCodeSessions(
+export async function listZodySessions(
   options: ListZodySessionsOptions = {},
 ): Promise<SessionInfo[]> {
   const ownsStore = options.sessionStore === undefined;

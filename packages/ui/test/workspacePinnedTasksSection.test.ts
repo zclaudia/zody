@@ -40,7 +40,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => {
         const messages: Record<string, string> = {
@@ -66,7 +66,7 @@ vi.mock("@/TaskRenameDialog.js", () => ({
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       removeOptimisticTaskListItem: () => {},
       removeTaskState: () => {},

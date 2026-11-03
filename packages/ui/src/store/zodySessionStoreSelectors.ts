@@ -301,7 +301,7 @@ export function getTaskUnreadIndicator(
 // Standalone selector functions
 // ────────────────────────────────────────────
 
-export function selectWorkspaceZCodeState(
+export function selectWorkspaceZodyState(
   state: ZodySessionStoreState,
   workspacePath: string,
   workspaceIdentity?: string,

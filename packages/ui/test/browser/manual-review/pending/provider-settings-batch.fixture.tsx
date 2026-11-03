@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { parseZCodeBuiltinModelConfigRules } from "@zody/provider";
+import { parseZodyBuiltinModelConfigRules } from "@zody/provider";
 import type { IServiceAccessor, ProviderSettingsView } from "@zody/services";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { ProviderTemplatePicker } from "@/settings/model-provider-section/ProviderTemplatePicker.js";
@@ -32,7 +32,7 @@ import { Checkbox } from "@/components/ui/checkbox.js";
 const params = new URLSearchParams(location.search);
 document.documentElement.className =
   params.get("theme") === "light" ? "light theme-zai-light" : "dark theme-zai-dark";
-const rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+const rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
 const templates = release.config.providerConfigRules
   .templateRules as ProviderSettingsView["providerTemplates"];
 function createProvider(templateId: string): ProviderSettingsFormProvider {
@@ -261,7 +261,7 @@ createRoot(document.getElementById("root")!).render(
     }
   >
     <TooltipProvider>
-      <ZCodeIntlProvider initialLocale={params.get("locale") === "zh-CN" ? "zh-CN" : "en-US"}>
+      <ZodyIntlProvider initialLocale={params.get("locale") === "zh-CN" ? "zh-CN" : "en-US"}>
         {params.has("teamEntry") ? (
           <OffPeakTeamEntryFixture />
         ) : params.has("offpeak") ? (
@@ -271,7 +271,7 @@ createRoot(document.getElementById("root")!).render(
         ) : (
           <Fixture />
         )}
-      </ZCodeIntlProvider>
+      </ZodyIntlProvider>
     </TooltipProvider>
   </ServiceProvider>,
 );

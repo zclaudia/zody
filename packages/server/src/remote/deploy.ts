@@ -10,7 +10,7 @@ import {
   type RemoteResourcePackageSelection,
 } from "@zody/shared";
 import type { IRemoteBackend, RemoteEnvironment } from "./backend.js";
-import { deployZCodeAgentRuntime } from "./zodyAgentDeploy.js";
+import { deployZodyAgentRuntime } from "./zodyAgentDeploy.js";
 import {
   deployNodePtyPrebuilds,
   deployNodeRuntime,
@@ -319,7 +319,7 @@ export async function deployServer(
           { log, logWarn },
         );
       }
-      await deployZCodeAgentRuntime(
+      await deployZodyAgentRuntime(
         backend,
         env,
         {
@@ -401,7 +401,7 @@ export async function deployServer(
     log("all uploads complete");
 
     // 部署 ZCode Agent runtime 到远程，历史资源包选择已在入口统一忽略。
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       env,
       {

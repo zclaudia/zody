@@ -3,10 +3,10 @@ import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { compileModelOptionMaps } from "@zody/model-option-map";
 import { ModelConfig, ModelOptionSpecsConfig } from "@zody/provider";
-import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
+import { NodeZodyBuiltinProviderConfigSource } from "../src/index.js";
 
 const path = fileURLToPath(new URL("../../../config/provider/zody-builtin.json", import.meta.url));
-const source = new NodeZCodeBuiltinProviderConfigSource({ bundledFilePath: path, watch: false });
+const source = new NodeZodyBuiltinProviderConfigSource({ bundledFilePath: path, watch: false });
 let snapshot: Awaited<ReturnType<typeof source.read>>;
 let modelIds: string[];
 beforeAll(async () => {

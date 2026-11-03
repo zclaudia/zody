@@ -5,15 +5,15 @@ import { ElicitationDialog } from "@/ElicitationDialog.js";
 import { PermissionDialog } from "@/PermissionDialog.js";
 import { workflowSessionModelOf } from "@/components/workflow-timeline/workflowRunSettings.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { usePendingInteractionTaskNotifications } from "@/hooks/useTaskNotifications.js";
 import { logger } from "@/logger.js";
-import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
+import { useZodyStoreWithDefault } from "@/store/StoreProvider.js";
 import { useWorkspaceHookReviewStore } from "@/store/workspaceHookReviewStore.js";
 import {
   getTaskUiState,
   getWorkspaceState,
-  useZCodeSessionStore,
+  useZodySessionStore,
 } from "@/store/zodySessionStore.js";
 import type { ElicitationFormDraft } from "@/store/zodySessionStoreTypes.js";
 import { createCommandEnvelope } from "@/v4/commandFactory.js";
@@ -108,7 +108,7 @@ export function V4InteractionDialogs({
   const upsertWorkspaceHookReview = useWorkspaceHookReviewStore((state) => state.upsert);
   const clearWorkspaceHookReview = useWorkspaceHookReviewStore((state) => state.clear);
   const platform = useOptionalPlatform();
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   // task 切换时 sessionId 会先更新，旧 task snapshot 可能再保留一帧。
   // 若直接使用旧 snapshot，会把当前 task 的 renderer-local 问答草稿误判为过期并清理。
   const currentSnapshot = getCurrentSessionInteractionSnapshot(sessionId, snapshot);
@@ -128,13 +128,13 @@ export function V4InteractionDialogs({
   const workspaceHookReview = currentSnapshot?.pendingInteractions.find(
     (interaction) => interaction.payload.kind === "workspaceHookReview",
   );
-  const notificationEnabled = useZCodeStoreWithDefault((state) => state.notificationEnabled, true);
-  const botElicitationProgress = useZCodeSessionStore(
+  const notificationEnabled = useZodyStoreWithDefault((state) => state.notificationEnabled, true);
+  const botElicitationProgress = useZodySessionStore(
     (state) =>
       getTaskUiState(getWorkspaceState(state, workspacePath, workspaceIdentity), sessionId)
         .elicitationRequest,
   );
-  const localElicitationDraft = useZCodeSessionStore((state) => {
+  const localElicitationDraft = useZodySessionStore((state) => {
     if (!pending || pending.payload.kind !== "userInput") return undefined;
     return getTaskUiState(getWorkspaceState(state, workspacePath, workspaceIdentity), sessionId)
       .elicitationFormDraftsByRequestId[pending.interactionId];
@@ -251,7 +251,7 @@ export function V4InteractionDialogs({
 
   const persistElicitationDraft = useCallback(
     (requestId: string, draft: ElicitationFormDraft) => {
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .setTaskElicitationFormDraft(workspacePath, sessionId, requestId, draft, workspaceIdentity);
     },
@@ -260,7 +260,7 @@ export function V4InteractionDialogs({
 
   const removeElicitationDraft = useCallback(
     (requestId: string) => {
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .removeTaskElicitationFormDraft(workspacePath, sessionId, requestId, workspaceIdentity);
     },
@@ -275,7 +275,7 @@ export function V4InteractionDialogs({
         .map((interaction) => interaction.interactionId),
     );
     const taskUiState = getTaskUiState(
-      getWorkspaceState(useZCodeSessionStore.getState(), workspacePath, workspaceIdentity),
+      getWorkspaceState(useZodySessionStore.getState(), workspacePath, workspaceIdentity),
       sessionId,
     );
     for (const requestId of Object.keys(taskUiState.elicitationFormDraftsByRequestId)) {

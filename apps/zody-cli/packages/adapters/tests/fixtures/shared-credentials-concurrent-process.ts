@@ -1,4 +1,4 @@
-import { createSharedZCodeCredentialStore } from "../../src/auth/shared-credentials.js";
+import { createSharedZodyCredentialStore } from "../../src/auth/shared-credentials.js";
 
 process.send?.({ type: "ready" });
 
@@ -23,7 +23,7 @@ process.once(
     }
 
     try {
-      const store = createSharedZCodeCredentialStore({
+      const store = createSharedZodyCredentialStore({
         env: { ZCODE_CREDENTIAL_SECRET: "test-secret" },
         filePath: message.filePath,
       });

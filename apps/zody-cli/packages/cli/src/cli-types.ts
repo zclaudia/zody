@@ -7,28 +7,28 @@ import type {
 } from "@zody/adapters/browser";
 import type {
   createModelAdapter,
-  createZCodeApp,
+  createZodyApp,
   CreateModelAdapterOptions,
-  inspectZCodeSkill,
+  inspectZodySkill,
   inspectWorkspaceHookTrust,
   grantWorkspaceHookTrust,
   revokeWorkspaceHookTrustCli,
-  inspectZCodeCustomCommand,
+  inspectZodyCustomCommand,
   InspectZodyCustomCommandOptions,
   InspectZodySkillOptions,
-  listZCodeCustomCommands,
+  listZodyCustomCommands,
   ListZodyCustomCommandsOptions,
-  loadZCodeCustomCommand,
-  listZCodeSessions,
-  listZCodeSkills,
+  loadZodyCustomCommand,
+  listZodySessions,
+  listZodySkills,
   ListZodySessionsOptions,
   ListZodySkillsOptions,
   resolveLatestSession,
   ResolveLatestSessionOptions,
   RunZodyProtocolAgentOptions,
-  prepareZCodeTelemetryEnv,
+  prepareZodyTelemetryEnv,
   startProcessProviderRegistryRuntime,
-  shutdownZCodeTelemetry,
+  shutdownZodyTelemetry,
   ZodyAppOptions,
 } from "@zody/bootstrap";
 import type { CliEnv, DotenvLoadResult, LoadCliDotenvOptions } from "./env.js";
@@ -47,9 +47,9 @@ export interface RunDependencies extends PluginsCommandOverrides {
   createModelAdapter?: (
     options?: CreateModelAdapterOptions,
   ) => ReturnType<typeof createModelAdapter>;
-  createZCodeApp?: (
+  createZodyApp?: (
     options?: ZodyAppOptions,
-  ) => Awaited<ReturnType<typeof createZCodeApp>> | ReturnType<typeof createZCodeApp>;
+  ) => Awaited<ReturnType<typeof createZodyApp>> | ReturnType<typeof createZodyApp>;
   /**
    * Session-event shaper for --output-format stream-json. Defaults to the
    * bootstrap module's, which is also what the protocol server uses; injectable
@@ -59,27 +59,27 @@ export interface RunDependencies extends PluginsCommandOverrides {
   mapSessionEvent?: BootstrapModule["mapSessionEvent"];
   cwd?: () => string;
   env?: CliEnv;
-  inspectSkill?: (options: InspectZodySkillOptions) => ReturnType<typeof inspectZCodeSkill>;
+  inspectSkill?: (options: InspectZodySkillOptions) => ReturnType<typeof inspectZodySkill>;
   inspectWorkspaceHookTrust?: typeof inspectWorkspaceHookTrust;
   grantWorkspaceHookTrust?: typeof grantWorkspaceHookTrust;
   revokeWorkspaceHookTrustCli?: typeof revokeWorkspaceHookTrustCli;
   inspectCustomCommand?: (
     options: InspectZodyCustomCommandOptions,
-  ) => ReturnType<typeof inspectZCodeCustomCommand>;
+  ) => ReturnType<typeof inspectZodyCustomCommand>;
   loadDotenv?: (options?: LoadCliDotenvOptions) => DotenvLoadResult;
-  prepareZCodeTelemetryEnv?: typeof prepareZCodeTelemetryEnv;
+  prepareZodyTelemetryEnv?: typeof prepareZodyTelemetryEnv;
   projectConfigPath?: string;
-  listSessions?: (options: ListZodySessionsOptions) => ReturnType<typeof listZCodeSessions>;
+  listSessions?: (options: ListZodySessionsOptions) => ReturnType<typeof listZodySessions>;
   listCustomCommands?: (
     options: ListZodyCustomCommandsOptions,
-  ) => ReturnType<typeof listZCodeCustomCommands>;
+  ) => ReturnType<typeof listZodyCustomCommands>;
   loadCustomCommand?: (
     options: InspectZodyCustomCommandOptions,
-  ) => ReturnType<typeof loadZCodeCustomCommand>;
+  ) => ReturnType<typeof loadZodyCustomCommand>;
   // headless slash 路由要和 app facade 的保留名 gate 用同一个判据；默认取 bootstrap 的，
   // 注入点只为让单测不必拉起整个 bootstrap 模块。见 prompt-command.ts。
-  isReservedSlashCommandName?: BootstrapModule["isReservedZCodeSlashCommandName"];
-  listSkills?: (options: ListZodySkillsOptions) => ReturnType<typeof listZCodeSkills>;
+  isReservedSlashCommandName?: BootstrapModule["isReservedZodySlashCommandName"];
+  listSkills?: (options: ListZodySkillsOptions) => ReturnType<typeof listZodySkills>;
   logger?: Logger;
   readClipboardImage?: TuiReadClipboardImage;
   writeClipboardText?: TuiWriteClipboardText;
@@ -95,7 +95,7 @@ export interface RunDependencies extends PluginsCommandOverrides {
   shutdownCleanupTimeoutMs?: number;
   shutdownProcess?: CliShutdownProcess;
   startProcessProviderRegistryRuntime?: typeof startProcessProviderRegistryRuntime;
-  shutdownZCodeTelemetry?: typeof shutdownZCodeTelemetry;
+  shutdownZodyTelemetry?: typeof shutdownZodyTelemetry;
 }
 
 export type CliPermissionMode = "build" | "plan" | "edit" | "yolo" | "guarded";
@@ -111,7 +111,7 @@ export interface CliTargetRequest {
   replaceExisting: boolean;
 }
 
-export type ModeCapableApp = Awaited<ReturnType<typeof createZCodeApp>> & {
+export type ModeCapableApp = Awaited<ReturnType<typeof createZodyApp>> & {
   getMode?: () => CliRuntimeMode;
   setLocale?: (locale: UiLocale) => Promise<{ locale: "en-US" | "zh-CN" }>;
   setMode?: (mode: CliRuntimeMode) => Promise<{ mode: CliRuntimeMode }>;

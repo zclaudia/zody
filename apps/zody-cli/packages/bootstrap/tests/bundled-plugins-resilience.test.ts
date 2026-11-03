@@ -109,7 +109,7 @@ vi.mock("../src/app/official-plugin-seed-lock.js", async (importOriginal) => {
 
 import { resolveOfficialPluginRoots } from "../src/app/bundled-plugins.js";
 import { OFFICIAL_PLUGIN_DEFINITIONS } from "../src/app/official-plugin-definitions.js";
-import { resolveZCodePlugins } from "../src/plugins.js";
+import { resolveZodyPlugins } from "../src/plugins.js";
 
 const OFFICIAL_CACHE_ROOT = join("cache", "zcode-plugins-official");
 const BROWSER_CACHE_SUFFIX = join(OFFICIAL_CACHE_ROOT, "browser-use", "0.5.1");
@@ -188,7 +188,7 @@ describe("bundled official plugin cache resilience", () => {
     faults.promoteTargetSuffix = BROWSER_CACHE_SUFFIX;
 
     expect(() =>
-      resolveZCodePlugins({
+      resolveZodyPlugins({
         logger,
         pluginStorageRoot: storageRoot,
         skipUserConfig: true,
@@ -305,9 +305,9 @@ describe("bundled official plugin cache resilience", () => {
     process.argv[1] = join(entrypointRoot, "zody.cjs");
     const logger = createLogger();
 
-    let outcome!: ReturnType<typeof resolveZCodePlugins>;
+    let outcome!: ReturnType<typeof resolveZodyPlugins>;
     expect(() => {
-      outcome = resolveZCodePlugins({
+      outcome = resolveZodyPlugins({
         logger,
         pluginStorageRoot: storageRoot,
         skipUserConfig: true,
@@ -422,7 +422,7 @@ describe("bundled official plugin cache resilience", () => {
     const logger = createLogger();
     faults.seedLockHeldTargetSuffixes = [BROWSER_CACHE_SUFFIX];
 
-    const outcome = resolveZCodePlugins({
+    const outcome = resolveZodyPlugins({
       logger,
       pluginStorageRoot: storageRoot,
       skipUserConfig: true,

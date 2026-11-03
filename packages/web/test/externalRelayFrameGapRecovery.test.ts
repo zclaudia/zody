@@ -52,7 +52,7 @@ vi.mock("@zody/ui", () => ({
   WebRemoteControlMobileStartPage: () => null,
   WebRemoteControlMobileSettingsScreen: () => null,
   WebRemoteControlMobileBackendPicker: () => null,
-  ZCodeIntlProvider: ({ children }: { children: unknown }) => children,
+  ZodyIntlProvider: ({ children }: { children: unknown }) => children,
   generateMobileDeviceFingerprint: vi.fn(() => "test-mobile-fingerprint"),
   installDocumentHiddenMotionPause: vi.fn(),
   playTaskNotificationSound: vi.fn(),
@@ -62,6 +62,8 @@ vi.mock("@zody/ui", () => ({
 
 vi.mock("@zody/client", () => ({
   connectViaProtocol: vi.fn(() => ({ settingService: {} })),
+  // bridge 会持有连接所有者，测试需要模拟服务和对应释放接口。
+  connectViaProtocolOwned: vi.fn(() => ({ services: { settingService: {} }, dispose: vi.fn() })),
   connectViaWebSocket: vi.fn(),
   createAcknowledgedWebRemoteControlRelayProtocol: vi.fn((options) => {
     testState.relayProtocolOptions.push(options);

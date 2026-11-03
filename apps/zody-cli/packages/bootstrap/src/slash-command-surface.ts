@@ -31,10 +31,10 @@ const RESERVED_SLASH_COMMAND_NAMES = new Set(
   ]).concat([...EXTRA_RESERVED_SLASH_COMMAND_NAMES]),
 );
 
-export function normalizeZCodeSlashCommandName(name: string): string {
+export function normalizeZodySlashCommandName(name: string): string {
   return name.trim().replace(/^\/+/, "").toLowerCase();
 }
 
-export function isReservedZCodeSlashCommandName(name: string): boolean {
-  return RESERVED_SLASH_COMMAND_NAMES.has(normalizeZCodeSlashCommandName(name));
+export function isReservedZodySlashCommandName(name: string): boolean {
+  return RESERVED_SLASH_COMMAND_NAMES.has(normalizeZodySlashCommandName(name));
 }

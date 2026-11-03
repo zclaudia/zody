@@ -31,13 +31,13 @@ import {
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useProviderSettingsView } from "@/hooks/useProviderSettingsView.js";
 import { useServices } from "@/hooks/useServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
   buildLoginApiKeyDefaultModelPreferenceFromSelection,
   shouldShowLoginApiKeyLink,
 } from "@/login/LoginApiKeyForm.helpers.js";
-import { useZCodeStore } from "@/store/StoreProvider.js";
+import { useZodyStore } from "@/store/StoreProvider.js";
 
 interface LoginApiKeyFormProps {
   onSaved: () => void | Promise<void>;
@@ -45,10 +45,10 @@ interface LoginApiKeyFormProps {
 }
 
 export function LoginApiKeyForm({ onSaved, onSkipped }: LoginApiKeyFormProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const platform = usePlatform();
   const { modelSelectionService, providerSettingsService } = useServices();
-  const markApiKeyLoginSuccess = useZCodeStore((state) => state.markApiKeyLoginSuccess);
+  const markApiKeyLoginSuccess = useZodyStore((state) => state.markApiKeyLoginSuccess);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [apiKeyValue, setApiKeyValue] = useState("");
   const [saving, setSaving] = useState(false);

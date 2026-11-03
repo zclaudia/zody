@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IZodySessionService } from "@zody/services";
 import { invalidateDeferredDraftSessionForSkillChange } from "../src/lib/zodyDraftSkillInvalidation.js";
-import { useZCodeSessionStore } from "../src/store/zodySessionStore.js";
+import { useZodySessionStore } from "../src/store/zodySessionStore.js";
 
 function createSessionService(
   closeSession: IZodySessionService["closeSession"] = vi.fn(async () => {}),
@@ -10,7 +10,7 @@ function createSessionService(
 }
 
 beforeEach(() => {
-  useZCodeSessionStore.setState((state) => ({
+  useZodySessionStore.setState((state) => ({
     ...state,
     workspaces: {},
   }));
@@ -21,7 +21,7 @@ describe("invalidateDeferredDraftSessionForSkillChange", () => {
     const closeSession = vi.fn(async () => {});
     const workspacePath = "/workspace/app";
     const workspaceIdentity = "ssh:dev";
-    useZCodeSessionStore.getState().setDraftSessionId(workspacePath, "draft-1", workspaceIdentity);
+    useZodySessionStore.getState().setDraftSessionId(workspacePath, "draft-1", workspaceIdentity);
 
     await invalidateDeferredDraftSessionForSkillChange({
       reason: "test",
@@ -36,11 +36,11 @@ describe("invalidateDeferredDraftSessionForSkillChange", () => {
       sessionId: "draft-1",
     });
     expect(
-      useZCodeSessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
+      useZodySessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
         .draftSessionId,
     ).toBeNull();
     expect(
-      useZCodeSessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
+      useZodySessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
         .draftRuntimeInvalidationVersion,
     ).toBe(1);
   });
@@ -57,7 +57,7 @@ describe("invalidateDeferredDraftSessionForSkillChange", () => {
 
     expect(closeSession).not.toHaveBeenCalled();
     expect(
-      useZCodeSessionStore.getState().getWorkspaceState(workspacePath)
+      useZodySessionStore.getState().getWorkspaceState(workspacePath)
         .draftRuntimeInvalidationVersion,
     ).toBe(1);
   });
@@ -67,7 +67,7 @@ describe("invalidateDeferredDraftSessionForSkillChange", () => {
       throw new Error("stale draft");
     });
     const workspacePath = "/workspace/app";
-    useZCodeSessionStore.getState().setDraftSessionId(workspacePath, "draft-1");
+    useZodySessionStore.getState().setDraftSessionId(workspacePath, "draft-1");
 
     await invalidateDeferredDraftSessionForSkillChange({
       reason: "test",
@@ -80,10 +80,10 @@ describe("invalidateDeferredDraftSessionForSkillChange", () => {
       sessionId: "draft-1",
     });
     expect(
-      useZCodeSessionStore.getState().getWorkspaceState(workspacePath).draftSessionId,
+      useZodySessionStore.getState().getWorkspaceState(workspacePath).draftSessionId,
     ).toBeNull();
     expect(
-      useZCodeSessionStore.getState().getWorkspaceState(workspacePath)
+      useZodySessionStore.getState().getWorkspaceState(workspacePath)
         .draftRuntimeInvalidationVersion,
     ).toBe(1);
   });

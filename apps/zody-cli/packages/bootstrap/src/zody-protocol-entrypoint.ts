@@ -18,7 +18,7 @@ import { traceContextToLogContext, createRootTraceContext } from "@zody/contract
 import type { McpPort, ModelSelection } from "@zody/contracts";
 import type { PresentationSurface } from "@zody/core";
 import type { RunZodyProtocolAgentOptions, ZodyAppOptions } from "./app/types.js";
-import { createZCodeApp } from "./app/create-app.js";
+import { createZodyApp } from "./app/create-app.js";
 import {
   createNodeReplBrowserBroker,
   type NodeReplBrowserBroker,
@@ -38,7 +38,7 @@ import { ZodyProtocolNdjsonConnection } from "./zody-protocol/transport.js";
 import { cleanupProtocolRuntime } from "./zody-protocol/runtime-cleanup.js";
 import { startProtocolResourceSampler } from "./zody-protocol/resource-sampler.js";
 import { acquireProtocolStartupResource } from "./zody-protocol/startup-resource.js";
-import { prepareZCodeTelemetryEnv, shutdownZCodeTelemetry } from "./telemetry-bootstrap.js";
+import { prepareZodyTelemetryEnv, shutdownZodyTelemetry } from "./telemetry-bootstrap.js";
 import type { ZodyProcessResourceSampler } from "./process-resource-sampler.js";
 
 export function applyProtocolPresentationSurface(
@@ -163,9 +163,9 @@ export async function runZodyProtocolAgent(
     const telemetryEnv = await acquireProtocolStartupResource({
       signal: options.lifecycle?.signal,
       logger,
-      disposeLate: () => shutdownZCodeTelemetry(),
+      disposeLate: () => shutdownZodyTelemetry(),
       create: () =>
-        prepareZCodeTelemetryEnv(runtimeEnv, {
+        prepareZodyTelemetryEnv(runtimeEnv, {
           cliVersion: options.version,
           productVersion: options.env?.ZCODE_APP_VERSION,
           runtimeSurface,
@@ -219,8 +219,8 @@ export async function runZodyProtocolAgent(
     );
     options.lifecycle?.signal.throwIfAborted();
     const server = (serverForCleanup = new ZodyProtocolAgentServer({
-      createZCodeApp: (appOptions = {}) =>
-        createZCodeApp({
+      createZodyApp: (appOptions = {}) =>
+        createZodyApp({
           ...applyProtocolProviderRegistry(
             applyProtocolPresentationSurface(appOptions, presentationSurface),
             activeProviderRegistryRuntime.runtime.registryService,

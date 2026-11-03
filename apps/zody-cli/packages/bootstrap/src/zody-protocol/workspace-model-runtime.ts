@@ -87,7 +87,7 @@ export async function createWorkspaceZodyApp(
       : undefined;
   const providerRuntimeHeadersPort =
     options.providerRuntimeHeadersPort ?? createProviderRuntimeHeadersPort(context, workspace);
-  return context.deps.createZCodeApp({
+  return context.deps.createZodyApp({
     ...trustedOptions,
     ...(cuaLaunchIdentity ? { cuaLaunchIdentity } : {}),
     includeVisualize: true,

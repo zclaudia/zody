@@ -107,7 +107,7 @@ describe("v4 queue auto-drain foreground races", () => {
       );
 
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options: ZodyAppOptions) => {
+      createZodyApp: (options: ZodyAppOptions) => {
         const app = createFakeApp(options);
         return {
           ...app,

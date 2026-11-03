@@ -23,7 +23,7 @@ vi.mock("@/logger.js", () => ({ logger: loggerMock }));
 afterEach(cleanup);
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     locale: "zh-CN",
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, string>) => {

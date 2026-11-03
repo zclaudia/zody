@@ -592,7 +592,7 @@ nodes:
         file: "apps/zody-cli/packages/telemetry/src/error-sanitizer.ts"
       - symbol: "TerminalStreamChunkError"
         file: "apps/zody-cli/packages/adapters/src/model/runner-retry.ts"
-      - symbol: "createZCodeProcessResourceSampler"
+      - symbol: "createZodyProcessResourceSampler"
         file: "apps/zody-cli/packages/bootstrap/src/process-resource-sampler.ts"
       - symbol: "createZodyAgentService"
         file: "packages/services/src/zody-agent/zodyAgentService.ts"
@@ -643,15 +643,15 @@ nodes:
       - "docs/monitoring/zcode-data-size-arms-telemetry.md"
       - "docs/monitoring/performance-monitoring.md"
     codeSeeds:
-      - symbol: "createZCodeDataSizeTelemetryScheduler"
+      - symbol: "createZodyDataSizeTelemetryScheduler"
         file: "packages/desktop/src/main/desktopZodyDataSizeTelemetry.ts"
-      - symbol: "scanZCodeDataDirectory"
+      - symbol: "scanZodyDataDirectory"
         file: "packages/desktop/src/main/zodyDataSizeScanner.ts"
-      - symbol: "scanZCodeDataDirectoryInWorker"
+      - symbol: "scanZodyDataDirectoryInWorker"
         file: "packages/desktop/src/main/zodyDataSizeWorkerClient.ts"
-      - symbol: "writeZCodeDataSizeTelemetryState"
+      - symbol: "writeZodyDataSizeTelemetryState"
         file: "packages/desktop/src/main/zodyDataSizeTelemetryState.ts"
-      - symbol: "getZCodeDataRootDir"
+      - symbol: "getZodyDataRootDir"
         file: "packages/services/src/paths.ts"
     invariants:
       - "Measure only the local getZCodeDataRootDir logical byte size; never report paths, file names, workspace ids or remote targets."
@@ -3523,7 +3523,7 @@ nodes:
     codeSeeds:
       - symbol: "createSettingService"
         file: "packages/services/src/setting/settingService.ts"
-      - symbol: "getZCodeDataRootDir"
+      - symbol: "getZodyDataRootDir"
         file: "packages/services/src/paths.ts"
 
   - id: "service.model-io-runtime-preference-sync"
@@ -3985,7 +3985,7 @@ nodes:
     docs:
       - "docs/plugins/workspace-level-plugin-architecture.md"
     codeSeeds:
-      - symbol: "configureZCodePlugin"
+      - symbol: "configureZodyPlugin"
         file: "apps/zody-cli/packages/bootstrap/src/plugins.ts"
       - symbol: "resolvePluginMcpServers"
         file: "apps/zody-cli/packages/adapters/src/plugins/mcp.ts"
@@ -4025,7 +4025,7 @@ nodes:
         file: "apps/zody-cli/packages/bootstrap/src/app/bundled-plugins.ts"
       - symbol: "writeOfficialMarketplace"
         file: "apps/zody-cli/packages/bootstrap/src/app/bundled-plugins.ts"
-      - symbol: "uninstallZCodeMarketplacePlugin"
+      - symbol: "uninstallZodyMarketplacePlugin"
         file: "apps/zody-cli/packages/bootstrap/src/plugins.ts"
       - symbol: "describeMarketplacePlugin"
         file: "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts"
@@ -4056,7 +4056,7 @@ nodes:
       - "docs/specs/builtin-plugin-catalog-runtime-separation.md"
       - "docs/plugin-marketplace-ui-ux.md"
     codeSeeds:
-      - symbol: "describeZCodePlugin"
+      - symbol: "describeZodyPlugin"
         file: "apps/zody-cli/packages/bootstrap/src/plugins.ts"
       - symbol: "describePlugin"
         file: "packages/ui/src/store/pluginManagementStore.ts"

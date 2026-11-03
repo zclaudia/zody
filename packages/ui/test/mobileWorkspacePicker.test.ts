@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { WebRemoteControlMobileDirectoryListResult } from "@zody/shared";
 import { MobileWorkspacePicker } from "../src/MobileWorkspacePicker.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 
 // jsdom 没有布局，真实 useVirtualizer 视口高度为 0 时一行也不渲染；
 // 这里替换为确定性 fake（全部行展开），行渲染本身由真机/桌面环境验证。
@@ -48,7 +48,7 @@ function renderPicker(
 ) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(MobileWorkspacePicker, {
         listDirectory,

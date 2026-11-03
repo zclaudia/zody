@@ -7,7 +7,7 @@ import type {
 import { logger } from "@/logger.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { selectWorkspaceZodyState, useZodySessionStore } from "@/store/zodySessionStore.js";
 import { attachTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 import { stabilizeTaskListItems } from "@/v4/taskListItemStabilization.js";
 import { getWindowControllerTaskListRegistry } from "@/v4/windowControllerTaskListRegistry.js";
@@ -85,11 +85,11 @@ export function useGlobalTaskList(params: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [workspaceSignature],
   );
-  const taskListVersionSignature = useZCodeSessionStore((state) =>
+  const taskListVersionSignature = useZodySessionStore((state) =>
     JSON.stringify(
       params.workspaceTabs
         .map((tab) => {
-          const workspace = selectWorkspaceZCodeState(
+          const workspace = selectWorkspaceZodyState(
             state,
             tab.workspacePath,
             tab.workspaceIdentity,

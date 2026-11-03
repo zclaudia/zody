@@ -4,7 +4,7 @@ import type { ZodyTaskListItem } from "@zody/services";
 import type { ZodyTaskMeta } from "@zody/shared";
 import { matchesTaskListMembershipKind } from "@zody/shared/zody-protocol-v4";
 import { mergeTaskMetaCandidates } from "@/lib/zodyTaskMetaMerge.js";
-import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
+import { compareZodyTaskListItems } from "@/lib/taskListOrdering.js";
 import { getTaskListRowActivity, mergeTaskListMembershipFields } from "@/v4/taskListRowActivity.js";
 import {
   buildTaskEntityKey,
@@ -160,7 +160,7 @@ function sortTaskKeysByDescriptor(params: {
     if (!rightTask) {
       return -1;
     }
-    return compareZCodeTaskListItems(leftTask, rightTask, params.descriptor.sortBy);
+    return compareZodyTaskListItems(leftTask, rightTask, params.descriptor.sortBy);
   });
 }
 

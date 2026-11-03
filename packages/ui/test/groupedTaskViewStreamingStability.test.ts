@@ -26,7 +26,7 @@ import {
 } from "@/hooks/useGroupedTaskView.js";
 import { clearTaskListMembershipCache } from "@/lib/taskListMembershipSets.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { bumpTaskListMembershipVersion } from "@/v4/taskListMembershipVersion.js";
 
@@ -137,7 +137,7 @@ function cleanupHookTestGlobals(): void {
     sessionIdByWorkspaceIdentity: {},
     sessionIdByWorkspacePath: {},
   });
-  useZCodeSessionStore.setState({ workspaces: {} });
+  useZodySessionStore.setState({ workspaces: {} });
   clearCachedGroupedViewsForTest();
   clearTaskListMembershipCache();
   delete (globalThis as { document?: unknown }).document;

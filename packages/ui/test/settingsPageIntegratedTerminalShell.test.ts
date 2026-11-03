@@ -94,7 +94,7 @@ vi.mock("@/components/lib/utils.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -148,7 +148,7 @@ vi.mock("@/hooks/useModelProviders.js", () => ({
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  useZodyStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       codePreviewSettings: {},
       notificationEnabled: true,

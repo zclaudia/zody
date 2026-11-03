@@ -11,7 +11,7 @@ import {
   createRegistryProviderConfig,
   parseModelConfig,
   parseProviderConfig,
-  parseZCodeBuiltinModelConfigRules,
+  parseZodyBuiltinModelConfigRules,
 } from "@zody/provider";
 import { buildProviderRequestMessages } from "../../core/src/runtime/helpers/provider-request-messages.js";
 import { AiSdkModelAdapter } from "../src/model/runner.js";
@@ -32,7 +32,7 @@ describe("Published MCS and search final Anthropic wire", () => {
         "utf8",
       ),
     );
-    const rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+    const rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
     let config = rules.resolve({ providerId, baseUrl, modelId, apiType: "anthropic-messages" });
     if (providerId === "personal-off")
       config = config.overlay(

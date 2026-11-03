@@ -4,11 +4,11 @@ import {
   type ZodyBackgroundTaskControlItem,
 } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 export function formatBackgroundTaskElapsedLabel(
   elapsedMs: number,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
+  formatMessage: ReturnType<typeof useZodyIntl>["intl"]["formatMessage"],
 ) {
   const totalSeconds = Math.max(1, Math.floor(elapsedMs / 1000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -56,7 +56,7 @@ export function BackgroundTaskElapsedLabel({
   job: ZodyBackgroundTaskControlItem;
   now?: number;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const baselineRef = useRef<ReturnType<typeof createElapsedBaseline> | null>(null);
   const baselineKey = `${job.jobId}:${job.startedAt ?? "no-start"}:${job.elapsedMs ?? "no-elapsed"}`;
   if (!baselineRef.current || baselineRef.current.key !== baselineKey) {

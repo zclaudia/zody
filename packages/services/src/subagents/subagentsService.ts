@@ -34,7 +34,7 @@ import {
   resolveUserSubagentRoot,
   resolveWorkspaceSubagentRoot,
   resolveWorkspaceLegacySubagentRoot,
-  resolveZCodeStorageRoot,
+  resolveZodyStorageRoot,
   type SubagentStorageOptions,
 } from "./subagentStorage.js";
 import type { ISubagentsService } from "./subagents.js";
@@ -323,7 +323,7 @@ async function discoverPluginAgents(params: {
   reservedNames: Iterable<string>;
   storageOptions?: SubagentStorageOptions;
 }): Promise<PluginAgentDiscovery> {
-  const storageRoot = await resolveZCodeStorageRoot(params.storageOptions);
+  const storageRoot = await resolveZodyStorageRoot(params.storageOptions);
   const cliStorageRoot = basename(storageRoot) === "cli" ? storageRoot : join(storageRoot, "cli");
   const pluginConfig = await readPluginConfig(params.storageOptions);
   const records = await readEnabledPluginRecords(join(cliStorageRoot, "plugins"), pluginConfig);

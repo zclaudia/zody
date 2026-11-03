@@ -748,10 +748,10 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
 
   it("main 进程 endpoint 临时覆盖优先读取命令行环境变量", async () => {
     process.env["ZCODE_ENDPOINT_ORIGIN"] = "http://127.0.0.1:18765";
-    const { resolveZCodeEndpointEnvBaseOrigin } = await import("../src/main/desktopRuntimeEnv.js");
+    const { resolveZodyEndpointEnvBaseOrigin } = await import("../src/main/desktopRuntimeEnv.js");
 
     expect(
-      resolveZCodeEndpointEnvBaseOrigin({
+      resolveZodyEndpointEnvBaseOrigin({
         ZCODE_BASE_URL: "https://zcode.z.ai",
       }),
     ).toBe("http://127.0.0.1:18765");

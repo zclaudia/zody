@@ -1,0 +1,15 @@
+# R20 runtime B/C/D 实施记录
+
+基线 `01f59a33c1c54a4a5102d0917cd64b3c678e0d4c`。已先补现行 spec，再按 TypeScript symbol 分开实施 319 条声明及绑定引用，补齐动态模块、内部注入、mock、反射导出名及实际 JS/MJS 消费者。`output/zody-rename-r20-runtime-next/runtime-closure/bcd-implementation/319-record-audit.json` 逐项记录原记录、目标声明与绑定引用，319 项均在原文件找到新声明；`bindings.json`、`edits-preview.json` 保存分 binding 和原始坐标，`file-hashes.json` 保存本批 1121 个 tracked 文件的 before/after SHA-256（排除主控独立更改的三个账本）。这些文件尚未提交。
+
+29 个对象简写的 owner、键处置见 `shorthand-owner-audit.json`：保留 `basedOnZCodeBuiltinRevision` 协议信封键、插件桥 `zcode`，以及由 R44 管理的 provider-node 和 Host 初始化属性；内部 skills、workspace provider helper、workspace shell state、workspace runtime release helper 和 desktop menu 注入键及调用方已同步。IServiceAccessor、RemoteServiceAccess 等不在 319 条声明中的独立内部服务成员仍由后续 R20.4 成员批完整迁移，不将其误称外部 wire。`test-string-candidates.json` 和 `remaining-mock-keys.json` 记录测试字符串及已改函数的 mock 键检查；真实旧 Error.name、环境变量、协议、持久化及插件身份不提前切换。
+
+跨语言消费者：compact 的 `case-utils.mjs` 与 memory 的 `memory-e2e-runtime.mjs`、`memory-bench-child.mjs` 调用当前 bootstrap 工厂；`scripts/builtin-provider-config.mjs` 动态获取当前 provider decoder。以下活跃测试脚本只同步其从现行 UI 模块导入和实际调用的 `ZodyIntlProvider`：`packages/desktop/test/e2e/workspace-file-tree/manual-review/pending/mobile-file-browser.mjs`、`packages/desktop/test/e2e/manual-review/pending/mobile-remote-onboarding.mjs`、`packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-notification-center.mjs`、`mobile-history-search.mjs`、`mobile-shell-routing.mjs`、`mobile-settings-connection.mjs`（后三项与前项同目录），以及 `packages/desktop/test/e2e/helpers/feedback-submit-fixture.js`。onboarding 同时同步现行 remote service collection 的内部 `createReportingRemoteZodyTaskService` 注入键。未运行真实手机、原生活动或生成冻结 CUA 制品；两个独立 `loadZCodeModules` JS 局部绑定未列入此 319 项。
+
+图谱只变更 10 个与已改声明路径精确匹配的 symbol 叶子，节点 372、边 726 均不变；完整前后值见 `graph-leaf-diff.json`。根 `pnpm typecheck` 通过；lint 退出 0、303 warnings；changed architecture 0 violations。CLI `build --force` 23/23、0 cached，`typecheck --force` 34/34、0 cached。根目标 72、UI 目标 36（另 helper 复验 34）、CLI Vitest 31、CLI node:test 200、graph 4 均通过。隔离 HOME/USERPROFILE/TMPDIR 并移除 API key 的 compact fake 7 个场景通过，包括 background-bash。精确 argv、退出码及日志见 `commands.json`。
+
+中途两次 CLI 构建分别因 TUI 的 `getZCodeCopy` 别名和 `scripts/builtin-provider-config.mjs` 动态 decoder 解构遗漏失败；补齐后强制构建通过。首次 CLI 定向测试有 5 项因四处旧工厂注入键失败，修正后 31/31；所有原始失败日志保留。未进行完整 CLI 全量测试、真实 provider 调用、安装、Docker、桌面 E2E、签名或发布；最终整体验收须基于完整冻结候选执行。
+
+主控扩大验证发现两处活跃 OAuth 子进程 fixture 仍导入旧工厂：`apps/zody-cli/packages/adapters/tests/fixtures/shared-credentials-concurrent-process.ts` 与 `mcp-oauth-child-driver.ts` 均同步当前 `createSharedZodyCredentialStore`，其 credential payload 未变。两文件对应 auth 与跨进程 OAuth 单独运行 13/13 通过；在活跃 TS/TSX/CTS/MTS 的 319 名称候选中核对 import 和生成代码，唯一模板候选引用现有 R44 provider 参数及环境键，保持原义（证据 `active-import-and-code-strings.json`、`active-template-code-candidates.json`）。
+
+独立主控 root 7 项 Web relay 失败，固定祖先 7c clean 树以相同 root runner 实测同样 7 失败、4 通过（`web-7c-baseline.log`；该祖先不是本批同源码）。该 fixture 的 `@zody/client` mock 缺少真实 bridge 调用的 `connectViaProtocolOwned`；补充返回 services 与 dispose 的 mock，原恢复断言及 timeout 不变，当前单文件 11/11 通过（`web-target-fixed.log`）。未将主控误用 Vitest 执行 node:test 的 runner 失败归为源码问题；完整复验由主控执行。

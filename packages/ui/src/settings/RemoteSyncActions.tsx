@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { RemoteMcpSyncDialog } from "@/settings/RemoteMcpSyncDialog.js";
 import { RemotePluginSyncDialog } from "@/settings/RemotePluginSyncDialog.js";
 import { RemoteSkillSyncDialog } from "@/settings/RemoteSkillSyncDialog.js";
@@ -137,7 +137,7 @@ export function RemoteSyncMenuItems({
   stopMouseDownPropagation?: boolean;
   mcpDisabled?: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const handleMouseDown = stopMouseDownPropagation
     ? (event: MouseEvent) => {
         event.stopPropagation();
@@ -189,7 +189,7 @@ export function RemoteSyncDropdownButton({
   onOpenMcpSync: () => void;
   onOpenPluginSync?: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   if (!canSyncSkills && !canSyncMcp && !canSyncPlugins) {
     return null;

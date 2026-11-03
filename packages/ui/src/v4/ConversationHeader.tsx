@@ -6,7 +6,7 @@ import {
 } from "@zody/shared";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { runUserAction } from "@/lib/userActionTelemetry.js";
 
 /** 跨 workspace pane 的归属徽标（未来跨 workspace session 的多路径徽标在此扩展）。 */
@@ -41,7 +41,7 @@ function ConversationHeaderImpl({
   onClosePane,
   workspaceBadge,
 }: ConversationHeaderProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const hasFloatingActions = Boolean(workspaceBadge) || Boolean(onClosePane);
 
   return (

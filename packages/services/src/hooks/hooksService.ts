@@ -27,9 +27,9 @@ import { atomicWriteWorkspaceHookConfig } from "./workspaceHookConfigMutation.js
 import {
   fromLegacyHooksConfig,
   fromProjectSnapshot,
-  fromUserZCodeSource,
+  fromUserZodySource,
   resolveNextRootEnabled,
-  toZCodeHooksEvents,
+  toZodyHooksEvents,
   type LegacyHooksConfig,
 } from "./workspaceHookSettingsModel.js";
 
@@ -105,7 +105,7 @@ async function readJsonFile<T>(filePath: string): Promise<T | null> {
   }
 }
 
-async function readUserZCodeSource(): Promise<WorkspaceHookSourceInput | undefined> {
+async function readUserZodySource(): Promise<WorkspaceHookSourceInput | undefined> {
   const path = getConfigPath("zcode");
   const config = await readJsonFile<Record<string, unknown>>(path);
   const parsed = workspaceHooksConfigSchema.safeParse(config?.hooks);
@@ -229,7 +229,7 @@ async function loadHooksImpl(
   const workspaceIdentity = params.workspaceIdentity?.trim() || workspacePath;
   const [{ sources: projectSources }, userSource] = await Promise.all([
     readWorkspaceHookProjectSources({ workingDirectory: workspacePath }),
-    readUserZCodeSource(),
+    readUserZodySource(),
   ]);
   const runtimeRoot = resolveWorkspaceHookRuntimeRoot([
     userSource?.hooks,
@@ -253,7 +253,7 @@ async function loadHooksImpl(
     }),
     ...(await loadLegacyHooksFromLocation("agents", workspacePath)),
     ...(await loadLegacyHooksFromLocation("claude", workspacePath)),
-    ...fromUserZCodeSource({
+    ...fromUserZodySource({
       source: userSource,
       runtimeRoot,
       workspacePath,
@@ -270,7 +270,7 @@ async function loadHooksImpl(
   };
 }
 
-async function writeZCodeHooksConfig(
+async function writeZodyHooksConfig(
   workspacePath: string | undefined,
   hooks: Hook[],
 ): Promise<void> {
@@ -287,7 +287,7 @@ async function writeZCodeHooksConfig(
     hooks: {
       ...existingConfig.hooks,
       ...(enabled !== undefined ? { enabled } : {}),
-      events: toZCodeHooksEvents(hooks),
+      events: toZodyHooksEvents(hooks),
     },
   });
 }
@@ -313,8 +313,8 @@ async function saveHooksImpl(params: {
       (!hook.configuredState ||
         resolve(hook.configuredState.sourcePath) === currentProjectConfigPath),
   );
-  await writeZCodeHooksConfig(undefined, userHooks);
-  await writeZCodeHooksConfig(params.workspacePath, projectHooks);
+  await writeZodyHooksConfig(undefined, userHooks);
+  await writeZodyHooksConfig(params.workspacePath, projectHooks);
 }
 
 export function createHooksService(

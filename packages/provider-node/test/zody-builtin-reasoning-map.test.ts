@@ -7,10 +7,10 @@ import {
   ModelOptionSpecsConfig,
   validateModelSelectionOptions,
 } from "@zody/provider";
-import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
+import { NodeZodyBuiltinProviderConfigSource } from "../src/index.js";
 import baseline from "./fixtures/reasoning-map-before-todo95.json";
 
-const source = new NodeZCodeBuiltinProviderConfigSource({
+const source = new NodeZodyBuiltinProviderConfigSource({
   bundledFilePath: fileURLToPath(
     new URL("../../../config/provider/zody-builtin.json", import.meta.url),
   ),

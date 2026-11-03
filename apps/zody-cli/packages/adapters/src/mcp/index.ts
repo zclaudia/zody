@@ -44,7 +44,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import {
-  createSharedZCodeCredentialStore,
+  createSharedZodyCredentialStore,
   type SharedZodyCredentialStore,
 } from "../auth/shared-credentials.js";
 import { normalizeMcpToolDescriptor } from "./descriptor.js";
@@ -1522,7 +1522,7 @@ class NodeMcpAdapter implements McpPort {
         input.name,
         input.generation,
       );
-      const credentialStore = oauthOptions?.credentialStore ?? createSharedZCodeCredentialStore();
+      const credentialStore = oauthOptions?.credentialStore ?? createSharedZodyCredentialStore();
       const keyPrefix = createCredentialKeyPrefix(input.name, input.serverUrl, input.oauthConfig);
       // 403 step-up 的最终 scope 必须是 config ∪ token.scope ∪ challenge
       // 的并集。只带 challenge scope 重新授权时，授权服务器可能按新请求收回先前授予的 scope，
@@ -1725,7 +1725,7 @@ class NodeMcpAdapter implements McpPort {
   }
 
   private resolveCredentialStore(): SharedZodyCredentialStore {
-    this.credentialStore ??= this.mcpOAuth?.credentialStore ?? createSharedZCodeCredentialStore();
+    this.credentialStore ??= this.mcpOAuth?.credentialStore ?? createSharedZodyCredentialStore();
     return this.credentialStore;
   }
 

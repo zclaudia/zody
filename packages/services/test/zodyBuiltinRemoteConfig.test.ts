@@ -1,6 +1,6 @@
 import type { ApiClient } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
-import { fetchZCodeBuiltinRemoteRelease } from "../src/model-provider/zodyBuiltinRemoteConfig.js";
+import { fetchZodyBuiltinRemoteRelease } from "../src/model-provider/zodyBuiltinRemoteConfig.js";
 import { NodeApiClient } from "../src/providers/api/nodeApiClient.js";
 
 const release = {
@@ -33,7 +33,7 @@ describe("fetchZCodeBuiltinRemoteRelease", () => {
     );
     expect(
       (
-        await fetchZCodeBuiltinRemoteRelease({
+        await fetchZodyBuiltinRemoteRelease({
           apiClient: new NodeApiClient({
             fetchImpl: request as typeof fetch,
             resolveZodyEndpointOrigin: () => "https://example.com",
@@ -64,7 +64,7 @@ describe("fetchZCodeBuiltinRemoteRelease", () => {
         new Response(JSON.stringify({ code: 0, data: { configs: { zcodeBuiltin: release } } })),
     );
     await expect(
-      fetchZCodeBuiltinRemoteRelease({
+      fetchZodyBuiltinRemoteRelease({
         apiClient: { request } as ApiClient,
         endpointOrigin: "https://example.com",
         appVersion: "3.0.0",

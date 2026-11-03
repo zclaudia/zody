@@ -4,7 +4,7 @@ import type {
   ZodyImportableSessionCandidate,
 } from "@zody/shared";
 import { logger } from "@/logger.js";
-import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
+import { useZodyTaskService } from "@/hooks/useZodyTaskService.js";
 import { useTabStoreApi } from "@/store/TabStoreProvider.js";
 import { invalidateTaskQueryCacheByScopes } from "@/store/taskQueryCacheStore.js";
 
@@ -63,7 +63,7 @@ export function useClaudeSessionMigration(params: {
   workspaceIdentity?: string;
   isDesktop?: boolean;
 }) {
-  const zcodeTaskService = useZCodeTaskService(
+  const zodyTaskService = useZodyTaskService(
     params.workspacePath ?? undefined,
     undefined,
     params.workspaceIdentity,
@@ -156,7 +156,7 @@ export function useClaudeSessionMigration(params: {
       logger.info(
         `[Migration] 开始扫描 Claude 原生历史 workspaceFilter=${effectiveWorkspacePath ?? "all"} range=${range} limit=${scanLimit ?? "unlimited"}`,
       );
-      const nextCandidates = await zcodeTaskService.scanImportableClaudeSessions({
+      const nextCandidates = await zodyTaskService.scanImportableClaudeSessions({
         workspacePath: effectiveWorkspacePath,
         ...(effectiveWorkspaceIdentity
           ? { workspaceIdentity: effectiveWorkspaceIdentity }
@@ -183,7 +183,7 @@ export function useClaudeSessionMigration(params: {
       setIsScanning(false);
     }
   }, [
-    zcodeTaskService,
+    zodyTaskService,
     effectiveWorkspaceIdentity,
     effectiveWorkspacePath,
     range,
@@ -203,7 +203,7 @@ export function useClaudeSessionMigration(params: {
       logger.info(
         `[Migration] 开始导入 Claude 原生历史 workspaceFilter=${effectiveWorkspacePath ?? "all"} selected=${sessionIds.length}`,
       );
-      const result = await zcodeTaskService.importClaudeSessions({
+      const result = await zodyTaskService.importClaudeSessions({
         workspacePath: effectiveWorkspacePath,
         ...(effectiveWorkspaceIdentity
           ? { workspaceIdentity: effectiveWorkspaceIdentity }
@@ -247,7 +247,7 @@ export function useClaudeSessionMigration(params: {
       setIsImporting(false);
     }
   }, [
-    zcodeTaskService,
+    zodyTaskService,
     effectiveWorkspaceIdentity,
     effectiveWorkspacePath,
     supportState.supported,

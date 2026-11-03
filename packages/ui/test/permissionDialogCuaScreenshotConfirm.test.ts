@@ -10,7 +10,7 @@ import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZodyPermissionOption, ZodyPermissionRequest } from "@zody/shared";
 import { PermissionDialog } from "../src/PermissionDialog.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
   getCuaScreenshotConfirmOptionLabelMessageId,
   getCuaScreenshotConfirmTarget,
@@ -117,7 +117,7 @@ function renderPermissionDialog(
   const animationFrame = installAnimationFrameController();
   const view = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(PermissionDialog, {
         request,

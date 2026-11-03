@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { SessionEventType, type SessionEvent } from "@zody/contracts";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { applySessionEventToState } from "../src/app-events.js";
 import type { Message, ThoughtTranscriptPart } from "../src/app-model.js";
 import {
@@ -9,7 +9,7 @@ import {
   thoughtPlaceholderLabel,
 } from "../src/app-thought-components.js";
 
-const EN_COPY = getZCodeCopy("en-US").tui;
+const EN_COPY = getZodyCopy("en-US").tui;
 
 test("projects streamed reasoning as an expandable thought placeholder", () => {
   const state = createSessionEventState();

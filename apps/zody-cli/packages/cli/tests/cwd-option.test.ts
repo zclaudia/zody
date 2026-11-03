@@ -50,7 +50,7 @@ const fakeProjection = {
 };
 
 const createPromptDeps = (): RunDependencies => ({
-  createZCodeApp: () => createPromptApp(),
+  createZodyApp: () => createPromptApp(),
   loadDotenv: () => ({
     keys: [],
     loaded: false,
@@ -100,7 +100,7 @@ test("passes --cwd into prompt runtime config and dotenv loading", async () => {
     const exitCode = await run(ctx, {
       ...createPromptDeps(),
       cwd: () => "/workspace/ignored",
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         assert.equal(options?.runtimeConfig?.workingDirectory, cwd);
         return createPromptApp();
       },
@@ -128,7 +128,7 @@ test("resolves relative --cwd from the process cwd provider", async () => {
     const exitCode = await run(ctx, {
       ...createPromptDeps(),
       cwd: () => root,
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         assert.equal(options?.runtimeConfig?.workingDirectory, project);
         return createPromptApp();
       },
@@ -155,7 +155,7 @@ test("uses --cwd when resolving latest sessions for --continue", async () => {
         assert.equal(options.directory, cwd);
         return { id: "sess_latest" } as never;
       },
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         assert.equal(options?.runtimeConfig?.workingDirectory, cwd);
         assert.equal(options?.resume, true);
         assert.equal(options?.sessionId, "sess_latest");
@@ -179,7 +179,7 @@ test("passes --cwd into TUI app, skills, and session listing", async () => {
     const exitCode = await run(ctx, {
       ...createPromptDeps(),
       cwd: () => "/workspace/ignored",
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         assert.equal(options?.runtimeConfig?.workingDirectory, cwd);
         return createPromptApp();
       },
@@ -289,7 +289,7 @@ test("rejects inaccessible --cwd before creating an app", async () => {
   try {
     const exitCode = await run(ctx, {
       ...createPromptDeps(),
-      createZCodeApp: () => {
+      createZodyApp: () => {
         appCreated = true;
         throw new Error("app should not be created");
       },
@@ -314,7 +314,7 @@ test("rejects file --cwd before creating an app", async () => {
     await writeFile(filePath, "not a directory");
     const exitCode = await run(ctx, {
       ...createPromptDeps(),
-      createZCodeApp: () => {
+      createZodyApp: () => {
         appCreated = true;
         throw new Error("app should not be created");
       },

@@ -123,7 +123,7 @@ import {
   resolveAutomationEditRequiredFieldErrors,
   type AutomationEditRequiredField,
 } from "@/settings/automationEditValidation.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useAutomationProjectOptions } from "@/hooks/useAutomationProjectOptions.js";
 import { useModelSelectionView } from "@/hooks/useModelSelectionView.js";
@@ -374,7 +374,7 @@ function MonthDayPicker({
 }: {
   month: number;
   day: number;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   onChange: (month: number, day: number) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -432,7 +432,7 @@ function WeekdayPicker({
   onChange,
 }: {
   weekdays: number[];
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   onChange: (weekdays: number[]) => void;
 }) {
   const label = WEEKDAY_ORDER.filter((day) => weekdays.includes(day))
@@ -511,7 +511,7 @@ function EndDatePicker({
   value,
 }: {
   disabled: boolean;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   min: string;
   onChange: (value: string) => void;
   value: string;
@@ -637,7 +637,7 @@ function CustomRepeatDialog({
 }: {
   builder: CronBuilderState;
   endAt: number | undefined;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   onConfirm: (value: {
     interval: number;
     unit: CustomRepeatUnit;
@@ -1212,7 +1212,7 @@ export function AutomationEditView({
   onDeleteRun,
   onOpenSession,
 }: AutomationEditViewProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const confirmDialog = useConfirmDialog();
   const [tab, setTab] = useState<AutomationSettingsHistoryTab>("settings");
   const [runsPage, setRunsPage] = useState(1);

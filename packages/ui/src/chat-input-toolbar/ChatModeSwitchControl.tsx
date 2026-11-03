@@ -2,7 +2,7 @@ import type { RefObject } from "react";
 import type { ZodyConfigOption, ZodyProvider } from "@zody/shared";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { ConfigSelect } from "@/chat-input-toolbar/display.js";
-import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import type { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 export function ChatModeSwitchControl({
   compactIconOnly = false,
@@ -22,7 +22,7 @@ export function ChatModeSwitchControl({
   compactIconOnly?: boolean;
   disabled?: boolean;
   disabledReason?: string;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   labelVisibilityClassName?: string;
   modeOption: ZodyConfigOption;
   modeShortcutLabel: string;

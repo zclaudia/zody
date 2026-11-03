@@ -2,7 +2,7 @@ import type { Hook, WorkspaceHookReviewTrustState } from "@zody/shared";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   hasWorkspaceHooksRequiringReview,
   requiresWorkspaceHookTrust,
@@ -43,7 +43,7 @@ function workspaceHook(trustState: WorkspaceHookReviewTrustState): Hook {
 function renderNotice(locale: "en-US" | "zh-CN", hooks: Hook[]): string {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(WorkspaceHookTrustNotice, { hooks }),
     ),

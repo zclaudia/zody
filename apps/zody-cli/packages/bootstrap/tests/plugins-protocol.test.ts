@@ -38,7 +38,7 @@ import {
   zodyPluginsValidateResultSchema,
 } from "@zody/shared";
 import { getCliStorageRoot, getPluginStorageRoot } from "../src/app/paths.js";
-import { installZCodeMarketplacePlugin } from "../src/plugins.js";
+import { installZodyMarketplacePlugin } from "../src/plugins.js";
 import {
   addPluginMarketplace,
   describePlugin,
@@ -506,7 +506,7 @@ describe("updatePlugin handler diagnostics", () => {
       );
       await writeTestFile(join(pluginRoot, "skills", "demo", "SKILL.md"), "# demo");
 
-      const installResult = await installZCodeMarketplacePlugin({
+      const installResult = await installZodyMarketplacePlugin({
         marketplace: "lazy-market",
         pluginName: "demo",
         pluginStorageRoot,
@@ -872,7 +872,7 @@ describe("plugin storage read scheduling", () => {
         pluginStorageRoot,
       );
       // 完成安装：物化 manifest、写入 installed_plugins.json 与本地缓存。
-      await installZCodeMarketplacePlugin({
+      await installZodyMarketplacePlugin({
         marketplace: marketplaceId,
         pluginName,
         pluginStorageRoot,

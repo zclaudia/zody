@@ -110,7 +110,7 @@ vi.mock("@/hooks/useGlobalTaskList.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: vi.fn(() => "loading"),
     },
@@ -167,7 +167,7 @@ vi.mock("@/lib/rootStartupGate.js", () => ({
 
 vi.mock("@/store/StoreProvider.js", () => ({
   StoreProvider: ({ children }: { children: unknown }) => children,
-  useZCodeStore: (selector: (state: unknown) => unknown) =>
+  useZodyStore: (selector: (state: unknown) => unknown) =>
     selector({
       user: null,
       setUser: mockSetUser,
@@ -176,7 +176,7 @@ vi.mock("@/store/StoreProvider.js", () => ({
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  useZCodeSessionStore: Object.assign(
+  useZodySessionStore: Object.assign(
     (selector: (state: unknown) => unknown) =>
       selector({
         workspaces: {},

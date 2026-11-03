@@ -14,9 +14,9 @@ import {
 import type { PluginReferenceCatalogEntry } from "@zody/contracts";
 import { buildPluginReferenceCatalog } from "@zody/core";
 import {
-  getZCodePluginsOverview,
-  resolveZCodePlugins,
-  updateZCodePluginMarketplace,
+  getZodyPluginsOverview,
+  resolveZodyPlugins,
+  updateZodyPluginMarketplace,
 } from "../plugins.js";
 import {
   parseParams,
@@ -45,7 +45,7 @@ export async function getPluginReferenceCatalog(
         .plugins.map((entry) => toReferenceCatalogEntry(entry, displayByPluginId, includeCategory)),
     };
   }
-  const outcome = resolveZCodePlugins({
+  const outcome = resolveZodyPlugins({
     workingDirectory: params.workspace.workspacePath,
   });
   const displayByPluginId = resolveReferenceListingDisplayByPluginId(
@@ -98,7 +98,7 @@ export async function resolveSuggestedPluginReference(
 
   const workingDirectory = params.workspace.workspacePath;
   const readState = () => {
-    const outcome = resolveZCodePlugins({ logger: context.logger, workingDirectory });
+    const outcome = resolveZodyPlugins({ logger: context.logger, workingDirectory });
     const entry = buildPluginReferenceCatalog(outcome.plugins).plugins.find(
       (candidate) => candidate.pluginId === stableId,
     );
@@ -153,7 +153,7 @@ export async function resolveSuggestedPluginReference(
   let refreshTimedOut = false;
   let refreshTimeout: ReturnType<typeof setTimeout> | undefined;
   try {
-    const refreshRequest = updateZCodePluginMarketplace({
+    const refreshRequest = updateZodyPluginMarketplace({
       abortSignal: refreshController.signal,
       logger: context.logger,
       marketplace: SUGGESTED_PLUGIN_MARKETPLACE,
@@ -196,7 +196,7 @@ export async function resolveSuggestedPluginReference(
 
   const afterRefresh = readState();
   if (afterRefresh.entry) return toResult(afterRefresh.entry);
-  const overview = getZCodePluginsOverview({ logger: context.logger, workingDirectory });
+  const overview = getZodyPluginsOverview({ logger: context.logger, workingDirectory });
   const candidate = overview.availablePlugins.find((item) => item.id === stableId);
   if (
     !candidate ||
@@ -238,7 +238,7 @@ function resolveReferenceListingDisplayByPluginId(
   workspacePath: string,
 ): Map<string, PluginReferenceListingDisplay> {
   // fork（F6.2）：不再从官方 CDN 拉取 Claude 市场图标；listing.icon 缺失时 UI 回退内置图标。
-  const overview = getZCodePluginsOverview({ workingDirectory: workspacePath });
+  const overview = getZodyPluginsOverview({ workingDirectory: workspacePath });
   const displayByPluginId = new Map<string, PluginReferenceListingDisplay>();
   for (const plugin of [
     ...overview.availablePlugins,

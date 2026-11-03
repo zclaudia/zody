@@ -140,7 +140,7 @@ test("runtime Plan state survives Shift+Tab responses and metadata refreshes", a
       cwd: () => process.cwd(),
       skipUserConfig: true,
       loadDotenv: () => ({ keys: [], loaded: false, path: "" }),
-      createZCodeApp: async () => app,
+      createZodyApp: async () => app,
       startProcessProviderRegistryRuntime: async () => ({
         runtime: { registryService: {} },
         dispose() {},

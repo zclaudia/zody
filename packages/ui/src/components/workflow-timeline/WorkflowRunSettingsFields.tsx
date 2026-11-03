@@ -15,7 +15,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   MODEL_CONFIG_SELECT_BADGE_CLASS_NAME,
   ModelConfigSelect,
@@ -61,7 +61,7 @@ export function WorkflowRunSettingsModelField({
   triggerLabel: string;
   value: string;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const levelTriggerRef = useRef<HTMLSpanElement | null>(null);
   const [levelOpen, setLevelOpen] = useState(false);
   const label = intl.formatMessage({ id: "chat.toolCall.workflow.run.settings.model" });
@@ -154,7 +154,7 @@ export function WorkflowRunSettingsBoundField({
   disabled: boolean;
   onChange: (bound: number) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const hint =
     defaultConcurrency === undefined
       ? undefined

@@ -202,11 +202,11 @@ async function openCommunity(
   await shell.openExternal(communityUrl);
 }
 
-async function promptCustomZCodeEndpoint(
+async function promptCustomZodyEndpoint(
   targetWindow: BrowserWindow | null | undefined,
   currentValue: string,
 ): Promise<string | undefined> {
-  return showZCodeEndpointPromptWindow({
+  return showZodyEndpointPromptWindow({
     currentValue,
     parentWindow: targetWindow && !targetWindow.isDestroyed() ? targetWindow : undefined,
   });
@@ -220,7 +220,7 @@ function escapeHtmlAttribute(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
-function buildZCodeEndpointPromptHtml(currentValue: string): string {
+function buildZodyEndpointPromptHtml(currentValue: string): string {
   const value = escapeHtmlAttribute(currentValue);
   return `<!doctype html>
 <html>
@@ -265,7 +265,7 @@ function buildZCodeEndpointPromptHtml(currentValue: string): string {
 </html>`;
 }
 
-function showZCodeEndpointPromptWindow(options: {
+function showZodyEndpointPromptWindow(options: {
   currentValue: string;
   parentWindow?: BrowserWindow;
 }): Promise<string | undefined> {
@@ -316,13 +316,13 @@ function showZCodeEndpointPromptWindow(options: {
     // 这里改为主进程创建受控 modal 输入窗，确保 Custom... 始终有可见交互入口。
     void promptWindow.loadURL(
       `data:text/html;charset=utf-8,${encodeURIComponent(
-        buildZCodeEndpointPromptHtml(options.currentValue),
+        buildZodyEndpointPromptHtml(options.currentValue),
       )}`,
     );
   });
 }
 
-async function setZCodeEndpointOverride(options: {
+async function setZodyEndpointOverride(options: {
   value: string | undefined;
   settingService: { update(patch: { zodyEndpointOrigin?: string | undefined }): Promise<void> };
   onZCodeEndpointChanged: () => Promise<void> | void;
@@ -350,13 +350,13 @@ async function persistDesktopZoomLevel(options: {
   }
 }
 
-function toggleZCodeStdioTapDevProxy(options: {
+function toggleZodyStdioTapDevProxy(options: {
   logger: { info: (...args: unknown[]) => void };
-  updateZCodeStdioTapDevMenuState: () => void;
+  updateZodyStdioTapDevMenuState: () => void;
 }) {
   const current = readZodyStdioTapDevState();
   const next = setZodyStdioTapDevEnabled(!current.enabled);
-  options.updateZCodeStdioTapDevMenuState();
+  options.updateZodyStdioTapDevMenuState();
   options.logger.info("[stdio-tap] dev proxy toggled", {
     enabled: next.enabled,
     visible: next.visible,
@@ -413,7 +413,7 @@ export async function executeDesktopCommand(options: {
     warn: (...args: unknown[]) => void;
     error: (...args: unknown[]) => void;
   };
-  updateZCodeStdioTapDevMenuState: () => void;
+  updateZodyStdioTapDevMenuState: () => void;
   onDesktopZoomChanged?: (zoomLevel: number) => Promise<void> | void;
   onZCodeEndpointChanged: () => Promise<void> | void;
   onRelaunchApp: () => Promise<void>;
@@ -547,13 +547,13 @@ export async function executeDesktopCommand(options: {
       openResourceManager();
       return;
     case DesktopCommandIds.ToggleZCodeStdioTapDevProxy:
-      toggleZCodeStdioTapDevProxy({
+      toggleZodyStdioTapDevProxy({
         logger: options.logger,
-        updateZCodeStdioTapDevMenuState: options.updateZCodeStdioTapDevMenuState,
+        updateZodyStdioTapDevMenuState: options.updateZodyStdioTapDevMenuState,
       });
       return;
     case DesktopCommandIds.SetZCodeEndpointProduction:
-      await setZCodeEndpointOverride({
+      await setZodyEndpointOverride({
         value: DEFAULT_ZCODE_ENDPOINT_ORIGIN,
         settingService: options.settingService,
         onZCodeEndpointChanged: options.onZCodeEndpointChanged,
@@ -561,7 +561,7 @@ export async function executeDesktopCommand(options: {
       });
       return;
     case DesktopCommandIds.SetZCodeEndpointTest:
-      await setZCodeEndpointOverride({
+      await setZodyEndpointOverride({
         value: TEST_ZCODE_ENDPOINT_ORIGIN,
         settingService: options.settingService,
         onZCodeEndpointChanged: options.onZCodeEndpointChanged,
@@ -571,12 +571,12 @@ export async function executeDesktopCommand(options: {
     case DesktopCommandIds.SetZCodeEndpointCustom: {
       const current =
         (await options.settingService.get()).zodyEndpointOrigin ?? DEFAULT_ZCODE_ENDPOINT_ORIGIN;
-      const value = await promptCustomZCodeEndpoint(targetWindow, current);
+      const value = await promptCustomZodyEndpoint(targetWindow, current);
       if (!value) {
         return;
       }
       try {
-        await setZCodeEndpointOverride({
+        await setZodyEndpointOverride({
           value,
           settingService: options.settingService,
           onZCodeEndpointChanged: options.onZCodeEndpointChanged,
@@ -593,7 +593,7 @@ export async function executeDesktopCommand(options: {
       return;
     }
     case DesktopCommandIds.ResetZCodeEndpoint:
-      await setZCodeEndpointOverride({
+      await setZodyEndpointOverride({
         value: undefined,
         settingService: options.settingService,
         onZCodeEndpointChanged: options.onZCodeEndpointChanged,

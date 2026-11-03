@@ -34,10 +34,10 @@ describe("Compact E2E App admission", () => {
         maxOutputTokens: 16_000,
         storageDir: root,
       });
-      const createZCodeApp = vi.fn(async (options) => options);
+      const createZodyApp = vi.fn(async (options) => options);
       const options = await createApp({
         configPath,
-        modules: { provider, createZCodeApp },
+        modules: { provider, createZodyApp },
         runtimeConfig: { workingDirectory: root },
         storageDir: root,
       });
@@ -63,7 +63,7 @@ describe("Compact E2E App admission", () => {
         max: 16_000,
         map: `{"${field}":maxOutputTokens}`,
       });
-      expect(createZCodeApp).toHaveBeenCalledOnce();
+      expect(createZodyApp).toHaveBeenCalledOnce();
     },
   );
 
@@ -75,10 +75,10 @@ describe("Compact E2E App admission", () => {
       baseURL: "https://fixture.invalid/v1",
       storageDir: root,
     });
-    const createZCodeApp = vi.fn(async (options) => options);
+    const createZodyApp = vi.fn(async (options) => options);
     const options = await createApp({
       configPath,
-      modules: { provider, createZCodeApp },
+      modules: { provider, createZodyApp },
       runtimeConfig: { workingDirectory: root },
       storageDir: root,
       resume: true,

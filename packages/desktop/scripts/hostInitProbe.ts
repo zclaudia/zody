@@ -209,11 +209,11 @@ function parseProbeArgs(argv: string[]): NativeHostInitProbeOptions {
   const launcherPath = required("--launcher");
   const launcherCwd = required("--launcher-cwd");
   const workspacePath = required("--workspace");
-  const zcodeBuiltinProviderConfigFilePath = required("--builtin-config");
+  const zodyBuiltinProviderConfigFilePath = required("--builtin-config");
   if (!isAbsolute(launcherPath) || !isAbsolute(launcherCwd) || !isAbsolute(workspacePath)) {
     throw new Error("--launcher, --launcher-cwd and --workspace must be absolute paths");
   }
-  if (!isAbsolute(zcodeBuiltinProviderConfigFilePath)) {
+  if (!isAbsolute(zodyBuiltinProviderConfigFilePath)) {
     throw new Error("--builtin-config must be an absolute path");
   }
   const timeout = values.get("--timeout-ms");
@@ -227,7 +227,7 @@ function parseProbeArgs(argv: string[]): NativeHostInitProbeOptions {
       ? { agentSpawnFallbackCwd: values.get("--fallback-cwd") }
       : {}),
     ...(values.get("--device-mid") ? { deviceMid: values.get("--device-mid") } : {}),
-    zcodeBuiltinProviderConfigFilePath,
+    zcodeBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
     ...(timeout ? { timeoutMs: Number(timeout) } : {}),
   };
 }

@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { ExecutionPort, ExecutionResult, SessionId } from "@zody/contracts";
-import { resolveZCodeBuiltinPromptCommand } from "../src/builtin-prompt-command.js";
-import { resolveZCodeCustomCommandPrompt } from "../src/custom-command-prompt.js";
+import { resolveZodyBuiltinPromptCommand } from "../src/builtin-prompt-command.js";
+import { resolveZodyCustomCommandPrompt } from "../src/custom-command-prompt.js";
 import { listProtocolSlashCommands } from "../src/zody-protocol/slash-commands.js";
 
 describe("protocol slash command surface", () => {
@@ -88,16 +88,16 @@ describe("protocol slash command surface", () => {
         skipUserConfig: true,
         workingDirectory: workspace,
       };
-      const prompt = await resolveZCodeCustomCommandPrompt("/review src packages", options);
+      const prompt = await resolveZodyCustomCommandPrompt("/review src packages", options);
 
       expect(prompt).toContain("Run custom command /review.");
       expect(prompt).toContain("Command source: user/zcode.");
       expect(prompt).toContain("Review src packages.");
-      await expect(resolveZCodeCustomCommandPrompt("/model glm-5", options)).resolves.toBe(
+      await expect(resolveZodyCustomCommandPrompt("/model glm-5", options)).resolves.toBe(
         undefined,
       );
-      await expect(resolveZCodeCustomCommandPrompt("/init", options)).resolves.toBe(undefined);
-      await expect(resolveZCodeCustomCommandPrompt("please /review", options)).resolves.toBe(
+      await expect(resolveZodyCustomCommandPrompt("/init", options)).resolves.toBe(undefined);
+      await expect(resolveZodyCustomCommandPrompt("please /review", options)).resolves.toBe(
         undefined,
       );
     } finally {
@@ -124,7 +124,7 @@ describe("protocol slash command surface", () => {
         workingDirectory: workspace,
       };
 
-      const expanded = resolveZCodeBuiltinPromptCommand("/workflow ship it", {
+      const expanded = resolveZodyBuiltinPromptCommand("/workflow ship it", {
         dynamicWorkflowEnabled: true,
         workingDirectory: workspace,
       });
@@ -133,15 +133,15 @@ describe("protocol slash command surface", () => {
       expect(expanded).not.toContain("Should not expand.");
       // 缺席（TUI / headless）等于开启；显式 false 才挡下。
       expect(
-        resolveZCodeBuiltinPromptCommand("/workflow ship it", { workingDirectory: workspace }),
+        resolveZodyBuiltinPromptCommand("/workflow ship it", { workingDirectory: workspace }),
       ).toContain("ship it");
       expect(
-        resolveZCodeBuiltinPromptCommand("/workflow ship it", {
+        resolveZodyBuiltinPromptCommand("/workflow ship it", {
           dynamicWorkflowEnabled: false,
           workingDirectory: workspace,
         }),
       ).toBe(undefined);
-      await expect(resolveZCodeCustomCommandPrompt("/workflow ship it", options)).resolves.toBe(
+      await expect(resolveZodyCustomCommandPrompt("/workflow ship it", options)).resolves.toBe(
         undefined,
       );
     } finally {
@@ -155,7 +155,7 @@ describe("protocol slash command surface", () => {
 
     try {
       await mkdir(workspace, { recursive: true });
-      const prompt = resolveZCodeBuiltinPromptCommand("/init include pnpm scripts", {
+      const prompt = resolveZodyBuiltinPromptCommand("/init include pnpm scripts", {
         workingDirectory: workspace,
       });
 
@@ -168,11 +168,11 @@ describe("protocol slash command surface", () => {
       expect(prompt).toContain("they already have an instructions file");
       expect(prompt).not.toContain("Do not create CLAUDE.md or AGNENTS.md");
       expect(prompt).toContain("include pnpm scripts");
-      expect(resolveZCodeBuiltinPromptCommand("/review", { workingDirectory: workspace })).toBe(
+      expect(resolveZodyBuiltinPromptCommand("/review", { workingDirectory: workspace })).toBe(
         undefined,
       );
       expect(
-        resolveZCodeBuiltinPromptCommand("please /init", { workingDirectory: workspace }),
+        resolveZodyBuiltinPromptCommand("please /init", { workingDirectory: workspace }),
       ).toBe(undefined);
     } finally {
       await rm(tempRoot, { force: true, recursive: true });
@@ -227,7 +227,7 @@ describe("protocol slash command surface", () => {
         }),
       );
 
-      const prompt = await resolveZCodeCustomCommandPrompt("/ralph-loop build demo", {
+      const prompt = await resolveZodyCustomCommandPrompt("/ralph-loop build demo", {
         env: { ZCODE_ENV: "test" },
         executionPort,
         projectConfigPath: configPath,
@@ -293,10 +293,10 @@ describe("protocol slash command surface", () => {
         workingDirectory: workspace,
       };
 
-      await expect(resolveZCodeCustomCommandPrompt("/skill-context", options)).rejects.toThrow(
+      await expect(resolveZodyCustomCommandPrompt("/skill-context", options)).rejects.toThrow(
         "Custom command /skill-context variable requires a skill context: CLAUDE_SKILL_DIR",
       );
-      await expect(resolveZCodeCustomCommandPrompt("/session-context", options)).rejects.toThrow(
+      await expect(resolveZodyCustomCommandPrompt("/session-context", options)).rejects.toThrow(
         "Custom command /session-context variable requires a runtime session context: CLAUDE_SESSION_ID",
       );
       expect(executionCalled).toBe(false);

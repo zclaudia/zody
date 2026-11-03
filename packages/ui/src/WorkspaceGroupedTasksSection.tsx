@@ -25,7 +25,7 @@ import type {
 import { type ZodyTaskMeta } from "@zody/shared";
 import { createPortal } from "react-dom";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { TaskRenameDialog } from "@/TaskRenameDialog.js";
 import {
   shouldHideGroupedTaskContent,
@@ -38,8 +38,8 @@ import { resolveTaskFileTreeTargetFromTabs } from "@/lib/taskFileTreeTarget.js";
 import { toast } from "@/components/ui/toast.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import {
-  selectWorkspaceZCodeState,
-  useZCodeSessionStore,
+  selectWorkspaceZodyState,
+  useZodySessionStore,
 } from "@/store/zodySessionStore.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { buildWorkspaceServiceLookup } from "@/lib/workspaceServiceResolver.js";
@@ -613,7 +613,7 @@ export function WorkspaceGroupedTasksSection({
   onStickyGroupHeaderChange?: (node: ReactNode | null) => void;
   // fork（F4.3）：onOpenAutomations prop（闲时分组「+」跳自动化页）随闲时任务全链路删除。
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const baseServices = useBaseWorkspaceServices();
   const sessionsById = useRemoteWorkspaceSessionStore(
     (state) => state.sessionsById,
@@ -641,32 +641,32 @@ export function WorkspaceGroupedTasksSection({
       ),
     [baseServices, serviceResolverState, workspaceTabs],
   );
-  const removeTaskState = useZCodeSessionStore(
+  const removeTaskState = useZodySessionStore(
     (state) => state.removeTaskState,
   );
-  const upsertOptimisticTaskListItem = useZCodeSessionStore(
+  const upsertOptimisticTaskListItem = useZodySessionStore(
     (state) => state.upsertOptimisticTaskListItem,
   );
-  const setTaskUnreadIndicator = useZCodeSessionStore(
+  const setTaskUnreadIndicator = useZodySessionStore(
     (state) => state.setTaskUnreadIndicator,
   );
-  const groupedDraftTask = useZCodeSessionStore(
+  const groupedDraftTask = useZodySessionStore(
     (state) =>
-      selectWorkspaceZCodeState(
+      selectWorkspaceZodyState(
         state,
         activeWorkspacePath,
         activeWorkspaceIdentity,
       ).groupedDraftTask,
   );
-  const groupedDraftFocusVersion = useZCodeSessionStore(
+  const groupedDraftFocusVersion = useZodySessionStore(
     (state) =>
-      selectWorkspaceZCodeState(
+      selectWorkspaceZodyState(
         state,
         activeWorkspacePath,
         activeWorkspaceIdentity,
       ).draftFocusVersion,
   );
-  const clearGroupedDraftTask = useZCodeSessionStore(
+  const clearGroupedDraftTask = useZodySessionStore(
     (state) => state.clearGroupedDraftTask,
   );
   const {

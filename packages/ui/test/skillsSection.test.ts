@@ -127,7 +127,7 @@ vi.mock("@/components/ui/switch.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, string | number>) => {
         const messages: Record<string, string> = {
@@ -243,7 +243,7 @@ vi.mock("@/store/TabStoreProvider.js", () => ({
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  useZCodeSessionStore: Object.assign(
+  useZodySessionStore: Object.assign(
     (selector: (state: Record<string, unknown>) => unknown) =>
       selector({
         getWorkspaceState: () => ({

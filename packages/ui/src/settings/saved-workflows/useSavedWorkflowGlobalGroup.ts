@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ZodySavedWorkflowEntry, ZodySavedWorkflowRun } from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useServices } from "@/hooks/useServices.js";
 import { logger } from "@/logger.js";
@@ -64,7 +64,7 @@ export function useSavedWorkflowGlobalGroup({
   activeProjectKey,
   onMoved,
 }: UseSavedWorkflowGlobalGroupParams) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const requestConfirmation = useConfirmDialog();
   const { zcodeAgentService: agentService, fileWatcherService } = useServices();
 

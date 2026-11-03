@@ -19,7 +19,7 @@ import {
   type ZodySavedWorkflowRun,
   type ZodyWorkflowsGetResult,
 } from "@zody/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 const toastMock = vi.fn();
 vi.mock("@/components/ui/toast.js", () => ({ toast: (...args: unknown[]) => toastMock(...args) }));
@@ -115,7 +115,7 @@ function mount(overrides: Partial<Parameters<typeof SavedWorkflowDetailView>[0]>
   };
   render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(SavedWorkflowDetailView, props),
     ),

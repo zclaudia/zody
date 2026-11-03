@@ -1,7 +1,7 @@
 import { CliRenderEvents, createCliRenderer, type CliRenderer } from "@mbears/opentui-core";
 import type { UiThemeMode } from "@zody/contracts";
 import { createRoot } from "@mbears/opentui-react";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import React from "react";
 import { TuiApp } from "./app.js";
 import { TuiStartupScreen } from "./app-startup.js";
@@ -12,7 +12,7 @@ import type { TuiOptions } from "./types.js";
 
 export const runTui = async (options: TuiOptions): Promise<number> => {
   if (!options.stdin.isTTY || !options.stdout.isTTY) {
-    const copy = getZCodeCopy(options.locale);
+    const copy = getZodyCopy(options.locale);
     options.stderr.write(`${copy.tui.terminal.requiresInteractive}\n`);
     return 1;
   }

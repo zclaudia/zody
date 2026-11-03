@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildCliZCodeSourceHeaders,
+  buildCliZodySourceHeaders,
   createRuntimeAiSdkModelExecutionConfig,
 } from "../src/model-config.js";
 import { createModelAdapter, type CreateModelAdapterOptions } from "../src/model-factory.js";
@@ -71,7 +71,7 @@ describe("createRuntimeAiSdkModelExecutionConfig", () => {
 
 describe("buildCliZCodeSourceHeaders", () => {
   it("生成运行时来源 Header，不根据模型或 Provider 推断", () => {
-    const headers = buildCliZCodeSourceHeaders(
+    const headers = buildCliZodySourceHeaders(
       { ZCODE_APP_VERSION: "3.9.0", ZCODE_ENV: "production" },
       { sourceTitle: "cli" },
     );
@@ -86,7 +86,7 @@ describe("buildCliZCodeSourceHeaders", () => {
 
   it("fork（F3.1）：显式配置端点时才发送 HTTP-Referer", () => {
     expect(
-      buildCliZCodeSourceHeaders(
+      buildCliZodySourceHeaders(
         {
           ZCODE_APP_VERSION: "3.9.0",
           ZCODE_ENV: "test",

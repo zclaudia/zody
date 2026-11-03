@@ -1,7 +1,7 @@
 import { useEffect, useRef, type FormEvent } from "react";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { isWebRemoteControlMobileSettingsHistoryState } from "@/mobileNavigationHistory.js";
 import {
   useWebRemoteControlMobileSettingsForm,
@@ -49,7 +49,7 @@ export function WebRemoteControlMobileConnectionSettingsSection({
   resetToken = 0,
   formatError,
 }: WebRemoteControlMobileConnectionSettingsSectionProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const form = useWebRemoteControlMobileSettingsForm({
     initial: settings.initial,
     allowInsecureTransport: settings.allowInsecureTransport,

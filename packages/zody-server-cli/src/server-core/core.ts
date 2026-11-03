@@ -1,7 +1,7 @@
 import {
   createLocalServices,
   disposeServiceResourcesAndWait,
-  materializeZCodeBuiltinProviderConfig,
+  materializeZodyBuiltinProviderConfig,
   getAppConfigDir,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/services/node";
@@ -24,23 +24,23 @@ export async function runServerCore(generation: number): Promise<void> {
   });
   // fork（bot channels 移除）：topic-resource relay（createTopicResourcePeers /
   // topicResourceRelayChannel）是第三方 IM bot 的资源回传链，随 bot channels 整体删除。
-  const explicitZCodeBuiltinProviderConfigFilePath =
+  const explicitZodyBuiltinProviderConfigFilePath =
     process.env[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
-  const zcodeBuiltinProviderConfigFilePath = explicitZCodeBuiltinProviderConfigFilePath
-    ? explicitZCodeBuiltinProviderConfigFilePath
+  const zodyBuiltinProviderConfigFilePath = explicitZodyBuiltinProviderConfigFilePath
+    ? explicitZodyBuiltinProviderConfigFilePath
     : typeof __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__ === "string"
-      ? await materializeZCodeBuiltinProviderConfig({
+      ? await materializeZodyBuiltinProviderConfig({
           environmentConfigRoot: getAppConfigDir(),
           content: __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__,
         })
       : undefined;
-  if (!zcodeBuiltinProviderConfigFilePath) {
+  if (!zodyBuiltinProviderConfigFilePath) {
     throw new Error(
       `当前构建未嵌入 Zody Built-in Provider Config，且未设置 ${ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV}`,
     );
   }
   const services = createLocalServices({
-    zcodeBuiltinProviderConfigFilePath,
+    zcodeBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
     serviceAuthorityMode: "standalone-server",
   });
   const taskActivityTracker = createTaskActivityTracker(services.getOptional(IZodyAgentService));

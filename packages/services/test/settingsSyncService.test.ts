@@ -125,7 +125,7 @@ describe("settingsSyncService Claude AGENTS.md migration", () => {
       supported: true,
     });
     await expect(
-      service.copyClaudeAgentsFileToZcodeAgentsFile({
+      service.copyClaudeAgentsFileToZodyAgentsFile({
         workspacePath,
         overwrite: false,
       }),
@@ -159,7 +159,7 @@ describe("settingsSyncService Claude AGENTS.md migration", () => {
     });
 
     await expect(
-      service.copyClaudeAgentsFileToZcodeAgentsFile({
+      service.copyClaudeAgentsFileToZodyAgentsFile({
         workspacePath,
         overwrite: false,
       }),
@@ -173,7 +173,7 @@ describe("settingsSyncService Claude AGENTS.md migration", () => {
     expect(readFileSync(join(home, ".zody", "AGENTS.md"), "utf-8")).toBe("existing agents");
 
     await expect(
-      service.copyClaudeAgentsFileToZcodeAgentsFile({
+      service.copyClaudeAgentsFileToZodyAgentsFile({
         workspacePath,
         overwrite: true,
       }),
@@ -203,7 +203,7 @@ describe("settingsSyncService Claude AGENTS.md migration", () => {
       unavailableReason: "missingSource",
     });
     await expect(
-      service.copyClaudeAgentsFileToZcodeAgentsFile({
+      service.copyClaudeAgentsFileToZodyAgentsFile({
         workspacePath,
         overwrite: true,
       }),

@@ -17,7 +17,7 @@ import { clearTaskListWorkspaceEventCoordinatorForTest } from "@/lib/taskListWor
 import { clearTaskListMembershipCache } from "@/lib/taskListMembershipSets.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 import { resetTaskStatusUnreadSyncForTest } from "@/lib/taskStatusUnreadSync.js";
@@ -187,7 +187,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
       sessionIdByWorkspaceIdentity: {},
       sessionIdByWorkspacePath: {},
     });
-    useZCodeSessionStore.setState({ workspaces: {} });
+    useZodySessionStore.setState({ workspaces: {} });
     delete (globalThis as { document?: unknown }).document;
     delete (globalThis as { window?: unknown }).window;
     delete (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown }).IS_REACT_ACT_ENVIRONMENT;
@@ -233,7 +233,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
         workspacePath: "/workspace-2",
       },
     ];
-    useZCodeSessionStore.getState().setActiveTaskId("/workspace", task.taskId);
+    useZodySessionStore.getState().setActiveTaskId("/workspace", task.taskId);
 
     function Probe({ activeWorkspacePath }: { activeWorkspacePath: string }) {
       useWorkspaceTaskLists({

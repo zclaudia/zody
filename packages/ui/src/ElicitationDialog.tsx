@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea.js";
 import { InteractionRequestOriginBadge } from "@/InteractionRequestOriginBadge.js";
 import { isImeComposingKeyEvent } from "@/lib/imeComposition.js";
 import type { ElicitationFormDraft } from "@/store/zodySessionStoreTypes.js";
-import { useZCodeIntl } from "./i18n/IntlProvider.js";
+import { useZodyIntl } from "./i18n/IntlProvider.js";
 
 interface ElicitationDialogProps {
   request: ZodyElicitationRequest;
@@ -348,7 +348,7 @@ function ElicitationDialogContent({
   initialFormDraft,
   onFormDraftChange,
 }: ElicitationDialogProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const questions = useMemo(() => normalizeElicitationQuestions(request), [request]);
   const [questionIndex, setQuestionIndex] = useState(
     () => initialFormDraft?.questionIndex ?? normalizeInitialQuestionIndex(request, questions),

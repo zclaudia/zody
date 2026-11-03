@@ -4,7 +4,7 @@ import {
   type ZodyProvider,
   type ZodyError,
 } from "@zody/shared";
-import { normalizeZCodeUiError } from "@/lib/zodyUiError.js";
+import { normalizeZodyUiError } from "@/lib/zodyUiError.js";
 
 export const MODEL_CONFIG_MISSING_UI_ERROR_CODE = "model_config_missing";
 
@@ -141,7 +141,7 @@ export function buildWorkspacePrepareUiError(
   err: unknown,
   context: WorkspacePrepareErrorContext,
 ): ZodyError & { detail?: string } {
-  const normalizedError = normalizeZCodeUiError(
+  const normalizedError = normalizeZodyUiError(
     buildDisplayErrorInput(err, context.displayMessage),
     {
       fallbackCode: "WORKSPACE_PREPARE_FAILED",

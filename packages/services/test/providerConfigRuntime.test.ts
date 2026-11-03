@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { ModelConfigRules, ProviderConfigMap, ProviderTemplateMap } from "@zody/provider";
 import type { ModelProviderConfig } from "../src/model-provider/legacyModelProviderSerialized.js";
-import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
+import { readLegacyZodyConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
 import { createProviderConfigRuntime } from "../src/model-provider/providerConfigRuntime.js";
 import { setDataBaseDir } from "../src/paths.js";
 
@@ -69,7 +69,7 @@ describe("ProviderConfigRuntime", () => {
       const recovery = vi.fn();
       const runtime = createProviderConfigRuntime({
         zcodeBuiltinFilePath,
-        readLegacyProviders: readLegacyZCodeConfigProviders,
+        readLegacyProviders: readLegacyZodyConfigProviders,
         onPersonalConfigRecovery: recovery,
         personalPollingIntervalMs: false,
         watch: false,
@@ -129,7 +129,7 @@ describe("ProviderConfigRuntime", () => {
     const recovery = vi.fn();
     const runtime = createProviderConfigRuntime({
       zcodeBuiltinFilePath,
-      readLegacyProviders: readLegacyZCodeConfigProviders,
+      readLegacyProviders: readLegacyZodyConfigProviders,
       onPersonalConfigRecovery: recovery,
       personalPollingIntervalMs: false,
       watch: false,
@@ -225,7 +225,7 @@ describe("ProviderConfigRuntime", () => {
     setDataBaseDir(root);
     const runtime = createProviderConfigRuntime({
       zcodeBuiltinFilePath,
-      readLegacyProviders: readLegacyZCodeConfigProviders,
+      readLegacyProviders: readLegacyZodyConfigProviders,
       watch: false,
     });
     try {

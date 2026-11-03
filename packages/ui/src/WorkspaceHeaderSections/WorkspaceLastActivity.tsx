@@ -1,11 +1,11 @@
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { ZodyTaskMeta } from "@zody/shared";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 
 export function WorkspaceLastActivity({ task }: { task: ZodyTaskMeta | null }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [now, setNow] = useState(Date.now);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 60_000);

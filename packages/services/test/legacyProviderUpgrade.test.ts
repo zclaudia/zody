@@ -11,10 +11,10 @@ import {
 } from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
-  NodeZCodeBuiltinProviderConfigSource,
+  NodeZodyBuiltinProviderConfigSource,
 } from "@zody/provider-node";
 import { getAppConfigDir, setDataBaseDir } from "../src/paths.js";
-import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
+import { readLegacyZodyConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
 import { importLegacyPersonalProviderConfig } from "../src/model-provider/legacyPersonalProviderConfigImporter.js";
 
 let directory: string | undefined;
@@ -83,11 +83,11 @@ describe("Todo 72 已发布 config.json 首次升级", () => {
       importLegacy: async () => {
         importCount++;
         return importLegacyPersonalProviderConfig({
-          legacyProviders: await readLegacyZCodeConfigProviders(),
+          legacyProviders: await readLegacyZodyConfigProviders(),
         });
       },
     });
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: fileURLToPath(
         new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),
@@ -160,7 +160,7 @@ describe("Todo 72 已发布 config.json 首次升级", () => {
         importLegacy: async () => {
           importCount++;
           return importLegacyPersonalProviderConfig({
-            legacyProviders: await readLegacyZCodeConfigProviders(),
+            legacyProviders: await readLegacyZodyConfigProviders(),
           });
         },
       });

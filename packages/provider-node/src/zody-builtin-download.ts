@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { decodeZCodeBuiltinRelease, type ZodyBuiltinRelease } from "./zody-builtin-release.js";
+import { decodeZodyBuiltinRelease, type ZodyBuiltinRelease } from "./zody-builtin-release.js";
 
 const clientConfigSchema = z
   .object({
@@ -32,7 +32,7 @@ export interface ZodyBuiltinDownloadOptions {
 }
 
 /** App/CLI 共用下载边界。总预算包含两次请求正文，不依赖 ApiClient 的响应头超时。 */
-export async function downloadZCodeBuiltinRelease(
+export async function downloadZodyBuiltinRelease(
   options: ZodyBuiltinDownloadOptions,
 ): Promise<ZodyBuiltinRelease | null> {
   const controller = new AbortController();
@@ -54,7 +54,7 @@ export async function downloadZCodeBuiltinRelease(
     const downloadUrl = payload.data.configs.builtin_provider_config_json;
     if (downloadUrl === undefined) return null;
     stage = "cdn";
-    return decodeZCodeBuiltinRelease(await readJson(new URL(downloadUrl)));
+    return decodeZodyBuiltinRelease(await readJson(new URL(downloadUrl)));
   } catch (error) {
     // 不能把带 query 的 URL、响应正文或 Schema 输入（可能含凭据）交给上层日志。
     const reason = signal.aborted

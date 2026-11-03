@@ -25,7 +25,7 @@ import {
   withPluginStorageLock,
   withPluginStorageWriteGateWhenNeeded,
 } from "../src/lib/plugin-storage-lock.js";
-import { listZCodePlugins } from "../src/plugins.js";
+import { listZodyPlugins } from "../src/plugins.js";
 
 describe("withPluginStorageLock", () => {
   it("serializes operations on the same storage root", async () => {
@@ -94,7 +94,7 @@ describe("plugin storage read scheduling", () => {
     };
 
     // 第一次读取是冷启动：允许 lazy seed，并会进入跨进程 seed 锁。
-    const cold = listZCodePlugins(options);
+    const cold = listZodyPlugins(options);
     expect(
       cold.plugins.some((plugin) => plugin.id === "skill-creator@zcode-plugins-official"),
     ).toBe(true);
@@ -115,7 +115,7 @@ describe("plugin storage read scheduling", () => {
     // 第二次读取是缓存命中：只允许读已提交状态，不得进入 seed 写锁。
     seedLockCalls.length = 0;
     const startedAt = performance.now();
-    const warm = listZCodePlugins(options);
+    const warm = listZodyPlugins(options);
     const elapsedMs = performance.now() - startedAt;
 
     expect(

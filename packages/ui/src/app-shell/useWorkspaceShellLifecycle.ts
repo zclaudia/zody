@@ -6,7 +6,7 @@ import { logger } from "@/logger.js";
 import {
   getWorkspaceDisplayedTaskState,
   getWorkspaceInitState,
-  useZCodeSessionStore,
+  useZodySessionStore,
 } from "@/store/zodySessionStore.js";
 
 export function useWorkspaceShellLifecycle({
@@ -43,7 +43,7 @@ export function useWorkspaceShellLifecycle({
 
   useEffect(() => {
     return () => {
-      const currentWorkspaceState = useZCodeSessionStore
+      const currentWorkspaceState = useZodySessionStore
         .getState()
         .getWorkspaceState(workspaceAbsPath);
       const displayedTaskState = getWorkspaceDisplayedTaskState(currentWorkspaceState);
@@ -69,10 +69,10 @@ export function useWorkspaceShellLifecycle({
       logger.info(
         `[App] 回退 workspace 预热状态 workspace=${workspaceAbsPath} provider=${provider}`,
       );
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .setWorkspaceInitAttempts(workspaceAbsPath, 0, workspaceIdentity);
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .setWorkspaceInitState(workspaceAbsPath, "idle", null, workspaceIdentity);
 

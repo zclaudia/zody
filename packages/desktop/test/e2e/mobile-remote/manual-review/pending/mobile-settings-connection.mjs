@@ -23,7 +23,7 @@ import {ServiceProvider} from '@/hooks/useServices.js';
 import {PlatformProvider} from '@/hooks/usePlatform.js';
 import {StoreProvider} from '@/store/StoreProvider.js';
 import {TabStoreProvider} from '@/store/TabStoreProvider.js';
-import {ZCodeIntlProvider} from '@/i18n/IntlProvider.js';
+import {ZodyIntlProvider} from '@/i18n/IntlProvider.js';
 import {SettingsPage} from '@/SettingsPage.js';
 import {TooltipProvider} from '@/components/ui/tooltip.js';
 import '@/styles.css';
@@ -101,7 +101,7 @@ function App() {
           TabStoreProvider,
           null,
           React.createElement(
-            ZCodeIntlProvider,
+            ZodyIntlProvider,
             {initialLocale: 'en-US'},
             React.createElement(SettingsPage, {
               isWebRemoteControl: true,

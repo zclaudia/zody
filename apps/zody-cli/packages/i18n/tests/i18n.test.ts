@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_LOCALE,
   detectLocale,
-  getZCodeCopy,
+  getZodyCopy,
   isUiLocale,
   resolveLocale,
   SUPPORTED_LOCALES,
@@ -16,7 +16,7 @@ describe("i18n catalog", () => {
     expect(resolveLocale("auto", "zh_Hans_CN")).toBe("zh-CN");
     expect(resolveLocale("auto", "en-GB")).toBe("en-US");
     expect(resolveLocale("fr-FR")).toBe("en-US");
-    expect(getZCodeCopy("auto", "zh_CN.UTF-8").locale).toBe("zh-CN");
+    expect(getZodyCopy("auto", "zh_CN.UTF-8").locale).toBe("zh-CN");
   });
 
   it("detects supported locales from adapter-provided OS hints", () => {
@@ -36,15 +36,15 @@ describe("i18n catalog", () => {
 
   it("keeps all locale catalogs shape-compatible", () => {
     const [firstLocale, ...rest] = SUPPORTED_LOCALES;
-    const baseShape = catalogShape(getZCodeCopy(firstLocale));
+    const baseShape = catalogShape(getZodyCopy(firstLocale));
 
     for (const locale of rest) {
-      expect(catalogShape(getZCodeCopy(locale))).toEqual(baseShape);
+      expect(catalogShape(getZodyCopy(locale))).toEqual(baseShape);
     }
   });
 
   it("returns localized TUI and CLI copy", () => {
-    const copy = getZCodeCopy("zh-CN");
+    const copy = getZodyCopy("zh-CN");
 
     expect(copy.tui.status.ready).toBe("就绪。");
     expect(copy.tui.sidebar.sections.status).toBe("状态");

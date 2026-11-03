@@ -9,7 +9,7 @@ import { createTaskNavigationHistory } from "@/lib/taskNavigationHistory.js";
 import { buildTaskEntityKey } from "@/lib/taskQueryCache.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 
 const tabStore = vi.hoisted(() => {
   let state: {
@@ -94,7 +94,7 @@ describe("useWorkspaceTaskNavigation", () => {
       sessionIdByWorkspacePath: {},
       sessionIdByWorkspaceIdentity: {},
     });
-    useZCodeSessionStore.setState({ taskNavHistory: createTaskNavigationHistory() });
+    useZodySessionStore.setState({ taskNavHistory: createTaskNavigationHistory() });
   });
 
   it("把 Idle-time intent 写入 Automations 导航目标和历史", () => {
@@ -114,7 +114,7 @@ describe("useWorkspaceTaskNavigation", () => {
       workspaceIdentity: "remote:ssh:dev:22:user:/home/dev",
       automationTab: "idle",
     });
-    expect(useZCodeSessionStore.getState().taskNavHistory.entries).toEqual([
+    expect(useZodySessionStore.getState().taskNavHistory.entries).toEqual([
       {
         kind: "automations",
         workspacePath: "/home/dev",
@@ -128,7 +128,7 @@ describe("useWorkspaceTaskNavigation", () => {
   it("前进回放时恢复 Idle-time Automations intent", () => {
     const onNavigateToAutomations = vi.fn();
     const activateTabByPath = vi.fn(() => true);
-    useZCodeSessionStore.setState({
+    useZodySessionStore.setState({
       taskNavHistory: {
         entries: [
           {

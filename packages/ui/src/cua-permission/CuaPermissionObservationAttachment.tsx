@@ -10,7 +10,7 @@ import {
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useServices } from "@/hooks/useServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { shouldRestartHelperAfterCuaPermissionReturn } from "@/lib/cuaPermissionAction.js";
 import { createCuaPermissionOnboardingOperationId } from "@/lib/cuaPermissionOnboardingOperation.js";
 import { fetchCuaPermissionStatus } from "@/lib/cuaPermissionStatusStore.js";
@@ -115,7 +115,7 @@ export function CuaPermissionObservationAttachment() {
   const services = useServices();
   const platform = usePlatform();
   const confirmDialog = useConfirmDialog();
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   useEffect(() => {
     const permissionService = services.cuaPermissionService;

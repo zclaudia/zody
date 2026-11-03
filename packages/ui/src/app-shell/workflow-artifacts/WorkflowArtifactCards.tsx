@@ -9,7 +9,7 @@
 
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { formatArtifactBytes } from "@/app-shell/workflow-artifacts/artifactPresentation.js";
 import { toFileUrl } from "@/lib/path.js";
 import type { WorkflowRunArtifactView } from "@/hooks/useWorkflowRunArtifacts.js";
@@ -104,7 +104,7 @@ export function WorkflowArtifactHtmlCard({
   onOpenBrowserUrl?: (url: string) => void;
   onReveal?: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const openable =
     isLatestVersion && localSourcePath !== undefined && onOpenBrowserUrl !== undefined;
   return (

@@ -40,7 +40,7 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
       const server = new ZodyProtocolAgentServer({
         cwd: process.cwd(),
         sessionStore: store,
-        createZCodeApp: async (options) => {
+        createZodyApp: async (options) => {
           const app = await createRegistryBackedTestApp({
             ...options,
             env: {},
@@ -196,7 +196,7 @@ describe.each(["desktop-continuous", "web-remote-replayable"] as const)(
       const server = new ZodyProtocolAgentServer({
         cwd: process.cwd(),
         sessionStore: store,
-        createZCodeApp: async (options) => {
+        createZodyApp: async (options) => {
           const app = await createRegistryBackedTestApp({
             ...options,
             env: {},

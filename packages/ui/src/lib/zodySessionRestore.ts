@@ -6,10 +6,10 @@ import type {
   ZodyTaskSnapshot,
 } from "@zody/shared";
 import {
-  zcodeSessionSettingsToConfigOptions,
-  zcodeSessionSnapshotToZCodeTaskSnapshot,
+  zodySessionSettingsToConfigOptions,
+  zodySessionSnapshotToZodyTaskSnapshot,
 } from "@/lib/zodySessionProjection.js";
-import { normalizeZCodeUiError, type ZodyUiError } from "@/lib/zodyUiError.js";
+import { normalizeZodyUiError, type ZodyUiError } from "@/lib/zodyUiError.js";
 import { logger } from "@/logger.js";
 
 export type ZodySessionRestoreService = Pick<
@@ -156,7 +156,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
       snapshot: legacySnapshot,
       ...(runtimeModelUnavailable
         ? {
-            restoreWarning: normalizeZCodeUiError(error, {
+            restoreWarning: normalizeZodyUiError(error, {
               fallbackCode: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
               taskId: params.sessionId,
             }),
@@ -175,7 +175,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
   });
   const readDurationMs = Date.now() - readStartedAt;
   const projectionStartedAt = Date.now();
-  const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot(readSessionSnapshot);
+  const snapshot = zodySessionSnapshotToZodyTaskSnapshot(readSessionSnapshot);
   logger.info("[zcodeSessionRestore] desktop readSession 快照转换完成", {
     durationMs: Date.now() - startedAt,
     messageLimit: params.messageLimit ?? null,
@@ -235,7 +235,7 @@ export async function readWebRemoteReplayableSessionConfigOptions(params: {
       deliveryKind: "web-remote-replayable",
       messageLimit: 1,
     });
-    const options = zcodeSessionSettingsToConfigOptions(snapshot.settings);
+    const options = zodySessionSettingsToConfigOptions(snapshot.settings);
     logger.info("[zcodeSessionRestore] replayable task 配置读取完成", {
       configOptionCount: options.length,
       durationMs: Date.now() - startedAt,

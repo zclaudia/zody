@@ -3,7 +3,7 @@ import {
   ModelConfig,
   ModelConfigRules,
   ModelPropertiesConfig,
-  parseZCodeBuiltinModelConfigRules,
+  parseZodyBuiltinModelConfigRules,
   parseModelConfig,
   parsePersonalModelConfigRules,
   extractManualModelConfig,
@@ -161,7 +161,7 @@ describe("ModelConfigRules", () => {
         },
       ],
     };
-    const rules = parseZCodeBuiltinModelConfigRules(source);
+    const rules = parseZodyBuiltinModelConfigRules(source);
     expect(rules.toZCodeBuiltinJSON()).toEqual(source);
   });
 
@@ -205,7 +205,7 @@ describe("ModelConfigRules", () => {
   });
 
   it("provider-model 使用结构化精确身份并按来源层合成", () => {
-    const builtin = parseZCodeBuiltinModelConfigRules({
+    const builtin = parseZodyBuiltinModelConfigRules({
       ...emptyBuiltin,
       modelRules: [{ modelMatch: "model-a", config: { enabled: false } }],
     });
@@ -262,7 +262,7 @@ describe("ModelConfigRules", () => {
 
   it("持久化不接受 type 或混合两种 Rule 字段", () => {
     expect(() =>
-      parseZCodeBuiltinModelConfigRules({
+      parseZodyBuiltinModelConfigRules({
         ...emptyBuiltin,
         modelRules: [{ type: "model", modelMatch: "model-a", config: { enabled: true } }],
       }),

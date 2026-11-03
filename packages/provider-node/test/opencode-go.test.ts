@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { beforeAll, describe, expect, it } from "vitest";
 import { compileModelOptionMaps } from "@zody/model-option-map";
-import { ModelConfig, ModelConfigRules, parseZCodeBuiltinModelConfigRules } from "@zody/provider";
+import { ModelConfig, ModelConfigRules, parseZodyBuiltinModelConfigRules } from "@zody/provider";
 
 const url = "https://opencode.ai/zen/go/v1";
 const members = {
@@ -63,7 +63,7 @@ beforeAll(async () => {
   const release = JSON.parse(
     await readFile(new URL("../../../config/provider/zody-builtin.json", import.meta.url), "utf8"),
   );
-  rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+  rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
   templates = release.config.providerConfigRules.templateRules;
 });
 const input = (modelId: string, apiType = "openai-chat-completions", baseUrl = url) => ({

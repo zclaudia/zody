@@ -7,12 +7,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { SessionEventType, createSessionEvent, type SessionEvent } from "@zody/contracts";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { applyMainSessionEvent } from "../src/app-session-event-handler.js";
 import type { Message } from "../src/app-model.js";
 import { EMPTY_TUI_WORKFLOW_MIRROR, type TuiWorkflowMirror } from "../src/app-workflow-mirror.js";
 
-const COPY = getZCodeCopy("en-US").tui;
+const COPY = getZodyCopy("en-US").tui;
 const MAIN = "session-main";
 const ACTOR = "session-actor-1";
 

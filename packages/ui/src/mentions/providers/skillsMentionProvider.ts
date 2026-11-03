@@ -5,7 +5,7 @@ import { filterMentionItemsWithOptions } from "@/mentions/mentionSearch.js";
 import { buildSkillMentionMarkdown } from "@/mentions/mentionMarkdown.js";
 import { useSkills } from "@/hooks/useSkills.js";
 import { filterSkillsForProvider } from "@/lib/skillSourceFilter.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { resolveSkillDisplayDescription, resolveSkillSourceLabel } from "@/lib/builtinSkillI18n.js";
 
 export function mapSkillsToMentionItemsForTest(
@@ -67,7 +67,7 @@ export function useSkillsMentionProvider(
   emptyText: string,
   title: string,
 ): MentionCategoryResult {
-  const { locale } = useZCodeIntl();
+  const { locale } = useZodyIntl();
   const { skills, loading, error } = useSkills({
     workspacePath,
     workspaceIdentity,

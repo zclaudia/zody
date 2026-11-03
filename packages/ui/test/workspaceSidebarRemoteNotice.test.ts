@@ -120,7 +120,7 @@ vi.mock("@/ControlHintTooltip.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => {
         const messages: Record<string, string> = {
@@ -218,7 +218,7 @@ vi.mock("@/store/taskQueryCacheStore.js", () => ({
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       startDraft: () => {},
       removeTaskState: () => {},
@@ -226,7 +226,7 @@ vi.mock("@/store/zodySessionStore.js", () => ({
       removeOptimisticTaskListItem: () => {},
       setTaskUnreadIndicator: () => {},
     }),
-  selectWorkspaceZCodeState: () => ({
+  selectWorkspaceZodyState: () => ({
     activeTaskId: null,
     draftRuntime: { status: workspaceRuntimeState.draftStatus, error: null },
     taskRuntimeByTaskId: workspaceRuntimeState.taskRuntimeByTaskId,

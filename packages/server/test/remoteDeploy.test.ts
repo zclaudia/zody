@@ -15,7 +15,7 @@ import {
   ZCODE_VERSION,
 } from "@zody/shared";
 import type { IRemoteBackend, StdioStream } from "@zody/server/remote/backend.js";
-import { deployZCodeAgentRuntime } from "@zody/server/remote/zodyAgentDeploy.js";
+import { deployZodyAgentRuntime } from "@zody/server/remote/zodyAgentDeploy.js";
 import { deployServer } from "@zody/server/remote/deploy.js";
 import {
   createRemoteComponentVersionResolver,
@@ -1715,7 +1715,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -1765,7 +1765,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -1796,7 +1796,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -1836,7 +1836,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -1889,7 +1889,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -1945,7 +1945,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -2003,7 +2003,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -2060,7 +2060,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     };
     const warnings: string[] = [];
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -2104,7 +2104,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     };
 
     await expect(
-      deployZCodeAgentRuntime(
+      deployZodyAgentRuntime(
         backend,
         { platform: "linux", arch: "arm64" },
         {
@@ -2181,7 +2181,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     };
 
     await expect(
-      deployZCodeAgentRuntime(
+      deployZodyAgentRuntime(
         backend,
         { platform: "linux", arch: "arm64" },
         {
@@ -2230,7 +2230,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       },
     };
 
-    await deployZCodeAgentRuntime(
+    await deployZodyAgentRuntime(
       backend,
       { platform: "linux", arch: "arm64" },
       {
@@ -2336,7 +2336,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         },
       };
 
-      await deployZCodeAgentRuntime(
+      await deployZodyAgentRuntime(
         backend,
         { platform: "linux", arch: "arm64" },
         {

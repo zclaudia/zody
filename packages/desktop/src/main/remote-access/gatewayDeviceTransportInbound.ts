@@ -38,8 +38,8 @@ export interface GatewayDeviceInboundHost {
 
 function readSafePayloadType(payload: unknown): string | undefined {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return undefined;
-  const zcodeType = (payload as { zcode_type?: unknown }).zcode_type;
-  return typeof zcodeType === "string" ? zcodeType : undefined;
+  const zodyType = (payload as { zcode_type?: unknown }).zcode_type;
+  return typeof zodyType === "string" ? zodyType : undefined;
 }
 
 function handleDataFrame(

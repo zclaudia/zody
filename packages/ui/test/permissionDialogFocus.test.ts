@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZodyPermissionRequest } from "@zody/shared";
 import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { PermissionDialog } from "@/PermissionDialog.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { V4InteractionDialogs } from "@/v4/V4InteractionDialogs.js";
 
 vi.mock("@/v4/V4ConversationContext.js", () => ({
@@ -113,7 +113,7 @@ describe("PermissionDialog focus", () => {
     const onRespond = vi.fn();
     const view = render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(PermissionDialog, {
           request: {
@@ -288,7 +288,7 @@ describe("PermissionDialog focus", () => {
 
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(PermissionDialog, {
           request: {
@@ -338,7 +338,7 @@ describe("PermissionDialog focus", () => {
     installAnimationFrameController();
     const renderDialog = (interactionId: string) =>
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(V4InteractionDialogs, {
           sessionId: "task-focus",

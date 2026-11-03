@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { atomicWritePrivateTextFile, withFileLock } from "@zody/shared/node";
-import type { NodeZCodeBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
+import type { NodeZodyBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
 import type { ZodyBuiltinRelease } from "./zody-builtin-release.js";
 
 const HOUR_MS = 60 * 60 * 1_000;
@@ -15,7 +15,7 @@ export type ZodyBuiltinRefreshResult =
   | "disposed";
 
 export interface ZodyBuiltinRemoteSynchronizerOptions {
-  readonly source: NodeZCodeBuiltinProviderConfigSource;
+  readonly source: NodeZodyBuiltinProviderConfigSource;
   readonly controlFilePath: string;
   readonly resolveEndpointKey: () => string | Promise<string>;
   readonly fetchRelease: (
@@ -46,7 +46,7 @@ interface RefreshControl {
 }
 
 /** Environment 共享控制文件合并多进程刷新；网络期间不持有文件锁。 */
-export class ZCodeBuiltinRemoteSynchronizer {
+export class ZodyBuiltinRemoteSynchronizer {
   readonly #options: ZodyBuiltinRemoteSynchronizerOptions;
   readonly #now: () => number;
   #inFlight: Promise<ZodyBuiltinRefreshResult> | null = null;

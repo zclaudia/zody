@@ -12,7 +12,7 @@ import {
   resolveElicitationCustomInputKeyAction,
   updateElicitationDraftsForOption,
 } from "../src/ElicitationDialog.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 
 const SUBAGENT_ORIGIN = {
   kind: "subagent" as const,
@@ -118,7 +118,7 @@ describe("ElicitationDialog", () => {
     const render = (locale: "en-US" | "zh-CN") =>
       renderToStaticMarkup(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: locale },
           createElement(Dialog, {
             request: createMultiQuestionRequest(),
@@ -149,7 +149,7 @@ describe("ElicitationDialog", () => {
     const request = createMultiQuestionRequest();
     const mainHtml = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request,
@@ -159,7 +159,7 @@ describe("ElicitationDialog", () => {
     );
     const subagentHtml = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request: {
@@ -181,7 +181,7 @@ describe("ElicitationDialog", () => {
     const Dialog = ElicitationDialog as ComponentType<Record<string, unknown>>;
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request: createMultiQuestionRequest(),
@@ -240,7 +240,7 @@ describe("ElicitationDialog", () => {
     const Dialog = ElicitationDialog as ComponentType<Record<string, unknown>>;
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request: createMultiQuestionRequest(),
@@ -265,7 +265,7 @@ describe("ElicitationDialog", () => {
     };
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request,
@@ -288,7 +288,7 @@ describe("ElicitationDialog", () => {
     };
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request,
@@ -337,7 +337,7 @@ describe("ElicitationDialog", () => {
     };
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request,
@@ -358,7 +358,7 @@ describe("ElicitationDialog", () => {
     const Dialog = ElicitationDialog as ComponentType<Record<string, unknown>>;
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request: createMultiQuestionRequest(),
@@ -384,7 +384,7 @@ describe("ElicitationDialog", () => {
     };
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(Dialog, {
           request,
@@ -407,7 +407,7 @@ describe("ElicitationDialog", () => {
     const render = (locale: "en-US" | "zh-CN") =>
       renderToStaticMarkup(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: locale },
           createElement(Dialog, {
             request,

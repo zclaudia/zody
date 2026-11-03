@@ -46,14 +46,14 @@ export async function prepareTuiAppRuntime(
   }
 
   const sessionId = await resolveResumeSession(request, workingDirectory, env, deps);
-  const bootstrapModule = deps.createZCodeApp ? undefined : await loadBootstrapModule();
-  const createAppFactory = deps.createZCodeApp ?? bootstrapModule?.createZCodeApp;
+  const bootstrapModule = deps.createZodyApp ? undefined : await loadBootstrapModule();
+  const createAppFactory = deps.createZodyApp ?? bootstrapModule?.createZodyApp;
   if (!createAppFactory) throw new Error("Zody app factory is unavailable.");
   const prepareTelemetry =
-    deps.prepareZCodeTelemetryEnv ?? bootstrapModule?.prepareZCodeTelemetryEnv;
+    deps.prepareZodyTelemetryEnv ?? bootstrapModule?.prepareZodyTelemetryEnv;
   if (prepareTelemetry) {
     state.shutdownTelemetry =
-      deps.shutdownZCodeTelemetry ?? bootstrapModule?.shutdownZCodeTelemetry;
+      deps.shutdownZodyTelemetry ?? bootstrapModule?.shutdownZodyTelemetry;
   }
   const appEnv = prepareTelemetry
     ? await prepareTelemetry(env, {

@@ -195,7 +195,7 @@ describe("desktopHelpConfig 只读内置值", () => {
 function createCommandOptions() {
   return {
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-    updateZCodeStdioTapDevMenuState: vi.fn(),
+    updateZodyStdioTapDevMenuState: vi.fn(),
     onZCodeEndpointChanged: vi.fn(),
     onRelaunchApp: vi.fn(async () => undefined),
     settingService: {

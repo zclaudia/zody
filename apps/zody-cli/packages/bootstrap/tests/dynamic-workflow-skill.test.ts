@@ -34,8 +34,8 @@ import {
 } from "../src/app/bundled-skills.js";
 import { collectDynamicWorkflowDisabledSkillPaths } from "../src/app/dynamic-workflow-gate.js";
 import {
-  resolveZCodeBuiltinPromptCommand,
-  resolveZCodeBuiltinPromptCommandInvocation,
+  resolveZodyBuiltinPromptCommand,
+  resolveZodyBuiltinPromptCommandInvocation,
 } from "../src/builtin-prompt-command.js";
 import {
   BUILTIN_WORKFLOW_COMMAND,
@@ -124,31 +124,31 @@ describe("builtin /workflow command", () => {
 
   it("expands through the builtin prompt resolver, and not while the gray gate is off", () => {
     // DWG-03：目录侧剔除了它，但用户仍可手打命令名，两条路径必须给出同一个结论。
-    expect(resolveZCodeBuiltinPromptCommand("/workflow ship it")).toContain("ship it");
+    expect(resolveZodyBuiltinPromptCommand("/workflow ship it")).toContain("ship it");
     expect(
-      resolveZCodeBuiltinPromptCommand("/workflow ship it", { dynamicWorkflowEnabled: true }),
+      resolveZodyBuiltinPromptCommand("/workflow ship it", { dynamicWorkflowEnabled: true }),
     ).toContain("ship it");
     expect(
-      resolveZCodeBuiltinPromptCommand("/workflow ship it", { dynamicWorkflowEnabled: false }),
+      resolveZodyBuiltinPromptCommand("/workflow ship it", { dynamicWorkflowEnabled: false }),
     ).toBe(undefined);
     // 无参数也展开：模型会按技能自行向用户要任务，而不是把 "/workflow" 当普通文本。
-    expect(resolveZCodeBuiltinPromptCommand("/workflow")).toContain("Required skills");
-    expect(resolveZCodeBuiltinPromptCommand("please /workflow now")).toBe(undefined);
+    expect(resolveZodyBuiltinPromptCommand("/workflow")).toContain("Required skills");
+    expect(resolveZodyBuiltinPromptCommand("please /workflow now")).toBe(undefined);
   });
 
   // launch.md「On demand: activation」：装配层要知道展开的是哪个命令，才能在 `/workflow` 上挂激活。
   it("invocation 形态带命令名", () => {
-    expect(resolveZCodeBuiltinPromptCommandInvocation("/workflow ship it")).toMatchObject({
+    expect(resolveZodyBuiltinPromptCommandInvocation("/workflow ship it")).toMatchObject({
       name: BUILTIN_WORKFLOW_COMMAND_NAME,
     });
-    expect(resolveZCodeBuiltinPromptCommandInvocation("/WORKFLOW ship it")?.name).toBe(
+    expect(resolveZodyBuiltinPromptCommandInvocation("/WORKFLOW ship it")?.name).toBe(
       BUILTIN_WORKFLOW_COMMAND_NAME,
     );
-    expect(resolveZCodeBuiltinPromptCommandInvocation("/init")?.name).toBe("init");
+    expect(resolveZodyBuiltinPromptCommandInvocation("/init")?.name).toBe("init");
     expect(
-      resolveZCodeBuiltinPromptCommandInvocation("/workflow x", { dynamicWorkflowEnabled: false }),
+      resolveZodyBuiltinPromptCommandInvocation("/workflow x", { dynamicWorkflowEnabled: false }),
     ).toBeUndefined();
-    expect(resolveZCodeBuiltinPromptCommandInvocation("/unknown")).toBeUndefined();
+    expect(resolveZodyBuiltinPromptCommandInvocation("/unknown")).toBeUndefined();
   });
 });
 

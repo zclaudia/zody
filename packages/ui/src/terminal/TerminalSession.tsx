@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from "react";
 import type { ILink, ILinkHandler, ITheme, IWindowsPty } from "@xterm/xterm";
 import type { IServiceAccessor } from "@zody/services";
 import type { IDisposable } from "@zody/rpc";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
   ContextMenu,
@@ -121,7 +121,7 @@ export function TerminalSession({
    */
   workspaceKey?: string;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const containerRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);

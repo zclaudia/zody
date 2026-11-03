@@ -29,8 +29,8 @@ import {
 } from "@zody/shared";
 import type { ModelSelection } from "@zody/shared";
 import {
-  findZCodeAgentRuntimeBinary,
-  findZCodeAgentRuntimeNodeBundle,
+  findZodyAgentRuntimeBinary,
+  findZodyAgentRuntimeNodeBundle,
 } from "../runtime-tools/providerRuntimeResolver.js";
 import { isEffectiveDevelopmentNodeEnv } from "#src/runtime-tools/nodeEnv.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
@@ -493,7 +493,7 @@ function resolveDeployedZodyAgentBinaryCommand(
   // 这里复用 findZCodeAgentRuntimeBinary 的候选链（含 GLM_BINARY_PATH env、
   // packagedResourcesPath、~/.zody/server/agents/glm、bundled-agents 等），
   // 把已部署的原生 binary 当成最终兜底，远端/桌面打包形态都能命中。
-  const binaryPath = findZCodeAgentRuntimeBinary();
+  const binaryPath = findZodyAgentRuntimeBinary();
   if (!binaryPath) {
     return null;
   }
@@ -516,7 +516,7 @@ function resolveElectronRuntimeZodyAgentCommand(
   if (!process.versions.electron) {
     return null;
   }
-  const bundlePath = findZCodeAgentRuntimeNodeBundle();
+  const bundlePath = findZodyAgentRuntimeNodeBundle();
   if (!bundlePath) {
     return null;
   }

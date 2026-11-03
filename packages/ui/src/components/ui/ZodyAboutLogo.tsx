@@ -1,6 +1,6 @@
 import { cn } from "@/components/lib/utils.js";
 
-export function ZCodeWordmarkLogo({ className }: { className?: string }) {
+export function ZodyWordmarkLogo({ className }: { className?: string }) {
   return (
     <svg
       width="244"

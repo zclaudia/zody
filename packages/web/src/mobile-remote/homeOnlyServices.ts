@@ -63,7 +63,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
   // Bugfix: 手机端只有断开的远程 workspace 时，不能为了进入任务首页强行创建 bridge。
   // 这里提供只读/空结果服务，吸收 Root 首屏的模型供应商、Git、技能等后台初始化，
   // 避免断连这种预期状态被误报成未处理异常；真正聊天能力仍需重连成功后切到 bridge services。
-  const homeOnlyZCodeTaskService = createEmptyHomeOnlyService<RootServices["zcodeTaskService"]>({
+  const homeOnlyZodyTaskService = createEmptyHomeOnlyService<RootServices["zcodeTaskService"]>({
     initialize: async () => ({ available: false }),
     releaseWorkspacePreparation: async () => {},
     checkCodexConnectivity: async () => ({ ok: true }),
@@ -155,7 +155,7 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
       send: async () => {},
       onMessage: () => ({ dispose: () => {} }),
     }),
-    zcodeTaskService: homeOnlyZCodeTaskService,
+    zcodeTaskService: homeOnlyZodyTaskService,
     zcodeAgentService: createEmptyHomeOnlyService<RootServices["zcodeAgentService"]>({
       initialize: async (params: { workspacePath: string; workspaceIdentity?: string }) => ({
         available: false,

@@ -1,5 +1,5 @@
 import type { ZodyProvider } from "@zody/shared";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { selectWorkspaceZodyState, useZodySessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceZodyUIState } from "@/store/zodySessionStoreTypes.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import { isWorkspaceTab } from "@/store/tabStore.js";
@@ -47,8 +47,8 @@ export function useChatViewActiveTaskProvider(
   });
   const resolvedWorkspaceIdentity = workspaceIdentity ?? activeTabWorkspaceIdentity;
 
-  return useZCodeSessionStore((state) => {
-    const workspaceState = selectWorkspaceZCodeState(
+  return useZodySessionStore((state) => {
+    const workspaceState = selectWorkspaceZodyState(
       state,
       workspacePath,
       resolvedWorkspaceIdentity,

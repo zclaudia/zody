@@ -47,18 +47,18 @@ export function getDataBaseDir(): string {
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 /** {dataBaseDir}/.zody */
-export function getZCodeDataRootDir(): string {
+export function getZodyDataRootDir(): string {
   return join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME);
 }
 
 /** 非项目对话共享的真实工作目录；默认 ~/.zody/workspace/default。 */
 export function getConversationWorkspaceDir(): string {
-  return join(getZCodeDataRootDir(), "workspace", "default");
+  return join(getZodyDataRootDir(), "workspace", "default");
 }
 
 /** {dataBaseDir}/.zody/v2 */
 export function getAppConfigDir(): string {
-  return join(getZCodeDataRootDir(), "v2");
+  return join(getZodyDataRootDir(), "v2");
 }
 
 function readEnvValue(env: Record<string, string | undefined>, key: string): string | undefined {
@@ -171,15 +171,15 @@ export function validateDataBaseDirTarget(
 }
 
 export function getExportLogStageDir(): string {
-  return join(getZCodeDataRootDir(), "export-log-stage");
+  return join(getZodyDataRootDir(), "export-log-stage");
 }
 
 export function getExportLogDir(): string {
-  return join(getZCodeDataRootDir(), "export-log");
+  return join(getZodyDataRootDir(), "export-log");
 }
 
 export function getFeedbackRootDir(): string {
-  return join(getZCodeDataRootDir(), "feedback");
+  return join(getZodyDataRootDir(), "feedback");
 }
 
 export function getFeedbackAttachmentDir(): string {
@@ -191,7 +191,7 @@ export function getFeedbackLogArchiveDir(): string {
 }
 
 export function getGitCheckpointIndexRootDir(): string {
-  return join(getZCodeDataRootDir(), "git-checkpoint-index");
+  return join(getZodyDataRootDir(), "git-checkpoint-index");
 }
 
 /** ~/.zody/v2/tasks-index.sqlite */

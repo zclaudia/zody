@@ -6,7 +6,7 @@ import {
   createRegistryProviderConfig,
   parseModelConfig,
   parseProviderConfig,
-  parseZCodeBuiltinModelConfigRules,
+  parseZodyBuiltinModelConfigRules,
 } from "@zody/provider";
 import { collectAgentListingAttachment } from "../../core/src/subagent/listing.js";
 import { buildProviderRequestMessages } from "../../core/src/runtime/helpers/provider-request-messages.js";
@@ -37,7 +37,7 @@ describe("agent listing final Anthropic wire", () => {
         "utf8",
       ),
     );
-    let config = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules).resolve({
+    let config = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules).resolve({
       providerId: "fixture",
       baseUrl: BASE_URL,
       modelId: MODEL_ID,

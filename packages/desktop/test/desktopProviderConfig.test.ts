@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { resolveZCodeBuiltinProviderConfigFilePath } from "../src/main/desktopProviderConfig.js";
+import { resolveZodyBuiltinProviderConfigFilePath } from "../src/main/desktopProviderConfig.js";
 
 // 实现用 node:path join 产出本机分隔符（运行时语义正确），Windows 单测下需按
 // POSIX 口径归一后再比较，期望值才能跨平台成立。
@@ -11,7 +11,7 @@ describe("resolveZCodeBuiltinProviderConfigFilePath", () => {
   it("正式包读取 resources，开发态读取仓库 config", () => {
     expect(
       toPosixPath(
-        resolveZCodeBuiltinProviderConfigFilePath({
+        resolveZodyBuiltinProviderConfigFilePath({
           isPackaged: true,
           resourcesPath: "/Applications/ZCode.app/Contents/Resources",
           appPath: "/Applications/ZCode.app/Contents/Resources/app.asar",
@@ -24,7 +24,7 @@ describe("resolveZCodeBuiltinProviderConfigFilePath", () => {
 
     expect(
       toPosixPath(
-        resolveZCodeBuiltinProviderConfigFilePath({
+        resolveZodyBuiltinProviderConfigFilePath({
           isPackaged: false,
           appPath: "/repo/packages/desktop",
           env: {},
@@ -35,7 +35,7 @@ describe("resolveZCodeBuiltinProviderConfigFilePath", () => {
 
   it("显式 ZCode Built-in Config Source 优先于安装布局", () => {
     expect(
-      resolveZCodeBuiltinProviderConfigFilePath({
+      resolveZodyBuiltinProviderConfigFilePath({
         env: { ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: "/fixtures/zody-builtin.json" },
         isPackaged: true,
         resourcesPath: "/Applications/ZCode.app/Contents/Resources",
@@ -52,7 +52,7 @@ describe("开发态按编译环境选取配置", () => {
   it.each(["test", "production"])("%s 不受启动时的环境变量反向覆盖", async (environment) => {
     vi.resetModules();
     vi.stubGlobal("__ZCODE_ENV__", environment);
-    const { resolveZCodeBuiltinProviderConfigFilePath: resolvePath } =
+    const { resolveZodyBuiltinProviderConfigFilePath: resolvePath } =
       await import("../src/main/desktopProviderConfig.js");
     expect(
       toPosixPath(

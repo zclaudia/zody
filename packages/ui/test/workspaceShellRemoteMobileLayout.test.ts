@@ -139,7 +139,7 @@ vi.mock("@/DesktopWindowFrame.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -352,7 +352,7 @@ function createWorkspaceShellProps() {
     webRemoteControlWorkspaceSwitcher: undefined,
     workspaceAbsPath: "/tmp/project",
     workspaceRemoteSessionId: undefined,
-    workspaceShellZCodeState: {
+    workspaceShellZodyState: {
       activeTaskId: null,
       modelSwitchPending: false,
       modelSwitchStage: null,
@@ -622,8 +622,8 @@ describe("WorkspaceShellLayout Web remote control mobile layout", () => {
         listWorkspaces: vi.fn(async () => ({ workspaces: [] })),
         switchWorkspace: vi.fn(async () => {}),
       },
-      workspaceShellZCodeState: {
-        ...createWorkspaceShellProps().workspaceShellZCodeState,
+      workspaceShellZodyState: {
+        ...createWorkspaceShellProps().workspaceShellZodyState,
         activeTaskId: null,
       },
     });
@@ -806,8 +806,8 @@ describe("WorkspaceShellLayout Web remote control mobile layout", () => {
     const html = await renderWorkspaceShell({
       activeTaskId: null,
       isDesktop: true,
-      workspaceShellZCodeState: {
-        ...createWorkspaceShellProps().workspaceShellZCodeState,
+      workspaceShellZodyState: {
+        ...createWorkspaceShellProps().workspaceShellZodyState,
         activeTaskId: null,
       },
     });
@@ -823,8 +823,8 @@ describe("WorkspaceShellLayout Web remote control mobile layout", () => {
     const html = await renderWorkspaceShell({
       activeTaskId: null,
       isDesktop: false,
-      workspaceShellZCodeState: {
-        ...createWorkspaceShellProps().workspaceShellZCodeState,
+      workspaceShellZodyState: {
+        ...createWorkspaceShellProps().workspaceShellZodyState,
         activeTaskId: null,
       },
     });
@@ -839,8 +839,8 @@ describe("WorkspaceShellLayout Web remote control mobile layout", () => {
       isDesktop: true,
       isMacDesktop: false,
       isWindowsDesktop: true,
-      workspaceShellZCodeState: {
-        ...createWorkspaceShellProps().workspaceShellZCodeState,
+      workspaceShellZodyState: {
+        ...createWorkspaceShellProps().workspaceShellZodyState,
         activeTaskId: null,
       },
     });
@@ -855,8 +855,8 @@ describe("WorkspaceShellLayout Web remote control mobile layout", () => {
       isDesktop: true,
       isMacDesktop: false,
       isWindowsDesktop: false,
-      workspaceShellZCodeState: {
-        ...createWorkspaceShellProps().workspaceShellZCodeState,
+      workspaceShellZodyState: {
+        ...createWorkspaceShellProps().workspaceShellZodyState,
         activeTaskId: null,
       },
     });
@@ -870,8 +870,8 @@ describe("WorkspaceShellLayout Web remote control mobile layout", () => {
     const html = await renderWorkspaceShell({
       activeTaskId: "task-1",
       activeTaskTitle: "Task 1",
-      workspaceShellZCodeState: {
-        ...createWorkspaceShellProps().workspaceShellZCodeState,
+      workspaceShellZodyState: {
+        ...createWorkspaceShellProps().workspaceShellZodyState,
         activeTaskId: "task-1",
       },
     });
@@ -905,8 +905,8 @@ describe("WorkspaceShellLayout Web remote control mobile layout", () => {
         listWorkspaces: vi.fn(async () => ({ workspaces: [] })),
         switchWorkspace: vi.fn(async () => {}),
       },
-      workspaceShellZCodeState: {
-        ...createWorkspaceShellProps().workspaceShellZCodeState,
+      workspaceShellZodyState: {
+        ...createWorkspaceShellProps().workspaceShellZodyState,
         activeTaskId: null,
       },
     });

@@ -49,7 +49,7 @@ function harness(argv: string[]) {
     listCustomCommands: async () => ({ commands: [], diagnostics: [] }),
     startProcessProviderRegistryRuntime: async () =>
       ({ runtime: { registryService: {} }, dispose: () => {} }) as never,
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       appOptions.push(options!);
       return {
         sessionId: "sess_workflow_option",

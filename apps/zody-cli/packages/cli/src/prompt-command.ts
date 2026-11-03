@@ -113,7 +113,7 @@ export const runPrompt = async (
 
   let traceId: string | undefined;
   let app:
-    | Awaited<ReturnType<Awaited<ReturnType<typeof loadBootstrapModule>>["createZCodeApp"]>>
+    | Awaited<ReturnType<Awaited<ReturnType<typeof loadBootstrapModule>>["createZodyApp"]>>
     | undefined;
   let closePromise: Promise<void> | undefined;
   let browserRuntime: ReturnType<typeof createCliHeadlessBrowserRuntime>;
@@ -168,8 +168,8 @@ export const runPrompt = async (
     }
 
     const sessionId = await resolveResumeSession(resumeRequest, workingDirectory, env, deps);
-    const bootstrapModule = deps.createZCodeApp ? undefined : await loadBootstrapModule();
-    const createApp = deps.createZCodeApp ?? bootstrapModule?.createZCodeApp;
+    const bootstrapModule = deps.createZodyApp ? undefined : await loadBootstrapModule();
+    const createApp = deps.createZodyApp ?? bootstrapModule?.createZodyApp;
     if (!createApp) throw new Error("Zody app factory is unavailable.");
     const streamsEvents = wantsEventStream(options);
     let mapSessionEvent: NonNullable<RunDependencies["mapSessionEvent"]> | undefined;
@@ -186,9 +186,9 @@ export const runPrompt = async (
       stdout: ctx.stdout,
     });
     const prepareTelemetry =
-      deps.prepareZCodeTelemetryEnv ?? bootstrapModule?.prepareZCodeTelemetryEnv;
+      deps.prepareZodyTelemetryEnv ?? bootstrapModule?.prepareZodyTelemetryEnv;
     if (prepareTelemetry) {
-      shutdownTelemetry = deps.shutdownZCodeTelemetry ?? bootstrapModule?.shutdownZCodeTelemetry;
+      shutdownTelemetry = deps.shutdownZodyTelemetry ?? bootstrapModule?.shutdownZodyTelemetry;
     }
     const appEnv = prepareTelemetry
       ? await prepareTelemetry(env, {
@@ -484,7 +484,7 @@ async function isResolvableCustomCommand(deps: RunDependencies, name: string): P
 async function isReservedSlashCommandName(deps: RunDependencies, name: string): Promise<boolean> {
   if (deps.isReservedSlashCommandName) return deps.isReservedSlashCommandName(name);
   const bootstrap = await loadBootstrapModule();
-  return bootstrap.isReservedZCodeSlashCommandName(name);
+  return bootstrap.isReservedZodySlashCommandName(name);
 }
 
 async function runPromptCommandCenterCommand(
@@ -561,7 +561,7 @@ async function listCustomCommandsForPrompt(deps: RunDependencies) {
     return await deps.listCustomCommands({ env, logger: deps.logger, workingDirectory });
   }
   const bootstrap = await loadBootstrapModule();
-  return await bootstrap.listZCodeCustomCommands({ env, logger: deps.logger, workingDirectory });
+  return await bootstrap.listZodyCustomCommands({ env, logger: deps.logger, workingDirectory });
 }
 
 async function loadCustomCommandForPrompt(deps: RunDependencies, name: string) {
@@ -571,7 +571,7 @@ async function loadCustomCommandForPrompt(deps: RunDependencies, name: string) {
     return await deps.loadCustomCommand({ env, logger: deps.logger, name, workingDirectory });
   }
   const bootstrap = await loadBootstrapModule();
-  return await bootstrap.loadZCodeCustomCommand({
+  return await bootstrap.loadZodyCustomCommand({
     env,
     logger: deps.logger,
     name,

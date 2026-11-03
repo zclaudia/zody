@@ -8,9 +8,9 @@ import type { IZodySessionService } from "@zody/services";
 import { type ZodyProvider, type ZodyWorkspacePrepareResult } from "@zody/shared";
 import { getChatErrorMessage } from "@/lib/chatPrepareError.js";
 import { logger } from "@/logger.js";
-import { zcodeWorkspacePresentationToConfigOptions } from "@/lib/zodySessionProjection.js";
+import { zodyWorkspacePresentationToConfigOptions } from "@/lib/zodySessionProjection.js";
 
-export async function prepareWorkspaceWithZCodeSessionService(params: {
+export async function prepareWorkspaceWithZodySessionService(params: {
   workspacePath: string;
   workspaceIdentity?: string;
   provider: ZodyProvider;
@@ -41,7 +41,7 @@ export async function prepareWorkspaceWithZCodeSessionService(params: {
   }
 
   const readPresentationDurationMs = Date.now() - startedAt;
-  const configOptions = zcodeWorkspacePresentationToConfigOptions(presentation.mode);
+  const configOptions = zodyWorkspacePresentationToConfigOptions(presentation.mode);
   const totalDurationMs = Date.now() - startedAt;
   logger.info("[zcode-workspace-presentation] readWorkspacePresentation done", {
     workspacePath: params.workspacePath,

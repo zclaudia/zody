@@ -25,7 +25,7 @@ export async function resolveDefaultSkillRoots(
 ): Promise<SkillRoot[]> {
   const resolvedWorkingDirectory = resolve(workingDirectory);
   const roots: SkillRoot[] = [];
-  const includeZcode = options.includeZcodeSkills ?? true;
+  const includeZody = options.includeZcodeSkills ?? true;
   const home = options.homeDirectory ?? homedir();
   let priority = 0;
   const nextPriority = () => {
@@ -44,13 +44,13 @@ export async function resolveDefaultSkillRoots(
     );
   }
 
-  if (includeZcode) {
+  if (includeZody) {
     roots.push(...skillRootsForBase(home, "user", nextPriority));
   }
 
   const projectDirectories = await resolveProjectSkillDirectories(resolvedWorkingDirectory);
   for (const directory of projectDirectories) {
-    if (includeZcode) {
+    if (includeZody) {
       roots.push(...skillRootsForBase(directory, "project", nextPriority));
     }
   }

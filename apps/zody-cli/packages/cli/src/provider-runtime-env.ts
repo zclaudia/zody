@@ -2,11 +2,11 @@ import { existsSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import {
-  materializeZCodeBuiltinProviderConfig,
-  NodeZCodeBuiltinProviderConfigSource,
+  materializeZodyBuiltinProviderConfig,
+  NodeZodyBuiltinProviderConfigSource,
   PERSONAL_PROVIDER_CONFIG_FILE_NAME,
-  resolveZCodeBuiltinCachePaths,
-  resolveZCodeBuiltinClientPlatform,
+  resolveZodyBuiltinCachePaths,
+  resolveZodyBuiltinClientPlatform,
   ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
   ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
@@ -59,19 +59,19 @@ export async function prepareCliProviderRuntimeEnv(
 ): Promise<Record<string, string>> {
   if (!requiresProviderRuntime(options.argv)) return {};
 
-  const explicitZCodeBuiltin = options.env[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
+  const explicitZodyBuiltin = options.env[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
   const explicitPersonal = options.env[ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]?.trim();
   const dataBaseDir = options.dataBaseDir ?? options.env.ZCODE_DATA_BASE_DIR?.trim() ?? homedir();
-  if (explicitZCodeBuiltin && explicitPersonal) {
+  if (explicitZodyBuiltin && explicitPersonal) {
     return {
-      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: explicitZCodeBuiltin,
+      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: explicitZodyBuiltin,
       [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: explicitPersonal,
     };
   }
 
-  const zcodeBuiltinFilePath =
-    explicitZCodeBuiltin ??
-    (await resolveBundledZCodeBuiltinProviderConfig({
+  const zodyBuiltinFilePath =
+    explicitZodyBuiltin ??
+    (await resolveBundledZodyBuiltinProviderConfig({
       dataBaseDir,
       entrypoint: options.entrypoint ?? process.argv[1],
       sea: options.sea ?? getSeaProviderConfigAssets(),
@@ -81,16 +81,16 @@ export async function prepareCliProviderRuntimeEnv(
     explicitPersonal ??
     join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", PERSONAL_PROVIDER_CONFIG_FILE_NAME);
   const appVersion = options.appVersion ?? ZCODE_VERSION;
-  const platform = options.platform ?? resolveZCodeBuiltinClientPlatform();
-  const zcodeEndpointOrigin = resolveRuntimeZodyEndpointOrigin(options.env);
-  const cachePaths = resolveZCodeBuiltinCachePaths({
+  const platform = options.platform ?? resolveZodyBuiltinClientPlatform();
+  const zodyEndpointOrigin = resolveRuntimeZodyEndpointOrigin(options.env);
+  const cachePaths = resolveZodyBuiltinCachePaths({
     environmentConfigRoot: join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2"),
     platform,
     appVersion,
-    zcodeEndpointOrigin,
+    zcodeEndpointOrigin: zodyEndpointOrigin,
   });
-  const source = new NodeZCodeBuiltinProviderConfigSource({
-    bundledFilePath: zcodeBuiltinFilePath,
+  const source = new NodeZodyBuiltinProviderConfigSource({
+    bundledFilePath: zodyBuiltinFilePath,
     activeFilePath: cachePaths.activeFilePath,
     watch: false,
   });
@@ -103,7 +103,7 @@ export async function prepareCliProviderRuntimeEnv(
 
   return {
     [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: cachePaths.activeFilePath,
-    [ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
+    [ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV]: zodyBuiltinFilePath,
     [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
   };
 }
@@ -129,14 +129,14 @@ function requiresProviderRuntime(argv: readonly string[]): boolean {
   return command === "tui" || command === "app-server" || command === "agent-server";
 }
 
-async function resolveBundledZCodeBuiltinProviderConfig(input: {
+async function resolveBundledZodyBuiltinProviderConfig(input: {
   readonly dataBaseDir: string;
   readonly entrypoint: string | undefined;
   readonly sea: SeaProviderConfigAssets | undefined;
 }): Promise<string> {
   if (input.sea?.isSea()) {
     const content = input.sea.getAsset(SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY, "utf8");
-    return materializeZCodeBuiltinProviderConfig({
+    return materializeZodyBuiltinProviderConfig({
       environmentConfigRoot: join(input.dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2"),
       content,
     });

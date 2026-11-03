@@ -5,7 +5,7 @@ import {
   type ApiRequestInit,
 } from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
-import { buildZCodeSourceHeaders } from "../sourceHeaders.js";
+import { buildZodySourceHeaders } from "../sourceHeaders.js";
 import { withRequestIdHeader } from "./requestIdHeaders.js";
 
 const log = createServiceLogger("node-api-client");
@@ -122,10 +122,10 @@ function isRequestForEndpoint(input: string | URL, endpointOrigin: string): bool
   }
 }
 
-function withZCodeEndpointHeaders(
+function withZodyEndpointHeaders(
   headers: RequestInit["headers"] | undefined,
 ): RequestInit["headers"] {
-  const next = new Headers(buildZCodeSourceHeaders());
+  const next = new Headers(buildZodySourceHeaders());
   if (headers) {
     new Headers(headers).forEach((value, key) => {
       next.set(key, value);
@@ -148,7 +148,7 @@ function resolveRequestHeaders(
 
   // ZCode 后端请求以前只有部分业务路径手动补来源头。
   // 统一在 ApiClient 出口按 endpoint origin 注入，避免 OAuth/config/billing/snapshot 等链路遗漏。
-  return withZCodeEndpointHeaders(headers);
+  return withZodyEndpointHeaders(headers);
 }
 
 export class NodeApiClient implements ApiClient {
@@ -220,12 +220,12 @@ export class NodeApiClient implements ApiClient {
       if ((response.status === 401 || response.status === 200) && this.onZcodeJwtInvalid) {
         try {
           const requestHeadersForObservation = new Headers(requestHeaders);
-          const isCurrentZCodeJwtRequest = await this.isZcodeJwtRequest?.(
+          const isCurrentZodyJwtRequest = await this.isZcodeJwtRequest?.(
             requestInput,
             requestHeadersForObservation,
           );
           if (
-            isCurrentZCodeJwtRequest &&
+            isCurrentZodyJwtRequest &&
             (response.status === 401 ||
               ((await this.isBusinessUnauthorizedRequest?.(
                 requestInput,

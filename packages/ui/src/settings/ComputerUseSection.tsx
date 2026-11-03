@@ -16,7 +16,7 @@ import { toast } from "@/components/ui/toast.js";
 import { Switch } from "@/components/ui/switch.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useServices } from "@/hooks/useServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useCuaBuildCapability } from "@/hooks/useCuaBuildCapability.js";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
 import { SettingsGroupCard, SettingsRow } from "@/settings/SettingsPageParts.js";
@@ -46,7 +46,7 @@ export function ComputerUseSection({
   remoteSessionId,
   remoteTarget,
 }: ComputerUseSectionProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const pluginManagementService = useServices().pluginManagementService;
   const platform = usePlatform();
   const isLocalWorkspace =

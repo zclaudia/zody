@@ -4,7 +4,7 @@ import type { Hook } from "@zody/shared";
 import { createElement } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { HooksSection } from "@/settings/HooksSection.js";
 
 const hooksStateMock = vi.hoisted(() => ({
@@ -62,7 +62,7 @@ vi.mock("@/hooks/useConfirmDialog.js", () => ({
 }));
 
 vi.mock("@/hooks/useZodySessionService.js", () => ({
-  useZCodeSessionService: () => undefined,
+  useZodySessionService: () => undefined,
 }));
 
 vi.mock("@/store/TabStoreProvider.js", () => ({
@@ -152,7 +152,7 @@ function workspaceHook(): Hook {
 function renderHooksSection() {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "en-US" },
       createElement(HooksSection, { workspacePath: hooksStateMock.workspacePath }),
     ),

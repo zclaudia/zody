@@ -11,7 +11,7 @@ import {
   ProviderRegistry,
   type Provider,
 } from "@zody/provider";
-import { createZCodeApp } from "../../src/app/create-app.js";
+import { createZodyApp } from "../../src/app/create-app.js";
 import type { ZodyApp, ZodyAppOptions } from "../../src/app/types.js";
 import { createApiKeyProviderConfig } from "../provider-config-fixtures.js";
 
@@ -48,7 +48,7 @@ export function createRegistryBackedTestApp(
   const providerRegistry = options.providerRegistry ?? createTestProviderRegistry(modelSelections);
   const { modelExecutor, ...appOptions } = options;
 
-  return createZCodeApp({
+  return createZodyApp({
     ...appOptions,
     runtimeConfig: {
       ...appOptions.runtimeConfig,

@@ -1,8 +1,8 @@
 import type { SkillSyncImportResult } from "@zody/shared";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 export function RemoteSkillSyncResultList({ result }: { result: SkillSyncImportResult | null }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   if (!result) {
     return null;
   }

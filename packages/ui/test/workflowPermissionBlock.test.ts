@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import type { ZodyPermissionRequest } from "@zody/shared";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 vi.mock("@/components/ai-elements/code-block.js", () => ({
   CodeBlock: ({ code }: { code: string }) =>
@@ -94,7 +94,7 @@ function renderDialog(
 ) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(PermissionDialog, {
         request,

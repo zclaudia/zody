@@ -63,7 +63,7 @@ const ZCODE_FILE_CITATION_SYNTAX = {
   allowTripleColon: true,
 } as const;
 
-export function extractZCodeFileCitationDirectives(content: string): ZodyFileCitationDirective[] {
+export function extractZodyFileCitationDirectives(content: string): ZodyFileCitationDirective[] {
   return extractAssistantDirectives(
     content,
     ZCODE_FILE_CITATION_DIRECTIVE_NAME,
@@ -82,8 +82,8 @@ export function extractZCodeFileCitationDirectives(content: string): ZodyFileCit
   }));
 }
 
-export function extractZCodeFileCitations(content: string): ZodyFileCitation[] {
-  return extractZCodeFileCitationDirectives(content).flatMap((directive) =>
+export function extractZodyFileCitations(content: string): ZodyFileCitation[] {
+  return extractZodyFileCitationDirectives(content).flatMap((directive) =>
     directive.path
       ? [
           {
@@ -100,7 +100,7 @@ export function extractZCodeFileCitations(content: string): ZodyFileCitation[] {
  * 卡片是否生成仍由终态 row gate 决定。异常模型输出若已换行继续正文，则保留原文，避免
  * 一个缺失 `}` 的指令把后续回答全部吞掉；代码块中的协议样例也不参与隐藏。
  */
-export function projectZCodeFileCitations(
+export function projectZodyFileCitations(
   content: string,
   options: { streaming: boolean },
 ): ZodyFileCitationProjection {
@@ -142,7 +142,7 @@ function inferPreviewKindFromPath(path: string): ZodyFileCitationPreviewKind | n
   return null;
 }
 
-export function resolveZCodeFileCitationPreviewKind(params: {
+export function resolveZodyFileCitationPreviewKind(params: {
   artifactKind?: string;
   path: string;
 }): ZodyFileCitationPreviewKind | null {

@@ -9,7 +9,7 @@ import {
 } from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
-  NodeZCodeBuiltinProviderConfigSource,
+  NodeZodyBuiltinProviderConfigSource,
 } from "@zody/provider-node";
 import type { ModelSelection } from "@zody/shared/model-selection";
 import { describe, expect, it, vi } from "vitest";
@@ -21,7 +21,7 @@ import {
 import { createAccountProviderConfig } from "./providerConfigFixtures.js";
 
 async function readBuiltinRevision(filePath: string): Promise<string> {
-  const source = new NodeZCodeBuiltinProviderConfigSource({
+  const source = new NodeZodyBuiltinProviderConfigSource({
     bundledFilePath: filePath,
     watch: false,
   });

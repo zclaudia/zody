@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { DeveloperToolsPane } from "@/DeveloperToolsPane.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import type { IServiceAccessor } from "@zody/services";
 import "@/styles.css";
 const params = new URLSearchParams(location.search);
@@ -38,8 +38,8 @@ function Fixture() {
 }
 createRoot(document.getElementById("root")!).render(
   <ServiceProvider services={services}>
-    <ZCodeIntlProvider initialLocale={params.get("locale") === "en-US" ? "en-US" : "zh-CN"}>
+    <ZodyIntlProvider initialLocale={params.get("locale") === "en-US" ? "en-US" : "zh-CN"}>
       <Fixture />
-    </ZCodeIntlProvider>
+    </ZodyIntlProvider>
   </ServiceProvider>,
 );

@@ -38,7 +38,7 @@ import {
   type CronCreateAutomationSummary,
 } from "@/ToolCallBlocks/renderers/cron-create.js";
 // fork（F4.3）：offpeak-create 渲染器 import 随闲时任务全链路删除。
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type { AssistantPreviewCard } from "@/lib/assistantPreviewCards.js";
 import { useAssistantCodeCommentFeatureEnabled } from "@/AssistantCodeCommentFeatureProvider.js";
 import {
@@ -132,7 +132,7 @@ function TurnChatLoadingSlot({
   apiRetry: ApiRetryState | null;
   eligible: boolean;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const retryStatus = useMemo(() => (apiRetry ? toRetryStatus(apiRetry) : null), [apiRetry]);
   // 前两次短暂恢复对用户等价于普通加载；保留 apiRetry 运行态，但只在
   // 第三次重试开始后显示计数。必须在 retry/loading 分支前收敛，否则会留下空 slot，
@@ -509,7 +509,7 @@ function AssistantHistoryStatus({
   segment: ConversationTurnWorkSegment;
   open: boolean;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   // fork（bot-channels 移除）：useBotTopicInterruption（bot 话题打断态）随 bot 群投递链删除，
   // 打断文案统一回落通用 stopped（原 topicInterrupted 分支的 chat.history.topicInterrupted）。
   const durationLabel = formatConversationWorkDuration(

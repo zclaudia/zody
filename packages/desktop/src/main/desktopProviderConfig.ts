@@ -2,7 +2,7 @@ import { app } from "electron";
 import { join } from "node:path";
 import { ZCODE_ENV } from "@zody/shared";
 
-export function resolveZCodeBuiltinProviderConfigFilePath(options?: {
+export function resolveZodyBuiltinProviderConfigFilePath(options?: {
   readonly appPath?: string;
   readonly env?: Readonly<Record<string, string | undefined>>;
   readonly isPackaged?: boolean;

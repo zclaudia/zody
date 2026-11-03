@@ -24,7 +24,7 @@ import {
   type McpDirectoryService,
   type McpPlatformService,
 } from "@/store/mcpStoreDesktop.js";
-import { migrateStoredCommonMcpToZCodeAgent } from "@/store/mcpStoreMigration.js";
+import { migrateStoredCommonMcpToZodyAgent } from "@/store/mcpStoreMigration.js";
 import {
   buildServerList,
   DEFAULT_MCP_CONFIG,
@@ -275,7 +275,7 @@ export const useMcpStore = create<McpStoreState>((set, get) => {
             activeDirectoryService,
           );
           if (!activeDirectoryService) {
-            servers = await migrateStoredCommonMcpToZCodeAgent(
+            servers = await migrateStoredCommonMcpToZodyAgent(
               mcpPlatformService,
               servers,
               latestWorkspacePath,
@@ -576,8 +576,8 @@ export const useMcpStore = create<McpStoreState>((set, get) => {
 
       const result: ZodyAgentMcpServer[] = [];
       for (const server of candidates.values()) {
-        const zcodeAgentServer = convertToZodyAgentMcpServer(server.name, server.config);
-        if (zcodeAgentServer) result.push(zcodeAgentServer);
+        const zodyAgentServer = convertToZodyAgentMcpServer(server.name, server.config);
+        if (zodyAgentServer) result.push(zodyAgentServer);
       }
       return result;
     },

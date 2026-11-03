@@ -55,7 +55,7 @@ function createRecordingDeps(): { deps: RunDependencies; seen: RuntimeConfigSeen
   const seen: RuntimeConfigSeen[] = [];
   const deps: RunDependencies = {
     createModelAdapter: () => ({}) as never,
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       const config = (options?.runtimeConfig ?? {}) as RuntimeConfigSeen;
       seen.push({
         dynamicWorkflowEnabled: config.dynamicWorkflowEnabled,
@@ -209,7 +209,7 @@ test("--workflow-mode is accepted with --target", async () => {
   let seenPair: RuntimeConfigSeen | undefined;
   const exitCode = await run(ctx, {
     ...createRecordingDeps().deps,
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       const config = (options?.runtimeConfig ?? {}) as RuntimeConfigSeen;
       seenPair = {
         dynamicWorkflowEnabled: config.dynamicWorkflowEnabled,

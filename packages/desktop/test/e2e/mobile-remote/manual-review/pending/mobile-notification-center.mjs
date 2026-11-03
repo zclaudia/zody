@@ -28,7 +28,7 @@ import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {Emitter} from '@zody/rpc';
 import {PlatformProvider} from '@/hooks/usePlatform.js';
-import {ZCodeIntlProvider} from '@/i18n/IntlProvider.js';
+import {ZodyIntlProvider} from '@/i18n/IntlProvider.js';
 import {MobileNotificationsFeature} from '@/MobileNotificationsFeature.js';
 const fixture = ${JSON.stringify(fixture)};
 const changed = new Emitter();
@@ -64,7 +64,7 @@ createRoot(document.getElementById('root')).render(
   React.createElement(React.Fragment, null,
     React.createElement('button', {type:'button', onClick:()=>changed.fire()}, 'Simulate feed change'),
     React.createElement(PlatformProvider, {platform:undefined},
-      React.createElement(ZCodeIntlProvider, null,
+      React.createElement(ZodyIntlProvider, null,
         React.createElement(MobileNotificationsFeature, {switcher, onBack:()=>{}})))),
 );
 window.__markReadCalls = markReadCalls;

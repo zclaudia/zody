@@ -248,7 +248,7 @@ function countVisibleMarketplacePlugins(
   return plugins.filter((entry) => entry.name !== OFFICIAL_NODE_REPL_HOST_PLUGIN_NAME).length;
 }
 
-export function resolveZCodePlugins(options: ResolveZodyPluginsOptions = {}): PluginLoadOutcome {
+export function resolveZodyPlugins(options: ResolveZodyPluginsOptions = {}): PluginLoadOutcome {
   const { configResult, pluginStorageRoot, workingDirectory } = resolvePluginContext(options);
 
   return discoverNodePluginsSync({
@@ -267,12 +267,12 @@ export function resolveZCodePlugins(options: ResolveZodyPluginsOptions = {}): Pl
   });
 }
 
-export function getZCodePluginsOverview(
+export function getZodyPluginsOverview(
   options: ResolveZodyPluginsOptions = {},
 ): ZodyPluginsOverviewData {
   const { configResult, pluginStorageRoot, workingDirectory } = resolvePluginContext(options);
   ensureDefaultPluginMarketplaces(pluginStorageRoot);
-  const outcome = resolveZCodePlugins({
+  const outcome = resolveZodyPlugins({
     ...options,
     configResult,
     pluginStorageRoot,
@@ -403,8 +403,8 @@ export function getZCodePluginsOverview(
   };
 }
 
-export function listZCodePlugins(options: ListZodyPluginsOptions = {}): PluginLoadOutcome {
-  const outcome = resolveZCodePlugins(options);
+export function listZodyPlugins(options: ListZodyPluginsOptions = {}): PluginLoadOutcome {
+  const outcome = resolveZodyPlugins(options);
   const { pluginStorageRoot } = resolvePluginContext(options);
   return {
     ...outcome,
@@ -437,7 +437,7 @@ function loadPluginListingsById(storageRoot: string): Record<string, PluginStore
   return Object.fromEntries(listings);
 }
 
-export async function setZCodePluginEnabled(
+export async function setZodyPluginEnabled(
   options: SetZodyPluginEnabledOptions,
 ): Promise<SetZodyPluginEnabledResult> {
   const workingDirectory = resolve(options.workingDirectory ?? process.cwd());
@@ -450,7 +450,7 @@ export async function setZCodePluginEnabled(
       skipUserConfig: options.skipUserConfig,
       userConfigPath: options.userConfigPath,
     });
-  const outcome = resolveZCodePlugins({
+  const outcome = resolveZodyPlugins({
     ...options,
     configResult,
     workingDirectory,
@@ -472,7 +472,7 @@ export async function setZCodePluginEnabled(
   };
 }
 
-export async function addZCodePluginMarketplace(
+export async function addZodyPluginMarketplace(
   options: AddZodyMarketplaceOptions,
 ): Promise<ZodyMarketplaceSummaryData> {
   const { pluginStorageRoot } = resolvePluginContext(options);
@@ -497,7 +497,7 @@ export async function addZCodePluginMarketplace(
   return toMarketplaceSummaryData(record);
 }
 
-export async function removeZCodePluginMarketplace(
+export async function removeZodyPluginMarketplace(
   options: RemoveZodyMarketplaceOptions,
 ): Promise<void> {
   const { pluginStorageRoot } = resolvePluginContext(options);
@@ -507,7 +507,7 @@ export async function removeZCodePluginMarketplace(
   });
 }
 
-export async function updateZCodePluginMarketplace(
+export async function updateZodyPluginMarketplace(
   options: UpdateZodyMarketplaceOptions,
 ): Promise<ZodyMarketplaceUpdateData> {
   const { configResult, pluginStorageRoot } = resolvePluginContext(options);
@@ -588,7 +588,7 @@ export async function updateZCodePluginMarketplace(
   };
 }
 
-export async function installZCodeMarketplacePlugin(
+export async function installZodyMarketplacePlugin(
   options: InstallZodyMarketplacePluginOptions,
 ): Promise<ZodyPluginInstallData> {
   const { configResult, pluginStorageRoot, workingDirectory } = resolvePluginContext(options);
@@ -654,7 +654,7 @@ export async function installZCodeMarketplacePlugin(
     // 否则同一 storageRoot 的 promise-chain lock 会等待自身而永久阻塞。
     await restoreBuiltinPluginCore({ ...options, configResult, pluginId });
     const fresh = resolvePluginContext({ ...options, configResult: undefined });
-    const outcome = resolveZCodePlugins({
+    const outcome = resolveZodyPlugins({
       ...options,
       configResult: fresh.configResult,
       pluginStorageRoot: fresh.pluginStorageRoot,
@@ -751,7 +751,7 @@ export async function installZCodeMarketplacePlugin(
   };
 }
 
-export async function uninstallZCodeMarketplacePlugin(
+export async function uninstallZodyMarketplacePlugin(
   options: UninstallZodyMarketplacePluginOptions,
 ): Promise<ZodyInstalledPluginData | null> {
   const { configResult, pluginStorageRoot, workingDirectory } = resolvePluginContext(options);
@@ -783,7 +783,7 @@ export async function uninstallZCodeMarketplacePlugin(
     // 内置（官方）插件不在 installed_plugins.json 里，无法走 marketplace 卸载路径。
     // 卸载只改变 Runtime 抑制态并清理用户数据/config；Catalog 与不可变 cache 必须保留，
     // 这样详情页仍能离线读取组件，且恢复动作不依赖重新下载或重新构造目录。
-    const outcome = resolveZCodePlugins({
+    const outcome = resolveZodyPlugins({
       ...options,
       configResult,
       pluginStorageRoot,
@@ -827,7 +827,7 @@ export async function uninstallZCodeMarketplacePlugin(
  * cacheMarketplacePlugin 对已存在的安装记录做原地覆盖并保留 installedAt；启用态只会给
  * 用户配置里尚未显式声明的 id 补默认值，因此更新不会改变用户已经做过的开关选择。
  */
-export async function updateZCodeMarketplacePlugin(
+export async function updateZodyMarketplacePlugin(
   options: UpdateZodyMarketplacePluginOptions,
 ): Promise<ZodyPluginUpdateData> {
   const { pluginStorageRoot } = resolvePluginContext(options);
@@ -835,7 +835,7 @@ export async function updateZCodeMarketplacePlugin(
     (installed) => installed.id === options.pluginId,
   );
   if (!record) throw new Error(`Plugin not installed: ${options.pluginId}`);
-  const refreshed = await updateZCodePluginMarketplace({
+  const refreshed = await updateZodyPluginMarketplace({
     ...options,
     marketplace: record.marketplace,
   });
@@ -848,7 +848,7 @@ export async function updateZCodeMarketplacePlugin(
       previousVersion: record.version,
     };
   }
-  const installed = await installZCodeMarketplacePlugin({
+  const installed = await installZodyMarketplacePlugin({
     ...options,
     marketplace: record.marketplace,
     pluginName: record.name,
@@ -858,7 +858,7 @@ export async function updateZCodeMarketplacePlugin(
 }
 
 /** `zcode plugins validate <path>`：只读校验本地插件目录或 marketplace 目录。 */
-export async function validateZCodePluginPath(
+export async function validateZodyPluginPath(
   options: ValidateZodyPluginPathOptions,
 ): Promise<PluginLoadOutcome["diagnostics"]> {
   const { pluginStorageRoot } = resolvePluginContext(options);
@@ -890,9 +890,9 @@ function applySparsePaths(
  * 因此核心不能再次获取 promise-chain lock；公开入口再负责提供锁保护。
  */
 async function restoreBuiltinPluginCore(options: RestoreBuiltinPluginOptions): Promise<void> {
-  const zcodeCuaPluginId = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
+  const zodyCuaPluginId = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
   if (
-    options.pluginId === zcodeCuaPluginId &&
+    options.pluginId === zodyCuaPluginId &&
     !isZodyCuaInternalFeatureEnabled(options.env ?? process.env)
   ) {
     // overview 虽然隐藏了恢复入口，但协议调用仍可绕过 UI 写用户配置。
@@ -916,11 +916,11 @@ export async function restoreBuiltinPlugin(options: RestoreBuiltinPluginOptions)
   await withPluginStorageLock(pluginStorageRoot, () => restoreBuiltinPluginCore(options));
 }
 
-export async function configureZCodePlugin(options: ConfigureZodyPluginOptions): Promise<void> {
+export async function configureZodyPlugin(options: ConfigureZodyPluginOptions): Promise<void> {
   const normalizedOptions = normalizePluginOptions(options.options);
   const clearOptionKeys = normalizePluginOptionKeys(options.clearOptionKeys);
   const { configResult, pluginStorageRoot, workingDirectory } = resolvePluginContext(options);
-  const outcome = resolveZCodePlugins({
+  const outcome = resolveZodyPlugins({
     ...options,
     configResult,
     pluginStorageRoot,
@@ -937,7 +937,7 @@ export async function configureZCodePlugin(options: ConfigureZodyPluginOptions):
 }
 
 /** 删除指定 scope 的 Plugin 配置键，使 Workspace scope 回退到 User。 */
-export async function resetZCodePluginConfig(
+export async function resetZodyPluginConfig(
   options: ResetZodyPluginConfigOptions,
 ): Promise<{ path: string; pluginId: string }> {
   const { configResult, workingDirectory } = resolvePluginContext(options);
@@ -952,7 +952,7 @@ export async function resetZCodePluginConfig(
   return { path, pluginId: options.pluginId };
 }
 
-export async function validateZCodePlugin(
+export async function validateZodyPlugin(
   options: ValidateZodyPluginOptions,
 ): Promise<PluginLoadOutcome["diagnostics"]> {
   const { pluginStorageRoot } = resolvePluginContext(options);
@@ -1004,7 +1004,7 @@ export async function validateZCodePlugin(
   return [];
 }
 
-export async function describeZCodePlugin(
+export async function describeZodyPlugin(
   options: DescribeZodyPluginOptions,
 ): Promise<DescribeMarketplacePluginResult> {
   const { pluginStorageRoot } = resolvePluginContext(options);

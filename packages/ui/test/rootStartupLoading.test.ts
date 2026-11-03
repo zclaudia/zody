@@ -1,11 +1,11 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { RootStartupLoading, ZCodeStartupLogoBadge } from "@/root/RootStartupLoading.js";
+import { RootStartupLoading, ZodyStartupLogoBadge } from "@/root/RootStartupLoading.js";
 
 describe("RootStartupLoading", () => {
   it("引导使用静态品牌图标时展示应用图标且不播放呼吸动画", () => {
-    const html = renderToStaticMarkup(createElement(ZCodeStartupLogoBadge, { animated: false }));
+    const html = renderToStaticMarkup(createElement(ZodyStartupLogoBadge, { animated: false }));
     expect(html).toContain("<img");
     expect(html).toContain("zody-logo.png");
     expect(html).not.toContain("zcode-startup-logo-breathe");

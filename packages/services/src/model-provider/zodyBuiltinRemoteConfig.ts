@@ -1,4 +1,4 @@
-import { downloadZCodeBuiltinRelease, type ZodyBuiltinRelease } from "@zody/provider-node";
+import { downloadZodyBuiltinRelease, type ZodyBuiltinRelease } from "@zody/provider-node";
 import type { ApiClient } from "@zody/shared";
 
 export interface FetchZodyBuiltinRemoteReleaseOptions {
@@ -10,10 +10,10 @@ export interface FetchZodyBuiltinRemoteReleaseOptions {
 }
 
 /** Services 仅注入既有网络装配；URL、预算与 Release 校验由 provider-node 唯一实现。 */
-export async function fetchZCodeBuiltinRemoteRelease(
+export async function fetchZodyBuiltinRemoteRelease(
   options: FetchZodyBuiltinRemoteReleaseOptions,
 ): Promise<ZodyBuiltinRelease | null> {
-  return downloadZCodeBuiltinRelease({
+  return downloadZodyBuiltinRelease({
     endpointOrigin: options.endpointOrigin,
     appVersion: options.appVersion,
     platform: options.platform,

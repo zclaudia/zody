@@ -1,8 +1,8 @@
 import { useShallow } from "zustand/react/shallow";
 import {
   getWorkspaceDisplayedTaskState,
-  selectWorkspaceZCodeState,
-  useZCodeSessionStore,
+  selectWorkspaceZodyState,
+  useZodySessionStore,
   type WorkspaceZodyUIState,
 } from "@/store/zodySessionStore.js";
 import { resolveWorkspaceModelConfigSyncScope } from "@/lib/modelConfigSync.js";
@@ -22,13 +22,13 @@ type WorkspaceShellZodyState = Pick<
 > &
   ReturnType<typeof getWorkspaceDisplayedTaskState>;
 
-export function useWorkspaceShellZCodeState(workspaceAbsPath: string, workspaceIdentity?: string) {
+export function useWorkspaceShellZodyState(workspaceAbsPath: string, workspaceIdentity?: string) {
   // App 之前直接订阅整个 workspaceZCodeState，streaming 每个 chunk 都会改 taskMessagesByTaskId。
   // 这会把侧边栏、Header、Git 派生逻辑一起拖进同步重渲染，性能 trace 里那串 long task 就是这样被放大的。
   // 这里把外壳真正依赖的字段收敛成浅比较选择器，避免消息流惊动无关 UI。
-  const workspaceShellZCodeState = useZCodeSessionStore(
+  const workspaceShellZodyState = useZodySessionStore(
     useShallow((state): WorkspaceShellZodyState => {
-      const workspaceState = selectWorkspaceZCodeState(state, workspaceAbsPath, workspaceIdentity);
+      const workspaceState = selectWorkspaceZodyState(state, workspaceAbsPath, workspaceIdentity);
       const displayedTaskState = getWorkspaceDisplayedTaskState(workspaceState);
       return {
         activeTaskId: workspaceState.activeTaskId,
@@ -46,8 +46,8 @@ export function useWorkspaceShellZCodeState(workspaceAbsPath: string, workspaceI
     }),
   );
 
-  const reloadSessionDisabled = useZCodeSessionStore((state) => {
-    const workspaceState = selectWorkspaceZCodeState(state, workspaceAbsPath, workspaceIdentity);
+  const reloadSessionDisabled = useZodySessionStore((state) => {
+    const workspaceState = selectWorkspaceZodyState(state, workspaceAbsPath, workspaceIdentity);
     const actionScope = resolveWorkspaceModelConfigSyncScope(workspaceState);
     return hasBusyTaskInWorkspaceProvider(
       actionScope.provider,
@@ -58,5 +58,5 @@ export function useWorkspaceShellZCodeState(workspaceAbsPath: string, workspaceI
     );
   });
 
-  return { workspaceShellZCodeState, reloadSessionDisabled };
+  return { workspaceShellZodyState, reloadSessionDisabled };
 }

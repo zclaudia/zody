@@ -22,7 +22,7 @@ import {
 } from "@zody/shared";
 
 export {
-  materializeZCodeBuiltinProviderConfig,
+  materializeZodyBuiltinProviderConfig,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/provider-node";
 // fork（bots 移除）：readTopicResourceFromRelay / validateTopicResourceFromRelay 只被 topic
@@ -71,7 +71,7 @@ export type {
 export {
   setDataBaseDir,
   getDataBaseDir,
-  getZCodeDataRootDir,
+  getZodyDataRootDir,
   getConversationWorkspaceDir,
   getAppConfigDir,
   getExportLogStageDir,
@@ -331,14 +331,14 @@ import { TaskIndexRepo } from "./session/taskIndexRepo.js";
 // 功能整体删除（specs/bot-channels-removal.md）。
 import type { SessionMessageSendRequested } from "#src/session/sessionMailbox.js";
 import { createFileWatcherService } from "./fileWatcher/fileWatcherService.js";
-import { readLegacyZCodeConfigProviders } from "./model-provider/legacyZodyConfigProviderReader.js";
+import { readLegacyZodyConfigProviders } from "./model-provider/legacyZodyConfigProviderReader.js";
 // fork（F4.7）：officialAccountDataMigration 是一次性存量兼容清理（不依赖 OAuth 运行时），
 // 保留以满足 F4.1a 的升级清理规则与 E2E（旧版本直接升级到当前版本仍会清掉存量账号数据）。
 import { runOfficialAccountProviderDataMigration } from "./model-provider/officialAccountDataMigration.js";
 import { resolveSubagentStateFile } from "./subagents/subagentStorage.js";
 // fork（F4.7）：官方账号 OAuth 仓库、账号连接解析与 Project Token 均已删除。
 import { createProviderConfigRuntime } from "./model-provider/providerConfigRuntime.js";
-import { fetchZCodeBuiltinRemoteRelease } from "./model-provider/zodyBuiltinRemoteConfig.js";
+import { fetchZodyBuiltinRemoteRelease } from "./model-provider/zodyBuiltinRemoteConfig.js";
 import {
   createProviderRuntimeFromConfigRuntime,
   type ProviderRuntime,
@@ -938,7 +938,7 @@ export function resolveBundledCuaHelperAppPath(
 
 export { isOfficialCuaPluginEnabledForWorkspace };
 
-export function hasGlobalCliZCodeCuaServer(env: NodeJS.ProcessEnv = process.env): boolean {
+export function hasGlobalCliZodyCuaServer(env: NodeJS.ProcessEnv = process.env): boolean {
   const home = env.HOME?.trim() || homedir();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const configPath = join(home, ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
@@ -952,11 +952,11 @@ export function hasGlobalCliZCodeCuaServer(env: NodeJS.ProcessEnv = process.env)
   if (isRecord(parsed.features) && parsed.features.mcp === false) return false;
   if (!isRecord(parsed.mcp) || !isRecord(parsed.mcp.servers)) return false;
   return Object.entries(parsed.mcp.servers).some(([name, config]) =>
-    isGlobalCliZCodeCuaServer(name, config),
+    isGlobalCliZodyCuaServer(name, config),
   );
 }
 
-function isGlobalCliZCodeCuaServer(name: string, config: unknown): boolean {
+function isGlobalCliZodyCuaServer(name: string, config: unknown): boolean {
   if (!isRecord(config)) return false;
   if (config.enabled === false) return false;
   if (typeof config.type === "string" && config.type !== "stdio") return false;
@@ -1170,7 +1170,7 @@ export function createLocalServices(options: {
         else providerConfigLog.debug(undefined, "ZCode Built-in 刷新检查", event);
       },
       fetchRelease: (endpointOrigin, signal) =>
-        fetchZCodeBuiltinRemoteRelease({
+        fetchZodyBuiltinRemoteRelease({
           apiClient,
           endpointOrigin,
           signal,
@@ -1198,7 +1198,7 @@ export function createLocalServices(options: {
     },
     // 已发布 config.json 保存的是 ZCode 用户配置；清理第三方 ACP 不能移除这条升级路径。
     // Repository 仅在新 Personal 配置不存在时导入，并保留旧文件以便回滚。
-    readLegacyProviders: () => readLegacyZCodeConfigProviders(),
+    readLegacyProviders: () => readLegacyZodyConfigProviders(),
   });
   // fork（F4.1a）：官方账号 provider 下线后的一次性存量迁移。createLocalServices 是同步
   // 装配，迁移以 fire-and-forget 执行：每个存储位置单项容错、零命中零写入（幂等）。
@@ -1255,46 +1255,46 @@ export function createLocalServices(options: {
   const skillsService = createSkillsService({ isDesktopRuntime: true });
   const mcpSyncService = createMcpSyncService({
     // mcp/list 的 host 消费点收拢到 mcpSync 服务；真实状态检查仍在 agent 进程。
-    listMcpServerStatuses: (params) => zcodeAgentService.listMcpServerStatuses(params),
+    listMcpServerStatuses: (params) => zodyAgentService.listMcpServerStatuses(params),
   });
   const pluginSyncService = createPluginSyncService();
   // fork（F4.7）：插件 UI 的官方账号上下文（accountContext/invalidate）随账号链删除，
   // MCP App 实例直接绑定 agent 进程生命周期。
   const pluginUiBridgeService = createPluginUiBridgeService({
-    openInstance: (params) => zcodeAgentService.openMcpUiInstance(params),
-    closeInstance: (params) => zcodeAgentService.closeMcpUiInstance(params),
-    validateInstance: (params) => zcodeAgentService.validateMcpUiInstance(params),
-    recycleInstance: (params) => zcodeAgentService.recycleMcpUiInstance(params),
+    openInstance: (params) => zodyAgentService.openMcpUiInstance(params),
+    closeInstance: (params) => zodyAgentService.closeMcpUiInstance(params),
+    validateInstance: (params) => zodyAgentService.validateMcpUiInstance(params),
+    recycleInstance: (params) => zodyAgentService.recycleMcpUiInstance(params),
     // 插件 UI：资源读取与 UI 工具调用都发生在 session 所在的 agent 进程；host 只做校验与登记。
-    readMcpResource: (params) => zcodeAgentService.readMcpResource(params),
-    callMcpToolForUi: (params) => zcodeAgentService.callMcpToolForUi(params),
-    cancelMcpToolCallForUi: (params) => zcodeAgentService.cancelMcpToolCallForUi(params),
-    readMcpResourceForUi: (params) => zcodeAgentService.readMcpResourceForUi(params),
-    listMcpResourcesForUi: (params) => zcodeAgentService.listMcpResourcesForUi(params),
+    readMcpResource: (params) => zodyAgentService.readMcpResource(params),
+    callMcpToolForUi: (params) => zodyAgentService.callMcpToolForUi(params),
+    cancelMcpToolCallForUi: (params) => zodyAgentService.cancelMcpToolCallForUi(params),
+    readMcpResourceForUi: (params) => zodyAgentService.readMcpResourceForUi(params),
+    listMcpResourcesForUi: (params) => zodyAgentService.listMcpResourcesForUi(params),
     listMcpResourceTemplatesForUi: (params) =>
-      zcodeAgentService.listMcpResourceTemplatesForUi(params),
-    subscribeMcpResourceForUi: (params) => zcodeAgentService.subscribeMcpResourceForUi(params),
-    unsubscribeMcpResourceForUi: (params) => zcodeAgentService.unsubscribeMcpResourceForUi(params),
-    listPluginUiSurfaces: (params) => zcodeAgentService.listPluginUiSurfaces(params),
+      zodyAgentService.listMcpResourceTemplatesForUi(params),
+    subscribeMcpResourceForUi: (params) => zodyAgentService.subscribeMcpResourceForUi(params),
+    unsubscribeMcpResourceForUi: (params) => zodyAgentService.unsubscribeMcpResourceForUi(params),
+    listPluginUiSurfaces: (params) => zodyAgentService.listPluginUiSurfaces(params),
     registerSandbox: options?.registerPluginSandbox,
   });
   // App-Provided Tools：页面工具登记与模型调用的认领 / 回传都发生在 session 所在的 agent 进程。
   const pluginUiSamplingService = createPluginUiSamplingService({
-    sample: (params) => zcodeAgentService.sampleMcpApp(params),
-    cancelSampling: (params) => zcodeAgentService.cancelMcpAppSampling(params),
+    sample: (params) => zodyAgentService.sampleMcpApp(params),
+    cancelSampling: (params) => zodyAgentService.cancelMcpAppSampling(params),
   });
   const pluginUiAppToolsService = createPluginUiAppToolsService({
-    registerAppToolsForUi: (params) => zcodeAgentService.registerAppToolsForUi(params),
-    unregisterAppToolsForUi: (params) => zcodeAgentService.unregisterAppToolsForUi(params),
-    claimAppToolCallForUi: (params) => zcodeAgentService.claimAppToolCallForUi(params),
-    resolveAppToolCallForUi: (params) => zcodeAgentService.resolveAppToolCallForUi(params),
+    registerAppToolsForUi: (params) => zodyAgentService.registerAppToolsForUi(params),
+    unregisterAppToolsForUi: (params) => zodyAgentService.unregisterAppToolsForUi(params),
+    claimAppToolCallForUi: (params) => zodyAgentService.claimAppToolCallForUi(params),
+    resolveAppToolCallForUi: (params) => zodyAgentService.resolveAppToolCallForUi(params),
   });
   const subagentsService = createSubagentsService({
     isDesktopRuntime: true,
   });
   const commandsService = createCommandsService({ isDesktopRuntime: true });
   const hooksService = createHooksService({
-    grantWorkspaceHookTrust: (params) => zcodeAgentService.grantWorkspaceHookTrust(params),
+    grantWorkspaceHookTrust: (params) => zodyAgentService.grantWorkspaceHookTrust(params),
   });
   const memoryService = createMemoryService();
   // 只要当前进程已经装配 Provider Runtime，就由该 Environment 自己的 Selection View
@@ -1725,7 +1725,7 @@ export function createLocalServices(options: {
       : undefined;
   // fork（F4.3）：offPeakTaskServiceForAgent 前向引用与 offPeakToolWiring（Off-Peak 工具面装配）
   // 随闲时任务全链路删除。
-  const zcodeAgentService = createZodyAgentService({
+  const zodyAgentService = createZodyAgentService({
     // fork（F4.7）：账号请求鉴权已随官方账号链删除，Agent 只消费 BYOK/自定义 provider。
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
@@ -1871,16 +1871,16 @@ export function createLocalServices(options: {
           },
         }),
   });
-  providerConnectivityAgentService = zcodeAgentService;
+  providerConnectivityAgentService = zodyAgentService;
   // Helper health probe 短暂超时不应在 Computer Use turn 中途回收 Agent。resolver 会把 restart
   // 推迟到下一个 request/turn 边界；若 broker 确实已失效，当前 turn 会自然失败并由下一次请求恢复。
-  hasActiveTurnRef = () => zcodeAgentService.hasActiveCuaOperationTurn();
+  hasActiveTurnRef = () => zodyAgentService.hasActiveCuaOperationTurn();
   // desktop-continuous UI 直接订阅 zcodeSessionService，绕开 ZCode task adapter 的
   // mapServiceEvent 路径，导致 task_complete 永远不会写回 sqlite，侧边栏 spinner 不停。
   // 在 services 层装配一个共享的 taskIndexRepo + syncer，session 任意入口都会唤醒
   // shadow 订阅，把 runtime 终态收敛进 sqlite。
-  const zcodeTaskIndexSyncer = createZodyTaskIndexSyncer({
-    agentService: zcodeAgentService,
+  const zodyTaskIndexSyncer = createZodyTaskIndexSyncer({
+    agentService: zodyAgentService,
     taskIndexRepo,
   });
   // The plugin can be toggled at runtime. Do not let a previously created resolver continue
@@ -1900,9 +1900,9 @@ export function createLocalServices(options: {
   });
   const cuaProductMcpServerResolver =
     options?.cuaProductMcpServerResolver ?? defaultCuaProductMcpServerResolver;
-  const zcodeSessionService = createZodySessionService({
-    agentService: zcodeAgentService,
-    taskIndexSyncer: zcodeTaskIndexSyncer,
+  const zodySessionService = createZodySessionService({
+    agentService: zodyAgentService,
+    taskIndexSyncer: zodyTaskIndexSyncer,
     cuaProductMcpServerResolver,
   });
   const gitCommitMessageGenerator = new GitCommitMessageGenerator({
@@ -1915,7 +1915,7 @@ export function createLocalServices(options: {
     },
     textGenerator: {
       async generateText(params) {
-        return await zcodeAgentService.generateWorkspaceText({
+        return await zodyAgentService.generateWorkspaceText({
           workspacePath: params.workspacePath,
           ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
           selection: params.selection,
@@ -1930,10 +1930,10 @@ export function createLocalServices(options: {
     commitMessageGenerator: gitCommitMessageGenerator,
   });
   // task wrapper 由 ZCode task service adapter 提供；核心 session 状态由 ZCode agent server 维护。
-  const zcodeTaskService = createZodyTaskServiceAdapter({
-    zcodeAgentService,
+  const zodyTaskService = createZodyTaskServiceAdapter({
+    zcodeAgentService: zodyAgentService,
     taskIndexRepo,
-    taskIndexSyncer: zcodeTaskIndexSyncer,
+    taskIndexSyncer: zodyTaskIndexSyncer,
     settingService,
     cuaProductMcpServerResolver,
   });
@@ -1972,9 +1972,9 @@ export function createLocalServices(options: {
     .register(IOnboardingRecordService, onboardingRecordService)
     .register(ICredentialService, credentialService)
     .register(IBroadcastService, broadcastService)
-    .register(IZodyTaskService, zcodeTaskService)
-    .register(IZodyAgentService, zcodeAgentService)
-    .register(IZodySessionService, zcodeSessionService)
+    .register(IZodyTaskService, zodyTaskService)
+    .register(IZodyAgentService, zodyAgentService)
+    .register(IZodySessionService, zodySessionService)
     .register(ICuaPermissionService, cuaPermissionService)
     .register(ICuaPipSessionService, cuaPipSessionService)
     // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
@@ -1986,7 +1986,7 @@ export function createLocalServices(options: {
     .register(
       IUsageStatsService,
       createUsageStatsService({
-        zcodeAgentService,
+        zcodeAgentService: zodyAgentService,
       }),
     )
     // fork（F2.6b）：client-config 服务改纯本地实现，不再请求 /api/v1/client/configs；
@@ -2015,13 +2015,13 @@ export function createLocalServices(options: {
     .register(IPluginSyncService, pluginSyncService)
     .register(IPluginsService, createPluginsService({ isDesktopRuntime: true }))
     // 设置页插件管理薄服务——plugins/* 旧协议词的 host 侧唯一消费点。
-    .register(IPluginManagementService, createPluginManagementService({ zcodeAgentService }))
+    .register(IPluginManagementService, createPluginManagementService({ zcodeAgentService: zodyAgentService }))
     .register(ISubagentsService, subagentsService)
     .register(ICommandsService, createCommandsService({ isDesktopRuntime: true }))
     .register(
       IHooksService,
       createHooksService({
-        grantWorkspaceHookTrust: (params) => zcodeAgentService.grantWorkspaceHookTrust(params),
+        grantWorkspaceHookTrust: (params) => zodyAgentService.grantWorkspaceHookTrust(params),
       }),
     )
     .register(IMemoryService, createMemoryService())

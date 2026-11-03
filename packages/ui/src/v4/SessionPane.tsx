@@ -45,7 +45,7 @@ import { PluginUiSessionProvider } from "@/plugin-ui/index.js";
 // fork（F4.8）：会话分享发布/导入（错误映射、分享服务类型、回链本地化）随分享功能删除。
 import { toast } from "@/components/ui/toast.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
 import type { OpenAutomationsMain } from "@/lib/taskNavigationHistory.js";
@@ -65,7 +65,7 @@ import { useWorkflowRunJournalSummaries } from "@/hooks/useWorkflowRunJournalSum
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { buildGenUiModelContext } from "@zody/shared/gen-ui";
 import { useWorkspaceHomePath } from "@/hooks/useWorkspaceHomePath.js";
-import { prepareWorkspaceWithZCodeSessionService } from "@/hooks/useWorkspacePrepare.js";
+import { prepareWorkspaceWithZodySessionService } from "@/hooks/useWorkspacePrepare.js";
 // fork（F4.1b）：createCodingPlanFunnelContext / resolveCodingPlanEntryPlanState 随套餐横幅
 // 升级入口摘除不再引用。
 import {
@@ -91,8 +91,8 @@ import { projectSessionConfigToTaskConfigOptions } from "@/v4/composer/sessionCo
 import { useDraftRuntimeRebuildGate } from "@/v4/composer/useDraftRuntimeRebuildGate.js";
 import { useDraftModelReadinessGate } from "@/v4/composer/useDraftModelReadinessGate.js";
 import { useSettings } from "@/hooks/useSettingService.js";
-import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodyStoreWithDefault } from "@/store/StoreProvider.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 // fork（F4.8）：conversationShareSelectionStore（分享选择/确认/发布 dock）随分享功能删除。
 import type { GroupedDraftTaskState } from "@/store/zodySessionStoreTypes.js";
 import {
@@ -705,7 +705,7 @@ export function SessionPane({
     zcodeSessionService,
     zcodeTaskService,
   } = useServices();
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const slashCommands = useSlashCommands(workspacePath, workspaceIdentity);
   const baseWorkspaceServices = useBaseWorkspaceServices();
   const workspaceHomePath = useWorkspaceHomePath({
@@ -959,7 +959,7 @@ export function SessionPane({
       generation: paneBindingRef.current.generation + 1,
     };
   }
-  const workspaceConfigOptions = useZCodeSessionStore(
+  const workspaceConfigOptions = useZodySessionStore(
     (store) =>
       store.getWorkspaceState(workspacePath, workspaceIdentity).configOptions,
   );
@@ -976,7 +976,7 @@ export function SessionPane({
     // Bug 原因：V4 session 配置只存在 ConversationSnapshot，legacy task 配置桶一直为空；
     // 用户从 custom model 会话新建任务时，startDraft 只能继承 workspace 默认模型。
     // 这里仅把权威配置叠到完整目录并按 task 缓存，不改变 session 或 workspace 事实源。
-    useZCodeSessionStore
+    useZodySessionStore
       .getState()
       .setTaskConfigOptions(
         workspacePath,
@@ -1031,19 +1031,19 @@ export function SessionPane({
     // 生命周期边界，避免长时间 workbench 中 Set 随会话数增长。
     autoOpenedAssistantPptxKeysRef.current.clear();
   }, [sessionId, snapshot?.logEpoch, workspaceKey]);
-  const composerTextInsertRequest = useZCodeSessionStore(
+  const composerTextInsertRequest = useZodySessionStore(
     (store) =>
       store.getWorkspaceState(workspacePath, workspaceIdentity)
         .composerTextInsertRequest,
   );
-  const draftRuntimeInvalidationVersion = useZCodeSessionStore(
+  const draftRuntimeInvalidationVersion = useZodySessionStore(
     (store) =>
       store.getWorkspaceState(workspacePath, workspaceIdentity)
         .draftRuntimeInvalidationVersion,
   );
   const handleExternalTextInsertApplied = useCallback(
     (requestId: number) => {
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .clearComposerTextInsertRequest(
           workspacePath,
@@ -1142,7 +1142,7 @@ export function SessionPane({
     // Selection View。旧预热会话冻结了早期 fallback，即使最新 View 已包含当前账号连接，
     // Renderer 也会永久停在旧模型。未发送且无显式选择的草稿不是执行事实；View 更新时
     // 回收并按最新选择事实重建，已显式选择和正式会话仍保持冻结。
-    useZCodeSessionStore
+    useZodySessionStore
       .getState()
       .invalidateDraftRuntime(workspacePath, workspaceIdentity);
   }, [
@@ -1167,7 +1167,7 @@ export function SessionPane({
   );
   // fork（F4.1b）：useOptionalCodingPlanUpgradeDialog 消费已随 F4.5 删除。
   const openSettingsTab = useOptionalTabStore((state) => state.openSettingsTab);
-  const promoteGroupedDraftTask = useZCodeSessionStore(
+  const promoteGroupedDraftTask = useZodySessionStore(
     (state) => state.promoteGroupedDraftTask,
   );
   // 首发 commandId 在 accepted 时已存在，也是 completion 的 message_id；不必等回复完成。
@@ -1263,8 +1263,8 @@ export function SessionPane({
 
   // 注入模式对齐 PermissionDialog：theme/codePreviewSettings 在宿主取 store，
   // 经稳定引用的 rowContext 下发给 memo 行组件（MessageResponse/ToolCallBlocks）。
-  const theme = useZCodeStoreWithDefault((state) => state.theme, "system");
-  const codePreviewSettings = useZCodeStoreWithDefault(
+  const theme = useZodyStoreWithDefault((state) => state.theme, "system");
+  const codePreviewSettings = useZodyStoreWithDefault(
     (state) => state.codePreviewSettings,
     DEFAULT_CODE_PREVIEW_SETTINGS,
   );
@@ -1319,7 +1319,7 @@ export function SessionPane({
       // 必须早于第一次上行：transport error/renderer refresh 后仍有可查询线索。
       const groupedDraftTask =
         type === "createSession"
-          ? useZCodeSessionStore
+          ? useZodySessionStore
               .getState()
               .getWorkspaceState(workspacePath, workspaceIdentity)
               .groupedDraftTask
@@ -1335,7 +1335,7 @@ export function SessionPane({
               ...(groupedDraftTask ? { groupedDraftTask } : {}),
               sessionCreateSource:
                 sessionCreateSource ??
-                useZCodeSessionStore
+                useZodySessionStore
                   .getState()
                   .getWorkspaceState(workspacePath, workspaceIdentity)
                   .draftCreateSource,
@@ -2709,7 +2709,7 @@ export function SessionPane({
       // placement 必须绑定发送开始时的稳定 identity，不能在完成回调里读取当前 workspace 草稿。
       const groupedDraftTaskAtSend =
         sessionId === null
-          ? useZCodeSessionStore
+          ? useZodySessionStore
               .getState()
               .getWorkspaceState(workspacePath, workspaceIdentity)
               .groupedDraftTask
@@ -3071,7 +3071,7 @@ export function SessionPane({
 
   const dispatchSendText = useCallback(
     (text: string, options?: ConversationComposerSendOptions) => {
-      const createSource = useZCodeSessionStore
+      const createSource = useZodySessionStore
         .getState()
         .getWorkspaceState(workspacePath, workspaceIdentity).draftCreateSource;
       const submissionOptions = {
@@ -3720,7 +3720,7 @@ export function SessionPane({
         provider: modelSelection.providerId,
         model: modelSelection.modelId,
       });
-      const store = useZCodeSessionStore.getState();
+      const store = useZodySessionStore.getState();
       store.setModelSelectionResolution(
         workspacePath,
         {
@@ -3749,7 +3749,7 @@ export function SessionPane({
           bumpRuntimeEpoch: true,
         });
 
-        const prepareResult = await prepareWorkspaceWithZCodeSessionService({
+        const prepareResult = await prepareWorkspaceWithZodySessionService({
           workspacePath,
           workspaceIdentity,
           provider: displayProvider,

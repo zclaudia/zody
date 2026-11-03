@@ -7,7 +7,7 @@ import {
   MarkdownImage,
   normalizeConsecutiveMarkdownImageBlocks,
 } from "@/components/ai-elements/markdown-image.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { rewriteMarkdownArtifactImageSources } from "@zody/shared";
 import { sanitizeImageSourceForLog } from "@/components/ai-elements/image-preview-dialog.js";
 import {
@@ -31,7 +31,7 @@ describe("artifact-backed Markdown images", () => {
 
     const rendered = render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(MarkdownImage, {
           alt: "shot",

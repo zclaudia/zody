@@ -5,7 +5,7 @@ import type { MobileTargetRef } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { getPathLeaf } from "@/lib/path.js";
 import { isCoarseTouchDevice } from "@/lib/pickerFocus.js";
 import { PreviewPane } from "@/PreviewPane.js";
@@ -66,7 +66,7 @@ export function MobileWorkspaceFileBrowser({
   openRequest,
   onClose,
 }: MobileWorkspaceFileBrowserProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const platform = useOptionalPlatform();
   const browser = useMobileWorkspaceFiles({
     workspacePath,

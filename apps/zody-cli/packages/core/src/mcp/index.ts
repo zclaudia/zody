@@ -134,7 +134,7 @@ export function createMcpToolEntry(
   const providerVisible = resolveMcpToolVisibility(descriptor).includes("model");
   const isHostNodeReplExecution =
     descriptor.serverName === "node_repl" && descriptor.toolName === "js";
-  const isCuaAppObservation = isZCodeCuaGetAppState(descriptor);
+  const isCuaAppObservation = isZodyCuaGetAppState(descriptor);
   // 宿主 node_repl 的 js 能执行本机 Node 代码，不能沿用普通未知 MCP 的 medium/network
   // 默认值；否则权限 UI 会把文件/进程级能力错误描述成普通网络调用。
   const sideEffectScope: ModelToolSideEffectScope = isHostNodeReplExecution ? "system" : "network";
@@ -406,7 +406,7 @@ function createModelFacingMcpInputSchema(
   };
 }
 
-function isZCodeCuaGetAppState(
+function isZodyCuaGetAppState(
   descriptor: Pick<McpToolDescriptor, "serverName" | "toolName">,
 ): boolean {
   if (descriptor.toolName.trim().toLowerCase().replace(/-/g, "_") !== "get_app_state") {

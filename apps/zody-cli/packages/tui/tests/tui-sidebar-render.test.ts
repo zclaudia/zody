@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { testRender } from "@mbears/opentui-react/test-utils";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import React, { act } from "react";
 import type { SidebarState } from "../src/app-model.js";
 import { Sidebar } from "../src/app-sidebar.js";
@@ -16,7 +16,7 @@ test("renders localized sidebar rows without section title glyph tails", async (
         { style: { height: 44, width: 42 } },
         React.createElement(Sidebar, {
           ...baseSidebarState,
-          copy: getZCodeCopy("zh-CN").tui,
+          copy: getZodyCopy("zh-CN").tui,
           developerMode: true,
           status: "就绪。",
         }),

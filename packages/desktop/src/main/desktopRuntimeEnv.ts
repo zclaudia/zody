@@ -224,7 +224,7 @@ export function loadHostProcessEnvFromLocalFiles(): Record<string, string> {
     Object.assign(merged, parsed);
   }
 
-  return applySelectedZCodeEnvLinks(merged);
+  return applySelectedZodyEnvLinks(merged);
 }
 
 export function resolvePackagedAgentTelemetryEnv(
@@ -259,7 +259,7 @@ function resolveEnvValue(envName: string, localEnv: LocalRuntimeEnv = {}): strin
   return process.env[envName]?.trim() || localEnv[envName]?.trim() || undefined;
 }
 
-export function resolveZCodeEndpointEnvBaseOrigin(
+export function resolveZodyEndpointEnvBaseOrigin(
   localEnv: LocalRuntimeEnv = {},
 ): string | undefined {
   const scopedEnvName =
@@ -286,7 +286,7 @@ function readDefinedProcessEnv(): Record<string, string> {
   return values;
 }
 
-function applySelectedZCodeEnvLinks(env: Record<string, string>): Record<string, string> {
+function applySelectedZodyEnvLinks(env: Record<string, string>): Record<string, string> {
   const endpointEnv = {
     ...env,
     ZCODE_ENV,
@@ -335,7 +335,7 @@ export function resolveRemoteAssetDirs(
   };
 }
 
-function resolveBundledZCodeAgentBinaryPath(): string | undefined {
+function resolveBundledZodyAgentBinaryPath(): string | undefined {
   const runtime = ZCODE_AGENT_RUNTIME;
   const entrySegments = runtime.resolveEntrySegments(process.platform);
   const platformKey = resolvePlatformKeyForPackagedApp();
@@ -400,7 +400,7 @@ function resolveBundledLarkCliBinaryPath(): string | undefined {
 }
 
 export function resolveBundledGlmBinaryPath(): string | undefined {
-  return resolveBundledZCodeAgentBinaryPath();
+  return resolveBundledZodyAgentBinaryPath();
 }
 
 function resolveHostProcessBinaryEnv(
@@ -521,7 +521,7 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
   ]) {
     delete agentTelemetryEnv[key];
   }
-  const inheritedEnv = applySelectedZCodeEnvLinks({
+  const inheritedEnv = applySelectedZodyEnvLinks({
     ...sanitizeZodyRuntimeEnv(rawInheritedEnv),
     ...buildZodyToolEnvPassthroughEnv(rawInheritedEnv),
   });

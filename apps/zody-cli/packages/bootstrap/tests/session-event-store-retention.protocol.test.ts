@@ -48,7 +48,7 @@ function createHarness(): Harness {
       stores.push(store);
       return store;
     },
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       eventStore = options?.eventStore;
       const app = createFakeApp(options);
       return {

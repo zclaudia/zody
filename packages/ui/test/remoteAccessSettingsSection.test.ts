@@ -60,7 +60,7 @@ const intlMock = vi.hoisted(() => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => intlMock,
+  useZodyIntl: () => intlMock,
 }));
 
 const platformMock = vi.hoisted(() => ({

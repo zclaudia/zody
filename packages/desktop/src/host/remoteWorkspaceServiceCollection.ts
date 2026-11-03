@@ -68,7 +68,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
   sourceServices?: ServiceCollection;
   localOnboardingRecordService: IOnboardingRecordService;
   parentPort: Parameters<typeof createBroadcastService>[0];
-  createReportingRemoteZCodeTaskService: <T extends object>(service: T) => T;
+  createReportingRemoteZodyTaskService: <T extends object>(service: T) => T;
   createRemotePromptAttachmentTaskService: <T extends object>(service: T) => T;
   createRemotePromptAttachmentSessionService: <T extends object>(service: T) => T;
   promptAttachmentTransferService: IPromptAttachmentTransferService;
@@ -93,15 +93,15 @@ export function createRemoteWorkspaceServiceCollection(params: {
   const localBroadcastService = createBroadcastService(params.parentPort);
   // fork（F4.7）：remote workspace host 不再重建 OAuth 服务/凭据仓库/账号派生 Key logout。
   // fork（F4.8）：远端 workspace 的会话分享服务装配已删除。
-  const reportingRemoteZCodeTaskService = params.createReportingRemoteZCodeTaskService(
+  const reportingRemoteZodyTaskService = params.createReportingRemoteZodyTaskService(
     params.connectionServices.zcodeTaskService,
   );
   // 手机 remote 的 replayable mirror 在 reporting wrapper 中发布用户消息；
   // 附件物化必须包在 reporting 外层，确保 mirror 和真正发给远端 agent 的 prompt 使用同一份远端路径。
-  const remoteZCodeTaskService = params.createRemotePromptAttachmentTaskService(
-    reportingRemoteZCodeTaskService,
+  const remoteZodyTaskService = params.createRemotePromptAttachmentTaskService(
+    reportingRemoteZodyTaskService,
   );
-  const remoteZCodeSessionService = params.createRemotePromptAttachmentSessionService(
+  const remoteZodySessionService = params.createRemotePromptAttachmentSessionService(
     params.connectionServices.zcodeSessionService,
   );
   const remoteProviderProvisioningService =
@@ -223,9 +223,9 @@ export function createRemoteWorkspaceServiceCollection(params: {
     .register(IOnboardingRecordService, params.localOnboardingRecordService)
     .register(ICredentialService, localCredentialService)
     .register(IBroadcastService, localBroadcastService)
-    .register(IZodyTaskService, remoteZCodeTaskService)
+    .register(IZodyTaskService, remoteZodyTaskService)
     .register(IZodyAgentService, params.connectionServices.zcodeAgentService)
-    .register(IZodySessionService, remoteZCodeSessionService)
+    .register(IZodySessionService, remoteZodySessionService)
     // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
     // fork（bot channels 移除，specs/bot-channels-removal.md）：IBotsService 注册随
     // 第三方 IM bot 功能删除；其余 ~30 个注册（手机 replayable 直连 remote host 依赖）保留。

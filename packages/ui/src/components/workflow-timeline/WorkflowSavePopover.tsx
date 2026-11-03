@@ -11,7 +11,7 @@ import type { ZodySavedWorkflowScope, ZodyWorkflowsSaveResult } from "@zody/shar
 import { Button } from "@/components/ui/button.js";
 import { Popover, PopoverAnchor, PopoverContent, PopoverTitle } from "@/components/ui/popover.js";
 import { Spinner } from "@/components/ui/spinner.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { WorkflowSaveFields, type WorkflowSaveFailure } from "./WorkflowSaveFields.js";
 import {
   initialWorkflowSaveDraft,
@@ -91,7 +91,7 @@ function WorkflowSaveForm({
   host: WorkflowSavePopoverHost;
   onClose: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const format = useCallback((id: string) => intl.formatMessage({ id }), [intl]);
   // 起点在打开那一刻定下（同「配置」弹层）：run 在弹层开着时变了，也不该把用户正在改的表单拽回去。
   const [draft, setDraft] = useState<WorkflowSaveDraft>(() =>

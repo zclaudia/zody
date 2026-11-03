@@ -8,7 +8,7 @@ import { DownloadIcon, ExternalLinkIcon } from "lucide-react";
 import { ZCODE_FEEDBACK_ISSUE_URL } from "@zody/shared";
 import type { IFeedbackService } from "@zody/services";
 import type { IPlatformService } from "@zody/shared";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { memo } from "react";
 import { runExportLogsAction } from "@/lib/exportLogsAction.js";
 
@@ -22,7 +22,7 @@ export const FeedbackCenter = memo(function FeedbackCenterComponent({
   // store 的 openFeatureRequest 会把 open 置 false，这里必须合并判定才能响应全部入口。
   const open = useFeedbackStore((state) => state.open || state.featureRequestOpen);
   const close = useFeedbackStore((state) => state.close);
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   const handleExportLogs = () => {
     void runExportLogsAction(platform, intl);

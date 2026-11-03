@@ -130,7 +130,7 @@ vi.mock("@/useTaskListItemContextActions.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -147,7 +147,7 @@ vi.mock("@/store/taskQueryCacheStore.js", () => ({
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       removeTaskState: vi.fn(),
       removeOptimisticTaskListItem: vi.fn(),

@@ -3,7 +3,7 @@
 import type { ZodyTaskMeta } from "@zody/shared";
 import { matchesTaskListMembershipKind } from "@zody/shared/zody-protocol-v4";
 import { buildTaskEntityKey } from "@/lib/taskQueryCache.js";
-import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
+import { compareZodyTaskListItems } from "@/lib/taskListOrdering.js";
 import { attachTaskListRowActivity, getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 
 export type TaskListKind = "pinned" | "archived" | "timeline" | "active";
@@ -189,7 +189,7 @@ export function buildTaskListResult(params: BuildTaskListParams): BuildTaskListR
     if (query && !task.title.toLocaleLowerCase().includes(query)) return false;
     return true;
   });
-  filtered.sort((a, b) => compareZCodeTaskListItems(a, b, params.sortBy));
+  filtered.sort((a, b) => compareZodyTaskListItems(a, b, params.sortBy));
   const total = filtered.length;
   const items = params.limit === undefined ? filtered : filtered.slice(0, params.limit);
   return { items, total };

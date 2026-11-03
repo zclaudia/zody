@@ -3,7 +3,7 @@ import type { FileEntry, WebRemoteControlMobileDirectoryListResult } from "@zody
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 
 /**
@@ -32,7 +32,7 @@ export function MobileWorkspacePicker({
   /** 打开成功后由宿主切换 workspace（回调参数是聚合列表里的 workspaceKey）。 */
   onOpened(workspaceKey: string): void | Promise<void>;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [initialResult, setInitialResult] = useState<{ resolvedPath: string } | "failed" | null>(
     null,
   );

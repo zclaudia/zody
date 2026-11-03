@@ -19,7 +19,7 @@ import {
 } from "@/hooks/useGroupedTaskView.js";
 import { buildTaskEntityKey } from "@/lib/taskQueryCache.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { attachTaskListRowActivity, getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 import { taskKey } from "@/workspace-grouped-tasks/ids.js";
@@ -126,7 +126,7 @@ function cleanupHookTestGlobals(): void {
     sessionIdByWorkspaceIdentity: {},
     sessionIdByWorkspacePath: {},
   });
-  useZCodeSessionStore.setState({ workspaces: {} });
+  useZodySessionStore.setState({ workspaces: {} });
   clearCachedGroupedViewsForTest();
   delete (globalThis as { document?: unknown }).document;
   delete (globalThis as { window?: unknown }).window;

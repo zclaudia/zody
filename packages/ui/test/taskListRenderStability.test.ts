@@ -42,11 +42,11 @@ vi.mock("@/components/ui/toast.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({ intl: stableIntl }),
+  useZodyIntl: () => ({ intl: stableIntl }),
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  useZCodeSessionStore: (selector: (state: { startDraft: () => void }) => unknown) =>
+  useZodySessionStore: (selector: (state: { startDraft: () => void }) => unknown) =>
     selector({ startDraft: stableStartDraft }),
 }));
 

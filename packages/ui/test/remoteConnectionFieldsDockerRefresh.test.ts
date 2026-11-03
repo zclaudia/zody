@@ -58,7 +58,7 @@ vi.mock("@/components/ui/popover.js", async () => {
 });
 
 import { PlatformProvider } from "@/hooks/usePlatform.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { RemoteConnectionFields } from "@/RemoteConnectionFields.js";
 
 type RemoteConnectionFieldsTestProps = {
@@ -202,7 +202,7 @@ function renderDockerFields({
     createElement(
       PlatformProvider,
       { platform },
-      createElement(ZCodeIntlProvider, { initialLocale: "zh-CN" }, createElement(Component, props)),
+      createElement(ZodyIntlProvider, { initialLocale: "zh-CN" }, createElement(Component, props)),
     ),
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeZCodeUiError } from "@/lib/zodyUiError.js";
+import { normalizeZodyUiError } from "@/lib/zodyUiError.js";
 import {
   getProviderBusinessErrorMessageId,
   isProviderBusinessErrorCode,
@@ -93,7 +93,7 @@ describe("providerBusinessError", () => {
   });
 
   it("从 detail provider_code 读取 GLM 业务码供横幅分类使用", () => {
-    const normalized = normalizeZCodeUiError({
+    const normalized = normalizeZodyUiError({
       code: "PROVIDER_BUSINESS_ERROR",
       message: "Provider request failed",
       detail: "provider_code=1308 upstream quota limit",

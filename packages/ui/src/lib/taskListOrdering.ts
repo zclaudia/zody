@@ -62,7 +62,7 @@ export function compareTaskListItemsWithRunningFirst<T extends TaskListSortableI
   return compareTaskListItemsByTime(left, right, sortBy);
 }
 
-export function compareZCodeTaskListItems(
+export function compareZodyTaskListItems(
   left: ZodyTaskMeta,
   right: ZodyTaskMeta,
   sortBy: TaskListTimeSortBy,

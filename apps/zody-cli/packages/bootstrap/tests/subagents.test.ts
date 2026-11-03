@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   loadPluginAgentTemplates,
   resolvePluginAgentProfiles,
-  loadZCodeAgentProfiles,
+  loadZodyAgentProfiles,
 } from "../src/subagents.js";
 import { loadPluginAgentProfiles } from "./helpers/subagents.js";
 
@@ -50,7 +50,7 @@ describe("loadZCodeAgentProfiles", () => {
           pluginAgentThoughtLevelOverrides: { [agentId]: "high" },
         }),
       );
-      const state = await loadZCodeAgentProfiles({ storageRoot, workingDirectory: root });
+      const state = await loadZodyAgentProfiles({ storageRoot, workingDirectory: root });
       const selection = {
         providerId: "account:zai-individual-coding-plan",
         modelId: "GLM",
@@ -139,7 +139,7 @@ description: 项目级中文审查 agent
         "utf8",
       );
 
-      const result = await loadZCodeAgentProfiles({ storageRoot, workingDirectory });
+      const result = await loadZodyAgentProfiles({ storageRoot, workingDirectory });
 
       expect(result.diagnostics).toEqual([]);
       expect(result.profiles.map((profile) => profile.source)).toEqual(["user", "project"]);
@@ -180,7 +180,7 @@ permissionMode: bypassPermissions
         "utf8",
       );
 
-      const result = await loadZCodeAgentProfiles({ storageRoot, workingDirectory });
+      const result = await loadZodyAgentProfiles({ storageRoot, workingDirectory });
 
       const userProfile = result.profiles.find((profile) => profile.name === "trusted-runner");
       const projectProfile = result.profiles.find((profile) => profile.name === "attacker-runner");
@@ -206,7 +206,7 @@ prompt`,
         "utf8",
       );
 
-      const result = await loadZCodeAgentProfiles({ storageRoot, workingDirectory });
+      const result = await loadZodyAgentProfiles({ storageRoot, workingDirectory });
 
       expect(result.profiles).toEqual([]);
       expect(result.diagnostics).toHaveLength(1);
@@ -247,7 +247,7 @@ description: 用户级运行 agent
         "utf8",
       );
 
-      const result = await loadZCodeAgentProfiles({ storageRoot, workingDirectory });
+      const result = await loadZodyAgentProfiles({ storageRoot, workingDirectory });
 
       expect(result.diagnostics).toEqual([]);
       expect(result.profiles.map((profile) => profile.name)).toEqual(["zcode-runner"]);
@@ -286,7 +286,7 @@ description: 用户级运行 agent
         "utf8",
       );
 
-      const result = await loadZCodeAgentProfiles({ storageRoot, workingDirectory });
+      const result = await loadZodyAgentProfiles({ storageRoot, workingDirectory });
 
       expect(result.diagnostics).toEqual([]);
       expect(result.profiles).toEqual([]);
@@ -331,7 +331,7 @@ describe("loadPluginAgentProfiles", () => {
       }
       for (const path of paths) await writeFile(path, markdown);
       for (let load = 0; load < 2; load++) {
-        const local = await loadZCodeAgentProfiles({ storageRoot, workingDirectory });
+        const local = await loadZodyAgentProfiles({ storageRoot, workingDirectory });
         const plugins = loadPluginAgentProfiles({
           plugins: [pluginMetadata({ id: "scope-test", name: "scope-test", rootPath: pluginRoot })],
         });
@@ -446,7 +446,7 @@ thoughtLevel: low
         }),
       ];
 
-      const state = await loadZCodeAgentProfiles({ storageRoot, workingDirectory: root });
+      const state = await loadZodyAgentProfiles({ storageRoot, workingDirectory: root });
       const overridden = loadPluginAgentProfiles({
         plugins,
         modelSelectionOverrides: state.pluginAgentModelSelectionOverrides,
@@ -483,7 +483,7 @@ thoughtLevel: low
         }),
         "utf8",
       );
-      const modelOnlyState = await loadZCodeAgentProfiles({ storageRoot, workingDirectory: root });
+      const modelOnlyState = await loadZodyAgentProfiles({ storageRoot, workingDirectory: root });
       const modelOnly = loadPluginAgentProfiles({
         plugins,
         modelSelectionOverrides: modelOnlyState.pluginAgentModelSelectionOverrides,

@@ -20,7 +20,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
 }));
 
 // eslint-disable-next-line import/first -- 必须在 mock 之后再引入被测组件。
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 // eslint-disable-next-line import/first
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 // eslint-disable-next-line import/first
@@ -58,7 +58,7 @@ function renderRow(notification: WorkflowNotificationMeta, options: { openable?:
   rowSeq += 1;
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         TooltipProvider,
@@ -231,7 +231,7 @@ describe("ConversationTurnGroup 把通知行的 chip 变成打开请求", () => 
   ) {
     return render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           PlatformProvider,

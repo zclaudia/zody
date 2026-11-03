@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ZodyTaskPendingInteraction } from "@zody/shared";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
   TaskInteractionBadge,
   getTaskInteractionBadgePresentation,
@@ -106,7 +106,7 @@ describe("TaskInteractionBadge", () => {
     const render = (locale: "zh-CN" | "en-US") =>
       renderToStaticMarkup(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: locale },
           createElement(TaskInteractionBadge, {
             interaction: countdown,

@@ -11,7 +11,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
 import { FileDisplayInline } from "@/lib/fileDisplay.js";
 import { buildTurnChangeSummary, toWorkspaceRelativePath } from "@/lib/taskChangeSummary.js";
@@ -61,7 +61,7 @@ export function MessageChangeSummaryPanel({
   onToggleFiles,
   onOpenCodeViewer,
 }: MessageChangeSummaryPanelProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [isFileListOpen, setIsFileListOpen] = useState(false);
 
   const turnSummary = useMemo(() => {

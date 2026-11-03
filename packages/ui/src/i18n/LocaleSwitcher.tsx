@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { Locale } from "@zody/shared";
 import { TID_LOCALE_TOGGLE } from "@zody/shared";
-import { useZCodeIntl } from "./IntlProvider.js";
+import { useZodyIntl } from "./IntlProvider.js";
 
 const LOCALE_CYCLE: Locale[] = ["zh-CN", "en-US"];
 
@@ -14,7 +14,7 @@ const LOCALE_LABELS: Record<Locale, string> = {
  * 语言切换按钮 —— 点击循环切换语言
  */
 export function LocaleSwitcher() {
-  const { intl, locale, setLocale } = useZCodeIntl();
+  const { intl, locale, setLocale } = useZodyIntl();
 
   const cycleLocale = useCallback(() => {
     const idx = LOCALE_CYCLE.indexOf(locale);

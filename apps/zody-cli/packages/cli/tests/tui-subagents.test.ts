@@ -10,7 +10,7 @@ import {
   type SessionEvent,
 } from "@zody/contracts";
 import type { ZodySessionSubagentsResult } from "@zody/shared";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { runTuiWithRenderer } from "../../tui/src/tui.js";
 import {
   applyMainSessionEvent,
@@ -66,7 +66,7 @@ const snapshot = (sessionId = child): TuiSubagentTranscriptSnapshot => ({
 test("main admission rejects raw child events and parent-ID tool mirrors before any state changes", () => {
   let mutations = 0;
   const handlers = new Proxy(
-    { copy: getZCodeCopy("en-US").tui, getMainSessionId: () => parent },
+    { copy: getZodyCopy("en-US").tui, getMainSessionId: () => parent },
     {
       get(target, property) {
         return property in target

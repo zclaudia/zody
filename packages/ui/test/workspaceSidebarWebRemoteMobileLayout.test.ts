@@ -120,7 +120,7 @@ vi.mock("@/hooks/useWorkspaceTaskLists.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -130,13 +130,13 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  selectWorkspaceZCodeState: () => ({ activeTaskId: "task-1" }),
-  useZCodeSessionStore: (selector: (state: { selectDraftProvider: () => void }) => unknown) =>
+  selectWorkspaceZodyState: () => ({ activeTaskId: "task-1" }),
+  useZodySessionStore: (selector: (state: { selectDraftProvider: () => void }) => unknown) =>
     selector({ selectDraftProvider: vi.fn() }),
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: { setTheme: () => void }) => unknown) =>
+  useZodyStore: (selector: (state: { setTheme: () => void }) => unknown) =>
     selector({ setTheme: vi.fn() }),
 }));
 

@@ -20,7 +20,7 @@ vi.mock("react-dom/client", () => ({
 vi.mock("@zody/ui", () => ({
   AppErrorBoundary: ({ children }: { children: unknown }) => children,
   Root: () => null,
-  ZCodeIntlProvider: ({ children }: { children: unknown }) => children,
+  ZodyIntlProvider: ({ children }: { children: unknown }) => children,
   registerBaseWorkspaceServices: vi.fn(),
   registerRemoteWorkspaceSession: vi.fn(),
   playTaskNotificationSound: vi.fn(() => Promise.resolve()),

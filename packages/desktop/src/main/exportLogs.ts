@@ -29,17 +29,17 @@ import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { createAboutSnapshot, formatAboutDetail, readBuildMetadata } from "./about.js";
 import { logger } from "./logger.js";
 
-function getZCodeDataDir() {
+function getZodyDataDir() {
   return getAppConfigDir();
 }
 
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-function getZCodeCliDir() {
+function getZodyCliDir() {
   return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli");
 }
 
-function getZCodeCliLogDir() {
-  return join(getZCodeCliDir(), "log");
+function getZodyCliLogDir() {
+  return join(getZodyCliDir(), "log");
 }
 
 /**
@@ -78,7 +78,7 @@ interface LogArchiveSkippedFileEntry {
 
 interface ExportLogsDependencies {
   now?: () => Date;
-  getZCodeDataDir?: () => string;
+  getZodyDataDir?: () => string;
   getExportLogStageDir?: () => string;
   getExportLogDir?: () => string;
   createLogArchiveArtifacts?: (
@@ -962,27 +962,27 @@ export async function createLogArchiveArtifacts(
 
   await collectLogArchiveFilesFromDirectory(sourceDir, "", visitedDirs, files);
 
-  const zcodeCliLogDir = getZCodeCliLogDir();
+  const zodyCliLogDir = getZodyCliLogDir();
   // GLM / zcode-cli 的运行日志写在 ~/.zody/cli/log，不在应用主数据目录 ~/.zody/v2 下。
   // 如果导出日志只扫描 v2，定位 agent CLI 启动、协议或崩溃问题时会缺少最关键的原生侧日志。
   await collectLogArchiveFilesFromDirectory(
-    zcodeCliLogDir,
+    zodyCliLogDir,
     posix.join(ZCODE_DATA_ROOT_DIR_NAME, "cli", "log"),
     visitedDirs,
     files,
   );
 
-  const zcodeCliDir = getZCodeCliDir();
+  const zodyCliDir = getZodyCliDir();
   // 排查 agent CLI 问题还需要它的运行配置与模型 IO 轨迹。
   // config.json 是当前生效配置；rollout 是 model-io 调用轨迹，
   // 二者都不在 ~/.zody/cli/log 下，需要额外收集才能完整还原现场。
   await collectLogArchiveFile(
-    join(zcodeCliDir, "config.json"),
+    join(zodyCliDir, "config.json"),
     posix.join(ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json"),
     files,
   );
   await collectLogArchiveFilesFromDirectory(
-    join(zcodeCliDir, "rollout"),
+    join(zodyCliDir, "rollout"),
     posix.join(ZCODE_DATA_ROOT_DIR_NAME, "cli", "rollout"),
     visitedDirs,
     files,
@@ -1147,18 +1147,18 @@ export async function createFeedbackLogArchiveFromExportLogs(
     sources: [
       { directory: join(sourceDir, "logs"), archivePrefix: "logs" },
       {
-        directory: getZCodeCliLogDir(),
+        directory: getZodyCliLogDir(),
         archivePrefix: `${ZCODE_DATA_ROOT_DIR_NAME}/cli/log`,
       },
       {
-        directory: getZCodeCliDir(),
+        directory: getZodyCliDir(),
         archivePrefix: `${ZCODE_DATA_ROOT_DIR_NAME}/cli`,
         includeFileNames: ["config.json"],
         onlyCurrentDay: false,
         contentPolicy: "cli-config",
       },
       {
-        directory: join(getZCodeCliDir(), "rollout"),
+        directory: join(getZodyCliDir(), "rollout"),
         archivePrefix: `${ZCODE_DATA_ROOT_DIR_NAME}/cli/rollout`,
       },
       {
@@ -1178,7 +1178,7 @@ export async function exportLogs(
 ): Promise<{ success: boolean; path?: string; error?: string }> {
   try {
     const now = dependencies.now ?? (() => new Date());
-    const getSourceDir = dependencies.getZCodeDataDir ?? getZCodeDataDir;
+    const getSourceDir = dependencies.getZodyDataDir ?? getZodyDataDir;
     const buildArtifacts = dependencies.createLogArchiveArtifacts ?? createLogArchiveArtifacts;
     const writeZip = dependencies.writeLogArchiveZip ?? writeLogArchiveZip;
     const writeDirectory = dependencies.writeLogArchiveDirectory ?? writeLogArchiveDirectory;

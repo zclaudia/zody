@@ -8,12 +8,12 @@ import {
   createFailClosedAccountProviderConfigSnapshot,
 } from "@zody/provider";
 import {
-  NodeZCodeBuiltinProviderConfigSource,
-  EndpointScopedZCodeBuiltinSource,
-  ZCodeBuiltinRemoteSynchronizer,
-  decodeZCodeBuiltinRelease,
-  encodeZCodeBuiltinRelease,
-  resolveZCodeBuiltinCachePaths,
+  NodeZodyBuiltinProviderConfigSource,
+  EndpointScopedZodyBuiltinSource,
+  ZodyBuiltinRemoteSynchronizer,
+  decodeZodyBuiltinRelease,
+  encodeZodyBuiltinRelease,
+  resolveZodyBuiltinCachePaths,
   NodePersonalProviderConfigRepository,
 } from "../src/index.js";
 
@@ -29,13 +29,13 @@ describe("ZCode Built-in Release", () => {
     const bundledFilePath = join(root, "bundled.json");
     const controlFilePath = join(root, "control.json");
     await writeRelease(bundledFilePath, 1, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({ bundledFilePath, watch: false });
+    const source = new NodeZodyBuiltinProviderConfigSource({ bundledFilePath, watch: false });
     let now = 1000;
     const events = vi.fn();
     const fetchRelease = vi.fn(async () => {
       throw new Error("offline");
     });
-    const sync = new ZCodeBuiltinRemoteSynchronizer({
+    const sync = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath,
       resolveEndpointKey: () => "https://example.com",
@@ -73,16 +73,16 @@ describe("ZCode Built-in Release", () => {
     }
   });
   it("严格解析两层 Release，并拒绝缺字段和旧单层形状", () => {
-    const release = decodeZCodeBuiltinRelease(releaseObject(2, "model-b"));
+    const release = decodeZodyBuiltinRelease(releaseObject(2, "model-b"));
 
     expect(release.revision).toBe(2);
     expect(release.config.providers.get("builtin")?.builtinModelIds).toEqual(["model-b"]);
-    expect(encodeZCodeBuiltinRelease(release)).toEqual(releaseObject(2, "model-b"));
+    expect(encodeZodyBuiltinRelease(release)).toEqual(releaseObject(2, "model-b"));
     expect(() =>
-      decodeZCodeBuiltinRelease({ schemaVersion: 1, providers: {}, models: [] }),
+      decodeZodyBuiltinRelease({ schemaVersion: 1, providers: {}, models: [] }),
     ).toThrow();
     expect(() =>
-      decodeZCodeBuiltinRelease({
+      decodeZodyBuiltinRelease({
         schemaVersion: 1,
         revision: 1,
         config: { providers: {} },
@@ -94,7 +94,7 @@ describe("ZCode Built-in Release", () => {
     const release = releaseObject(2, "model-b");
 
     expect(() =>
-      decodeZCodeBuiltinRelease({
+      decodeZodyBuiltinRelease({
         ...release,
         config: {
           ...release.config,
@@ -122,19 +122,19 @@ describe("ZCode Built-in Release", () => {
   });
 
   it("缓存路径按平台、App 版本和规范化 Endpoint 隔离", () => {
-    const first = resolveZCodeBuiltinCachePaths({
+    const first = resolveZodyBuiltinCachePaths({
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
       zcodeEndpointOrigin: "https://EXAMPLE.com/",
     });
-    const equivalent = resolveZCodeBuiltinCachePaths({
+    const equivalent = resolveZodyBuiltinCachePaths({
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
       zcodeEndpointOrigin: "https://example.com",
     });
-    const second = resolveZCodeBuiltinCachePaths({
+    const second = resolveZodyBuiltinCachePaths({
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
@@ -152,7 +152,7 @@ describe("ZCode Built-in Release", () => {
     );
     expect(second.activeFilePath).not.toBe(first.activeFilePath);
     expect(() =>
-      resolveZCodeBuiltinCachePaths({
+      resolveZodyBuiltinCachePaths({
         environmentConfigRoot: "/environment",
         platform: "../other",
         appVersion: "3.0.0",
@@ -162,7 +162,7 @@ describe("ZCode Built-in Release", () => {
   });
 
   it("fork（F3.1）：未配置 Endpoint 使用固定本地目录，不伪造官方地址", () => {
-    const unconfigured = resolveZCodeBuiltinCachePaths({
+    const unconfigured = resolveZodyBuiltinCachePaths({
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
@@ -180,7 +180,7 @@ describe("ZCode Built-in Release", () => {
     const bundledFilePath = join(root, "bundled.json");
     await writeRelease(bundledFilePath, 1, "bundled-model");
     const fetchRelease = vi.fn(async () => releaseObject(2, "remote-model"));
-    const source = new EndpointScopedZCodeBuiltinSource({
+    const source = new EndpointScopedZodyBuiltinSource({
       bundledFilePath,
       environmentConfigRoot: join(root, "environment"),
       platform: "darwin-aarch64",
@@ -205,7 +205,7 @@ describe("ZCode Built-in Release", () => {
     const activeFilePath = join(root, "cache", "active.json");
     await writeRelease(bundledFilePath, 2, "bundled-model");
     await writeRelease(activeFilePath, 3, "active-model");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -226,7 +226,7 @@ describe("ZCode Built-in Release", () => {
     const activeFilePath = join(root, "cache", "active.json");
     await writeRelease(bundledFilePath, 4, "bundled-model");
     await writeRelease(activeFilePath, 3, "old-model");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -247,7 +247,7 @@ describe("ZCode Built-in Release", () => {
     const activeFilePath = join(root, "cache", "active.json");
     await writeRelease(bundledFilePath, 4, "bundled-model");
     await writeRelease(activeFilePath, 4, "other-model");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -268,7 +268,7 @@ describe("ZCode Built-in Release", () => {
     const activeFilePath = join(root, "cache", "active.json");
     await writeRelease(bundledFilePath, 4, "bundled-model");
     await mkdir(activeFilePath, { recursive: true });
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -285,7 +285,7 @@ describe("ZCode Built-in Release", () => {
     const bundledFilePath = join(root, "bundled.json");
     const activeFilePath = join(root, "cache", "active.json");
     await writeRelease(bundledFilePath, 1, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -295,16 +295,16 @@ describe("ZCode Built-in Release", () => {
     await source.read();
 
     await expect(
-      source.applyRemoteRelease(decodeZCodeBuiltinRelease(releaseObject(2, "model-b"))),
+      source.applyRemoteRelease(decodeZodyBuiltinRelease(releaseObject(2, "model-b"))),
     ).resolves.toBe("updated");
     await expect(
-      source.applyRemoteRelease(decodeZCodeBuiltinRelease(releaseObject(2, "model-b"))),
+      source.applyRemoteRelease(decodeZodyBuiltinRelease(releaseObject(2, "model-b"))),
     ).resolves.toBe("unchanged");
     await expect(
-      source.applyRemoteRelease(decodeZCodeBuiltinRelease(releaseObject(2, "different"))),
+      source.applyRemoteRelease(decodeZodyBuiltinRelease(releaseObject(2, "different"))),
     ).rejects.toThrow("相同 revision");
     await expect(
-      source.applyRemoteRelease(decodeZCodeBuiltinRelease(releaseObject(1, "old"))),
+      source.applyRemoteRelease(decodeZodyBuiltinRelease(releaseObject(1, "old"))),
     ).resolves.toBe("stale");
 
     expect(reasons).toEqual(["remote-updated"]);
@@ -318,7 +318,7 @@ describe("ZCode Built-in Release", () => {
     const activeFilePath = join(root, "cache", "active.json");
     const controlFilePath = join(root, "cache", "refresh-control.json");
     await writeRelease(bundledFilePath, 1, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -327,18 +327,18 @@ describe("ZCode Built-in Release", () => {
     let releaseFetch!: () => void;
     const fetchRelease = vi.fn(
       () =>
-        new Promise<ReturnType<typeof decodeZCodeBuiltinRelease>>((resolve) => {
-          releaseFetch = () => resolve(decodeZCodeBuiltinRelease(releaseObject(2, "model-b")));
+        new Promise<ReturnType<typeof decodeZodyBuiltinRelease>>((resolve) => {
+          releaseFetch = () => resolve(decodeZodyBuiltinRelease(releaseObject(2, "model-b")));
         }),
     );
-    const first = new ZCodeBuiltinRemoteSynchronizer({
+    const first = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath,
       resolveEndpointKey: () => "https://first.example.com",
       fetchRelease,
       now: () => 1_000,
     });
-    const second = new ZCodeBuiltinRemoteSynchronizer({
+    const second = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath,
       resolveEndpointKey: () => "https://first.example.com",
@@ -353,7 +353,7 @@ describe("ZCode Built-in Release", () => {
     await expect(firstRefresh).resolves.toBe("updated");
 
     const endpointChangedFetch = vi.fn(async () => null);
-    const endpointChanged = new ZCodeBuiltinRemoteSynchronizer({
+    const endpointChanged = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath,
       resolveEndpointKey: () => "https://second.example.com",
@@ -373,7 +373,7 @@ describe("ZCode Built-in Release", () => {
     const bundledFilePath = join(root, "bundled.json");
     const activeFilePath = join(root, "cache", "active.json");
     await writeRelease(bundledFilePath, 1, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -381,14 +381,14 @@ describe("ZCode Built-in Release", () => {
     await source.read();
     let endpointKey = "https://old.example.com";
     let completeFetch!: () => void;
-    const synchronizer = new ZCodeBuiltinRemoteSynchronizer({
+    const synchronizer = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath: join(root, "cache", "refresh-control.json"),
       resolveEndpointKey: () => endpointKey,
       fetchRelease: () =>
         new Promise((resolve) => {
           completeFetch = () =>
-            resolve(decodeZCodeBuiltinRelease(releaseObject(2, "old-endpoint-model")));
+            resolve(decodeZodyBuiltinRelease(releaseObject(2, "old-endpoint-model")));
         }),
     });
 
@@ -408,14 +408,14 @@ describe("ZCode Built-in Release", () => {
     const bundledFilePath = join(root, "bundled.json");
     await writeRelease(bundledFilePath, 1, "bundled-model");
     let endpointOrigin = "https://a.example.com";
-    const source = new EndpointScopedZCodeBuiltinSource({
+    const source = new EndpointScopedZodyBuiltinSource({
       bundledFilePath,
       environmentConfigRoot: join(root, "environment"),
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
       resolveEndpointOrigin: () => endpointOrigin,
       fetchRelease: async (origin) =>
-        decodeZCodeBuiltinRelease(
+        decodeZodyBuiltinRelease(
           origin === "https://a.example.com"
             ? releaseObject(20, "endpoint-a-model")
             : releaseObject(10, "endpoint-b-model"),
@@ -449,14 +449,14 @@ describe("ZCode Built-in Release", () => {
     const bundledFilePath = join(root, "bundled.json");
     await writeRelease(bundledFilePath, 1, "bundled");
     let endpoint = "https://a.example.com";
-    const source = new EndpointScopedZCodeBuiltinSource({
+    const source = new EndpointScopedZodyBuiltinSource({
       bundledFilePath,
       environmentConfigRoot: root,
       platform: "darwin-aarch64",
       appVersion: "3.12.0",
       resolveEndpointOrigin: () => endpoint,
       fetchRelease: async (origin) =>
-        decodeZCodeBuiltinRelease(
+        decodeZodyBuiltinRelease(
           releaseObject(20, origin.includes("a.example") ? "model-a" : "model-b"),
         ),
       watch: false,
@@ -489,7 +489,7 @@ describe("ZCode Built-in Release", () => {
         "model-b",
       ]);
       const activeFilePath = await source.resolveActiveFilePath();
-      const worker = new NodeZCodeBuiltinProviderConfigSource({
+      const worker = new NodeZodyBuiltinProviderConfigSource({
         bundledFilePath: activeFilePath,
         watch: false,
       });
@@ -528,7 +528,7 @@ describe("ZCode Built-in Release", () => {
         failureCount: 0,
       }),
     );
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -536,7 +536,7 @@ describe("ZCode Built-in Release", () => {
     await source.read();
     let now = 1_000;
     const fetchRelease = vi.fn(async () => null);
-    const synchronizer = new ZCodeBuiltinRemoteSynchronizer({
+    const synchronizer = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath,
       resolveEndpointKey: () => "https://example.com",
@@ -558,7 +558,7 @@ describe("ZCode Built-in Release", () => {
     const activeFilePath = join(root, "cache", "active.json");
     const controlFilePath = join(root, "cache", "refresh-control.json");
     await writeRelease(bundledFilePath, 1, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
@@ -566,10 +566,10 @@ describe("ZCode Built-in Release", () => {
     await source.read();
     let now = 1_000;
     const fetchRelease = vi
-      .fn<() => Promise<ReturnType<typeof decodeZCodeBuiltinRelease> | null>>()
+      .fn<() => Promise<ReturnType<typeof decodeZodyBuiltinRelease> | null>>()
       .mockRejectedValueOnce(new Error("temporary"))
       .mockResolvedValue(null);
-    const synchronizer = new ZCodeBuiltinRemoteSynchronizer({
+    const synchronizer = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath,
       resolveEndpointKey: () => "https://example.com",
@@ -592,20 +592,20 @@ describe("ZCode Built-in Release", () => {
     const bundledFilePath = join(root, "bundled.json");
     const activeFilePath = join(root, "cache", "active.json");
     await writeRelease(bundledFilePath, 1, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath,
       activeFilePath,
       watch: false,
     });
     await source.read();
     let completeFetch!: () => void;
-    const synchronizer = new ZCodeBuiltinRemoteSynchronizer({
+    const synchronizer = new ZodyBuiltinRemoteSynchronizer({
       source,
       controlFilePath: join(root, "cache", "refresh-control.json"),
       resolveEndpointKey: () => "https://example.com",
       fetchRelease: () =>
         new Promise((resolve) => {
-          completeFetch = () => resolve(decodeZCodeBuiltinRelease(releaseObject(2, "model-b")));
+          completeFetch = () => resolve(decodeZodyBuiltinRelease(releaseObject(2, "model-b")));
         }),
     });
 

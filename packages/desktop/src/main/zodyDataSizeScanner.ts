@@ -40,7 +40,7 @@ function isMissingPathError(error: unknown): boolean {
  * 异步统计数据根下普通文件的逻辑字节数。调用方必须把它放在 Worker 中执行；这里不跟随
  * 符号链接，避免循环或越出用户选择的数据根。
  */
-export async function scanZCodeDataDirectory(
+export async function scanZodyDataDirectory(
   options: ZodyDataSizeScanOptions,
 ): Promise<ZodyDataSizeScanResult> {
   const now = options.now ?? Date.now;
@@ -162,7 +162,7 @@ export async function scanZCodeDataDirectory(
   };
 }
 
-export function isZCodeDataSizeScanResult(value: unknown): value is ZodyDataSizeScanResult {
+export function isZodyDataSizeScanResult(value: unknown): value is ZodyDataSizeScanResult {
   if (typeof value !== "object" || value === null) {
     return false;
   }

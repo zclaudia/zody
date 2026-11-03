@@ -22,7 +22,7 @@ import {
   type ZodyWorkflowsListResult,
 } from "@zody/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { resetSavedWorkflowStoreForTests } from "@/store/savedWorkflowStore.js";
 
 const confirmMock = vi.fn(async () => true);
@@ -209,7 +209,7 @@ function mount(
   const onBack = vi.fn();
   const result = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale },
       createElement(SavedWorkflowProjectGroup, {
         project: BETA,
@@ -345,7 +345,7 @@ describe("SavedWorkflowProjectGroup", () => {
 
     rerender(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(SavedWorkflowProjectGroup, {
           project: BETA,

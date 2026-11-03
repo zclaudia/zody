@@ -1,8 +1,8 @@
-import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import type { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
 import { isSubagentColor } from "@/lib/subagentColors.js";
 
-type AgentIntl = ReturnType<typeof useZCodeIntl>["intl"];
+type AgentIntl = ReturnType<typeof useZodyIntl>["intl"];
 type AgentToolCall = ToolCallBlockRenderContext["toolCallNode"]["toolCall"];
 const DEFAULT_AGENT_TYPE_LABEL = "general-purpose";
 
@@ -192,12 +192,12 @@ function readAgentColorFromRecord(value: Record<string, unknown> | null): string
 export function readBackgroundAgentInfo(toolCall: AgentToolCall) {
   const raw = isPlainRecord(toolCall.raw) ? toolCall.raw : null;
   const meta = raw && isPlainRecord(raw._meta) ? raw._meta : null;
-  const zcode = meta && isPlainRecord(meta.zcode) ? meta.zcode : null;
-  const zcodeBackgroundAgent =
-    zcode && isPlainRecord(zcode.backgroundAgent) ? zcode.backgroundAgent : null;
+  const zody = meta && isPlainRecord(meta.zcode) ? meta.zcode : null;
+  const zodyBackgroundAgent =
+    zody && isPlainRecord(zody.backgroundAgent) ? zody.backgroundAgent : null;
   const taskNotification =
-    zcode && isPlainRecord(zcode.taskNotification) ? zcode.taskNotification : null;
-  const backgroundAgent = zcodeBackgroundAgent;
+    zody && isPlainRecord(zody.taskNotification) ? zody.taskNotification : null;
+  const backgroundAgent = zodyBackgroundAgent;
   const input = isPlainRecord(toolCall.input) ? toolCall.input : null;
   const outputText = readTextFromUnknown(toolCall.output);
   const outputFile =

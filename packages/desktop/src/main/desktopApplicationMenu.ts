@@ -38,7 +38,7 @@ export function resolveSystemApplicationLocale(): Locale {
   return systemLocale.toLowerCase().startsWith("zh") ? "zh-CN" : "en-US";
 }
 
-export function updateZCodeStdioTapDevMenuState() {
+export function updateZodyStdioTapDevMenuState() {
   const menu = Menu.getApplicationMenu();
   const item = menu?.getMenuItemById(HELP_TOGGLE_ZCODE_STDIO_TAP_MENU_ID);
   if (!item) {
@@ -387,6 +387,6 @@ export function rebuildApplicationMenu(options: {
   );
   setAutoUpdaterMenuLocale(options.currentApplicationLocale);
   if (!app.isPackaged) {
-    updateZCodeStdioTapDevMenuState();
+    updateZodyStdioTapDevMenuState();
   }
 }

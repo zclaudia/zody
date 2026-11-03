@@ -64,10 +64,10 @@ vi.mock("@/hooks/useSettingService.js", () => ({
   }),
 }));
 vi.mock("@/hooks/useZodySessionService.js", () => ({
-  useZCodeSessionService: () => ({}),
+  useZodySessionService: () => ({}),
 }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },

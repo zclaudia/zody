@@ -13,7 +13,7 @@ import { createTaskSlice } from "./zodySessionStoreTaskSlice.js";
 import { createWorkspaceSlice } from "./zodySessionStoreWorkspaceSlice.js";
 import { uiMemoryDiagnosticsRegistry } from "@/lib/memoryDiagnostics.js";
 
-export const useZCodeSessionStore = create<ZodySessionStoreState>()((set, get) => ({
+export const useZodySessionStore = create<ZodySessionStoreState>()((set, get) => ({
   workspaces: {},
   ...createNavigationSlice(set, get),
   ...createWorkspaceSlice(set),
@@ -22,7 +22,7 @@ export const useZCodeSessionStore = create<ZodySessionStoreState>()((set, get) =
     getWorkspaceState(get(), workspacePath, workspaceIdentity),
 }));
 
-type ZodySessionStoreE2EBridge = typeof useZCodeSessionStore;
+type ZodySessionStoreE2EBridge = typeof useZodySessionStore;
 
 declare global {
   interface Window {
@@ -32,7 +32,7 @@ declare global {
 
 if (shouldExposeE2EStoreBridge()) {
   // E2E 诊断入口必须由 WDIO 显式打开，不能复用 ZCODE_ENV=test，避免产品测试环境暴露可变全局 store。
-  window.__zcodeSessionStoreE2E = useZCodeSessionStore;
+  window.__zcodeSessionStoreE2E = useZodySessionStore;
 }
 
 // ────────────────────────────────────────────
@@ -49,5 +49,5 @@ export type {
 
 // 内存诊断计数器：workspace 桶全仓无删除路径，先落日志。
 uiMemoryDiagnosticsRegistry.register("sessionStore", () => ({
-  workspaces: Object.keys(useZCodeSessionStore.getState().workspaces).length,
+  workspaces: Object.keys(useZodySessionStore.getState().workspaces).length,
 }));

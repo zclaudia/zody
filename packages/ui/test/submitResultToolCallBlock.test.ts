@@ -7,7 +7,7 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { getZodyToolFamilyForName, normalizeZodyToolName } from "@zody/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { resolveToolCallIdentity } from "@/lib/toolIdentity.js";
 
 // CodeBlock 依赖 shiki / CodeViewer / Tooltip 根 provider，静态渲染跑不动；照
@@ -96,7 +96,7 @@ function renderBlock(
 ): string {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(SubmitResultToolCallBlock, buildContext(toolCall, contextOverrides)),
     ),
@@ -133,7 +133,7 @@ describe("submit_result 路由", () => {
     // 同时钉住两个面。
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolCallBlock, {
           toolCallNode: {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { CircleHelp, Loader2 } from "lucide-react";
 import { ZCODE_AGENT_PROVIDER, type ZodyConfigOption } from "@zody/shared";
 import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycleControl.js";
-import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import type { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 export type SubagentReasoningFieldState =
   | { kind: "not-applicable" }
@@ -18,7 +18,7 @@ export function SubagentReasoningField({
   state,
 }: {
   disabled: boolean;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   labelVisibilityClassName: string;
   onValueCommit: (value: string) => void;
   state: SubagentReasoningFieldState;

@@ -1,4 +1,4 @@
-import { getZCodeCopy, type UiLocale } from "@zody/i18n";
+import { getZodyCopy, type UiLocale } from "@zody/i18n";
 import type { TuiEffortOption } from "@zody/tui";
 import type { CommandCenterApp } from "./types.js";
 
@@ -13,7 +13,7 @@ export function thoughtLevelsToEffortOptions(
   levels: readonly string[],
   locale?: UiLocale,
 ): TuiEffortOption[] {
-  const effortCopy = getZCodeCopy(locale).tui.effort;
+  const effortCopy = getZodyCopy(locale).tui.effort;
   return levels.map((level) => ({
     id: level,
     label: effortLabel(level, effortCopy),

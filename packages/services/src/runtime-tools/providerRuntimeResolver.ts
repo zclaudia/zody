@@ -116,7 +116,7 @@ function resolveLegacyBundledResourceRoots(moduleDir?: string): Array<string | n
   ];
 }
 
-export function findZCodeAgentRuntimeBinary(): string | null {
+export function findZodyAgentRuntimeBinary(): string | null {
   const runtime = ZCODE_AGENT_RUNTIME;
   const entrySegments = runtime.resolveEntrySegments(process.platform);
   const resourceSegments = [runtime.bundledResourceDir, ...entrySegments];
@@ -150,7 +150,7 @@ export function findZCodeAgentRuntimeBinary(): string | null {
  * 候选目录与 findZCodeAgentRuntimeBinary 完全平行，只是入口换成平台无关的 nodeBundleEntryFile。
  * 不查 GLM_BINARY_PATH——那个 env 指向原生二进制，语义不同。
  */
-export function findZCodeAgentRuntimeNodeBundle(): string | null {
+export function findZodyAgentRuntimeNodeBundle(): string | null {
   const runtime = ZCODE_AGENT_RUNTIME;
   const entrySegments = runtime.resolveNodeBundleSegments();
   const resourceSegments = [runtime.bundledResourceDir, ...entrySegments];
@@ -183,7 +183,7 @@ export function findBinary(provider: string): string | null {
   if (devEntry) {
     return devEntry.agentPath;
   }
-  return findZCodeAgentRuntimeBinary();
+  return findZodyAgentRuntimeBinary();
 }
 
 /**

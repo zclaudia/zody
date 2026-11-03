@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ZodyTaskMeta } from "@zody/shared";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
-import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
+import { compareZodyTaskListItems } from "@/lib/taskListOrdering.js";
 import { mapSessionSummaryToTaskMeta } from "@/v4/mapSessionSummaryToTaskMeta.js";
 import {
   buildTaskListItemIdentityKey,
@@ -190,7 +190,7 @@ export function useWorkspaceSessionsIndexItems(
         );
       }
     }
-    metas.sort((a, b) => compareZCodeTaskListItems(a, b, "updated"));
+    metas.sort((a, b) => compareZodyTaskListItems(a, b, "updated"));
     // 每个 tick 都全量重建 metas，即使内容完全没变（例如冷恢复把 seed 换成
     // live 投影只改了列表不消费的 preview 字段），下游也会把"全新数组引用"当成新数据：
     // grouped 视图整树 refresh、workspace 行缓存被 invalidate、各列表 republish——

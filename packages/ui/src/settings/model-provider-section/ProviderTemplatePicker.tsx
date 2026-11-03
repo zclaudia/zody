@@ -10,7 +10,7 @@ import {
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { SettingsBreadcrumbReporter } from "@/settings/SettingsHeaderBreadcrumb.js";
 import { useSettingsPresentation } from "@/settings/SettingsPresentationContext.js";
@@ -34,7 +34,7 @@ export function ProviderTemplatePicker({
   onCreateCustom: CustomProviderCreate;
   creating: boolean;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const { isMobile } = useSettingsPresentation();
   const { dismissFeedback, showFeedback } = useProviderDetailFeedback();
   const templatePickerTitle = intl.formatMessage({

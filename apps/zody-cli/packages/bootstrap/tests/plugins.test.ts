@@ -23,19 +23,19 @@ import { createPluginFacadeForApp } from "../src/app/plugin-facade.js";
 import type { ZodyAppOptions } from "../src/app/types.js";
 import { loadPluginAgentProfiles } from "./helpers/subagents.js";
 import {
-  configureZCodePlugin,
-  describeZCodePlugin,
-  getZCodePluginsOverview,
-  installZCodeMarketplacePlugin,
-  listZCodePlugins,
-  resolveZCodePlugins,
-  resetZCodePluginConfig,
+  configureZodyPlugin,
+  describeZodyPlugin,
+  getZodyPluginsOverview,
+  installZodyMarketplacePlugin,
+  listZodyPlugins,
+  resolveZodyPlugins,
+  resetZodyPluginConfig,
   resolveMarketplaceRefreshTargetIds,
   restoreBuiltinPlugin,
-  setZCodePluginEnabled,
-  uninstallZCodeMarketplacePlugin,
-  updateZCodePluginMarketplace,
-  validateZCodePlugin,
+  setZodyPluginEnabled,
+  uninstallZodyMarketplacePlugin,
+  updateZodyPluginMarketplace,
+  validateZodyPlugin,
   isWorkspacePluginConfigPath,
 } from "../src/plugins.js";
 import { StartupTimer } from "../src/startup-logging.js";
@@ -194,7 +194,7 @@ describe("ZCode plugins", () => {
           plugins: { enabledPlugins: { "documents@zcode-plugins-official": false } },
         }),
       );
-      const outcome = resolveZCodePlugins({
+      const outcome = resolveZodyPlugins({
         env: {},
         pluginStorageRoot: join(root, "plugins"),
         userConfigPath,
@@ -237,7 +237,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const outcome = listZCodePlugins({
+      const outcome = listZodyPlugins({
         env: {},
         pluginStorageRoot,
         skipUserConfig: true,
@@ -308,7 +308,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const outcome = resolveZCodePlugins({
+      const outcome = resolveZodyPlugins({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
@@ -352,7 +352,7 @@ describe("ZCode plugins", () => {
       );
       await writeTestFile(join(pluginRoot, "skills", "demo", "SKILL.md"), "# demo");
 
-      await installZCodeMarketplacePlugin({
+      await installZodyMarketplacePlugin({
         marketplace: "lazy-market",
         pluginName: "demo",
         pluginStorageRoot,
@@ -377,7 +377,7 @@ describe("ZCode plugins", () => {
       }
       await writeFile(manifestPath, JSON.stringify(manifest));
 
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         pluginStorageRoot,
         userConfigPath: configPath,
         workingDirectory: root,
@@ -450,7 +450,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         pluginStorageRoot,
         userConfigPath: configPath,
         workingDirectory: root,
@@ -518,7 +518,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         pluginStorageRoot,
         userConfigPath: configPath,
         workingDirectory: root,
@@ -547,7 +547,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
@@ -563,7 +563,7 @@ describe("ZCode plugins", () => {
 
     try {
       const pluginStorageRoot = join(root, "plugins");
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         env: {},
         pluginStorageRoot,
         skipUserConfig: true,
@@ -664,7 +664,7 @@ describe("ZCode plugins", () => {
       await writeTestFile(join(pluginRoot, "agents", "judge.md"), "---\nname: judge\n---\n");
 
       const configPath = join(root, "config.json");
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         marketplace: "lazy-market",
         pluginName: "hello",
         pluginStorageRoot,
@@ -680,7 +680,7 @@ describe("ZCode plugins", () => {
         // 安装即默认启用：新装插件应直接 enabled，无需再手动开。
         enabled: true,
       });
-      const overview = await getZCodePluginsOverview({
+      const overview = await getZodyPluginsOverview({
         pluginStorageRoot,
         userConfigPath: configPath,
         workingDirectory: root,
@@ -761,7 +761,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         marketplace: "zip-lazy-market",
         pluginName: "hello-zip",
         pluginStorageRoot,
@@ -784,7 +784,7 @@ describe("ZCode plugins", () => {
         existsSync(join(result.installedPlugins[0]?.installPath ?? "", "agents", "judge.md")),
       ).toBe(true);
 
-      const overviewResult = getZCodePluginsOverview({
+      const overviewResult = getZodyPluginsOverview({
         pluginStorageRoot,
         userConfigPath: configPath,
         workingDirectory: root,
@@ -839,7 +839,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         marketplace: "lazy-market",
         pluginName: "hello",
         pluginStorageRoot,
@@ -891,7 +891,7 @@ describe("ZCode plugins", () => {
       );
       await writeTestFile(join(pluginRoot, "skills", "hello", "SKILL.md"), "# hello");
 
-      const installed = await installZCodeMarketplacePlugin({
+      const installed = await installZodyMarketplacePlugin({
         marketplace: "lazy-market",
         pluginName: "hello",
         pluginStorageRoot,
@@ -918,7 +918,7 @@ describe("ZCode plugins", () => {
       await mkdir(dataDir, { recursive: true });
       await writeTestFile(join(dataDir, "generated-commands", "demo.md"), "# demo");
 
-      const removed = await uninstallZCodeMarketplacePlugin({
+      const removed = await uninstallZodyMarketplacePlugin({
         pluginId: "hello@lazy-market",
         pluginStorageRoot,
         userConfigPath: configPath,
@@ -996,7 +996,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const removed = await uninstallZCodeMarketplacePlugin({
+      const removed = await uninstallZodyMarketplacePlugin({
         pluginId,
         pluginStorageRoot,
         userConfigPath,
@@ -1059,7 +1059,7 @@ describe("ZCode plugins", () => {
         JSON.stringify({ plugins: { suppressedBuiltins: [pluginId] } }),
       );
 
-      await uninstallZCodeMarketplacePlugin({
+      await uninstallZodyMarketplacePlugin({
         pluginId,
         pluginStorageRoot,
         userConfigPath,
@@ -1095,7 +1095,7 @@ describe("ZCode plugins", () => {
       );
 
       // Seed first so its cache exists.
-      resolveZCodePlugins({
+      resolveZodyPlugins({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
@@ -1103,7 +1103,7 @@ describe("ZCode plugins", () => {
       const cacheDir = join(pluginStorageRoot, OFFICIAL_SKILL_CREATOR_PLUGIN_CACHE_PATH);
       await stat(cacheDir);
 
-      const removed = await uninstallZCodeMarketplacePlugin({
+      const removed = await uninstallZodyMarketplacePlugin({
         pluginId: SKILL_CREATOR_PLUGIN_ID,
         pluginStorageRoot,
         userConfigPath,
@@ -1117,7 +1117,7 @@ describe("ZCode plugins", () => {
       expect(config.plugins.options?.[SKILL_CREATOR_PLUGIN_ID]).toBeUndefined();
 
       // Re-resolve: Runtime stays gone, but Catalog/cache remain readable for detail/restore.
-      const outcome = resolveZCodePlugins({
+      const outcome = resolveZodyPlugins({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
@@ -1125,7 +1125,7 @@ describe("ZCode plugins", () => {
       expect(outcome.plugins.find((p) => p.id === SKILL_CREATOR_PLUGIN_ID)).toBeUndefined();
       await expect(stat(cacheDir)).resolves.toBeDefined();
 
-      const detail = await describeZCodePlugin({
+      const detail = await describeZodyPlugin({
         pluginName: "skill-creator",
         marketplace: "zcode-plugins-official",
         pluginStorageRoot,
@@ -1139,7 +1139,7 @@ describe("ZCode plugins", () => {
 
       // Double-uninstall is idempotent: an already-suppressed built-in is not resolved,
       // so it falls through to the marketplace path and returns null without throwing.
-      const second = await uninstallZCodeMarketplacePlugin({
+      const second = await uninstallZodyMarketplacePlugin({
         pluginId: SKILL_CREATOR_PLUGIN_ID,
         pluginStorageRoot,
         userConfigPath,
@@ -1204,7 +1204,7 @@ describe("ZCode plugins", () => {
       );
 
       // Suppressed: not present.
-      let outcome = resolveZCodePlugins({
+      let outcome = resolveZodyPlugins({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
@@ -1221,7 +1221,7 @@ describe("ZCode plugins", () => {
       const config = JSON.parse(await readFile(userConfigPath, "utf8"));
       expect(config.plugins.suppressedBuiltins ?? []).not.toContain(SKILL_CREATOR_PLUGIN_ID);
 
-      outcome = resolveZCodePlugins({
+      outcome = resolveZodyPlugins({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
@@ -1249,13 +1249,13 @@ describe("ZCode plugins", () => {
       );
 
       // 先写入完整 Catalog/cache，模拟详情页仍可见但 Runtime 被抑制的状态。
-      resolveZCodePlugins({
+      resolveZodyPlugins({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
       });
 
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         marketplace: "zcode-plugins-official",
         pluginName: "skill-creator",
         pluginStorageRoot,
@@ -1307,7 +1307,7 @@ describe("ZCode plugins", () => {
         "# Document Skills\n",
       );
 
-      resolveZCodePlugins({
+      resolveZodyPlugins({
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
@@ -1327,7 +1327,7 @@ describe("ZCode plugins", () => {
       entry!.version = "1.0.0";
       await writeFile(manifestPath, JSON.stringify(manifest));
 
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         marketplace: "zcode-plugins-official",
         pluginName: "documents",
         pluginStorageRoot,
@@ -1351,7 +1351,7 @@ describe("ZCode plugins", () => {
     const pluginStorageRoot = join(root, "plugins");
 
     try {
-      const removed = await uninstallZCodeMarketplacePlugin({
+      const removed = await uninstallZodyMarketplacePlugin({
         pluginId: "missing@lazy-market",
         pluginStorageRoot,
         skipUserConfig: true,
@@ -1381,7 +1381,7 @@ describe("ZCode plugins", () => {
         },
       ]);
 
-      const diagnostics = await validateZCodePlugin({
+      const diagnostics = await validateZodyPlugin({
         marketplace: "offline-market",
         pluginName: "hello",
         pluginStorageRoot,
@@ -1428,12 +1428,12 @@ describe("ZCode plugins", () => {
         },
       ]);
 
-      const update = await updateZCodePluginMarketplace({
+      const update = await updateZodyPluginMarketplace({
         marketplace: "offline-market",
         pluginStorageRoot,
         workingDirectory: root,
       });
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         pluginStorageRoot,
         skipUserConfig: true,
         workingDirectory: root,
@@ -1502,7 +1502,7 @@ describe("ZCode plugins", () => {
       ]);
       vi.stubEnv("PATH", join(root, "no-system-git"));
 
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         marketplace: "private-market",
         pluginName: "private-plugin",
         pluginStorageRoot,
@@ -1604,7 +1604,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const outcome = resolveZCodePlugins({
+      const outcome = resolveZodyPlugins({
         env: {},
         pluginStorageRoot,
         userConfigPath: configPath,
@@ -1643,7 +1643,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const outcome = resolveZCodePlugins({
+      const outcome = resolveZodyPlugins({
         env: {},
         pluginStorageRoot,
         userConfigPath: configPath,
@@ -1731,7 +1731,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const outcome = resolveZCodePlugins({
+      const outcome = resolveZodyPlugins({
         env: {},
         pluginStorageRoot,
         userConfigPath: configPath,
@@ -1833,14 +1833,14 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      await configureZCodePlugin({
+      await configureZodyPlugin({
         options: { region: "us-east-1" },
         pluginId,
         pluginStorageRoot,
         userConfigPath,
         workingDirectory: root,
       });
-      await configureZCodePlugin({
+      await configureZodyPlugin({
         options: { token: "secret" },
         pluginId,
         pluginStorageRoot,
@@ -1864,13 +1864,13 @@ describe("ZCode plugins", () => {
       });
       expect(reloadedConfig.config.plugins.dirs).toEqual([pluginRoot]);
       expect(
-        resolveZCodePlugins({
+        resolveZodyPlugins({
           configResult: reloadedConfig,
           pluginStorageRoot,
           workingDirectory: root,
         }).plugins.map((plugin) => plugin.id),
       ).toContain(pluginId);
-      await configureZCodePlugin({
+      await configureZodyPlugin({
         options: { region: "eu-west-1" },
         pluginId,
         pluginStorageRoot,
@@ -1879,7 +1879,7 @@ describe("ZCode plugins", () => {
         userConfigPath,
         workingDirectory: root,
       });
-      await setZCodePluginEnabled({
+      await setZodyPluginEnabled({
         enabled: true,
         plugin: pluginId,
         pluginStorageRoot,
@@ -1888,7 +1888,7 @@ describe("ZCode plugins", () => {
         userConfigPath,
         workingDirectory: root,
       });
-      await configureZCodePlugin({
+      await configureZodyPlugin({
         clearOptionKeys: ["token"],
         options: {},
         pluginId,
@@ -1941,7 +1941,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const result = await setZCodePluginEnabled({
+      const result = await setZodyPluginEnabled({
         enabled: true,
         plugin: pluginId,
         pluginStorageRoot,
@@ -1995,7 +1995,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      await setZCodePluginEnabled({
+      await setZodyPluginEnabled({
         enabled: true,
         plugin: pluginId,
         pluginStorageRoot: join(root, "plugins"),
@@ -2050,7 +2050,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      await resetZCodePluginConfig({
+      await resetZodyPluginConfig({
         pluginId,
         scope: "workspace",
         projectConfigPath: workspaceConfigPath,
@@ -2121,7 +2121,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const beforeRefresh = getZCodePluginsOverview({
+      const beforeRefresh = getZodyPluginsOverview({
         env: {},
         pluginStorageRoot,
         userConfigPath,
@@ -2145,7 +2145,7 @@ describe("ZCode plugins", () => {
       ) as { marketplaces: Array<{ id: string }> };
       expect(knownBeforeRefresh.marketplaces.some((item) => item.id === marketplaceId)).toBe(false);
 
-      const dryRun = await installZCodeMarketplacePlugin({
+      const dryRun = await installZodyMarketplacePlugin({
         dryRun: true,
         env: {},
         marketplace: marketplaceId,
@@ -2157,7 +2157,7 @@ describe("ZCode plugins", () => {
       expect(dryRun.diagnostics).toEqual([]);
       expect(existsSync(join(pluginStorageRoot, "marketplaces", marketplaceId))).toBe(false);
 
-      const refreshed = await updateZCodePluginMarketplace({
+      const refreshed = await updateZodyPluginMarketplace({
         env: {},
         marketplace: marketplaceId,
         pluginStorageRoot,
@@ -2172,7 +2172,7 @@ describe("ZCode plugins", () => {
         existsSync(join(pluginStorageRoot, "marketplaces", marketplaceId, "marketplace.json")),
       ).toBe(true);
 
-      const afterRefresh = getZCodePluginsOverview({
+      const afterRefresh = getZodyPluginsOverview({
         env: {},
         pluginStorageRoot,
         userConfigPath,
@@ -2187,7 +2187,7 @@ describe("ZCode plugins", () => {
         ]),
       );
 
-      const installed = await installZCodeMarketplacePlugin({
+      const installed = await installZodyMarketplacePlugin({
         env: {},
         marketplace: marketplaceId,
         pluginName,
@@ -2256,7 +2256,7 @@ describe("ZCode plugins", () => {
         workingDirectory: root,
       });
       expect(configResult.config.plugins?.extraKnownMarketplaces?.[marketplaceId]).toBeUndefined();
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         env: {},
         pluginStorageRoot: join(root, "plugins"),
         userConfigPath: join(root, "user-config.json"),
@@ -2288,7 +2288,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         env: {},
         pluginStorageRoot: join(root, "plugins"),
         userConfigPath,
@@ -2329,7 +2329,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const overview = getZCodePluginsOverview({
+      const overview = getZodyPluginsOverview({
         env: {},
         pluginStorageRoot,
         userConfigPath,
@@ -2398,7 +2398,7 @@ describe("ZCode plugins", () => {
         }),
       );
 
-      const result = await updateZCodePluginMarketplace({
+      const result = await updateZodyPluginMarketplace({
         env: {},
         marketplace: marketplaceId,
         pluginStorageRoot,
@@ -2415,7 +2415,7 @@ describe("ZCode plugins", () => {
           severity: "error",
         }),
       ]);
-      const installResult = await installZCodeMarketplacePlugin({
+      const installResult = await installZodyMarketplacePlugin({
         env: {},
         marketplace: marketplaceId,
         pluginName: "demo",
@@ -2481,7 +2481,7 @@ describe("ZCode plugins", () => {
       const controller = new AbortController();
       controller.abort();
 
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         abortSignal: controller.signal,
         env: {},
         marketplace: marketplaceId,
@@ -2530,7 +2530,7 @@ describe("ZCode plugins", () => {
       const controller = new AbortController();
       controller.abort();
 
-      const result = await updateZCodePluginMarketplace({
+      const result = await updateZodyPluginMarketplace({
         abortSignal: controller.signal,
         env: {},
         marketplace: marketplaceId,

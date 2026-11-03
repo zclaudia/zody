@@ -9,7 +9,7 @@ import type {
   TurnHeaderRow,
   UserInputRow,
 } from "@zody/shared/zody-protocol-v4";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationTurnNavigator } from "@/v4/ConversationTurnNavigator.js";
 import { buildConversationTurnRenderUnits } from "@/v4/conversationTurnRenderUnits.js";
 import {
@@ -361,7 +361,7 @@ describe("conversation turn navigator helpers", () => {
   it("positions the compact rail at the owning timeline vertical center", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ConversationTurnNavigator, {
           onJumpToQuery: () => {},
@@ -399,7 +399,7 @@ describe("conversation turn navigator helpers", () => {
   it("TN03：rail 只允许纵向滚动，山峰放大不产生横向滚动条", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ConversationTurnNavigator, {
           onJumpToQuery: () => {},

@@ -10,7 +10,7 @@ import {
 } from "@zody/adapters/storage";
 import { createWorkspaceHookTrustRecords } from "@zody/core";
 import { SessionEventType, type ExecutionPort } from "@zody/contracts";
-import { createRegistryBackedTestApp as createZCodeApp } from "./helpers/registry-backed-test-app.js";
+import { createRegistryBackedTestApp as createZodyApp } from "./helpers/registry-backed-test-app.js";
 
 const roots: string[] = [];
 
@@ -51,7 +51,7 @@ describe("createZCodeApp workspace Hook admission", () => {
     const blockedSessionStore = createSqliteSessionStore({
       dbPath: ":memory:",
     });
-    const blockedApp = await createZCodeApp({
+    const blockedApp = await createZodyApp({
       env: {},
       eventStore: blockedEvents,
       executionPort: executionPort(blockedCommands),
@@ -105,7 +105,7 @@ describe("createZCodeApp workspace Hook admission", () => {
     const trustedSessionStore = createSqliteSessionStore({
       dbPath: ":memory:",
     });
-    const trustedApp = await createZCodeApp({
+    const trustedApp = await createZodyApp({
       env: {},
       eventStore: trustedEvents,
       executionPort: executionPort(trustedCommands),
@@ -178,7 +178,7 @@ describe("createZCodeApp workspace Hook admission", () => {
     const commands: string[] = [];
     const events = createInMemorySessionEventStore();
     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
-    const app = await createZCodeApp({
+    const app = await createZodyApp({
       env: {},
       eventStore: events,
       executionPort: executionPort(commands),
@@ -242,7 +242,7 @@ describe("createZCodeApp workspace Hook admission", () => {
     const commands: string[] = [];
     const eventStore = createInMemorySessionEventStore();
     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
-    const app = await createZCodeApp({
+    const app = await createZodyApp({
       env: {},
       eventStore,
       executionPort: executionPort(commands),
@@ -380,7 +380,7 @@ describe("createZCodeApp workspace Hook admission", () => {
     const commands: string[] = [];
     const eventStore = createInMemorySessionEventStore();
     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
-    const app = await createZCodeApp({
+    const app = await createZodyApp({
       env: {},
       eventStore,
       executionPort: executionPort(commands),
@@ -463,7 +463,7 @@ describe("createZCodeApp workspace Hook admission", () => {
     const commands: string[] = [];
     const eventStore = createInMemorySessionEventStore();
     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
-    const app = await createZCodeApp({
+    const app = await createZodyApp({
       env: {},
       eventStore,
       executionPort: executionPort(commands),

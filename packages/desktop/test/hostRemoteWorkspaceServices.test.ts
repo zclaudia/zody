@@ -175,7 +175,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => ({ wrapped: service }) as never,
+      createReportingRemoteZodyTaskService: (service) => ({ wrapped: service }) as never,
     });
 
     expect(services.get(IFileService)).toBe(remoteServices.fileService);
@@ -241,7 +241,7 @@ describe("remote workspace host service wiring", () => {
               parentPort: null,
               createRemotePromptAttachmentTaskService: passthroughService,
               createRemotePromptAttachmentSessionService: passthroughService,
-              createReportingRemoteZCodeTaskService: passthroughService,
+              createReportingRemoteZodyTaskService: passthroughService,
             });
       const [serverProtocol, clientProtocol] = createQueuePair();
       const server = new ChannelServer(serverProtocol, "mobile-onboarding", 50);
@@ -290,7 +290,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => service,
+      createReportingRemoteZodyTaskService: (service) => service,
     });
     try {
       await services.get(ISettingService).update({
@@ -379,7 +379,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => service,
+      createReportingRemoteZodyTaskService: (service) => service,
     });
 
     try {
@@ -432,7 +432,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => service,
+      createReportingRemoteZodyTaskService: (service) => service,
     });
 
     try {
@@ -535,7 +535,7 @@ describe("remote workspace host service wiring", () => {
           }),
         }),
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) =>
+      createReportingRemoteZodyTaskService: (service) =>
         new Proxy(service, {
           get(target, property, receiver) {
             const value = Reflect.get(target, property, receiver);

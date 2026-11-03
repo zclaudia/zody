@@ -3,7 +3,7 @@ import type { MobileNotification } from "@zody/services/mobile-notifications";
 import type { MobileNotificationPushStatus } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { MobileNotificationCenter } from "@/MobileNotificationCenter.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 
@@ -24,7 +24,7 @@ export function MobileNotificationsFeature({
   switcher: WebRemoteControlWorkspaceSwitcherApi;
   onBack: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const reader = useMemo(() => switcher.getNotificationReader?.(), [switcher]);
   const platform = useOptionalPlatform();
   const notificationPlatform = platform?.mobileNotifications;

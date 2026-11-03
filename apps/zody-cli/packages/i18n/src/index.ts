@@ -27,6 +27,6 @@ const CATALOGS: Record<SupportedLocale, ZodyCopy> = {
   "zh-CN": zhCN,
 };
 
-export function getZCodeCopy(locale?: UiLocale | string, detected?: string | null): ZodyCopy {
+export function getZodyCopy(locale?: UiLocale | string, detected?: string | null): ZodyCopy {
   return CATALOGS[resolveLocale(locale, detected)];
 }

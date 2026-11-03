@@ -6,7 +6,7 @@ import type { PluginStoreOrder, ZodyPluginMarketplaceSummary } from "@zody/share
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { PluginStoreAvatar } from "@/settings/PluginStoreAvatar.js";
 import { PluginStoreCard, type PluginStoreActions } from "@/settings/PluginStoreCard.js";
@@ -56,7 +56,7 @@ export function PluginStoreListView({
   onSegmentChange: (segment: PluginStoreSegment) => void;
   onOpenManage: () => void;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const isOfficeMode = useIsOfficeMode();
   const modeOrder = isOfficeMode ? order?.work : order?.code;
   const keyword = query.trim().toLowerCase();
@@ -375,7 +375,7 @@ function CollapsibleCardGroup({
   actions: PluginStoreActions;
   locale: string;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const visible = expanded ? items : items.slice(0, CATEGORY_VISIBLE_LIMIT);
   const hidden = expanded ? [] : items.slice(CATEGORY_VISIBLE_LIMIT);
   const hiddenNames = hidden.slice(0, 2).map((item) => resolveItemDisplayName(item, locale));
@@ -451,7 +451,7 @@ function PublicSegment({
   resolveCategoryLabel: (category: string) => string;
   onToggleGroup: (key: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const isEmpty = featuredItems.length === 0 && categoryGroups.length === 0;
   if (isEmpty) {
     return (
@@ -515,7 +515,7 @@ function PersonalSegment({
   locale: string;
   onToggleGroup: (key: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   if (groups.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-border px-4 py-3 text-ui-base text-foreground-subtle">

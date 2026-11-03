@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 
-export function resolveZCodeBuiltinClientPlatform(): string {
+export function resolveZodyBuiltinClientPlatform(): string {
   const target = process.platform === "win32" ? "windows" : process.platform;
   const arch =
     process.arch === "arm64" ? "aarch64" : process.arch === "x64" ? "x86_64" : process.arch;
@@ -21,12 +21,12 @@ export interface ZodyBuiltinCachePaths {
 }
 
 /** 按平台与 App 版本隔离 Active/LKG；路径本身就是兼容范围。 */
-export function resolveZCodeBuiltinCachePaths(
+export function resolveZodyBuiltinCachePaths(
   options: ZodyBuiltinCachePathOptions,
 ): ZodyBuiltinCachePaths {
   const platform = normalizeSegment(options.platform, "platform");
   const appVersion = normalizeSegment(options.appVersion, "appVersion");
-  const endpointKey = createZCodeBuiltinEndpointKey(options.zcodeEndpointOrigin);
+  const endpointKey = createZodyBuiltinEndpointKey(options.zcodeEndpointOrigin);
   const directory = join(
     options.environmentConfigRoot,
     "runtime",
@@ -48,18 +48,18 @@ export function resolveZCodeBuiltinCachePaths(
 const ZCODE_BUILTIN_UNCONFIGURED_ENDPOINT_KEY = "endpoint-unconfigured";
 
 /** 将 ZCode 控制面 Origin 规范化后映射为安全、稳定且碰撞风险可忽略的缓存路径段。 */
-export function createZCodeBuiltinEndpointKey(zcodeEndpointOrigin: string): string {
+export function createZodyBuiltinEndpointKey(zcodeEndpointOrigin: string): string {
   const trimmed = zcodeEndpointOrigin.trim();
   // fork（F3.1）：未配置端点不再回落官方地址，使用固定目录保证缓存隔离且可稳定读取。
   if (!trimmed) {
     return ZCODE_BUILTIN_UNCONFIGURED_ENDPOINT_KEY;
   }
-  const normalized = normalizeZCodeBuiltinEndpointOrigin(trimmed);
+  const normalized = normalizeZodyBuiltinEndpointOrigin(trimmed);
   const digest = createHash("sha256").update(normalized).digest("hex").slice(0, 32);
   return `endpoint-${digest}`;
 }
 
-export function normalizeZCodeBuiltinEndpointOrigin(value: string): string {
+export function normalizeZodyBuiltinEndpointOrigin(value: string): string {
   const normalized = value.trim();
   if (!normalized) throw new Error("ZCode Built-in Endpoint Origin 不能为空");
   const url = new URL(normalized);

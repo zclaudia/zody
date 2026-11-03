@@ -12,7 +12,7 @@ import {
   testId,
   type ZodySavedWorkflowEntry,
 } from "@zody/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   resolveAutomationWorkspaceSelectionKey,
   type AutomationWorkspaceOption,
@@ -73,7 +73,7 @@ function mount(
   const { scope, projectLabel, ...rest } = extra;
   render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(SavedWorkflowLaunchDialog, {
         entry,

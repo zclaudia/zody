@@ -5,7 +5,7 @@ import type { FeedbackTicketDetail } from "@zody/shared";
 import type { IFeedbackService } from "@zody/services";
 
 import { FeedbackProcessView } from "@/feedback/FeedbackProcessView.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 function createTicket(): FeedbackTicketDetail {
   return {
@@ -43,7 +43,7 @@ describe("FeedbackProcessView", () => {
   it("localizes the latest summary in the process header", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(FeedbackProcessView, {
           ticket: createTicket(),

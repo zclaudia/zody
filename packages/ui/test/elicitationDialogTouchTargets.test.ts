@@ -2,7 +2,7 @@ import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ElicitationDialog } from "../src/ElicitationDialog.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import type { ZodyElicitationRequest } from "@zody/shared";
 
 const TOUCH_SIZE_11 = "[@media(hover:none)_and_(pointer:coarse)]:size-11";
@@ -42,7 +42,7 @@ function renderDialog(props: Record<string, unknown>): string {
   const Dialog = ElicitationDialog as ComponentType<Record<string, unknown>>;
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(Dialog, {
         request: createMultiQuestionRequest(),

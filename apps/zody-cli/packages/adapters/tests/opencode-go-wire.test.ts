@@ -5,7 +5,7 @@ import {
   createRegistryProviderConfig,
   createRegistryModelConfig,
   parseProviderConfig,
-  parseZCodeBuiltinModelConfigRules,
+  parseZodyBuiltinModelConfigRules,
   type ModelConfigRules,
 } from "@zody/provider";
 import { AiSdkModelExecution } from "../src/model/model-execution.js";
@@ -21,7 +21,7 @@ beforeAll(async () => {
       "utf8",
     ),
   );
-  rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+  rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
 });
 const baseUrl = "https://opencode.ai/zen/go/v1";
 // 每种 Go 映射走正式 SDK / transport；只截获假 Key 请求，不消耗用户额度。

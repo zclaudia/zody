@@ -155,8 +155,8 @@ vi.mock("@/store/zodySessionStore.js", async () => {
     getTaskUnreadIndicator: () => false,
     hasTaskPendingHumanInterventionRequest: () => false,
     hasTaskPendingPermissionRequest: () => false,
-    selectWorkspaceZCodeState: () => ({}),
-    useZCodeSessionStore: (
+    selectWorkspaceZodyState: () => ({}),
+    useZodySessionStore: (
       selector: (state: Record<string, unknown>) => unknown,
     ) => selector({}),
   };

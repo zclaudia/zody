@@ -177,9 +177,9 @@ export class AccountProviderService implements ProviderSource<AccountProviderCon
           this.#pendingReasons.add("superseded-resolution");
           continue;
         }
-        const basedOnZCodeBuiltinRevision = config.zcodeBuiltinRevision;
+        const basedOnZodyBuiltinRevision = config.zcodeBuiltinRevision;
         const next = createAccountProviderConfigSnapshot(
-          basedOnZCodeBuiltinRevision,
+          basedOnZodyBuiltinRevision,
           providers,
           states,
         );

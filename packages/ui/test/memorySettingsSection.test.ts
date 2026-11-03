@@ -24,7 +24,7 @@ import {
 } from "@zody/shared";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     locale: "zh-CN",
     intl: {
       formatMessage: (

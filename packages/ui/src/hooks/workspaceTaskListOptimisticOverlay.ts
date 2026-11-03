@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import type { ZodyTaskMeta } from "@zody/shared";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { buildTaskEntityKey, buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
-import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
+import { compareZodyTaskListItems } from "@/lib/taskListOrdering.js";
 import { mergeTaskWithOptimisticMeta } from "@/lib/zodyTaskMetaMerge.js";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { selectWorkspaceZodyState, useZodySessionStore } from "@/store/zodySessionStore.js";
 import type { GroupedDraftTaskState } from "@/store/zodySessionStoreTypes.js";
 import { mergeTaskListMembershipFields } from "@/v4/taskListRowActivity.js";
 
@@ -56,7 +56,7 @@ export function mergeWorkspaceTaskListItemsWithOptimistic(params: {
   }
 
   const sortedItems = [...taskByKey.values()].sort((left, right) =>
-    compareZCodeTaskListItems(left, right, params.sortBy),
+    compareZodyTaskListItems(left, right, params.sortBy),
   );
   return params.visibleLimit === null ? sortedItems : sortedItems.slice(0, params.visibleLimit);
 }
@@ -77,10 +77,10 @@ export function useWorkspaceTaskOptimisticOverlayByWorkspaceKey(
     () => JSON.parse(workspaceScopeSignature) as WorkspaceOptimisticScope[],
     [workspaceScopeSignature],
   );
-  const optimisticTaskListSignature = useZCodeSessionStore((state) =>
+  const optimisticTaskListSignature = useZodySessionStore((state) =>
     JSON.stringify(
       workspaceScopes.map((scope) => {
-        const workspaceState = selectWorkspaceZCodeState(
+        const workspaceState = selectWorkspaceZodyState(
           state,
           scope.workspacePath,
           scope.workspaceIdentity,
@@ -114,10 +114,10 @@ export function useWorkspaceTaskOptimisticOverlayByWorkspaceKey(
   );
 
   return useMemo(() => {
-    const state = useZCodeSessionStore.getState();
+    const state = useZodySessionStore.getState();
     return new Map<string, WorkspaceOptimisticTaskOverlay>(
       workspaceScopes.map((scope) => {
-        const workspaceState = selectWorkspaceZCodeState(
+        const workspaceState = selectWorkspaceZodyState(
           state,
           scope.workspacePath,
           scope.workspaceIdentity,

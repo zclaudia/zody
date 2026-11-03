@@ -39,7 +39,7 @@ vi.mock("@/hooks/useWorkflowRunSave.js", () => ({
 }));
 
 // eslint-disable-next-line import/first -- 必须在 mock 之后再引入被测组件。
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 // eslint-disable-next-line import/first
 import {
   WorkflowSavePopover,
@@ -82,7 +82,7 @@ const ENTRY: ZodySavedWorkflowEntry = {
 };
 
 function withIntl(node: ReactNode, locale: "en-US" | "zh-CN" = "en-US") {
-  return createElement(ZCodeIntlProvider, { initialLocale: locale }, node);
+  return createElement(ZodyIntlProvider, { initialLocale: locale }, node);
 }
 
 // ── 弹层 ──

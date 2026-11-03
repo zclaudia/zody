@@ -28,7 +28,7 @@ import {
 import { Spinner } from "@/components/ui/spinner.js";
 import { Switch } from "@/components/ui/switch.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { AutomationRunNowIcon } from "@/settings/AutomationDesignPrimitives.js";
 import { SettingsFormTextarea } from "@/settings/SettingsFormTextarea.js";
 import {
@@ -96,7 +96,7 @@ export function SavedWorkflowLaunchDialog({
   pending = false,
   error = null,
 }: SavedWorkflowLaunchDialogProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [fields, setFields] = useState<SavedWorkflowArgField[]>([]);
   const [errors, setErrors] = useState<Record<string, SavedWorkflowArgFieldError>>({});
   const [targetKey, setTargetKey] = useState<string | null>(null);

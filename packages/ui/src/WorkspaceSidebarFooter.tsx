@@ -7,7 +7,7 @@ import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type { Theme } from "@/useTheme.js";
 import { WorkspaceSidebarFooterPreferences } from "@/WorkspaceSidebarFooterPreferences.js";
 import { WorkspaceWebRemoteControlTrigger } from "@/WorkspaceWebRemoteControlTrigger.js";
@@ -44,7 +44,7 @@ export const WorkspaceSidebarFooter = memo(function WorkspaceSidebarFooterCompon
   banner?: ReactNode;
   className?: string;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const settingsButtonLabel =
     settingsButtonMode === "back"

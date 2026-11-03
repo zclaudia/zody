@@ -33,19 +33,19 @@ import {
 } from "@zody/shared";
 import type { PluginDiagnostic, PluginMetadata } from "@zody/contracts";
 import {
-  addZCodePluginMarketplace,
-  configureZCodePlugin,
-  describeZCodePlugin,
-  getZCodePluginsOverview,
-  installZCodeMarketplacePlugin,
-  removeZCodePluginMarketplace,
-  resolveZCodePlugins,
-  resetZCodePluginConfig,
+  addZodyPluginMarketplace,
+  configureZodyPlugin,
+  describeZodyPlugin,
+  getZodyPluginsOverview,
+  installZodyMarketplacePlugin,
+  removeZodyPluginMarketplace,
+  resolveZodyPlugins,
+  resetZodyPluginConfig,
   restoreBuiltinPlugin as restoreBuiltinPluginCore,
-  setZCodePluginEnabled,
-  uninstallZCodeMarketplacePlugin,
-  updateZCodePluginMarketplace,
-  validateZCodePlugin,
+  setZodyPluginEnabled,
+  uninstallZodyMarketplacePlugin,
+  updateZodyPluginMarketplace,
+  validateZodyPlugin,
 } from "../plugins.js";
 import {
   isDefaultPluginMarketplacesInitialized,
@@ -222,7 +222,7 @@ export async function listPlugins(
     params.workspace.workspacePath,
     params.configScope,
   );
-  const outcome = resolveZCodePlugins({
+  const outcome = resolveZodyPlugins({
     configResult,
     logger: context.logger,
     workingDirectory: params.workspace.workspacePath,
@@ -249,7 +249,7 @@ export async function setPluginEnabled(
 ): Promise<ZodyPluginsSetEnabledResult> {
   const params = parseParams(zodyPluginsSetEnabledParamsSchema, rawParams);
   abortSignal?.throwIfAborted();
-  const result = await setZCodePluginEnabled({
+  const result = await setZodyPluginEnabled({
     enabled: params.enabled,
     logger: context.logger,
     plugin: params.pluginId,
@@ -272,7 +272,7 @@ export async function getPluginsOverview(
   rawParams: unknown,
 ): Promise<ZodyPluginsOverviewResult> {
   const params = parseParams(zodyPluginsOverviewParamsSchema, rawParams);
-  const overview = getZCodePluginsOverview({
+  const overview = getZodyPluginsOverview({
     configResult: createPluginConfigView(
       context,
       params.workspace.workspacePath,
@@ -299,7 +299,7 @@ export async function addPluginMarketplace(
   const params = parseParams(zodyPluginsMarketplaceAddParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const marketplace = await withPluginStorageLock(pluginStorageRoot, async () =>
-    addZCodePluginMarketplace({
+    addZodyPluginMarketplace({
       abortSignal,
       dryRun: params.dryRun,
       logger: context.logger,
@@ -317,7 +317,7 @@ export async function removePluginMarketplace(
   const params = parseParams(zodyPluginsMarketplaceRemoveParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   await withPluginStorageLock(pluginStorageRoot, async () =>
-    removeZCodePluginMarketplace({
+    removeZodyPluginMarketplace({
       logger: context.logger,
       marketplace: params.marketplace,
       workingDirectory: params.workspace.workspacePath,
@@ -334,7 +334,7 @@ export async function updatePluginMarketplace(
   const params = parseParams(zodyPluginsMarketplaceUpdateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageLock(pluginStorageRoot, async () =>
-    updateZCodePluginMarketplace({
+    updateZodyPluginMarketplace({
       abortSignal,
       logger: context.logger,
       marketplace: params.marketplace,
@@ -355,7 +355,7 @@ export async function installPlugin(
   const params = parseParams(zodyPluginsInstallParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageLock(pluginStorageRoot, async () =>
-    installZCodeMarketplacePlugin({
+    installZodyMarketplacePlugin({
       abortSignal,
       dryRun: params.dryRun,
       logger: context.logger,
@@ -377,7 +377,7 @@ export async function uninstallPlugin(
   rawParams: unknown,
 ): Promise<ZodyPluginsUninstallResult> {
   const params = parseParams(zodyPluginsUninstallParamsSchema, rawParams);
-  const removed = await uninstallZCodeMarketplacePlugin({
+  const removed = await uninstallZodyMarketplacePlugin({
     logger: context.logger,
     marketplace: params.marketplace,
     pluginId: params.pluginId,
@@ -413,7 +413,7 @@ export async function updatePlugin(
     // 让失败的重装显式暴露，而不是静默"成功"。
     const diagnostics: ZodyPluginDiagnostic[] = [];
     for (const record of installed) {
-      const result = await installZCodeMarketplacePlugin({
+      const result = await installZodyMarketplacePlugin({
         logger: context.logger,
         marketplace: record.marketplace,
         pluginName: record.name,
@@ -448,7 +448,7 @@ export async function configurePlugin(
   rawParams: unknown,
 ): Promise<ZodyPluginsConfigureResult> {
   const params = parseParams(zodyPluginsConfigureParamsSchema, rawParams);
-  await configureZCodePlugin({
+  await configureZodyPlugin({
     clearOptionKeys: params.clearOptionKeys,
     dryRun: params.dryRun,
     logger: context.logger,
@@ -465,7 +465,7 @@ export async function resetPluginConfig(
   rawParams: unknown,
 ): Promise<ZodyPluginsConfigureResult> {
   const params = parseParams(zodyPluginsResetConfigParamsSchema, rawParams);
-  await resetZCodePluginConfig({
+  await resetZodyPluginConfig({
     logger: context.logger,
     pluginId: params.pluginId,
     scope: params.scope,
@@ -523,7 +523,7 @@ export async function validatePlugin(
         params.pluginName === undefined ? undefined : params.marketplace,
       ),
     async () =>
-      validateZCodePlugin({
+      validateZodyPlugin({
         logger: context.logger,
         marketplace: params.marketplace,
         pluginName: params.pluginName,
@@ -558,7 +558,7 @@ export async function describePlugin(
       ) &&
       needsMarketplaceManifestMaterialization(pluginStorageRoot, params.marketplace),
     async () =>
-      describeZCodePlugin({
+      describeZodyPlugin({
         logger: context.logger,
         marketplace: params.marketplace,
         pluginName: params.pluginName,

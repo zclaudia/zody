@@ -9,7 +9,7 @@ import {
   buildTaskWorkspaceKey,
 } from "@/lib/taskQueryCache.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 
 const WORKSPACE_PATH = "/repo/event-coordinator";
 
@@ -59,7 +59,7 @@ function titleFor(taskId: string): string | undefined {
 afterEach(() => {
   clearTaskListWorkspaceEventCoordinatorForTest();
   useTaskQueryCacheStore.getState().clearAll();
-  useZCodeSessionStore.setState({ workspaces: {} });
+  useZodySessionStore.setState({ workspaces: {} });
 });
 
 describe("taskListWorkspaceEventCoordinator", () => {

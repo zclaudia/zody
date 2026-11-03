@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createSqliteSessionStore } from "@zody/adapters/storage";
 import type { McpPort, McpServerConfig } from "@zody/contracts";
-import { createRegistryBackedTestApp as createZCodeApp } from "./helpers/registry-backed-test-app.js";
+import { createRegistryBackedTestApp as createZodyApp } from "./helpers/registry-backed-test-app.js";
 import {
   resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
@@ -15,7 +15,7 @@ import {
 import {
   ZCODE_CUA_BROKER_UNAVAILABLE_ENV,
   ZCODE_CUA_BROKER_SOCKET_ENV,
-  injectZCodeCuaBrokerMcpServers,
+  injectZodyCuaBrokerMcpServers,
   omitMcpServers,
   resolveTrustedOfficialCuaServerNames,
 } from "../src/mcp-config.js";
@@ -59,7 +59,7 @@ describe("project MCP config", () => {
         }),
       );
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         mcpPort: createRecordingMcpPort(connectedServerSets),
         modelExecutor: createStopModelExecutor(),
@@ -117,7 +117,7 @@ describe("project MCP config", () => {
         }),
       );
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         mcpPort: createRecordingMcpPort(connectedServerSets, connectedConfigs),
         modelExecutor: createStopModelExecutor(),
@@ -168,7 +168,7 @@ describe("project MCP config", () => {
       new Set(),
     );
 
-    const injected = injectZCodeCuaBrokerMcpServers(
+    const injected = injectZodyCuaBrokerMcpServers(
       configuredServers,
       "/tmp/product-broker.sock",
       "product-token",
@@ -236,7 +236,7 @@ describe("project MCP config", () => {
         }),
       );
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         mcpPort: createRecordingMcpPort(connectedServerSets, connectedConfigs),
         modelExecutor: createStopModelExecutor(),
@@ -316,7 +316,7 @@ describe("project MCP config", () => {
         }),
       );
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         mcpPort: createRecordingMcpPort(connectedServerSets, connectedConfigs),
         modelExecutor: createStopModelExecutor(),
@@ -397,7 +397,7 @@ describe("project MCP config", () => {
         }),
       );
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         mcpPort: createRecordingMcpPort(connectedServerSets, connectedConfigs),
         modelExecutor: createStopModelExecutor(),
@@ -452,7 +452,7 @@ describe("project MCP config", () => {
       },
     };
 
-    const injected = injectZCodeCuaBrokerMcpServers(servers, "/tmp/broker.sock", "tok");
+    const injected = injectZodyCuaBrokerMcpServers(servers, "/tmp/broker.sock", "tok");
 
     expect(injected).toBe(servers);
   });
@@ -476,7 +476,7 @@ describe("project MCP config", () => {
       },
     };
 
-    const injected = injectZCodeCuaBrokerMcpServers(
+    const injected = injectZodyCuaBrokerMcpServers(
       servers,
       "/tmp/broker.sock",
       "tok",
@@ -501,7 +501,7 @@ describe("project MCP config", () => {
       },
     };
 
-    const injected = injectZCodeCuaBrokerMcpServers(
+    const injected = injectZodyCuaBrokerMcpServers(
       servers,
       "/tmp/broker.sock",
       "tok",
@@ -527,7 +527,7 @@ describe("project MCP config", () => {
       },
     };
 
-    const cleaned = injectZCodeCuaBrokerMcpServers(servers, undefined);
+    const cleaned = injectZodyCuaBrokerMcpServers(servers, undefined);
     expect(cleaned["zcode-cua"]).toBeUndefined();
   });
 

@@ -6,7 +6,7 @@ import type { Locale } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { MODEL_INPUT_CAPABILITY_BADGE_CLASS_NAME } from "@/components/ModelInputCapabilityBadge.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   MODEL_CONFIG_SELECT_BADGE_CLASS_NAME,
   getModelTriggerLabelClassName,
@@ -35,7 +35,7 @@ function createGroup(key: string): ModelSelectGroup {
 function renderWithTooltipProvider(element: ReactElement, locale: Locale = "zh-CN") {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(TooltipProvider, null, element),
     ),
@@ -45,7 +45,7 @@ function renderWithTooltipProvider(element: ReactElement, locale: Locale = "zh-C
 function renderInteractive(element: ReactElement, locale: Locale) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(TooltipProvider, null, element),
     ),

@@ -20,7 +20,7 @@ import {
   ListTodo,
   LoaderIcon,
 } from "lucide-react";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { cn } from "./components/lib/utils.js";
 
@@ -51,7 +51,7 @@ export function TodoPanel({
   plan: ZodyPlanStep[] | null;
   isStreaming: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!plan || plan.length === 0) {

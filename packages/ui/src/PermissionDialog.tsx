@@ -59,9 +59,9 @@ import {
 } from "@/permissionWorkflowSettings.js";
 import { SaveWorkflowPermissionBlock } from "@/SaveWorkflowPermissionBlock.js";
 import { isSaveWorkflowToolCall } from "@/lib/workflowToolNames.js";
-import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
+import { useZodyStoreWithDefault } from "@/store/StoreProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
-import { useZCodeIntl } from "./i18n/IntlProvider.js";
+import { useZodyIntl } from "./i18n/IntlProvider.js";
 import { Info, CameraIcon, LoaderIcon, WrenchIcon } from "lucide-react";
 
 const MCP_PERMISSION_TOOL_ICON = <WrenchIcon className="size-4 shrink-0 text-foreground-subtle" />;
@@ -471,7 +471,7 @@ function CuaScreenshotConfirmPermissionBlock({
   request: ZodyPermissionRequest;
   fallbackReason: string | null;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const target = useMemo(() => getCuaScreenshotConfirmTarget(request), [request]);
   const targetRows = useMemo(() => {
     if (!target) {
@@ -602,7 +602,7 @@ export function PermissionDialog({
   provider?: ZodyProvider;
   isWebRemoteControl?: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const isMobileTextInputViewport = useIsMobileTextInputViewport();
   // Bug 根因：反馈输入也会渲染在手机 Web 远控的 PermissionDialog 中，14px 输入框聚焦时会触发 iOS 页面放大。
   // 与 composer 复用同一套视口判断和 16px 兼容 token，桌面和非远控 Web 保持原有字号。
@@ -611,8 +611,8 @@ export function PermissionDialog({
     isWebRemoteControl,
   });
   // M5②.5 store 耦合剥离：主题/代码预览设置在宿主处取 store，向下走 props/render context。
-  const theme = useZCodeStoreWithDefault((state) => state.theme, "system");
-  const codePreviewSettings = useZCodeStoreWithDefault(
+  const theme = useZodyStoreWithDefault((state) => state.theme, "system");
+  const codePreviewSettings = useZodyStoreWithDefault(
     (state) => state.codePreviewSettings,
     DEFAULT_CODE_PREVIEW_SETTINGS,
   );

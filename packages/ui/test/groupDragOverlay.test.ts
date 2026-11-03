@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { ZodyGroupedTaskViewNode } from "@zody/services";
 import { CRON_DEFAULT_GROUP_ID } from "@zody/shared";
 import { describe, expect, it } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { GroupDragOverlay } from "@/workspace-grouped-tasks/group-drag-overlay.js";
 
 type GroupNode = Extract<ZodyGroupedTaskViewNode, { type: "group" }>;
@@ -11,7 +11,7 @@ type GroupNode = Extract<ZodyGroupedTaskViewNode, { type: "group" }>;
 function renderOverlay(node: GroupNode) {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(GroupDragOverlay, { node }),
     ),

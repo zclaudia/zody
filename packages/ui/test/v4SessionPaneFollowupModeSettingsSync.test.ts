@@ -7,7 +7,7 @@ import type {
   ConversationSnapshot,
 } from "@zody/shared/zody-protocol-v4";
 import { SessionPane } from "@/v4/SessionPane.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { dispatchConversationSelectionAdd } from "@/lib/conversationSelectionReference.js";
 import {
   buildSelectionSideChatKey,
@@ -116,7 +116,7 @@ vi.mock("@/v4/V4ConversationContext.js", () => ({
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStoreWithDefault: (_selector: unknown, fallback: unknown) => fallback,
+  useZodyStoreWithDefault: (_selector: unknown, fallback: unknown) => fallback,
 }));
 
 vi.mock("@/v4/composer/useDraftConfigControl.js", () => ({
@@ -350,7 +350,7 @@ describe("SessionPane followupMode app setting sync", () => {
       await act(async () => {
         root.render(
           createElement(
-            ZCodeIntlProvider,
+            ZodyIntlProvider,
             { initialLocale: "zh-CN" },
             createElement(SessionPane, {
               paneId: "workspace-main",
@@ -405,7 +405,7 @@ describe("SessionPane followupMode app setting sync", () => {
     await act(async () => {
       root.render(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: "zh-CN" },
           createElement(SessionPane, {
             paneId: "workspace-main",

@@ -138,14 +138,14 @@ function isLegacyAgentTool(
   const kind = normalizeLegacyToken(toolCall.kind);
   const title = normalizeLegacyToken(toolCall.title);
   const rawDirect = normalizeLegacyToken(rawNames.direct);
-  const rawZCode = normalizeLegacyToken(rawNames.zcode);
+  const rawZody = normalizeLegacyToken(rawNames.zcode);
   const rawClaude = normalizeLegacyToken(rawNames.claudeCode);
 
   return (
     rawClaude === "agent" ||
     rawClaude === "task" ||
-    rawZCode === "agent" ||
-    rawZCode === "spawn_agent" ||
+    rawZody === "agent" ||
+    rawZody === "spawn_agent" ||
     rawDirect === "agent" ||
     rawDirect === "spawn_agent" ||
     kind === "agent" ||

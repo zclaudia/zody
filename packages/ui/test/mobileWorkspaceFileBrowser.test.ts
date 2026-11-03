@@ -14,7 +14,7 @@ import {
   resolveMobileFileBrowserError,
 } from "../src/mobileFileBrowserModel.js";
 import { MobileWorkspaceFileBrowser } from "../src/MobileWorkspaceFileBrowser.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import { ServiceProvider } from "../src/hooks/useServices.js";
 import { PlatformProvider } from "../src/hooks/usePlatform.js";
 import { StoreProvider } from "../src/store/StoreProvider.js";
@@ -218,7 +218,7 @@ function createBrowserHarness(
 
   const view = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         StoreProvider,

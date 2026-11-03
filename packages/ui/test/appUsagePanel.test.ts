@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFile } from "node:fs/promises";
 import type { AppUsageRange, AppUsageSnapshot } from "@zody/shared";
 import type { IServiceAccessor } from "@zody/services";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import {
   AppUsageLifetimeSummaryStrip,
@@ -119,7 +119,7 @@ describe("AppUsageLifetimeSummaryStrip", () => {
   it("renders all-time app usage metrics independent of the selected range", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(AppUsageLifetimeSummaryStrip, {
           snapshot: createSnapshot(),
@@ -159,7 +159,7 @@ describe("AppUsageLifetimeSummaryStrip", () => {
       createElement(
         ServiceProvider,
         { services: createServices() },
-        createElement(ZCodeIntlProvider, { initialLocale: "zh-CN" }, createElement(AppUsagePanel)),
+        createElement(ZodyIntlProvider, { initialLocale: "zh-CN" }, createElement(AppUsagePanel)),
       ),
     );
 

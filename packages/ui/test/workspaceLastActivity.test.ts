@@ -5,7 +5,7 @@ import type { ZodyTaskMeta } from "@zody/shared";
 import zh from "@/i18n/locales/zh-CN.js";
 import { WorkspaceLastActivity } from "@/WorkspaceHeaderSections/WorkspaceLastActivity.js";
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }, values: Record<string, unknown> = {}) =>
         zh[id]!.replace(/\{(\w+)\}/g, (_, key) => String(values[key])),

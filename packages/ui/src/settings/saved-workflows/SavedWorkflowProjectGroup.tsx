@@ -10,7 +10,7 @@ import {
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { logger } from "@/logger.js";
@@ -83,7 +83,7 @@ export function SavedWorkflowProjectGroup({
   onOpenWorkflowRun,
   onOpenWorkflowArtifact,
 }: SavedWorkflowProjectGroupProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const requestConfirmation = useConfirmDialog();
   const resolution = useWorkspaceServicesResolution(
     project.workspacePath,

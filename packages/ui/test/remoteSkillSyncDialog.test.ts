@@ -91,7 +91,7 @@ vi.mock("@/components/ui/dialog.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => {
+  useZodyIntl: () => {
     const locale = remoteSkillSyncIntlMockState.locale;
     return {
       intl: {

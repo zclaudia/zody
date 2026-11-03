@@ -11,7 +11,7 @@ import {
   type ProviderId,
 } from "@zody/provider";
 import {
-  NodeZCodeBuiltinProviderConfigSource,
+  NodeZodyBuiltinProviderConfigSource,
   type ZCodeBuiltinProviderConfigSnapshot,
 } from "@zody/provider-node";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -20,7 +20,7 @@ import { ApiProviderModelRuntime } from "../src/app/provider-registry-model-runt
 const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
   new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
 );
-const source = new NodeZCodeBuiltinProviderConfigSource({
+const source = new NodeZodyBuiltinProviderConfigSource({
   bundledFilePath: zcodeBuiltinProviderConfigFilePath,
   watch: false,
 });

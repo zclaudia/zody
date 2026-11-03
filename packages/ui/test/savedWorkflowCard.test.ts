@@ -12,7 +12,7 @@ import {
   type ZodySavedWorkflowEntry,
   type ZodySavedWorkflowRun,
 } from "@zody/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   SavedWorkflowCard,
   SavedWorkflowLastRunBadge,
@@ -47,7 +47,7 @@ function run(overrides: Partial<ZodySavedWorkflowRun> = {}): ZodySavedWorkflowRu
 }
 
 function mount(node: ReactNode) {
-  return render(createElement(ZCodeIntlProvider, { initialLocale: "zh-CN" }, node));
+  return render(createElement(ZodyIntlProvider, { initialLocale: "zh-CN" }, node));
 }
 
 describe("SavedWorkflowLastRunBadge", () => {

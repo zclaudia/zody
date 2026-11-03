@@ -7,9 +7,9 @@ export class ProtocolRuntimeResources {
   private readonly apps = new Set<ZodyApp>();
   private closePromise?: Promise<void>;
 
-  constructor(private readonly factory: ZodyProtocolAgentDependencies["createZCodeApp"]) {}
+  constructor(private readonly factory: ZodyProtocolAgentDependencies["createZodyApp"]) {}
 
-  readonly create: ZodyProtocolAgentDependencies["createZCodeApp"] = async (options) => {
+  readonly create: ZodyProtocolAgentDependencies["createZodyApp"] = async (options) => {
     this.assertServing();
     const app = await this.factory(options);
     const originalClose = app.close?.bind(app);

@@ -72,10 +72,10 @@ function installedItemWithRuntimeInfo(): StorePluginItem {
 
 async function renderCard(item: StorePluginItem, actions: PluginStoreActions): Promise<string> {
   const { PluginStoreCard } = await import("../src/settings/PluginStoreCard.js");
-  const { ZCodeIntlProvider } = await import("@/i18n/IntlProvider.js");
+  const { ZodyIntlProvider } = await import("@/i18n/IntlProvider.js");
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "en-US" },
       createElement(PluginStoreCard, { item, actions, locale: "en-US" }),
     ),
@@ -88,10 +88,10 @@ async function renderDetail(
   onUsePrompt: (item: StorePluginItem, prompt: string) => void = () => {},
 ): Promise<string> {
   const { PluginStoreDetailView } = await import("../src/settings/PluginStoreDetailView.js");
-  const { ZCodeIntlProvider } = await import("@/i18n/IntlProvider.js");
+  const { ZodyIntlProvider } = await import("@/i18n/IntlProvider.js");
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "en-US" },
       createElement(PluginStoreDetailView, {
         item,

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useZCodeSessionStore } from "../src/store/zodySessionStore.js";
+import { useZodySessionStore } from "../src/store/zodySessionStore.js";
 import { LAST_SELECTED_AGENT_PROVIDER_STORAGE_KEY } from "../src/lib/zodyProviderPreference.js";
 
 function createStorageMock(initial: Record<string, string> = {}) {
@@ -17,7 +17,7 @@ function createStorageMock(initial: Record<string, string> = {}) {
 
 describe("agent provider preference", () => {
   beforeEach(() => {
-    useZCodeSessionStore.setState((state) => ({
+    useZodySessionStore.setState((state) => ({
       ...state,
       workspaces: {},
     }));
@@ -33,7 +33,7 @@ describe("agent provider preference", () => {
     });
     vi.stubGlobal("window", { localStorage: storage });
 
-    const workspaceState = useZCodeSessionStore.getState().getWorkspaceState("/tmp/workspace-gemini");
+    const workspaceState = useZodySessionStore.getState().getWorkspaceState("/tmp/workspace-gemini");
 
     expect(workspaceState.selectedProvider).toBe("glm");
   });
@@ -44,7 +44,7 @@ describe("agent provider preference", () => {
     });
     vi.stubGlobal("window", { localStorage: storage });
 
-    const workspaceState = useZCodeSessionStore.getState().getWorkspaceState("/tmp/workspace-glm");
+    const workspaceState = useZodySessionStore.getState().getWorkspaceState("/tmp/workspace-glm");
 
     expect(workspaceState.selectedProvider).toBe("glm");
     expect(workspaceState.taskListVersion).toBe(0);
@@ -55,10 +55,10 @@ describe("agent provider preference", () => {
     const storage = createStorageMock();
     vi.stubGlobal("window", { localStorage: storage });
 
-    useZCodeSessionStore.getState().startDraft("/tmp/workspace-draft", "gemini");
+    useZodySessionStore.getState().startDraft("/tmp/workspace-draft", "gemini");
 
     expect(storage.getItem(LAST_SELECTED_AGENT_PROVIDER_STORAGE_KEY)).toBe("glm");
-    expect(useZCodeSessionStore.getState().getWorkspaceState("/tmp/workspace-draft").selectedProvider).toBe(
+    expect(useZodySessionStore.getState().getWorkspaceState("/tmp/workspace-draft").selectedProvider).toBe(
       "glm",
     );
   });

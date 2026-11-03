@@ -5,7 +5,7 @@ import type { IPlatformService } from "@zody/shared";
 import { NewTaskButtonGroup } from "@/NewTaskButtonGroup.js";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { formatCommandShortcutLabel } from "@/lib/keyboardShortcuts.js";
 import { TabStoreProvider } from "@/store/TabStoreProvider.js";
 import { createSettingsTestServices } from "./lib/settingsTestServices.js";
@@ -21,7 +21,7 @@ function renderNewTaskButtonGroup() {
         PlatformProvider,
         { platform: {} as unknown as IPlatformService },
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: "zh-CN" },
           createElement(
             TabStoreProvider,

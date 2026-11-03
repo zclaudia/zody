@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useRemoteAccessStatus } from "@/hooks/useRemoteAccessStatus.js";
 import { useSettings } from "@/hooks/useSettingService.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
   getGatewayStatusDotClassName,
@@ -62,7 +62,7 @@ function PendingSpinner({ pending }: { pending: boolean }) {
  * 本组件只提交用户动作。backend 凭证只写不读，界面只能看到「已配置/未配置」。
  */
 export function RemoteAccessSection({ isDesktop }: { isDesktop: boolean }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const platform = usePlatform();
   const { settings, update, refresh: refreshSettings } = useSettings();
   const remoteAccessStatusRead = useRemoteAccessStatus({ enabled: isDesktop });

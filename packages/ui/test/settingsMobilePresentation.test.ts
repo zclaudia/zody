@@ -16,7 +16,7 @@ import { SettingsPresentationProvider } from "@/settings/SettingsPresentationCon
 import { ShortcutBindingRow } from "@/settings/ShortcutBindingRow.js";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: { formatMessage: ({ id }: { id: string }) => id },
     locale: "en-US",
     localePreference: "system",

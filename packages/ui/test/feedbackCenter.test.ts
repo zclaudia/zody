@@ -6,7 +6,7 @@ import type { IFeedbackService } from "@zody/services";
 import type { IPlatformService } from "@zody/shared";
 
 import { useFeedbackStore } from "@/feedback/feedbackStore.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { TabStoreProvider } from "@/store/TabStoreProvider.js";
 
 // fork（F2.9，决策门 D7）：反馈中心收敛为本地面板。
@@ -36,7 +36,7 @@ function makePlatform(): IPlatformService {
 function renderFeedbackCenter(platform: IPlatformService) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         TabStoreProvider,

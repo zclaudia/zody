@@ -44,7 +44,7 @@ import { resolveLatestSession, runZodyProtocolAgent } from "../src/index.js";
 import { ProductProjection } from "../src/zody-protocol-v4/product-projection.js";
 import { synthesizeEventsFromMessages } from "../src/zody-protocol-v4/transcript-hydration.js";
 import {
-  createRegistryBackedTestApp as createZCodeApp,
+  createRegistryBackedTestApp as createZodyApp,
   createTestProviderRegistry,
 } from "./helpers/registry-backed-test-app.js";
 
@@ -67,7 +67,7 @@ describe("session persistence", () => {
     const primeSpy = vi.spyOn(artifactStore, "primeMediaAttachmentPath");
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         artifactStore,
         env: {},
         runtimeConfig: { workingDirectory: process.cwd() },
@@ -153,7 +153,7 @@ describe("session persistence", () => {
     const messageId = createMessageId();
     const persistedBytes = Uint8Array.from([1, 2, 3, 4]);
     const changedOriginalBytes = Uint8Array.from([9, 8, 7, 6]);
-    let app: Awaited<ReturnType<typeof createZCodeApp>> | undefined;
+    let app: Awaited<ReturnType<typeof createZodyApp>> | undefined;
 
     try {
       await store.createSession({
@@ -165,7 +165,7 @@ describe("session persistence", () => {
         version: "test",
       });
       await writeFile(originalPath, changedOriginalBytes);
-      app = await createZCodeApp({
+      app = await createZodyApp({
         artifactStore,
         bootstrapModelConfig: {
           main: {
@@ -283,7 +283,7 @@ describe("session persistence", () => {
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
     const sessionId = createSessionId("sent-local-ref-preview");
     const messageId = createMessageId();
-    let app: Awaited<ReturnType<typeof createZCodeApp>> | undefined;
+    let app: Awaited<ReturnType<typeof createZodyApp>> | undefined;
 
     try {
       await store.createSession({
@@ -294,7 +294,7 @@ describe("session persistence", () => {
         title: "Sent local ref preview",
         version: "test",
       });
-      app = await createZCodeApp({
+      app = await createZodyApp({
         bootstrapModelConfig: {
           main: {
             apiKeyRequired: false,
@@ -372,7 +372,7 @@ describe("session persistence", () => {
     );
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
     const requests: Array<Array<{ content: unknown; role: string }>> = [];
-    let app: Awaited<ReturnType<typeof createZCodeApp>> | undefined;
+    let app: Awaited<ReturnType<typeof createZodyApp>> | undefined;
 
     try {
       await mkdir(dirname(enabledSkillPath), { recursive: true });
@@ -406,7 +406,7 @@ describe("session persistence", () => {
         }),
       );
 
-      app = await createZCodeApp({
+      app = await createZodyApp({
         env: {
           HOME: tempRoot,
           ZCODE_STORAGE_DIR: tempRoot,
@@ -455,7 +455,7 @@ describe("session persistence", () => {
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         loggerFactory,
         modelExecutor: {
@@ -495,7 +495,7 @@ describe("session persistence", () => {
     const store = createSqliteSessionStore({ dbPath: ":memory:" });
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText() {
@@ -530,7 +530,7 @@ describe("session persistence", () => {
     const requests: string[][] = [];
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText(request) {
@@ -579,7 +579,7 @@ describe("session persistence", () => {
     const requests: string[][] = [];
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText(request) {
@@ -636,7 +636,7 @@ describe("session persistence", () => {
     const sessionId = createSessionId("bootstrap-session-version");
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -719,7 +719,7 @@ describe("session persistence", () => {
     const store = createSqliteSessionStore({ dbPath });
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -777,7 +777,7 @@ describe("session persistence", () => {
     const queueItemId = "queue-goal-visible-prompt";
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -907,7 +907,7 @@ describe("session persistence", () => {
       await mkdir(shellDir, { recursive: true });
       await writeFile(zshPath, "#!/bin/sh\n");
       await chmod(zshPath, 0o755);
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           PATH: shellDir,
           SHELL: join(shellDir, "fish"),
@@ -962,7 +962,7 @@ describe("session persistence", () => {
     const replacementDisplayText = `/GoAl replace ${replacementObjective}`;
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -1043,7 +1043,7 @@ describe("session persistence", () => {
     const store = createSqliteSessionStore({ dbPath });
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -1118,8 +1118,8 @@ describe("session persistence", () => {
 
     try {
       let switched = false;
-      let app: Awaited<ReturnType<typeof createZCodeApp>>;
-      app = await createZCodeApp({
+      let app: Awaited<ReturnType<typeof createZodyApp>>;
+      app = await createZodyApp({
         configuredDefaultModelSelection: {
           providerId: "zai",
           modelId: "glm-main",
@@ -1214,7 +1214,7 @@ describe("session persistence", () => {
         }),
       );
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           PATH: shellDir,
           SHELL: join(shellDir, "fish"),
@@ -1305,7 +1305,7 @@ describe("session persistence", () => {
 
     try {
       await workflowStore.writeSnapshot(snapshot);
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -1380,7 +1380,7 @@ describe("session persistence", () => {
 
     try {
       await expect(
-        createZCodeApp({
+        createZodyApp({
           env: {
             ZCODE_SESSION_DB_PATH: dbPath,
           },
@@ -1551,7 +1551,7 @@ describe("session persistence", () => {
       await mkdir(join(workspace, ".git"));
       await writeFile(join(workspace, "AGENTS.md"), "Always follow marker: project-rule-314.\n");
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -1640,7 +1640,7 @@ describe("session persistence", () => {
     } satisfies ExecutionPort;
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           ZCODE_STORAGE_DIR: tempRoot,
         },
@@ -1785,7 +1785,7 @@ describe("session persistence", () => {
       // 否则真实用户目录里的 SKILL.md 会注入额外上下文消息，让持久化计数依赖本机状态。
       await writeFile(configPath, JSON.stringify({ skills: { enabled: false } }), "utf8");
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         loggerFactory: createNodeLoggerFactory({ logDir, minLevel: LogLevel.Debug }),
         modelExecutor: modelExecutor as never,
@@ -1890,7 +1890,7 @@ describe("session persistence", () => {
     const liveEventTypes: string[] = [];
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         loggerFactory: createNodeLoggerFactory({ logDir, minLevel: LogLevel.Debug }),
@@ -1941,7 +1941,7 @@ describe("session persistence", () => {
     let capturedMessages: Array<{ content: string; role: string }> = [];
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         modelExecutor: {
@@ -2004,7 +2004,7 @@ describe("session persistence", () => {
     let secondRequestMessages: Array<{ content: string; role: string }> = [];
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         modelExecutor: {
@@ -2074,7 +2074,7 @@ describe("session persistence", () => {
     let modelCallCount = 0;
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         modelExecutor: {
@@ -2144,7 +2144,7 @@ describe("session persistence", () => {
     const store = createSqliteSessionStore({ dbPath: join(tempRoot, "session.sqlite") });
 
     try {
-      const firstApp = await createZCodeApp({
+      const firstApp = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         modelExecutor: {
@@ -2169,7 +2169,7 @@ describe("session persistence", () => {
 
       await firstApp.setMode("yolo");
 
-      const restoredApp = await createZCodeApp({
+      const restoredApp = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         modelExecutor: {
@@ -2193,7 +2193,7 @@ describe("session persistence", () => {
       });
       expect(restoredApp.getMode()).toBe("yolo");
 
-      const otherProjectApp = await createZCodeApp({
+      const otherProjectApp = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         modelExecutor: {
@@ -2217,7 +2217,7 @@ describe("session persistence", () => {
       });
       expect(otherProjectApp.getMode()).toBe("build");
 
-      const cliOverrideApp = await createZCodeApp({
+      const cliOverrideApp = await createZodyApp({
         env: {},
         eventStore: createInMemorySessionEventStore(),
         modelExecutor: {
@@ -2284,7 +2284,7 @@ describe("session persistence", () => {
     };
 
     try {
-      const firstApp = await createZCodeApp({
+      const firstApp = await createZodyApp({
         env: { ZCODE_STORAGE_DIR: tempRoot },
         modelExecutor: createWriteModelExecutor(firstFile, "hello") as never,
         runtimeConfig: {
@@ -2299,7 +2299,7 @@ describe("session persistence", () => {
       await firstApp.close?.();
       expect(await readFile(firstFile, "utf8")).toBe("hello");
 
-      const resumedApp = await createZCodeApp({
+      const resumedApp = await createZodyApp({
         env: { ZCODE_STORAGE_DIR: tempRoot },
         modelExecutor: createWriteModelExecutor(secondFile, "world") as never,
         resume: true,
@@ -2331,7 +2331,7 @@ describe("session persistence", () => {
     let capturedMessages: Array<{ role: string; content: string }> = [];
 
     try {
-      const firstApp = await createZCodeApp({
+      const firstApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText() {
@@ -2355,7 +2355,7 @@ describe("session persistence", () => {
 
       await firstApp.submitPrompt("first prompt");
 
-      const secondApp = await createZCodeApp({
+      const secondApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText(request: { messages: Array<{ role: string; content: string }> }) {
@@ -2424,7 +2424,7 @@ describe("session persistence", () => {
     let capturedMessages: Array<{ role: string; content: string }> = [];
 
     try {
-      const firstApp = await createZCodeApp({
+      const firstApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText() {
@@ -2448,7 +2448,7 @@ describe("session persistence", () => {
 
       await firstApp.submitPrompt("first prompt");
 
-      const secondApp = await createZCodeApp({
+      const secondApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText(request: { messages: Array<{ role: string; content: string }> }) {
@@ -2517,7 +2517,7 @@ describe("session persistence", () => {
       await writeFile(zshPath, "#!/bin/sh\n");
       await chmod(zshPath, 0o755);
 
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           PATH: shellDir,
           SHELL: join(shellDir, "fish"),
@@ -2572,7 +2572,7 @@ describe("session persistence", () => {
       await chmod(oldZshPath, 0o755);
       await chmod(newBashPath, 0o755);
 
-      const firstApp = await createZCodeApp({
+      const firstApp = await createZodyApp({
         env: {
           PATH: oldShellDir,
           SHELL: join(oldShellDir, "fish"),
@@ -2600,7 +2600,7 @@ describe("session persistence", () => {
       await firstApp.submitPrompt("first prompt");
       await rm(oldZshPath, { force: true });
 
-      const secondApp = await createZCodeApp({
+      const secondApp = await createZodyApp({
         env: {
           PATH: newShellDir,
           SHELL: newBashPath,
@@ -2647,7 +2647,7 @@ describe("session persistence", () => {
     const sessionId = createSessionId("resume-transcript");
 
     try {
-      const firstApp = await createZCodeApp({
+      const firstApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText() {
@@ -2671,7 +2671,7 @@ describe("session persistence", () => {
 
       await firstApp.submitPrompt("first prompt");
 
-      const resumedApp = await createZCodeApp({
+      const resumedApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText() {
@@ -2742,7 +2742,7 @@ describe("session persistence", () => {
     };
 
     try {
-      const firstApp = await createZCodeApp({
+      const firstApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText() {
@@ -2767,7 +2767,7 @@ describe("session persistence", () => {
 
       await firstApp.submitPrompt("first prompt");
 
-      const secondApp = await createZCodeApp({
+      const secondApp = await createZodyApp({
         env: {},
         modelExecutor: {
           async generateText(request: { messages: Array<{ role: string; content: string }> }) {

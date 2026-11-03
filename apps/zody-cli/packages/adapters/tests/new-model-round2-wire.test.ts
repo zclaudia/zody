@@ -5,13 +5,13 @@ import {
   createRegistryModelConfig,
   createRegistryProviderConfig,
   parseProviderConfig,
-  parseZCodeBuiltinModelConfigRules,
+  parseZodyBuiltinModelConfigRules,
 } from "@zody/provider";
 import { AiSdkModelAdapter } from "../src/model/runner.js";
 import { AiSdkModelExecution } from "../src/model/model-execution.js";
 
 type Api = "anthropic-messages" | "openai-chat-completions" | "openai-responses";
-let rules: ReturnType<typeof parseZCodeBuiltinModelConfigRules>;
+let rules: ReturnType<typeof parseZodyBuiltinModelConfigRules>;
 beforeAll(async () => {
   const release = JSON.parse(
     await readFile(
@@ -19,7 +19,7 @@ beforeAll(async () => {
       "utf8",
     ),
   );
-  rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+  rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
 });
 afterEach(() => vi.unstubAllGlobals());
 const image: ModelMessageContentBlock = {

@@ -56,7 +56,7 @@ export function createTuiSubmitPrompt(
   browserExecutable?: GlobalOptions["browserExecutable"],
   workflowMode: DynamicWorkflowMode = DEFAULT_CLI_WORKFLOW_MODE,
 ): TuiPromptHandler {
-  let app: Awaited<ReturnType<NonNullable<RunDependencies["createZCodeApp"]>>> | undefined;
+  let app: Awaited<ReturnType<NonNullable<RunDependencies["createZodyApp"]>>> | undefined;
   let activeUiLocale = uiLocale;
   // 进程级句柄（telemetry / Provider Registry / endpoint 路由）跨 App 替换复用，见 runtime 文件。
   const processRuntime = createTuiProcessRuntimeState();
@@ -112,7 +112,7 @@ export function createTuiSubmitPrompt(
   });
 
   const replaceApp = async (
-    factory: () => Promise<Awaited<ReturnType<NonNullable<RunDependencies["createZCodeApp"]>>>>,
+    factory: () => Promise<Awaited<ReturnType<NonNullable<RunDependencies["createZodyApp"]>>>>,
   ): Promise<CommandCenterApp> => {
     const previousApp = app;
     const nextApp = await factory();
@@ -138,7 +138,7 @@ export function createTuiSubmitPrompt(
       workingDirectory,
     } = await prepareTuiAppRuntime(deps, version, request, processRuntime);
     const browserRuntime = createCliHeadlessBrowserRuntime({ browserExecutable, browserUse }, deps);
-    let createdApp: Awaited<ReturnType<NonNullable<RunDependencies["createZCodeApp"]>>>;
+    let createdApp: Awaited<ReturnType<NonNullable<RunDependencies["createZodyApp"]>>>;
     try {
       createdApp = await createAppFactory({
         browserControlPort: browserRuntime?.browserControlPort,

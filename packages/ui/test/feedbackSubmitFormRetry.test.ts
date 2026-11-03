@@ -96,7 +96,7 @@ vi.mock("@/feedback/feedbackSubmitSubmission.js", () => ({
   startSimplifiedFeedbackSubmission: formCapture.startSubmission,
 }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: { formatMessage: ({ id }: { id: string }) => id },
     locale: "en-US",
   }),
@@ -106,8 +106,8 @@ vi.mock("@/store/TabStoreProvider.js", () => ({
     selector({ activeWorkspaceIdentity: null, activeWorkspacePath: null }),
 }));
 vi.mock("@/store/zodySessionStore.js", () => ({
-  selectWorkspaceZCodeState: () => null,
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) => selector({}),
+  selectWorkspaceZodyState: () => null,
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) => selector({}),
 }));
 
 const mountedRoots: Root[] = [];

@@ -16,14 +16,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
-import { addZCodePluginMarketplace, getZCodePluginsOverview } from "../src/plugins.js";
+import { addZodyPluginMarketplace, getZodyPluginsOverview } from "../src/plugins.js";
 
 const execFileAsync = promisify(execFile);
 
 // popover 调用约定：source 为自由文本；pluginStorageRoot 真实运行时由 config 推导，
 // 这里显式覆盖到临时目录做隔离，等价「换一个干净工作区做导入」。
 function addViaFacade(source: string, storageRoot: string, workingDirectory: string) {
-  return addZCodePluginMarketplace({
+  return addZodyPluginMarketplace({
     source,
     pluginStorageRoot: storageRoot,
     workingDirectory,
@@ -32,7 +32,7 @@ function addViaFacade(source: string, storageRoot: string, workingDirectory: str
 }
 
 function overview(storageRoot: string, workingDirectory: string) {
-  return getZCodePluginsOverview({
+  return getZodyPluginsOverview({
     pluginStorageRoot: storageRoot,
     workingDirectory,
     skipUserConfig: true,

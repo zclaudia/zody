@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { ZodyConfigOption } from "@zody/shared";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { selectWorkspaceZodyState, useZodySessionStore } from "@/store/zodySessionStore.js";
 
 /**
  * 子代理模型的 provider 名从哪儿来：会话的模型清单
@@ -40,10 +40,10 @@ export function useWorkflowSubagentModelProviderName(
   workspacePath: string | undefined,
   workspaceIdentity?: string,
 ): ((providerId: string) => string | undefined) | undefined {
-  const configOptions = useZCodeSessionStore((state) =>
+  const configOptions = useZodySessionStore((state) =>
     workspacePath === undefined
       ? undefined
-      : selectWorkspaceZCodeState(state, workspacePath, workspaceIdentity).configOptions,
+      : selectWorkspaceZodyState(state, workspacePath, workspaceIdentity).configOptions,
   );
   return useMemo(() => workflowSubagentProviderNameLookup(configOptions), [configOptions]);
 }

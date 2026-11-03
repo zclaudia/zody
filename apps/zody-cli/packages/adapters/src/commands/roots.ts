@@ -25,7 +25,7 @@ export async function resolveDefaultCustomCommandRoots(
 ): Promise<CustomCommandRoot[]> {
   const resolvedWorkingDirectory = resolve(workingDirectory);
   const roots: CustomCommandRoot[] = [];
-  const includeZcode = options.includeZcodeCommands ?? true;
+  const includeZody = options.includeZcodeCommands ?? true;
   const home = options.homeDirectory ?? homedir();
   let priority = 0;
   const nextPriority = () => {
@@ -44,13 +44,13 @@ export async function resolveDefaultCustomCommandRoots(
     );
   }
 
-  if (includeZcode) {
+  if (includeZody) {
     roots.push(...commandRootsForBase(home, "user", nextPriority));
   }
 
   const projectDirectories = await resolveProjectDirectories(resolvedWorkingDirectory);
   for (const directory of projectDirectories) {
-    if (includeZcode) {
+    if (includeZody) {
       roots.push(...commandRootsForBase(directory, "project", nextPriority));
     }
   }

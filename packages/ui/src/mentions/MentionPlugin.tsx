@@ -15,7 +15,7 @@ import {
   KEY_ESCAPE_COMMAND,
   KEY_TAB_COMMAND,
 } from "lexical";
-import { useZCodeIntl } from "../i18n/IntlProvider.js";
+import { useZodyIntl } from "../i18n/IntlProvider.js";
 import {
   extractActivePromptInputTrigger,
   getActivePromptInputTokenTailLength,
@@ -158,7 +158,7 @@ export function MentionPlugin({
   onWhiteboardMentionSelected,
 }: MentionPluginProps & { provider: ZodyProvider }) {
   const [editor] = useLexicalComposerContext();
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [activeTrigger, setActiveTrigger] = useState<ActivePromptInputTrigger | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const dismissedSignatureRef = useRef<string | null>(null);

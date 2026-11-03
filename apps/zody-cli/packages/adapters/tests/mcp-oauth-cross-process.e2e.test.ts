@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  createSharedZCodeCredentialStore,
+  createSharedZodyCredentialStore,
   type SharedZodyCredentialStore,
 } from "../src/auth/shared-credentials.js";
 import { publishCanonicalCredentials } from "../src/mcp/oauth-credentials.js";
@@ -346,7 +346,7 @@ async function createCredentials(secret: string): Promise<{
   temporaryDirectories.push(directory);
   const credentialsPath = join(directory, "credentials.json");
   return {
-    credentialStore: createSharedZCodeCredentialStore({
+    credentialStore: createSharedZodyCredentialStore({
       env: { ZCODE_CREDENTIAL_SECRET: secret },
       filePath: credentialsPath,
     }),

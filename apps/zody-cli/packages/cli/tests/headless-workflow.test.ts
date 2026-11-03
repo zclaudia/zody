@@ -281,7 +281,7 @@ const createRunDeps = (): RunDependencies & { appOptions: () => unknown } => {
   let appOptions: unknown;
   return {
     appOptions: () => appOptions,
-    createZCodeApp: (options?: unknown) => {
+    createZodyApp: (options?: unknown) => {
       appOptions = options;
       return {
         getModel: () => "openai/gpt-test",
@@ -512,7 +512,7 @@ const createWaitingRunDeps = (
   const sinks: ((event: SessionEvent) => void)[] = [];
   return {
     pollCount: () => polls,
-    createZCodeApp: () =>
+    createZodyApp: () =>
       ({
         getModel: () => "openai/gpt-test",
         getThoughtLevel: () => "medium",
@@ -757,8 +757,8 @@ test("a run with no workflow activity never polls and stays byte-identical", asy
   // 把 dwf 活动从回合事件里摘掉：没有触发证据就绝不进等待。
   const quietDeps = {
     ...deps,
-    createZCodeApp: ((options?: unknown) => {
-      const app = (deps.createZCodeApp as (o?: unknown) => Record<string, unknown>)(options);
+    createZodyApp: ((options?: unknown) => {
+      const app = (deps.createZodyApp as (o?: unknown) => Record<string, unknown>)(options);
       return {
         ...app,
         submitPrompt: async (

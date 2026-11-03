@@ -5,9 +5,9 @@ import { dirname, resolve } from "node:path";
 import type { ProviderConfigLayerSnapshot, ProviderSource } from "@zody/provider";
 import { atomicWritePrivateTextFile, withFileLock } from "@zody/shared/node";
 import {
-  decodeZCodeBuiltinRelease,
-  encodeZCodeBuiltinRelease,
-  serializeZCodeBuiltinRelease,
+  decodeZodyBuiltinRelease,
+  encodeZodyBuiltinRelease,
+  serializeZodyBuiltinRelease,
   type ZodyBuiltinRelease,
 } from "./zody-builtin-release.js";
 
@@ -20,7 +20,7 @@ export interface NodeZodyBuiltinProviderConfigSourceOptions {
 export type ApplyZodyBuiltinReleaseResult = "updated" | "unchanged" | "stale";
 
 /** Bundled、Active/LKG 与 Remote 共用同一 Release，并最终发布为现有 Config Snapshot。 */
-export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<ProviderConfigLayerSnapshot> {
+export class NodeZodyBuiltinProviderConfigSource implements ProviderSource<ProviderConfigLayerSnapshot> {
   readonly #bundledFilePath: string;
   readonly #activeFilePath: string;
   readonly #sourceKey: string;
@@ -72,7 +72,7 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
       this.#assertNotDisposed();
       if (release.revision < current.revision) return "stale" as const;
       if (release.revision === current.revision) {
-        if (serializeZCodeBuiltinRelease(release) === serializeZCodeBuiltinRelease(current)) {
+        if (serializeZodyBuiltinRelease(release) === serializeZodyBuiltinRelease(current)) {
           return "unchanged" as const;
         }
         throw new Error(`ZCode Built-in 相同 revision ${release.revision} 对应不同内容`);
@@ -120,7 +120,7 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
     this.#assertNotDisposed();
     await atomicWritePrivateTextFile(
       this.#activeFilePath,
-      JSON.stringify(encodeZCodeBuiltinRelease(release), null, 2),
+      JSON.stringify(encodeZodyBuiltinRelease(release), null, 2),
     );
   }
 
@@ -193,10 +193,10 @@ export class NodeZCodeBuiltinProviderConfigSource implements ProviderSource<Prov
   }
 }
 
-export function createNodeZCodeBuiltinProviderConfigSource(
+export function createNodeZodyBuiltinProviderConfigSource(
   options: NodeZodyBuiltinProviderConfigSourceOptions,
-): NodeZCodeBuiltinProviderConfigSource {
-  return new NodeZCodeBuiltinProviderConfigSource(options);
+): NodeZodyBuiltinProviderConfigSource {
+  return new NodeZodyBuiltinProviderConfigSource(options);
 }
 
 interface ReleaseCandidate {
@@ -206,7 +206,7 @@ interface ReleaseCandidate {
 
 async function readReleaseCandidate(filePath: string): Promise<ReleaseCandidate | null> {
   try {
-    return { release: decodeZCodeBuiltinRelease(JSON.parse(await readFile(filePath, "utf8"))) };
+    return { release: decodeZodyBuiltinRelease(JSON.parse(await readFile(filePath, "utf8"))) };
   } catch (error) {
     if (isFileNotFound(error)) return null;
     return { error };
@@ -221,7 +221,7 @@ function selectReleaseCandidate(
     bundled?.release &&
     active?.release &&
     bundled.release.revision === active.release.revision &&
-    serializeZCodeBuiltinRelease(bundled.release) !== serializeZCodeBuiltinRelease(active.release)
+    serializeZodyBuiltinRelease(bundled.release) !== serializeZodyBuiltinRelease(active.release)
   ) {
     // 同 revision 冲突属于 Active 缓存失效，不能反向使可信 Bundled 无法启动。
     // 返回 Bundled 后调用方会在能够写入时原子替换 Active。
@@ -254,7 +254,7 @@ function snapshotFromRelease(
 }
 
 function signatureOf(release: ZodyBuiltinRelease): string {
-  return `${release.revision}:${serializeZCodeBuiltinRelease(release)}`;
+  return `${release.revision}:${serializeZodyBuiltinRelease(release)}`;
 }
 
 function isFileNotFound(error: unknown): boolean {

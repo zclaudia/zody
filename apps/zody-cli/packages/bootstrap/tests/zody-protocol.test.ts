@@ -182,7 +182,7 @@ describe("conditional session close", () => {
 describe("ZodyProtocolAgentServer", () => {
   it("所有 Entry 都不再接受旧 Workspace Provider 写协议", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -212,7 +212,7 @@ describe("ZodyProtocolAgentServer", () => {
       policyRevision: "test:deny:v1",
     });
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
       workspaceHookPolicyProvider: policyProvider,
@@ -241,7 +241,7 @@ describe("ZodyProtocolAgentServer", () => {
     });
     let createdOptions: ZodyAppOptions | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdOptions = options;
         return createFakeApp(options);
       },
@@ -261,7 +261,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("applies strict workspace interaction preferences without creating a session", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1161,7 +1161,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("logs snapshot phase timings for session create diagnostics", async () => {
     const logs: RecordedLog[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       loggerFactory: createProtocolTestLoggerFactory(logs),
       version: "test-version",
@@ -1191,7 +1191,7 @@ describe("ZodyProtocolAgentServer", () => {
   // session/usage 共用（usage store 聚合），这里锁定 v4 方法名可达且结果过 v4 schema。
   it("serves v4/usage/stats through the usage data access layer", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1213,7 +1213,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("serves v4/conversation/usage keyed by sessionId", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1233,7 +1233,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("三类 v4 subscribe response 只含 ACK，并把 initial 放入 request-scoped outbox", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1300,7 +1300,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("routes strict v4 connection flow control to the gateway", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1324,7 +1324,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("routes attachment begin/chunk/commit/abort without a full-data RPC", async () => {
     const writePromptAttachment = vi.fn(async () => ({ ref: "zcode-artifact://upload/server" }));
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options, { writePromptAttachment }),
+      createZodyApp: (options) => createFakeApp(options, { writePromptAttachment }),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1406,7 +1406,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("并发 subscribe request id 的 post-response outbox 不串线", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1439,7 +1439,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("aligned resume 经真实 server/outbox/NDJSON 只写一行 ACK response", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1514,7 +1514,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("same-sub resync 经真实 server/NDJSON 严格先 ACK 再 physical recovery", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -1587,7 +1587,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("uses the app supplied protocol trace as the session root trace", async () => {
     const logs: RecordedLog[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       loggerFactory: createProtocolTestLoggerFactory(logs),
       version: "test-version",
@@ -1616,7 +1616,7 @@ describe("ZodyProtocolAgentServer", () => {
     const connectedConfigs: Record<string, McpServerConfig>[] = [];
     const mcpPort = createProtocolListMcpPort(connectedConfigs);
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspacePath,
       mcpPort,
       version: "test-version",
@@ -1699,7 +1699,7 @@ describe("ZodyProtocolAgentServer", () => {
     const connectedConfigs: Record<string, McpServerConfig>[] = [];
     const mcpPort = createProtocolListMcpPort(connectedConfigs);
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspacePath,
       mcpPort,
       version: "test-version",
@@ -1790,7 +1790,7 @@ describe("ZodyProtocolAgentServer", () => {
       },
     });
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspacePath,
       mcpPort,
       version: "test-version",
@@ -1872,7 +1872,7 @@ describe("ZodyProtocolAgentServer", () => {
       },
     });
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspacePath,
       mcpPort,
       version: "test-version",
@@ -1946,7 +1946,7 @@ describe("ZodyProtocolAgentServer", () => {
       finishConnect = resolve;
     });
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspacePath,
       mcpPort,
       version: "test-version",
@@ -2012,7 +2012,7 @@ describe("ZodyProtocolAgentServer", () => {
       },
     ];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const app = createFakeApp(options);
         return {
           ...app,
@@ -2080,7 +2080,7 @@ describe("ZodyProtocolAgentServer", () => {
     let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         eventStore = options?.eventStore;
         const app = createFakeApp(options);
         return {
@@ -2241,7 +2241,7 @@ describe("ZodyProtocolAgentServer", () => {
     let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         eventStore = options?.eventStore;
         const app = createFakeApp(options);
         return {
@@ -2384,7 +2384,7 @@ describe("ZodyProtocolAgentServer", () => {
     let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         eventStore = options?.eventStore;
         const app = createFakeApp(options);
         return {
@@ -2512,7 +2512,7 @@ describe("ZodyProtocolAgentServer", () => {
     let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         eventStore = options?.eventStore;
         const app = createFakeApp(options);
         return {
@@ -2636,7 +2636,7 @@ describe("ZodyProtocolAgentServer", () => {
     let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         eventStore = options?.eventStore;
         const app = createFakeApp(options);
         return {
@@ -2740,7 +2740,7 @@ describe("ZodyProtocolAgentServer", () => {
     };
     try {
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => createFakeApp(options),
+        createZodyApp: (options) => createFakeApp(options),
         cwd: importedWorkspace.workspacePath,
         sessionStore: store,
         version: "test-version",
@@ -2851,7 +2851,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("rejects caller-provided session ids outside imported history creates", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -2878,7 +2878,7 @@ describe("ZodyProtocolAgentServer", () => {
     let eventStore: ZodyAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         eventStore = options?.eventStore;
         const app = createFakeApp(options);
         return {
@@ -3046,7 +3046,7 @@ describe("ZodyProtocolAgentServer", () => {
     let eventStore: SessionEventStore | undefined;
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         eventStore = options?.eventStore;
         const app = createFakeApp(options);
         return {
@@ -3179,7 +3179,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("returns direct session snapshots for create/read and wrapped subscribe results", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -3223,7 +3223,7 @@ describe("ZodyProtocolAgentServer", () => {
     const big = "y".repeat(512 * 1024);
     try {
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => createFakeApp(options),
+        createZodyApp: (options) => createFakeApp(options),
         cwd: workspace.workspacePath,
         sessionStore: store,
         version: "test-version",
@@ -3345,7 +3345,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("returns built-in slash commands for workspace and session snapshots", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       version: "test-version",
     });
@@ -3388,7 +3388,7 @@ describe("ZodyProtocolAgentServer", () => {
     await createWorkspaceZodyApp(
       {
         deps: {
-          createZCodeApp: (options) => {
+          createZodyApp: (options) => {
             createdAppOptions.push(options ?? {});
             return createFakeApp(options);
           },
@@ -3419,7 +3419,7 @@ describe("ZodyProtocolAgentServer", () => {
     await createWorkspaceZodyApp(
       {
         deps: {
-          createZCodeApp: (options) => {
+          createZodyApp: (options) => {
             createdAppOptions.push(options ?? {});
             return createFakeApp(options);
           },
@@ -3453,7 +3453,7 @@ describe("ZodyProtocolAgentServer", () => {
     await createWorkspaceZodyApp(
       {
         deps: {
-          createZCodeApp: (options) => {
+          createZodyApp: (options) => {
             createdAppOptions.push(options ?? {});
             return createFakeApp(options);
           },
@@ -3524,7 +3524,7 @@ describe("ZodyProtocolAgentServer", () => {
     await createWorkspaceZodyApp(
       {
         deps: {
-          createZCodeApp: (options) => {
+          createZodyApp: (options) => {
             createdAppOptions.push(options ?? {});
             return createFakeApp(options);
           },
@@ -3601,7 +3601,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("injects protocol MCP servers into session runtime config", async () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -3669,7 +3669,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("injects protocol tool allow and deny lists into session runtime config", async () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -3696,7 +3696,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("远程 SSH/WSL workspace 默认禁用全部 Cron 工具并保留调用方 denylist", async () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -3737,7 +3737,7 @@ describe("ZodyProtocolAgentServer", () => {
     let memoryEnabled = false;
     let modelContextBudgetStrategy: "legacy" | "preflight-v1" = "legacy";
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -3800,7 +3800,7 @@ describe("ZodyProtocolAgentServer", () => {
         time: { created: 1, updated: 1 },
       });
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => {
+        createZodyApp: (options) => {
           createdAppOptions.push(options);
           return createFakeApp(options);
         },
@@ -3836,7 +3836,7 @@ describe("ZodyProtocolAgentServer", () => {
       const reads: unknown[] = [];
       let content = "old";
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (input) => {
+        createZodyApp: (input) => {
           options.push(input);
           return createFakeApp(input);
         },
@@ -3911,7 +3911,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("keeps native search on but defaults Memory off when no Host client is attached", async () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -3934,7 +3934,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("defaults Memory off for an old Host but rejects other preference failures", async () => {
     const oldHostOptions: ZodyAppOptions[] = [];
     const oldHostServer = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         oldHostOptions.push(options);
         return createFakeApp(options);
       },
@@ -3968,7 +3968,7 @@ describe("ZodyProtocolAgentServer", () => {
     ]) {
       const createdAppOptions: ZodyAppOptions[] = [];
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => {
+        createZodyApp: (options) => {
           createdAppOptions.push(options);
           return createFakeApp(options);
         },
@@ -4000,7 +4000,7 @@ describe("ZodyProtocolAgentServer", () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const logs: RecordedLog[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -4049,7 +4049,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("defaults Memory off when an older responder omits the preference field", async () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -4074,7 +4074,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("settles queued Session creation when the Host disconnects during preference resolution", async () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -4155,7 +4155,7 @@ describe("ZodyProtocolAgentServer", () => {
     await chmod(fakeGitBash, 0o755);
     try {
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) =>
+        createZodyApp: (options) =>
           createShellRecordingFakeApp(options, shellInitializations, createdAppOptions),
         cwd: workspace.workspacePath,
         platform: "win32",
@@ -4223,7 +4223,7 @@ describe("ZodyProtocolAgentServer", () => {
     const shellInitializations: unknown[] = [];
     const unavailablePath = "Z:\\Missing\\Git\\bin\\bash.exe";
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createShellRecordingFakeApp(options, shellInitializations, createdAppOptions),
       cwd: workspace.workspacePath,
       env: { PATH: "" },
@@ -4286,7 +4286,7 @@ describe("ZodyProtocolAgentServer", () => {
     try {
       let selectedShell = initialGitBash;
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => createShellRecordingFakeApp(options, shellInitializations),
+        createZodyApp: (options) => createShellRecordingFakeApp(options, shellInitializations),
         cwd: workspace.workspacePath,
         platform: "win32",
         version: "test-version",
@@ -4377,7 +4377,7 @@ describe("ZodyProtocolAgentServer", () => {
     await chmod(laterGitBash, 0o755);
     try {
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) =>
+        createZodyApp: (options) =>
           createShellRecordingFakeApp(options, shellInitializations, createdAppOptions),
         cwd: workspace.workspacePath,
         platform: "win32",
@@ -4437,7 +4437,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("rejects integrated terminal shell params on create, resume, and send", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
       platform: "win32",
       version: "test-version",
@@ -4498,7 +4498,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("keeps deferred draft sessions out of session/list until the first send", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
     });
 
@@ -4542,7 +4542,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("keeps server-owned model state and emits state update notifications", async () => {
     const notifications: ZodyProtocolNotification[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
     });
     setTestNotificationSink(server, (notification) => notifications.push(notification));
@@ -4584,7 +4584,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("maps a protocol session model to structured Runtime Selection", async () => {
     const createdAppOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdAppOptions.push(options);
         return createFakeApp(options);
       },
@@ -4656,7 +4656,7 @@ describe("ZodyProtocolAgentServer", () => {
 
       const appOptions: ZodyAppOptions[] = [];
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => {
+        createZodyApp: (options) => {
           appOptions.push(options ?? {});
           return createFakeApp(options);
         },
@@ -4735,7 +4735,7 @@ describe("ZodyProtocolAgentServer", () => {
       });
 
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => createFakeApp(options),
+        createZodyApp: (options) => createFakeApp(options),
         cwd: workspace.workspacePath,
         sessionStore: store,
       });
@@ -4757,7 +4757,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("workspace presentation omits model facts", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
     });
 
@@ -4777,7 +4777,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("通过独立协议同步 Account Config，不再从 Workspace Snapshot 反向投影", async () => {
     const syncAccountProviderConfig = vi.fn(async () => true);
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: () => createFakeApp(),
+      createZodyApp: () => createFakeApp(),
       cwd: workspace.workspacePath,
       syncAccountProviderConfig,
     });
@@ -4856,7 +4856,7 @@ describe("ZodyProtocolAgentServer", () => {
       thoughtLevel: "max",
     };
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
     });
 
@@ -4876,7 +4876,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("uses app-provided thought level when creating a session", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options),
+      createZodyApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
     });
 
@@ -4907,7 +4907,7 @@ describe("ZodyProtocolAgentServer", () => {
       resolveSendInput = resolve;
     });
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           sendInput: async (_input, options) => {
             receivedInputId = options?.inputId;
@@ -4966,7 +4966,7 @@ describe("ZodyProtocolAgentServer", () => {
     let finalizationCountDuringCompleted: number | undefined;
     let activeLockDuringCompleted: AbortController | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           sendInput: async () => ({
             kind: "started_turn",
@@ -5047,7 +5047,7 @@ describe("ZodyProtocolAgentServer", () => {
       resolveReceived = resolve;
     });
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           sendInput: async (input) => {
             receivedInput = input;
@@ -5130,7 +5130,7 @@ describe("ZodyProtocolAgentServer", () => {
       | Awaited<ReturnType<NonNullable<ZodyAppOptions["permissionBroker"]>["requestPermission"]>>
       | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           sendInput: async () => {
             brokerResult = await options?.permissionBroker?.requestPermission({
@@ -5221,7 +5221,7 @@ describe("ZodyProtocolAgentServer", () => {
         | ReturnType<NonNullable<ZodyAppOptions["permissionBroker"]>["requestPermission"]>
         | undefined;
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) =>
+        createZodyApp: (options) =>
           createFakeApp(options, {
             sendInput: async () => {
               brokerResultPromise = options?.permissionBroker?.requestPermission({
@@ -5328,7 +5328,7 @@ describe("ZodyProtocolAgentServer", () => {
       ],
     };
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           sendInput: async () => {
             brokerResult = await options?.permissionBroker?.requestPermission({
@@ -5429,7 +5429,7 @@ describe("ZodyProtocolAgentServer", () => {
       plan: "1. Change the runtime\n2. Add tests",
     };
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           sendInput: async () => {
             brokerResult = await options?.permissionBroker?.requestPermission({
@@ -5522,7 +5522,7 @@ describe("ZodyProtocolAgentServer", () => {
         plan: "1. Change the runtime\n2. Add tests",
       };
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) =>
+        createZodyApp: (options) =>
           createFakeApp(options, {
             sendInput: async () => {
               brokerResultPromise = options?.permissionBroker?.requestPermission({
@@ -5613,7 +5613,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("runs compact through the explicit session protocol method", async () => {
     const submittedPrompts: string[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           submitPrompt: async (prompt) => {
             submittedPrompts.push(typeof prompt === "string" ? prompt : prompt.text);
@@ -5672,7 +5672,7 @@ describe("ZodyProtocolAgentServer", () => {
       });
     });
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options, { submitPrompt }),
+      createZodyApp: (options) => createFakeApp(options, { submitPrompt }),
       cwd: workspace.workspacePath,
     });
     const created = zodySessionStateSnapshotSchema.parse(
@@ -5725,7 +5725,7 @@ describe("ZodyProtocolAgentServer", () => {
       usage: { inputTokens: 3, outputTokens: 256, totalTokens: 259 },
     }));
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options, { generateWorkspaceText }),
+      createZodyApp: (options) => createFakeApp(options, { generateWorkspaceText }),
       cwd: workspace.workspacePath,
     });
 
@@ -5773,7 +5773,7 @@ describe("ZodyProtocolAgentServer", () => {
     });
     const testModelConnectivity = vi.fn(async () => {});
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) =>
+      createZodyApp: (options) =>
         createFakeApp(options, {
           testModelConnectivity: async (...args) => {
             calls.push("connectivity");
@@ -5823,7 +5823,7 @@ describe("ZodyProtocolAgentServer", () => {
     const close = vi.fn(async () => {});
     const testModelConnectivity = vi.fn(async () => {});
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options, { close, testModelConnectivity }),
+      createZodyApp: (options) => createFakeApp(options, { close, testModelConnectivity }),
       cwd: workspace.workspacePath,
     });
 
@@ -5858,7 +5858,7 @@ describe("ZodyProtocolAgentServer", () => {
       },
     );
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options, { generateWorkspaceText }),
+      createZodyApp: (options) => createFakeApp(options, { generateWorkspaceText }),
       cwd: workspace.workspacePath,
     });
 
@@ -5916,7 +5916,7 @@ describe("ZodyProtocolAgentServer", () => {
       },
     );
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options, { generateWorkspaceText }),
+      createZodyApp: (options) => createFakeApp(options, { generateWorkspaceText }),
       cwd: workspace.workspacePath,
     });
     const params = {
@@ -5981,7 +5981,7 @@ describe("ZodyProtocolAgentServer", () => {
     }));
     const providerRegistry = createProtocolTestProviderRegistry();
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const effectiveOptions = { ...options, providerRegistry };
         appOptions.push(effectiveOptions);
         return createFakeApp(effectiveOptions, { close, generateWorkspaceText });
@@ -6013,7 +6013,7 @@ describe("ZodyProtocolAgentServer", () => {
   it("drops duplicate compact requests while the same session is compacting", async () => {
     const submitPrompt = vi.fn();
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const app = createFakeApp(options);
         return {
           ...app,
@@ -6061,7 +6061,7 @@ describe("ZodyProtocolAgentServer", () => {
     const submitPrompt = vi.fn();
     const continueActiveTarget = vi.fn(async () => ({ response: "continued" }) as never);
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const app = createFakeApp(options);
         return {
           ...app,
@@ -6204,7 +6204,7 @@ describe("ZodyProtocolAgentServer", () => {
       time: { created: 1, updated: 1 },
     }));
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => createFakeApp(options, { sendInput, setTarget }),
+      createZodyApp: (options) => createFakeApp(options, { sendInput, setTarget }),
     });
     const created = zodySessionStateSnapshotSchema.parse(
       await requestResult(server, {
@@ -6265,7 +6265,7 @@ describe("ZodyProtocolAgentServer", () => {
         }),
     );
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const app = createFakeApp(options, { sendInput });
         target = {
           objective: "Pause current goal immediately",
@@ -6377,7 +6377,7 @@ describe("ZodyProtocolAgentServer", () => {
         }),
     );
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const app = createFakeApp(options, { continueActiveTarget });
         return {
           ...app,
@@ -6470,7 +6470,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("includes persisted goal and todos in protocol snapshots", async () => {
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const app = createFakeApp(options);
         const persistedTarget = {
           objective: "Restore parser goal",
@@ -7288,7 +7288,7 @@ describe("ZodyProtocolAgentServer", () => {
     const selectionChildId = "sess_selection_runtime_preferences" as SessionId;
     try {
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) => {
+        createZodyApp: (options) => {
           createdAppOptions.push(options);
           const app = createFakeApp(options);
           return {
@@ -7544,7 +7544,7 @@ describe("ZodyProtocolAgentServer", () => {
       await saveCompactSummary(store, sessionId, "msg_compact_summary" as MessageId, 7);
 
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: (options) =>
+        createZodyApp: (options) =>
           createFakeApp(options, {
             forkFromCheckpoint: async (target) => {
               forkTargets.push({

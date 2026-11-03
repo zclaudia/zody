@@ -30,7 +30,7 @@ import {
   shouldRestoreChatInputFocusAfterPickerClose,
 } from "@/lib/pickerFocus.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
   ChevronDownIcon,
@@ -136,7 +136,7 @@ export function ChatApiRetryStatus({
   locale,
 }: {
   apiRetry: ZodyApiRetryStatus | null;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   locale: string;
 }) {
   const retryLabel = useMemo(() => {
@@ -181,7 +181,7 @@ export function ChatApiRetryStatus({
 }
 
 export function getModeOptionDisplayLabel(
-  intl: ReturnType<typeof useZCodeIntl>["intl"],
+  intl: ReturnType<typeof useZodyIntl>["intl"],
   provider: ZodyProvider | undefined,
   entry: Pick<ZodyConfigSelectValue, "name" | "value">,
 ): string {
@@ -216,7 +216,7 @@ export function getModeOptionDescriptionMessageId(
 }
 
 export function getConfigOptionEntryLabel(
-  intl: ReturnType<typeof useZCodeIntl>["intl"],
+  intl: ReturnType<typeof useZodyIntl>["intl"],
   provider: ZodyProvider | undefined,
   option: ZodyConfigOption,
   entry: ZodyConfigSelectValue,
@@ -229,7 +229,7 @@ export function getConfigOptionEntryLabel(
 }
 
 export function getConfigOptionEntryDescription(
-  intl: ReturnType<typeof useZCodeIntl>["intl"],
+  intl: ReturnType<typeof useZodyIntl>["intl"],
   provider: ZodyProvider | undefined,
   option: ZodyConfigOption,
   entry: ZodyConfigSelectValue,
@@ -309,7 +309,7 @@ export function ConfigSelect({
   provider?: ZodyProvider;
   restoreFocusSelector?: string | null;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   // 注意：handleContentKeyDown 必须在 early return 之前调用。
   // 之前 `if (option.type !== "select" ...) return null` 写在 useCallback 之前，

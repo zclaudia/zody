@@ -50,7 +50,7 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function buildZCodeHookLocation(
+function buildZodyHookLocation(
   workspacePath: string,
   storageLevel: "user" | "project" = "user",
 ): Hook["location"] {
@@ -86,7 +86,7 @@ function hookFromConfig(config: HookConfig, workspacePath: string): Hook {
     timeout: config.timeout ?? 60,
     enabled: config.enabled ?? true,
     custom: config.custom,
-    location: buildZCodeHookLocation(workspacePath, config.storageLevel),
+    location: buildZodyHookLocation(workspacePath, config.storageLevel),
   };
 }
 
@@ -296,7 +296,7 @@ export const useHooksStore = create<HooksStoreState>((set, get) => ({
       ...source,
       id: `hook-${crypto.randomUUID()}`,
       enabled: true,
-      location: buildZCodeHookLocation(workspacePath, source.location?.scope ?? "user"),
+      location: buildZodyHookLocation(workspacePath, source.location?.scope ?? "user"),
     };
     await applyHookMutation(get, set, hooksService, [...hooks, imported], id);
   },

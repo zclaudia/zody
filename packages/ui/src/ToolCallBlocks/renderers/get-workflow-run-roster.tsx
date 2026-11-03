@@ -13,7 +13,7 @@
  */
 
 import type { ToolCallGetWorkflowRunDisplay } from "@zody/shared/zody-protocol-v4";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   formatWorkflowAge,
   formatWorkflowDuration,
@@ -25,7 +25,7 @@ import {
 } from "@/ToolCallBlocks/renderers/get-workflow-run-situation.js";
 
 type WorkflowRunSubagentView = NonNullable<ToolCallGetWorkflowRunDisplay["subagents"]>[number];
-type FormatMessage = ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"];
+type FormatMessage = ReturnType<typeof useZodyIntl>["intl"]["formatMessage"];
 
 const I18N_PREFIX = "chat.toolCall.workflow.getRun.";
 
@@ -51,7 +51,7 @@ export function WorkflowRunSubagentRoster({
   subagents: readonly WorkflowRunSubagentView[];
   generatedAt: number | undefined;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   // 空花名册什么也不画：还没造出子代理是一件不需要一整块区域来说的事。
   if (subagents.length === 0) return null;
   return (

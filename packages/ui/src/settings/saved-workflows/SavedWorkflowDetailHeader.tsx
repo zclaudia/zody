@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   AutomationMoreHorizontalIcon,
   AutomationRunNowIcon,
@@ -48,7 +48,7 @@ export function SavedWorkflowDetailHeader({
   onMove,
   onDelete,
 }: SavedWorkflowDetailHeaderProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex min-w-0 flex-col gap-1.5">

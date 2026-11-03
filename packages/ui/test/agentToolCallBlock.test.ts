@@ -10,7 +10,7 @@ import { testId, TID_TOOL_SUMMARY_TRIGGER } from "@zody/shared";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ServiceProvider } from "@/hooks/useServices.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { StoreProvider } from "@/store/StoreProvider.js";
 import { useSubagentsStore } from "@/store/subagentsStore.js";
 import type { ImageCodeViewerSource } from "@/lib/codeViewer.js";
@@ -76,7 +76,7 @@ describe("AgentToolCallBlock", () => {
   it("keeps an Agent without a persisted child as a static one-line summary", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -144,7 +144,7 @@ describe("AgentToolCallBlock", () => {
   it("uses a side-pane summary action instead of expandable details", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -215,7 +215,7 @@ describe("AgentToolCallBlock", () => {
   it("never falls back to inline prompt or child output", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -301,7 +301,7 @@ describe("AgentToolCallBlock", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -362,7 +362,7 @@ describe("AgentToolCallBlock", () => {
   it("keeps the agent type blank while subagent_type may still be streaming", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -423,7 +423,7 @@ describe("AgentToolCallBlock", () => {
   it("falls back to the default general-purpose agent type only after complete input omits subagent_type", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -488,7 +488,7 @@ describe("AgentToolCallBlock", () => {
   it("uses the latest child tool summary for a collapsed running subagent", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -574,7 +574,7 @@ describe("AgentToolCallBlock", () => {
   it("does not keep a completed subagent visually running while a child tool is running", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -659,7 +659,7 @@ describe("AgentToolCallBlock", () => {
   it("allows disabling subagent summary roll animation", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -740,7 +740,7 @@ describe("AgentToolCallBlock", () => {
   it("keeps the child action label for completed subagent child summaries", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -820,7 +820,7 @@ describe("AgentToolCallBlock", () => {
   it("summarizes TodoWrite child tools with todo progress and active content", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -916,7 +916,7 @@ describe("AgentToolCallBlock", () => {
   it("uses SubAgent as the outer kind instead of the resolved agent type", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -991,7 +991,7 @@ describe("AgentToolCallBlock", () => {
   it("uses spawn_agent subagent nickname as the summary primary text", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -1063,7 +1063,7 @@ describe("AgentToolCallBlock", () => {
   it("falls back to spawn_agent agent_type when nickname is not available", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -1125,7 +1125,7 @@ describe("AgentToolCallBlock", () => {
   it("renders prompt and child tool calls without result content", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -1216,7 +1216,7 @@ describe("AgentToolCallBlock", () => {
   it("keeps background agent internals out of the static summary", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -1291,7 +1291,7 @@ describe("AgentToolCallBlock", () => {
   it("does not inline background child activity", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -1361,7 +1361,7 @@ describe("AgentToolCallBlock", () => {
   it("does not inline either task notification or raw background transcript", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,
@@ -1488,7 +1488,7 @@ function buildInlineImageTree(services: IServiceAccessor, source: ImageCodeViewe
     showKind: false,
   };
   return createElement(
-    ZCodeIntlProvider,
+    ZodyIntlProvider,
     { initialLocale: "zh-CN" },
     createElement(
       ServiceProvider,
@@ -1579,7 +1579,7 @@ function buildNestedExploreImageTree(
     ],
   };
   return createElement(
-    ZCodeIntlProvider,
+    ZodyIntlProvider,
     { initialLocale: "zh-CN" },
     createElement(
       ServiceProvider,
@@ -1915,7 +1915,7 @@ describe("ToolCallBody inline image preview", () => {
     };
     const buildTree = (workspaceIdentity: string) =>
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           ServiceProvider,

@@ -15,7 +15,7 @@ vi.mock("@/store/zodySessionStore.js", async () => {
   );
   return {
     ...actual,
-    useZCodeSessionStore: (selector: (state: { workspaces: Record<string, unknown> }) => unknown) =>
+    useZodySessionStore: (selector: (state: { workspaces: Record<string, unknown> }) => unknown) =>
       selector({ workspaces: Object.fromEntries(workspaceStateByPath) }),
   };
 });

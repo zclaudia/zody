@@ -58,7 +58,7 @@ import {
   captureLoginShellEnvSnapshot,
   getConversationWorkspaceDir,
   getDataBaseDir,
-  getZCodeDataRootDir,
+  getZodyDataRootDir,
   normalizeRuntimeProcessEnv,
   setDataBaseDir,
 } from "@zody/services/node";
@@ -137,7 +137,7 @@ import {
   getDesktopMenuLabel as getDesktopMenuLabelByLocale,
   rebuildApplicationMenu,
   resolveSystemApplicationLocale,
-  updateZCodeStdioTapDevMenuState,
+  updateZodyStdioTapDevMenuState,
 } from "./desktopApplicationMenu.js";
 import { applyAppIcon } from "./desktopWindowChrome.js";
 import { resolveWindowsAppUserModelIdForFlavor } from "../../scripts/desktop-product-identity.mjs";
@@ -159,7 +159,7 @@ import {
   syncApplicationUnreadBadge,
   handleDesktopWindowCloseRequest,
 } from "./desktopWindowLifecycle.js";
-import { resolveZCodeBuiltinProviderConfigFilePath } from "./desktopProviderConfig.js";
+import { resolveZodyBuiltinProviderConfigFilePath } from "./desktopProviderConfig.js";
 import {
   getCredentialsDir,
   isDockerDaemonAvailable,
@@ -169,7 +169,7 @@ import {
   loadHostProcessEnvFromLocalFiles,
   resolveBundledGlmBinaryPath,
   resolveRemoteAssetDirs,
-  resolveZCodeEndpointEnvBaseOrigin,
+  resolveZodyEndpointEnvBaseOrigin,
   desktopRuntimeEnv,
   runtimeApplicationName,
   runtimeHomePath,
@@ -250,8 +250,8 @@ import {
 } from "./desktopResourceTelemetry.js";
 import { registerRendererHeapSampleIpc } from "./processResourceRendererHeapSource.js";
 import {
-  registerDesktopZCodeDataSizeTelemetry,
-  stopDesktopZCodeDataSizeTelemetry,
+  registerDesktopZodyDataSizeTelemetry,
+  stopDesktopZodyDataSizeTelemetry,
 } from "./desktopZodyDataSizeTelemetry.js";
 import { configureDesktopMcpTelemetry, reportMcpTelemetryToArms } from "./desktopMcpTelemetry.js";
 import {
@@ -813,7 +813,7 @@ const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
 async function resolveCurrentZodyEndpointOrigin() {
   return resolveZodyEndpointOrigin({
     env: ZCODE_ENV,
-    envBaseOrigin: resolveZCodeEndpointEnvBaseOrigin(hostProcessLocalEnv),
+    envBaseOrigin: resolveZodyEndpointEnvBaseOrigin(hostProcessLocalEnv),
     overrideOrigin: (await mainSettingService.get()).zodyEndpointOrigin,
   });
 }
@@ -1197,7 +1197,7 @@ async function prepareAppQuit(reason: string, kind: AppShutdownKind = "normal"):
   // Bug 根因：资源样本改为 5 分钟窗口后，退出仍直接 stop 会清空未满窗口的数据。
   // 退出时只排空已存在的角色 / Agent 内存窗口，不启动新采样、目录扫描或外部探针。
   stopDesktopResourceTelemetry({ flushPendingWindows: true });
-  stopDesktopZCodeDataSizeTelemetry();
+  stopDesktopZodyDataSizeTelemetry();
   stopDesktopNetworkTelemetry();
   stopRemoteUsageArmsPeriodicSampling();
   // 扩展 socket 随 Host 退出一起收口；失败只记录，不扩大退出预算。
@@ -1541,14 +1541,14 @@ async function executeDesktopCommandForApp(
     command,
     senderWindow,
     logger,
-    updateZCodeStdioTapDevMenuState,
+    updateZodyStdioTapDevMenuState,
     onDesktopZoomChanged: (zoomLevel) => {
       currentDesktopZoomLevel = clampDesktopZoomLevel(zoomLevel);
       rebuildMenu();
     },
     settingService: mainSettingService,
-    onZCodeEndpointChanged: handleZCodeEndpointChanged,
-    zcodeEndpointEnvBaseOrigin: resolveZCodeEndpointEnvBaseOrigin(hostProcessLocalEnv),
+    onZCodeEndpointChanged: handleZodyEndpointChanged,
+    zcodeEndpointEnvBaseOrigin: resolveZodyEndpointEnvBaseOrigin(hostProcessLocalEnv),
     onRelaunchApp: async () => {
       await prepareAppQuit("desktop-command-relaunch");
       app.relaunch();
@@ -1559,7 +1559,7 @@ async function executeDesktopCommandForApp(
   });
 }
 
-async function resolveZCodeEndpointSelection(): Promise<"production" | "test" | "custom"> {
+async function resolveZodyEndpointSelection(): Promise<"production" | "test" | "custom"> {
   if (ZCODE_ENV === "production") {
     return "production";
   }
@@ -1573,7 +1573,7 @@ async function resolveZCodeEndpointSelection(): Promise<"production" | "test" | 
   return "custom";
 }
 
-async function handleZCodeEndpointChanged() {
+async function handleZodyEndpointChanged() {
   rebuildMenu();
   // T2.3：远控 runtime 是 App 级单实例，endpoint 变化只需要挂起一次。
   await webRemoteControlManagerRef.current?.suspend("endpoint-changed");
@@ -1614,7 +1614,7 @@ function resetShortcutRecordingForWebContents(webContentsId: number) {
 }
 
 function rebuildMenu() {
-  void Promise.all([resolveZCodeEndpointSelection(), mainSettingService.get()]).then(
+  void Promise.all([resolveZodyEndpointSelection(), mainSettingService.get()]).then(
     ([zcodeEndpointSelection, settings]) => {
       rebuildApplicationMenu({
         currentApplicationLocale,
@@ -1899,7 +1899,7 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         label,
         {
           ...initMessage,
-          zcodeBuiltinProviderConfigFilePath: resolveZCodeBuiltinProviderConfigFilePath(),
+          zcodeBuiltinProviderConfigFilePath: resolveZodyBuiltinProviderConfigFilePath(),
         },
         {
           hostProcessLocalEnv,
@@ -2517,7 +2517,7 @@ app.whenReady().then(async () => {
   // 主窗口 renderer 的 60 秒 heap 样本入口；随 App 生命周期常驻，只注册一次。
   registerRendererHeapSampleIpc();
   const defaultDataBaseDir = process.env.HOME?.trim() || homedir();
-  registerDesktopZCodeDataSizeTelemetry({
+  registerDesktopZodyDataSizeTelemetry({
     context: {
       appVersion: ZCODE_VERSION,
       armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
@@ -2530,7 +2530,7 @@ app.whenReady().then(async () => {
     isAppBackground: () => resolveResourceUsageScene() === "background",
     isZCodeBusy: () => getRunningAgentSessionCount() > 0,
     logger,
-    rootPath: getZCodeDataRootDir(),
+    rootPath: getZodyDataRootDir(),
     stateFile: join(app.getPath("userData"), "zody-data-size-telemetry.json"),
   });
   registerDesktopNetworkTelemetry(logger);

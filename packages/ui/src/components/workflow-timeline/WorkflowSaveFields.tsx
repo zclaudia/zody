@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select.js";
 import { Spinner } from "@/components/ui/spinner.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { SettingsFormTextarea } from "@/settings/SettingsFormTextarea.js";
 import { SAVED_WORKFLOW_NAME_MAX_CHARS, type WorkflowSaveDraft } from "./workflowRunSave.js";
 
@@ -58,7 +58,7 @@ export function WorkflowSaveFields({
   taken: boolean;
   update: (next: Partial<WorkflowSaveDraft>) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const format = (id: string, values?: Record<string, string>) =>
     intl.formatMessage({ id }, values);
   return (
@@ -193,7 +193,7 @@ function WorkflowSaveConsequence({
   shadowing: boolean;
   taken: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const format = (id: string, values?: Record<string, string>) =>
     intl.formatMessage({ id }, values);
   // 遮蔽那一句借 SaveWorkflow 卡的原词（它本身不带句号），句号随语言由词条补上。

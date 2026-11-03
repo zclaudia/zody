@@ -1,11 +1,11 @@
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
+import { NodeZodyBuiltinProviderConfigSource } from "../src/index.js";
 import { compileModelOptionMaps } from "@zody/model-option-map";
 
 describe("发布模型规则的前后缀与覆盖顺序", () => {
   it("OpenRouter Messages 的 GPT 选择实际生成对应 effort，保留完整请求型号", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: fileURLToPath(
         new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),
@@ -45,7 +45,7 @@ describe("发布模型规则的前后缀与覆盖顺序", () => {
   it.each(["anthropic-messages", "openai-chat-completions", "openai-responses"] as const)(
     "%s：等价前后缀复用能力与 Map，不依赖聚合站点白名单",
     async (apiType) => {
-      const source = new NodeZCodeBuiltinProviderConfigSource({
+      const source = new NodeZodyBuiltinProviderConfigSource({
         bundledFilePath: fileURLToPath(
           new URL("../../../config/provider/zody-builtin.json", import.meta.url),
         ),
@@ -117,7 +117,7 @@ describe("发布模型规则的前后缀与覆盖顺序", () => {
   );
 
   it("聚合模板的每家维护厂商有默认启用代表，所有成员能形成完整配置和请求 Map", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: fileURLToPath(
         new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),

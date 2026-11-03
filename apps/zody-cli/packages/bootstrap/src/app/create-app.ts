@@ -107,14 +107,14 @@ import {
   type NodeReplBrowserBroker,
 } from "./node-repl-browser-broker.js";
 import { resolveBuiltInNodeReplMcpServers } from "./built-in-node-repl.js";
-import { resolveZCodeCustomCommandPrompt } from "../custom-command-prompt.js";
-import { resolveZCodeBuiltinPromptCommandInvocation } from "../builtin-prompt-command.js";
+import { resolveZodyCustomCommandPrompt } from "../custom-command-prompt.js";
+import { resolveZodyBuiltinPromptCommandInvocation } from "../builtin-prompt-command.js";
 import { BUILTIN_WORKFLOW_COMMAND_NAME } from "../builtin-workflow-command.js";
 import { collectDisabledPaths } from "../skill-command-overrides.js";
 import {
   loadPluginAgentTemplates,
   resolvePluginAgentProfiles,
-  loadZCodeAgentProfiles,
+  loadZodyAgentProfiles,
 } from "../subagents.js";
 import { createRuntimeAiSdkModelExecutionConfig } from "../model-config.js";
 import { ApiProviderModelRuntime } from "./provider-registry-model-runtime.js";
@@ -167,7 +167,7 @@ function decodePromptAttachmentDataUrl(
   return { bytes, mediaType };
 }
 
-export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> {
+export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
   if (!options?.providerRegistry) {
     throw new Error("createZCodeApp requires a Provider Registry");
   }
@@ -237,10 +237,10 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
       signal: new AbortController().signal,
       traceContext,
     });
-    const zcodeSubagentProfileOutcome = hostSubagentSnapshot
+    const zodySubagentProfileOutcome = hostSubagentSnapshot
       ? subagentProfilesFromSnapshot(hostSubagentSnapshot)
-      : await loadZCodeAgentProfiles({ logger, storageRoot, workingDirectory });
-    const zcodeSubagentProfiles = zcodeSubagentProfileOutcome.profiles;
+      : await loadZodyAgentProfiles({ logger, storageRoot, workingDirectory });
+    const zodySubagentProfiles = zodySubagentProfileOutcome.profiles;
     const pluginOutcome = resolveStartupPlugins({
       cliStorageRoot,
       configResult,
@@ -260,9 +260,9 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
             {
               logger,
               plugins: pluginOutcome.plugins,
-              reservedProfileNames: zcodeSubagentProfiles.map((profile) => profile.name),
+              reservedProfileNames: zodySubagentProfiles.map((profile) => profile.name),
               modelSelectionOverrides:
-                zcodeSubagentProfileOutcome.pluginAgentModelSelectionOverrides,
+                zodySubagentProfileOutcome.pluginAgentModelSelectionOverrides,
             },
             pluginTemplates,
           ).profiles;
@@ -272,7 +272,7 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
       workingDirectory,
     });
     // 用户目录已在 loader 前完成原地迁移；不能给项目/插件旧身份加内存兼容旁路。
-    const subagentProfiles = [...zcodeSubagentProfiles, ...pluginSubagentProfiles];
+    const subagentProfiles = [...zodySubagentProfiles, ...pluginSubagentProfiles];
     const ownsSessionStore = options.sessionStore === undefined;
     const sessionStore =
       options.sessionStore ?? (await openStartupSessionStore(configResult, startupTimer));
@@ -292,7 +292,7 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
         builtInMcpServers,
         pluginRuntimeFeatures,
         builtInSubagentModelSelectionOverrides:
-          zcodeSubagentProfileOutcome.builtInModelSelectionOverrides,
+          zodySubagentProfileOutcome.builtInModelSelectionOverrides,
         subagentOutputRootDir: join(cliStorageRoot, "agents"),
         subagentProfiles,
         storageRoot,
@@ -996,7 +996,7 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
     const inputFacade = createInputFacade({
       artifactStore,
       customCommandPromptResolver: async (text, resolverOptions) => {
-        const builtin = resolveZCodeBuiltinPromptCommandInvocation(text, {
+        const builtin = resolveZodyBuiltinPromptCommandInvocation(text, {
           // 动态工作流灰度关闭时内置 `/workflow` 不得展开（DWG-03）。目录侧已经把它从 `/` 面板
           // 剔除，但用户仍可手打命令名，两条路径必须给出同一个结论。独立 CLI 的 TUI 与 headless
           // 按 --workflow-mode 显式取值；缺席（进程内嵌入方）不设门禁，见 runtimeConfig 字段注释。
@@ -1015,7 +1015,7 @@ export async function createZCodeApp(options: ZodyAppOptions): Promise<ZodyApp> 
           }
           return builtin.prompt;
         }
-        return await resolveZCodeCustomCommandPrompt(text, {
+        return await resolveZodyCustomCommandPrompt(text, {
           env: options.env,
           executionPort,
           logger,

@@ -6,7 +6,7 @@ import type {
   ZodyPluginInfo,
   ZodyPluginUserConfigOption,
 } from "@zody/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { InstalledPluginDetailPanel } from "../src/settings/InstalledPluginManagement.js";
 
 describe("InstalledPluginDetailPanel", () => {
@@ -36,7 +36,7 @@ describe("InstalledPluginDetailPanel", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(InstalledPluginDetailPanel, {
           getPluginOptionValue: (
@@ -88,7 +88,7 @@ describe("InstalledPluginDetailPanel", () => {
 
       const html = renderToStaticMarkup(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: "zh-CN" },
           createElement(InstalledPluginDetailPanel, {
             getPluginOptionValue: (
@@ -136,7 +136,7 @@ describe("InstalledPluginDetailPanel", () => {
     const renderPanel = (diagnostics: ZodyPluginDiagnostic[]) =>
       renderToStaticMarkup(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: "zh-CN" },
           createElement(InstalledPluginDetailPanel, {
             diagnostics,
@@ -205,7 +205,7 @@ describe("InstalledPluginDetailPanel", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(InstalledPluginDetailPanel, {
           getPluginOptionValue: (

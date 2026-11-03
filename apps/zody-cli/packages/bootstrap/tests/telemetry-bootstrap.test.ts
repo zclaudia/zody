@@ -6,7 +6,7 @@ import {
   sanitizeZodyRuntimeEnvInPlace,
 } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
-import { prepareZCodeTelemetryEnv } from "../src/telemetry-bootstrap.js";
+import { prepareZodyTelemetryEnv } from "../src/telemetry-bootstrap.js";
 
 describe("prepareZCodeTelemetryEnv", () => {
   afterEach(() => {
@@ -23,7 +23,7 @@ describe("prepareZCodeTelemetryEnv", () => {
       };
       sanitizeZodyRuntimeEnvInPlace(env);
 
-      const prepared = await prepareZCodeTelemetryEnv(env);
+      const prepared = await prepareZodyTelemetryEnv(env);
 
       expect(prepared.OTEL_EXPORTER_OTLP_HEADERS).toBeUndefined();
       expect(prepared.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT).toBeUndefined();

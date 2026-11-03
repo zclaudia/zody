@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { SessionEventType, createSessionEvent, type SessionEvent } from "@zody/contracts";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { WORKFLOW_RUNS_LIMITS } from "@zody/shared/zody-protocol-v4";
 import {
   EMPTY_TUI_WORKFLOW_MIRROR,
@@ -21,7 +21,7 @@ import {
   workflowRunSeedFromSummary,
 } from "../src/app-workflow-seed.js";
 
-const COPY = getZCodeCopy("en-US").tui;
+const COPY = getZodyCopy("en-US").tui;
 const RUN_ID = "dwfrun-1";
 const TOOL_CALL_ID = "tc-1";
 
@@ -569,7 +569,7 @@ test("a replayed stopped run renders its real facts after a cold start", () => {
 test("both locales render the card without leaking raw copy keys", () => {
   const card = buildTuiWorkflowCardIndex(startedMirror()).get(TOOL_CALL_ID)!;
   for (const locale of ["en-US", "zh-CN"] as const) {
-    const copy = getZCodeCopy(locale).tui;
+    const copy = getZodyCopy(locale).tui;
     const text = renderCardText(WorkflowRunCardView({ card, copy, expanded: true })).join("\n");
     assert.ok(text.length > 0, `${locale} rendered nothing`);
     assert.doesNotMatch(text, /undefined/u, `${locale} leaked undefined`);
@@ -624,7 +624,7 @@ test("both locales render a notice without leaking raw keys", () => {
   for (const locale of ["en-US", "zh-CN"] as const) {
     const text = workflowInterruptedNoticeText(
       { runId: "dwfrun-1", label: "L" },
-      getZCodeCopy(locale).tui,
+      getZodyCopy(locale).tui,
     );
     assert.ok(text.length > 0);
     assert.doesNotMatch(text, /undefined|\[object Object\]/u);

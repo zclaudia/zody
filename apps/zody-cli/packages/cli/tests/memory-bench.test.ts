@@ -43,7 +43,7 @@ function harness(argv: string[], enabled = true) {
       calls.push(`exit:${code}`);
     },
     mapSessionEvent: ((event: unknown) => event) as never,
-    createZCodeApp: (options) => {
+    createZodyApp: (options) => {
       calls.push(`extraction:${options?.runtimeConfig?.memory?.extractionEnabled}`);
       assert.equal(options?.runtimeConfig?.memory?.enabled, undefined);
       return {

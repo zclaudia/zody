@@ -286,7 +286,7 @@ export const hooksSchema = z
   })
   .strict();
 
-export const ZCodeConfigFileSchema = z
+export const ZodyConfigFileSchema = z
   .object({
     $schema: z.string().optional(),
     modelStream: modelStreamSchema.optional(),
@@ -308,7 +308,7 @@ export const ZCodeConfigFileSchema = z
   })
   .passthrough();
 
-export type ZodyConfigFile = z.infer<typeof ZCodeConfigFileSchema>;
+export type ZodyConfigFile = z.infer<typeof ZodyConfigFileSchema>;
 
 type SkillCommandOverrideMap = Record<string, { enable?: boolean }>;
 
@@ -391,7 +391,7 @@ export function parseConfigFileToRuntimePatchWithDiagnostics(
 ): ParseConfigFileResult {
   const diagnostics: ConfigDiagnostic[] = [];
   const normalized = normalizeConfigFileInput(value, diagnostics);
-  const parsed = ZCodeConfigFileSchema.parse(normalized);
+  const parsed = ZodyConfigFileSchema.parse(normalized);
   return {
     config: parsedConfigFileToRuntimePatch(parsed),
     diagnostics,

@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 /**
  * 已连接手机首页与聊天页共用的设置入口。
@@ -22,7 +22,7 @@ export function WebRemoteControlMobileSettingsMenu({
   className?: string;
   onOpenAppSettings?: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   if (!onOpenAppSettings) return null;
 
   return (

@@ -13,7 +13,7 @@ describe("Session 原选择与输入协议", () => {
   it("完整配置命令保留档位，Session read 不用候选名单过滤原选择", async () => {
     let app!: ReturnType<typeof createFakeApp>;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => (app = createFakeApp(options)),
+      createZodyApp: (options) => (app = createFakeApp(options)),
     });
     await request(server, zodyProtocolMethods.sessionCreate, {
       workspace: { workspacePath: "/fixture", workspaceKey: "/fixture" },
@@ -56,7 +56,7 @@ describe("Session 原选择与输入协议", () => {
       completion,
     }));
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => (app = createFakeApp(options, { sendInput })),
+      createZodyApp: (options) => (app = createFakeApp(options, { sendInput })),
     });
     await request(server, zodyProtocolMethods.sessionCreate, {
       workspace: { workspacePath: "/fixture", workspaceKey: "/fixture" },

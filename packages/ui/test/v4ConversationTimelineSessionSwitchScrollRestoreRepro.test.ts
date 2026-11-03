@@ -22,7 +22,7 @@ import {
   clearChatSessionScrollMemoryForTest,
   saveChatSessionScrollMemoryState,
 } from "@/lib/chatSessionScrollMemory.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import type { ConversationRowRenderContext } from "@/v4/conversationRowContext.js";
 import { ConversationTimeline } from "@/v4/ConversationTimeline.js";
 
@@ -273,7 +273,7 @@ function renderTimeline(
 ): void {
   root.render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(ConversationTimeline, {
         canLoadOlder: options.canLoadOlder,

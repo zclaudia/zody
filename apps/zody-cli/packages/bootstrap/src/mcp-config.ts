@@ -21,7 +21,7 @@ export {
 // 保留环境变量名供旧诊断脚本读取；迁移后的配置路径不会据此启动独立 CUA MCP。
 export const ZCODE_CUA_BROKER_UNAVAILABLE_ENV = "ZCODE_CUA_PERMISSION_BROKER_UNAVAILABLE";
 // CLI 入口会先清理 broker 凭据；shared node_repl 的可信配置随后从进程内捕获快照恢复它们。
-function resolveZCodeCuaBrokerSocket(): string | undefined {
+function resolveZodyCuaBrokerSocket(): string | undefined {
   // captured 优先；运行时残留的 stale socket 不能覆盖可信快照。
   return (
     getCapturedZodyCuaBrokerCredentials().socket ||
@@ -29,7 +29,7 @@ function resolveZCodeCuaBrokerSocket(): string | undefined {
   );
 }
 
-function resolveZCodeCuaBrokerToken(): string | undefined {
+function resolveZodyCuaBrokerToken(): string | undefined {
   return (
     undefined
   );
@@ -105,15 +105,15 @@ export function omitMcpServers(
     ),
   );
 
-  return injectZCodeCuaBrokerMcpServers(
+  return injectZodyCuaBrokerMcpServers(
     kept,
-    resolveZCodeCuaBrokerSocket(),
-    resolveZCodeCuaBrokerToken(),
+    resolveZodyCuaBrokerSocket(),
+    resolveZodyCuaBrokerToken(),
     trustedOfficialCuaServerNames,
   );
 }
 
-export function injectZCodeCuaBrokerMcpServers(
+export function injectZodyCuaBrokerMcpServers(
   servers: Record<string, McpServerConfig>,
   socketPath: string | undefined,
   token: string | undefined = undefined,
@@ -173,7 +173,7 @@ function injectCuaCredentialsIntoNodeRepl(
   };
 }
 
-function isZCodeCuaStdioServer(
+function isZodyCuaStdioServer(
   name: string,
   config: McpServerConfig,
 ): config is McpStdioServerConfig {
@@ -196,7 +196,7 @@ function isZCodeCuaStdioServer(
 function isRetiredCuaMcpServer(name: string, config: McpServerConfig | undefined): boolean {
   // node_repl is the single supported CUA host and may share the CUA plugin's
   // authority marker; all other CUA-shaped MCP entries are retired.
-  return name !== NODE_REPL_SERVER_NAME && config !== undefined && isZCodeCuaStdioServer(name, config);
+  return name !== NODE_REPL_SERVER_NAME && config !== undefined && isZodyCuaStdioServer(name, config);
 }
 
 function getConfiguredServerStatus(

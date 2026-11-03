@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ZodyTaskMeta } from "@zody/shared";
-import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
+import { compareZodyTaskListItems } from "@/lib/taskListOrdering.js";
 import { attachTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 
 function task(id: string, overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
@@ -31,7 +31,7 @@ function liveTask(
 
 function sortedIds(tasks: ZodyTaskMeta[], sortBy: "created" | "updated"): string[] {
   return [...tasks]
-    .sort((left, right) => compareZCodeTaskListItems(left, right, sortBy))
+    .sort((left, right) => compareZodyTaskListItems(left, right, sortBy))
     .map((item) => item.taskId);
 }
 

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  createSharedZCodeCredentialStore,
+  createSharedZodyCredentialStore,
   type SharedZodyCredentialStore,
 } from "../src/auth/shared-credentials.js";
 import {
@@ -111,7 +111,7 @@ async function seedCredentials(input: {
 }): Promise<SeededCredentials> {
   const directory = await mkdtemp(join(tmpdir(), "zcode-mcp-oauth-refresh-"));
   temporaryDirectories.push(directory);
-  const credentialStore = createSharedZCodeCredentialStore({
+  const credentialStore = createSharedZodyCredentialStore({
     env: { ZCODE_CREDENTIAL_SECRET: input.secret },
     filePath: join(directory, "credentials.json"),
   });
@@ -355,7 +355,7 @@ describe("MCP OAuth refresh single-flight", () => {
     });
     const directory = await mkdtemp(join(tmpdir(), "zcode-mcp-oauth-no-refresh-"));
     temporaryDirectories.push(directory);
-    const credentialStore = createSharedZCodeCredentialStore({
+    const credentialStore = createSharedZodyCredentialStore({
       env: { ZCODE_CREDENTIAL_SECRET: "refresh-none-secret" },
       filePath: join(directory, "credentials.json"),
     });

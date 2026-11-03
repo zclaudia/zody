@@ -9,7 +9,7 @@ import { ServiceProvider } from "@/hooks/useServices.js";
 const { confirm } = vi.hoisted(() => ({ confirm: vi.fn() }));
 vi.mock("@/hooks/useConfirmDialog.js", () => ({ useConfirmDialog: () => confirm }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }, values?: { count?: number }) =>
         values?.count == null ? id : `${id}:${values.count}`,

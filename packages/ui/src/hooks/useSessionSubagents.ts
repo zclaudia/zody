@@ -51,7 +51,7 @@ export function useSessionSubagents(options: {
   workspacePath: string;
 }) {
   const services = useServices();
-  const zcodeAgentService = services.zcodeAgentService;
+  const zodyAgentService = services.zcodeAgentService;
   const [state, setState] = useState<SessionSubagentsViewState>(emptyState);
   const requestVersionRef = useRef(0);
   const requestInFlightRef = useRef(false);
@@ -63,7 +63,7 @@ export function useSessionSubagents(options: {
   const requestPage = useCallback(
     (endedLimit: number, endedCursor?: string): Promise<ZodySessionSubagentsResult> => {
       if (!options.sessionId) return Promise.reject(new Error("session_id_missing"));
-      if (typeof zcodeAgentService?.listSessionSubagents !== "function") {
+      if (typeof zodyAgentService?.listSessionSubagents !== "function") {
         return Promise.resolve({
           revision: 0,
           childSessionIds: [],
@@ -71,7 +71,7 @@ export function useSessionSubagents(options: {
           ended: { total: 0, items: [] },
         });
       }
-      return zcodeAgentService.listSessionSubagents({
+      return zodyAgentService.listSessionSubagents({
         workspacePath: options.workspacePath,
         ...(options.workspaceIdentity ? { workspaceIdentity: options.workspaceIdentity } : {}),
         ...(options.remoteSessionId ? { remoteSessionId: options.remoteSessionId } : {}),
@@ -85,7 +85,7 @@ export function useSessionSubagents(options: {
       options.sessionId,
       options.workspaceIdentity,
       options.workspacePath,
-      zcodeAgentService,
+      zodyAgentService,
     ],
   );
 

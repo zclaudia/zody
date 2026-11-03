@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import React, { act } from "react";
 import { testRender } from "@mbears/opentui-react/test-utils";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { completeSlashCommand } from "../src/app-keyboard.js";
 import { AppView } from "../src/app-view.js";
 import { Sidebar } from "../src/app-sidebar.js";
@@ -62,7 +62,7 @@ test("mouse clicks outside the prompt return focus to the prompt input", async (
         approvalQueue: [],
         busy: false,
         contextUsage: {},
-        copy: getZCodeCopy("en-US").tui,
+        copy: getZodyCopy("en-US").tui,
         copyCurrentSelection: () => {
           copySelectionCount += 1;
           return false;

@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ToolLayout } from "../src/ToolCallBlocks/ToolLayout.js";
 import { handleToolSummaryActionKeyDown } from "../src/ToolCallBlocks/ToolSummaryRow.js";
 
@@ -110,7 +110,7 @@ describe("ToolLayout", () => {
   it("keeps collapsible detail spacing inside the animated content body", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolLayout, {
           toolId: "tool-layout-spacing",
@@ -140,7 +140,7 @@ describe("ToolLayout", () => {
   it("preserves detail spacing for force-open non-toggle content", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolLayout, {
           toolId: "tool-layout-force-open-spacing",
@@ -163,7 +163,7 @@ describe("ToolLayout", () => {
   it("keeps running tool icons static while animating kind labels", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolLayout, {
           toolId: "tool-layout-running-label",
@@ -186,7 +186,7 @@ describe("ToolLayout", () => {
   it("does not reserve a summary content gap when an expanded tool has no summary", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolLayout, {
           toolId: "tool-layout-empty-expanded-summary",
@@ -208,7 +208,7 @@ describe("ToolLayout", () => {
   it("prioritizes edit file content when the conversation container narrows", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolLayout, {
           toolId: "tool-layout-edit-file-priority",
@@ -230,7 +230,7 @@ describe("ToolLayout", () => {
   it("renders a summary action without collapsible semantics or inline detail", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolLayout, {
           toolId: "tool-layout-summary-action",
@@ -275,7 +275,7 @@ describe("ToolLayout hidden measurement", () => {
 
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           "div",
@@ -310,7 +310,7 @@ describe("ToolLayout hidden measurement", () => {
 
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           "div",
@@ -374,7 +374,7 @@ describe("ToolLayout hidden measurement", () => {
 
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ToolLayout, {
           toolId: "tool-layout-measure-toggle",

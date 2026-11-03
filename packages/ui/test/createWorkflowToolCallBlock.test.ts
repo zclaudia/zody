@@ -7,7 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkflowRunState } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowDraftPosition, WorkflowRunCardSummary } from "@/ToolCallBlocks/shared.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 vi.mock("@/components/ai-elements/code-block.js", () => ({
   CodeBlockHeader: () => null,
@@ -104,7 +104,7 @@ function createBlock(
   locale: "en-US" | "zh-CN" = "en-US",
 ) {
   return createElement(
-    ZCodeIntlProvider,
+    ZodyIntlProvider,
     { initialLocale: locale },
     createElement(CreateWorkflowToolCallBlock, {
       toolCallNode: {
@@ -2067,7 +2067,7 @@ describe("ConversationRowView 把工具卡的产物药丸变成打开请求", ()
     });
     return render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           PlatformProvider,
@@ -2186,7 +2186,7 @@ describe("ConversationRowView 把工具卡的产物药丸变成打开请求", ()
     });
     return render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           PlatformProvider,
@@ -2358,7 +2358,7 @@ describe("ConversationRowView 把稿号交给编译反馈行", () => {
     });
     return render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           PlatformProvider,

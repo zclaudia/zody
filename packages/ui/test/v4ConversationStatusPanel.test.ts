@@ -146,7 +146,7 @@ vi.mock("@/components/ui/collapsible.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: (descriptor: { id: string }, values?: Record<string, string>) => {
         const durationUnits: Record<string, string> = {

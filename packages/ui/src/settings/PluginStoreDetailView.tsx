@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import type { ZodyPluginComponentKind, ZodyPluginsDescribeResult } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import { PluginStoreAvatar } from "@/settings/PluginStoreAvatar.js";
 import { ThemeHeroVisual } from "@/openWorkspacePageThemeHero.js";
@@ -100,7 +100,7 @@ export function PluginStoreDetailView({
   /** 高级折叠区（rootPath/Hook 明细/配置项），仅已安装且有运行时信息时由父级注入。 */
   advanced?: ReactNode;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const displayName = resolveItemDisplayName(item, locale);
   const description = resolveItemDescription(item, locale);
   const heroImage = item.listing?.heroImage;
@@ -319,7 +319,7 @@ function HeroSection({
 }
 
 function ComponentSection({ group }: { group: PluginComponentDisplayGroup }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const Icon = SECTION_ICONS[group.kind];
   return (
     <section data-testid="plugin-store-component-section" data-component-kind={group.kind}>
@@ -362,7 +362,7 @@ function InfoSection({
   item: StorePluginItem;
   describeMetadata: ZodyPluginsDescribeResult["metadata"];
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const platform = useOptionalPlatform();
   const listing = item.listing;
   const developer = listing?.author ?? item.info?.author ?? describeMetadata?.author;
@@ -473,7 +473,7 @@ function pickHttpsUrl(...candidates: Array<string | undefined>): string | undefi
 
 /** 高级折叠区外壳：详情页底部的「更多详情」，内容由父级注入（rootPath/Hook 明细/配置）。 */
 export function PluginStoreAdvancedSection({ children }: { children: ReactNode }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <details
       className="group/advanced border-t border-border pt-4"

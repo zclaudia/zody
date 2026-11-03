@@ -1644,7 +1644,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     const store = createSqliteSessionStore({ dbPath });
     const providerRegistry = createColdProviderRegistry();
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         const effectiveOptions = { ...options, providerRegistry };
         createdAppOptions.push(effectiveOptions);
         return createColdFakeApp(effectiveOptions, sentInputs, probe);
@@ -1669,7 +1669,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
       const activationGate = deferred();
       const frames: ConversationTopicFrame[] = [];
       const server = new ZodyProtocolAgentServer({
-        createZCodeApp: async (options) => {
+        createZodyApp: async (options) => {
           activationStarted.resolve();
           await activationGate.promise;
           return createColdFakeApp({ ...options, providerRegistry }, []);
@@ -1772,7 +1772,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     const server = new ZodyProtocolAgentServer({
       cwd: process.cwd(),
       sessionStore: store,
-      createZCodeApp: async (options) => {
+      createZodyApp: async (options) => {
         const app = await createRegistryBackedTestApp({
           ...options,
           env: {},
@@ -1988,7 +1988,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     const store = createSqliteSessionStore({ dbPath });
     const resumedWorkingDirectories: string[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
       },
@@ -2051,7 +2051,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     const store = createSqliteSessionStore({ dbPath });
     const resumedWorkingDirectories: string[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
       },
@@ -2100,7 +2100,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     store.repairLegacyRemoteSessionWorkspace = vi.fn(async () => false);
     const resumedWorkingDirectories: string[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
       },
@@ -2161,7 +2161,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     });
     const resumedWorkingDirectories: string[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         resumedWorkingDirectories.push(options?.runtimeConfig?.workingDirectory ?? "");
         return createColdFakeApp(options, []);
       },

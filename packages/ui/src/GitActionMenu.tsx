@@ -46,7 +46,7 @@ import {
   getCurrentSessionFilePaths,
 } from "@/git-action-menu/currentSessionFileScope.js";
 import { useServices } from "@/hooks/useServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { getErrorMessage } from "@/lib/errorMessage.js";
 import { runUserAction } from "@/lib/userActionTelemetry.js";
 import { formatCommandShortcutLabel, matchesPrimaryShortcut } from "@/lib/keyboardShortcuts.js";
@@ -206,7 +206,7 @@ function GitCommitDialog({
   onSubmitAndPush,
   onPushOnly,
 }: GitCommitDialogProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const [selectedActionId, setSelectedActionId] = useState<CommitDialogActionId>("commit");
   const messageTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const messageInputFocusedOnOpenRef = useRef(false);
@@ -601,7 +601,7 @@ function GitPushDialog({
   onOpenChange,
   onSubmit,
 }: GitPushDialogProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const numberFormatter = new Intl.NumberFormat(locale);
   const [errorCopied, setErrorCopied] = useState(false);
   const descriptionId = gitSummary.trackingBranchName
@@ -831,7 +831,7 @@ export function GitActionMenu({
   triggerLayout = "header",
 }: GitActionMenuProps) {
   const { gitService } = useServices();
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const [commitDialogOpen, setCommitDialogOpen] = useState(false);
   const [commitDialogLoading, setCommitDialogLoading] = useState(false);
   const [commitDialogState, setCommitDialogState] = useState<GitCommitDialogState | null>(null);

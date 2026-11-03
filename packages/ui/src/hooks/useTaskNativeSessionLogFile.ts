@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ZodyProvider } from "@zody/shared";
 import { logger } from "@/logger.js";
-import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
+import { useZodyTaskService } from "@/hooks/useZodyTaskService.js";
 
 /**
  * useWorkspaceActiveTaskState 的导出返回类型间接引用此接口，声明生成要求它可导出。
@@ -57,7 +57,7 @@ export function useTaskNativeSessionLogFile(
   workspaceIdentity?: string,
   options: { enabled?: boolean } = {},
 ) {
-  const zcodeTaskService = useZCodeTaskService(workspacePath, undefined, workspaceIdentity);
+  const zodyTaskService = useZodyTaskService(workspacePath, undefined, workspaceIdentity);
   const [state, setState] = useState<TaskNativeSessionLogFileState>(INITIAL_STATE);
   const requestVersionRef = useRef(0);
   const enabled = options.enabled ?? true;
@@ -99,7 +99,7 @@ export function useTaskNativeSessionLogFile(
       error: null,
     });
 
-    void zcodeTaskService
+    void zodyTaskService
       .getTaskNativeSessionLogFile({
         taskId,
         workspacePath,
@@ -143,7 +143,7 @@ export function useTaskNativeSessionLogFile(
     return () => {
       disposed = true;
     };
-  }, [enabled, zcodeTaskService, providerHint, taskId, workspaceIdentity, workspacePath]);
+  }, [enabled, zodyTaskService, providerHint, taskId, workspaceIdentity, workspacePath]);
 
   return state;
 }

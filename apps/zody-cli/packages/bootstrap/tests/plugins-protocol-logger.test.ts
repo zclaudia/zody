@@ -9,7 +9,7 @@ vi.mock("../src/plugins.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/plugins.js")>();
   return {
     ...actual,
-    resolveZCodePlugins(options: Record<string, unknown>): PluginLoadOutcome {
+    resolveZodyPlugins(options: Record<string, unknown>): PluginLoadOutcome {
       resolverCapture.options = options;
       return {
         commandRoots: [],

@@ -11,7 +11,7 @@ import {
   clearMobileHistorySearchSessionForTest,
   useMobileHistorySearch,
 } from "../src/hooks/useMobileHistorySearch.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import { WebRemoteControlMobileSearch } from "../src/WebRemoteControlMobileSearch.js";
 
 function workspace(index: number) {
@@ -702,7 +702,7 @@ describe("useMobileHistorySearch", () => {
     });
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(WebRemoteControlMobileSearch, {
           workspaces: [workspace(1), workspace(2)],

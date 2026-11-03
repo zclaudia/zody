@@ -74,7 +74,7 @@ vi.mock("@/v4/V4ConversationContext.js", () => ({
 }));
 
 // eslint-disable-next-line import/first -- 必须在 mock 之后再引入被测组件。
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 // eslint-disable-next-line import/first
 import { PermissionDialog } from "@/PermissionDialog.js";
 // eslint-disable-next-line import/first
@@ -151,7 +151,7 @@ function renderDialog(
   const onRespond = vi.fn();
   const element = (next: ZodyPermissionRequest) =>
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: options.locale ?? "en-US" },
       createElement(PermissionDialog, {
         request: next,
@@ -573,7 +573,7 @@ describe("V4 宿主", () => {
     } as unknown as ConversationSnapshot;
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(V4InteractionDialogs, {
           sessionId: "sess-1",

@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   WebRemoteControlMobileStartPage,
   WebRemoteControlStandaloneStoreProvider,
-  ZCodeIntlProvider,
+  ZodyIntlProvider,
 } from "../src/index.js";
 
 /**
@@ -24,7 +24,7 @@ function renderStartPage(options?: {
 }) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         WebRemoteControlStandaloneStoreProvider,

@@ -18,17 +18,17 @@ it("真实工厂同样装配唯一请求端口，完整账号事实透传而不�
       requestAuth,
     }),
   );
-  const createZCodeApp = vi.fn(async (_options: Omit<ZodyAppOptions, "providerRegistry">) => ({}));
+  const createZodyApp = vi.fn(async (_options: Omit<ZodyAppOptions, "providerRegistry">) => ({}));
   await createWorkspaceZodyApp(
     {
-      deps: { createZCodeApp },
+      deps: { createZodyApp },
       requestClient,
       notify: vi.fn(),
     } as unknown as ZodyProtocolAgentServerContext,
     workspace,
     {},
   );
-  const port = createZCodeApp.mock.calls[0]![0].providerRuntimeHeadersPort!;
+  const port = createZodyApp.mock.calls[0]![0].providerRuntimeHeadersPort!;
   const input = {
     sessionId: "session",
     providerId: "account:zai-team-coding-plan",
@@ -122,7 +122,7 @@ it("无人应答在总时限后失败并取消，迟到响应失效且下一请�
   const { ZodyProtocolAgentServer } = await import("../src/zody-protocol/server.js");
   vi.useFakeTimers();
   try {
-    const server = new ZodyProtocolAgentServer({ createZCodeApp: vi.fn() });
+    const server = new ZodyProtocolAgentServer({ createZodyApp: vi.fn() });
     const sink = vi.fn();
     server.setNotificationSink(sink);
     const context = (server as unknown as { context: ZodyProtocolAgentServerContext }).context;

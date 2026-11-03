@@ -45,11 +45,11 @@ describe("TicketDetailView issue copy state", () => {
     const React = await import("react");
     const { renderToStaticMarkup } = await import("react-dom/server");
     const { TicketDetailView } = await import("@/feedback/TicketDetail.js");
-    const { ZCodeIntlProvider } = await import("@/i18n/IntlProvider.js");
+    const { ZodyIntlProvider } = await import("@/i18n/IntlProvider.js");
 
     renderToStaticMarkup(
       React.createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         React.createElement(TicketDetailView, {
           ticket: createTicket("ticket-1"),

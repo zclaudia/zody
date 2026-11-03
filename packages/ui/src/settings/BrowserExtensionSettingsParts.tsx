@@ -5,7 +5,7 @@ import type {
   BrowserExtensionProfileStatus,
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { SettingsRow } from "@/settings/SettingsPageParts.js";
 
 export const BROWSER_EXTENSION_INSTALL_COMMAND = "pnpm --filter @zody/browser-extension build";
@@ -22,7 +22,7 @@ export function BrowserExtensionInstallRow({
   status: BrowserExtensionBridgeStatus | null;
   onOpenDirectory: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <SettingsRow
       label={intl.formatMessage({ id: "settings.browser.extension.install.title" })}
@@ -80,7 +80,7 @@ export function BrowserExtensionPairingPanel({
   pendingPairing?: BrowserExtensionPairingStatus;
   onCancel: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div
       className="flex flex-wrap items-center gap-2"
@@ -136,7 +136,7 @@ export function BrowserExtensionProfileRows({
   onTransfer: (profile: BrowserExtensionProfileStatus) => void;
   onRevoke: (profile: BrowserExtensionProfileStatus) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   if (profiles.length === 0) {
     return (
       <div className="px-4 pb-3 text-ui-base text-foreground-subtle">

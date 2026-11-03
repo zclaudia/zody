@@ -12,7 +12,7 @@ import {
 } from "@/components/ai-elements/context.js";
 import { cn } from "@/components/lib/utils.js";
 import { Progress } from "@/components/ui/progress.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { formatCompactTokenNumber } from "@/lib/tokenNumberFormat.js";
 
 /**
@@ -216,7 +216,7 @@ export function ChatContextUsage({
     breakdown?: ZodyContextUsageBreakdownItem[];
   } | null;
   selectedProvider: ZodyProvider;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   locale: string;
 }) {
   const [contextOpen, setContextOpen] = useState(false);

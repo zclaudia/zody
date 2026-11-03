@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { KeyEvent } from "@mbears/opentui-core";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { filterSelectionItems, handleSelectionKey } from "../src/app-input.js";
 import type { SelectionState } from "../src/app-model.js";
 import { palette } from "../src/app-model.js";
 import { visibleSelectionItemWindow } from "../src/app-selection-keyboard.js";
 import { SelectionPanel } from "../src/app-selection-panel.js";
 
-const EN_COPY = getZCodeCopy("en-US").tui;
+const EN_COPY = getZodyCopy("en-US").tui;
 
 test("renders non-filterable selections without a filter prompt", () => {
   const panel = SelectionPanel({

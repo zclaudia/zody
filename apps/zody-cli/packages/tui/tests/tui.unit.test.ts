@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { SessionEventType, type SessionEvent } from "@zody/contracts";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { LoginRequiredPanel } from "../src/app-components.js";
 import { ContentPane, MessageRow } from "../src/app-transcript-components.js";
 import { EmptyTranscriptLogo, ZCODE_LOGO_LINES } from "../src/app-empty-transcript.js";
@@ -29,8 +29,8 @@ import { createSelectionState } from "../src/app-selection-state.js";
 import { describeSessionEvent, normalizePromptInput } from "../src/state.js";
 import type { TuiSlashCommandSuggestion } from "../src/types.js";
 
-const EN_COPY = getZCodeCopy("en-US").tui;
-const ZH_COPY = getZCodeCopy("zh-CN").tui;
+const EN_COPY = getZodyCopy("en-US").tui;
+const ZH_COPY = getZodyCopy("zh-CN").tui;
 
 test("normalizes prompt input for the shell", () => {
   assert.deepEqual(normalizePromptInput("hello"), {

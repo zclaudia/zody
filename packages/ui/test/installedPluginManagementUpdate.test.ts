@@ -130,11 +130,11 @@ describe("InstalledPluginDetailPanel update badge", () => {
     const { InstalledPluginDetailPanel } = await import(
       "../src/settings/InstalledPluginManagement.js"
     );
-    const { ZCodeIntlProvider } = await import("@/i18n/IntlProvider.js");
+    const { ZodyIntlProvider } = await import("@/i18n/IntlProvider.js");
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(InstalledPluginDetailPanel, {
           ...sharedPanelProps,
@@ -157,11 +157,11 @@ describe("InstalledPluginDetailPanel update badge", () => {
     const { InstalledPluginDetailPanel } = await import(
       "../src/settings/InstalledPluginManagement.js"
     );
-    const { ZCodeIntlProvider } = await import("@/i18n/IntlProvider.js");
+    const { ZodyIntlProvider } = await import("@/i18n/IntlProvider.js");
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(InstalledPluginDetailPanel, {
           ...sharedPanelProps,
@@ -182,14 +182,14 @@ describe("InstalledPluginDetailPanel update badge", () => {
     const { InstalledPluginDetailPanel } = await import(
       "../src/settings/InstalledPluginManagement.js"
     );
-    const { ZCodeIntlProvider } = await import("@/i18n/IntlProvider.js");
+    const { ZodyIntlProvider } = await import("@/i18n/IntlProvider.js");
     const onRequestUpdate = vi.fn();
     const root: Root = createRoot(installMinimalDom());
 
     act(() => {
       root.render(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: "en-US" },
           createElement(InstalledPluginDetailPanel, {
             ...sharedPanelProps,

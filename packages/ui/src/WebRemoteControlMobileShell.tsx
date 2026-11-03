@@ -24,7 +24,7 @@ import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import { useMobileFileEntryNavigation } from "@/hooks/useMobileFileEntryNavigation.js";
 import { useMobileFeatureWorkspaceDirectory } from "@/hooks/useMobileFeatureWorkspaceDirectory.js";
 import { useWebRemoteControlMobileShellBack } from "@/hooks/useWebRemoteControlMobileShellBack.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
   backOutOfWebRemoteControlMobileOverlayHistory,
@@ -85,7 +85,7 @@ export function WebRemoteControlMobileShell({
   sidePaneContent?: ReactNode;
   webRemoteControlTerminalTransportState?: WebRemoteControlTerminalTransportState;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [featurePage, setFeaturePage] = useState<WebRemoteControlMobileFeaturePage | null>(
     initialNavigationIntent === "files" ? "files" : null,
   );

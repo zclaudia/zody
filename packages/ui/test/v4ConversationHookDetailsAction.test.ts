@@ -4,7 +4,7 @@ import { createElement, type ReactNode } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { HookInvocationRow } from "@zody/shared/zody-protocol-v4";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationHookDetailsAction } from "@/v4/ConversationHookDetailsAction.js";
 
 const tooltipCapture = vi.hoisted(() => ({ opens: [] as Array<boolean | undefined> }));
@@ -80,7 +80,7 @@ function renderAction(rows: readonly HookInvocationRow[], locale: "zh-CN" | "en-
 
 function actionElement(rows: readonly HookInvocationRow[], locale: "zh-CN" | "en-US" = "zh-CN") {
   return createElement(
-    ZCodeIntlProvider,
+    ZodyIntlProvider,
     { initialLocale: locale },
     createElement(ConversationHookDetailsAction, {
       rows,

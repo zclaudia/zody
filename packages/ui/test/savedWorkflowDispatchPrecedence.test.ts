@@ -21,7 +21,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { ZodyPermissionRequest } from "@zody/shared";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 // 只改 family 判定，其余行为保持真实实现。
 vi.mock("@/lib/toolIdentity.js", async (importOriginal) => {
@@ -177,7 +177,7 @@ describe("saved-workflow dispatch precedence over tool family", () => {
 
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(PermissionDialog, {
           request,

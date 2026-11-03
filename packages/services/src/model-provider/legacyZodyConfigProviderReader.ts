@@ -43,7 +43,7 @@ import {
 } from "./legacyModelProviderSerialized.js";
 import { getAppConfigDir } from "../paths.js";
 
-function getZCodeConfigFilePath(): string {
+function getZodyConfigFilePath(): string {
   return join(getAppConfigDir(), "config.json");
 }
 
@@ -177,10 +177,10 @@ interface ZodyModelConfigExtension {
 }
 
 const jsonObjectSchema = z.record(z.string(), z.unknown());
-const zcodeModelProviderModalitySchema = z.enum(["text", "image", "video", "audio", "pdf"]);
-const zcodeProviderModelMappingsSchema = z.record(z.string(), z.unknown());
+const zodyModelProviderModalitySchema = z.enum(["text", "image", "video", "audio", "pdf"]);
+const zodyProviderModelMappingsSchema = z.record(z.string(), z.unknown());
 
-const zcodeReasoningConfigExtensionSchema = z
+const zodyReasoningConfigExtensionSchema = z
   .object({
     enabled: z.boolean().optional(),
     variants: z.array(z.string().min(1)).optional(),
@@ -189,7 +189,7 @@ const zcodeReasoningConfigExtensionSchema = z
   })
   .passthrough();
 
-const zcodeModelConfigExtensionSchema = z
+const zodyModelConfigExtensionSchema = z
   .object({
     kinds: z.array(modelProviderKindSchema).optional(),
     defaultKind: modelProviderKindSchema.optional(),
@@ -205,11 +205,11 @@ const zcodeModelConfigExtensionSchema = z
   })
   .passthrough();
 
-const zcodeOpenCodeModelConfigSchema: z.ZodType<ZodyOpenCodeModelConfig> = z
+const zodyOpenCodeModelConfigSchema: z.ZodType<ZodyOpenCodeModelConfig> = z
   .object({
     id: z.string().optional(),
     name: z.string().optional(),
-    reasoning: z.union([z.boolean(), zcodeReasoningConfigExtensionSchema]).optional(),
+    reasoning: z.union([z.boolean(), zodyReasoningConfigExtensionSchema]).optional(),
     limit: z
       .object({
         context: z.number().positive().optional(),
@@ -224,8 +224,8 @@ const zcodeOpenCodeModelConfigSchema: z.ZodType<ZodyOpenCodeModelConfig> = z
     maxOutputTokens: z.number().int().positive().optional(),
     modalities: z
       .object({
-        input: z.array(zcodeModelProviderModalitySchema).optional(),
-        output: z.array(zcodeModelProviderModalitySchema).optional(),
+        input: z.array(zodyModelProviderModalitySchema).optional(),
+        output: z.array(zodyModelProviderModalitySchema).optional(),
       })
       .optional(),
     options: jsonObjectSchema.optional(),
@@ -242,11 +242,11 @@ const zcodeOpenCodeModelConfigSchema: z.ZodType<ZodyOpenCodeModelConfig> = z
     priority: z.number().finite().optional(),
     modified: z.boolean().optional(),
     deleted: z.boolean().optional(),
-    zcode: zcodeModelConfigExtensionSchema.optional(),
+    zcode: zodyModelConfigExtensionSchema.optional(),
   })
   .passthrough();
 
-const zcodeProviderConfigExtensionSchema = z
+const zodyProviderConfigExtensionSchema = z
   .object({
     enabled: z.boolean().optional(),
     systemDisabledReason: modelProviderSystemDisabledReasonSchema.optional(),
@@ -261,14 +261,14 @@ const zcodeProviderConfigExtensionSchema = z
     logoUrl: z.string().optional(),
     apiKeyUrl: z.string().optional(),
     defaultKind: modelProviderKindSchema.optional(),
-    providerMappings: zcodeProviderModelMappingsSchema.optional(),
+    providerMappings: zodyProviderModelMappingsSchema.optional(),
     createdAt: z.number().optional(),
     updatedAt: z.number().optional(),
     deletedModels: z.array(z.string().min(1)).optional(),
   })
   .passthrough();
 
-const zcodeOpenCodeProviderConfigSchema: z.ZodType<ZodyOpenCodeProviderConfig> = z
+const zodyOpenCodeProviderConfigSchema: z.ZodType<ZodyOpenCodeProviderConfig> = z
   .object({
     api: z.string().optional(),
     name: z.string().optional(),
@@ -292,18 +292,18 @@ const zcodeOpenCodeProviderConfigSchema: z.ZodType<ZodyOpenCodeProviderConfig> =
     logoUrl: z.string().optional(),
     apiKeyUrl: z.string().optional(),
     defaultKind: modelProviderKindSchema.optional(),
-    providerMappings: zcodeProviderModelMappingsSchema.optional(),
+    providerMappings: zodyProviderModelMappingsSchema.optional(),
     createdAt: z.number().optional(),
     updatedAt: z.number().optional(),
-    models: z.record(z.string(), zcodeOpenCodeModelConfigSchema).optional(),
-    zcode: zcodeProviderConfigExtensionSchema.optional(),
+    models: z.record(z.string(), zodyOpenCodeModelConfigSchema).optional(),
+    zcode: zodyProviderConfigExtensionSchema.optional(),
   })
   .passthrough();
 
-const zcodeConfigFileSchema = z
+const zodyConfigFileSchema = z
   .object({
     $schema: z.string().optional(),
-    provider: z.record(z.string(), zcodeOpenCodeProviderConfigSchema).optional(),
+    provider: z.record(z.string(), zodyOpenCodeProviderConfigSchema).optional(),
   })
   .passthrough();
 
@@ -406,7 +406,7 @@ function resolveOpenCodeProviderEndpoints(
   return provider.endpoints ?? provider.zcode?.endpoints ?? {};
 }
 
-function stripZCodePrefixedProviderMappings(
+function stripZodyPrefixedProviderMappings(
   providerMappings: ProviderModelMappings | undefined,
 ): ProviderModelMappings | undefined {
   if (!providerMappings) {
@@ -452,8 +452,8 @@ function openCodeModelToModelProviderModel(
   providerDefaultKind: ModelProviderKind,
   options: { preferOpenCodeFields: boolean },
 ): ModelProviderModelConfig {
-  const zcode = options.preferOpenCodeFields ? undefined : model.zcode;
-  const zcodeExtensions = model.zcode;
+  const zody = options.preferOpenCodeFields ? undefined : model.zcode;
+  const zodyExtensions = model.zcode;
   const contextWindow =
     readPositiveNumber(model.limit?.context) ?? readPositiveNumber(model.contextWindow);
   const maxOutputTokens =
@@ -464,13 +464,13 @@ function openCodeModelToModelProviderModel(
   // 读取时按 limit > options > 顶层兼容，写回仍收敛到标准 limit 结构。
   const hasMaxOutputTokens =
     (!options.preferOpenCodeFields ? model.hasMaxOutputTokens : undefined) ??
-    zcode?.hasMaxOutputTokens ??
+    zody?.hasMaxOutputTokens ??
     maxOutputTokens !== undefined;
   const kinds =
     !options.preferOpenCodeFields && model.kinds?.length
       ? model.kinds
-      : zcode?.kinds?.length
-        ? zcode.kinds
+      : zody?.kinds?.length
+        ? zody.kinds
         : [providerDefaultKind];
   return createModelProviderModelConfig({
     id: model.id?.trim() || modelId,
@@ -478,7 +478,7 @@ function openCodeModelToModelProviderModel(
     kinds,
     defaultKind:
       (!options.preferOpenCodeFields ? model.defaultKind : undefined) ??
-      zcode?.defaultKind ??
+      zody?.defaultKind ??
       providerDefaultKind,
     contextWindow,
     maxOutputTokens: hasMaxOutputTokens ? maxOutputTokens : undefined,
@@ -487,12 +487,12 @@ function openCodeModelToModelProviderModel(
       output: model.modalities?.output,
     },
     reasoning: openCodeReasoningToModelReasoning(model, options),
-    priority: readFiniteNumber(model.priority) ?? readFiniteNumber(zcodeExtensions?.priority),
-    disabledReason: model.disabledReason ?? zcode?.disabledReason,
-    supportsTools: model.supportsTools ?? zcode?.supportsTools,
-    supportsStructuredOutput: model.supportsStructuredOutput ?? zcode?.supportsStructuredOutput,
-    modified: model.modified ?? zcodeExtensions?.modified,
-    deleted: model.deleted ?? zcodeExtensions?.deleted,
+    priority: readFiniteNumber(model.priority) ?? readFiniteNumber(zodyExtensions?.priority),
+    disabledReason: model.disabledReason ?? zody?.disabledReason,
+    supportsTools: model.supportsTools ?? zody?.supportsTools,
+    supportsStructuredOutput: model.supportsStructuredOutput ?? zody?.supportsStructuredOutput,
+    modified: model.modified ?? zodyExtensions?.modified,
+    deleted: model.deleted ?? zodyExtensions?.deleted,
   });
 }
 
@@ -529,7 +529,7 @@ function openCodeProviderToModelProviderConfig(
   providerId: string,
   provider: ZodyOpenCodeProviderConfig,
 ): ModelProviderConfig {
-  const zcode = provider.zcode;
+  const zody = provider.zcode;
   const preferOpenCodeFields = hasOpenCodeProviderRuntimeFields(provider);
   // fork（F4.7）：官方账号 provider（Coding/Start Plan）与其 runtime URL 归一化已删除，
   // 旧 config.json 只按通用 kind/baseURL 规则导入，保留自定义 provider 的旧配置能力。
@@ -544,7 +544,7 @@ function openCodeProviderToModelProviderConfig(
     }),
   );
   const modelKeys = new Set(models.map((model) => model.id.trim().toLowerCase()).filter(Boolean));
-  for (const deletedModelId of normalizeDeletedModelIds(zcode?.deletedModels)) {
+  for (const deletedModelId of normalizeDeletedModelIds(zody?.deletedModels)) {
     const key = deletedModelId.toLowerCase();
     if (modelKeys.has(key)) {
       continue;
@@ -553,68 +553,68 @@ function openCodeProviderToModelProviderConfig(
     modelKeys.add(key);
   }
   const apiKeyRequired =
-    provider.apiKeyRequired ?? zcode?.apiKeyRequired ?? readBoolean(options.apiKeyRequired);
+    provider.apiKeyRequired ?? zody?.apiKeyRequired ?? readBoolean(options.apiKeyRequired);
   const providerMappings = preferOpenCodeFields
     ? undefined
-    : stripZCodePrefixedProviderMappings(provider.providerMappings ?? zcode?.providerMappings);
+    : stripZodyPrefixedProviderMappings(provider.providerMappings ?? zody?.providerMappings);
   return normalizeProviderForStore({
     id: provider.id?.trim() || providerId,
     name: provider.name?.trim() || providerId,
     ...(provider.enabled !== undefined
       ? { enabled: provider.enabled }
-      : zcode?.enabled !== undefined
-        ? { enabled: zcode.enabled }
+      : zody?.enabled !== undefined
+        ? { enabled: zody.enabled }
         : {}),
-    ...((provider.systemDisabledReason ?? zcode?.systemDisabledReason)
+    ...((provider.systemDisabledReason ?? zody?.systemDisabledReason)
       ? {
-          systemDisabledReason: provider.systemDisabledReason ?? zcode?.systemDisabledReason,
+          systemDisabledReason: provider.systemDisabledReason ?? zody?.systemDisabledReason,
         }
       : {}),
     endpoints,
     apiFormat: preferOpenCodeFields
       ? resolveModelProviderKindApiFormat(defaultKind)
-      : (provider.apiFormat ?? zcode?.apiFormat ?? resolveModelProviderKindApiFormat(defaultKind)),
-    ...((provider.source ?? zcode?.source)
-      ? { source: provider.source ?? zcode?.source }
+      : (provider.apiFormat ?? zody?.apiFormat ?? resolveModelProviderKindApiFormat(defaultKind)),
+    ...((provider.source ?? zody?.source)
+      ? { source: provider.source ?? zody?.source }
       : { source: "custom" }),
-    ...((provider.catalogSourceId ?? zcode?.catalogSourceId)
-      ? { catalogSourceId: provider.catalogSourceId ?? zcode?.catalogSourceId }
+    ...((provider.catalogSourceId ?? zody?.catalogSourceId)
+      ? { catalogSourceId: provider.catalogSourceId ?? zody?.catalogSourceId }
       : {}),
-    ...((provider.catalogProviderId ?? zcode?.catalogProviderId)
+    ...((provider.catalogProviderId ?? zody?.catalogProviderId)
       ? {
-          catalogProviderId: provider.catalogProviderId ?? zcode?.catalogProviderId,
+          catalogProviderId: provider.catalogProviderId ?? zody?.catalogProviderId,
         }
       : {}),
-    ...((provider.modelsDevProviderId ?? zcode?.modelsDevProviderId)
+    ...((provider.modelsDevProviderId ?? zody?.modelsDevProviderId)
       ? {
-          modelsDevProviderId: provider.modelsDevProviderId ?? zcode?.modelsDevProviderId,
+          modelsDevProviderId: provider.modelsDevProviderId ?? zody?.modelsDevProviderId,
         }
       : {}),
     ...(apiKeyRequired !== undefined ? { apiKeyRequired } : {}),
-    ...((provider.headers ?? zcode?.headers ?? readStringRecord(options.headers))
+    ...((provider.headers ?? zody?.headers ?? readStringRecord(options.headers))
       ? {
-          headers: provider.headers ?? zcode?.headers ?? readStringRecord(options.headers),
+          headers: provider.headers ?? zody?.headers ?? readStringRecord(options.headers),
         }
       : {}),
-    ...((provider.logoUrl ?? zcode?.logoUrl)
-      ? { logoUrl: provider.logoUrl ?? zcode?.logoUrl }
+    ...((provider.logoUrl ?? zody?.logoUrl)
+      ? { logoUrl: provider.logoUrl ?? zody?.logoUrl }
       : {}),
     apiKey,
-    ...((provider.apiKeyUrl ?? zcode?.apiKeyUrl)
-      ? { apiKeyUrl: provider.apiKeyUrl ?? zcode?.apiKeyUrl }
+    ...((provider.apiKeyUrl ?? zody?.apiKeyUrl)
+      ? { apiKeyUrl: provider.apiKeyUrl ?? zody?.apiKeyUrl }
       : {}),
     defaultKind,
     models,
     ...(providerMappings ? { providerMappings } : {}),
     createdAt:
-      (!preferOpenCodeFields ? (provider.createdAt ?? zcode?.createdAt) : undefined) ?? now,
+      (!preferOpenCodeFields ? (provider.createdAt ?? zody?.createdAt) : undefined) ?? now,
     updatedAt:
-      (!preferOpenCodeFields ? (provider.updatedAt ?? zcode?.updatedAt) : undefined) ?? now,
+      (!preferOpenCodeFields ? (provider.updatedAt ?? zody?.updatedAt) : undefined) ?? now,
   });
 }
 
-async function readRawZCodeConfigFile(): Promise<ZodyConfigFile | null> {
-  const filePath = getZCodeConfigFilePath();
+async function readRawZodyConfigFile(): Promise<ZodyConfigFile | null> {
+  const filePath = getZodyConfigFilePath();
   let raw: string;
   try {
     raw = await readFile(filePath, "utf-8");
@@ -632,7 +632,7 @@ async function readRawZCodeConfigFile(): Promise<ZodyConfigFile | null> {
     // JSON/Zod 原始错误可能包含 API Key 等输入值；不能写入日志或通过 cause 向外传递。
     throw new Error(`旧 Provider 配置解析失败 stage=json path=${filePath}`);
   }
-  const parsed = zcodeConfigFileSchema.safeParse(json);
+  const parsed = zodyConfigFileSchema.safeParse(json);
   if (!parsed.success) {
     const field = parsed.error.issues[0]?.path.map(String).join(".").slice(0, 256) ?? "";
     throw new Error(`旧 Provider 配置校验失败 stage=schema path=${filePath} field=${field}`);
@@ -640,8 +640,8 @@ async function readRawZCodeConfigFile(): Promise<ZodyConfigFile | null> {
   return parsed.data;
 }
 
-async function readZCodeConfigProviders(): Promise<ModelProviderConfig[] | null> {
-  const config = await readRawZCodeConfigFile();
+async function readZodyConfigProviders(): Promise<ModelProviderConfig[] | null> {
+  const config = await readRawZodyConfigFile();
   if (!config?.provider) {
     return null;
   }
@@ -794,7 +794,7 @@ function normalizeProviderForStore(provider: ModelProviderConfig): ModelProvider
     models: normalizedModels,
     modelDisplayNames: undefined,
     modelSupportedFormats: undefined,
-    providerMappings: stripZCodePrefixedProviderMappings(
+    providerMappings: stripZodyPrefixedProviderMappings(
       stripLegacyClaudeProviderMappings(provider.providerMappings),
     ),
   };
@@ -816,8 +816,8 @@ function applyProviderStoreMigrations(providers: ModelProviderConfig[]): ModelPr
 }
 
 /** 只读取已发布旧 config.json；更早期的独立 Provider Store 已退出所有迁移链路。 */
-export async function readLegacyZCodeConfigProviders(): Promise<ModelProviderConfig[]> {
-  const configProviders = await readZCodeConfigProviders();
+export async function readLegacyZodyConfigProviders(): Promise<ModelProviderConfig[]> {
+  const configProviders = await readZodyConfigProviders();
   return configProviders ? filterDeletedProviderModelsForRead(configProviders) : [];
 }
 

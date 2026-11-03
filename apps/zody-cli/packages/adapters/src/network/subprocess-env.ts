@@ -82,12 +82,12 @@ function applyProxyEnv(
     return;
   }
 
-  const zcodeProxy = normalizeProxyValue(
+  const zodyProxy = normalizeProxyValue(
     getFirstEnvValue(sourceEnv, [ZCODE_HTTP_PROXY_ENV_KEY], platform),
   );
-  if (zcodeProxy) {
+  if (zodyProxy) {
     for (const key of ALL_PROXY_KEYS) {
-      setEnvKey(env, key, zcodeProxy, platform);
+      setEnvKey(env, key, zodyProxy, platform);
     }
     return;
   }

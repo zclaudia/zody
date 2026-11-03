@@ -603,8 +603,8 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
   sessionId: string;
 }> {
   const targetServices = resolveAutomationTargetServices(request);
-  const zcodeTaskService = targetServices.getOptional(IZodyTaskService);
-  if (!zcodeTaskService) {
+  const zodyTaskService = targetServices.getOptional(IZodyTaskService);
+  if (!zodyTaskService) {
     throw new Error("Zody task service is not initialized.");
   }
   const modelSelectionService = targetServices.getOptional(IModelSelectionService);
@@ -637,7 +637,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
   try {
     const task = request.targetTaskId
       ? { taskId: request.targetTaskId }
-      : await zcodeTaskService.createTask({
+      : await zodyTaskService.createTask({
           workspacePath: request.workspacePath,
           workspaceIdentity: request.workspaceIdentity,
           model: formatModelPickerValue(submissionModelSelection),
@@ -652,7 +652,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
     if (request.targetTaskId) {
       // 绑定会话在 app 重启或切换 workspace 后通常不处于 active；旧实现直接
       // setConfig/sendPrompt 会立即报 Session is not active，看起来像「立即运行」没有触发。
-      await zcodeTaskService.resumeTask({
+      await zodyTaskService.resumeTask({
         taskId: task.taskId,
         workspacePath: request.workspacePath,
         workspaceIdentity: request.workspaceIdentity,
@@ -661,7 +661,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
         automationId: request.automationId,
       });
       await applyCronRunConfigToExistingTask({
-        zcodeTaskService,
+        zcodeTaskService: zodyTaskService,
         taskId: task.taskId,
         traceId: promptTraceId,
         modelSelection: submissionModelSelection,
@@ -673,7 +673,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
     // （createTask→resumeTask→sendPrompt）与结算保持不变。
     trackedKey = cronRunSubscriptionKey(task.taskId, promptTraceId);
     trackCronRunOutcome({
-      zcodeTaskService,
+      zcodeTaskService: zodyTaskService,
       taskId: task.taskId,
       traceId: promptTraceId,
       workspacePath: request.workspacePath,
@@ -684,7 +684,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
       scheduledAt,
       trigger,
     });
-    await zcodeTaskService.sendPrompt({
+    await zodyTaskService.sendPrompt({
       taskId: task.taskId,
       traceId: promptTraceId,
       content: request.prompt,
@@ -874,7 +874,7 @@ const workspaceTaskTracker = createHostWorkspaceTaskTracker((event) => {
   reportHostRunningTaskCount();
 });
 
-function isZCodeTaskMeta(value: unknown): value is ZodyTaskMeta {
+function isZodyTaskMeta(value: unknown): value is ZodyTaskMeta {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -893,7 +893,7 @@ function isRemoteMirrorableStreamEvent(
   return event.type !== "task_stream_mirror_batch" && event.type !== "task_snapshot_updated";
 }
 
-function createReportingRemoteZCodeTaskService<T extends object>(
+function createReportingRemoteZodyTaskService<T extends object>(
   service: T,
   options?: {
     reportRunningPromptCount?: boolean;
@@ -941,7 +941,7 @@ function createReportingRemoteZCodeTaskService<T extends object>(
   }
 
   function rememberTaskMeta(result: unknown): void {
-    if (isZCodeTaskMeta(result)) {
+    if (isZodyTaskMeta(result)) {
       workspaceProxyState.rememberTaskMeta(result);
       subscribeSessionMessageRequests(service, result);
       parentPort?.postMessage({
@@ -1326,7 +1326,7 @@ function resolveLocalNarrowAgentWiring(
   return { zodyAgentNativeRuntimeResolver };
 }
 
-function warmUpZCodeAgent(
+function warmUpZodyAgent(
   services: ServiceCollection,
   context: { workspacePath?: string; workspaceIdentity?: string },
   reason: string,
@@ -1336,11 +1336,11 @@ function warmUpZCodeAgent(
   }
   const workspacePath = context.workspacePath;
   const workspaceIdentity = context.workspaceIdentity;
-  const zcodeSessionService = services.getOptional(IZodySessionService);
-  if (!zcodeSessionService) {
+  const zodySessionService = services.getOptional(IZodySessionService);
+  if (!zodySessionService) {
     return;
   }
-  void zcodeSessionService
+  void zodySessionService
     .initializeWorkspace({
       workspacePath,
       ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -1565,8 +1565,8 @@ async function createWindowRemoteConnectionHandle(params: {
               createRemotePromptAttachmentTaskService(service, {
                 materializePromptAttachments,
               }),
-            createReportingRemoteZCodeTaskService: (service) =>
-              createReportingRemoteZCodeTaskService(service, {
+            createReportingRemoteZodyTaskService: (service) =>
+              createReportingRemoteZodyTaskService(service, {
                 taskRealtimePort: activeSessionRealtimePort ?? undefined,
               }),
             promptAttachmentTransferService,
@@ -2400,8 +2400,8 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
   }
 
   if (msg.type === HostMessageTypes.SessionMessageDeliver) {
-    const zcodeTaskService = activeServices?.getOptional(IZodyTaskService);
-    if (!zcodeTaskService) {
+    const zodyTaskService = activeServices?.getOptional(IZodyTaskService);
+    if (!zodyTaskService) {
       parentPort.postMessage({
         type: HostResponseTypes.SessionMessageDeliverResult,
         result: {
@@ -2415,7 +2415,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
       return;
     }
 
-    void zcodeTaskService
+    void zodyTaskService
       .deliverSessionMessage(msg.request)
       .then((deliveryResult) => {
         parentPort.postMessage({
@@ -2439,12 +2439,12 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
   }
 
   if (msg.type === HostMessageTypes.SessionMessageDeliveryResult) {
-    const zcodeTaskService = activeServices?.getOptional(IZodyTaskService);
-    if (!zcodeTaskService) {
+    const zodyTaskService = activeServices?.getOptional(IZodyTaskService);
+    if (!zodyTaskService) {
       logger.warn("session message delivery result received before ZCode task service initialized");
       return;
     }
-    void zcodeTaskService.sendSessionMessageDeliveryResult(msg.result).catch((error) => {
+    void zodyTaskService.sendSessionMessageDeliveryResult(msg.result).catch((error) => {
       logger.warn("failed to forward session message delivery result:", error);
     });
     return;
@@ -2906,15 +2906,15 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
             return initializedServices;
           },
         });
-        const zcodeTaskService = services.getOptional(IZodyTaskService);
-        if (zcodeTaskService) {
-          const reportingZCodeTaskService = createReportingRemoteZCodeTaskService(
-            zcodeTaskService,
+        const zodyTaskService = services.getOptional(IZodyTaskService);
+        if (zodyTaskService) {
+          const reportingZodyTaskService = createReportingRemoteZodyTaskService(
+            zodyTaskService,
             {
               reportRunningPromptCount: false,
             },
           );
-          services.register(IZodyTaskService, reportingZCodeTaskService);
+          services.register(IZodyTaskService, reportingZodyTaskService);
         }
         wireLocalResourceTelemetry(services);
         hasDisposedHostResources = false;
@@ -2933,7 +2933,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
         // Main 已把启动预热限制为 active workspace 1 个；Host 必须显式消费这份固定名单，
         // 不能让后续 task-list observer 再隐式扩大，也不能因失败扫描补位。
         agentWarmupTargets.forEach((target, index) => {
-          warmUpZCodeAgent(
+          warmUpZodyAgent(
             services,
             target,
             `local host init (${index + 1}/${agentWarmupTargets.length})`,

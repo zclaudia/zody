@@ -15,14 +15,14 @@ export interface ZodyCredentialCipherOptions {
   env?: Record<string, string | undefined>;
 }
 
-export function createZCodeCredentialCipher(
+export function createZodyCredentialCipher(
   options: ZodyCredentialCipherOptions = {},
 ): ZodyCredentialCipher {
   const key = deriveCipherKey(resolveCredentialSecret(options.env ?? process.env));
 
   return {
     decrypt(value: string): string {
-      if (!isEncryptedZCodeCredentialValue(value)) {
+      if (!isEncryptedZodyCredentialValue(value)) {
         return value;
       }
 
@@ -75,7 +75,7 @@ export function createZCodeCredentialCipher(
   };
 }
 
-export function isEncryptedZCodeCredentialValue(value: string): boolean {
+export function isEncryptedZodyCredentialValue(value: string): boolean {
   return value.startsWith(ENCRYPTED_VALUE_PREFIX);
 }
 

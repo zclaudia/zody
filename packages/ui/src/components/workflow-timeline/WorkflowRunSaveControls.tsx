@@ -18,7 +18,7 @@ import { Spinner } from "@/components/ui/spinner.js";
 import { toast } from "@/components/ui/toast.js";
 import { cn } from "@/components/lib/utils.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useWorkflowRunSave } from "@/hooks/useWorkflowRunSave.js";
 import { useSavedWorkflowHub } from "@/v4/savedWorkflowHubContext.js";
 import { useOptionalServices } from "@/hooks/useServices.js";
@@ -63,7 +63,7 @@ export interface WorkflowRunSaveSlots {
 const SAVE_WORD_CONTAINER = "@[480px]/wf-card:inline";
 
 export function useWorkflowRunSaveSlots(host: WorkflowRunSaveSlotsHost): WorkflowRunSaveSlots {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const format = (id: string) => intl.formatMessage({ id });
   const hub = useSavedWorkflowHub();
   const anchorRef = useRef<HTMLElement | null>(null);

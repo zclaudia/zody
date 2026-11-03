@@ -67,8 +67,8 @@ try {
         runtime: { registryService: providerRegistry },
         dispose() {},
       }),
-      createZCodeApp: async (options) => {
-        const app = await modules.bootstrap.createZCodeApp({
+      createZodyApp: async (options) => {
+        const app = await modules.bootstrap.createZodyApp({
           ...options,
           skipUserConfig: true,
           runtimeConfig: {

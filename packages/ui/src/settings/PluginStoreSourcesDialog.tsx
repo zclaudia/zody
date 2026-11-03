@@ -3,7 +3,7 @@ import type { ZodyPluginMarketplaceSummary } from "@zody/shared";
 import { CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { resolveMarketplaceDisplayName } from "@/settings/pluginSourceLabel.js";
 import {
   isPublicStoreMarketplaceId,
@@ -23,7 +23,7 @@ export function PluginStoreSourceRefreshFailure({
 }: {
   failure: NonNullable<ZodyPluginMarketplaceSummary["refreshFailure"]>;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div
       className="mt-1 flex min-w-0 items-start gap-1 text-ui-base text-destructive"
@@ -57,7 +57,7 @@ export function PluginStoreSourcesDialog({
   onRemoveMarketplace: (marketplace: string) => void;
   operationId: string | null;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const claudeCodePlugins = intl.formatMessage({
     id: "settings.plugins.marketplace.claudeCodePlugins",
   });

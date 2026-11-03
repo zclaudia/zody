@@ -267,7 +267,7 @@ test("TUI persists defaults through the shared repository across new sessions an
     cwd: () => dir,
     skipUserConfig: true,
     loadDotenv: () => ({ keys: [], loaded: false, path: "" }),
-    createZCodeApp: async (options: ZodyAppOptions) => {
+    createZodyApp: async (options: ZodyAppOptions) => {
       const f = fixture(
         options.resume ? restoredSelection : options.configuredDefaultModelSelection,
       );
@@ -390,7 +390,7 @@ test("active-turn model picks use the same configuration command instead of beco
     cwd: () => process.cwd(),
     skipUserConfig: true,
     loadDotenv: () => ({ keys: [], loaded: false, path: "" }),
-    createZCodeApp: async () => f.app,
+    createZodyApp: async () => f.app,
     startProcessProviderRegistryRuntime: async () => ({
       runtime: { registryService: {} },
       modelSelectionConfigRepository: {

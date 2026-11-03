@@ -50,7 +50,7 @@ const fakeEvents = [
 ];
 
 const createDeps = (): RunDependencies => ({
-  createZCodeApp: () =>
+  createZodyApp: () =>
     ({
       getModel: () => "openai/gpt-test",
       getThoughtLevel: () => "medium",

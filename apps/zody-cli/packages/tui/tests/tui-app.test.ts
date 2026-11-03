@@ -5,7 +5,7 @@ import { CliRenderEvents } from "@mbears/opentui-core";
 import { createTestRenderer } from "@mbears/opentui-core/testing";
 import { testRender } from "@mbears/opentui-react/test-utils";
 import type { UiThemeMode } from "@zody/contracts";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { TuiApp } from "../src/app.js";
 import { LoginRequiredPanel } from "../src/app-components.js";
 import { ZCODE_LOGO_LINES } from "../src/app-empty-transcript.js";
@@ -74,7 +74,7 @@ test("places the login notice before the prompt input in the composer area", () 
       busy: false,
       contentWidth: 80,
       contextUsage: {},
-      copy: getZCodeCopy("en-US").tui,
+      copy: getZodyCopy("en-US").tui,
       draft: "",
       editorRef: { current: null },
       inputCursorToEndVersion: 0,
@@ -103,7 +103,7 @@ test("places composer selections above the prompt input", () => {
       busy: false,
       contentWidth: 80,
       contextUsage: {},
-      copy: getZCodeCopy("en-US").tui,
+      copy: getZodyCopy("en-US").tui,
       draft: "",
       editorRef: { current: null },
       inputCursorToEndVersion: 0,
@@ -144,7 +144,7 @@ test("passes the busy active status outside the prompt input", () => {
       busy: true,
       contentWidth: 80,
       contextUsage: { contextUsed: 11_100, contextWindow: 185_000 },
-      copy: getZCodeCopy("en-US").tui,
+      copy: getZodyCopy("en-US").tui,
       draft: "",
       editorRef: { current: null },
       inputCursorToEndVersion: 0,
@@ -177,7 +177,7 @@ test("places queued input panel immediately above the prompt input", () => {
       busy: true,
       contentWidth: 80,
       contextUsage: {},
-      copy: getZCodeCopy("en-US").tui,
+      copy: getZodyCopy("en-US").tui,
       draft: "",
       editorRef: { current: null },
       inputCursorToEndVersion: 0,

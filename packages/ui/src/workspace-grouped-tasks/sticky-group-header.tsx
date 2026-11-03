@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { CRON_DEFAULT_GROUP_ID } from "@zody/shared";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { getTaskGroupDisplayTitle } from "@/workspace-grouped-tasks/group-title.js";
 import {
   TASK_GROUP_COLORS,
@@ -49,7 +49,7 @@ export function StickyGroupHeader({
   onUpdateGroupColor: (groupId: string, color: ZodyTaskGroupColor) => void;
   onUngroupGroup: (groupId: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const taskCount = node.tasks.length;
   // 系统分组（cron）标题按语言环境本地化展示，与 GroupItem 保持一致。
   // fork（F4.3）：offPeak 标题与 isSystemGroup 的 OFF_PEAK 分支随闲时任务全链路删除。

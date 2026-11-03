@@ -22,7 +22,7 @@ import { ESCALATE_TOOL_NAME, type ModelRequest, type ModelResult } from "@zody/c
 import { saveSavedWorkflow } from "@zody/core";
 import { createProtocolBrowserControlBroker } from "../src/zody-protocol/browser-control-broker.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
-import { createRegistryBackedTestApp as createZCodeApp } from "./helpers/registry-backed-test-app.js";
+import { createRegistryBackedTestApp as createZodyApp } from "./helpers/registry-backed-test-app.js";
 
 const WORKFLOW_NAME = "browse";
 const ACTOR_SESSION_PREFIX = "sess_dwf-";
@@ -98,7 +98,7 @@ describe("dwf 子代理的 Browser Use（真 app 装配）", () => {
       meta: { description: "open a page" },
     });
 
-    const app = await createZCodeApp({
+    const app = await createZodyApp({
       env: {},
       browserControlPort: appPort,
       modelExecutor: {

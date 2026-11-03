@@ -12,7 +12,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { WorkflowRunState } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowRunCardSummary } from "@/ToolCallBlocks/shared.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { resolveWorkflowResumeHandler } from "@/v4/workflowResumeGate.js";
 
 vi.mock("@/components/ai-elements/code-block.js", () => ({
@@ -86,7 +86,7 @@ function renderCard(
 ) {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(CreateWorkflowToolCallBlock, {
         toolCallNode: {
@@ -130,7 +130,7 @@ function renderCard(
 function renderDigest(onResume: (() => void) | undefined) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(WorkflowRunDigest, {
         graph: GRAPH as unknown as WorkflowRunDigestProps["graph"],

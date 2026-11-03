@@ -930,9 +930,9 @@ function loadPlugin(
 }
 
 function findManifest(rootPath: string): string | null {
-  const zcodePath = join(rootPath, ZCODE_MANIFEST_PATH);
-  if (fileExists(zcodePath)) {
-    return zcodePath;
+  const zodyPath = join(rootPath, ZCODE_MANIFEST_PATH);
+  if (fileExists(zodyPath)) {
+    return zodyPath;
   }
 
   // 兼容不同 manifest 目录约定，发现阶段按稳定优先级回退。

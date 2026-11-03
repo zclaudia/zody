@@ -6,7 +6,7 @@ import {
   type ZodySkillsReferenceCatalogResult,
 } from "@zody/shared";
 import type { SkillLoadOutcome, SkillMetadata } from "@zody/contracts";
-import { listZCodeSkills } from "../skills.js";
+import { listZodySkills } from "../skills.js";
 import {
   parseParams,
   requireSession,
@@ -27,7 +27,7 @@ export async function getSkillReferenceCatalog(
   // 旧 UI cache 只在 workspace 首次挂载时扫描，用户从文件系统手动新增
   // Skill 后，新建对话仍停在旧快照。草稿请求在 Agent 侧复用 CLI 正式发现配置，
   // 每次新打开引用面板都读取当前 workspace catalog。
-  const outcome = await listZCodeSkills({
+  const outcome = await listZodySkills({
     env: context.deps.env,
     includeVisualize: true,
     logger: context.logger,

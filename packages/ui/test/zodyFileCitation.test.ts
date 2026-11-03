@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  extractZCodeFileCitations,
-  projectZCodeFileCitations,
-  resolveZCodeFileCitationPreviewKind,
+  extractZodyFileCitations,
+  projectZodyFileCitations,
+  resolveZodyFileCitationPreviewKind,
 } from "@/lib/zodyFileCitation.js";
 
 describe("zcode-file-citation parser", () => {
@@ -14,7 +14,7 @@ describe("zcode-file-citation parser", () => {
       ':::zcode-file-citation{path="reports/论文.pdf" purpose="source"}',
     ].join("\n");
 
-    expect(extractZCodeFileCitations(content)).toEqual([
+    expect(extractZodyFileCitations(content)).toEqual([
       {
         artifactKind: "document",
         end: content.indexOf("} 后文") + 1,
@@ -56,7 +56,7 @@ describe("zcode-file-citation parser", () => {
     ].join("\n");
 
     expect(
-      extractZCodeFileCitations(content).map(({ path, purpose, artifactKind }) => ({
+      extractZodyFileCitations(content).map(({ path, purpose, artifactKind }) => ({
         path,
         purpose,
         artifactKind,
@@ -77,7 +77,7 @@ describe("zcode-file-citation parser", () => {
 
   it("忽略未闭合、参数格式错误和缺少 path 的指令", () => {
     expect(
-      extractZCodeFileCitations(
+      extractZodyFileCitations(
         [
           '::zcode-file-citation{purpose="output"}',
           '::zcode-file-citation{path "missing equals.pdf"}',
@@ -90,50 +90,50 @@ describe("zcode-file-citation parser", () => {
   });
 
   it("错配智能引号时 fail closed", () => {
-    expect(extractZCodeFileCitations("::zcode-file-citation{path=“docs/report.pdf'}")).toEqual([]);
+    expect(extractZodyFileCitations("::zcode-file-citation{path=“docs/report.pdf'}")).toEqual([]);
   });
 
   it("streaming 隐藏最后一行未闭合 citation，但不吞掉异常输出后的正文", () => {
-    const incomplete = projectZCodeFileCitations(
+    const incomplete = projectZodyFileCitations(
       '正文\n::zcode-file-citation{path="reports/result.pdf"',
       { streaming: true },
     );
     expect(incomplete.visibleText).toBe("正文\n");
 
-    const inlineIncomplete = projectZCodeFileCitations(
+    const inlineIncomplete = projectZodyFileCitations(
       '请注意 ::zcode-file-citation{path="reports/result.pdf"',
       { streaming: true },
     );
     expect(inlineIncomplete.visibleText).toBe("请注意 ");
 
-    const malformedWithFollowingText = projectZCodeFileCitations(
+    const malformedWithFollowingText = projectZodyFileCitations(
       '正文\n::zcode-file-citation{path="reports/result.pdf"\n后续说明仍然可见',
       { streaming: true },
     );
     expect(malformedWithFollowingText.visibleText).toContain("后续说明仍然可见");
     expect(malformedWithFollowingText.visibleText).toContain("::zcode-file-citation");
 
-    const inlineMalformed = projectZCodeFileCitations(
+    const inlineMalformed = projectZodyFileCitations(
       '请注意 ::zcode-file-citation{path="reports/result.pdf" 后续说明',
       { streaming: true },
     );
     expect(inlineMalformed.visibleText).toContain("请注意");
     expect(inlineMalformed.visibleText).toContain("后续说明");
 
-    const legacyIncomplete = projectZCodeFileCitations(
+    const legacyIncomplete = projectZodyFileCitations(
       '正文\n:zcode-file-citation{path="reports/legacy.pdf"',
       { streaming: true },
     );
     expect(legacyIncomplete.visibleText).toBe("正文\n");
 
-    const legacyMalformed = projectZCodeFileCitations(
+    const legacyMalformed = projectZodyFileCitations(
       '正文\n:zcode-file-citation{path="reports/legacy.pdf"\n后续说明仍然可见',
       { streaming: true },
     );
     expect(legacyMalformed.visibleText).toContain("后续说明仍然可见");
     expect(legacyMalformed.visibleText).toContain(":zcode-file-citation");
 
-    const tripleIncomplete = projectZCodeFileCitations(
+    const tripleIncomplete = projectZodyFileCitations(
       '正文\n:::zcode-file-citation{path="reports/triple.pdf"',
       { streaming: true },
     );
@@ -141,27 +141,27 @@ describe("zcode-file-citation parser", () => {
   });
 
   it("streaming 在 citation 名称尚未闭合前暂存协议前缀", () => {
-    expect(projectZCodeFileCitations("正文\n::", { streaming: true }).visibleText).toBe("正文\n");
+    expect(projectZodyFileCitations("正文\n::", { streaming: true }).visibleText).toBe("正文\n");
     expect(
-      projectZCodeFileCitations("正文\n::zcode-file-cit", { streaming: true }).visibleText,
+      projectZodyFileCitations("正文\n::zcode-file-cit", { streaming: true }).visibleText,
     ).toBe("正文\n");
-    expect(projectZCodeFileCitations("正文\n:", { streaming: true }).visibleText).toBe("正文\n:");
+    expect(projectZodyFileCitations("正文\n:", { streaming: true }).visibleText).toBe("正文\n:");
     expect(
-      projectZCodeFileCitations("正文\n:zcode-file-cit", { streaming: true }).visibleText,
-    ).toBe("正文\n");
-    expect(
-      projectZCodeFileCitations("正文\n:::zcode-file-cit", { streaming: true }).visibleText,
+      projectZodyFileCitations("正文\n:zcode-file-cit", { streaming: true }).visibleText,
     ).toBe("正文\n");
     expect(
-      projectZCodeFileCitations("正文\n::zcode-file-citationX", { streaming: true }).visibleText,
+      projectZodyFileCitations("正文\n:::zcode-file-cit", { streaming: true }).visibleText,
+    ).toBe("正文\n");
+    expect(
+      projectZodyFileCitations("正文\n::zcode-file-citationX", { streaming: true }).visibleText,
     ).toContain("::zcode-file-citationX");
     expect(
-      projectZCodeFileCitations("正文\n:zcode-file-citationX", { streaming: true }).visibleText,
+      projectZodyFileCitations("正文\n:zcode-file-citationX", { streaming: true }).visibleText,
     ).toContain(":zcode-file-citationX");
   });
 
   it("智能引号未闭合时仍隐藏流式 citation 尾部", () => {
-    const result = projectZCodeFileCitations("正文\n::zcode-file-citation{path=“docs/report.pdf”", {
+    const result = projectZodyFileCitations("正文\n::zcode-file-citation{path=“docs/report.pdf”", {
       streaming: true,
     });
     expect(result.visibleText).toBe("正文\n");
@@ -169,39 +169,39 @@ describe("zcode-file-citation parser", () => {
 
   it("artifact_kind 优先映射且必须与后缀兼容，未设置时按后缀推断", () => {
     expect(
-      resolveZCodeFileCitationPreviewKind({
+      resolveZodyFileCitationPreviewKind({
         artifactKind: "document",
         path: "report.docx",
       }),
     ).toBe("docx");
     expect(
-      resolveZCodeFileCitationPreviewKind({
+      resolveZodyFileCitationPreviewKind({
         artifactKind: "presentation",
         path: "deck.pptx",
       }),
     ).toBe("pptx");
     expect(
-      resolveZCodeFileCitationPreviewKind({
+      resolveZodyFileCitationPreviewKind({
         artifactKind: "workbook",
         path: "book.xlsx",
       }),
     ).toBe("xlsx");
-    expect(resolveZCodeFileCitationPreviewKind({ path: "paper.PDF" })).toBe("pdf");
-    expect(resolveZCodeFileCitationPreviewKind({ path: "README.md" })).toBeNull();
+    expect(resolveZodyFileCitationPreviewKind({ path: "paper.PDF" })).toBe("pdf");
+    expect(resolveZodyFileCitationPreviewKind({ path: "README.md" })).toBeNull();
     expect(
-      resolveZCodeFileCitationPreviewKind({
+      resolveZodyFileCitationPreviewKind({
         artifactKind: "document",
         path: "paper.pdf",
       }),
     ).toBeNull();
     expect(
-      resolveZCodeFileCitationPreviewKind({
+      resolveZodyFileCitationPreviewKind({
         artifactKind: "unknown",
         path: "paper.pdf",
       }),
     ).toBeNull();
     expect(
-      resolveZCodeFileCitationPreviewKind({
+      resolveZodyFileCitationPreviewKind({
         artifactKind: "",
         path: "paper.pdf",
       }),

@@ -46,13 +46,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   buildWorkspaceSessionKey,
   formatRemoteWorkspaceDisplayLabel,
 } from "@/lib/remoteWorkspaceHistory.js";
 import { TaskList } from "@/TaskList.js";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { selectWorkspaceZodyState, useZodySessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import type { RemoteConnectionLogEntry } from "@/hooks/useRemoteConnectionLogs.js";
 import { ReconnectingRemoteWorkspaceLogTooltip } from "@/WorkspaceSidebar/ReconnectingRemoteWorkspaceLogTooltip.js";
@@ -190,19 +190,19 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
   sortableBindings?: SortableBindings;
   isDragging?: boolean;
 }) {
-  const { intl } = useZCodeIntl();
-  const workspaceZCodeState = useZCodeSessionStore((state) =>
-    selectWorkspaceZCodeState(state, tab.workspacePath, tab.workspaceIdentity),
+  const { intl } = useZodyIntl();
+  const workspaceZodyState = useZodySessionStore((state) =>
+    selectWorkspaceZodyState(state, tab.workspacePath, tab.workspaceIdentity),
   );
-  const activeTaskId = workspaceZCodeState.activeTaskId;
-  const removeTaskState = useZCodeSessionStore((state) => state.removeTaskState);
-  const upsertOptimisticTaskListItem = useZCodeSessionStore(
+  const activeTaskId = workspaceZodyState.activeTaskId;
+  const removeTaskState = useZodySessionStore((state) => state.removeTaskState);
+  const upsertOptimisticTaskListItem = useZodySessionStore(
     (state) => state.upsertOptimisticTaskListItem,
   );
-  const removeOptimisticTaskListItem = useZCodeSessionStore(
+  const removeOptimisticTaskListItem = useZodySessionStore(
     (state) => state.removeOptimisticTaskListItem,
   );
-  const setTaskUnreadIndicator = useZCodeSessionStore((state) => state.setTaskUnreadIndicator);
+  const setTaskUnreadIndicator = useZodySessionStore((state) => state.setTaskUnreadIndicator);
   const services = useWorkspaceServices(
     tab.workspacePath,
     tab.remoteSessionId,
@@ -211,11 +211,11 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
   );
   const confirmDialog = useConfirmDialog();
   const baseServices = useBaseWorkspaceServices();
-  const zcodeTaskService = services.zcodeTaskService;
+  const zodyTaskService = services.zcodeTaskService;
   const taskItemsRef = useRef(taskItems);
   taskItemsRef.current = taskItems;
-  const workspaceZCodeStateRef = useRef(workspaceZCodeState);
-  workspaceZCodeStateRef.current = workspaceZCodeState;
+  const workspaceZodyStateRef = useRef(workspaceZodyState);
+  workspaceZodyStateRef.current = workspaceZodyState;
   const findCurrentTaskItem = useCallback((taskId: string) => {
     // 流式刷新会重建 taskItems 数组，任务操作回调如果直接依赖数组，
     // 即使任务语义没变也会换引用，继续击穿 TaskListItem 的 memo。
@@ -362,7 +362,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
 
     if (
       hasRunningWorkspaceChat({
-        workspaceState: workspaceZCodeStateRef.current,
+        workspaceState: workspaceZodyStateRef.current,
         taskItems: taskItemsRef.current,
       })
     ) {
@@ -387,7 +387,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
         workspacePath: tab.workspacePath,
         workspaceIdentity: tab.workspaceIdentity,
       },
-      zcodeTaskService,
+      zodyTaskService,
     });
     // 移除 workspace 只是移除入口和连接历史，不代表用户要隐藏历史任务：
     // 这里只失效缓存，保留 sqlite 任务索引原状态，避免重连同一 SSH workspace 后任务像“丢了”。
@@ -431,7 +431,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
     tab.id,
     tab.workspaceIdentity,
     tab.workspacePath,
-    zcodeTaskService,
+    zodyTaskService,
   ]);
 
   const handleReconnectRemoteWorkspace = useCallback(
@@ -495,7 +495,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
       });
       let meta: ZodyTaskMeta;
       try {
-        meta = await zcodeTaskService.renameTask({
+        meta = await zodyTaskService.renameTask({
           taskId,
           workspacePath: tab.workspacePath,
           title,
@@ -539,7 +539,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
       findCurrentTaskItem,
       readOnlyReason,
       upsertOptimisticTaskListItem,
-      zcodeTaskService,
+      zodyTaskService,
     ],
   );
 
@@ -572,7 +572,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
         });
       }
       try {
-        const meta = await zcodeTaskService.setTaskPinned({
+        const meta = await zodyTaskService.setTaskPinned({
           taskId,
           workspacePath: tab.workspacePath,
           pinned,
@@ -628,7 +628,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
       tab.workspaceIdentity,
       tab.workspacePath,
       findCurrentTaskItem,
-      zcodeTaskService,
+      zodyTaskService,
     ],
   );
 
@@ -638,7 +638,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
         return null;
       }
       const previousTask = findCurrentTaskItem(taskId);
-      const meta = await zcodeTaskService.archiveTask({
+      const meta = await zodyTaskService.archiveTask({
         taskId,
         workspacePath: tab.workspacePath,
         ...(tab.workspaceIdentity ? { workspaceIdentity: tab.workspaceIdentity } : {}),
@@ -666,7 +666,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
       tab.workspaceIdentity,
       tab.workspacePath,
       findCurrentTaskItem,
-      zcodeTaskService,
+      zodyTaskService,
     ],
   );
 
@@ -676,7 +676,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
         return null;
       }
       const previousTask = findCurrentTaskItem(taskId);
-      const meta = await zcodeTaskService.setTaskUnread({
+      const meta = await zodyTaskService.setTaskUnread({
         taskId,
         workspacePath: tab.workspacePath,
         unread,
@@ -702,7 +702,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
       tab.workspacePath,
       findCurrentTaskItem,
       upsertOptimisticTaskListItem,
-      zcodeTaskService,
+      zodyTaskService,
     ],
   );
 

@@ -1,6 +1,6 @@
 import type { ZodyStreamEvent, ZodyTaskRuntimeStatus } from "@zody/shared";
 import type { TaskChatMessage } from "@/lib/taskChatMessageTypes.js";
-import { hasRunningZCodeTimeline } from "@/lib/zodyTimelineRuntime.js";
+import { hasRunningZodyTimeline } from "@/lib/zodyTimelineRuntime.js";
 
 type TaskStreamMirrorBatchEvent = Extract<ZodyStreamEvent, { type: "task_stream_mirror_batch" }>;
 type TaskStreamMirrorOp = TaskStreamMirrorBatchEvent["ops"][number];
@@ -60,7 +60,7 @@ function isTaskRuntimeBusy(taskStatus: ZodyTaskRuntimeStatus): boolean {
 }
 
 export function hasForegroundActivityFromMessages(messages: readonly TaskChatMessage[]): boolean {
-  return hasForegroundStreamingAssistantMessage(messages) || hasRunningZCodeTimeline(messages);
+  return hasForegroundStreamingAssistantMessage(messages) || hasRunningZodyTimeline(messages);
 }
 
 export function isMainActivityRuntimeBusy(params: {

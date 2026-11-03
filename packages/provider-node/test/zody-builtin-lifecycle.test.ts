@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { NodeProviderConfigRuntime } from "../src/provider-config-runtime.js";
-import { decodeZCodeBuiltinRelease } from "../src/zody-builtin-release.js";
+import { decodeZodyBuiltinRelease } from "../src/zody-builtin-release.js";
 
 const release = {
   schemaVersion: 1,
@@ -40,7 +40,7 @@ async function setup(
   fetchRelease: (
     endpoint: string,
     signal: AbortSignal,
-  ) => Promise<ReturnType<typeof decodeZCodeBuiltinRelease> | null>,
+  ) => Promise<ReturnType<typeof decodeZodyBuiltinRelease> | null>,
 ) {
   const root = await mkdtemp(join(tmpdir(), "builtin-lifecycle-"));
   roots.push(root);

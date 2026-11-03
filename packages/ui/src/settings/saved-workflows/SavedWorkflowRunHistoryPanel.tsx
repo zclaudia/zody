@@ -3,7 +3,7 @@ import { Ban, ChevronRight, CircleCheck, Loader2, TriangleAlert } from "lucide-r
 import { TID_WORKFLOW_RUN_ROW, testId, type ZodySavedWorkflowRun } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { formatDateTime } from "@/settings/automationFormat.js";
 import { SavedWorkflowArtifactChips } from "@/settings/saved-workflows/SavedWorkflowArtifactChips.js";
 import {
@@ -43,7 +43,7 @@ export function SavedWorkflowRunHistory({
   /** 传入即在每行渲染项目列（全局工作流跨项目历史）；「查看实例」还要该行 canOpen。 */
   resolveRunProject?: (run: ZodySavedWorkflowRun) => SavedWorkflowRunProject | null;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   if (runs.length === 0) {
     return (
       <p className="text-ui-base text-foreground-subtlest">

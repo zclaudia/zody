@@ -46,7 +46,7 @@ interface ParsedPluginAgentProfile {
 
 const RESERVED_AGENT_NAMES = new Set(["general-purpose", "Explore"]);
 
-export async function loadZCodeAgentProfiles(
+export async function loadZodyAgentProfiles(
   input: LoadZodyAgentProfilesInput,
 ): Promise<LoadZodyAgentProfilesResult> {
   const migration = await migrateUserSubagentMarkdown(join(input.storageRoot, "agents"));

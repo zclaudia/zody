@@ -144,7 +144,7 @@ const STATE_CHANNEL_PREFIX = "state:";
  *
  * @param broadcastService - 广播服务。Desktop 走 RPC，Web 可传 no-op 实现
  */
-export function createZCodeStore(broadcastService: IBroadcastService) {
+export function createZodyStore(broadcastService: IBroadcastService) {
   /** 标记：正在应用来自广播的更新，此时不再重复广播（防止循环） */
   let applyingBroadcast = false;
   let cleanupSystemThemeListener: (() => void) | null = null;
@@ -339,4 +339,4 @@ export function createZCodeStore(broadcastService: IBroadcastService) {
   return useStore;
 }
 
-export type ZodyStore = ReturnType<typeof createZCodeStore>;
+export type ZodyStore = ReturnType<typeof createZodyStore>;

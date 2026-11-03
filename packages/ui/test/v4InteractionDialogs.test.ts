@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { TID_V4_USER_INPUT_DIALOG } from "@zody/shared";
 import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
   // fork（bot-channels 移除）：buildV4ElicitationProgressKey / resolveV4ElicitationRequest
   // 的 bot 代答进度用例删除后不再被本文件引用。
@@ -78,7 +78,7 @@ describe("V4InteractionDialogs", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(V4InteractionDialogs, {
           sessionId: "sess-1",
@@ -149,7 +149,7 @@ describe("V4InteractionDialogs", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(V4InteractionDialogs, {
           sessionId: "sess-1",
@@ -197,7 +197,7 @@ describe("V4InteractionDialogs", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(V4InteractionDialogs, {
           sessionId: "sess-1",

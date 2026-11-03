@@ -8,8 +8,8 @@ import { mergeTaskMetaCandidates } from "@/lib/zodyTaskMetaMerge.js";
 import { resolveWorkspaceHeaderProvider } from "@/lib/workspaceHeaderProvider.js";
 import {
   getTaskMeta,
-  selectWorkspaceZCodeState,
-  useZCodeSessionStore,
+  selectWorkspaceZodyState,
+  useZodySessionStore,
 } from "@/store/zodySessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
 
@@ -86,8 +86,8 @@ export function useWorkspaceActiveTaskState({
   selectedProvider,
   intl,
 }: UseWorkspaceActiveTaskStateParams) {
-  const workspaceState = useZCodeSessionStore((state) =>
-    selectWorkspaceZCodeState(state, workspaceAbsPath, workspaceIdentity),
+  const workspaceState = useZodySessionStore((state) =>
+    selectWorkspaceZodyState(state, workspaceAbsPath, workspaceIdentity),
   );
   const activeTaskQueryMeta = useTaskQueryCacheStore((state) => {
     if (!activeTaskId) {

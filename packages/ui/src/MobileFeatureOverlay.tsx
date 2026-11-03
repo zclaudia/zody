@@ -9,7 +9,7 @@ import {
 } from "@/MobileWorkspaceFileBrowser.js";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 import { logger } from "@/logger.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 export type WebRemoteControlMobileFeaturePage = "search" | "files" | "notifications";
 
@@ -38,7 +38,7 @@ export function MobileFeatureOverlay({
   onClose: () => void;
   onSwitchingWorkspaceChange: (switching: boolean) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const previousFocus =

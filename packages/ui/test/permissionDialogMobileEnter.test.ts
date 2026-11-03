@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZodyPermissionRequest } from "@zody/shared";
 import { PermissionDialog } from "../src/PermissionDialog.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 
 // jsdom 没有 ResizeObserver，PermissionDialog 内的工具调用块（ExecuteCommand）会用到。
 class ResizeObserverStub {
@@ -64,7 +64,7 @@ function renderFeedbackDialog(onRespond: () => void) {
   const Dialog = PermissionDialog as unknown as React.ComponentType<Record<string, unknown>>;
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(Dialog, {
         request: createFeedbackRequest(),
@@ -117,7 +117,7 @@ describe("PermissionDialog 手机反馈输入（keyboard-4 / dialogs-5）", () =
     stubMatchMedia(false);
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(PermissionDialog as unknown as React.ComponentType<Record<string, unknown>>, {
           request: createFeedbackRequest(),

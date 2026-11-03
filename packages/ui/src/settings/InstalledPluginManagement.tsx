@@ -10,7 +10,7 @@ import type {
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { PluginConfigControls } from "@/settings/PluginConfigControls.js";
 import { PluginComponentGroups } from "@/settings/PluginComponentGroups.js";
 import { buildInstalledPluginDisplayGroups } from "@/settings/pluginManagedResourceGroups.js";
@@ -120,7 +120,7 @@ export function InstalledPluginDetailPanel({
   uninstallable?: boolean;
   updateStatus?: "none" | "update-available" | "version-changed";
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   if (!plugin) {
     return (
       <div className="px-5 py-4 text-ui-base text-foreground-subtle">
@@ -332,7 +332,7 @@ export function PluginHookDetails({
 }: {
   hooks: NonNullable<ZodyPluginInfo["hookDetails"]>;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div>
       <div className="mb-2 text-ui-xs font-medium text-foreground">

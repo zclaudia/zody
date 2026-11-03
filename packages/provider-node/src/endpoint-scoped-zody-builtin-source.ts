@@ -1,11 +1,11 @@
 import type { ProviderConfigLayerSnapshot, ProviderSource } from "@zody/provider";
 import {
-  normalizeZCodeBuiltinEndpointOrigin,
-  resolveZCodeBuiltinCachePaths,
+  normalizeZodyBuiltinEndpointOrigin,
+  resolveZodyBuiltinCachePaths,
 } from "./zody-builtin-cache-paths.js";
-import { NodeZCodeBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
+import { NodeZodyBuiltinProviderConfigSource } from "./zody-builtin-provider-config-source.js";
 import {
-  ZCodeBuiltinRemoteSynchronizer,
+  ZodyBuiltinRemoteSynchronizer,
   type ZodyBuiltinRefreshResult,
   type ZodyBuiltinRemoteSynchronizerOptions,
 } from "./zody-builtin-remote-synchronizer.js";
@@ -25,7 +25,7 @@ export interface EndpointScopedZodyBuiltinSourceOptions {
  * 让 Environment 的 ZCode 控制面 Endpoint 同时决定 Active/LKG 与刷新控制路径。
  * Endpoint 切换只替换当前 Source，不读取上一 Endpoint 的缓存。
  */
-export class EndpointScopedZCodeBuiltinSource implements ProviderSource<ProviderConfigLayerSnapshot> {
+export class EndpointScopedZodyBuiltinSource implements ProviderSource<ProviderConfigLayerSnapshot> {
   readonly #options: EndpointScopedZodyBuiltinSourceOptions;
   readonly #listeners = new Set<(reason: string) => void>();
   #current: CurrentEndpointSource | null = null;
@@ -83,9 +83,9 @@ export class EndpointScopedZCodeBuiltinSource implements ProviderSource<Provider
     // fork（F3.1）：未配置端点使用固定的本地缓存目录，只读取随包/本地缓存；
     // 该分支不创建远端 synchronizer，refresh 返回 skipped。
     const endpointOrigin = rawEndpointOrigin
-      ? normalizeZCodeBuiltinEndpointOrigin(rawEndpointOrigin)
+      ? normalizeZodyBuiltinEndpointOrigin(rawEndpointOrigin)
       : "";
-    const paths = resolveZCodeBuiltinCachePaths({
+    const paths = resolveZodyBuiltinCachePaths({
       environmentConfigRoot: this.#options.environmentConfigRoot,
       platform: this.#options.platform,
       appVersion: this.#options.appVersion,
@@ -93,18 +93,18 @@ export class EndpointScopedZCodeBuiltinSource implements ProviderSource<Provider
     });
     if (this.#current?.activeFilePath === paths.activeFilePath) return this.#current;
 
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: this.#options.bundledFilePath,
       activeFilePath: paths.activeFilePath,
       watch: this.#options.watch,
     });
     const sourceDispose = source.onDidChange((reason) => this.#emit(reason));
     const synchronizer = endpointOrigin
-      ? new ZCodeBuiltinRemoteSynchronizer({
+      ? new ZodyBuiltinRemoteSynchronizer({
           source,
           controlFilePath: paths.controlFilePath,
           resolveEndpointKey: async () =>
-            normalizeZCodeBuiltinEndpointOrigin(await this.#options.resolveEndpointOrigin()),
+            normalizeZodyBuiltinEndpointOrigin(await this.#options.resolveEndpointOrigin()),
           fetchRelease: this.#options.fetchRelease,
           onRefreshResult: this.#options.onRefreshResult,
         })
@@ -145,9 +145,9 @@ export class EndpointScopedZCodeBuiltinSource implements ProviderSource<Provider
 class CurrentEndpointSource {
   constructor(
     readonly activeFilePath: string,
-    readonly source: NodeZCodeBuiltinProviderConfigSource,
+    readonly source: NodeZodyBuiltinProviderConfigSource,
     /** 端点未配置时为 null：不创建远端刷新器。 */
-    readonly synchronizer: ZCodeBuiltinRemoteSynchronizer | null,
+    readonly synchronizer: ZodyBuiltinRemoteSynchronizer | null,
     readonly sourceDispose: () => void,
   ) {}
 

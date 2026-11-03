@@ -198,7 +198,7 @@ function readNestedAskUserQuestionAnswers(input: unknown): ZodyUserQuestionAnswe
   return readNestedAskUserQuestionAnswers(record.output);
 }
 
-function parseZCodeAskUserQuestionOutput(
+function parseZodyAskUserQuestionOutput(
   output: unknown,
   input: unknown,
 ): ZodyUserQuestionAnswers | undefined {
@@ -330,12 +330,12 @@ export function readAskUserQuestionAnswers(value: {
   if (parsedOutputAnswers) {
     return parsedOutputAnswers;
   }
-  const parsedZCodeOutputAnswers = parseZCodeAskUserQuestionOutput(
+  const parsedZodyOutputAnswers = parseZodyAskUserQuestionOutput(
     value.output,
     readAskUserQuestionInput(value),
   );
-  if (parsedZCodeOutputAnswers) {
-    return parsedZCodeOutputAnswers;
+  if (parsedZodyOutputAnswers) {
+    return parsedZodyOutputAnswers;
   }
   if (isPlainRecord(value.input) && isPlainRecord(value.input.answers)) {
     return value.input.answers;
@@ -349,12 +349,12 @@ export function readAskUserQuestionAnswers(value: {
     if (parsedRawOutputAnswers) {
       return parsedRawOutputAnswers;
     }
-    const parsedRawZCodeOutputAnswers = parseZCodeAskUserQuestionOutput(
+    const parsedRawZodyOutputAnswers = parseZodyAskUserQuestionOutput(
       value.raw.rawOutput,
       readAskUserQuestionInput(value),
     );
-    if (parsedRawZCodeOutputAnswers) {
-      return parsedRawZCodeOutputAnswers;
+    if (parsedRawZodyOutputAnswers) {
+      return parsedRawZodyOutputAnswers;
     }
     const nestedRawAnswers = readNestedAskUserQuestionAnswers(value.raw.output);
     if (nestedRawAnswers) {
@@ -364,12 +364,12 @@ export function readAskUserQuestionAnswers(value: {
     if (parsedRawAnswers) {
       return parsedRawAnswers;
     }
-    const parsedRawZCodeAnswers = parseZCodeAskUserQuestionOutput(
+    const parsedRawZodyAnswers = parseZodyAskUserQuestionOutput(
       value.raw.output,
       readAskUserQuestionInput(value),
     );
-    if (parsedRawZCodeAnswers) {
-      return parsedRawZCodeAnswers;
+    if (parsedRawZodyAnswers) {
+      return parsedRawZodyAnswers;
     }
     const nestedRawContentAnswers = readNestedAskUserQuestionAnswers(value.raw.content);
     if (nestedRawContentAnswers) {

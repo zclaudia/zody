@@ -16,7 +16,7 @@ const ZCODE_TASK_MODE_VALUES: readonly ZodyTaskMode[] = [
 
 const ZCODE_TASK_MODE_SET = new Set<string>(ZCODE_TASK_MODE_VALUES);
 
-function normalizeZCodeModeForTaskCreation(
+function normalizeZodyModeForTaskCreation(
   modeId: string,
   _provider?: ZodyProvider,
 ): ZodyTaskMode | undefined {
@@ -88,7 +88,7 @@ export function getErrorMessage(err: unknown): string {
   return stringifyUnknownValue(err);
 }
 
-export function readCurrentZCodeMode(
+export function readCurrentZodyMode(
   options: readonly ZodyConfigOption[],
   provider?: ZodyProvider,
 ): ZodyTaskMode | undefined {
@@ -102,5 +102,5 @@ export function readCurrentZCodeMode(
 
   // Bugfix: 之前只白名单了本地 ZCodeTaskMode，导致 provider 原生模式
   // 在首发建 session 时被丢弃。这里先归一化，避免 UI 已选模式和真实 ZCode Agent session 模式不一致。
-  return normalizeZCodeModeForTaskCreation(currentValue, provider);
+  return normalizeZodyModeForTaskCreation(currentValue, provider);
 }

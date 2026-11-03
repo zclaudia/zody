@@ -17,7 +17,7 @@ export function isRunningGoalVerificationTimeline(
   );
 }
 
-export function isRunningZCodeTimeline(timeline: ZodyTimelineMeta | undefined): boolean {
+export function isRunningZodyTimeline(timeline: ZodyTimelineMeta | undefined): boolean {
   if (!timeline) {
     return false;
   }
@@ -30,8 +30,8 @@ export function isRunningZCodeTimeline(timeline: ZodyTimelineMeta | undefined): 
   return false;
 }
 
-export function hasRunningZCodeTimeline(messages: readonly TaskChatMessage[]): boolean {
-  return messages.some((message) => isRunningZCodeTimeline(message.syntheticTimeline));
+export function hasRunningZodyTimeline(messages: readonly TaskChatMessage[]): boolean {
+  return messages.some((message) => isRunningZodyTimeline(message.syntheticTimeline));
 }
 
 export function hasRunningContextCompactionTimeline(

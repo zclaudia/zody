@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createWorkflowChildSkillPort } from "../src/app/script-workflow-child-runtime.js";
 import { resolveStartupPlugins } from "../src/app/startup-marks.js";
 import type { ZodyApp, ZodyAppOptions } from "../src/app/types.js";
-import { inspectZCodeSkill, listZCodeSkills } from "../src/skills.js";
+import { inspectZodySkill, listZodySkills } from "../src/skills.js";
 import { StartupTimer } from "../src/startup-logging.js";
 import { getSkillReferenceCatalog } from "../src/zody-protocol/skill-reference-catalog.js";
 import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
@@ -40,18 +40,18 @@ describe("visualize protocol-only skill discovery", () => {
     "list and inspect agree with includeVisualize=%s",
     async (includeVisualize) => {
       const options = { env, includeVisualize, skipUserConfig: true, workingDirectory: root };
-      const outcome = await listZCodeSkills(options);
+      const outcome = await listZodySkills(options);
       expect(outcome.skills.some((skill) => skill.pluginId === VISUALIZE_PLUGIN_ID)).toBe(
         includeVisualize === true,
       );
       expect(outcome.skills.some((skill) => skill.name === "pdf")).toBe(true);
       for (const name of ["visualize", VISUALIZE_SKILL]) {
         if (includeVisualize) {
-          const result = await inspectZCodeSkill({ ...options, name });
+          const result = await inspectZodySkill({ ...options, name });
           expect(result.skill.metadata.pluginId).toBe(VISUALIZE_PLUGIN_ID);
           expect(result.skill.content).toContain("Inline HTML output contract");
         } else {
-          await expect(inspectZCodeSkill({ ...options, name })).rejects.toThrow("Skill not found:");
+          await expect(inspectZodySkill({ ...options, name })).rejects.toThrow("Skill not found:");
         }
       }
     },
@@ -93,7 +93,7 @@ describe("visualize protocol-only skill discovery", () => {
       join(skillDir, "SKILL.md"),
       "---\nname: visualize\ndescription: Project visualization.\n---\nProject skill.",
     );
-    const result = await inspectZCodeSkill({
+    const result = await inspectZodySkill({
       env,
       skipUserConfig: true,
       workingDirectory: root,
@@ -115,24 +115,24 @@ describe("visualize protocol-only skill discovery", () => {
       userConfigPath: configPath,
       workingDirectory: root,
     };
-    const outcome = await listZCodeSkills(options);
+    const outcome = await listZodySkills(options);
     expect(outcome.skills.some((skill) => skill.pluginId === VISUALIZE_PLUGIN_ID)).toBe(false);
-    await expect(inspectZCodeSkill({ ...options, name: VISUALIZE_SKILL })).rejects.toThrow(
+    await expect(inspectZodySkill({ ...options, name: VISUALIZE_SKILL })).rejects.toThrow(
       "Skill not found:",
     );
   });
 
   it("opts protocol apps in and keeps their draft catalog consistent", async () => {
-    const createZCodeApp = vi.fn(() => ({}) as ZodyApp);
+    const createZodyApp = vi.fn(() => ({}) as ZodyApp);
     const context = {
-      deps: { createZCodeApp, env },
+      deps: { createZodyApp, env },
       sessions: new Map(),
     } as unknown as ZodyProtocolAgentServerContext;
     const workspace = { workspacePath: root, workspaceKey: root };
     await createWorkspaceZodyApp(context, workspace, {
       providerRuntimeHeadersPort: {} as ZodyAppOptions["providerRuntimeHeadersPort"],
     });
-    expect(createZCodeApp).toHaveBeenCalledWith(
+    expect(createZodyApp).toHaveBeenCalledWith(
       expect.objectContaining({ includeVisualize: true }),
     );
     const catalog = await getSkillReferenceCatalog(context, { workspace });

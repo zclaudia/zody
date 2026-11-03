@@ -2,7 +2,7 @@ import { Cpu } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { thoughtLevelLabelId } from "@/chat-input-toolbar/thoughtLevelOptions.js";
 import { useWorkflowSubagentModelProviderName } from "@/hooks/useWorkflowSubagentModelProviderName.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { ToolSnapshotFieldNotice } from "@/ToolCallBlocks/ToolSnapshotFieldNotice.js";
 import { FallbackToolCallBlock } from "@/ToolCallBlocks/renderers/fallback.js";
 import { readToolResultDisplay } from "@/ToolCallBlocks/toolResultDisplay.js";
@@ -248,7 +248,7 @@ function groupModelsByProvider(models: ListModelsEntryView[]): ListModelsGroup[]
  * providerId 一个字符都不上屏。
  */
 export function ListModelsToolCallBlock(context: ToolCallBlockRenderContext) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const { toolCall } = context.toolCallNode;
   const providerName = useWorkflowSubagentModelProviderName(context.workspacePath);
 

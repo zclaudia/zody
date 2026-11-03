@@ -5,7 +5,7 @@ import type { ZodyConfigOption } from "@zody/shared";
 import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
 import type { IModelSelectionService, ModelSelectionView } from "@zody/services";
 import { resolveEffectiveModelSelection, type ProviderRegistryView } from "@zody/provider";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import { useDraftConfigControl as useActualDraftConfigControl } from "@/v4/composer/useDraftConfigControl.js";
 import { persistV4ComposerDraft, readV4ComposerDraft } from "@/v4/composer/composerDraftStore.js";
 import { captureComposerRecentSubmission } from "@/lib/composerRecent.js";
@@ -20,11 +20,11 @@ const { toastMock } = vi.hoisted(() => ({
 }));
 
 vi.mock("@/hooks/useWorkspacePrepare.js", () => ({
-  prepareWorkspaceWithZCodeSessionService: prepareWorkspaceMock,
+  prepareWorkspaceWithZodySessionService: prepareWorkspaceMock,
 }));
 
 vi.mock("@/hooks/useZodySessionService.js", () => ({
-  useZCodeSessionService: () => ({ readWorkspacePresentation: vi.fn() }),
+  useZodySessionService: () => ({ readWorkspacePresentation: vi.fn() }),
 }));
 
 vi.mock("@/hooks/useSettingService.js", () => ({
@@ -36,7 +36,7 @@ vi.mock("@/components/ui/toast.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: { formatMessage: ({ id }: { id: string }) => id },
   }),
 }));
@@ -340,7 +340,7 @@ describe("useDraftConfigControl slash command hydration", () => {
     selectionServices.clear();
     prepareWorkspaceMock.mockReset();
     toastMock.mockReset();
-    useZCodeSessionStore.setState((state) => ({
+    useZodySessionStore.setState((state) => ({
       ...state,
       workspaces: {},
     }));
@@ -356,7 +356,7 @@ describe("useDraftConfigControl slash command hydration", () => {
   it("task → draft 继承模型目录但 slashCommands 为空时重新拉取并写入 identity 桶", async () => {
     const workspacePath = "/workspace";
     const workspaceIdentity = "ssh://demo/workspace";
-    useZCodeSessionStore
+    useZodySessionStore
       .getState()
       .setConfigOptions(workspacePath, WORKSPACE_PRESENTATION, workspaceIdentity);
     prepareWorkspaceMock.mockResolvedValue({
@@ -382,7 +382,7 @@ describe("useDraftConfigControl slash command hydration", () => {
 
     await vi.waitFor(() => {
       expect(
-        useZCodeSessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
+        useZodySessionStore.getState().getWorkspaceState(workspacePath, workspaceIdentity)
           .slashCommands,
       ).toEqual(CUSTOM_COMMANDS);
     });
@@ -395,7 +395,7 @@ describe("useDraftConfigControl slash command hydration", () => {
 
   it("打开已有 session 且 workspace slashCommands 为空时独立补水合", async () => {
     const workspacePath = "/known-workspace";
-    useZCodeSessionStore.getState().setConfigOptions(workspacePath, WORKSPACE_PRESENTATION);
+    useZodySessionStore.getState().setConfigOptions(workspacePath, WORKSPACE_PRESENTATION);
     prepareWorkspaceMock.mockResolvedValue({
       configOptions: WORKSPACE_PRESENTATION,
       slashCommands: CUSTOM_COMMANDS,
@@ -418,7 +418,7 @@ describe("useDraftConfigControl slash command hydration", () => {
 
     await vi.waitFor(() => {
       expect(
-        useZCodeSessionStore.getState().getWorkspaceState(workspacePath).slashCommands,
+        useZodySessionStore.getState().getWorkspaceState(workspacePath).slashCommands,
       ).toEqual(CUSTOM_COMMANDS);
     });
     expect(prepareWorkspaceMock).toHaveBeenCalledWith(expect.objectContaining({ workspacePath }));
@@ -428,7 +428,7 @@ describe("useDraftConfigControl slash command hydration", () => {
 
   it("打开已有 session 时保留已经水合的 workspace slashCommands", async () => {
     const workspacePath = "/hydrated-workspace";
-    const store = useZCodeSessionStore.getState();
+    const store = useZodySessionStore.getState();
     store.setConfigOptions(workspacePath, WORKSPACE_PRESENTATION);
     store.setSlashCommands(workspacePath, CUSTOM_COMMANDS);
 
@@ -447,7 +447,7 @@ describe("useDraftConfigControl slash command hydration", () => {
       root.render(createElement(Probe));
     });
 
-    expect(useZCodeSessionStore.getState().getWorkspaceState(workspacePath).slashCommands).toEqual(
+    expect(useZodySessionStore.getState().getWorkspaceState(workspacePath).slashCommands).toEqual(
       CUSTOM_COMMANDS,
     );
     expect(prepareWorkspaceMock).not.toHaveBeenCalled();
@@ -484,7 +484,7 @@ describe("useDraftConfigControl slash command hydration", () => {
         options: [{ value: "max", name: "Max" }],
       },
     ];
-    const store = useZCodeSessionStore.getState();
+    const store = useZodySessionStore.getState();
     store.setActiveTaskId(workspacePath, taskId);
     store.setTaskConfigOptions(workspacePath, taskId, inheritedOptions);
     store.startDraft(workspacePath, "glm");
@@ -545,7 +545,7 @@ describe("useDraftConfigControl slash command hydration", () => {
         options: [{ value: "max", name: "Max" }],
       },
     ];
-    const store = useZCodeSessionStore.getState();
+    const store = useZodySessionStore.getState();
     store.setConfigOptions(workspacePath, inheritedOptions);
     store.setActiveTaskId(workspacePath, taskId);
     store.setTaskConfigOptions(workspacePath, taskId, inheritedOptions);
@@ -575,7 +575,7 @@ describe("useDraftConfigControl slash command hydration", () => {
     });
 
     act(() => {
-      useZCodeSessionStore.getState().startDraft(workspacePath, "glm");
+      useZodySessionStore.getState().startDraft(workspacePath, "glm");
       root.render(createElement(Probe, { sessionId: null }));
     });
 
@@ -588,8 +588,8 @@ describe("useDraftConfigControl slash command hydration", () => {
     const workspacePath = "/live-selection-invalidated";
     const firstView = modelSelectionView(1, ["old", "preferred"], "preferred");
     const nextView = modelSelectionView(2, ["preferred"], "preferred");
-    useZCodeSessionStore.getState().setSlashCommands(workspacePath, CUSTOM_COMMANDS);
-    useZCodeSessionStore.getState().setConfigOptions(workspacePath, WORKSPACE_PRESENTATION);
+    useZodySessionStore.getState().setSlashCommands(workspacePath, CUSTOM_COMMANDS);
+    useZodySessionStore.getState().setConfigOptions(workspacePath, WORKSPACE_PRESENTATION);
 
     let control: ReturnType<typeof useDraftConfigControl> | undefined;
     function Probe({ view }: { view: ModelSelectionView }) {

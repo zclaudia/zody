@@ -3,7 +3,7 @@ import { TID_CRON_CREATE_CARD, TID_CRON_CREATE_OPEN } from "@zody/shared";
 import type { ZodyAutomationScheduleRule } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { describeAutomationCardSchedule } from "@/settings/automationCardSchedule.js";
 import type { ToolCallBlockRenderContext } from "@/ToolCallBlocks/shared.js";
 import { FallbackToolCallBlock } from "@/ToolCallBlocks/renderers/fallback.js";
@@ -165,7 +165,7 @@ export function CronCreateAutomationCard({
   automation: CronCreateAutomationSummary;
   onOpenAutomationsMain?: (automationId?: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const title =
     automation.title ?? intl.formatMessage({ id: "automations.chatCreated.defaultTitle" });
   const schedule = automation.cronExpr

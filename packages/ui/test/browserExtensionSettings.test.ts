@@ -62,7 +62,7 @@ vi.mock("@/hooks/usePlatform.js", () => ({
   }),
 }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: (message: { id: string }, values?: Record<string, string | number>) =>
         values

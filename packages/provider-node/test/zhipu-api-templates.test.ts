@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { parseZCodeBuiltinModelConfigRules } from "@zody/provider";
+import { parseZodyBuiltinModelConfigRules } from "@zody/provider";
 
 describe("Zhipu four manual API templates", () => {
   it.each(["zody-builtin.json", "zody-builtin.test.json"])(
@@ -17,7 +17,7 @@ describe("Zhipu four manual API templates", () => {
         ).toBe("https:");
         expect(template.config.access).not.toHaveProperty("teamApiKeyManagementUrl");
       }
-      const rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+      const rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
       for (const family of ["zai", "bigmodel"]) {
         for (const standard of [false, true]) {
           const templateId = `${family}-${standard ? "standard-" : ""}api`;

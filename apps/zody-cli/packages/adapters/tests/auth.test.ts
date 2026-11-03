@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  createSharedZCodeCredentialStore,
-  loadSharedZCodeCredentialSync,
+  createSharedZodyCredentialStore,
+  loadSharedZodyCredentialSync,
 } from "../src/auth/index.js";
 import { createStoredCredentialCipher } from "../../../../../packages/services/src/credential/providers/credentialKeyStore.js";
 
@@ -30,14 +30,14 @@ describe("shared Zody credentials", () => {
         }),
       );
 
-      const store = createSharedZCodeCredentialStore({
+      const store = createSharedZodyCredentialStore({
         baseDir: dir,
         env: TEST_ENV,
       });
 
       expect(await store.load("mcp-oauth:server:tokens")).toBe("legacy-token");
       expect(
-        loadSharedZCodeCredentialSync("mcp-oauth:server:tokens", {
+        loadSharedZodyCredentialSync("mcp-oauth:server:tokens", {
           baseDir: dir,
           env: TEST_ENV,
         }),
@@ -50,12 +50,12 @@ describe("shared Zody credentials", () => {
   it("shares the stored key and ciphertext format with the services credential adapter", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zody-cross-credential-"));
     try {
-      const store = createSharedZCodeCredentialStore({ baseDir: dir, env: {} });
+      const store = createSharedZodyCredentialStore({ baseDir: dir, env: {} });
       await store.save("mcp-oauth:shared", "service-readable");
       const serviceCipher = await createStoredCredentialCipher(store.filePath, {});
       const raw = JSON.parse(await readFile(store.filePath, "utf8")) as Record<string, string>;
       expect(serviceCipher.decrypt(raw["mcp-oauth:shared"]!)).toBe("service-readable");
-      expect(loadSharedZCodeCredentialSync("mcp-oauth:shared", { baseDir: dir, env: {} })).toBe(
+      expect(loadSharedZodyCredentialSync("mcp-oauth:shared", { baseDir: dir, env: {} })).toBe(
         "service-readable",
       );
     } finally {
@@ -70,14 +70,14 @@ describe("shared Zody credentials", () => {
     try {
       await mkdir(credentialsDir, { recursive: true });
       await writeFile(credentialsPath, JSON.stringify({ token: "enc:v1:broken" }));
-      expect(loadSharedZCodeCredentialSync("token", { baseDir: dir, env: {} })).toBeUndefined();
+      expect(loadSharedZodyCredentialSync("token", { baseDir: dir, env: {} })).toBeUndefined();
       await expect(readFile(join(credentialsDir, "credentials.key"), "utf8")).rejects.toMatchObject(
         {
           code: "ENOENT",
         },
       );
       await writeFile(join(credentialsDir, "credentials.key"), "broken");
-      expect(loadSharedZCodeCredentialSync("token", { baseDir: dir, env: {} })).toBeUndefined();
+      expect(loadSharedZodyCredentialSync("token", { baseDir: dir, env: {} })).toBeUndefined();
     } finally {
       await rm(dir, { force: true, recursive: true });
     }
@@ -85,7 +85,7 @@ describe("shared Zody credentials", () => {
 
   it("preserves every key across concurrent read-modify-write mutations", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-auth-concurrent-"));
-    const store = createSharedZCodeCredentialStore({
+    const store = createSharedZodyCredentialStore({
       baseDir: dir,
       env: TEST_ENV,
     });
@@ -106,7 +106,7 @@ describe("shared Zody credentials", () => {
 
   it("deletes a credential only when its expected plaintext value is still current", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-auth-compare-delete-"));
-    const store = createSharedZCodeCredentialStore({
+    const store = createSharedZodyCredentialStore({
       baseDir: dir,
       env: TEST_ENV,
     });
@@ -125,7 +125,7 @@ describe("shared Zody credentials", () => {
 
   it("publishes a replacement credential and removes legacy keys in one mutation", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-auth-replace-"));
-    const store = createSharedZCodeCredentialStore({
+    const store = createSharedZodyCredentialStore({
       baseDir: dir,
       env: TEST_ENV,
     });
@@ -155,7 +155,7 @@ describe("shared Zody credentials", () => {
 
     try {
       await runConcurrentCredentialWorkers(credentialsPath, processCount, keysPerProcess);
-      const store = createSharedZCodeCredentialStore({
+      const store = createSharedZodyCredentialStore({
         env: TEST_ENV,
         filePath: credentialsPath,
       });
@@ -176,7 +176,7 @@ describe("shared Zody credentials", () => {
   it("backs up corrupt JSON and refuses to overwrite it", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-auth-corrupt-"));
     const credentialsPath = join(dir, "credentials.json");
-    const store = createSharedZCodeCredentialStore({
+    const store = createSharedZodyCredentialStore({
       env: TEST_ENV,
       filePath: credentialsPath,
     });

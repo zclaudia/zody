@@ -6,7 +6,7 @@ import {
   type ZodyPluginsListUiSurfacesResult,
 } from "@zody/shared";
 import type { PluginMetadata } from "@zody/contracts";
-import { resolveZCodePlugins } from "../plugins.js";
+import { resolveZodyPlugins } from "../plugins.js";
 import { parseParams, type ZodyProtocolAgentServerContext } from "./server-types.js";
 
 export function listPluginUiSurfacesFromPlugins(
@@ -37,7 +37,7 @@ export async function listPluginUiSurfaces(
   rawParams: unknown,
 ): Promise<ZodyPluginsListUiSurfacesResult> {
   const params = parseParams(zodyPluginsListUiSurfacesParamsSchema, rawParams);
-  const outcome = resolveZCodePlugins({
+  const outcome = resolveZodyPlugins({
     logger: context.logger,
     workingDirectory: params.workspace.workspacePath,
   });

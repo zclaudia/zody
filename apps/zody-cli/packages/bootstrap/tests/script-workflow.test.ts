@@ -11,7 +11,7 @@ import {
   ModelPropertiesConfig,
   ProviderRegistry,
 } from "@zody/provider";
-import { createRegistryBackedTestApp as createZCodeApp } from "./helpers/registry-backed-test-app.js";
+import { createRegistryBackedTestApp as createZodyApp } from "./helpers/registry-backed-test-app.js";
 import { readWorkflowScriptDocument } from "../src/app/script-workflow-meta.js";
 import { runScriptWorkflowChild } from "../src/app/script-workflow-process.js";
 import { createScriptWorkflowToolPort } from "../src/app/script-workflow-tool-port.js";
@@ -283,7 +283,7 @@ describe("script workflow runtime", () => {
     const requestTexts: string[] = [];
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {
           PATH: shellDir,
           SHELL: join(shellDir, "fish"),
@@ -359,7 +359,7 @@ describe("script workflow runtime", () => {
     );
 
     try {
-      const app = await createZCodeApp({
+      const app = await createZodyApp({
         env: {},
         modelAdapter: {
           addStatusSink() {},

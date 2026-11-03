@@ -37,7 +37,7 @@ export async function loadZCodeModules(repoRoot) {
       CompactReason: contracts.CompactReason,
       CompactTrigger: contracts.CompactTrigger,
       SessionEventType: contracts.SessionEventType,
-      createZCodeApp: bootstrap.createZCodeApp,
+      createZodyApp: bootstrap.createZodyApp,
       provider: { ...providerConfig, ...providerRegistry },
     };
   } catch (error) {
@@ -115,7 +115,7 @@ export async function writeProviderConfig(configPath, input) {
 
 export async function createApp(input) {
   const providerConfig = JSON.parse(await readFile(`${input.configPath}.provider.json`, "utf8"));
-  return input.modules.createZCodeApp({
+  return input.modules.createZodyApp({
     env: {
       ...process.env,
       ZCODE_STORAGE_DIR: input.storageDir,

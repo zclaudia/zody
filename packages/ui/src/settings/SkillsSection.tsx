@@ -30,10 +30,10 @@ import type {
 } from "@zody/shared";
 import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
-import { useZCodeSessionService } from "@/hooks/useZodySessionService.js";
+import { useZodySessionService } from "@/hooks/useZodySessionService.js";
 import {
   useBaseWorkspaceServices,
   useWorkspaceServicesResolution,
@@ -184,7 +184,7 @@ export function SkillsSection({
   showMarketplaceBreadcrumb = false,
   reportDetailBreadcrumb = false,
 }: SkillsSectionProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const platform = usePlatform();
   const baseServices = useBaseWorkspaceServices();
   const plugins = usePluginManagementStore((state) => state.plugins);
@@ -225,7 +225,7 @@ export function SkillsSection({
   // 取服务，导致跨远程 host 误路由。技能读写和远端同步都改用同一 target 解析结果。
   const { pluginManagementService, skillSyncService, skillsService } =
     targetServiceResolution.services;
-  const zcodeSessionService = useZCodeSessionService(
+  const zodySessionService = useZodySessionService(
     activeWorkspacePath ?? undefined,
     undefined,
     activeWorkspaceIdentity,
@@ -418,7 +418,7 @@ export function SkillsSection({
           enabled,
         });
         await invalidateDeferredDraftSessionForSkillChange({
-          zcodeSessionService,
+          zcodeSessionService: zodySessionService,
           workspacePath: activeWorkspacePath,
           workspaceIdentity: activeWorkspaceIdentity,
           reason: "settings-skill-enabled",
@@ -442,7 +442,7 @@ export function SkillsSection({
       refreshSharedSkillStoreForCurrentWorkspace,
       skills,
       skillsService,
-      zcodeSessionService,
+      zodySessionService,
     ],
   );
 
@@ -471,7 +471,7 @@ export function SkillsSection({
           skillId: skill.id,
         });
         await invalidateDeferredDraftSessionForSkillChange({
-          zcodeSessionService,
+          zcodeSessionService: zodySessionService,
           workspacePath: activeWorkspacePath,
           workspaceIdentity: activeWorkspaceIdentity,
           reason: "settings-skill-delete",
@@ -496,7 +496,7 @@ export function SkillsSection({
       loadSkills,
       selectedSkill,
       skillsService,
-      zcodeSessionService,
+      zodySessionService,
     ],
   );
 
@@ -1069,7 +1069,7 @@ export function SkillsSection({
         onOpenChange={setImportDialogOpen}
         onImported={async () => {
           await invalidateDeferredDraftSessionForSkillChange({
-            zcodeSessionService,
+            zcodeSessionService: zodySessionService,
             workspacePath: activeWorkspacePath,
             workspaceIdentity: activeWorkspaceIdentity,
             reason: "settings-skill-import",
@@ -1098,7 +1098,7 @@ export function SkillsSection({
         workspaceIdentity={activeWorkspaceIdentity}
         onSkillsSynced={async () => {
           await invalidateDeferredDraftSessionForSkillChange({
-            zcodeSessionService,
+            zcodeSessionService: zodySessionService,
             workspacePath: activeWorkspacePath,
             workspaceIdentity: activeWorkspaceIdentity,
             reason: "settings-remote-skill-sync",

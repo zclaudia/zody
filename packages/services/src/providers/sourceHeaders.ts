@@ -30,7 +30,7 @@ function resolveClientTimezone(): string {
   );
 }
 
-export function buildZCodeSourceHeaders(
+export function buildZodySourceHeaders(
   options: ZodySourceHeaderOptions = {},
 ): Record<string, string> {
   const platform = options.platform ?? process.platform;

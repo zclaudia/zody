@@ -38,7 +38,7 @@ function rememberBoundedId(ids: Set<string>, order: string[], id: string): boole
   return true;
 }
 
-export function createZCodeSessionEventOrderGate(): ZodySessionEventOrderGate {
+export function createZodySessionEventOrderGate(): ZodySessionEventOrderGate {
   const deliveredEventIds = new Set<string>();
   const deliveredEventIdOrder: string[] = [];
   const pendingEvents = new Map<number, ZodySessionEvent>();

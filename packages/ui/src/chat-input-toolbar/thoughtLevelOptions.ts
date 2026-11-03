@@ -1,5 +1,5 @@
 import type { ZodyConfigOption, ZodyProvider } from "@zody/shared";
-import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import type { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { getConfigOptionEntryLabel } from "@/chat-input-toolbar/display.js";
 
 export type ThoughtLevelEntry = NonNullable<ZodyConfigOption["options"]>[number];
@@ -72,7 +72,7 @@ export function getNextThoughtLevelValue(
 }
 
 export function getThoughtLevelLabel(
-  intl: ReturnType<typeof useZCodeIntl>["intl"],
+  intl: ReturnType<typeof useZodyIntl>["intl"],
   provider: ZodyProvider | undefined,
   option: ZodyConfigOption,
   entry: ThoughtLevelEntry,

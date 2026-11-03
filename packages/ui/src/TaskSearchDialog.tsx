@@ -13,7 +13,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command.js";
 import { useGlobalTaskList } from "@/hooks/useGlobalTaskList.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { formatCommandShortcutLabel, matchesPrimaryShortcut } from "@/lib/keyboardShortcuts.js";
 import { formatTaskRelativeTime } from "@/lib/taskListItemPresentation.js";
@@ -98,7 +98,7 @@ export function TaskSearchDialog({
   ) => void;
   openRequestId?: number;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [expandedTaskKeys, setExpandedTaskKeys] = useState<Set<string>>(() => new Set());

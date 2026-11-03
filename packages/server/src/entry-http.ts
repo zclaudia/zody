@@ -1,14 +1,14 @@
 import { createLocalServices, getAppConfigDir } from "@zody/services/node";
 import {
-  materializeBundledZCodeBuiltinProviderConfig,
-  readBundledZCodeBuiltinProviderConfig,
+  materializeBundledZodyBuiltinProviderConfig,
+  readBundledZodyBuiltinProviderConfig,
 } from "./bundledZodyBuiltinProviderConfig.js";
 import { createHttpServer } from "./http.js";
 
 async function main(): Promise<void> {
-  const zcodeBuiltinProviderConfigFilePath = await materializeBundledZCodeBuiltinProviderConfig({
+  const zodyBuiltinProviderConfigFilePath = await materializeBundledZodyBuiltinProviderConfig({
     environmentConfigRoot: getAppConfigDir(),
-    content: readBundledZCodeBuiltinProviderConfig(),
+    content: readBundledZodyBuiltinProviderConfig(),
   });
   const port = Number(process.env["PORT"]) || 3030;
   const host =
@@ -18,7 +18,7 @@ async function main(): Promise<void> {
   // fork（bot channels 移除）：topic-resource relay（createTopicResourcePeers /
   // topicResourceRelayChannel）是第三方 IM bot 的资源回传链，随 bot channels 整体删除。
   const services = createLocalServices({
-    zcodeBuiltinProviderConfigFilePath,
+    zcodeBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
     providerProvisioningTargetEnabled: Boolean(authToken),
   });
 

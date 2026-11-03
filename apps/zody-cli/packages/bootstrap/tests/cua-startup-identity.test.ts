@@ -32,7 +32,7 @@ async function createWorkspaceAppWithServerIdentity(
   const context = {
     cuaLaunchIdentity: TRUSTED_IDENTITY,
     deps: {
-      createZCodeApp: (appOptions) => {
+      createZodyApp: (appOptions) => {
         createdOptions.push(appOptions ?? {});
         return createFakeApp(appOptions);
       },
@@ -48,7 +48,7 @@ describe("CUA startup identity protocol", () => {
   it("pins the first identity, treats the same value as idempotent, and rejects replacement", async () => {
     const createdOptions: ZodyAppOptions[] = [];
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         createdOptions.push(options ?? {});
         return createFakeApp(options);
       },

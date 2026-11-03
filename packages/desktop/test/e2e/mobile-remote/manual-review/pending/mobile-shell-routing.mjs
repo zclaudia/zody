@@ -31,7 +31,7 @@ import {ServiceProvider} from '@/hooks/useServices.js';
 import {PlatformProvider} from '@/hooks/usePlatform.js';
 import {StoreProvider} from '@/store/StoreProvider.js';
 import {TabStoreProvider} from '@/store/TabStoreProvider.js';
-import {ZCodeIntlProvider} from '@/i18n/IntlProvider.js';
+import {ZodyIntlProvider} from '@/i18n/IntlProvider.js';
 import {WebRemoteControlMobileShell} from '@/WebRemoteControlMobileShell.js';
 import '@/styles.css';
 const fixture = ${JSON.stringify(fixture)};
@@ -118,7 +118,7 @@ createRoot(document.getElementById('root')).render(
     React.createElement(TabStoreProvider, null,
       React.createElement(StoreProvider, {broadcastService},
         React.createElement(PlatformProvider, {platform},
-          React.createElement(ZCodeIntlProvider, null, React.createElement(Harness)))))));
+          React.createElement(ZodyIntlProvider, null, React.createElement(Harness)))))));
 window.__dispatchBack = () => { for (const handler of backHandlers) if (handler()) return true; return false; };
 `;
 

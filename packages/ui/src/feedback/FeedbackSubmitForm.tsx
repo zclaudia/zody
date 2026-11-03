@@ -49,9 +49,9 @@ import {
 } from "@/feedback/feedbackSubmitSubmission.js";
 import type { IFeedbackService } from "@zody/services";
 import type { IPlatformService } from "@zody/shared";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { selectWorkspaceZodyState, useZodySessionStore } from "@/store/zodySessionStore.js";
 
 export { SubmitProgressView } from "@/feedback/FeedbackSubmitProgressView.js";
 export { readCurrentAgentModelContext } from "@/feedback/feedbackSubmitModelContext.js";
@@ -89,7 +89,7 @@ export function FeedbackSubmitForm({
   onViewTickets: () => void;
   onCancel: () => void;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const formatMessage = useCallback(
     (id: string, values?: Record<string, string>) => intl.formatMessage({ id }, values),
     [intl],
@@ -397,13 +397,13 @@ function useActiveFeedbackModelContext(): FeedbackAgentModelContext {
   const activeWorkspaceIdentity = useTabStore(
     (state) => state.activeWorkspaceIdentity ?? undefined,
   );
-  const workspaceZCodeState = useZCodeSessionStore((state) =>
+  const workspaceZodyState = useZodySessionStore((state) =>
     activeWorkspacePath
-      ? selectWorkspaceZCodeState(state, activeWorkspacePath, activeWorkspaceIdentity)
+      ? selectWorkspaceZodyState(state, activeWorkspacePath, activeWorkspaceIdentity)
       : null,
   );
   return useMemo(
-    () => readCurrentAgentModelContext(workspaceZCodeState?.configOptions),
-    [workspaceZCodeState?.configOptions],
+    () => readCurrentAgentModelContext(workspaceZodyState?.configOptions),
+    [workspaceZodyState?.configOptions],
   );
 }

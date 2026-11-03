@@ -14,8 +14,8 @@ import {
   NodeModelSelectionConfigRepository,
   NodeProviderRegistryRuntime,
   resolveNodeProviderRuntimePaths,
-  downloadZCodeBuiltinRelease,
-  resolveZCodeBuiltinClientPlatform,
+  downloadZodyBuiltinRelease,
+  resolveZodyBuiltinClientPlatform,
   ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV,
   type ZodyBuiltinRefreshEvent,
 } from "@zody/provider-node";
@@ -70,11 +70,11 @@ export async function startProcessProviderRegistryRuntime(
                   ),
                   resolveEndpointKey: () => remoteRefreshEndpointOrigin,
                   fetchRelease: (endpointOrigin, signal) =>
-                    downloadZCodeBuiltinRelease({
+                    downloadZodyBuiltinRelease({
                       endpointOrigin,
                       signal,
                       appVersion: ZCODE_VERSION,
-                      platform: resolveZCodeBuiltinClientPlatform(),
+                      platform: resolveZodyBuiltinClientPlatform(),
                       request: options.standalone?.request ?? globalThis.fetch,
                     }),
                   onRefreshResult: options.standalone?.onBuiltinRefreshResult,
@@ -182,8 +182,8 @@ export function parseProcessAccountProviderConfigSnapshot(input: {
 }): AccountProviderConfigSnapshot {
   const revision = input.revision.trim();
   if (!revision) throw new Error("Account Config revision 不能为空");
-  const basedOnZCodeBuiltinRevision = input.basedOnZCodeBuiltinRevision.trim();
-  if (!basedOnZCodeBuiltinRevision) {
+  const basedOnZodyBuiltinRevision = input.basedOnZCodeBuiltinRevision.trim();
+  if (!basedOnZodyBuiltinRevision) {
     throw new Error("Account Config Built-in revision 不能为空");
   }
   const providers = parseAccountProviderConfigMap(input.providers);
@@ -202,7 +202,7 @@ export function parseProcessAccountProviderConfigSnapshot(input: {
   }
   return Object.freeze({
     revision,
-    basedOnZCodeBuiltinRevision,
+    basedOnZCodeBuiltinRevision: basedOnZodyBuiltinRevision,
     providers,
     // 与 Overlay 属于同一快照；不能只更新 revision 却丢掉当前连接事实。
     ...(input.states ? { states: input.states } : {}),

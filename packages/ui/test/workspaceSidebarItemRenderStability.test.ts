@@ -96,7 +96,7 @@ vi.mock("@/WorkspaceSidebar/ReconnectingRemoteWorkspaceLogTooltip.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -109,11 +109,11 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
 }));
 
 vi.mock("@/store/zodySessionStore.js", () => ({
-  selectWorkspaceZCodeState: () => ({
+  selectWorkspaceZodyState: () => ({
     activeTaskId: null,
     selectedProvider: "codex",
   }),
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector(zcodeSessionStoreState),
 }));
 

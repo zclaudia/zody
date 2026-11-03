@@ -1,7 +1,7 @@
 import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 // 走查 composer-5：390px 视口下 composer 容器 < 384px（@sm），模型触发器此前把
 // 文字标签整段隐藏，纯触屏没有 hover tooltip，用户看不到当前模型、必须打开菜单确认。
@@ -71,7 +71,7 @@ function renderControls(overrides: Record<string, unknown> = {}) {
   thoughtControlProps.length = 0;
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(AnyControls, {
         sessionId: null,

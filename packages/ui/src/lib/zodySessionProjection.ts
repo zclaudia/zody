@@ -109,7 +109,7 @@ export interface ZodySessionEventProjectionState extends ZodyToolProjectionMemor
   streamedTurnKeys?: Set<string>;
 }
 
-export function createZCodeSessionEventProjectionState(): ZodySessionEventProjectionState {
+export function createZodySessionEventProjectionState(): ZodySessionEventProjectionState {
   return {
     ...createZodyToolProjectionMemory(),
     activePromptInputIdBySession: new Map<string, InputId>(),
@@ -159,7 +159,7 @@ export function parseModelPickerValue(value: string): ModelSelection {
   return parseSharedModelSelection(value);
 }
 
-export function toZCodeTaskMode(mode: ZodyTaskMode | undefined): ZodySessionMode | undefined {
+export function toZodyTaskMode(mode: ZodyTaskMode | undefined): ZodySessionMode | undefined {
   switch (mode) {
     case "plan":
       return "plan";
@@ -183,7 +183,7 @@ export function toZCodeTaskMode(mode: ZodyTaskMode | undefined): ZodySessionMode
   }
 }
 
-export function zcodeSessionSettingsToConfigOptions(
+export function zodySessionSettingsToConfigOptions(
   settings: ZodySessionSettingsState,
 ): ZodyConfigOption[] {
   const configOptions: ZodyConfigOption[] = [
@@ -217,7 +217,7 @@ export function zcodeSessionSettingsToConfigOptions(
       category: "mode",
       type: "select",
       currentValue: normalizeAvailableZodyMode(settings.mode.current),
-      options: getZCodeAgentModeSelectOptions(),
+      options: getZodyAgentModeSelectOptions(),
     },
   ];
   if (settings.thoughtLevel.enabled) {
@@ -237,7 +237,7 @@ export function zcodeSessionSettingsToConfigOptions(
   return configOptions;
 }
 
-export function zcodeWorkspacePresentationToConfigOptions(
+export function zodyWorkspacePresentationToConfigOptions(
   mode: ZodySessionMode,
 ): ZodyConfigOption[] {
   return [
@@ -247,7 +247,7 @@ export function zcodeWorkspacePresentationToConfigOptions(
       category: "mode",
       type: "select",
       currentValue: normalizeAvailableZodyMode(mode),
-      options: getZCodeAgentModeSelectOptions(),
+      options: getZodyAgentModeSelectOptions(),
     },
   ];
 }
@@ -269,10 +269,10 @@ function resolveSettingsThoughtLevelCurrentValue(
   return currentThoughtLevel ?? defaultThoughtLevel ?? thoughtLevel.available[0]?.value;
 }
 
-export function zcodeSessionSnapshotToZCodeTaskSnapshot(
+export function zodySessionSnapshotToZodyTaskSnapshot(
   snapshot: ZodySessionStateSnapshot,
 ): ZodyTaskSnapshot {
-  const meta = zcodeSessionSnapshotToTaskMeta(snapshot);
+  const meta = zodySessionSnapshotToTaskMeta(snapshot);
   const activeGoalIterationCount = getSnapshotGoalActiveIterationCount(snapshot);
   const goalIterationByAssistantMessageId = getZodyGoalIterationByAssistantMessageId(
     snapshot.messages,
@@ -317,7 +317,7 @@ export function zcodeSessionSnapshotToZCodeTaskSnapshot(
           restoreGoalCommandUserMessages(
             coalesceConsecutiveZodyAssistants(
               visibleMessages.map((message) =>
-                zcodeMessageToZCodePersistedMessage(
+                zodyMessageToZodyPersistedMessage(
                   message,
                   message.info.role === "assistant"
                     ? goalIterationByAssistantMessageId.get(message.info.messageId)
@@ -343,7 +343,7 @@ export function zcodeSessionSnapshotToZCodeTaskSnapshot(
     meta,
     messages,
     fileChanges: [],
-    configOptions: zcodeSessionSettingsToConfigOptions(snapshot.settings),
+    configOptions: zodySessionSettingsToConfigOptions(snapshot.settings),
     // Bugfix: session/read 已经通过协议返回 `/compact` 等 slashCommands。
     // 历史 task restore 会消费这里投影出的 task snapshot；如果不透传，UI 回填 store 时只能拿到空列表。
     slashCommands: snapshot.slashCommands ?? [],
@@ -784,7 +784,7 @@ function sessionTodoGroupsToRuntime(
   }));
 }
 
-export function zcodeSessionSnapshotToTaskMeta(snapshot: ZodySessionStateSnapshot): ZodyTaskMeta {
+export function zodySessionSnapshotToTaskMeta(snapshot: ZodySessionStateSnapshot): ZodyTaskMeta {
   return {
     taskId: snapshot.session.sessionId,
     traceId: generateTraceId(snapshot.session.sessionId),
@@ -793,7 +793,7 @@ export function zcodeSessionSnapshotToTaskMeta(snapshot: ZodySessionStateSnapsho
     workspaceIdentity: snapshot.session.workspace.workspaceIdentity,
     createdAt: snapshot.session.createdAt,
     updatedAt: snapshot.session.updatedAt,
-    mode: fromZCodeMode(snapshot.session.mode),
+    mode: fromZodyMode(snapshot.session.mode),
     model: formatModelPickerValue(resolveTaskMetaModelSelectionFromSnapshot(snapshot)),
     thoughtLevel: snapshot.settings.thoughtLevel.current,
     provider: ZCODE_AGENT_PROVIDER,
@@ -811,12 +811,12 @@ export function zcodeSessionSnapshotToTaskMeta(snapshot: ZodySessionStateSnapsho
         }
       : undefined,
     target: snapshot.projection.target
-      ? fromZCodeGoal(snapshot.projection.target)
+      ? fromZodyGoal(snapshot.projection.target)
       : snapshot.projection.target,
   };
 }
 
-export function zcodeSessionEventToZCodeStreamEvents(params: {
+export function zodySessionEventToZodyStreamEvents(params: {
   event: ZodySessionEvent;
   projectionMode?: ZodySessionProjectionMode;
   state?: ZodySessionEventProjectionState;
@@ -1167,7 +1167,7 @@ function takeProjectionApiRetryClearOnModelProgress(
   };
 }
 
-export function zcodeStateUpdatedToZCodeStreamEvents(params: {
+export function zodyStateUpdatedToZodyStreamEvents(params: {
   notification: ZodyStateUpdatedNotification;
   settings: ZodySessionSettingsState;
   taskId: string;
@@ -1179,7 +1179,7 @@ export function zcodeStateUpdatedToZCodeStreamEvents(params: {
       taskId: params.taskId,
       traceId,
       currentModeId: normalizeAvailableZodyMode(params.settings.mode.current),
-      availableModes: getZCodeAgentAvailableModes(),
+      availableModes: getZodyAgentAvailableModes(),
     },
     {
       type: "glm_agent_model_state_update",
@@ -1216,7 +1216,7 @@ export function zcodeStateUpdatedToZCodeStreamEvents(params: {
   ];
 }
 
-export function zcodePermissionRequestToZCodeStreamEvent(
+export function zodyPermissionRequestToZodyStreamEvent(
   taskId: string,
   request: ZodyPermissionRequestParams,
 ): ZodyStreamEvent {
@@ -1234,7 +1234,7 @@ export function zcodePermissionRequestToZCodeStreamEvent(
   };
 }
 
-export function zcodeUserInputRequestToZCodeStreamEvent(
+export function zodyUserInputRequestToZodyStreamEvent(
   taskId: string,
   request: ZodyUserInputRequestParams,
 ): Extract<ZodyStreamEvent, { type: "elicitation_request" }> {
@@ -1265,7 +1265,7 @@ export function zcodeUserInputRequestToZCodeStreamEvent(
   };
 }
 
-export function zcodeUserInputResponseToZCodeStreamEvent(
+export function zodyUserInputResponseToZodyStreamEvent(
   taskId: string,
   response: {
     requestId: string;
@@ -1314,7 +1314,7 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
   };
 }
 
-function zcodeMessageToZCodePersistedMessage(
+function zodyMessageToZodyPersistedMessage(
   message: ZodyMessageWithParts,
   goalIteration?: number,
   backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
@@ -2766,7 +2766,7 @@ function setProjectionBackgroundTaskControls(
   ensureProjectionBackgroundTaskControlsCache(state)?.set(taskId, jobs);
 }
 
-export function syncZCodeSessionBackgroundTaskProjection(
+export function syncZodySessionBackgroundTaskProjection(
   state: ZodySessionEventProjectionState | undefined,
   taskId: string,
   jobs: ZodyBackgroundTaskControlItem[],
@@ -2774,13 +2774,13 @@ export function syncZCodeSessionBackgroundTaskProjection(
   setProjectionBackgroundTaskControls(state, taskId, jobs);
 }
 
-export function syncZCodeSessionBackgroundTaskProjectionFromSnapshot(
+export function syncZodySessionBackgroundTaskProjectionFromSnapshot(
   state: ZodySessionEventProjectionState | undefined,
   snapshot: ZodySessionStateSnapshot,
 ) {
   // Bugfix: 单 task completion 是增量 payload，必须以同一订阅收到的完整 snapshot
   // 作为 merge 基线；否则切走/切回后新 projection state 会把 peer running task 清掉。
-  syncZCodeSessionBackgroundTaskProjection(
+  syncZodySessionBackgroundTaskProjection(
     state,
     snapshot.session.sessionId,
     parseZodyBackgroundTaskControlItems(snapshot.projection.backgroundJobs),
@@ -2946,7 +2946,7 @@ function mapSessionInfoLikePayload(
       // Bugfix: EnterPlanMode 写入的 SessionModeChanged 会经 bootstrap 投影成 session.updated；
       // 这里把 mode payload 转成 UI 现有事件，避免菜单仍显示进入 plan 前的模式。
       currentModeId: normalizeAvailableZodyMode(mode as ZodySessionMode),
-      availableModes: getZCodeAgentAvailableModes(),
+      availableModes: getZodyAgentAvailableModes(),
     });
   }
   if ("target" in payload && ("action" in payload || "source" in payload)) {
@@ -2959,9 +2959,9 @@ function mapSessionInfoLikePayload(
       target: {
         action: targetAction,
         source: stringValue(payload.source) === "tool" ? "tool" : "runtime",
-        target: payload.target ? fromZCodeGoal(payload.target as never) : null,
+        target: payload.target ? fromZodyGoal(payload.target as never) : null,
         previousTarget: payload.previousTarget
-          ? fromZCodeGoal(payload.previousTarget as never)
+          ? fromZodyGoal(payload.previousTarget as never)
           : undefined,
       },
     });
@@ -3322,11 +3322,11 @@ function deriveTitleFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
   });
 }
 
-function fromZCodeMode(mode: ZodySessionMode): ZodyTaskMode {
+function fromZodyMode(mode: ZodySessionMode): ZodyTaskMode {
   return mode === "build" ? "build" : mode;
 }
 
-function getZCodeAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"]> {
+function getZodyAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"]> {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({
     value: mode.id,
     name: mode.name,
@@ -3334,11 +3334,11 @@ function getZCodeAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options
   }));
 }
 
-function getZCodeAgentAvailableModes(): ZodyTaskModeInfo[] {
+function getZodyAgentAvailableModes(): ZodyTaskModeInfo[] {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({ ...mode }));
 }
 
-function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
+function fromZodyGoal(goal: unknown): ZodyTaskGoal {
   const record = asRecord(goal);
   const time = asRecord(record.time);
   const status = stringValue(record.status);
@@ -3347,7 +3347,7 @@ function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
     targetID: stringValue(record.targetID) ?? stringValue(record.targetId) ?? "",
     objective: stringValue(record.objective) ?? "",
     summaryTitle: stringValue(record.summaryTitle) ?? null,
-    status: isZCodeTaskGoalStatus(status) ? status : "active",
+    status: isZodyTaskGoalStatus(status) ? status : "active",
     tokenBudget: typeof record.tokenBudget === "number" ? record.tokenBudget : null,
     tokensUsed: numberValue(record.tokensUsed) ?? 0,
     timeUsedSeconds: numberValue(record.timeUsedSeconds) ?? 0,
@@ -3361,7 +3361,7 @@ function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
   };
 }
 
-function isZCodeTaskGoalStatus(status: string | undefined): status is ZodyTaskGoal["status"] {
+function isZodyTaskGoalStatus(status: string | undefined): status is ZodyTaskGoal["status"] {
   return (
     status === "active" ||
     status === "paused" ||

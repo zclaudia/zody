@@ -31,7 +31,7 @@ import type {
 import { cn } from "@/components/lib/utils.js";
 import { runUserAction } from "@/lib/userActionTelemetry.js";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { ConversationTurnGroup } from "@/v4/ConversationTurnGroup.js";
 import {
@@ -399,7 +399,7 @@ function ConversationTimelineImpl({
   scrollToQueryActionRef,
   selectionActions,
 }: ConversationTimelineProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const scrollRef = useRef<HTMLDivElement>(null);
   // fork（F4.8）：headerSlot 高度跟踪/scrollMargin 随分享导入只读块删除。
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());

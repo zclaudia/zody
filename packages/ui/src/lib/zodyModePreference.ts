@@ -1,6 +1,6 @@
 import type { ZodyConfigOption } from "@zody/shared";
 
-export function applySelectedZCodeMode(
+export function applySelectedZodyMode(
   options: readonly ZodyConfigOption[],
   mode: string,
 ): ZodyConfigOption[] {

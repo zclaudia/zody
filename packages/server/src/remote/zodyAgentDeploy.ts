@@ -12,7 +12,7 @@ import {
 } from "@zody/server/remote/deployShared.js";
 import type { RemoteAssetInstaller } from "@zody/server/remote/remoteAssetInstaller.js";
 import { buildWriteLiteralFileCommand } from "@zody/server/remote/posixShell.js";
-import { deployDevelopmentZCodeAgentRuntime } from "@zody/server/remote/zodyAgentDevDeploy.js";
+import { deployDevelopmentZodyAgentRuntime } from "@zody/server/remote/zodyAgentDevDeploy.js";
 import {
   buildRemoteAgentBundleWrapper,
   isRemoteAgentBundleWrapperCurrent,
@@ -43,7 +43,7 @@ export interface DeployZodyAgentRuntimeOptions extends RemoteAssetDeployOptions 
   force?: boolean;
 }
 
-function isSelectedZCodeAgentComponent(
+function isSelectedZodyAgentComponent(
   componentId: string,
   selectedResourcePackageIds: readonly RemoteResourcePackageId[] | undefined,
 ): boolean {
@@ -53,7 +53,7 @@ function isSelectedZCodeAgentComponent(
   );
 }
 
-async function shouldSkipZCodeAgentDeploy(params: {
+async function shouldSkipZodyAgentDeploy(params: {
   backend: IRemoteBackend;
   remoteBinaryPath: string;
   remoteBundlePath: string;
@@ -149,7 +149,7 @@ async function findMissingRemoteOfficialPluginAssetPaths(
  *
  * 生产态只用 manifest SHA 判断制品是否变化；语义版本不参与跳过决策。
  */
-export async function deployZCodeAgentRuntime(
+export async function deployZodyAgentRuntime(
   backend: IRemoteBackend,
   env: RemoteEnvironment,
   options: DeployZodyAgentRuntimeOptions,
@@ -158,7 +158,7 @@ export async function deployZCodeAgentRuntime(
   const provider = ZCODE_AGENT_PROVIDER;
   const runtime = ZCODE_AGENT_RUNTIME;
   const componentId = provider;
-  if (!isSelectedZCodeAgentComponent(componentId, options.selectedResourcePackageIds)) {
+  if (!isSelectedZodyAgentComponent(componentId, options.selectedResourcePackageIds)) {
     loggers.log(`[zcode-agent-deploy] ${provider}: 未选择资源包 ${componentId}，跳过检查和部署`);
     return;
   }
@@ -183,7 +183,7 @@ export async function deployZCodeAgentRuntime(
 
   if (
     !options.assetSource &&
-    (await deployDevelopmentZCodeAgentRuntime(
+    (await deployDevelopmentZodyAgentRuntime(
       backend,
       {
         runtimeVersion: runtime.version,
@@ -210,7 +210,7 @@ export async function deployZCodeAgentRuntime(
   }
 
   if (
-    await shouldSkipZCodeAgentDeploy({
+    await shouldSkipZodyAgentDeploy({
       backend,
       remoteBinaryPath,
       remoteBundlePath,

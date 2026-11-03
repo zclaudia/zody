@@ -11,7 +11,7 @@ import {
 } from "@zody/provider";
 import { describe, expect, it } from "vitest";
 import {
-  NodeZCodeBuiltinProviderConfigSource,
+  NodeZodyBuiltinProviderConfigSource,
   decodeProviderConfigFile,
   encodeProviderConfigFile,
 } from "../src/index.js";
@@ -32,7 +32,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   it.each(["anthropic-messages", "openai-chat-completions", "openai-responses"] as const)(
     "未知模型在 %s 下拥有完整两档兜底并可进入 Registry",
     async (apiType) => {
-      const source = new NodeZCodeBuiltinProviderConfigSource({
+      const source = new NodeZodyBuiltinProviderConfigSource({
         bundledFilePath: zcodeBuiltinProviderConfigFilePath,
         watch: false,
       });
@@ -80,7 +80,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
     },
   );
   it("GLM-5.3-Flash 的媒体输入能力在 BYOK 模板上保持明确", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -169,7 +169,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("按当前官方证据声明各厂商主推模型和关键静态属性", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -310,7 +310,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("MiMo API 与 Token Plan 是独立模板，端点与模型成员互不越界", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -351,7 +351,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("MiMo v2.6 与 v2.5 模型规则分别命中，能力不串用", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -447,7 +447,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("MiMo v2.6 规则命中带厂商/网关前缀的模型 ID 与 [1m] 标记，且不误伤 ultraspeed", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -518,7 +518,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("MiMo 模板升级不静默改写旧 Personal 的名称、Key、URL 与禁用态", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -711,7 +711,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("聚合供应商按维护清单提供独立模板，不复用上游 Provider 配置", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -736,7 +736,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("聚合供应商同型号命中模型规则和 API Map，保留完整 ID 且每家至少启用一个代表型号", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -804,7 +804,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("每个 Provider 的默认 enabled 模型形成成员前缀，历史或 alias 型号默认关闭", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -860,7 +860,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("按产品分组声明 Zhipu 系统 Provider 与外部主流 Provider", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -981,7 +981,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("按模型家族连续排列 Rule，且不保留语义等价的重复 matcher", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -1025,7 +1025,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("Reasoning 公开档位按语义强度从低到高排列", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -1064,7 +1064,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("解析 OpenAI Responses 与 Anthropic Messages 的模型事实和 reasoning 映射", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -1233,7 +1233,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   });
 
   it("每个 Built-in 模板与模型成员都完整，启用成员在补齐访问材料后进入正式 Registry", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });

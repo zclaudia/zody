@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { WebRemoteControlMobileSettingsMenu } from "@/WebRemoteControlMobileSettingsMenu.js";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: { formatMessage: ({ id }: { id: string }) => id },
   }),
 }));

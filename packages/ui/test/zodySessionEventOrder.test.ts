@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ZodySessionEvent } from "@zody/shared";
-import { createZCodeSessionEventOrderGate } from "@/lib/zodySessionEventOrder.js";
+import { createZodySessionEventOrderGate } from "@/lib/zodySessionEventOrder.js";
 
 function event(seq: number, eventId = `evt-${seq}`): ZodySessionEvent {
   return {
@@ -24,7 +24,7 @@ function streamingDeltaEvent(seq: number, eventId = `evt-${seq}`): ZodySessionEv
 
 describe("zcode session event order gate", () => {
   it("buffers future events until the missing seq arrives", () => {
-    const gate = createZCodeSessionEventOrderGate();
+    const gate = createZodySessionEventOrderGate();
 
     expect(gate.push(event(1)).readyEvents.map((item) => item.seq)).toEqual([1]);
     const future = gate.push(event(3));
@@ -35,7 +35,7 @@ describe("zcode session event order gate", () => {
   });
 
   it("drops duplicate event ids", () => {
-    const gate = createZCodeSessionEventOrderGate();
+    const gate = createZodySessionEventOrderGate();
 
     expect(gate.push(event(1, "evt-same")).readyEvents).toHaveLength(1);
     expect(gate.push(event(1, "evt-same"))).toMatchObject({
@@ -45,7 +45,7 @@ describe("zcode session event order gate", () => {
   });
 
   it("uses snapshot seq as the recovery watermark", () => {
-    const gate = createZCodeSessionEventOrderGate();
+    const gate = createZodySessionEventOrderGate();
 
     expect(gate.push(event(5)).readyEvents.map((item) => item.seq)).toEqual([5]);
     expect(gate.push(event(7)).gap).toEqual({ expectedSeq: 6, receivedSeq: 7 });
@@ -53,7 +53,7 @@ describe("zcode session event order gate", () => {
   });
 
   it("preserves pending events when running snapshot cannot cover stream deltas", () => {
-    const gate = createZCodeSessionEventOrderGate();
+    const gate = createZodySessionEventOrderGate();
 
     expect(gate.markSnapshotSeq(25)).toEqual([]);
     expect(gate.push(event(27)).gap).toEqual({ expectedSeq: 26, receivedSeq: 27 });
@@ -69,7 +69,7 @@ describe("zcode session event order gate", () => {
   });
 
   it("releases selected pending events after gap recovery", () => {
-    const gate = createZCodeSessionEventOrderGate();
+    const gate = createZodySessionEventOrderGate();
 
     expect(gate.markSnapshotSeq(8)).toEqual([]);
     expect(gate.push(event(10))).toMatchObject({
@@ -92,7 +92,7 @@ describe("zcode session event order gate", () => {
   });
 
   it("passes through legacy seq zero events without inventing UI ordering", () => {
-    const gate = createZCodeSessionEventOrderGate();
+    const gate = createZodySessionEventOrderGate();
 
     expect(gate.push(event(0, "evt-zero")).readyEvents.map((item) => item.seq)).toEqual([0]);
   });

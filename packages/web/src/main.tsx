@@ -2,7 +2,7 @@
 import {
   AppErrorBoundary,
   Root,
-  ZCodeIntlProvider,
+  ZodyIntlProvider,
   generateMobileDeviceFingerprint,
   installDocumentHiddenMotionPause,
   setStreamClientId,
@@ -102,7 +102,7 @@ async function bootstrapWebApp() {
 
     webEntryRoot.render(
       <AppErrorBoundary>
-        <ZCodeIntlProvider
+        <ZodyIntlProvider
           settingService={services.settingService}
           broadcastService={services.broadcastService}
         >
@@ -118,7 +118,7 @@ async function bootstrapWebApp() {
             supportsEmbeddedBrowser={false}
             allowRemoteWorkspace={false}
           />
-        </ZCodeIntlProvider>
+        </ZodyIntlProvider>
       </AppErrorBoundary>,
     );
   } catch (error) {

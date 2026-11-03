@@ -6,7 +6,7 @@ export interface ZodyDataSizeTelemetryState {
   reportReservedAt?: number;
 }
 
-export async function readZCodeDataSizeTelemetryState(
+export async function readZodyDataSizeTelemetryState(
   stateFile: string,
 ): Promise<ZodyDataSizeTelemetryState | null> {
   try {
@@ -42,7 +42,7 @@ export async function readZCodeDataSizeTelemetryState(
   }
 }
 
-export async function writeZCodeDataSizeTelemetryState(
+export async function writeZodyDataSizeTelemetryState(
   stateFile: string,
   state: ZodyDataSizeTelemetryState,
 ): Promise<void> {

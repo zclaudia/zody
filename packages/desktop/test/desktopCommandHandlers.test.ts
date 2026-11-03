@@ -574,7 +574,7 @@ function createCommandOptions(options?: {
   return {
     command: DesktopCommandIds.OpenChangelog,
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-    updateZCodeStdioTapDevMenuState: vi.fn(),
+    updateZodyStdioTapDevMenuState: vi.fn(),
     onDesktopZoomChanged: options?.onDesktopZoomChanged ?? vi.fn(),
     onZCodeEndpointChanged: options?.onZCodeEndpointChanged ?? vi.fn(),
     onRelaunchApp: options?.onRelaunchApp ?? vi.fn(async () => undefined),

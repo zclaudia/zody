@@ -67,7 +67,7 @@ describe("session 创建：runtimeConfig.dynamicWorkflowEnabled", () => {
   }): Promise<{ enabled: boolean | undefined; onDemand: boolean | undefined }> {
     let appOptions: ZodyAppOptions | undefined;
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp: (options) => {
+      createZodyApp: (options) => {
         appOptions = options;
         return createFakeApp(options);
       },

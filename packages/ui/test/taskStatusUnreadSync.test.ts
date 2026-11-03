@@ -10,7 +10,7 @@ import {
   buildTaskListCacheDescriptor,
   buildTaskListCacheKeyFromDescriptor,
 } from "@/lib/taskQueryCache.js";
-import { getTaskUnreadIndicator, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { getTaskUnreadIndicator, useZodySessionStore } from "@/store/zodySessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
 
 function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
@@ -108,14 +108,14 @@ function syncStatusEvent(
 describe("task status unread sync", () => {
   afterEach(() => {
     resetTaskStatusUnreadSyncForTest();
-    useZCodeSessionStore.setState({ workspaces: {} });
+    useZodySessionStore.setState({ workspaces: {} });
     useTaskQueryCacheStore.getState().clearAll();
   });
 
   it("inactive terminal status event marks the query row unread before persistence settles", async () => {
     const task = createTaskMeta({ status: "completed" });
     const service = createService();
-    const store = useZCodeSessionStore.getState();
+    const store = useZodySessionStore.getState();
     seedQueryTask(task);
     store.setActiveTaskId("/repo/demo", "other-task");
 
@@ -132,7 +132,7 @@ describe("task status unread sync", () => {
     expect(getQueryTask(task)?.unreadAt).toEqual(expect.any(Number));
     expect(
       getTaskUnreadIndicator(
-        useZCodeSessionStore.getState().getWorkspaceState("/repo/demo"),
+        useZodySessionStore.getState().getWorkspaceState("/repo/demo"),
         "task-1",
       ),
     ).toBe(true);
@@ -159,7 +159,7 @@ describe("task status unread sync", () => {
     };
     const queryKey = seedQueryTask(task);
     const descriptor = useTaskQueryCacheStore.getState().resultsByQueryKey[queryKey]!.descriptor;
-    useZCodeSessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
+    useZodySessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
 
     syncStatusEvent({ event: createStatusEvent(task), service });
     const optimisticUnreadAt = getQueryTask(task)?.unreadAt;
@@ -209,7 +209,7 @@ describe("task status unread sync", () => {
           }),
       ),
     };
-    useZCodeSessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
+    useZodySessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
 
     syncStatusEvent({ event: createStatusEvent(task), service });
 
@@ -235,7 +235,7 @@ describe("task status unread sync", () => {
   it("active terminal status event stays read", () => {
     const task = createTaskMeta({ status: "completed" });
     const service = createService();
-    const store = useZCodeSessionStore.getState();
+    const store = useZodySessionStore.getState();
     seedQueryTask(task);
     store.setActiveTaskId("/repo/demo", "task-1");
 
@@ -248,7 +248,7 @@ describe("task status unread sync", () => {
     expect(getQueryTask(task)?.unreadAt).toBeUndefined();
     expect(
       getTaskUnreadIndicator(
-        useZCodeSessionStore.getState().getWorkspaceState("/repo/demo"),
+        useZodySessionStore.getState().getWorkspaceState("/repo/demo"),
         "task-1",
       ),
     ).toBe(false);
@@ -260,7 +260,7 @@ describe("task status unread sync", () => {
     seedQueryTask(task);
     // 切换 workspace 不会清掉旧 workspace 保存的 activeTaskId；全局焦点已经离开时，
     // 这个 task 的终态仍应被视为后台完成。
-    useZCodeSessionStore.getState().setActiveTaskId("/repo/demo", task.taskId);
+    useZodySessionStore.getState().setActiveTaskId("/repo/demo", task.taskId);
 
     syncStatusEvent({
       event: createStatusEvent(task),
@@ -290,7 +290,7 @@ describe("task status unread sync", () => {
     const task = createTaskMeta({ status: "completed" });
     const service = createService();
     seedQueryTask(task);
-    useZCodeSessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
+    useZodySessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
 
     syncStatusEvent({
       event: createStatusEvent(task, { unreadSignal: undefined }),
@@ -305,7 +305,7 @@ describe("task status unread sync", () => {
     const task = createTaskMeta({ status: "error", updatedAt: 9 });
     const event = createStatusEvent(task);
     const service = createService();
-    const store = useZCodeSessionStore.getState();
+    const store = useZodySessionStore.getState();
     seedQueryTask(task);
     store.setActiveTaskId("/repo/demo", "other-task");
 
@@ -323,7 +323,7 @@ describe("task status unread sync", () => {
         throw new Error("write failed");
       }),
     };
-    useZCodeSessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
+    useZodySessionStore.getState().setActiveTaskId("/repo/demo", "other-task");
 
     syncStatusEvent({ event: createStatusEvent(task), service });
     expect(getQueryTask(task)?.unreadAt).toEqual(expect.any(Number));
@@ -334,7 +334,7 @@ describe("task status unread sync", () => {
       expect(useTaskQueryCacheStore.getState().resultsByQueryKey[queryKey]?.stale).toBe(true);
       expect(
         getTaskUnreadIndicator(
-          useZCodeSessionStore.getState().getWorkspaceState("/repo/demo"),
+          useZodySessionStore.getState().getWorkspaceState("/repo/demo"),
           task.taskId,
         ),
       ).toBe(false);
@@ -353,7 +353,7 @@ describe("task status unread sync", () => {
     seedQueryTask(firstTask);
     seedQueryTask(siblingTask);
     const service = createService();
-    useZCodeSessionStore
+    useZodySessionStore
       .getState()
       .setActiveTaskId(firstTask.workspacePath, "other-task", firstTask.workspaceIdentity);
 

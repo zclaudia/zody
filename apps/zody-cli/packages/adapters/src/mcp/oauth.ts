@@ -12,7 +12,7 @@ import {
   type LocalhostOAuthCallbackServer,
 } from "../auth/localhost-callback.js";
 import {
-  createSharedZCodeCredentialStore,
+  createSharedZodyCredentialStore,
   type SharedZodyCredentialStore,
 } from "../auth/shared-credentials.js";
 import {
@@ -78,9 +78,9 @@ export async function createMcpAuthorizationCodeOAuthSession(input: {
     callbackPath,
     state,
   });
-  const credentialStore = input.options?.credentialStore ?? createSharedZCodeCredentialStore();
+  const credentialStore = input.options?.credentialStore ?? createSharedZodyCredentialStore();
   const keyPrefix = createCredentialKeyPrefix(input.serverName, input.serverUrl, input.config);
-  const provider = new ZCodeMcpAuthorizationCodeProvider({
+  const provider = new ZodyMcpAuthorizationCodeProvider({
     adapterInstanceId: input.adapterInstanceId,
     callbackServer,
     config: input.config,
@@ -108,7 +108,7 @@ export async function createMcpAuthorizationCodeOAuthSession(input: {
   };
 }
 
-class ZCodeMcpAuthorizationCodeProvider implements OAuthClientProvider {
+class ZodyMcpAuthorizationCodeProvider implements OAuthClientProvider {
   private readonly adapterInstanceId?: string;
   private readonly callbackServer: LocalhostOAuthCallbackServer;
   private readonly config: McpAuthorizationCodeOAuthConfig;

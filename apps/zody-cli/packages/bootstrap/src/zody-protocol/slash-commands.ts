@@ -1,13 +1,13 @@
 import { BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES, type ZodySlashCommand } from "@zody/shared";
 import { BUILTIN_WORKFLOW_COMMAND_NAME } from "../builtin-workflow-command.js";
 import {
-  listZCodeCustomCommands,
+  listZodyCustomCommands,
   type ListZodyCustomCommandsOptions,
 } from "../custom-commands.js";
 import {
   APP_PROTOCOL_APP_ONLY_BUILTIN_SLASH_COMMANDS,
   APP_PROTOCOL_VISIBLE_BUILTIN_SLASH_COMMAND_NAMES,
-  isReservedZCodeSlashCommandName,
+  isReservedZodySlashCommandName,
 } from "../slash-command-surface.js";
 
 export interface ListProtocolSlashCommandsOptions extends ListZodyCustomCommandsOptions {
@@ -29,9 +29,9 @@ export async function listProtocolSlashCommands(
     (command) =>
       options.dynamicWorkflowEnabled !== false || command.name !== BUILTIN_WORKFLOW_COMMAND_NAME,
   );
-  let customCommands: Awaited<ReturnType<typeof listZCodeCustomCommands>>["commands"] = [];
+  let customCommands: Awaited<ReturnType<typeof listZodyCustomCommands>>["commands"] = [];
   try {
-    const outcome = await listZCodeCustomCommands(options);
+    const outcome = await listZodyCustomCommands(options);
     customCommands = outcome.commands;
   } catch {
     // 自定义命令发现失败不应阻断 session snapshot；保留可执行的内置协议命令。
@@ -42,7 +42,7 @@ export async function listProtocolSlashCommands(
     ...builtins,
     ...customCommands
       .filter((command) => !command.disableNonInteractive)
-      .filter((command) => !isReservedZCodeSlashCommandName(command.name))
+      .filter((command) => !isReservedZodySlashCommandName(command.name))
       .map((command) => ({
         description: command.description,
         inputHint: `/${command.name}${command.argumentHint ? ` ${command.argumentHint}` : ""}`,

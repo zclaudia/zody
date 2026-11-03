@@ -11,8 +11,8 @@ import { createStdioServer } from "./stdio.js";
 import { registerStdioProcessLifecycle } from "./stdio-lifecycle.js";
 import { createStdioServices } from "./stdioServices.js";
 import {
-  materializeBundledZCodeBuiltinProviderConfig,
-  readBundledZCodeBuiltinProviderConfig,
+  materializeBundledZodyBuiltinProviderConfig,
+  readBundledZodyBuiltinProviderConfig,
 } from "./bundledZodyBuiltinProviderConfig.js";
 
 // In stdio mode, all logging goes to stderr
@@ -57,13 +57,13 @@ async function main() {
   // Phase 3: Initialize services and start stdio RPC server
   // fork（bot channels 移除）：TOPIC_RESOURCE_RELAY_CHANNEL 反向频道（Desktop topic resource
   // 回传链）随第三方 IM bot channels 整体删除；stdio 的 onReverseClientReady 结构保留但无注入方。
-  const zcodeBuiltinProviderConfigFilePath = await materializeBundledZCodeBuiltinProviderConfig({
+  const zodyBuiltinProviderConfigFilePath = await materializeBundledZodyBuiltinProviderConfig({
     environmentConfigRoot: getAppConfigDir(),
-    content: readBundledZCodeBuiltinProviderConfig(),
+    content: readBundledZodyBuiltinProviderConfig(),
   });
   const { authorityModeParseResult, services } = createStdioServices({
     env: process.env,
-    zcodeBuiltinProviderConfigFilePath,
+    zcodeBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
   });
   if (authorityModeParseResult.invalidRawValue) {
     log(

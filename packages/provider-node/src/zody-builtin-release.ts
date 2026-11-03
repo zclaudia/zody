@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
-  parseZCodeBuiltinModelConfigRules,
-  parseZCodeBuiltinProviderConfigRules,
+  parseZodyBuiltinModelConfigRules,
+  parseZodyBuiltinProviderConfigRules,
   type ModelConfigRules,
   type ProviderConfigMap,
   type ProviderTemplateMap,
@@ -35,9 +35,9 @@ const releaseSchema = z
   })
   .strict();
 
-export function decodeZCodeBuiltinRelease(input: unknown): ZodyBuiltinRelease {
+export function decodeZodyBuiltinRelease(input: unknown): ZodyBuiltinRelease {
   const parsed = releaseSchema.parse(input);
-  const { providers, providerTemplates } = parseZCodeBuiltinProviderConfigRules(
+  const { providers, providerTemplates } = parseZodyBuiltinProviderConfigRules(
     parsed.config.providerConfigRules,
   );
   // ZAPI 已退出产品，旧 Remote Release 或 LKG 不能在 Renderer 静态入口删除后
@@ -51,12 +51,12 @@ export function decodeZCodeBuiltinRelease(input: unknown): ZodyBuiltinRelease {
     config: Object.freeze({
       providers,
       providerTemplates,
-      modelConfigRules: parseZCodeBuiltinModelConfigRules(parsed.config.modelConfigRules),
+      modelConfigRules: parseZodyBuiltinModelConfigRules(parsed.config.modelConfigRules),
     }),
   });
 }
 
-export function encodeZCodeBuiltinRelease(release: ZodyBuiltinRelease): object {
+export function encodeZodyBuiltinRelease(release: ZodyBuiltinRelease): object {
   return {
     schemaVersion: ZCODE_BUILTIN_RELEASE_SCHEMA_VERSION,
     revision: release.revision,
@@ -70,6 +70,6 @@ export function encodeZCodeBuiltinRelease(release: ZodyBuiltinRelease): object {
   };
 }
 
-export function serializeZCodeBuiltinRelease(release: ZodyBuiltinRelease): string {
-  return JSON.stringify(encodeZCodeBuiltinRelease(release));
+export function serializeZodyBuiltinRelease(release: ZodyBuiltinRelease): string {
+  return JSON.stringify(encodeZodyBuiltinRelease(release));
 }

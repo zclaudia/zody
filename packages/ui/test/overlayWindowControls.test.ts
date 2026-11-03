@@ -14,7 +14,7 @@ vi.mock("@/hooks/usePlatform.js", () => ({
   usePlatform: () => ({ executeDesktopCommand }),
 }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: { formatMessage: ({ id }: { id: string }) => id },
   }),
 }));

@@ -2,7 +2,7 @@ import { zodyProcessResourceSampleSchema } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import {
   ZCODE_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS,
-  createZCodeProcessResourceSampler,
+  createZodyProcessResourceSampler,
   type ProcessMemoryUsageSnapshot,
 } from "../src/process-resource-sampler.js";
 
@@ -24,7 +24,7 @@ describe("createZCodeProcessResourceSampler", () => {
       { user: 2_000_000, system: 500_000 },
     ];
     const monotonicSnapshots = [0n, 1_000_000_000n];
-    const sampler = createZCodeProcessResourceSampler({
+    const sampler = createZodyProcessResourceSampler({
       arch: "arm64",
       logicalCpuCount: 8,
       onSample,
@@ -79,7 +79,7 @@ describe("createZCodeProcessResourceSampler", () => {
       { user: 2_000_000, system: 0 },
     ];
     const monotonicSnapshots = [0n, 1_000_000_000n, 2_000_000_000n];
-    const sampler = createZCodeProcessResourceSampler({
+    const sampler = createZodyProcessResourceSampler({
       arch: "x64",
       logicalCpuCount: 4,
       onSample,
@@ -125,7 +125,7 @@ describe("createZCodeProcessResourceSampler", () => {
       { user: 3_000_000, system: 0 },
     ];
     const monotonicSnapshots = [0n, 1_000_000_000n, 3_000_000_000n];
-    const sampler = createZCodeProcessResourceSampler({
+    const sampler = createZodyProcessResourceSampler({
       arch: "x64",
       logicalCpuCount: 4,
       onSample,
@@ -162,7 +162,7 @@ describe("createZCodeProcessResourceSampler", () => {
     const onSample = vi.fn();
     let scheduled: (() => void) | undefined;
     const monotonicSnapshots = [0n, 1_000_000_000n];
-    const sampler = createZCodeProcessResourceSampler({
+    const sampler = createZodyProcessResourceSampler({
       arch: "x64",
       logicalCpuCount: 4,
       onSample,
@@ -190,7 +190,7 @@ describe("createZCodeProcessResourceSampler", () => {
     const clearInterval = vi.fn();
     const handle = { unref: vi.fn() };
     const setInterval = vi.fn(() => handle);
-    const sampler = createZCodeProcessResourceSampler({
+    const sampler = createZodyProcessResourceSampler({
       arch: "x64",
       logicalCpuCount: 1,
       onSample: vi.fn(),
@@ -219,7 +219,7 @@ describe("createZCodeProcessResourceSampler", () => {
       },
     };
     const clearInterval = vi.fn();
-    const sampler = createZCodeProcessResourceSampler({
+    const sampler = createZodyProcessResourceSampler({
       arch: "x64",
       logicalCpuCount: 1,
       onSample: vi.fn(),

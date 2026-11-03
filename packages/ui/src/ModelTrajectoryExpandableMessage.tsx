@@ -9,7 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible.js";
-import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import type { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
   TrajectoryExpansionCommandContext,
@@ -25,7 +25,7 @@ import {
   trajectoryToolPayloadErrorText,
 } from "@/ModelTrajectoryToolPayload.js";
 
-type IntlShape = ReturnType<typeof useZCodeIntl>["intl"];
+type IntlShape = ReturnType<typeof useZodyIntl>["intl"];
 
 export function ExpandableTrajectoryMessage({
   message,

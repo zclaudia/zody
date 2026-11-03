@@ -103,7 +103,7 @@ vi.mock("../src/app/create-app.js", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/app/create-app.js")>();
   return {
     ...original,
-    async createZCodeApp(options: Parameters<typeof original.createZCodeApp>[0]) {
+    async createZodyApp(options: Parameters<typeof original.createZodyApp>[0]) {
       if (telemetryMocks.emitToolOnAppCreate)
         options.onToolExecResource?.({
           platform: "linux",
@@ -118,7 +118,7 @@ vi.mock("../src/app/create-app.js", async (importOriginal) => {
         });
       if (telemetryMocks.emitToolOnAppCreate)
         throw new Error("test app completed telemetry handoff");
-      return original.createZCodeApp(options);
+      return original.createZodyApp(options);
     },
   };
 });

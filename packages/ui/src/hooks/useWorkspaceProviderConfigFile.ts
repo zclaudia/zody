@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ZodyProvider } from "@zody/shared";
 import { logger } from "@/logger.js";
 import { shouldEnableWorkspaceRpc } from "@/lib/workspaceRpcAvailability.js";
-import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
+import { useZodyTaskService } from "@/hooks/useZodyTaskService.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { useResolvedRemoteWorkspaceSessionId } from "@/hooks/useResolvedRemoteWorkspaceSessionId.js";
 import type { IZodyTaskService } from "@zody/services";
@@ -38,28 +38,28 @@ const INITIAL_STATE: WorkspaceProviderConfigFileState = {
 
 type WorkspaceProviderConfigServiceScope = "workspace" | "base";
 
-export function resolveWorkspaceProviderConfigZCodeService(params: {
+export function resolveWorkspaceProviderConfigZodyService(params: {
   configuredServiceScope: WorkspaceProviderConfigServiceScope;
-  workspaceZCodeService: IZodyTaskService;
-  baseZCodeService: IZodyTaskService | null;
+  workspaceZodyService: IZodyTaskService;
+  baseZodyService: IZodyTaskService | null;
   remoteSessionId: string | null;
 }): IZodyTaskService | null {
   if (params.configuredServiceScope === "workspace") {
-    return params.workspaceZCodeService;
+    return params.workspaceZodyService;
   }
 
-  if (params.baseZCodeService) {
-    return params.baseZCodeService;
+  if (params.baseZodyService) {
+    return params.baseZodyService;
   }
 
-  // Bugfix: 远程 workspace 下如果误回退到 workspaceZCodeService，
+  // Bugfix: 远程 workspace 下如果误回退到 workspaceZodyService，
   // “前往配置”会读到远端绝对路径（如 /root/...），本机无法正确打开。
-  // 这里在远程会话里严格要求 baseZCodeService，就绪前先等待，不再冒险走错误 fallback。
+  // 这里在远程会话里严格要求 baseZodyService，就绪前先等待，不再冒险走错误 fallback。
   if (params.remoteSessionId) {
     return null;
   }
 
-  return params.workspaceZCodeService;
+  return params.workspaceZodyService;
 }
 
 /**
@@ -77,7 +77,7 @@ export function useWorkspaceProviderConfigFile(
     enabled?: boolean;
   },
 ) {
-  const workspaceZCodeService = useZCodeTaskService(
+  const workspaceZodyService = useZodyTaskService(
     workspacePath,
     preferredRemoteSessionId,
     workspaceIdentity,
@@ -89,23 +89,23 @@ export function useWorkspaceProviderConfigFile(
     preferredRemoteSessionId,
     workspaceIdentity,
   );
-  const baseZCodeService = useRemoteWorkspaceSessionStore(
+  const baseZodyService = useRemoteWorkspaceSessionStore(
     (state) => state.baseServices?.zcodeTaskService ?? null,
   );
   const workspaceRpcEnabled = shouldEnableWorkspaceRpc({
     workspaceIdentity,
     remoteSessionId,
   });
-  const zcodeTaskService = resolveWorkspaceProviderConfigZCodeService({
+  const zodyTaskService = resolveWorkspaceProviderConfigZodyService({
     configuredServiceScope,
-    workspaceZCodeService,
-    baseZCodeService,
+    workspaceZodyService,
+    baseZodyService,
     remoteSessionId,
   });
-  const zcodeServiceScope =
+  const zodyServiceScope =
     configuredServiceScope === "base"
       ? "base"
-      : remoteSessionId && workspaceZCodeService !== baseZCodeService
+      : remoteSessionId && workspaceZodyService !== baseZodyService
         ? "remote"
         : "base";
   const [state, setState] =
@@ -135,7 +135,7 @@ export function useWorkspaceProviderConfigFile(
       };
     }
 
-    if (!zcodeTaskService) {
+    if (!zodyTaskService) {
       requestVersionRef.current += 1;
       setState({
         path: null,
@@ -161,10 +161,10 @@ export function useWorkspaceProviderConfigFile(
     });
 
     logger.info(
-      `[useWorkspaceProviderConfigFile] 开始读取 provider 配置路径 workspace=${workspacePath} provider=${provider} scope=${zcodeServiceScope} session=${remoteSessionId ?? "none"}`,
+      `[useWorkspaceProviderConfigFile] 开始读取 provider 配置路径 workspace=${workspacePath} provider=${provider} scope=${zodyServiceScope} session=${remoteSessionId ?? "none"}`,
     );
 
-    void zcodeTaskService
+    void zodyTaskService
       .getWorkspaceProviderConfigFile({
         workspacePath,
         ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -176,7 +176,7 @@ export function useWorkspaceProviderConfigFile(
         }
 
         logger.info(
-          `[useWorkspaceProviderConfigFile] 读取 provider 配置路径成功 workspace=${workspacePath} provider=${provider} scope=${zcodeServiceScope} session=${remoteSessionId ?? "none"} exists=${result.exists} path=${result.path}`,
+          `[useWorkspaceProviderConfigFile] 读取 provider 配置路径成功 workspace=${workspacePath} provider=${provider} scope=${zodyServiceScope} session=${remoteSessionId ?? "none"} exists=${result.exists} path=${result.path}`,
         );
 
         setState({
@@ -195,7 +195,7 @@ export function useWorkspaceProviderConfigFile(
         logger.warn("[useWorkspaceProviderConfigFile] 读取 provider 配置路径失败", {
           workspacePath,
           provider,
-          scope: zcodeServiceScope,
+          scope: zodyServiceScope,
           remoteSessionId,
           error: message,
         });
@@ -211,8 +211,8 @@ export function useWorkspaceProviderConfigFile(
       disposed = true;
     };
   }, [
-    zcodeTaskService,
-    zcodeServiceScope,
+    zodyTaskService,
+    zodyServiceScope,
     enabled,
     provider,
     refreshVersion,

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getZCodeCopy } from "@zody/i18n";
+import { getZodyCopy } from "@zody/i18n";
 import { toPromptInput } from "../src/app-input.js";
 import { FileMentionPanel } from "../src/app-file-mention-panel.js";
 import {
@@ -80,7 +80,7 @@ test("submits only file mention attachments that remain in the draft", () => {
 test("renders file mention suggestions with wrapped rows", () => {
   const panel = FileMentionPanel({
     contentWidth: 28,
-    copy: getZCodeCopy("en-US").tui,
+    copy: getZodyCopy("en-US").tui,
     state: {
       endOffset: 3,
       items: [
@@ -107,7 +107,7 @@ test("renders file mention suggestions with wrapped rows", () => {
 
 test("renders a loading file mention state", () => {
   const panel = FileMentionPanel({
-    copy: getZCodeCopy("en-US").tui,
+    copy: getZodyCopy("en-US").tui,
     state: emptyMentionState({ loading: true }),
   });
 

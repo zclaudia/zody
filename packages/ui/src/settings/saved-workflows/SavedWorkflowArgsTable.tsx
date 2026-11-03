@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select.js";
 import { Switch } from "@/components/ui/switch.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type {
   SavedWorkflowArgRow,
   SavedWorkflowArgRowError,
@@ -33,7 +33,7 @@ export function SavedWorkflowArgsTable({
   onAdd: () => void;
   onRemove: (key: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const columns = "grid-cols-[minmax(0,1.4fr)_112px_64px_minmax(0,1fr)_minmax(0,1.6fr)_28px]";
   return (
     <div className="overflow-hidden rounded-lg border border-border">

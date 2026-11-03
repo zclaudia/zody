@@ -4,17 +4,17 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import {
-  buildZCodeDataSizeArmsPayload,
-  createZCodeDataSizeTelemetryScheduler,
+  buildZodyDataSizeArmsPayload,
+  createZodyDataSizeTelemetryScheduler,
   type ZodyDataSizeTelemetryState,
 } from "../src/main/desktopZodyDataSizeTelemetry.js";
 import {
-  scanZCodeDataDirectory,
+  scanZodyDataDirectory,
   type ZodyDataSizeScanResult,
 } from "../src/main/zodyDataSizeScanner.js";
 import {
-  readZCodeDataSizeTelemetryState,
-  writeZCodeDataSizeTelemetryState,
+  readZodyDataSizeTelemetryState,
+  writeZodyDataSizeTelemetryState,
 } from "../src/main/zodyDataSizeTelemetryState.js";
 
 const COMPLETE_RESULT: ZodyDataSizeScanResult = {
@@ -56,7 +56,7 @@ describe("scanZCodeDataDirectory", () => {
     await writeFile(join(rootPath, "root.txt"), "12345");
     await writeFile(join(rootPath, "cli", "log", "agent.log"), "1234567");
 
-    const result = await scanZCodeDataDirectory({
+    const result = await scanZodyDataDirectory({
       maxDurationMs: 30_000,
       maxFiles: 200_000,
       rootPath,
@@ -76,7 +76,7 @@ describe("scanZCodeDataDirectory", () => {
     await writeFile(join(rootPath, "one.txt"), "111");
     await writeFile(join(rootPath, "two.txt"), "2222");
 
-    const result = await scanZCodeDataDirectory({
+    const result = await scanZodyDataDirectory({
       maxDurationMs: 30_000,
       maxFiles: 1,
       rootPath,
@@ -91,7 +91,7 @@ describe("scanZCodeDataDirectory", () => {
   it("达到时间保护后返回 time_limit partial", async () => {
     await writeFile(join(rootPath, "one.txt"), "111");
 
-    const result = await scanZCodeDataDirectory({
+    const result = await scanZodyDataDirectory({
       maxDurationMs: 0,
       maxFiles: 200_000,
       rootPath,
@@ -145,7 +145,7 @@ describe("createZCodeDataSizeTelemetryScheduler", () => {
       }
       state = next;
     });
-    const scheduler = createZCodeDataSizeTelemetryScheduler({
+    const scheduler = createZodyDataSizeTelemetryScheduler({
       deviceMid: options?.deviceMid ?? "device-1",
       getSystemIdleTimeSeconds: () => idleSeconds,
       isAppBackground: () => appBackground,
@@ -323,7 +323,7 @@ describe("createZCodeDataSizeTelemetryScheduler", () => {
           });
         }),
     );
-    const scheduler = createZCodeDataSizeTelemetryScheduler({
+    const scheduler = createZodyDataSizeTelemetryScheduler({
       deviceMid: "device-1",
       getSystemIdleTimeSeconds: () => 300,
       isAppBackground: () => true,
@@ -392,11 +392,11 @@ describe("ZCode data size telemetry state", () => {
   it("原子持久化最近成功上报时间供重启后限频", async () => {
     const stateFile = join(rootPath, "nested", "telemetry.json");
 
-    await writeZCodeDataSizeTelemetryState(stateFile, {
+    await writeZodyDataSizeTelemetryState(stateFile, {
       lastReportedAt: 1_777_777_777_777,
     });
 
-    await expect(readZCodeDataSizeTelemetryState(stateFile)).resolves.toEqual({
+    await expect(readZodyDataSizeTelemetryState(stateFile)).resolves.toEqual({
       lastReportedAt: 1_777_777_777_777,
     });
   });
@@ -404,18 +404,18 @@ describe("ZCode data size telemetry state", () => {
   it("原子持久化发送前 reservation 供崩溃恢复后限频", async () => {
     const stateFile = join(rootPath, "nested", "telemetry-reservation.json");
 
-    await writeZCodeDataSizeTelemetryState(stateFile, {
+    await writeZodyDataSizeTelemetryState(stateFile, {
       reportReservedAt: 1_777_777_777_777,
     });
 
-    await expect(readZCodeDataSizeTelemetryState(stateFile)).resolves.toEqual({
+    await expect(readZodyDataSizeTelemetryState(stateFile)).resolves.toEqual({
       reportReservedAt: 1_777_777_777_777,
     });
   });
 
   it("状态文件不存在时显式返回无历史状态", async () => {
     await expect(
-      readZCodeDataSizeTelemetryState(join(rootPath, "missing.json")),
+      readZodyDataSizeTelemetryState(join(rootPath, "missing.json")),
     ).resolves.toBeNull();
   });
 
@@ -423,14 +423,14 @@ describe("ZCode data size telemetry state", () => {
     const stateFile = join(rootPath, "corrupted.json");
     await writeFile(stateFile, '{"lastReportedAt":');
 
-    await expect(readZCodeDataSizeTelemetryState(stateFile)).rejects.toThrow();
+    await expect(readZodyDataSizeTelemetryState(stateFile)).rejects.toThrow();
   });
 
   it("状态字段格式非法时不降级为无历史状态", async () => {
     const stateFile = join(rootPath, "invalid.json");
     await writeFile(stateFile, '{"lastReportedAt":"invalid"}');
 
-    await expect(readZCodeDataSizeTelemetryState(stateFile)).rejects.toThrow(
+    await expect(readZodyDataSizeTelemetryState(stateFile)).rejects.toThrow(
       "Invalid lastReportedAt",
     );
   });
@@ -438,7 +438,7 @@ describe("ZCode data size telemetry state", () => {
 
 describe("buildZCodeDataSizeArmsPayload", () => {
   it("把 partial 下界和扫描质量写入独立事件且不携带本地路径", () => {
-    const payload = buildZCodeDataSizeArmsPayload({
+    const payload = buildZodyDataSizeArmsPayload({
       context: {
         appVersion: "3.9.3",
         armsEnv: "prod",

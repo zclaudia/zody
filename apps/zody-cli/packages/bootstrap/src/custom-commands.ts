@@ -7,7 +7,7 @@ import type {
   CustomCommandLoadOutcome,
   Logger,
 } from "@zody/contracts";
-import { resolveZCodePlugins } from "./plugins.js";
+import { resolveZodyPlugins } from "./plugins.js";
 import { collectDisabledPaths } from "./skill-command-overrides.js";
 
 export interface ListZodyCustomCommandsOptions {
@@ -29,7 +29,7 @@ export interface ZodyCustomCommandInspection {
   diagnostics: CustomCommandDiagnostic[];
 }
 
-export async function listZCodeCustomCommands(
+export async function listZodyCustomCommands(
   options: ListZodyCustomCommandsOptions = {},
 ): Promise<CustomCommandLoadOutcome> {
   const discovery = createCustomCommandDiscovery(options);
@@ -38,7 +38,7 @@ export async function listZCodeCustomCommands(
   });
 }
 
-export async function inspectZCodeCustomCommand(
+export async function inspectZodyCustomCommand(
   options: InspectZodyCustomCommandOptions,
 ): Promise<ZodyCustomCommandInspection> {
   const discovery = createCustomCommandDiscovery(options);
@@ -59,7 +59,7 @@ export async function inspectZCodeCustomCommand(
   };
 }
 
-export async function loadZCodeCustomCommand(
+export async function loadZodyCustomCommand(
   options: InspectZodyCustomCommandOptions,
 ): Promise<CustomCommandContent> {
   const discovery = createCustomCommandDiscovery(options);
@@ -78,7 +78,7 @@ function createCustomCommandDiscovery(options: ListZodyCustomCommandsOptions) {
     skipUserConfig: options.skipUserConfig,
     userConfigPath: options.userConfigPath,
   });
-  const pluginOutcome = resolveZCodePlugins({
+  const pluginOutcome = resolveZodyPlugins({
     configResult,
     env: options.env,
     logger: options.logger,

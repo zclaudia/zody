@@ -12,7 +12,7 @@ import { mergeSlashCommandsAfterCommandRefresh } from "@/settings/pluginSlashCom
 import { useCommandsStore } from "@/store/commandsStore.js";
 import { useMcpStore } from "@/store/mcpStore.js";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 
 function toMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -50,15 +50,15 @@ async function refreshSlashCommandsAfterRemotePluginSync(params: {
       });
     }
 
-    const zcodeSessionStore = useZCodeSessionStore.getState();
-    const currentSlashCommands = zcodeSessionStore.getWorkspaceState(
+    const zodySessionStore = useZodySessionStore.getState();
+    const currentSlashCommands = zodySessionStore.getWorkspaceState(
       workspacePath,
       workspaceIdentityParam,
     ).slashCommands;
     // 远程插件同步入口不一定打开过命令设置页，commandsStore 可能尚未初始化。
     // 输入框 `/` 面板读取的是 zcodeSessionStore.slashCommands，所以同步后必须直接
     // 向当前远端 workspace 拉取 commands 并写回 slashCommands，不能只刷新设置页 store。
-    zcodeSessionStore.setSlashCommands(
+    zodySessionStore.setSlashCommands(
       workspacePath,
       mergeSlashCommandsAfterCommandRefresh(currentSlashCommands, result.commands),
       workspaceIdentityParam,

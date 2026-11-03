@@ -8,7 +8,7 @@ import type { RemoteTarget } from "@zody/shared";
 const capturedRemoteSyncDialogProps = vi.hoisted(() => [] as Array<Record<string, unknown>>);
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },

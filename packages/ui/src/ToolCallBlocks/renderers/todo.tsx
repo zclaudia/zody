@@ -4,7 +4,7 @@ import { extractPlanStepsFromToolInput, extractPlanStepsFromToolOutput } from "@
 import type { ZodyPlanStep } from "@zody/shared";
 import { ToolCallBody } from "@/ToolCallBlocks/ToolCallBody.js";
 import { ToolSnapshotFieldNotice } from "@/ToolCallBlocks/ToolSnapshotFieldNotice.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { cn } from "@/components/lib/utils.js";
 import { ToolLayout } from "../ToolLayout.js";
 import type { ToolCallBlockRenderContext } from "../shared.js";
@@ -46,7 +46,7 @@ function TodoStatusIcon({ status }: { status: ZodyPlanStep["status"] }) {
 }
 
 export function TodoToolCallBlock(context: ToolCallBlockRenderContext) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const { toolCall } = context.toolCallNode;
   const plan = readTodoPlan(context);
   const completedCount = plan?.filter((step) => step.status === "completed").length ?? 0;

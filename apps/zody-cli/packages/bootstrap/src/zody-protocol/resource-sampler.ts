@@ -7,7 +7,7 @@ import {
   type ZodyProtocolNotification,
 } from "@zody/shared";
 import {
-  createZCodeProcessResourceSampler,
+  createZodyProcessResourceSampler,
   type ZodyProcessResourceSampler,
 } from "../process-resource-sampler.js";
 import type { ZodyProtocolAgentServer } from "./server.js";
@@ -21,7 +21,7 @@ export function startProtocolResourceSampler(
     // 本地内存诊断日志：复用同一 60s 节拍，
     // 变化/心跳门控后才写一行，避免与消息流同频刷盘。
     const memoryDiagnosticsGate = createMemorySampleWriteGate();
-    const sampler = createZCodeProcessResourceSampler({
+    const sampler = createZodyProcessResourceSampler({
       onSample: (sample, memoryUsage) => {
         send({
           method: zodyProtocolNotifications.processResourceSample,

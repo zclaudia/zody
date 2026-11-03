@@ -1,7 +1,7 @@
 import type { ZodyPluginComponentKind } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import { Badge } from "@/components/ui/badge.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 /** 详情中单个组件项：名称（mono）+ 可选描述（次行）。 */
 export interface PluginComponentDisplayItem {
@@ -45,7 +45,7 @@ export function PluginComponentGroups({
   groups: PluginComponentDisplayGroup[];
   className?: string;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div className={cn("space-y-3", className)}>
       {groups.map((group) => (

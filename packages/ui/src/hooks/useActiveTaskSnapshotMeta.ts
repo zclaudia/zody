@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ZodyTaskMeta } from "@zody/shared";
-import { useZCodeSessionService } from "@/hooks/useZodySessionService.js";
-import { zcodeSessionSnapshotToTaskMeta } from "@/lib/zodySessionProjection.js";
+import { useZodySessionService } from "@/hooks/useZodySessionService.js";
+import { zodySessionSnapshotToTaskMeta } from "@/lib/zodySessionProjection.js";
 
 export function resolveImmediateActiveTaskSnapshotMeta(
   previousSnapshotMeta: ZodyTaskMeta | null,
@@ -34,7 +34,7 @@ export function useActiveTaskSnapshotMeta(
   workspaceIdentity?: string,
   taskMetaFromLists?: ZodyTaskMeta | null,
 ) {
-  const zcodeSessionService = useZCodeSessionService(
+  const zodySessionService = useZodySessionService(
     workspacePath,
     preferredRemoteSessionId,
     workspaceIdentity,
@@ -64,7 +64,7 @@ export function useActiveTaskSnapshotMeta(
       };
     }
 
-    void zcodeSessionService
+    void zodySessionService
       // active header 只需要 session meta/标题兜底，走 ZCode Protocol 的轻量读取，
       // 避免继续经 legacy snapshot 把大任务消息整包拉回 UI。
       .readSession({
@@ -77,7 +77,7 @@ export function useActiveTaskSnapshotMeta(
         if (cancelled) {
           return;
         }
-        setSnapshotMeta(zcodeSessionSnapshotToTaskMeta(snapshot));
+        setSnapshotMeta(zodySessionSnapshotToTaskMeta(snapshot));
       })
       .catch(() => {
         if (cancelled) {
@@ -89,7 +89,7 @@ export function useActiveTaskSnapshotMeta(
     return () => {
       cancelled = true;
     };
-  }, [zcodeSessionService, taskId, taskMetaFromLists, workspaceIdentity, workspacePath]);
+  }, [zodySessionService, taskId, taskMetaFromLists, workspaceIdentity, workspacePath]);
 
   return snapshotMeta;
 }

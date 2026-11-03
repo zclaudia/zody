@@ -20,7 +20,7 @@ const labels: Record<string, string> = {
 };
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: (descriptor: { id: string }) => labels[descriptor.id] ?? descriptor.id,
     },

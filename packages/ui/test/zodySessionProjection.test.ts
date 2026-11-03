@@ -14,12 +14,12 @@ import {
   formatModelPickerValue as formatProjectedModelSelection,
   parseModelPickerValue,
   type ZodySessionEventProjectionState,
-  zcodeSessionEventToZCodeStreamEvents,
-  zcodeSessionSettingsToConfigOptions,
-  zcodeSessionSnapshotToZCodeTaskSnapshot,
-  zcodeStateUpdatedToZCodeStreamEvents,
-  zcodeUserInputRequestToZCodeStreamEvent,
-  zcodeUserInputResponseToZCodeStreamEvent,
+  zodySessionEventToZodyStreamEvents,
+  zodySessionSettingsToConfigOptions,
+  zodySessionSnapshotToZodyTaskSnapshot,
+  zodyStateUpdatedToZodyStreamEvents,
+  zodyUserInputRequestToZodyStreamEvent,
+  zodyUserInputResponseToZodyStreamEvent,
 } from "@/lib/zodySessionProjection.js";
 
 const workspace = {
@@ -199,14 +199,14 @@ describe("zcodeSessionProjection", () => {
       const snapshot = createSnapshot();
       snapshot.runtime.deliveryKind = deliveryKind;
       for (const message of snapshot.messages) delete message.info.model;
-      const projected = zcodeSessionSnapshotToZCodeTaskSnapshot(snapshot);
+      const projected = zodySessionSnapshotToZodyTaskSnapshot(snapshot);
       expect(projected.messages).toHaveLength(snapshot.messages.length);
       expect(projected.messages.every((message) => message.model === undefined)).toBe(true);
       expect(projected.messages[0]?.content).toBe("hello");
     },
   );
   it("preserves structured attribution when projecting a failed turn to task_error", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_turn_failed_attribution",
         seq: 8,
@@ -247,7 +247,7 @@ describe("zcodeSessionProjection", () => {
   it("preserves completed tool display metadata in snapshot raw output", () => {
     const base = createSnapshot();
     const assistant = base.messages[1]!;
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       messages: [
         base.messages[0]!,
@@ -292,7 +292,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("falls back to a valid thought level when session settings carry a stale current value", () => {
-    const options = zcodeSessionSettingsToConfigOptions({
+    const options = zodySessionSettingsToConfigOptions({
       ...settings,
       thoughtLevel: {
         enabled: true,
@@ -310,13 +310,13 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("uses thought defaultLevel before the first available level when current is empty", () => {
-    const options = zcodeSessionSettingsToConfigOptions(settingsWithDefaultThoughtLevel);
+    const options = zodySessionSettingsToConfigOptions(settingsWithDefaultThoughtLevel);
 
     expect(options.find((option) => option.category === "thought_level")?.currentValue).toBe("max");
   });
 
   it("uses thought defaultLevel in model state updates when current is empty", () => {
-    const events = zcodeStateUpdatedToZCodeStreamEvents({
+    const events = zodyStateUpdatedToZodyStreamEvents({
       notification: {
         type: "state.updated",
         scope: "session",
@@ -343,7 +343,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps server-owned session snapshots into the current chat projection", () => {
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot(createSnapshot());
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot(createSnapshot());
 
     expect(snapshot.meta).toMatchObject({
       taskId: "sess_1",
@@ -420,7 +420,7 @@ describe("zcodeSessionProjection", () => {
       ],
     };
 
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       messages: [...base.messages, forkNotice],
     });
@@ -478,7 +478,7 @@ describe("zcodeSessionProjection", () => {
       ],
     };
 
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       messages: [...base.messages, timelineMessage],
     });
@@ -574,7 +574,7 @@ describe("zcodeSessionProjection", () => {
       ],
     };
 
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       messages: [...base.messages, timelineMessage, rawNotice],
     });
@@ -670,7 +670,7 @@ describe("zcodeSessionProjection", () => {
       ],
     } satisfies ZodySessionStateSnapshot["messages"][number];
 
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       messages: [base.messages[0]!, assistantMessage, notificationMessage],
     });
@@ -780,7 +780,7 @@ describe("zcodeSessionProjection", () => {
         ],
       } satisfies ZodySessionStateSnapshot["messages"][number];
 
-      const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+      const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
         ...base,
         messages: [base.messages[0]!, assistantMessage, notificationMessage],
       });
@@ -807,7 +807,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps pending ExitPlanMode approvals into pending elicitations", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       projection: {
         ...base.projection,
@@ -891,7 +891,7 @@ describe("zcodeSessionProjection", () => {
       ],
     } satisfies ZodySessionStateSnapshot["messages"][number];
 
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       session: {
         ...base.session,
@@ -928,7 +928,7 @@ describe("zcodeSessionProjection", () => {
 
   it("restores user image, video, and PDF attachments from protocol file parts", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       messages: [
         {
@@ -1040,7 +1040,7 @@ describe("zcodeSessionProjection", () => {
     } satisfies ZodySessionStateSnapshot["messages"][number];
     const originalParts = structuredClone(rawMessage.parts);
 
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       messages: [rawMessage],
     });
@@ -1066,7 +1066,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps idle session snapshots with a completed assistant turn to completed task status", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       session: {
         ...base.session,
@@ -1089,7 +1089,7 @@ describe("zcodeSessionProjection", () => {
 
   it("keeps an idle tool-calls assistant turn without a task terminal status", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       session: {
         ...base.session,
@@ -1123,7 +1123,7 @@ describe("zcodeSessionProjection", () => {
 
   it("keeps an empty idle session without a task terminal status", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       session: {
         ...base.session,
@@ -1147,7 +1147,7 @@ describe("zcodeSessionProjection", () => {
 
   it("preserves protocol projection error type as task error code", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       projection: {
         ...base.projection,
@@ -1166,7 +1166,7 @@ describe("zcodeSessionProjection", () => {
 
   it("prefers structured projection error code over wrapper error type in task meta", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       projection: {
         ...base.projection,
@@ -1198,7 +1198,7 @@ describe("zcodeSessionProjection", () => {
 
   it("prioritizes projection lastError over a completed previous assistant turn", () => {
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       session: {
         ...base.session,
@@ -1238,7 +1238,7 @@ describe("zcodeSessionProjection", () => {
       modelId: "deepseek-v4-flash",
     };
     const base = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...base,
       settings: {
         ...base.settings,
@@ -1261,7 +1261,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps persisted session todos into task runtime plan", () => {
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...createSnapshot(),
       todos: [
         { content: "实现 Lexer", priority: "high", status: "completed" },
@@ -1276,7 +1276,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps derived goal stats and grouped todos into task runtime", () => {
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...createSnapshot(),
       runtime: {
         ...createSnapshot().runtime,
@@ -1359,7 +1359,7 @@ describe("zcodeSessionProjection", () => {
 
   it("adds persisted goal verification lifecycle as a synthetic divider on snapshot restore", () => {
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       runtime: {
         ...baseSnapshot.runtime,
@@ -1408,7 +1408,7 @@ describe("zcodeSessionProjection", () => {
   it("anchors goal verification dividers to assistant messages that were coalesced", () => {
     const objective = "写一篇短篇科幻小说";
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       projection: {
         ...baseSnapshot.projection,
@@ -1544,7 +1544,7 @@ describe("zcodeSessionProjection", () => {
 
   it("uses runtime context usage when restored projection has no usage yet", () => {
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       projection: {
         ...baseSnapshot.projection,
@@ -1581,7 +1581,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps snapshot runtime apiRetry into legacy task runtime", () => {
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       runtime: {
         ...baseSnapshot.runtime,
@@ -1608,7 +1608,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps projection background jobs into runtime background bash jobs", () => {
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       projection: {
         ...baseSnapshot.projection,
@@ -1640,7 +1640,7 @@ describe("zcodeSessionProjection", () => {
     const internalSummary =
       "This session is being continued from a previous conversation that was compacted.";
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       messages: [
         {
@@ -1699,7 +1699,7 @@ describe("zcodeSessionProjection", () => {
 
   it("does not synthesize a compact divider from summary user compaction metadata", () => {
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       messages: [
         {
@@ -1736,7 +1736,7 @@ describe("zcodeSessionProjection", () => {
     const baseSnapshot = createSnapshot();
     const summaryText =
       "This session is being continued from a previous conversation that ran out of context.";
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       messages: [
         {
@@ -1832,7 +1832,7 @@ describe("zcodeSessionProjection", () => {
 
   it("adds a fallback fork divider for legacy fork snapshots without synthetic notice", () => {
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       session: {
         ...baseSnapshot.session,
@@ -1865,7 +1865,7 @@ describe("zcodeSessionProjection", () => {
       "</system-reminder>",
     ].join("\n");
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       session: {
         ...baseSnapshot.session,
@@ -1960,7 +1960,7 @@ describe("zcodeSessionProjection", () => {
   it("keeps verifier-bounded goal continuation assistant messages split by goal iteration in snapshots", () => {
     const objective = "优化性能到 60fps";
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       projection: {
         ...baseSnapshot.projection,
@@ -2133,7 +2133,7 @@ describe("zcodeSessionProjection", () => {
   it("restores /goal prefix for persisted objective user messages", () => {
     const objective = "优化性能到 60fps";
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       projection: {
         ...baseSnapshot.projection,
@@ -2184,7 +2184,7 @@ describe("zcodeSessionProjection", () => {
   it("does not add /goal to earlier normal user messages with the same text", () => {
     const objective = "优化性能到 60fps";
     const baseSnapshot = createSnapshot();
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...baseSnapshot,
       projection: {
         ...baseSnapshot.projection,
@@ -2232,7 +2232,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps ZCode Protocol context projection updates to legacy usage_update events", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_usage",
           sessionId: "sess_1",
@@ -2261,7 +2261,7 @@ describe("zcodeSessionProjection", () => {
 
   it("preserves goal target run action patches", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_goal_run_started",
           sessionId: "sess_1",
@@ -2331,7 +2331,7 @@ describe("zcodeSessionProjection", () => {
       type: "model.streaming" as const,
     };
 
-    const startEvents = zcodeSessionEventToZCodeStreamEvents({
+    const startEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_start",
@@ -2353,7 +2353,7 @@ describe("zcodeSessionProjection", () => {
       }),
     ]);
 
-    const deltaEvents = zcodeSessionEventToZCodeStreamEvents({
+    const deltaEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_delta",
@@ -2378,7 +2378,7 @@ describe("zcodeSessionProjection", () => {
       }),
     ]);
 
-    const nextDeltaEvents = zcodeSessionEventToZCodeStreamEvents({
+    const nextDeltaEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_delta_2",
@@ -2394,7 +2394,7 @@ describe("zcodeSessionProjection", () => {
     expect(nextDeltaEvents).toEqual([]);
     expect(state.streamingToolInputById?.get("call_write")?.rawInput).toContain("\\nline 3");
 
-    const endEvents = zcodeSessionEventToZCodeStreamEvents({
+    const endEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_end",
@@ -2419,7 +2419,7 @@ describe("zcodeSessionProjection", () => {
     expect(endEvents[0]).not.toHaveProperty("input");
     expect(state.streamingToolInputById?.get("call_write")?.rawInput).toContain("\\nline 3");
 
-    const completeEvents = zcodeSessionEventToZCodeStreamEvents({
+    const completeEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_call",
@@ -2491,7 +2491,7 @@ describe("zcodeSessionProjection", () => {
     } satisfies ZodySessionEvent;
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: streamingToolCall,
         state,
         taskId: "sess_1",
@@ -2502,7 +2502,7 @@ describe("zcodeSessionProjection", () => {
         toolId: "call_write",
       }),
     ]);
-    const scheduledEvents = zcodeSessionEventToZCodeStreamEvents({
+    const scheduledEvents = zodySessionEventToZodyStreamEvents({
       event: scheduledTombstone,
       state,
       taskId: "sess_1",
@@ -2559,14 +2559,14 @@ describe("zcodeSessionProjection", () => {
       },
     } satisfies ZodySessionEvent;
 
-    zcodeSessionEventToZCodeStreamEvents({
+    zodySessionEventToZodyStreamEvents({
       event: streamingDelta,
       state,
       taskId: "sess_1",
     });
     expect(state.streamingToolInputById?.get("call_write")?.rawInput).toContain("generated.html");
 
-    zcodeSessionEventToZCodeStreamEvents({
+    zodySessionEventToZodyStreamEvents({
       event: scheduledWithCompleteInput,
       state,
       taskId: "sess_1",
@@ -2591,7 +2591,7 @@ describe("zcodeSessionProjection", () => {
       type: "model.streaming" as const,
     };
 
-    zcodeSessionEventToZCodeStreamEvents({
+    zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_start",
@@ -2604,7 +2604,7 @@ describe("zcodeSessionProjection", () => {
       state,
       taskId: "sess_1",
     });
-    zcodeSessionEventToZCodeStreamEvents({
+    zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_delta",
@@ -2618,7 +2618,7 @@ describe("zcodeSessionProjection", () => {
       taskId: "sess_1",
     });
 
-    const nextDeltaEvents = zcodeSessionEventToZCodeStreamEvents({
+    const nextDeltaEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_delta_2",
@@ -2635,7 +2635,7 @@ describe("zcodeSessionProjection", () => {
     expect(state.streamingToolInputById?.get("call_write")?.deltaCount).toBe(2);
     expect(nextDeltaEvents).toEqual([]);
 
-    const endEvents = zcodeSessionEventToZCodeStreamEvents({
+    const endEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_end",
@@ -2660,7 +2660,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("infers Write for streamed file inputs when the delta arrives without cached tool metadata", () => {
-    const streamEvents = zcodeSessionEventToZCodeStreamEvents({
+    const streamEvents = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_tool_input_delta_no_name",
         sessionId: "sess_1",
@@ -2704,7 +2704,7 @@ describe("zcodeSessionProjection", () => {
       type: "model.streaming" as const,
     };
 
-    const startEvents = zcodeSessionEventToZCodeStreamEvents({
+    const startEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_start",
@@ -2718,7 +2718,7 @@ describe("zcodeSessionProjection", () => {
       state,
       taskId: "sess_1",
     });
-    const deltaEvents = zcodeSessionEventToZCodeStreamEvents({
+    const deltaEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_input_delta",
@@ -2740,7 +2740,7 @@ describe("zcodeSessionProjection", () => {
       rawInput: '{"file_path":"src/app.ts","content":"line 1\\nline 2',
     });
 
-    const completeEvents = zcodeSessionEventToZCodeStreamEvents({
+    const completeEvents = zodySessionEventToZodyStreamEvents({
       event: {
         ...common,
         eventId: "evt_tool_call",
@@ -2787,7 +2787,7 @@ describe("zcodeSessionProjection", () => {
         type: "model.streaming" as const,
       };
 
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           ...common,
           eventId: "evt_tool_input_start",
@@ -2803,7 +2803,7 @@ describe("zcodeSessionProjection", () => {
 
       let materializedCount = 0;
       for (let index = 0; index < 100; index += 1) {
-        const events = zcodeSessionEventToZCodeStreamEvents({
+        const events = zodySessionEventToZodyStreamEvents({
           event: {
             ...common,
             eventId: `evt_tool_input_delta_${index}`,
@@ -2823,7 +2823,7 @@ describe("zcodeSessionProjection", () => {
       expect(materializedCount).toBe(1);
 
       vi.setSystemTime(2_000);
-      const intervalEvents = zcodeSessionEventToZCodeStreamEvents({
+      const intervalEvents = zodySessionEventToZodyStreamEvents({
         event: {
           ...common,
           eventId: "evt_tool_input_delta_interval",
@@ -2844,7 +2844,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps goal completion verifier model results to goal verification updates", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_goal_verify",
           sessionId: "sess_1",
@@ -2898,7 +2898,7 @@ describe("zcodeSessionProjection", () => {
 
   it("does not synthesize nextAction when goal completion verifier JSON is invalid", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_goal_verify_invalid",
           sessionId: "sess_1",
@@ -2929,7 +2929,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps goal verification lifecycle payloads to synthetic divider chunks", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_goal_verify_started",
           sessionId: "sess_1",
@@ -2975,7 +2975,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps completed goal verification lifecycle payloads with verifier result", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_goal_verify_completed",
           sessionId: "sess_1",
@@ -3024,7 +3024,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it.each(["plan", "edit"] as const)("maps %s mode updates without replacing historical values", (mode) => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_mode",
         sessionId: "sess_1",
@@ -3060,7 +3060,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps main turn model usage with context window to legacy usage_update events", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_model_usage",
           sessionId: "sess_1",
@@ -3127,7 +3127,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps model network status payloads to task network debug events", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_network_debug",
         sessionId: "sess_1",
@@ -3194,7 +3194,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps aggregate main turn cache hit usage from protocol payload", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_model_usage_average",
           sessionId: "sess_1",
@@ -3268,7 +3268,7 @@ describe("zcodeSessionProjection", () => {
 
   it("prefers real main turn model usage over projected context used", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_model_usage_projection",
           sessionId: "sess_1",
@@ -3319,7 +3319,7 @@ describe("zcodeSessionProjection", () => {
 
   it("does not map sidecar model usage to context usage", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_title_usage",
           sessionId: "sess_1",
@@ -3360,7 +3360,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps ZCode model retry status updates to apiRetry events", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_retry",
         sessionId: "sess_1",
@@ -3415,7 +3415,7 @@ describe("zcodeSessionProjection", () => {
     };
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_retry_scheduled",
           sessionId: "sess_1",
@@ -3448,7 +3448,7 @@ describe("zcodeSessionProjection", () => {
       },
     });
 
-    const retryStartedEvents = zcodeSessionEventToZCodeStreamEvents({
+    const retryStartedEvents = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_retry_started",
         sessionId: "sess_1",
@@ -3486,7 +3486,7 @@ describe("zcodeSessionProjection", () => {
     });
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_retry_progress",
           sessionId: "sess_1",
@@ -3520,7 +3520,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps core stream recovery request starts to apiRetry events", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_stream_recovery_retry",
         sessionId: "sess_1",
@@ -3574,7 +3574,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps core stream recovery progress to apiRetry events", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_stream_recovery_progress",
           sessionId: "sess_1",
@@ -3612,7 +3612,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps private apiRetry meta updates and clear patches", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_retry_meta",
           sessionId: "sess_1",
@@ -3653,7 +3653,7 @@ describe("zcodeSessionProjection", () => {
       },
     ]);
 
-    const clearEvents = zcodeSessionEventToZCodeStreamEvents({
+    const clearEvents = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_retry_clear",
         sessionId: "sess_1",
@@ -3691,7 +3691,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps projection background job updates to runtime stream events", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_background_bash",
           sessionId: "sess_1",
@@ -3734,7 +3734,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps single background task payloads into cached background job updates", () => {
     const state: ZodySessionEventProjectionState = {};
-    const bashEvents = zcodeSessionEventToZCodeStreamEvents({
+    const bashEvents = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_background_bash_started",
         sessionId: "sess_1",
@@ -3755,7 +3755,7 @@ describe("zcodeSessionProjection", () => {
       state,
       taskId: "sess_1",
     });
-    const agentEvents = zcodeSessionEventToZCodeStreamEvents({
+    const agentEvents = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_background_agent_started",
         sessionId: "sess_1",
@@ -3816,7 +3816,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("projects live task notification turns back onto the matching background Agent tool", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_task_notification_started",
         sessionId: "sess_1",
@@ -3873,7 +3873,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("projects failed live task notifications with the original provider error", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_failed_task_notification_started",
         sessionId: "sess_1",
@@ -3930,7 +3930,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("projects killed task notification turns as stopped tool updates", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_task_notification_stopped",
         sessionId: "sess_1",
@@ -3983,7 +3983,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps direct user input requests into elicitation requests", () => {
-    const event = zcodeUserInputRequestToZCodeStreamEvent("sess_1", {
+    const event = zodyUserInputRequestToZodyStreamEvent("sess_1", {
       requestId: "ask_1",
       sessionId: "sess_1",
       turnId: "turn_1",
@@ -4035,7 +4035,7 @@ describe("zcodeSessionProjection", () => {
 
   it("maps nested ZCode Protocol projection context usage", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_projection_usage",
           sessionId: "sess_1",
@@ -4066,7 +4066,7 @@ describe("zcodeSessionProjection", () => {
 
   it("does not emit legacy usage_update for zero context usage", () => {
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_zero_usage",
           sessionId: "sess_1",
@@ -4101,7 +4101,7 @@ describe("zcodeSessionProjection", () => {
         cache: { read: 0, write: 0 },
       },
     };
-    const snapshot = zcodeSessionSnapshotToZCodeTaskSnapshot({
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
       ...createSnapshot(),
       messages: [
         {
@@ -4280,7 +4280,7 @@ describe("zcodeSessionProjection", () => {
     } satisfies ZodySessionEvent;
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: turnStartedEvent,
         state,
         taskId: "sess_1",
@@ -4299,7 +4299,7 @@ describe("zcodeSessionProjection", () => {
     // projection 需要记录 active input，后续 chunk/tool/complete 才能归到同一轮 trace。
     expect(state.activePromptInputIdBySession?.get("sess_1")).toBe("t-sess_1-run");
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: streamingEvent,
         state,
         taskId: "sess_1",
@@ -4315,7 +4315,7 @@ describe("zcodeSessionProjection", () => {
       },
     ]);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           ...streamingEvent,
           eventId: "evt_parent_stream",
@@ -4339,7 +4339,7 @@ describe("zcodeSessionProjection", () => {
       },
     ]);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: toolEvent,
         state,
         taskId: "sess_1",
@@ -4355,7 +4355,7 @@ describe("zcodeSessionProjection", () => {
       },
     ]);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: completeEvent,
         state,
         taskId: "sess_1",
@@ -4408,7 +4408,7 @@ describe("zcodeSessionProjection", () => {
     } satisfies ZodySessionEvent;
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: started,
         state,
         taskId: "sess_1",
@@ -4416,7 +4416,7 @@ describe("zcodeSessionProjection", () => {
     ).toMatchObject([{ type: "task_run_started" }]);
     expect(state.rewindControlTurnKeys?.has("sess_1:turn_rewind")).toBe(true);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: completed,
         state,
         taskId: "sess_1",
@@ -4447,7 +4447,7 @@ describe("zcodeSessionProjection", () => {
     };
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         taskId: "sess_1",
         state,
         event: {
@@ -4512,7 +4512,7 @@ describe("zcodeSessionProjection", () => {
     };
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         taskId: "sess_1",
         state,
         event: {
@@ -4544,7 +4544,7 @@ describe("zcodeSessionProjection", () => {
     expect(state.toolNameById.get("tool_subagent_agent_1_call_search")).toBe("WebSearch");
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         taskId: "sess_1",
         state,
         event: {
@@ -4624,7 +4624,7 @@ describe("zcodeSessionProjection", () => {
       };
 
       expect(
-        zcodeSessionEventToZCodeStreamEvents({
+        zodySessionEventToZodyStreamEvents({
           taskId: "sess_1",
           state,
           event: {
@@ -4650,7 +4650,7 @@ describe("zcodeSessionProjection", () => {
       ]);
 
       expect(
-        zcodeSessionEventToZCodeStreamEvents({
+        zodySessionEventToZodyStreamEvents({
           taskId: "sess_1",
           state,
           event: {
@@ -4707,7 +4707,7 @@ describe("zcodeSessionProjection", () => {
       kind: "started",
     };
     const project = (event: ZodySessionEvent) =>
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         taskId: "sess_1",
         state,
         event,
@@ -4803,7 +4803,7 @@ describe("zcodeSessionProjection", () => {
     };
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         taskId: "sess_1",
         state,
         event: {
@@ -4840,7 +4840,7 @@ describe("zcodeSessionProjection", () => {
     };
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         taskId: "sess_1",
         state,
         event: {
@@ -4870,7 +4870,7 @@ describe("zcodeSessionProjection", () => {
     };
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         taskId: "sess_1",
         state,
         event: {
@@ -4901,7 +4901,7 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("maps model-only goal continuation turn starts to goal iteration boundaries", () => {
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       taskId: "task-goal",
       event: {
         eventId: "evt_goal_start",
@@ -5014,7 +5014,7 @@ describe("zcodeSessionProjection", () => {
     } satisfies ZodySessionEvent;
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: parentToolCall,
         state,
         taskId: "sess_1",
@@ -5028,7 +5028,7 @@ describe("zcodeSessionProjection", () => {
       },
     ]);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: subagentToolCall,
         state,
         taskId: "sess_1",
@@ -5042,7 +5042,7 @@ describe("zcodeSessionProjection", () => {
       },
     ]);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: parentToolResult,
         state,
         taskId: "sess_1",
@@ -5065,7 +5065,7 @@ describe("zcodeSessionProjection", () => {
       streamedTurnKeys: new Set<string>(),
       toolNameById: new Map<string, string>(),
     };
-    zcodeSessionEventToZCodeStreamEvents({
+    zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_parent_agent",
         sessionId: "sess_1",
@@ -5089,7 +5089,7 @@ describe("zcodeSessionProjection", () => {
       taskId: "sess_1",
     });
 
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_parent_agent_result",
         sessionId: "sess_1",
@@ -5132,7 +5132,7 @@ describe("zcodeSessionProjection", () => {
       streamedTurnKeys: new Set<string>(),
       toolNameById: new Map<string, string>(),
     };
-    zcodeSessionEventToZCodeStreamEvents({
+    zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_parent_task",
         sessionId: "sess_1",
@@ -5172,7 +5172,7 @@ describe("zcodeSessionProjection", () => {
     ];
 
     for (const [index, content] of acknowledgementContents.entries()) {
-      const events = zcodeSessionEventToZCodeStreamEvents({
+      const events = zodySessionEventToZodyStreamEvents({
         event: {
           eventId: `evt_parent_task_result_${index}`,
           sessionId: "sess_1",
@@ -5289,14 +5289,14 @@ describe("zcodeSessionProjection", () => {
     } satisfies ZodySessionEvent;
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: mainTodoCall,
         state,
         taskId: "sess_1",
       }).map((event) => event.type),
     ).toEqual(["tool_call", "plan"]);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: subagentTodoCall,
         state,
         taskId: "sess_1",
@@ -5309,7 +5309,7 @@ describe("zcodeSessionProjection", () => {
       },
     ]);
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: subagentTodoResult,
         state,
         taskId: "sess_1",
@@ -5329,7 +5329,7 @@ describe("zcodeSessionProjection", () => {
       toolNameById: new Map<string, string>(),
     };
 
-    zcodeSessionEventToZCodeStreamEvents({
+    zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_start",
         sessionId: "sess_1",
@@ -5349,7 +5349,7 @@ describe("zcodeSessionProjection", () => {
     });
 
     expect(
-      zcodeSessionEventToZCodeStreamEvents({
+      zodySessionEventToZodyStreamEvents({
         event: {
           eventId: "evt_stream_other",
           sessionId: "sess_2",
@@ -5385,7 +5385,7 @@ describe("zcodeSessionProjection", () => {
       toolNameById: new Map<string, string>(),
     };
 
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_compact_started",
         sessionId: "sess_1",
@@ -5439,7 +5439,7 @@ describe("zcodeSessionProjection", () => {
       toolNameById: new Map<string, string>(),
     };
 
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_compact_retrying",
         sessionId: "sess_1",
@@ -5489,7 +5489,7 @@ describe("zcodeSessionProjection", () => {
       toolNameById: new Map<string, string>(),
     };
 
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_compact_skipped",
         sessionId: "sess_1",
@@ -5533,7 +5533,7 @@ describe("zcodeSessionProjection", () => {
       toolNameById: new Map<string, string>(),
     };
 
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_fork_notice",
         sessionId: "forked-session",
@@ -5590,7 +5590,7 @@ describe("zcodeSessionProjection", () => {
       toolNameById: new Map<string, string>(),
     };
 
-    const events = zcodeSessionEventToZCodeStreamEvents({
+    const events = zodySessionEventToZodyStreamEvents({
       event: {
         eventId: "evt_compact_failed",
         sessionId: "sess_1",
@@ -5628,8 +5628,8 @@ describe("zcodeSessionProjection", () => {
   });
 
   it("projects ZCode settings updates to model and mode state events", () => {
-    const options = zcodeSessionSettingsToConfigOptions(settings);
-    const events = zcodeStateUpdatedToZCodeStreamEvents({
+    const options = zodySessionSettingsToConfigOptions(settings);
+    const events = zodyStateUpdatedToZodyStreamEvents({
       notification: {
         type: "state.updated",
         scope: "session",
@@ -5705,7 +5705,7 @@ describe("zcodeSessionProjection", () => {
 
   it("projects web remote user input response to elicitation response", () => {
     expect(
-      zcodeUserInputResponseToZCodeStreamEvent("sess_1", {
+      zodyUserInputResponseToZodyStreamEvent("sess_1", {
         requestId: "input-1",
         action: "accept",
         content: { answers: { answer_0: "a" } },

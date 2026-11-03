@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button.js";
 import { Spinner } from "@/components/ui/spinner.js";
 import { toast } from "@/components/ui/toast.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { SettingsBreadcrumbReporter } from "@/settings/SettingsHeaderBreadcrumb.js";
 import { SETTINGS_FRAME_CONTENT_CLASSNAME } from "@/settings/SettingsPageParts.js";
@@ -111,7 +111,7 @@ export function SavedWorkflowDetailView({
   resolveRunProject,
   launchDialog,
 }: SavedWorkflowDetailViewProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [tab, setTab] = useState<DetailTab>("definition");
   const [loadState, setLoadState] = useState<DetailLoad>({ status: "loading" });
   const [draft, setDraft] = useState<MetaDraft | null>(null);

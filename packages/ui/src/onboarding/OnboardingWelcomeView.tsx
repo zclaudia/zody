@@ -1,11 +1,11 @@
 import { ArrowRightIcon } from "lucide-react";
 import { zodyLogoUrl } from "@/brand.js";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { OnboardingWelcomeAsciiVisual } from "@/onboarding/OnboardingWelcomeAsciiVisual.js";
 
 export function OnboardingWelcomeView(props: { onStart: () => void; onOpenMigration: () => void }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   return (
     <div className="flex h-full min-h-0">

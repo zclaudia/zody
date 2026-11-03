@@ -5,14 +5,14 @@ import { createElement, type ReactNode } from "react";
 import {
   resolveLocalePreferenceFromSettings,
   shouldApplyLocaleBroadcastMessage,
-  useZCodeIntl,
-  ZCodeIntlProvider,
+  useZodyIntl,
+  ZodyIntlProvider,
 } from "@/i18n/IntlProvider.js";
 import type { Locale } from "@zody/shared";
 import type { BroadcastMessage } from "@zody/services";
 
 function LocaleProbe() {
-  const { locale, localePreference } = useZCodeIntl();
+  const { locale, localePreference } = useZodyIntl();
   return createElement(
     "div",
     null,
@@ -22,7 +22,7 @@ function LocaleProbe() {
 }
 
 function LocaleControls() {
-  const { setLocalePreference } = useZCodeIntl();
+  const { setLocalePreference } = useZodyIntl();
   return createElement(
     "div",
     null,
@@ -75,7 +75,7 @@ function renderIntlProvider({
   const settingService = createSettingService(settings, update);
   render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       {
         settingService,
         resolveSystemLocale,

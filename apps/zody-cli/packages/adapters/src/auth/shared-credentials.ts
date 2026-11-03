@@ -11,8 +11,8 @@ import {
 } from "@zody/shared/node";
 import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import {
-  createZCodeCredentialCipher,
-  isEncryptedZCodeCredentialValue,
+  createZodyCredentialCipher,
+  isEncryptedZodyCredentialValue,
   type ZodyCredentialCipher,
 } from "./credential-cipher.js";
 
@@ -51,15 +51,15 @@ export interface SharedZodyCredentialStore {
   saveReplacing(key: string, value: string, replacedKeys: readonly string[]): Promise<void>;
 }
 
-export function createSharedZCodeCredentialStore(
+export function createSharedZodyCredentialStore(
   options: SharedZodyCredentialStoreOptions = {},
 ): SharedZodyCredentialStore {
   const env = options.env ?? process.env;
-  const filePath = resolveSharedZCodeCredentialsPath(options);
+  const filePath = resolveSharedZodyCredentialsPath(options);
   const getCipher = async () => {
     if (options.cipher) return options.cipher;
     const secret = await resolveStoredCredentialSecret(filePath, env);
-    return createZCodeCredentialCipher({ env: { [CREDENTIAL_SECRET_ENV_KEY]: secret } });
+    return createZodyCredentialCipher({ env: { [CREDENTIAL_SECRET_ENV_KEY]: secret } });
   };
 
   return {
@@ -215,11 +215,11 @@ export function createSharedZCodeCredentialStore(
   };
 }
 
-export function loadSharedZCodeCredentialSync(
+export function loadSharedZodyCredentialSync(
   key: string,
   options: SharedZodyCredentialStoreOptions = {},
 ): string | undefined {
-  const filePath = resolveSharedZCodeCredentialsPath(options);
+  const filePath = resolveSharedZodyCredentialsPath(options);
   if (!existsSync(filePath)) {
     return undefined;
   }
@@ -232,10 +232,10 @@ export function loadSharedZCodeCredentialSync(
     if (rawValue === undefined) {
       return undefined;
     }
-    const decrypted = isEncryptedZCodeCredentialValue(rawValue)
+    const decrypted = isEncryptedZodyCredentialValue(rawValue)
       ? (
           options.cipher ??
-          createZCodeCredentialCipher({
+          createZodyCredentialCipher({
             env: {
               [CREDENTIAL_SECRET_ENV_KEY]: readStoredCredentialSecretSync(filePath, options.env),
             },
@@ -248,7 +248,7 @@ export function loadSharedZCodeCredentialSync(
   }
 }
 
-export function resolveSharedZCodeCredentialsPath(
+export function resolveSharedZodyCredentialsPath(
   options: SharedZodyCredentialStoreOptions = {},
 ): string {
   if (options.filePath) {
@@ -306,7 +306,7 @@ async function decryptValue(
   value: string,
   getCipher: () => Promise<ZodyCredentialCipher>,
 ): Promise<string> {
-  return isEncryptedZCodeCredentialValue(value) ? (await getCipher()).decrypt(value) : value;
+  return isEncryptedZodyCredentialValue(value) ? (await getCipher()).decrypt(value) : value;
 }
 
 function parseCredentialRecord(value: unknown): Record<string, string> {

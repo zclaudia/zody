@@ -2,16 +2,16 @@ import { formatJson } from "@zody/core";
 import type { Logger } from "@zody/contracts";
 import type { GlobalOptions, RunContext } from "@zody/shared-types";
 import type {
-  inspectZCodeCustomCommand,
+  inspectZodyCustomCommand,
   InspectZodyCustomCommandOptions,
-  listZCodeCustomCommands,
+  listZodyCustomCommands,
   ListZodyCustomCommandsOptions,
   ZodyCustomCommandInspection,
 } from "@zody/bootstrap";
 import type { CliEnv } from "./env.js";
 
 type BootstrapModule = typeof import("@zody/bootstrap");
-type CustomCommandListOutcome = Awaited<ReturnType<typeof listZCodeCustomCommands>>;
+type CustomCommandListOutcome = Awaited<ReturnType<typeof listZodyCustomCommands>>;
 type CustomCommandListItem = CustomCommandListOutcome["commands"][number];
 
 interface CommandsCommandDependencies {
@@ -19,10 +19,10 @@ interface CommandsCommandDependencies {
   env?: CliEnv;
   inspectCustomCommand?: (
     options: InspectZodyCustomCommandOptions,
-  ) => ReturnType<typeof inspectZCodeCustomCommand>;
+  ) => ReturnType<typeof inspectZodyCustomCommand>;
   listCustomCommands?: (
     options: ListZodyCustomCommandsOptions,
-  ) => ReturnType<typeof listZCodeCustomCommands>;
+  ) => ReturnType<typeof listZodyCustomCommands>;
   loadBootstrapModule?: () => Promise<BootstrapModule>;
   logger?: Logger;
 }
@@ -109,13 +109,13 @@ async function runCommandsInspectCommand(
 async function resolveListCustomCommands(deps: CommandsCommandDependencies) {
   if (deps.listCustomCommands) return deps.listCustomCommands;
   const bootstrap = deps.loadBootstrapModule ?? (() => import("@zody/bootstrap"));
-  return (await bootstrap()).listZCodeCustomCommands;
+  return (await bootstrap()).listZodyCustomCommands;
 }
 
 async function resolveInspectCustomCommand(deps: CommandsCommandDependencies) {
   if (deps.inspectCustomCommand) return deps.inspectCustomCommand;
   const bootstrap = deps.loadBootstrapModule ?? (() => import("@zody/bootstrap"));
-  return (await bootstrap()).inspectZCodeCustomCommand;
+  return (await bootstrap()).inspectZodyCustomCommand;
 }
 
 function reportCommandsError(ctx: RunContext, options: GlobalOptions, error: unknown): number {

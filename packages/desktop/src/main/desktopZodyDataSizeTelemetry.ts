@@ -3,11 +3,11 @@ import type { ArmsRumEnv, FinalArmsCustomEventPayload } from "@zody/shared";
 
 import type { ZodyDataSizeScanResult } from "./zodyDataSizeScanner.js";
 import {
-  readZCodeDataSizeTelemetryState,
-  writeZCodeDataSizeTelemetryState,
+  readZodyDataSizeTelemetryState,
+  writeZodyDataSizeTelemetryState,
   type ZodyDataSizeTelemetryState,
 } from "./zodyDataSizeTelemetryState.js";
-import { scanZCodeDataDirectoryInWorker } from "./zodyDataSizeWorkerClient.js";
+import { scanZodyDataDirectoryInWorker } from "./zodyDataSizeWorkerClient.js";
 
 export type { ZodyDataSizeTelemetryState } from "./zodyDataSizeTelemetryState.js";
 
@@ -89,7 +89,7 @@ function stringifyProperties(
   );
 }
 
-export function buildZCodeDataSizeArmsPayload(params: {
+export function buildZodyDataSizeArmsPayload(params: {
   context: {
     appVersion: string;
     armsEnv: ArmsRumEnv;
@@ -149,7 +149,7 @@ function unrefTimer(timer: ReturnType<typeof setTimeout> | ReturnType<typeof set
   }
 }
 
-export function createZCodeDataSizeTelemetryScheduler(
+export function createZodyDataSizeTelemetryScheduler(
   dependencies: ZodyDataSizeTelemetrySchedulerDependencies,
 ): { start: () => Promise<void>; stop: () => void } {
   const timing = { ...DEFAULT_TIMING, ...dependencies.timing };
@@ -390,10 +390,10 @@ export function createZCodeDataSizeTelemetryScheduler(
   };
 }
 
-let desktopScheduler: ReturnType<typeof createZCodeDataSizeTelemetryScheduler> | null = null;
+let desktopScheduler: ReturnType<typeof createZodyDataSizeTelemetryScheduler> | null = null;
 
-export function registerDesktopZCodeDataSizeTelemetry(options: {
-  context: Parameters<typeof buildZCodeDataSizeArmsPayload>[0]["context"];
+export function registerDesktopZodyDataSizeTelemetry(options: {
+  context: Parameters<typeof buildZodyDataSizeArmsPayload>[0]["context"];
   getSystemIdleTimeSeconds: () => number;
   isAppBackground: () => boolean;
   isZCodeBusy: () => boolean;
@@ -401,16 +401,16 @@ export function registerDesktopZCodeDataSizeTelemetry(options: {
   rootPath: string;
   stateFile: string;
 }): void {
-  stopDesktopZCodeDataSizeTelemetry();
-  desktopScheduler = createZCodeDataSizeTelemetryScheduler({
+  stopDesktopZodyDataSizeTelemetry();
+  desktopScheduler = createZodyDataSizeTelemetryScheduler({
     deviceMid: options.context.deviceMid,
     getSystemIdleTimeSeconds: options.getSystemIdleTimeSeconds,
     isAppBackground: options.isAppBackground,
     isZCodeBusy: options.isZCodeBusy,
     logger: options.logger,
-    readState: () => readZCodeDataSizeTelemetryState(options.stateFile),
+    readState: () => readZodyDataSizeTelemetryState(options.stateFile),
     report: (result) => {
-      const payload = buildZCodeDataSizeArmsPayload({ context: options.context, result });
+      const payload = buildZodyDataSizeArmsPayload({ context: options.context, result });
       armsRum.sendCustom({
         group: payload.group,
         name: payload.name,
@@ -420,7 +420,7 @@ export function registerDesktopZCodeDataSizeTelemetry(options: {
       });
     },
     scan: ({ signal }) =>
-      scanZCodeDataDirectoryInWorker(
+      scanZodyDataDirectoryInWorker(
         {
           maxDurationMs: ZCODE_DATA_SIZE_SCAN_MAX_DURATION_MS,
           maxFiles: ZCODE_DATA_SIZE_SCAN_MAX_FILES,
@@ -428,14 +428,14 @@ export function registerDesktopZCodeDataSizeTelemetry(options: {
         },
         signal,
       ),
-    writeState: (state) => writeZCodeDataSizeTelemetryState(options.stateFile, state),
+    writeState: (state) => writeZodyDataSizeTelemetryState(options.stateFile, state),
   });
   void desktopScheduler.start().catch((error) => {
     options.logger.warn("[zcode-data-size] scheduler start failed", error);
   });
 }
 
-export function stopDesktopZCodeDataSizeTelemetry(): void {
+export function stopDesktopZodyDataSizeTelemetry(): void {
   desktopScheduler?.stop();
   desktopScheduler = null;
 }

@@ -18,7 +18,7 @@ import { mergeTaskListMembershipFields } from "@/v4/taskListRowActivity.js";
 import { fetchTaskListMembershipSets } from "@/lib/taskListMembershipSets.js";
 import { useTaskListMembershipVersion } from "@/v4/taskListMembershipVersion.js";
 import { useGlobalTaskList } from "@/hooks/useGlobalTaskList.js";
-import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { selectWorkspaceZodyState, useZodySessionStore } from "@/store/zodySessionStore.js";
 import { buildTaskEntityKey, buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
 import { mergeTaskWithOptimisticMeta } from "@/lib/zodyTaskMetaMerge.js";
 import {
@@ -645,11 +645,11 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
   );
   const [saving, setSaving] = useState(false);
   const requestIdRef = useRef(0);
-  const taskListVersionSignature = useZCodeSessionStore((state) =>
+  const taskListVersionSignature = useZodySessionStore((state) =>
     JSON.stringify(
       params.workspaceTabs.map((tab) => {
         const workspaceKey = buildTaskWorkspaceKey(tab.workspacePath, tab.workspaceIdentity);
-        const workspaceState = selectWorkspaceZCodeState(
+        const workspaceState = selectWorkspaceZodyState(
           state,
           tab.workspacePath,
           tab.workspaceIdentity,
@@ -689,7 +689,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
   const optimisticTaskOverlayByWorkspaceKey = useWorkspaceTaskOptimisticOverlayByWorkspaceKey(
     params.workspaceTabs,
   );
-  const clearPromotedGroupedDraftTask = useZCodeSessionStore(
+  const clearPromotedGroupedDraftTask = useZodySessionStore(
     (state) => state.clearPromotedGroupedDraftTask,
   );
   const visibleMissingTaskKeysRef = useRef<Set<string>>(new Set());

@@ -39,7 +39,7 @@ export interface ParamsSchema<T> {
 }
 
 export interface ZodyProtocolAgentDependencies {
-  createZCodeApp(options?: Omit<ZodyAppOptions, "providerRegistry">): ZodyApp | Promise<ZodyApp>;
+  createZodyApp(options?: Omit<ZodyAppOptions, "providerRegistry">): ZodyApp | Promise<ZodyApp>;
   /**
    * 每个 session record 的内存 event store 工厂。
    * 默认 turn 窗口保留策略；测试可注入 spy 或 unbounded 实现做对照。

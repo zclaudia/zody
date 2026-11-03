@@ -4,7 +4,7 @@ import type { IServiceAccessor } from "@zody/services";
 import type { ZodyWorkspaceEvent } from "@zody/shared";
 import { logger } from "@/logger.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
-import { useZCodeSessionStore, selectWorkspaceZCodeState } from "@/store/zodySessionStore.js";
+import { useZodySessionStore, selectWorkspaceZodyState } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import {
   buildTaskEntityKey,
@@ -226,11 +226,11 @@ export function useWorkspaceTaskLists(params: {
   const nextRequestIdRef = useRef(0);
   const rerunRequestedRef = useRef(false);
   const groupCacheRef = useRef<Map<string, WorkspaceTaskListGroup>>(new Map());
-  const taskListVersionSignature = useZCodeSessionStore((state) =>
+  const taskListVersionSignature = useZodySessionStore((state) =>
     buildWorkspaceTaskListVersionSignature(
       params.workspaceTabs.map((tab) => {
         const workspaceKey = buildTaskWorkspaceKey(tab.workspacePath, tab.workspaceIdentity);
-        const workspaceState = selectWorkspaceZCodeState(
+        const workspaceState = selectWorkspaceZodyState(
           state,
           tab.workspacePath,
           tab.workspaceIdentity,

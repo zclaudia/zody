@@ -192,7 +192,7 @@ async function findMissingRemoteOfficialPluginAssetPaths(params: {
   return missingPaths;
 }
 
-async function shouldSkipDevelopmentZCodeAgentDeploy(params: {
+async function shouldSkipDevelopmentZodyAgentDeploy(params: {
   backend: IRemoteBackend;
   remoteVersionFile: string;
   remoteDevVersionFile: string;
@@ -373,7 +373,7 @@ async function uploadDevelopmentOfficialPluginPackages(params: {
   }
 }
 
-export async function deployDevelopmentZCodeAgentRuntime(
+export async function deployDevelopmentZodyAgentRuntime(
   backend: IRemoteBackend,
   params: DeployDevelopmentZodyAgentRuntimeParams,
   loggers: DeployLoggers,
@@ -395,7 +395,7 @@ export async function deployDevelopmentZCodeAgentRuntime(
   });
 
   if (
-    await shouldSkipDevelopmentZCodeAgentDeploy({
+    await shouldSkipDevelopmentZodyAgentDeploy({
       backend,
       remoteVersionFile: params.remoteVersionFile,
       remoteDevVersionFile,

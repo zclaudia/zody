@@ -2,9 +2,9 @@ import type { ConfigResult } from "@zody/adapters/config";
 import type { PluginLoadOutcome } from "@zody/contracts";
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zody/contracts";
 import {
-  listZCodePlugins,
-  setZCodePluginEnabled,
-  uninstallZCodeMarketplacePlugin,
+  listZodyPlugins,
+  setZodyPluginEnabled,
+  uninstallZodyMarketplacePlugin,
 } from "../plugins.js";
 import type {
   ZodyApp,
@@ -40,12 +40,12 @@ function createPluginFacade(options: CreatePluginFacadeOptions): PluginFacade {
   });
 
   return {
-    listPlugins: async (): Promise<PluginLoadOutcome> => listZCodePlugins(commonOptions()),
+    listPlugins: async (): Promise<PluginLoadOutcome> => listZodyPlugins(commonOptions()),
     setPluginEnabled: async (
       plugin: string,
       enabled: boolean,
     ): Promise<ZodyPluginSetResult> => {
-      const result = await setZCodePluginEnabled({
+      const result = await setZodyPluginEnabled({
         ...commonOptions(),
         enabled,
         plugin,
@@ -57,7 +57,7 @@ function createPluginFacade(options: CreatePluginFacadeOptions): PluginFacade {
       return result;
     },
     uninstallPlugin: async (plugin: string): Promise<ZodyPluginUninstallResult> => {
-      const removed = await uninstallZCodeMarketplacePlugin({
+      const removed = await uninstallZodyMarketplacePlugin({
         ...commonOptions(),
         pluginId: plugin,
       });

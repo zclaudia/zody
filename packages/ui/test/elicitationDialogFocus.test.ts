@@ -5,7 +5,7 @@ import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ZodyElicitationRequest } from "@zody/shared";
 import { ElicitationDialog } from "@/ElicitationDialog.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 afterEach(() => {
   cleanup();
@@ -44,7 +44,7 @@ describe("ElicitationDialog custom answer focus", () => {
       const onRespond = vi.fn();
       const { container } = render(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: "zh-CN" },
           createElement(ElicitationDialog, { request, onRespond }),
         ),

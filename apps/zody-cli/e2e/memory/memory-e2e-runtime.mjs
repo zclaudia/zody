@@ -316,7 +316,7 @@ function createApp(input) {
   });
   const providerRegistry = createProviderRegistry(input.modules.provider, target);
 
-  return input.modules.bootstrap.createZCodeApp({
+  return input.modules.bootstrap.createZodyApp({
     env,
     modelAdapter,
     providerRegistry,

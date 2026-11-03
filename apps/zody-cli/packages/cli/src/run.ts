@@ -2,7 +2,7 @@ import { extractDisallowedToolsArgs, parseGlobalArgs } from "./arguments.js";
 import { createNodeLoggerFactory } from "@zody/adapters";
 import { getRuntimeInfo, type PresentationSurface } from "@zody/core";
 import { color, formatJson, supportsColor } from "@zody/core";
-import { getZCodeCopy, isUiLocale, type UiLocale } from "@zody/i18n";
+import { getZodyCopy, isUiLocale, type UiLocale } from "@zody/i18n";
 import type { RunContext, GlobalOptions, GlobalOutputFormat } from "@zody/shared-types";
 import {
   applyCliRuntimeEnvSanitization,
@@ -131,7 +131,7 @@ const normalizeOutputFormat = (value: string | undefined): GlobalOutputFormat | 
 const normalizeLocaleOption = (value: string | undefined): UiLocale | undefined => {
   if (value === undefined) return undefined;
   if (isUiLocale(value)) return value;
-  throw new Error(getZCodeCopy().cli.errors.localeUnsupported(value));
+  throw new Error(getZodyCopy().cli.errors.localeUnsupported(value));
 };
 
 const normalizePromptMode = (value: string | undefined): CliPermissionMode | undefined => {
@@ -243,7 +243,7 @@ const runDoctor = (ctx: RunContext, options: GlobalOptions, workingDirectory: st
   return 0;
 };
 
-const runZCodeProtocolCommand = async (
+const runZodyProtocolCommand = async (
   ctx: RunContext,
   options: GlobalOptions,
   deps: RunDependencies,
@@ -558,7 +558,7 @@ export const run = async (ctx: RunContext, deps: RunDependencies = {}): Promise<
       return 0;
     case "agent-server":
     case "app-server":
-      return await runZCodeProtocolCommand(
+      return await runZodyProtocolCommand(
         ctx,
         options,
         commandDeps,

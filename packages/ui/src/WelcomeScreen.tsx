@@ -13,7 +13,7 @@ import { ArrowLeftRightIcon, CpuIcon, LockIcon } from "lucide-react";
 import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { cn } from "@/components/lib/utils.js";
 import { DesktopOverlayWindowControls } from "@/DesktopOverlayWindowControls.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { LoginApiKeyForm } from "@/login/LoginApiKeyForm.js";
 
 interface WelcomeScreenProps {
@@ -43,7 +43,7 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
 }
 
 function WelcomeBrandPanel() {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <aside
       data-testid="welcome-brand-panel"
@@ -136,7 +136,7 @@ interface LoginPanelProps {
 }
 
 export function LoginPanel({ active, onComplete }: LoginPanelProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   // fork（F4.1b）：active 原用于 OAuth 等待态的取消与 loginEntryRequest 消费；
   // BYOK 引导是纯表单，不依赖激活态。参数保留以稳定 WelcomeScreen 契约（Root 挂载点）。
   void active;

@@ -11,7 +11,7 @@ import { useCallback, useMemo } from "react";
 import { completeNewModelSelection } from "@zody/provider";
 import { ZCODE_AGENT_PROVIDER, type ZodyConfigOption } from "@zody/shared";
 import { useModelSelectionView } from "@/hooks/useModelSelectionView.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { buildRegistryModelSelectGroups } from "@/lib/modelSelectionGroups.js";
 import { resolveModelThoughtOption } from "@/lib/modelThoughtOption.js";
 import { encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
@@ -49,7 +49,7 @@ export interface WorkflowSettingsModelFace {
 }
 
 export function useWorkflowSettingsModelChoices(scope: WorkflowSettingsModelScope) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const format = useCallback(
     (id: string, values?: Record<string, string | number>) => intl.formatMessage({ id }, values),
     [intl],

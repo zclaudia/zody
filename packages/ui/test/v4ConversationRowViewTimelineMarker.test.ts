@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ModelSelectionView } from "@zody/services";
 import type { TimelineMarkerRow } from "@zody/shared/zody-protocol-v4";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationRowView } from "@/v4/ConversationRowView.js";
 import type { ConversationRowRenderContext } from "@/v4/conversationRowContext.js";
 
@@ -27,7 +27,7 @@ function currentContext(): ConversationRowRenderContext {
 function renderMarker(row: TimelineMarkerRow, locale: "en-US" | "zh-CN" = "zh-CN"): string {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(ConversationRowView, { context: currentContext(), row }),
     ),
@@ -197,7 +197,7 @@ describe("ConversationRowView timeline marker contract", () => {
     };
     const view = render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(ConversationRowView, { context: currentContext(), row }),
       ),
@@ -213,7 +213,7 @@ describe("ConversationRowView timeline marker contract", () => {
       ]);
       view.rerender(
         createElement(
-          ZCodeIntlProvider,
+          ZodyIntlProvider,
           { initialLocale: "zh-CN" },
           createElement(ConversationRowView, { context: currentContext(), row: { ...row } }),
         ),

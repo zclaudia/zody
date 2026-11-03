@@ -1,6 +1,6 @@
 import type { IBroadcastService } from "@zody/services";
 import { beforeEach, describe, expect, it } from "vitest";
-import { createZCodeStore } from "@/store/index.js";
+import { createZodyStore } from "@/store/index.js";
 
 const localStorageState = new Map<string, string>();
 
@@ -46,7 +46,7 @@ describe("createZCodeStore global state", () => {
   // store 不再暴露对应字段；这里只保留仍在使用的全局状态断言。
 
   it("只在用户从未登录进入登录态时推进鉴权会话序号", () => {
-    const store = createZCodeStore(mockBroadcastService);
+    const store = createZodyStore(mockBroadcastService);
     const user = { id: "user-1", username: "tester", displayName: "Tester" };
 
     store.getState().setUser(user);
@@ -62,7 +62,7 @@ describe("createZCodeStore global state", () => {
   });
 
   it("性能模式默认关闭，并持久化用户选择", () => {
-    const store = createZCodeStore(mockBroadcastService);
+    const store = createZodyStore(mockBroadcastService);
 
     expect(store.getState().performanceMode).toBe(false);
 
@@ -70,6 +70,6 @@ describe("createZCodeStore global state", () => {
 
     expect(store.getState().performanceMode).toBe(true);
     expect(localStorageState.get("zody-performance-mode")).toBe("true");
-    expect(createZCodeStore(mockBroadcastService).getState().performanceMode).toBe(true);
+    expect(createZodyStore(mockBroadcastService).getState().performanceMode).toBe(true);
   });
 });

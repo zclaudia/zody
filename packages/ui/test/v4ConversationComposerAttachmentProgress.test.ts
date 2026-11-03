@@ -7,7 +7,7 @@ import {
   TID_V4_COMPOSER_SEND,
   testId,
 } from "@zody/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationComposer } from "@/v4/ConversationComposer.js";
 
 const attachmentState = vi.hoisted(() => ({
@@ -130,7 +130,7 @@ const AnyConversationComposer = ConversationComposer as unknown as ComponentType
 function renderComposer(overrides: Record<string, unknown> = {}) {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(AnyConversationComposer, {
         draftMode: true,

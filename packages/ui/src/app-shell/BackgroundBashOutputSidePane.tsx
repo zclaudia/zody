@@ -2,7 +2,7 @@ import { memo, useLayoutEffect, useRef } from "react";
 import { ArrowDownIcon, LoaderCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { ScrollFadeViewport } from "@/components/ui/scroll-fade-viewport.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useBackgroundBashOutput } from "@/hooks/useBackgroundBashOutput.js";
 import { backgroundBashOutputTitle } from "@/lib/backgroundBashOutputTitle.js";
 import { logger } from "@/logger.js";
@@ -18,7 +18,7 @@ export const BackgroundBashOutputSidePane = memo(function BackgroundBashOutputSi
   visible: boolean;
   onOpenCodeViewer?: (source: CodeViewerSource) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const preview = useBackgroundBashOutput(tab, visible);
   const { latest, display, following } = preview;
   const scroll = useRef<HTMLDivElement>(null);

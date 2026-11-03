@@ -8,7 +8,7 @@ import type { ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { PermissionDialog } from "../src/PermissionDialog.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 
 const WORKSPACE_PATH = "/Users/dev/ZCodeProject/demo";
 const SUBAGENT_ORIGIN = {
@@ -28,7 +28,7 @@ function renderPermissionDialog(
   const Dialog = PermissionDialog as ComponentType<Record<string, unknown>>;
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(Dialog, {
         request,

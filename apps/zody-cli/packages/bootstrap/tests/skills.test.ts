@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { inspectZCodeSkill, listZCodeSkills } from "../src/skills.js";
+import { inspectZodySkill, listZodySkills } from "../src/skills.js";
 
 describe("inspectZCodeSkill", () => {
   it("loads one discovered skill through the configured skill adapter", async () => {
@@ -25,7 +25,7 @@ describe("inspectZCodeSkill", () => {
         ].join("\n"),
       );
 
-      const inspection = await inspectZCodeSkill({
+      const inspection = await inspectZodySkill({
         env: {},
         name: "demo",
         skipUserConfig: true,
@@ -47,7 +47,7 @@ describe("inspectZCodeSkill", () => {
 
     try {
       await expect(
-        inspectZCodeSkill({
+        inspectZodySkill({
           env: {},
           name: "missing",
           skipUserConfig: true,
@@ -65,7 +65,7 @@ describe("inspectZCodeSkill", () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-bootstrap-bundled-skill-"));
 
     try {
-      const outcome = await listZCodeSkills({
+      const outcome = await listZodySkills({
         env: { ZCODE_STORAGE_DIR: join(dir, "storage") },
         skipUserConfig: true,
         workingDirectory: dir,
@@ -88,7 +88,7 @@ describe("inspectZCodeSkill", () => {
 
     try {
       const env = { ZCODE_STORAGE_DIR: join(dir, "storage") };
-      const outcome = await listZCodeSkills({
+      const outcome = await listZodySkills({
         env,
         skipUserConfig: true,
         workingDirectory: dir,
@@ -123,7 +123,7 @@ describe("inspectZCodeSkill", () => {
       ]);
       expect(outcome.diagnostics).toEqual([]);
 
-      const pptxInspection = await inspectZCodeSkill({
+      const pptxInspection = await inspectZodySkill({
         env,
         name: "pptx",
         skipUserConfig: true,

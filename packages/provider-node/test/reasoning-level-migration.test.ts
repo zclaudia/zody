@@ -14,11 +14,11 @@ import {
   type ModelSelection,
   type ProviderRegistryServiceSnapshot,
 } from "@zody/provider";
-import { NodeZCodeBuiltinProviderConfigSource } from "../src/index.js";
+import { NodeZodyBuiltinProviderConfigSource } from "../src/index.js";
 import { createNodeModelSelectionFacade } from "../src/model-selection-facade.js";
 import { legacyReasoningLevelRenames } from "../src/legacy-reasoning-level-renames.js";
 
-const source = new NodeZCodeBuiltinProviderConfigSource({
+const source = new NodeZodyBuiltinProviderConfigSource({
   bundledFilePath: fileURLToPath(
     new URL("../../../config/provider/zody-builtin.json", import.meta.url),
   ),

@@ -11,7 +11,7 @@ import type { ZodyTaskMeta } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { useGlobalTaskList } from "@/hooks/useGlobalTaskList.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 
 const REMOTE_IDENTITY = "remote:wsl:default:root:/root";
@@ -43,7 +43,7 @@ function remoteTask(): ZodyTaskMeta {
 
 describe("useGlobalTaskList remote connection generation", () => {
   afterEach(() => {
-    useZCodeSessionStore.setState({ workspaces: {} });
+    useZodySessionStore.setState({ workspaces: {} });
   });
 
   it("同一 WSL workspace 从断开占位变为在线 session 后重新查询 Controller", async () => {

@@ -97,7 +97,7 @@ function toRoundedUnit(value: number, divisor: number): number | undefined {
   return Number.isFinite(value) && value >= 0 ? Math.round(value / divisor) : undefined;
 }
 
-export function createZCodeProcessResourceSampler(
+export function createZodyProcessResourceSampler(
   options: CreateZodyProcessResourceSamplerOptions,
 ): ZodyProcessResourceSampler {
   const platform = options.platform ?? (process.platform as ZodyProcessResourceSample["platform"]);

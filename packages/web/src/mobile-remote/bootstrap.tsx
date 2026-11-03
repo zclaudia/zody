@@ -4,7 +4,7 @@ import {
   Root,
   WebRemoteControlMobileStartPage,
   WebRemoteControlStandaloneStoreProvider,
-  ZCodeIntlProvider,
+  ZodyIntlProvider,
   generateMobileDeviceFingerprint,
   setStreamClientId,
   setWebRemoteControlTerminalTransportState,
@@ -1668,7 +1668,7 @@ async function startGatewaySession(
     document.title = "Zody - Web Remote Control";
     webEntryRoot.render(
       <AppErrorBoundary key={bridge.bridgeSessionId}>
-        <ZCodeIntlProvider
+        <ZodyIntlProvider
           settingService={services.settingService}
           broadcastService={services.broadcastService}
           preferSettingServiceLocale
@@ -1761,7 +1761,7 @@ async function startGatewaySession(
             supportsEmbeddedBrowser={false}
             allowRemoteWorkspace={false}
           />
-        </ZCodeIntlProvider>
+        </ZodyIntlProvider>
       </AppErrorBoundary>,
     );
     renderCurrentExternalRelayRoot = () => {
@@ -1792,7 +1792,7 @@ async function startGatewaySession(
     disposeStartPageRecentSubscription = undefined;
     webEntryRoot.render(
       <AppErrorBoundary key={`home-only-${workspaceKey}`}>
-        <ZCodeIntlProvider>
+        <ZodyIntlProvider>
           <Root
             services={createHomeOnlyWebRemoteControlServices()}
             platform={createWebPlatform({
@@ -1851,7 +1851,7 @@ async function startGatewaySession(
             allowRemoteWorkspace={false}
             initialWebRemoteControlWorkspaceList={initialResult}
           />
-        </ZCodeIntlProvider>
+        </ZodyIntlProvider>
       </AppErrorBoundary>,
     );
   };
@@ -1884,7 +1884,7 @@ async function startGatewaySession(
         recentProjects: [],
       };
       webEntryRoot.render(
-        <ZCodeIntlProvider>
+        <ZodyIntlProvider>
           {/* 空态页头部 ThemeMenu 需要 store 上下文；修复 A-MO-01 的 StartPage 白屏崩溃。 */}
           <WebRemoteControlStandaloneStoreProvider>
           <WebRemoteControlMobileStartPage
@@ -1963,7 +1963,7 @@ async function startGatewaySession(
             }
           />
           </WebRemoteControlStandaloneStoreProvider>
-        </ZCodeIntlProvider>,
+        </ZodyIntlProvider>,
       );
     };
 

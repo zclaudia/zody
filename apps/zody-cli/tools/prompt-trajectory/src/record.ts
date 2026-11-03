@@ -18,7 +18,7 @@ import { startOpenAiProviderProxy } from "./openai-provider-proxy.js";
 
 interface ZodyBootstrapModule {
   createModelAdapter(input: unknown): unknown;
-  createZCodeApp(input: unknown): Promise<{
+  createZodyApp(input: unknown): Promise<{
     close?: () => Promise<void>;
     submitPrompt(prompt: RecorderPromptInput): Promise<unknown>;
   }>;
@@ -89,7 +89,7 @@ export async function recordPromptTrajectoryFromFixture(input: {
   let closeApp: (() => Promise<void>) | undefined;
 
   try {
-    const { bootstrap, contracts, provider } = await loadZCodeModules();
+    const { bootstrap, contracts, provider } = await loadZodyModules();
     const proxy = await startOpenAiProviderProxy({
       ledger,
       mockResponses: fixture.mockResponses,
@@ -112,7 +112,7 @@ export async function recordPromptTrajectoryFromFixture(input: {
     const modelSelection = contracts.parseModelSelection(resolveModelSelection(fixture));
     const eventObserver = createRuntimeEventObserver();
     const providerRegistry = createRecorderProviderRegistry(provider, modelConfig, fixture);
-    const app = await bootstrap.createZCodeApp({
+    const app = await bootstrap.createZodyApp({
       eventSink: eventObserver.sink,
       env: process.env,
       modelAdapter: recorderModelAdapter,
@@ -256,7 +256,7 @@ function assertNever(value: never): never {
   throw new Error(`Unsupported fixture step: ${JSON.stringify(value)}`);
 }
 
-async function loadZCodeModules(): Promise<{
+async function loadZodyModules(): Promise<{
   bootstrap: ZodyBootstrapModule;
   contracts: ZodyContractsModule;
   provider: ZodyProviderModule;

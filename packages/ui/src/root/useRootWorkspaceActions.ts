@@ -9,7 +9,7 @@ import { parseWslUncWorkspacePath } from "@/lib/wslUncWorkspace.js";
 import { logger } from "@/logger.js";
 import { openFolderFromWorkspaceEntry } from "@/root/openWorkspaceFolderEntry.js";
 import { useConversationWorkspaceActions } from "@/root/useConversationWorkspaceActions.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import { isWorkspaceReadOnly, type TabStore, type TabStoreState } from "@/store/tabStore.js";
 import type { RootProps } from "@/root/types.js";
 import {
@@ -74,7 +74,7 @@ export function useRootWorkspaceActions({
   onOpenRemoteConnection,
   workbenchGroupClientMode = "desktop-continuous",
 }: {
-  intl: ReturnType<typeof import("@/i18n/IntlProvider.js").useZCodeIntl>["intl"];
+  intl: ReturnType<typeof import("@/i18n/IntlProvider.js").useZodyIntl>["intl"];
   platform: IPlatformService;
   services: IServiceAccessor;
   tabStoreApi: TabStore;
@@ -132,7 +132,7 @@ export function useRootWorkspaceActions({
         useWorkbenchGroupStore.getState().deactivateActiveGroup();
         usePaneLayoutStore.getState().resetToPrimaryPane();
       }
-      useZCodeSessionStore.getState().startDraft(workspacePath, undefined, workspaceIdentity);
+      useZodySessionStore.getState().startDraft(workspacePath, undefined, workspaceIdentity);
     },
     [workbenchGroupClientMode],
   );
@@ -224,7 +224,7 @@ export function useRootWorkspaceActions({
       // group / paneLayout 中继续拆一个 draft；目标 workspace 取 focused pane。
       useWorkbenchGroupStore.getState().deactivateActiveGroup();
       usePaneLayoutStore.getState().resetToPrimaryPane();
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .startDraft(
           newTaskTarget.workspacePath,
@@ -248,7 +248,7 @@ export function useRootWorkspaceActions({
             ...(initialPromptMention ? { mention: initialPromptMention } : {}),
           },
         );
-        useZCodeSessionStore
+        useZodySessionStore
           .getState()
           .requestComposerTextInsert(
             newTaskTarget.workspacePath,

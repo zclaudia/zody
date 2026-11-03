@@ -21,11 +21,11 @@ export function createNodeProviderRuntimePathEnv(
 export function resolveNodeProviderRuntimePaths(
   env: Readonly<Record<string, string | undefined>>,
 ): NodeProviderRuntimePaths | null {
-  const zcodeBuiltinFilePath = env[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
+  const zodyBuiltinFilePath = env[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
   const personalFilePath = env[ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]?.trim();
-  if (!zcodeBuiltinFilePath && !personalFilePath) return null;
-  if (!zcodeBuiltinFilePath || !personalFilePath) {
+  if (!zodyBuiltinFilePath && !personalFilePath) return null;
+  if (!zodyBuiltinFilePath || !personalFilePath) {
     throw new Error("ZCode Built-in 与 Personal Provider Config 路径必须同时提供");
   }
-  return Object.freeze({ zcodeBuiltinFilePath, personalFilePath });
+  return Object.freeze({ zcodeBuiltinFilePath: zodyBuiltinFilePath, personalFilePath });
 }

@@ -12,7 +12,7 @@ import { WebRemoteControlMobileShell } from "@/WebRemoteControlMobileShell.js";
  * 前进落在 overlay 条目时按条目恢复浮层。
  */
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -28,7 +28,7 @@ vi.mock("@/logger.js", () => ({
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (
+  useZodyStore: (
     selector: (state: { theme: string; setTheme: (theme: string) => void }) => unknown,
   ) => selector({ theme: "dark", setTheme: vi.fn() }),
 }));

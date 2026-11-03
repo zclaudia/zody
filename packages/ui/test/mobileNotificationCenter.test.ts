@@ -9,7 +9,7 @@ import { MobileNotificationsFeature } from "@/MobileNotificationsFeature.js";
 const platformState = vi.hoisted(() => ({ value: null as unknown }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({ intl: { formatMessage: ({ id }: { id: string }) => id } }),
+  useZodyIntl: () => ({ intl: { formatMessage: ({ id }: { id: string }) => id } }),
 }));
 vi.mock("@/hooks/usePlatform.js", () => ({
   useOptionalPlatform: () => platformState.value,

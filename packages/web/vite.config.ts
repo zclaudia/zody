@@ -15,7 +15,7 @@ const HERE = fileURLToPath(new URL(".", import.meta.url));
 const REPO_ROOT = resolve(HERE, "../..");
 const { version } = JSON.parse(readFileSync(resolve(REPO_ROOT, "package.json"), "utf-8"));
 
-function resolveZCodeEnv(value: string | undefined): "test" | "production" {
+function resolveZodyEnv(value: string | undefined): "test" | "production" {
   return value?.trim().toLowerCase() === "production" ? "production" : "test";
 }
 
@@ -27,12 +27,12 @@ export default defineConfig(({ mode }) => {
   // 启动脚本通过 process.env 显式选择 test/production；它必须优先于 .env 文件，
   // 否则 mode 对应的旧配置可能被误解析到错误 endpoint。
   const env = { ...loadEnv(mode, REPO_ROOT, ""), ...process.env };
-  const zcodeEnv = resolveZCodeEnv(env.ZCODE_ENV);
+  const zodyEnv = resolveZodyEnv(env.ZCODE_ENV);
   const endpointEnv = {
     ...env,
-    ZCODE_ENV: zcodeEnv,
+    ZCODE_ENV: zodyEnv,
   };
-  const zcodeEndpointOrigin = resolveRuntimeZodyEndpointOrigin(endpointEnv);
+  const zodyEndpointOrigin = resolveRuntimeZodyEndpointOrigin(endpointEnv);
 
   return {
     plugins: [pdfJsCMapsPlugin(), react(), tailwindcss(), thirdPartyNoticesVitePlugin()],
@@ -75,10 +75,10 @@ export default defineConfig(({ mode }) => {
         resolveRemoteFrontendVersion(version, process.env.WEB_REMOTE_FRONTEND_VERSION),
       ),
       __ZCODE_COMMIT__: JSON.stringify(env.ZCODE_COMMIT || "unknown"),
-      __ZCODE_ENV__: JSON.stringify(zcodeEnv),
-      "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify(zcodeEndpointOrigin),
+      __ZCODE_ENV__: JSON.stringify(zodyEnv),
+      "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify(zodyEndpointOrigin),
       // 兼容旧 Web runtime 读取名；新代码统一读 VITE_ZCODE_BASE_URL。
-      "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify(zcodeEndpointOrigin),
+      "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify(zodyEndpointOrigin),
     },
     build: {
       // 手机入口产物单独放到 dist-mobile-remote，避免与普通 Web 客户端互相清空（两边都是待打包产物，

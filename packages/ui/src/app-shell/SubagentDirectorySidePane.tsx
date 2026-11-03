@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { useSessionSubagents } from "@/hooks/useSessionSubagents.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type {
   OpenScopedSubagentSideTabRequest,
   SubagentDirectorySidePaneTab,
@@ -71,7 +71,7 @@ const DirectoryRow = memo(function DirectoryRow({
   item: DirectoryItem;
   onOpen: (item: DirectoryItem) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const timestamp = "endedAt" in item ? item.endedAt : item.startedAt;
   return (
     <button
@@ -136,7 +136,7 @@ const SubagentDirectoryContents = memo(function SubagentDirectoryContents({
   tab: SubagentDirectorySidePaneTab;
   onOpenSubagentSession: (request: OpenScopedSubagentSideTabRequest) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const { layer } = useV4Conversation();
   const [lease, setLease] = useState<SessionLease | null>(null);
   const projection = useConversationProjection(lease);

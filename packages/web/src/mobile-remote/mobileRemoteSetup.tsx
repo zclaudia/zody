@@ -1,5 +1,5 @@
 import {
-  ZCodeIntlProvider,
+  ZodyIntlProvider,
   WebRemoteControlMobileBackendPicker,
   WebRemoteControlMobileSettingsScreen,
   type WebRemoteControlMobileSettingsDraft,
@@ -50,7 +50,7 @@ function renderSettingsPage(
 ): Promise<MobileRemoteGatewayConfig> {
   return new Promise((resolve) => {
     webEntryRoot.render(
-      <ZCodeIntlProvider>
+      <ZodyIntlProvider>
         <WebRemoteControlMobileSettingsScreen
           initial={{
             ...(initial?.gatewayUrl ? { gatewayUrl: initial.gatewayUrl } : {}),
@@ -70,7 +70,7 @@ function renderSettingsPage(
             resolve(next);
           }}
         />
-      </ZCodeIntlProvider>,
+      </ZodyIntlProvider>,
     );
   });
 }
@@ -99,7 +99,7 @@ function renderBackendPicker(
         return;
       }
       webEntryRoot.render(
-        <ZCodeIntlProvider>
+        <ZodyIntlProvider>
           <WebRemoteControlMobileBackendPicker
             backends={snapshot.backends}
             loading={snapshot.loading}
@@ -123,7 +123,7 @@ function renderBackendPicker(
             }}
             onBackToSettings={() => finish({ kind: "settings" })}
           />
-        </ZCodeIntlProvider>,
+        </ZodyIntlProvider>,
       );
     };
 

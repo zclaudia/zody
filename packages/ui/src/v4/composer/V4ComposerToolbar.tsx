@@ -45,7 +45,7 @@ import { useTabStore } from "@/store/TabStoreProvider.js";
 import type { ModelSelectionView } from "@zody/services";
 import type { ModelSelectionState } from "@/hooks/useModelSelectionView.js";
 import { useToolbarConfigOptions } from "@/hooks/useZodyConfig.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { logger } from "@/logger.js";
 import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
@@ -134,7 +134,7 @@ function V4ComposerModelControlsImpl({
   onSendCompressionCommand,
   onRecoverCustomModelSelection,
 }: V4ComposerToolbarProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const displayProvider = provider ?? ZCODE_AGENT_PROVIDER;
   // 配置面读取：workspace 缺省目录（taskId=null），不读旧会话态。
   const { error: configOptionsError } = useToolbarConfigOptions(

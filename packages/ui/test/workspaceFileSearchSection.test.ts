@@ -5,7 +5,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ServiceProvider } from "@/hooks/useServices.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { WorkspaceFileSearchSection } from "@/settings/WorkspaceFileSearchSection.js";
 
 // 组件顶层 hook 链（useWorkspaceServicesResolution → useServices）要求 context 存在；
@@ -18,7 +18,7 @@ function renderSection(props: { workspacePath?: string | null }): string {
       ServiceProvider,
       { services: emptyAccessor },
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(WorkspaceFileSearchSection, props),
       ),

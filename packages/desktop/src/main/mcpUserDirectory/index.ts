@@ -355,19 +355,19 @@ async function readDirectoryServersFromPreferredSources(
   scope: Exclude<McpScope, "common">,
   workspacePath?: string,
 ): Promise<NativeMcpServerRecord[]> {
-  const zcodeServers = await readDirectoryServersFromFile(
+  const zodyServers = await readDirectoryServersFromFile(
     ZCODE_MCP_DESCRIPTOR,
     scope,
     workspacePath,
   );
   // `.zcode` 是强优先级来源；只要读到 MCP server，同 scope 的 `.agents` 就不再参与。
-  if (zcodeServers.length > 0) {
-    return zcodeServers;
+  if (zodyServers.length > 0) {
+    return zodyServers;
   }
   return readDirectoryServersFromFile(AGENTS_MCP_DESCRIPTOR, scope, workspacePath);
 }
 
-async function writeZCodeServersToFile(
+async function writeZodyServersToFile(
   scope: Exclude<McpScope, "common">,
   servers: Record<string, Record<string, unknown>>,
   workspacePath?: string,
@@ -435,5 +435,5 @@ export async function saveCliMcpToUserDirectory(
     delete nextServers[payload.name];
   }
 
-  await writeZCodeServersToFile(scope, nextServers, payload.projectPath);
+  await writeZodyServersToFile(scope, nextServers, payload.projectPath);
 }

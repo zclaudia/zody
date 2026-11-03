@@ -744,7 +744,7 @@ function bootServer(
   const store = createSqliteSessionStore({ dbPath });
   const createdApps: ZodyApp[] = [];
   const server = new ZodyProtocolAgentServer({
-    createZCodeApp: (appOptions) => {
+    createZodyApp: (appOptions) => {
       const app = createFakeApp(appOptions, options.appOverrides ?? {});
       createdApps.push(app);
       return app;
@@ -979,7 +979,7 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
 describe("SessionResidentPool 配置回退", () => {
   function makeServer(deps: Partial<ZodyProtocolAgentDependencies>) {
     return new ZodyProtocolAgentServer({
-      createZCodeApp: (appOptions) => createFakeApp(appOptions, {}),
+      createZodyApp: (appOptions) => createFakeApp(appOptions, {}),
       cwd: WORKSPACE_PATH,
       ...deps,
     });

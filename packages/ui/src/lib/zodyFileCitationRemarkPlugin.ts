@@ -4,7 +4,7 @@ import {
   type AssistantFilePathResolveOptions,
 } from "@/lib/assistantFileReferences.js";
 import { getPathLeaf } from "@/lib/path.js";
-import { extractZCodeFileCitations } from "@/lib/zodyFileCitation.js";
+import { extractZodyFileCitations } from "@/lib/zodyFileCitation.js";
 
 interface CitationMarkdownNode {
   children?: CitationMarkdownNode[];
@@ -21,7 +21,7 @@ function projectCitationTextNode(
   options: AssistantFilePathResolveOptions,
 ): CitationMarkdownNode[] | null {
   const value = node.value ?? "";
-  const citations = extractZCodeFileCitations(value);
+  const citations = extractZodyFileCitations(value);
   if (citations.length === 0) return null;
 
   const nextNodes: CitationMarkdownNode[] = [];
@@ -67,7 +67,7 @@ function transformCitationChildren(
   }
 }
 
-export function createZCodeFileCitationRemarkPlugin(
+export function createZodyFileCitationRemarkPlugin(
   workspacePath: string,
   homePath?: string,
 ): Plugin {

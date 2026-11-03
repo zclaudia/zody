@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { PermissionDialog } from "@/PermissionDialog.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import type { ZodyPermissionRequest } from "@zody/shared";
 import "@/styles.css";
 const params = new URLSearchParams(location.search);
@@ -58,7 +58,7 @@ function Fixture() {
   );
 }
 createRoot(document.getElementById("root")!).render(
-  <ZCodeIntlProvider initialLocale={params.get("locale") === "en-US" ? "en-US" : "zh-CN"}>
+  <ZodyIntlProvider initialLocale={params.get("locale") === "en-US" ? "en-US" : "zh-CN"}>
     <Fixture />
-  </ZCodeIntlProvider>,
+  </ZodyIntlProvider>,
 );

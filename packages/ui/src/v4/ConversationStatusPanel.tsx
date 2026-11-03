@@ -75,7 +75,7 @@ import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { formatBackgroundTaskElapsedLabel } from "@/BackgroundTaskElapsedLabel.js";
 import { GitActionMenu } from "@/GitActionMenu.js";
 import { GitBranchSwitcher } from "@/GitBranchSwitcher.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type {
   OpenPlanDetailSideTabRequest,
   OpenSubagentDirectorySideTabRequest,
@@ -167,7 +167,7 @@ const PILL_MINI_MOBILE_MAX_WIDTH_CLASS = "max-w-[min(60cqw,20rem)]";
 
 function formatDurationUnits(
   totalSeconds: number,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
+  formatMessage: ReturnType<typeof useZodyIntl>["intl"]["formatMessage"],
 ) {
   const seconds = Math.max(0, Math.floor(totalSeconds));
   const hours = Math.floor(seconds / 3600);
@@ -202,7 +202,7 @@ function getLongestRunningWorkElapsedMs(works: readonly BackgroundWorkSummary[],
 }
 
 function formatRunningCount(
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
+  formatMessage: ReturnType<typeof useZodyIntl>["intl"]["formatMessage"],
   count: number,
 ) {
   return formatMessage(
@@ -217,7 +217,7 @@ function formatRunningCount(
 }
 
 function formatRunningSubagentCount(
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
+  formatMessage: ReturnType<typeof useZodyIntl>["intl"]["formatMessage"],
   count: number,
 ) {
   return formatMessage(
@@ -393,7 +393,7 @@ function GitStatusSection({
   workspacePath: string;
   useVerticalFloatingPanels: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const git = model.git;
   if (!git || !gitSummary || !onRefreshGit) {
     return null;
@@ -481,7 +481,7 @@ function GoalStatusSection({
   onResumeGoal?: () => void;
   separated: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const goal = model.goal;
   const isPausable =
     goal?.status === "active" || goal?.status === "verifying" || goal?.status === "notSatisfied";
@@ -739,7 +739,7 @@ function TodoHiddenGroupPreview({
   open: boolean;
   popoverSide: "bottom" | "left";
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const messageId =
     group === "preceding"
       ? items.every((item) => item.status === "completed")
@@ -833,7 +833,7 @@ function SessionPlansStatusSection({
   parentSessionId?: string;
   separated: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const sessionPlans = model.sessionPlans;
   if (!sessionPlans) return null;
 
@@ -895,7 +895,7 @@ function PlanStatusSection({
   popoverSide: "bottom" | "left";
   separated: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const plan = model.plan;
   if (!plan) return null;
   const isCompleted = plan.totalCount > 0 && plan.completedCount >= plan.totalCount;
@@ -934,7 +934,7 @@ function RunningWorkCancelButton({
   workId: string;
   onCancel?: (workId: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const handleClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
@@ -993,7 +993,7 @@ function RunningStatusItem({
   onCancelBackgroundWork?: (workId: string) => void;
   work: BackgroundWorkSummary;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   return (
     <li
@@ -1052,7 +1052,7 @@ function BackgroundWorkStatusSection({
   title: string;
   works: readonly BackgroundWorkSummary[];
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [now, setNow] = useState(() => Date.now());
   const orderedRunningWorks = useMemo(
     () => [...works].sort((left, right) => left.startedAt - right.startedAt),
@@ -1127,7 +1127,7 @@ function BackgroundWorkStatusSection({
  */
 function formatWorkflowRunElapsed(
   elapsedMs: number,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
+  formatMessage: ReturnType<typeof useZodyIntl>["intl"]["formatMessage"],
 ) {
   const seconds = Math.max(0, Math.floor(elapsedMs / 1000));
   return formatDurationUnits(seconds >= 3600 ? seconds - (seconds % 60) : seconds, formatMessage);
@@ -1136,7 +1136,7 @@ function formatWorkflowRunElapsed(
 /** run 「此刻在做什么」的词，按 i18n 拼成一句（规则在模型层的 `workflowRunWords`）。 */
 function formatWorkflowRunWords(
   words: ConversationStatusPanelWorkflowRunWords,
-  formatMessage: ReturnType<typeof useZCodeIntl>["intl"]["formatMessage"],
+  formatMessage: ReturnType<typeof useZodyIntl>["intl"]["formatMessage"],
 ) {
   switch (words.kind) {
     case "status":
@@ -1181,7 +1181,7 @@ function WorkflowRunStopButton({
   workId: string;
   onCancel: (workId: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <Button
       type="button"
@@ -1227,7 +1227,7 @@ function WorkflowRunRow({
   onOpenWorkflowRun?: (target: ConversationStatusPanelWorkflowRunTarget) => void;
   run: ConversationStatusPanelWorkflowRun;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   // 行 → 打开意图的换算与 composer 徽标直达共用（模型层 workflowRunOpenTarget）。
   const openTarget = onOpenWorkflowRun ? workflowRunOpenTarget(run) : null;
   const name = workflowRunDisplayName(run);
@@ -1370,7 +1370,7 @@ function WorkflowStatusSection({
   separated: boolean;
   title: string;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [now, setNow] = useState(() => Date.now());
   // 只有带 startedAt 的行需要秒级刷新；一行都没有时不必让面板每秒重渲染。
   const tickingRunCount = runs.filter((run) => run.startedAt !== undefined).length;
@@ -1465,7 +1465,7 @@ function SubagentStatusSection({
   title: string;
   subagents: readonly ConversationStatusPanelRunningSubagent[];
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [now, setNow] = useState(() => Date.now());
   const ordered = useMemo(
     () => [...subagents].sort((left, right) => (left.startedAt ?? 0) - (right.startedAt ?? 0)),
@@ -1638,7 +1638,7 @@ function EndedSubagentDirectoryRow({
   rootSessionId?: string;
   separated: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <EndedDirectoryRow
       count={count}
@@ -1683,7 +1683,7 @@ function WorkflowSummaryMetric({
   others: number;
   run: ConversationStatusPanelWorkflowRun;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const name = workflowRunDisplayName(run);
   const words = workflowRunWords(run);
   const wordsText = words ? formatWorkflowRunWords(words, intl.formatMessage) : null;
@@ -1744,7 +1744,7 @@ function StatusSummaryRow({
   onOpenWorkflowSection?: () => void;
   onVariantChange?: (variant: ChatViewSummaryPanelVariant | null) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const expandLabel = intl.formatMessage({ id: "chat.summaryPanel.showPanel" });
   const currentPlanItem = getCurrentPlanItem(model.plan);
   const completedPlanItem = getCompletedPlanItem(model.plan);
@@ -1961,7 +1961,7 @@ function ConversationStatusPanelImpl({
   // 让 Radix 在上/下之间翻转；桌面和宽屏 Web 保持原左侧交互。
   const useVerticalFloatingPanels = isWebRemoteControl && isMobileViewport;
   const panelModeValue = isVariantAutomatic ? "auto" : variant;
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const panelMenuLabel = intl.formatMessage({
     id: "chat.summaryPanel.displayMode",
   });

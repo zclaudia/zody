@@ -4,7 +4,7 @@ import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
 import { refreshWorkspacePluginCapabilitiesAfterRemoteSync } from "../src/lib/remotePluginSyncRefresh.js";
 import { useCommandsStore } from "../src/store/commandsStore.js";
 import { useSkillStore } from "../src/store/skillStore.js";
-import { useZCodeSessionStore } from "../src/store/zodySessionStore.js";
+import { useZodySessionStore } from "../src/store/zodySessionStore.js";
 
 function makePluginCommand(
   overrides: Partial<Extract<ZodyCommand, { source: "plugin" }>>,
@@ -26,7 +26,7 @@ function makePluginCommand(
 }
 
 beforeEach(() => {
-  useZCodeSessionStore.setState((state) => ({
+  useZodySessionStore.setState((state) => ({
     ...state,
     workspaces: {},
   }));
@@ -61,7 +61,7 @@ describe("refreshWorkspacePluginCapabilitiesAfterRemoteSync", () => {
   it("refreshes slash commands even when commands settings store was not loaded", async () => {
     const workspacePath = "/Users/dev";
     const workspaceIdentity = "remote:ssh:intranet.example.invalid:22:dev:/Users/dev";
-    useZCodeSessionStore.getState().setSlashCommands(
+    useZodySessionStore.getState().setSlashCommands(
       workspacePath,
       [
         {
@@ -111,7 +111,7 @@ describe("refreshWorkspacePluginCapabilitiesAfterRemoteSync", () => {
       workspaceIdentity,
     });
     expect(
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .getWorkspaceState(workspacePath, workspaceIdentity)
         .slashCommands,

@@ -4,7 +4,7 @@ import type { ZodyPluginInfo, ZodyPluginScope, ZodyPluginUserConfigOption } from
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Switch } from "@/components/ui/switch.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { SettingsScopeBadge } from "@/settings/SettingsScopeBadge.js";
 
 interface PluginConfigControlsProps {
@@ -32,7 +32,7 @@ export function PluginConfigControls({
   plugin,
   scope,
 }: PluginConfigControlsProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [revealedSecrets, setRevealedSecrets] = useState<Record<string, boolean>>({});
   const entries = Object.entries(plugin.userConfig ?? {});
   if (entries.length === 0) return null;

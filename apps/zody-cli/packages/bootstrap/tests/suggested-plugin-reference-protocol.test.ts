@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   buildPluginReferenceCatalog: vi.fn(),
-  getZCodePluginsOverview: vi.fn(),
-  resolveZCodePlugins: vi.fn(),
-  updateZCodePluginMarketplace: vi.fn(),
+  getZodyPluginsOverview: vi.fn(),
+  resolveZodyPlugins: vi.fn(),
+  updateZodyPluginMarketplace: vi.fn(),
 }));
 
 vi.mock("@zody/core", () => ({
@@ -12,9 +12,9 @@ vi.mock("@zody/core", () => ({
 }));
 
 vi.mock("../src/plugins.js", () => ({
-  getZCodePluginsOverview: mocks.getZCodePluginsOverview,
-  resolveZCodePlugins: mocks.resolveZCodePlugins,
-  updateZCodePluginMarketplace: mocks.updateZCodePluginMarketplace,
+  getZodyPluginsOverview: mocks.getZodyPluginsOverview,
+  resolveZodyPlugins: mocks.resolveZodyPlugins,
+  updateZodyPluginMarketplace: mocks.updateZodyPluginMarketplace,
 }));
 
 import {
@@ -77,12 +77,12 @@ describe("plugins/resolveSuggestedReference protocol", () => {
     entries = [];
     mocks.buildPluginReferenceCatalog.mockReset();
     mocks.buildPluginReferenceCatalog.mockImplementation(() => ({ plugins: entries }));
-    mocks.resolveZCodePlugins.mockReset();
-    mocks.resolveZCodePlugins.mockReturnValue({ diagnostics: [], plugins: [] });
-    mocks.updateZCodePluginMarketplace.mockReset();
-    mocks.updateZCodePluginMarketplace.mockResolvedValue({ diagnostics: [], marketplaces: [] });
-    mocks.getZCodePluginsOverview.mockReset();
-    mocks.getZCodePluginsOverview.mockReturnValue({
+    mocks.resolveZodyPlugins.mockReset();
+    mocks.resolveZodyPlugins.mockReturnValue({ diagnostics: [], plugins: [] });
+    mocks.updateZodyPluginMarketplace.mockReset();
+    mocks.updateZodyPluginMarketplace.mockResolvedValue({ diagnostics: [], marketplaces: [] });
+    mocks.getZodyPluginsOverview.mockReset();
+    mocks.getZodyPluginsOverview.mockReturnValue({
       availablePlugins: [],
       diagnostics: [],
       installedPlugins: [],
@@ -184,7 +184,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
     expect(result.diagnostics[0]?.code).toBe(
       "plugin_suggested_reference_untrusted_source",
     );
-    expect(mocks.updateZCodePluginMarketplace).not.toHaveBeenCalled();
+    expect(mocks.updateZodyPluginMarketplace).not.toHaveBeenCalled();
     expect(() => zodyPluginsResolveSuggestedReferenceResultSchema.parse(result)).not.toThrow();
   });
 
@@ -193,7 +193,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
     ["disabled", false],
   ] as const)("returns %s for an installed official plugin without refreshing", async (status, enabled) => {
     entries = [catalogEntry({ enabled })];
-    mocks.getZCodePluginsOverview.mockReturnValue({
+    mocks.getZodyPluginsOverview.mockReturnValue({
       availablePlugins: [
         overviewCandidate({
           installed: true,
@@ -219,12 +219,12 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       sourceTrust: "official",
       icon: "https://cdn.example/document-skills.svg",
     });
-    expect(mocks.updateZCodePluginMarketplace).not.toHaveBeenCalled();
+    expect(mocks.updateZodyPluginMarketplace).not.toHaveBeenCalled();
     expect(notify).not.toHaveBeenCalled();
   });
 
   it("refreshes only zcode-plugins-official before exposing a missing candidate", async () => {
-    mocks.getZCodePluginsOverview.mockReturnValue({
+    mocks.getZodyPluginsOverview.mockReturnValue({
       availablePlugins: [
         overviewCandidate({ listing: { icon: "https://cdn.example/document-skills.svg" } }),
       ],
@@ -245,8 +245,8 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       },
     );
 
-    expect(mocks.updateZCodePluginMarketplace).toHaveBeenCalledOnce();
-    expect(mocks.updateZCodePluginMarketplace).toHaveBeenCalledWith(
+    expect(mocks.updateZodyPluginMarketplace).toHaveBeenCalledOnce();
+    expect(mocks.updateZodyPluginMarketplace).toHaveBeenCalledWith(
       expect.objectContaining({
         marketplace: "zcode-plugins-official",
         workingDirectory: "/workspace",
@@ -268,7 +268,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
 
   it("emits refreshing after the first local miss and before marketplace refresh settles", async () => {
     let settleRefresh!: (value: { diagnostics: never[]; marketplaces: never[] }) => void;
-    mocks.updateZCodePluginMarketplace.mockReturnValue(
+    mocks.updateZodyPluginMarketplace.mockReturnValue(
       new Promise((resolve) => {
         settleRefresh = resolve;
       }),
@@ -287,14 +287,14 @@ describe("plugins/resolveSuggestedReference protocol", () => {
         params: { operationId: "suggested-progress", state: "refreshing" },
       });
     });
-    expect(mocks.updateZCodePluginMarketplace).toHaveBeenCalledOnce();
+    expect(mocks.updateZodyPluginMarketplace).toHaveBeenCalledOnce();
 
     settleRefresh({ diagnostics: [], marketplaces: [] });
     await expect(pending).resolves.toMatchObject({ status: "unavailable" });
   });
 
   it("fails closed after a refresh failure even when an old snapshot still has a candidate", async () => {
-    mocks.updateZCodePluginMarketplace.mockResolvedValue({
+    mocks.updateZodyPluginMarketplace.mockResolvedValue({
       diagnostics: [
         {
           code: "plugin_archive_fetch_failed",
@@ -305,7 +305,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       ],
       marketplaces: [],
     });
-    mocks.getZCodePluginsOverview.mockReturnValue({
+    mocks.getZodyPluginsOverview.mockReturnValue({
       availablePlugins: [overviewCandidate()],
       diagnostics: [],
       installedPlugins: [],
@@ -320,12 +320,12 @@ describe("plugins/resolveSuggestedReference protocol", () => {
 
     expect(result.status).toBe("unavailable");
     expect(result.diagnostics[0]?.code).toBe("marketplace_refresh_failed");
-    expect(mocks.getZCodePluginsOverview).not.toHaveBeenCalled();
+    expect(mocks.getZodyPluginsOverview).not.toHaveBeenCalled();
   });
 
   it("fails closed and aborts the official marketplace refresh at ten seconds", async () => {
     let refreshSignal: AbortSignal | undefined;
-    mocks.updateZCodePluginMarketplace.mockImplementation(
+    mocks.updateZodyPluginMarketplace.mockImplementation(
       (options: { abortSignal?: AbortSignal }) => {
         refreshSignal = options.abortSignal;
         return new Promise(() => {});
@@ -351,7 +351,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       expect(refreshSignal?.aborted).toBe(true);
       expect(result.status).toBe("unavailable");
       expect(result.diagnostics[0]?.code).toBe("marketplace_refresh_failed");
-      expect(mocks.getZCodePluginsOverview).not.toHaveBeenCalled();
+      expect(mocks.getZodyPluginsOverview).not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }
@@ -359,7 +359,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
 
   it("reports cancellation separately from marketplace refresh failure", async () => {
     const controller = new AbortController();
-    mocks.updateZCodePluginMarketplace.mockImplementation(async () => {
+    mocks.updateZodyPluginMarketplace.mockImplementation(async () => {
       controller.abort();
       throw controller.signal.reason;
     });
@@ -375,7 +375,7 @@ describe("plugins/resolveSuggestedReference protocol", () => {
   });
 
   it("re-resolves installed state from the refreshed catalog", async () => {
-    mocks.updateZCodePluginMarketplace.mockImplementation(async () => {
+    mocks.updateZodyPluginMarketplace.mockImplementation(async () => {
       entries = [catalogEntry()];
       return { diagnostics: [], marketplaces: [] };
     });
@@ -385,12 +385,12 @@ describe("plugins/resolveSuggestedReference protocol", () => {
       { workspace: WORKSPACE, stableId: STABLE_ID, ...DESKTOP_BOUNDARY },
     );
 
-    expect(mocks.resolveZCodePlugins).toHaveBeenCalledTimes(2);
+    expect(mocks.resolveZodyPlugins).toHaveBeenCalledTimes(2);
     expect(result.status).toBe("ready");
   });
 
   it("rejects a disappeared or identity-mismatched candidate after refresh", async () => {
-    mocks.getZCodePluginsOverview.mockReturnValue({
+    mocks.getZodyPluginsOverview.mockReturnValue({
       availablePlugins: [overviewCandidate({ marketplace: "personal" })],
       diagnostics: [],
       installedPlugins: [],

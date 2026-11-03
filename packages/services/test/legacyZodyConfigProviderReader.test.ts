@@ -9,7 +9,7 @@ import {
   type ModelProviderConfig,
   type ModelProviderModelConfig,
 } from "../src/model-provider/legacyModelProviderSerialized.js";
-import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
+import { readLegacyZodyConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
 
 function createProvider(): ModelProviderConfig {
   return {
@@ -87,7 +87,7 @@ describe("legacyZCodeConfigProviderReader", () => {
       }),
       "utf8",
     );
-    const providers = await readLegacyZCodeConfigProviders();
+    const providers = await readLegacyZodyConfigProviders();
 
     const configDir = join(tempDir, ".zody", "v2");
     expect(providers).toEqual([]);
@@ -111,7 +111,7 @@ describe("legacyZCodeConfigProviderReader", () => {
       "utf8",
     );
 
-    const providers = await readLegacyZCodeConfigProviders();
+    const providers = await readLegacyZodyConfigProviders();
 
     expect(providers.map((provider) => provider.id)).toEqual(["custom:test"]);
   });
@@ -135,7 +135,7 @@ describe("legacyZCodeConfigProviderReader", () => {
       "utf8",
     );
 
-    const providers = await readLegacyZCodeConfigProviders();
+    const providers = await readLegacyZodyConfigProviders();
 
     expect(readModel(providers, "limit-wins").maxOutputTokens).toBe(4000);
     expect(readModel(providers, "options-wins").maxOutputTokens).toBe(3000);
@@ -156,7 +156,7 @@ describe("legacyZCodeConfigProviderReader", () => {
       "utf8",
     );
 
-    await expect(readLegacyZCodeConfigProviders()).rejects.toThrow(
+    await expect(readLegacyZodyConfigProviders()).rejects.toThrow(
       /stage=schema .*field=provider\.custom:test\.models\.test-model\.maxOutputTokens$/,
     );
   });
@@ -174,7 +174,7 @@ describe("legacyZCodeConfigProviderReader", () => {
       "utf8",
     );
 
-    await expect(readLegacyZCodeConfigProviders()).rejects.toThrow(
+    await expect(readLegacyZodyConfigProviders()).rejects.toThrow(
       /stage=schema .*field=provider\.custom:test\.models\.test-model\.limit\.output$/,
     );
   });
@@ -199,7 +199,7 @@ describe("legacyZCodeConfigProviderReader", () => {
       "utf8",
     );
 
-    const providers = await readLegacyZCodeConfigProviders();
+    const providers = await readLegacyZodyConfigProviders();
 
     expect(readModel(providers, "options-decimal-only").maxOutputTokens).toBeUndefined();
     expect(readModel(providers, "options-decimal-fallback").maxOutputTokens).toBe(8192);
@@ -219,7 +219,7 @@ describe("legacyZCodeConfigProviderReader", () => {
     mkdirSync(configDir, { recursive: true });
     writeFileSync(configPath, JSON.stringify(document, null, 2), "utf8");
 
-    await expect(readLegacyZCodeConfigProviders()).resolves.toEqual([]);
+    await expect(readLegacyZodyConfigProviders()).resolves.toEqual([]);
 
     expect(JSON.parse(readFileSync(configPath, "utf8"))).toEqual(document);
   });

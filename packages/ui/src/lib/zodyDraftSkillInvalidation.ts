@@ -1,6 +1,6 @@
 import type { IZodySessionService } from "@zody/services";
 import { logger } from "@/logger.js";
-import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 
 interface DeferredDraftRuntimeChangeParams {
   logScope: string;
@@ -18,7 +18,7 @@ export async function invalidateDeferredDraftSessionForRuntimeChange(
   }
 
   const workspaceIdentity = params.workspaceIdentity?.trim() || undefined;
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const draftSessionId = store.getWorkspaceState(
     params.workspacePath,
     workspaceIdentity,

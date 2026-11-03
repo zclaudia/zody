@@ -40,7 +40,7 @@ vi.mock("@/v4/V4ConversationContext.js", () => ({
 }));
 
 // eslint-disable-next-line import/first -- 必须在 mock 之后再引入被测组件。
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 // eslint-disable-next-line import/first
 import { WorkflowRunArtifactsSection } from "@/app-shell/WorkflowRunArtifactsSection.js";
 // eslint-disable-next-line import/first
@@ -68,7 +68,7 @@ function renderSection(
 ) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: options.locale ?? "zh-CN" },
       createElement(WorkflowRunArtifactsSection, {
         artifacts,
@@ -349,7 +349,7 @@ describe("WorkflowRunArtifactsSection", () => {
 
     view.rerender(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(WorkflowRunArtifactsSection, {
           artifacts: [board(3)],

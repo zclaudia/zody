@@ -2,23 +2,23 @@ import { formatJson } from "@zody/core";
 import type { Logger } from "@zody/contracts";
 import type { RunContext, GlobalOptions } from "@zody/shared-types";
 import type {
-  inspectZCodeSkill,
+  inspectZodySkill,
   InspectZodySkillOptions,
-  listZCodeSkills,
+  listZodySkills,
   ListZodySkillsOptions,
   ZodySkillInspection,
 } from "@zody/bootstrap";
 import type { CliEnv } from "./env.js";
 
 type BootstrapModule = typeof import("@zody/bootstrap");
-type CliSkillListOutcome = Awaited<ReturnType<typeof listZCodeSkills>>;
+type CliSkillListOutcome = Awaited<ReturnType<typeof listZodySkills>>;
 type CliSkillListItem = CliSkillListOutcome["skills"][number];
 
 interface SkillsCommandDependencies {
   cwd?: () => string;
   env?: CliEnv;
-  inspectSkill?: (options: InspectZodySkillOptions) => ReturnType<typeof inspectZCodeSkill>;
-  listSkills?: (options: ListZodySkillsOptions) => ReturnType<typeof listZCodeSkills>;
+  inspectSkill?: (options: InspectZodySkillOptions) => ReturnType<typeof inspectZodySkill>;
+  listSkills?: (options: ListZodySkillsOptions) => ReturnType<typeof listZodySkills>;
   logger?: Logger;
   loadBootstrapModule?: () => Promise<BootstrapModule>;
 }
@@ -60,7 +60,7 @@ async function runSkillsListCommand(
     const env = deps.env ?? process.env;
     const workingDirectory = (deps.cwd ?? process.cwd)();
     const bootstrap = deps.loadBootstrapModule ?? (() => import("@zody/bootstrap"));
-    const listSkills = deps.listSkills ?? (await bootstrap()).listZCodeSkills;
+    const listSkills = deps.listSkills ?? (await bootstrap()).listZodySkills;
     const outcome = await listSkills({
       env,
       logger: deps.logger,
@@ -88,7 +88,7 @@ async function runSkillsInspectCommand(
     const env = deps.env ?? process.env;
     const workingDirectory = (deps.cwd ?? process.cwd)();
     const bootstrap = deps.loadBootstrapModule ?? (() => import("@zody/bootstrap"));
-    const inspectSkill = deps.inspectSkill ?? (await bootstrap()).inspectZCodeSkill;
+    const inspectSkill = deps.inspectSkill ?? (await bootstrap()).inspectZodySkill;
     const inspection = await inspectSkill({
       env,
       logger: deps.logger,

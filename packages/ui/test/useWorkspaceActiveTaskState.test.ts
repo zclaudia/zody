@@ -29,8 +29,8 @@ vi.mock("@/store/zodySessionStore.js", () => ({
     workspaceState.optimisticTaskListByTaskId?.[taskId] ??
     workspaceState.taskListCache?.find((task) => task.taskId === taskId) ??
     null,
-  selectWorkspaceZCodeState: () => activeWorkspaceState.current,
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  selectWorkspaceZodyState: () => activeWorkspaceState.current,
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({}),
 }));
 

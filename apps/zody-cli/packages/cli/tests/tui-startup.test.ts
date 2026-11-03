@@ -227,7 +227,7 @@ test("CLI defers initialization to the renderer and discovers commands and Git c
     cwd: () => process.cwd(),
     skipUserConfig: true,
     loadDotenv: () => ({ keys: [], loaded: false, path: "" }),
-    createZCodeApp: async () => {
+    createZodyApp: async () => {
       observed.push("app");
       return created.promise;
     },

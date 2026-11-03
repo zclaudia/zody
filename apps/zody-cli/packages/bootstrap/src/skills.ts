@@ -5,7 +5,7 @@ import type { Logger, SkillContent, SkillDiagnostic, SkillLoadOutcome } from "@z
 import { resolveBundledSkillRoots } from "./app/bundled-skills.js";
 import { getCliStorageRoot } from "./app/paths.js";
 import { filterVisualizeSkillRoots } from "./app/visualize-skill-gate.js";
-import { resolveZCodePlugins } from "./plugins.js";
+import { resolveZodyPlugins } from "./plugins.js";
 import { collectDisabledPaths } from "./skill-command-overrides.js";
 
 export interface ListZodySkillsOptions {
@@ -28,7 +28,7 @@ export interface ZodySkillInspection {
   skill: SkillContent;
 }
 
-export async function listZCodeSkills(
+export async function listZodySkills(
   options: ListZodySkillsOptions = {},
 ): Promise<SkillLoadOutcome> {
   const discovery = createSkillDiscovery(options);
@@ -45,7 +45,7 @@ export async function listZCodeSkills(
   });
 }
 
-export async function inspectZCodeSkill(
+export async function inspectZodySkill(
   options: InspectZodySkillOptions,
 ): Promise<ZodySkillInspection> {
   const discovery = createSkillDiscovery(options);
@@ -100,7 +100,7 @@ function createSkillDiscovery(options: ListZodySkillsOptions):
       workingDirectory,
     };
   }
-  const pluginOutcome = resolveZCodePlugins({
+  const pluginOutcome = resolveZodyPlugins({
     configResult,
     env: options.env,
     logger: options.logger,

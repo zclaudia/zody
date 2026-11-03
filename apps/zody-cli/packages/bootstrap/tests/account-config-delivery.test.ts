@@ -41,7 +41,7 @@ describe("托管 Worker 账号交付", () => {
     const previous = registry.getSnapshot();
     const next = createAccountProviderConfigSnapshot("builtin-B", ProviderConfigMap.empty(), {});
     const server = new ZodyProtocolAgentServer({
-      createZCodeApp() {
+      createZodyApp() {
         throw new Error("账号交付不得创建会话");
       },
       syncAccountProviderConfig: started.syncAccountProviderConfig,

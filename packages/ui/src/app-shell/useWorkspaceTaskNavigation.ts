@@ -11,7 +11,7 @@ import {
 import { shouldBlockTaskSelectionDuringModelRestart } from "@/lib/taskSwitchGuard.js";
 import { logger } from "@/logger.js";
 import { toast } from "@/components/ui/toast.js";
-import { getVisibleTaskMetas, useZCodeSessionStore } from "@/store/zodySessionStore.js";
+import { getVisibleTaskMetas, useZodySessionStore } from "@/store/zodySessionStore.js";
 import { buildTaskEntityKey, buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
 import {
   markTaskQueryCacheScopesStale,
@@ -55,13 +55,13 @@ export function useWorkspaceTaskNavigation({
   // 发起，再由 Host Controller 路由，不能把本地路径送进旧 remote scope。
   const baseServices = useBaseWorkspaceServices();
   const tabStoreApi = useTabStoreApi();
-  const setActiveTaskId = useZCodeSessionStore((s) => s.setActiveTaskId);
-  const taskNavHistory = useZCodeSessionStore((s) => s.taskNavHistory);
-  const taskNavPushAutomations = useZCodeSessionStore((s) => s.taskNavPushAutomations);
-  const taskNavPushPluginStore = useZCodeSessionStore((s) => s.taskNavPushPluginStore);
-  const taskNavGoBack = useZCodeSessionStore((s) => s.taskNavGoBack);
-  const taskNavGoForward = useZCodeSessionStore((s) => s.taskNavGoForward);
-  const removeTaskFromNavHistory = useZCodeSessionStore((s) => s.removeTaskFromNavHistory);
+  const setActiveTaskId = useZodySessionStore((s) => s.setActiveTaskId);
+  const taskNavHistory = useZodySessionStore((s) => s.taskNavHistory);
+  const taskNavPushAutomations = useZodySessionStore((s) => s.taskNavPushAutomations);
+  const taskNavPushPluginStore = useZodySessionStore((s) => s.taskNavPushPluginStore);
+  const taskNavGoBack = useZodySessionStore((s) => s.taskNavGoBack);
+  const taskNavGoForward = useZodySessionStore((s) => s.taskNavGoForward);
+  const removeTaskFromNavHistory = useZodySessionStore((s) => s.removeTaskFromNavHistory);
 
   const handleSelectTask = useCallback(
     (
@@ -70,7 +70,7 @@ export function useWorkspaceTaskNavigation({
       targetWorkspaceIdentityHint?: string,
       selectedRowUnreadAt?: number,
     ) => {
-      const targetWorkspaceState = useZCodeSessionStore
+      const targetWorkspaceState = useZodySessionStore
         .getState()
         .getWorkspaceState(targetWorkspacePath, targetWorkspaceIdentityHint);
       if (
@@ -225,7 +225,7 @@ export function useWorkspaceTaskNavigation({
   }, [onNavigateToPluginStore, taskNavPushPluginStore, workspaceAbsPath, workspaceIdentity]);
 
   const handleTaskNavBack = useCallback(() => {
-    const currentWorkspaceState = useZCodeSessionStore
+    const currentWorkspaceState = useZodySessionStore
       .getState()
       .getWorkspaceState(workspaceAbsPath);
     if (
@@ -277,7 +277,7 @@ export function useWorkspaceTaskNavigation({
         onNavigateToPluginStore?.(currentEntry);
         return;
       }
-      const navWorkspaceState = useZCodeSessionStore
+      const navWorkspaceState = useZodySessionStore
         .getState()
         .getWorkspaceState(currentEntry.workspacePath, currentEntry.workspaceIdentity);
       const exists = taskNavigationTargetExists({
@@ -312,7 +312,7 @@ export function useWorkspaceTaskNavigation({
   ]);
 
   const handleTaskNavForward = useCallback(() => {
-    const currentWorkspaceState = useZCodeSessionStore
+    const currentWorkspaceState = useZodySessionStore
       .getState()
       .getWorkspaceState(workspaceAbsPath);
     if (
@@ -363,7 +363,7 @@ export function useWorkspaceTaskNavigation({
         onNavigateToPluginStore?.(currentEntry);
         return;
       }
-      const navWorkspaceState = useZCodeSessionStore
+      const navWorkspaceState = useZodySessionStore
         .getState()
         .getWorkspaceState(currentEntry.workspacePath, currentEntry.workspaceIdentity);
       const exists = taskNavigationTargetExists({
@@ -398,7 +398,7 @@ export function useWorkspaceTaskNavigation({
 
   const canGoBack = navCanGoBack(taskNavHistory);
   const canGoForward = navCanGoForward(taskNavHistory);
-  const currentWorkspaceState = useZCodeSessionStore.getState().getWorkspaceState(workspaceAbsPath);
+  const currentWorkspaceState = useZodySessionStore.getState().getWorkspaceState(workspaceAbsPath);
   const isTaskSwitchLockedByModelRestart = shouldBlockTaskSelectionDuringModelRestart(
     currentWorkspaceState.modelSwitchPending,
     currentWorkspaceState.modelSwitchStage,

@@ -7,7 +7,7 @@
  *
  * 协议:argv[2] 是 JSON 配置;结束向 stdout 打印一行 JSON 结果;失败 exit 1。
  */
-import { createSharedZCodeCredentialStore } from "../../src/auth/shared-credentials.js";
+import { createSharedZodyCredentialStore } from "../../src/auth/shared-credentials.js";
 import { createMcpAdapter } from "../../src/mcp/index.js";
 import { createMcpOAuthTokenProvider } from "../../src/mcp/oauth-provider.js";
 
@@ -23,7 +23,7 @@ interface DriverConfig {
 
 async function main(): Promise<void> {
   const config = JSON.parse(process.argv[2] ?? "{}") as DriverConfig;
-  const credentialStore = createSharedZCodeCredentialStore({
+  const credentialStore = createSharedZodyCredentialStore({
     env: { ZCODE_CREDENTIAL_SECRET: config.secret },
     filePath: config.credentialsPath,
   });

@@ -4,7 +4,7 @@ import { compileModelOptionMaps } from "@zody/model-option-map";
 import {
   ModelConfig,
   ModelOptionSpecsConfig,
-  parseZCodeBuiltinModelConfigRules,
+  parseZodyBuiltinModelConfigRules,
 } from "@zody/provider";
 
 type Release = {
@@ -22,12 +22,12 @@ type Release = {
   };
 };
 let release: Release;
-let rules: ReturnType<typeof parseZCodeBuiltinModelConfigRules>;
+let rules: ReturnType<typeof parseZodyBuiltinModelConfigRules>;
 beforeAll(async () => {
   release = JSON.parse(
     await readFile(new URL("../../../config/provider/zody-builtin.json", import.meta.url), "utf8"),
   );
-  rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+  rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
 });
 const resolve = (
   modelId: string,

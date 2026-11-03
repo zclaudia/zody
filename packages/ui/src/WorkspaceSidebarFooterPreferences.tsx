@@ -25,10 +25,10 @@ import {
 } from "@/components/ui/select.js";
 import { Separator } from "@/components/ui/separator.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { normalizeInterfaceMode } from "@/lib/interfaceMode.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
-import { useZCodeStore } from "@/store/StoreProvider.js";
+import { useZodyStore } from "@/store/StoreProvider.js";
 import type { Theme } from "@/useTheme.js";
 
 interface SegmentOption<T extends string> {
@@ -155,7 +155,7 @@ function useDesktopZoomLevel(): number {
 }
 
 function ZoomStepper() {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const platform = usePlatform();
   const zoomLevel = useDesktopZoomLevel();
   const zoomInShortcut = useShortcutCommandLabel("zoomIn");
@@ -223,9 +223,9 @@ export function WorkspaceSidebarFooterPreferences({
   onThemeChange: (value: string) => void;
   isDesktop: boolean;
 }) {
-  const { intl } = useZCodeIntl();
-  const interfaceMode = useZCodeStore((state) => state.interfaceMode);
-  const setInterfaceMode = useZCodeStore((state) => state.setInterfaceMode);
+  const { intl } = useZodyIntl();
+  const interfaceMode = useZodyStore((state) => state.interfaceMode);
+  const setInterfaceMode = useZodyStore((state) => state.setInterfaceMode);
   const localeLabel = intl.formatMessage({ id: "settings.locale" });
 
   return (

@@ -44,7 +44,7 @@ import {
   useWebRemoteControlTaskOpen,
 } from "@/hooks/useWebRemoteControlTaskOpen.js";
 import { getErrorMessage } from "@/hooks/chatActionHelpers.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { formatTaskRelativeTime } from "@/lib/taskListItemPresentation.js";
 import { TaskWorkflowRunLines } from "@/components/workflow-run-line/TaskWorkflowRunLines.js";
 import { getTaskTimelineGroupMessage, groupTaskTimelineItems } from "@/lib/taskTimelineGroups.js";
@@ -151,7 +151,7 @@ const MobileTaskRow = memo(function MobileTaskRow({
   timeField,
   onOpen,
 }: MobileTaskRowProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const taskTitle = task.title || intl.formatMessage({ id: "taskList.untitled" });
   const displayStatus = task.displayStatus ?? "idle";
 
@@ -296,7 +296,7 @@ const MobileWorkspaceCard = memo(function MobileWorkspaceCard({
   onStartDraft,
   onOpenTask,
 }: MobileWorkspaceCardProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const disconnected = isDisconnectedRemoteWorkspaceTarget(group.workspace);
 
   return (
@@ -526,7 +526,7 @@ export function WebRemoteControlMobileTaskHome({
   refreshKey?: number;
   onCrossWorkspaceSwitchingChange?: (switching: boolean) => void;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const [result, setResult] = useState<WebRemoteControlWorkspaceListResult>(
     initialResult ?? EMPTY_WEB_REMOTE_CONTROL_WORKSPACE_LIST,
   );

@@ -9,11 +9,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.js";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { cn } from "@/components/lib/utils.js";
 
 function getKnownReasonLabel(
-  intl: ReturnType<typeof useZCodeIntl>["intl"],
+  intl: ReturnType<typeof useZodyIntl>["intl"],
   reason: string,
 ): string {
   if (reason === "session_not_found_or_workspace_mismatch") {
@@ -32,7 +32,7 @@ function ImportIssuesList({
   title: string;
   items: ZodyImportedSessionSkippedItem[];
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   if (items.length === 0) {
     return null;
@@ -95,7 +95,7 @@ export function MigrationCandidatesCard({
   onClearSelection: () => void;
   onImportSelected: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   return (
     <Card className="border border-border bg-card py-0 shadow-none">

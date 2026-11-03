@@ -26,14 +26,14 @@ export interface ResolvedZodyBuiltinPromptCommand {
   prompt: string;
 }
 
-export function resolveZCodeBuiltinPromptCommand(
+export function resolveZodyBuiltinPromptCommand(
   input: string,
   options: ResolveZodyBuiltinPromptCommandOptions = {},
 ): string | undefined {
-  return resolveZCodeBuiltinPromptCommandInvocation(input, options)?.prompt;
+  return resolveZodyBuiltinPromptCommandInvocation(input, options)?.prompt;
 }
 
-export function resolveZCodeBuiltinPromptCommandInvocation(
+export function resolveZodyBuiltinPromptCommandInvocation(
   input: string,
   options: ResolveZodyBuiltinPromptCommandOptions = {},
 ): ResolvedZodyBuiltinPromptCommand | undefined {

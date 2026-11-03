@@ -946,7 +946,7 @@ function createPnpmChildEnv() {
   };
 }
 
-function prepareZCodeAgentServer() {
+function prepareZodyAgentServer() {
   if (E2E_PACKAGED_APP_BINARY_PATH) {
     // 真正的 Preview 包必须使用随包 Agent，禁止测试 runner 注入源码入口掩盖漏打包。
     delete process.env.ZCODE_AGENT_SERVER_COMMAND;
@@ -960,7 +960,7 @@ function prepareZCodeAgentServer() {
     if (!existsSync(ZCODE_CLI_ENTRYPOINT)) {
       throw new Error(`ZCode CLI entrypoint not found: ${ZCODE_CLI_ENTRYPOINT}`);
     }
-    configureZCodeAgentServerEnv();
+    configureZodyAgentServerEnv();
     return;
   }
 
@@ -977,10 +977,10 @@ function prepareZCodeAgentServer() {
     throw new Error(`ZCode CLI entrypoint not found: ${ZCODE_CLI_ENTRYPOINT}`);
   }
 
-  configureZCodeAgentServerEnv();
+  configureZodyAgentServerEnv();
 }
 
-function configureZCodeAgentServerEnv() {
+function configureZodyAgentServerEnv() {
   // 自定义命令没有 storagePreparationEntry / supportsStorageStartup 声明，会被启动准备拒绝。
   // 构建后由正式 resolver 找到仓库 bundle（打包 E2E 则使用随包 bundle），保留完整启动契约。
   delete process.env.ZCODE_AGENT_SERVER_COMMAND;
@@ -3179,7 +3179,7 @@ export const config: WebdriverIO.Config = {
             artifactDir: e2eReporter.artifactDir,
           });
         } else await buildAndStage();
-        prepareZCodeAgentServer();
+        prepareZodyAgentServer();
       });
     } catch (error) {
       // 修复原因：WDIO 会把 onPrepare 异常记录成 hook error 后继续派发 worker，
@@ -3265,7 +3265,7 @@ export const config: WebdriverIO.Config = {
         await runE2EBeforeSessionSetup({
           cid,
           specs,
-          configureAgentServerEnv: configureZCodeAgentServerEnv,
+          configureAgentServerEnv: configureZodyAgentServerEnv,
           recordBeforeSession: e2eReporter.beforeSession,
           resetHome: resetE2EHome,
           startUpstreamHttpIfNeeded: startUpstreamE2EHttp,

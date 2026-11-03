@@ -12,14 +12,14 @@ import {
 } from "@zody/provider";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  NodeZCodeBuiltinProviderConfigSource,
+  NodeZodyBuiltinProviderConfigSource,
   NodePersonalProviderConfigRepository,
   NodeProviderConfigRuntime,
   NodeProviderRegistryRuntime,
   createNodeProviderRuntimePathEnv,
-  materializeZCodeBuiltinProviderConfig,
+  materializeZodyBuiltinProviderConfig,
   encodeProviderConfigFile,
-  resolveZCodeBuiltinCachePaths,
+  resolveZodyBuiltinCachePaths,
   resolveNodeProviderRuntimePaths,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
   ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
@@ -69,7 +69,7 @@ afterEach(async () => {
 
 describe("@zody/provider-node", () => {
   it("从 Built-in Model Config Rules 解析 ox-alpha 同策略别名和 API-specific reasoning", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -135,7 +135,7 @@ describe("@zody/provider-node", () => {
   });
 
   it("从 Built-in Config 解析模型能力、Access 协议和 Tool Schema 兼容事实", async () => {
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
       watch: false,
     });
@@ -233,15 +233,15 @@ describe("@zody/provider-node", () => {
       },
     });
 
-    const firstPath = await materializeZCodeBuiltinProviderConfig({
+    const firstPath = await materializeZodyBuiltinProviderConfig({
       environmentConfigRoot: root,
       content: firstContent,
     });
-    const repeatedPath = await materializeZCodeBuiltinProviderConfig({
+    const repeatedPath = await materializeZodyBuiltinProviderConfig({
       environmentConfigRoot: root,
       content: firstContent,
     });
-    const secondPath = await materializeZCodeBuiltinProviderConfig({
+    const secondPath = await materializeZodyBuiltinProviderConfig({
       environmentConfigRoot: root,
       content: secondContent,
     });
@@ -286,7 +286,7 @@ describe("@zody/provider-node", () => {
     const root = await temporaryDirectory();
     const filePath = join(root, "zcodeBuiltin.json");
     await writeZCodeBuiltin(filePath, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: filePath,
       watch: false,
     });
@@ -305,7 +305,7 @@ describe("@zody/provider-node", () => {
     const root = await temporaryDirectory();
     const filePath = join(root, "zcodeBuiltin.json");
     await writeZCodeBuiltin(filePath, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({ bundledFilePath: filePath });
+    const source = new NodeZodyBuiltinProviderConfigSource({ bundledFilePath: filePath });
     const reasons: string[] = [];
     source.onDidChange((reason) => reasons.push(reason));
     await source.read();
@@ -332,7 +332,7 @@ describe("@zody/provider-node", () => {
     const root = await temporaryDirectory();
     const filePath = join(root, "zcodeBuiltin.json");
     await writeZCodeBuiltin(filePath, "model-a");
-    const source = new NodeZCodeBuiltinProviderConfigSource({ bundledFilePath: filePath });
+    const source = new NodeZodyBuiltinProviderConfigSource({ bundledFilePath: filePath });
     const reasons: string[] = [];
     source.onDidChange((reason) => reasons.push(reason));
     await source.read();
@@ -591,7 +591,7 @@ describe("@zody/provider-node", () => {
     await runtime.start();
 
     await expect(runtime.resolveZCodeBuiltinActiveFilePath()).resolves.toBe(
-      resolveZCodeBuiltinCachePaths({
+      resolveZodyBuiltinCachePaths({
         environmentConfigRoot,
         platform: "darwin-aarch64",
         appVersion: "3.9.2",

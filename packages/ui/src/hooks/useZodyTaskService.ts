@@ -8,7 +8,7 @@ type GetTaskSnapshotParams = Parameters<IZodyTaskService["getTaskSnapshot"]>[0];
 type GetTaskSnapshotResult = Promise<ZodyTaskSnapshot | null>;
 type GetTaskSnapshotWithEtagParams = Parameters<IZodyTaskService["getTaskSnapshotWithEtag"]>[0];
 
-const zcodeTaskServiceProxyCache = new WeakMap<IZodyTaskService, IZodyTaskService>();
+const zodyTaskServiceProxyCache = new WeakMap<IZodyTaskService, IZodyTaskService>();
 const snapshotInflightRequestsByService = new WeakMap<
   IZodyTaskService,
   Map<string, GetTaskSnapshotResult>
@@ -216,7 +216,7 @@ function deletePersistedSnapshotEntry(key: string): void {
   flushPersistedSnapshotCache();
 }
 
-function createZCodeTaskServiceProxy(service: IZodyTaskService): IZodyTaskService {
+function createZodyTaskServiceProxy(service: IZodyTaskService): IZodyTaskService {
   const inflight = getOrCreateSnapshotInflightMap(service);
   const snapshotCache = getOrCreateSnapshotCacheMap(service);
 
@@ -300,7 +300,7 @@ function createZCodeTaskServiceProxy(service: IZodyTaskService): IZodyTaskServic
 }
 
 /** 获取 ZCode task wrapper 服务实例 */
-export function useZCodeTaskService(
+export function useZodyTaskService(
   workspacePath?: string,
   preferredRemoteSessionId?: string | null,
   workspaceIdentity?: string | null,
@@ -313,11 +313,11 @@ export function useZCodeTaskService(
   if (!rawService || typeof rawService !== "object") {
     return rawService;
   }
-  const cachedProxy = zcodeTaskServiceProxyCache.get(rawService);
+  const cachedProxy = zodyTaskServiceProxyCache.get(rawService);
   if (cachedProxy) {
     return cachedProxy;
   }
-  const nextProxy = createZCodeTaskServiceProxy(rawService);
-  zcodeTaskServiceProxyCache.set(rawService, nextProxy);
+  const nextProxy = createZodyTaskServiceProxy(rawService);
+  zodyTaskServiceProxyCache.set(rawService, nextProxy);
   return nextProxy;
 }
