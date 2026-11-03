@@ -27,3 +27,7 @@ exit 1：4 目标中 empty-root pass，rename/enable 共享块预期 researcher 
 `hookCreateButtonSize.test.ts` 的错误包含整个被读取的组件源码，所以 Intl 内部符号迁移导致全文不等；测试和被断言的 `onNew` JSX 片段在 7c、ad859、5bd 的片段 SHA-256 都是 `f7af714675737945d62b544261d0f939534531f2bd2eda96c1735f7148fb0ee8`。测试正则要求 `className="rounded-lg"`，现有片段为 `className={cn("rounded-lg", SETTINGS_TOUCH_MIN_H_11_CLASS)}`，两次实测同一断言不符；这只确认该测试断言的具体基线，不对按钮交互/视觉语义作结论。
 
 后续最小验证：保持已通过 edb 前置作为历史证据，最终新候选在自己干净树重建对应 CLI 依赖后重跑两个缺 dist 测试；watcher 的 4 个单例及必要同版本祖先对照采用上面的独立诊断；Gen UI 的并发 failure 需在固定最终候选原压力/原超时重现并记录具体调度证据；native 缺输入按现有来源审计后再测；UI 正则按产品合同单独裁决，不扩大至其他 30 项既有失败。无一项构成完整 R22 通过。
+
+## Later evidence and identity clarification
+
+The old four unmatched cases describe the original comparison, not permanent ancestor success. See R22-watcher-single-case-diagnostics.md for eight subsequent single cases (actual current HEAD71e, source-equivalent5bd; ancestor7c) and continued fluctuation. The historical state-single.log ran in directory final-clean-4fac2fb0 at actual HEAD ad859, not5bd/71e; directory names are not revision evidence. Later71e rebuilt dependencies and two missing-dist files7/7 are recorded in R22-four-target-build-smoke-71e.md. Independent attribution limits are recorded in R22-triage-independent-review.md. Original whole-suite failures remain.

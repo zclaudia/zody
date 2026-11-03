@@ -1,0 +1,11 @@
+# Fixed6c frozen reinstall and license refresh
+
+Source6c987a26bbd0384ec0f1702282f880dc05e26ce2, tree5d6d07d49edc15bcb1ebf0737f2a9ad15e26593e. Validation tree license-clean-9d135318 reused its own9d install, then actually ran root pnpm install --frozen-lockfile with lifecycles on6c; exit0. This was not an empty installation.50members/92links verified. One pending bin @zody/server-cli→dist/server-cli.js is an independent build entry, not covered by unified fourtarget artifacts. Main-worktree independent entry validation is separately recorded and found an initialization failure; no placeholder was created.
+
+Evidence output/zody-rename-r22/final-6c-reinstall and final-6c-license. Source/lock/pair unchanged by reinstall. Physical record count3453→3453, no additions/removals, only .modules.yaml content differs; do not infer pnpm cleanup causes. Exact snapshots retained.
+
+Generation0/basic0/Node18tests0; strict1 on unchanged19reviewRequired. Fresh debug audit confirms production4.4.3, installed4.4.3/2.6.9. Controller independently recomputed3081input/2826copied hashes and actualdebugLICENSE, errors0. All1218package records and notices unchanged. Only input apps/zody-cli/packages/browser-use-plugin/package.json changes50dfedac…→c23ae067…. Controller evidence output/zody-rename-r22/metadata-tail-controller/{pair-audit-6c.json,final-exact-audit.json}. Generator-phase physical snapshot identical before/final, only inventory tracked change.
+
+Integrated pair: inventory81b1832771facd6d6a92e1441b9422e9185b5841eea37ce468fa526dc2ddec39; notices4517e271b660037e2cbb8ccb3b390623f368424f03fb3fec79e1e5a2550c9479. Fixed6c source is the real generation source; integration additionally corrects one test comment @zcode/adapters/mcp→@zody/adapters/mcp and adds reports. The exact single comment substitution does not change license inputs; controller roottypecheck/lint both0. These two checks used pinned toolchain with inherited environment, not the isolated runtime test environment; they run only static checks. Full rebuild will target the newly integrated exact commit, not claim71e artifacts match6c. Browser package description is embedded in official SEA assets as proven by tail-build-impact-6c/report.md.
+
+Strict and full R22 remain failed/unclosed; no release pass.

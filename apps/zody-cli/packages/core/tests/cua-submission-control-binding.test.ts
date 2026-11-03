@@ -31,7 +31,7 @@ async function resolveAdapterMcpEntry(): Promise<URL> {
   if (!exportTarget) {
     throw new Error("@zody/adapters does not expose the ./mcp public entry");
   }
-  // 修复原因：@zcode/adapters/mcp 仅声明 import 条件，createRequire.resolve(包名) 会抛
+  // 修复原因：@zody/adapters/mcp 仅声明 import 条件，createRequire.resolve(包名) 会抛
   // ERR_PACKAGE_PATH_NOT_EXPORTED；按同一 package.json 的 exports 目标解析并只 dynamic import 产物。
   return pathToFileURL(adapterRequire.resolve(exportTarget));
 }
