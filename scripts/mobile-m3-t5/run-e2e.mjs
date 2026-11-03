@@ -382,9 +382,7 @@ async function waitForRemoteMeta(expectedReleaseId, timeoutMs = 25000) {
     }
     await sleep(300);
   }
-  throw new Error(
-    `timed out waiting for release ${expectedReleaseId}: ${JSON.stringify(last)}`,
-  );
+  throw new Error(`timed out waiting for release ${expectedReleaseId}: ${JSON.stringify(last)}`);
 }
 
 async function waitForState(predicate, label, timeoutMs = 20000) {
@@ -434,15 +432,13 @@ async function waitForBlockReason(reason, timeoutMs = 15000) {
 }
 
 async function waitForVeto(veto, timeoutMs = 15000) {
-  return waitForState(
-    (state) => state.veto === veto,
-    `native veto ${veto}`,
-    timeoutMs,
-  );
+  return waitForState((state) => state.veto === veto, `native veto ${veto}`, timeoutMs);
 }
 
 async function clearThrottle(page) {
-  await page.evaluate("sessionStorage.removeItem('zody.mobile-ui.release.last-auto-reload-at'); true");
+  await page.evaluate(
+    "sessionStorage.removeItem('zody.mobile-ui.release.last-auto-reload-at'); true",
+  );
 }
 
 async function mouseClick(page, selector) {
@@ -608,7 +604,12 @@ async function runReleaseUpgradeThrottleRollback() {
     const elapsed = Date.now() - startedAt;
     if (offset > elapsed) await sleep(offset - elapsed);
     const state = await readState(page);
-    samples.push({ offset, meta: state.meta, count: state.count, notice: state.notice.slice(0, 80) });
+    samples.push({
+      offset,
+      meta: state.meta,
+      count: state.count,
+      notice: state.notice.slice(0, 80),
+    });
   }
   assert(
     samples.every((sample) => sample.meta === baseline.meta && sample.count === 0),
@@ -616,9 +617,7 @@ async function runReleaseUpgradeThrottleRollback() {
   );
 
   // fixtures.json 由 prepare 脚本生成；直接读取以取得 B 的 releaseId。
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   const reloadedToB = await waitForRemoteMeta(fixtures.b.releaseId, 20000);
   page = reloadedToB.page;
   // reload 后 window 级标记和 listener 随旧文档销毁；在 B 文档重新登记计数器，继续统计回滚刷新。
@@ -631,13 +630,19 @@ async function runReleaseUpgradeThrottleRollback() {
     providerAfter.backendId === providerBefore.backendId,
     "backend identity changed during upgrade",
   );
-  assert(providerAfter.activeChannelCount <= 2, `channel leak after reload: ${providerAfter.activeChannelCount}`);
+  assert(
+    providerAfter.activeChannelCount <= 2,
+    `channel leak after reload: ${providerAfter.activeChannelCount}`,
+  );
 
   // 回滚在自动刷新冷却内：自动路径必须被一分钟限频挡住，手动安全刷新才放行。
   await setRoot("a");
   await triggerReleaseCheck(page);
   const throttled = await waitForState(
-    (state) => state.meta === fixtures.b.releaseId && state.reloadButton && /New version ready/u.test(state.notice),
+    (state) =>
+      state.meta === fixtures.b.releaseId &&
+      state.reloadButton &&
+      /New version ready/u.test(state.notice),
     "throttled rollback ready",
     20000,
   );
@@ -672,9 +677,7 @@ async function runFailureKeepsDocument() {
   const page = await openRemoteStartPage();
   await installReloadCounter(page, { reset: true });
   const baseline = await readState(page);
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   const results = {};
   for (const status of [429, 500]) {
     await setRoot("b");
@@ -687,7 +690,11 @@ async function runFailureKeepsDocument() {
     assert(state.meta === baseline.meta, `HTTP ${status} replaced the document`);
     assert(state.count === 0, `HTTP ${status} reloaded the document`);
     assert(fetchesAfter > fetchesBefore, `HTTP ${status} did not reach release endpoint`);
-    results[`http${status}`] = { meta: state.meta, count: state.count, fetchDelta: fetchesAfter - fetchesBefore };
+    results[`http${status}`] = {
+      meta: state.meta,
+      count: state.count,
+      fetchDelta: fetchesAfter - fetchesBefore,
+    };
   }
   await control("/release-status?value=0");
   await setRoot("invalid");
@@ -711,7 +718,10 @@ async function runFailureKeepsDocument() {
     return { status: response.status, bodyLength: body.length, hasNewContent: body.includes('m3-t5 release B') };
   })()`);
   // 旧 hash 命中手机侧 immutable 缓存时返回旧内容是允许的；关键是绝不能混入 B 的新内容。
-  assert(oldHash.status === 404 || oldHash.status === 200, `unexpected old hash status ${oldHash.status}`);
+  assert(
+    oldHash.status === 404 || oldHash.status === 200,
+    `unexpected old hash status ${oldHash.status}`,
+  );
   assert(!oldHash.hasNewContent, "old hash served new release content");
   const unknownHash = await page.evaluate(`(async () => {
     const response = await fetch('/assets/remote/assets/m3-t5-never-built.css', { cache: 'no-store' });
@@ -736,9 +746,7 @@ async function runFailureKeepsDocument() {
 }
 
 async function runBridgeIncompatible() {
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   await setRoot("a");
   await control("/release-status?value=0");
   const page = await openRemoteStartPage();
@@ -812,7 +820,10 @@ async function runBridgeIncompatible() {
       `incompatible Remote did not show upgrade prompt: ${incompatibleBody}`,
     );
   }
-  assert(provider.activeChannelCount === 0, `business channel opened: ${provider.activeChannelCount}`);
+  assert(
+    provider.activeChannelCount === 0,
+    `business channel opened: ${provider.activeChannelCount}`,
+  );
   record("bridge-incompatible", "pass", {
     baselineReleaseId: baseline.meta,
     incompatibleReleaseId: fixtures.incompatible.releaseId,
@@ -841,7 +852,10 @@ async function runBackgroundNoRefresh() {
   const fetchesAfter = (await providerStatus()).releaseFetchCount;
   assert(!backgroundState || backgroundState.meta === baseline.meta, "background page reloaded");
   assert(!backgroundState || backgroundState.count === 0, "background page reload count changed");
-  assert(fetchesAfter === fetchesBefore, `background page polled release: ${fetchesBefore} -> ${fetchesAfter}`);
+  assert(
+    fetchesAfter === fetchesBefore,
+    `background page polled release: ${fetchesBefore} -> ${fetchesAfter}`,
+  );
 
   await bringAppToForeground();
   await sleep(1000);
@@ -867,9 +881,7 @@ async function restoreToBaselineA() {
   await control("/release-status?value=0");
   let page = await waitForState(() => true, "remote for restore", 5000).then((r) => r.page);
   await triggerReleaseCheck(page);
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   const current = await readState(page);
   if (current.meta === fixtures.a.releaseId) return page;
   await sleep(6000);
@@ -925,9 +937,7 @@ async function runActiveOverlayGuard() {
   await sleep(800);
   const reloaded = await clickReload(blocked.page);
   assert(reloaded, "safe reload button missing after overlay release");
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   const upgraded = await waitForRemoteMeta(fixtures.b.releaseId, 20000);
   record("guard-active-overlay", "pass", {
     baselineReleaseId: baseline.meta,
@@ -949,9 +959,7 @@ async function runUnsavedSettingsGuard() {
   await openConnectionSettings(page);
   const typed = await typeIntoGatewayAddress(page);
   assert(typed, "gateway address input missing");
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   const nextRelease = baseline.meta === fixtures.a.releaseId ? "b" : "a";
   await setRoot(nextRelease);
   await triggerReleaseCheck(page);
@@ -987,9 +995,7 @@ async function runNativeBusyGuards() {
   let page = await openRemoteStartPage();
   await installReloadCounter(page, { reset: true });
   const context = await remoteContext(page);
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   const results = {};
 
   // 1) 系统文件选择：注入 input 触发真实 WebChromeClient 选择器，取消后必须解除 busy。
@@ -1008,7 +1014,10 @@ async function runNativeBusyGuards() {
       `window.ZodyRemoteBridge.prepareReload(${JSON.stringify(context.sessionId)}, ${JSON.stringify(fixtures.b.releaseId)})`,
     ),
   );
-  assert(results.fileChooserBusy.error?.code === "native-busy", "file chooser did not make native busy");
+  assert(
+    results.fileChooserBusy.error?.code === "native-busy",
+    "file chooser did not make native busy",
+  );
   await setRoot("b");
   await triggerReleaseCheck(page);
   const chooserVeto = await waitForVeto("native-busy", 18000);
@@ -1147,13 +1156,9 @@ async function runNotificationPermissionVeto() {
   const page = await openRemoteStartPage();
   await installReloadCounter(page, { reset: true });
   const context = await remoteContext(page);
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   // MainActivity.onCreate 在权限被撤销后会弹出真实系统通知权限对话框；它属于 native busy 来源。
-  const topActivity = adbShell(
-    "dumpsys activity activities | grep -m1 topResumedActivity",
-  );
+  const topActivity = adbShell("dumpsys activity activities | grep -m1 topResumedActivity");
   assert(
     topActivity.includes("GrantPermissionsActivity"),
     `notification permission dialog not visible: ${topActivity}`,
@@ -1163,7 +1168,10 @@ async function runNotificationPermissionVeto() {
       `window.ZodyRemoteBridge.prepareReload(${JSON.stringify(context.sessionId)}, ${JSON.stringify(fixtures.b.releaseId)})`,
     ),
   );
-  assert(busy.error?.code === "native-busy", `permission dialog did not veto: ${JSON.stringify(busy)}`);
+  assert(
+    busy.error?.code === "native-busy",
+    `permission dialog did not veto: ${JSON.stringify(busy)}`,
+  );
   await setRoot("b");
   await triggerReleaseCheck(page);
   const vetoed = await waitForVeto("native-busy", 18000);
@@ -1217,9 +1225,7 @@ async function runActivityRecreateNotPermanentlyBusy() {
     "remote bridge after recreate",
   );
   const secondContext = await remoteContext(second);
-  const fixtures = JSON.parse(
-    await readFile(`${fixturesDir}/fixtures.json`, "utf8"),
-  );
+  const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   const staleOnOld = JSON.parse(
     await second.evaluate(
       `window.ZodyRemoteBridge.prepareReload(${JSON.stringify(context.sessionId)}, ${JSON.stringify(fixtures.b.releaseId)})`,
@@ -1232,7 +1238,10 @@ async function runActivityRecreateNotPermanentlyBusy() {
   );
   adbShell("settings put system user_rotation 0");
   assert(staleOnOld.error?.code === "stale-session", "old session survived Activity recreate");
-  assert(readyOnNew.ok, `new session permanently busy after recreate: ${JSON.stringify(readyOnNew)}`);
+  assert(
+    readyOnNew.ok,
+    `new session permanently busy after recreate: ${JSON.stringify(readyOnNew)}`,
+  );
   record("activity-recreate-not-permanently-busy", "pass", {
     sameBackend: context.backendId === secondContext.backendId,
     sessionChanged: context.sessionId !== secondContext.sessionId,
