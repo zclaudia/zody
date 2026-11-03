@@ -193,10 +193,10 @@ export interface ZodyTaskReadyOutcome {
 }
 
 /**
- * IZCodeTaskService — ZCode task wrapper API 服务接口
+ * IZodyTaskService — ZCode task wrapper API 服务接口
  *
  * UI、remote controller 通过这层访问 task wrapper 状态；核心 session 状态由
- * ZCode Agent server 维护，新功能应优先走 IZCodeSessionService。
+ * ZCode Agent server 维护，新功能应优先走 IZodySessionService。
  */
 export interface IZodyTaskService {
   // ---- 生命周期 ----

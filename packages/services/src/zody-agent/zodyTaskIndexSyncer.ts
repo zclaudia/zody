@@ -111,7 +111,7 @@ export interface ZodyTaskIndexSyncer {
   ): void;
   /**
    * 把一份 session snapshot 同步到 sqlite，并广播 workspace_task_list_changed。
-   * desktop-continuous 路径上，zcodeSessionService 在 createSession/resumeSession/setModel
+   * desktop-continuous 路径上，zodySessionService 在 createSession/resumeSession/setModel
    * 之后调用本方法（send/steer/fork/compact/rewind 旧写路径已删，写路径统一走
    * v4 命令 + sessions-index/workspace 事件），让 sqlite 拿到最新 title/updatedAt 并触发 UI 列表刷新。
    */
@@ -610,7 +610,7 @@ export function createZodyTaskIndexSyncer(
           );
         }
         // 终态读取完整 snapshot：v4 命令路径（createSession/sendText 走 v4/command）
-        // 不经过 zcodeSessionService 的 op 驱动 snapshot 同步，行缺失/正文搜索/lastError
+        // 不经过 zodySessionService 的 op 驱动 snapshot 同步，行缺失/正文搜索/lastError
         // 全靠这里收敛；readSession(existing-only) 只读现有 runtime，不重新恢复 session。
         void resyncTaskIndexRowFromAgent(target, failed ? "phase.error" : "phase.completed", {
           moveGroupedTaskToTop: options?.moveGroupedTaskToTop,
@@ -646,7 +646,7 @@ export function createZodyTaskIndexSyncer(
         } else {
           // draft session 不预写占位行；首个标题（旧 first_input）先于任何
           // snapshot upsert 到达时按完整 snapshot 回源，避免依赖空 session 占位行。
-          // v4 createSession 不经过 zcodeSessionService.createSession；首个标题到达且
+          // v4 createSession 不经过 zodySessionService.createSession；首个标题到达且
           // task index 尚无行，说明这是新会话首次落库。回源时必须同时写 grouped 顶层最小
           // sort_order，否则缺序节点会被客户端补到列表末尾。
           void resyncTaskIndexRowFromAgent(target, "meta.titleUpdated", {
@@ -690,7 +690,7 @@ export function createZodyTaskIndexSyncer(
     }
     if (becameVisibleTask) {
       // v4 预热 session 从 draft 提升，或 online delta 首次出现新 session 时，
-      // 不经过 zcodeSessionService.createSession。此处是最早且不依赖标题时序的新任务边界；
+      // 不经过 zodySessionService.createSession。此处是最早且不依赖标题时序的新任务边界；
       // 立即回源写入 task 行与 grouped root 最小 sort_order，避免缺序节点落到末尾。
       void resyncTaskIndexRowFromAgent(target, "session.became-visible", {
         moveGroupedTaskToTop: true,
@@ -709,7 +709,7 @@ export function createZodyTaskIndexSyncer(
   ): Promise<void> {
     const candidates = [...summaries].filter((summary) => summary.phase !== "draft");
     if (candidates.length === 0) return;
-    // 纯 V4 UI 不经过 zcodeSessionService.initializeWorkspace；若把首帧
+    // 纯 V4 UI 不经过 zodySessionService.initializeWorkspace；若把首帧
     // 当成“已有 sqlite 存量”的静默基线，远端新库就会永远是 0 行。这里只做原子
     // insert-if-missing，不广播、不回放历史终态，也不覆盖已有产品壳状态；后续打开/
     // 收口时再由完整 snapshot 补 model、正文搜索等权威字段。
@@ -1139,7 +1139,7 @@ export function createZodyTaskIndexSyncer(
       completeConfigRecoveryFrame(state, deliveryKind);
       return;
     }
-    // v4 载荷与 ZCodeConfigOption 结构对齐（shared 黄金测试背书），零映射直通，
+    // v4 载荷与 ZodyConfigOption 结构对齐（shared 黄金测试背书），零映射直通，
     // 下游 workspace_config_options_update 消费面（useZCodeConfig 等）不改。
     getWorkspaceEmitter({
       workspacePath: state.target.workspacePath,

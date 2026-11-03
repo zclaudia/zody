@@ -37,7 +37,7 @@ function normalizeToolName(value: unknown): string | null {
  * 识别 CUA 截图确认请求：kind 与 raw.toolName 任一命中固定字面量即认定
  * （v4 适配器把 payload.toolName 同时写进 request.kind 与 raw）。
  * 参数形状放宽到 `kind?/raw?`，PermissionDialog 的合成 toolCall（TaskChatToolCall）
- * 与 ZCodePermissionRequest 都能直接传入。
+ * 与 ZodyPermissionRequest 都能直接传入。
  */
 export function isCuaScreenshotConfirmRequest(request: {
   kind?: string | null;

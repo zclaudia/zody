@@ -1,4 +1,4 @@
-// 附件命令面（UI 侧）：ZCodePromptAttachment（composer 序列化产物）→ AttachmentRef
+// 附件命令面（UI 侧）：ZodyPromptAttachment（composer 序列化产物）→ AttachmentRef
 // （v4 sendText/createSession attachments 引用模型）。
 //
 // 分派规则（与 CLI attachment-refs.ts 的映射对偶）：

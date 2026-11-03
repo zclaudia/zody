@@ -58,7 +58,7 @@ const taskMetaRealtimeSchema = z.object({
   createdAt: z.number().int().nonnegative(),
   updatedAt: z.number().int().nonnegative(),
   // realtime deliver 的运行时 schema 之前把 mode 放宽成 string，
-  // schema 推导类型因此无法回到 ZCodeTaskMeta，host typecheck 也就无法覆盖这条链路。
+  // schema 推导类型因此无法回到 ZodyTaskMeta，host typecheck 也就无法覆盖这条链路。
   mode: z.enum(zodyTaskModeRealtimeValues),
   model: z.string().optional(),
   runtimeEpoch: z.number().int().nonnegative().optional(),

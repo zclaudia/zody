@@ -54,7 +54,7 @@ function brokerState(context: ZodyProtocolAgentServerContext): ProtocolBrowserBr
  *
  * browser-client 的 agent.browsers.* 每个调用经此把一条 BrowserCommand 变成
  * ZCode Protocol 的 interaction/browserExecute 反向请求，由 app（host→main WebContentsView/CDP）
- * 执行并返回结果。与 permission broker 并列注入（server-operations 的 createWorkspaceZCodeApp options）。
+ * 执行并返回结果。与 permission broker 并列注入（server-operations 的 createWorkspaceZodyApp options）。
  */
 export function createProtocolBrowserControlBroker(
   context: ZodyProtocolAgentServerContext,

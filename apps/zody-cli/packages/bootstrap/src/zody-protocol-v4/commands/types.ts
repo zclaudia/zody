@@ -4,7 +4,7 @@
 // - 本目录是命令的原生实现：决策逻辑（steer 分流 / draft 提升 / abort 生命周期 /
 //   goal-pause barrier）在 handler 里直驱 core（ZCodeApp / runtime），不经旧协议 op。
 // - 会话注册表仍归宿主：通过 V4CommandCoreHost 以「结构化窄视图」透传旧
-//   ZCodeProtocolSessionRecord（同一对象引用，字段变更双向可见，不产生第二份注册表）。
+//   ZodyProtocolSessionRecord（同一对象引用，字段变更双向可见，不产生第二份注册表）。
 // - 环境能力（模型就绪 / legacy 广播 / shell 解析）是注入钩子：旧协议 binder 在过渡期
 //   提供实现，与旧协议同生命周期——每个钩子都标注过渡归宿，新增钩子必须标注。
 import type {
@@ -228,7 +228,7 @@ export interface V4CommandCoreHost {
   /**
    * 会话关闭（deleteSession 的执行面：退订事件 → app.close → 注册表摘除 → gateway 清通道）。
    * 过渡形态：会话注册表现归旧协议宿主，binder 内联实现（顺序对齐旧 closeSession op，
-   * 见 zcode-protocol/server-operations.ts）；v4 自持会话注册表后收编为原生实现。
+   * 见 zody-protocol/server-operations.ts）；v4 自持会话注册表后收编为原生实现。
    */
   closeSession?(sessionId: string): Promise<void>;
   /**

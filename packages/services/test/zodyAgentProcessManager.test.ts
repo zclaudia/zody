@@ -78,7 +78,7 @@ describe("E2E agent coverage", () => {
   });
 });
 
-describe("resolveZCodeAgentNativeRuntimeCommand", () => {
+describe("resolveZodyAgentNativeRuntimeCommand", () => {
   const context = { workspacePath: "/repo/workspace", workspaceKey: "/repo/workspace" };
 
   it("uses the fixed native launcher argv and fd6/7 protocol streams", () => {
@@ -186,7 +186,7 @@ describe("resolveZCodeAgentNativeRuntimeCommand", () => {
   });
 });
 
-describe("createZCodeAgentCommandResolver", () => {
+describe("createZodyAgentCommandResolver", () => {
   const context = { workspacePath: "/repo/workspace", workspaceKey: "/repo/workspace" };
 
   it("uses the selective native runtime only for the workspace it accepts", async () => {
@@ -392,7 +392,7 @@ describe("selective native runtime spawn", () => {
   });
 });
 
-describe("resolveDefaultZCodeAgentCommand", () => {
+describe("resolveDefaultZodyAgentCommand", () => {
   const desktopSurfaceArgsCases = [
     {
       name: "separate surface value",
@@ -470,7 +470,7 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     }
   });
 
-  it("内置 dist zcode-agent 通过 Electron Node 模式启动", () => {
+  it("内置 dist zody.cjs 通过 Electron Node 模式启动", () => {
     delete process.env.ZCODE_AGENT_SERVER_COMMAND;
     delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
     delete process.env.ZCODE_AGENT_SERVER_CWD;
@@ -626,11 +626,11 @@ describe("resolveDefaultZCodeAgentCommand", () => {
     delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
     delete process.env.ZCODE_AGENT_SERVER_CWD;
 
-    // Bugfix: SSH 远端把 zody-server.cjs 部署到 ~/.zcoder/server/，cwd 不在仓库内、
+    // Bugfix: SSH 远端把 zody-server.cjs 部署到 ~/.zody/server/，cwd 不在仓库内、
     // ZCODE_AGENT_SERVER_COMMAND 也没设；旧 resolver 只识别 env 和 monorepo 源码树，
-    // 即使 zcode-agent 已部署到 ~/.zcoder/server/agents/glm/，resolver 也找不到。
+    // 即使 zcode-agent 已部署到 ~/.zody/server/agents/glm/，resolver 也找不到。
     // 这里用 GLM_BINARY_PATH（=runtime.binaryEnvVar）模拟该部署场景，
-    // 验证 resolver 复用 findZCodeAgentRuntimeBinary 命中已部署 binary。
+    // 验证 resolver 复用 findZodyAgentRuntimeBinary 命中已部署 binary。
     const sandboxRoot = mkdtempSync(join(tmpdir(), "zcode-agent-deployed-binary-"));
     createdDirs.push(sandboxRoot);
 

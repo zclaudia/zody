@@ -1,5 +1,5 @@
 // ============================================================
-// dwf 子代理的 Browser Use：真 createZCodeApp + 真 run service 的端到端一格
+// dwf 子代理的 Browser Use：真 createZodyApp + 真 run service 的端到端一格
 // ============================================================
 // 契约见 apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md「Subagent sessions」与
 // docs/zcode-protocol-model-backed-control-requests.md 契约 4。
@@ -10,7 +10,7 @@
 // actor 工厂、run dispose 真的关掉 actor 的 Browser session。
 //
 // 生产里 node_repl MCP 进程经 broker socket 把 actor 的 session_id 原样交给进程级 broker 实例
-// （zcode-protocol-entrypoint.ts 的 `server.browserControlPort`）；这里由 actor 的罐头模型直接调用
+// （zody-protocol-entrypoint.ts 的 `server.browserControlPort`）；这里由 actor 的罐头模型直接调用
 // 同一 context 上的第二个 broker 实例来代替那一跳——socket 只做 token 校验与转发，不碰 session。
 
 import { mkdtemp, rm } from "node:fs/promises";
@@ -84,7 +84,7 @@ describe("dwf 子代理的 Browser Use（真 app 装配）", () => {
       requestClient,
       sessions,
     } as unknown as ZodyProtocolAgentServerContext;
-    // 同一 context 两个实例：app 的 runtime 端口（交给 createZCodeApp），与进程级 node_repl broker 的那个。
+    // 同一 context 两个实例：app 的 runtime 端口（交给 createZodyApp），与进程级 node_repl broker 的那个。
     const appPort = createProtocolBrowserControlBroker(context);
     const nodeReplPort = createProtocolBrowserControlBroker(context);
 

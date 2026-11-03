@@ -174,7 +174,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
   const startupStartedAt = startupNow();
   const appVersion = options.version ?? "0.0.0";
   const sessionId = options.sessionId ?? createSessionId();
-  // app 代际只在本次 createZCodeApp 固定；cold unload/resume 会重建 app 并自然换代。
+  // app 代际只在本次 createZodyApp 固定；cold unload/resume 会重建 app 并自然换代。
   // 旧 app 的 close/coordinator 只作用于旧实例，不能把 Main 全局值冒充 app 生命周期。
   const cuaAppIncarnation = randomUUID();
   const traceContext = options.traceContext ?? createRootTraceContext({ sessionId });

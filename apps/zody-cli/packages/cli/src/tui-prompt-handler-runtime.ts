@@ -25,7 +25,7 @@ export const createTuiProcessRuntimeState = (): TuiProcessRuntimeState => ({
 });
 
 // 返回值类型交给推断：原地 createApp 里这几个都是推断出来的局部变量，手写接口反而会把
-// 品牌类型（SessionId）和 createZCodeApp 的联合签名收窄错。
+// 品牌类型（SessionId）和 createZodyApp 的联合签名收窄错。
 export async function prepareTuiAppRuntime(
   deps: RunDependencies,
   version: string,

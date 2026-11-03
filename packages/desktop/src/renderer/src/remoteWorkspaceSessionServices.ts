@@ -15,7 +15,7 @@ export function buildRemoteWorkspaceSessionServices(
     // 远端附件必须由当前 workspace host 上传并改写路径；沿用本地服务会把
     // 桌面机的绝对路径原样传给 SSH/WSL/Docker 中的 CLI，导致附件无法读取。
     promptAttachmentTransferService: remoteServices.promptAttachmentTransferService,
-    // MCP / 插件状态检查走 zcodeAgentService 的控制面 app-server。
+    // MCP / 插件状态检查走 zodyAgentService 的控制面 app-server。
     // SSH 远端如果沿用本机 base service，会把远端 MCP 配置拿到本机 app-server 里检查，
     // 其 PATH / cwd 都不是远端环境，导致同步后仍显示 `spawn npx ENOENT`。
     zodyAgentService: remoteServices.zodyAgentService,

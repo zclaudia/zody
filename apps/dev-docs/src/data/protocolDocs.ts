@@ -94,7 +94,7 @@ export const concepts: Concept[] = [
     id: "taskId",
     name: "taskId",
     kind: "id",
-    summary: "App/UI 任务列表里的产品层 ID。ZCode Agent 路径迁移后应等同或映射到 sessionId。",
+    summary: "App/UI 任务列表里的产品层 ID。Zody Agent 路径迁移后应等同或映射到 sessionId。",
     lifecycle:
       "UI task 列表、缓存、导航和本地持久化使用；进入 ZCode Protocol 时必须找到对应 sessionId。",
     owner: "app/ui",
@@ -288,7 +288,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "eventEnvelope",
-    name: "ZCode Event Envelope",
+    name: "Zody Event Envelope",
     kind: "protocol",
     summary:
       "ZCode Protocol 事件外壳，承载 eventId、sessionId、turnId、seq、traceId、timestamp、deliveryKind。",
@@ -392,7 +392,7 @@ export const structures: StructureDoc[] = [
         type: "string",
         required: "required",
         meaning:
-          "App 产品层任务 ID。迁移期仍存在，但 ZCode Agent 路径进入协议时要找到对应 sessionId。",
+          "App 产品层任务 ID。迁移期仍存在，但 Zody Agent 路径进入协议时要找到对应 sessionId。",
         owner: "app/ui",
         source: "ZodyTaskMeta",
         conceptIds: ["taskId", "sessionId"],
@@ -601,7 +601,7 @@ export const structures: StructureDoc[] = [
         name: "messageId",
         type: "string",
         required: "optional",
-        meaning: "ZCode message upsert 主键；synthetic timeline 消息也用它做稳定更新。",
+        meaning: "Zody message upsert 主键；synthetic timeline 消息也用它做稳定更新。",
         owner: "agent runtime",
         source: "ZodyStreamEvent",
         conceptIds: ["messageId"],
@@ -714,7 +714,7 @@ export const structures: StructureDoc[] = [
   },
   {
     id: "zcode-event-envelope",
-    title: "ZCode Event Envelope",
+    title: "Zody Event Envelope",
     path: "packages/shared/src/zody-protocol/index.ts",
     purpose: "协议事件外壳。它描述事件日志顺序和观测链路，不描述 UI 输入归属。",
     newShape: "{ eventId, sessionId, turnId?, seq, traceId?, timestamp, deliveryKind? }",

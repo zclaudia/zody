@@ -62,7 +62,7 @@ export function useSavedWorkflowRunOpeners(options: {
       if (!run.parentSessionId) return;
       const target = resolveTarget(run);
       if (!target) return;
-      // 行上的 chip 载荷（`ZCodeSavedWorkflowRun.artifacts`）带最新版的 `contentType`：
+      // 行上的 chip 载荷（`ZodySavedWorkflowRun.artifacts`）带最新版的 `contentType`：
       // 终点据它把 html 产物直接开成浏览器 tab。老行整个 `artifacts` 缺席，少一个键是退化不是错误。
       const artifact = run.artifacts?.find((candidate) => candidate.id === artifactId);
       onOpenWorkflowArtifact?.({

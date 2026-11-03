@@ -147,7 +147,7 @@ export function createMobileNotificationEventBridge(params: {
       if (disposed || generation !== refreshGeneration) return;
       const nextTasksBySessionId = new Map<string, ZodyTaskMeta>();
       for (const task of tasks) {
-        // ZCodeTaskMeta explicitly defines taskId as the ZCode sessionId; the adapter builds it
+        // ZodyTaskMeta explicitly defines taskId as the ZCode sessionId; the adapter builds it
         // from snapshot.session.sessionId. Keep the lookup explicit so a future divergent mapping
         // cannot route a terminal event to a guessed task.
         const sessionId = task.taskId;

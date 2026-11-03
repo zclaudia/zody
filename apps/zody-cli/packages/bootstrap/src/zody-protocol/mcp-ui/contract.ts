@@ -1,6 +1,6 @@
 /**
  * mcp-ui 契约：UI 发起的 MCP 资源读取与工具调用在 agent 侧的处理器接口。
- * 参数与结果形状与 `@zcode/shared` 的 `zcodeMcpReadResource*` / `zcodeMcpUiCallTool*` schema 同构，
+ * 参数与结果形状与 `@zody/shared` 的 `zodyMcpReadResource*` / `zodyMcpUiCallTool*` schema 同构，
  * 由 contract.test 断言两者一致。
  */
 
@@ -56,7 +56,7 @@ export interface McpUiCallToolResult {
 
 /**
  * 处理器依赖的最小 session 视图：由 bootstrap 的 session record 适配，
- * 处理器不直接接触 ZCodeApp 或 mcpPort 的其余能力。
+ * 处理器不直接接触 ZodyApp 或 mcpPort 的其余能力。
  */
 export interface McpUiSessionAccess extends McpUiResourceSessionAccess {
   /** serverName 是否是本 session 已配置的 MCP server（插件 server 与普通 MCP server 同一张表）。 */

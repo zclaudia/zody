@@ -75,7 +75,7 @@ export async function runMemoryScenarios(input) {
   };
 }
 
-export async function loadZCodeModules() {
+export async function loadZodyModules() {
   const paths = {
     bootstrap: join(repoRoot, "apps/zody-cli/packages/bootstrap/dist/index.js"),
     bootstrapModelConfig: join(repoRoot, "apps/zody-cli/packages/bootstrap/dist/model-config.js"),

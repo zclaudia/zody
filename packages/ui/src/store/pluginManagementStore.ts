@@ -21,7 +21,7 @@ export interface PluginDescribeEntry {
   error?: string;
 }
 
-// 设置页「插件管理」的数据源: 经 IPluginManagementService 薄服务由 zcode-cli 提供 (list + enable/disable)。
+// 设置页「插件管理」的数据源: 经 IPluginManagementService 薄服务由 zody-cli 提供 (list + enable/disable)。
 // UI 不再直触 IZCodeAgentService，plugins/* 旧协议词的消费收拢到服务实现一处。
 // 与已 retired 的 marketplace pluginStore 无关, 故单独建一个精简 store。
 export interface PluginManagementState {

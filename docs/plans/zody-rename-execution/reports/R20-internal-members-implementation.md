@@ -1,6 +1,6 @@
 # R20.4 服务访问器及内部成员
 
-基线 `21c06e804020be17dc4dde62fbc0ee4d2b96beb4`。先更新 `specs/zody-brand-residual-cleanup.md` 的访问器/通道边界，再以 TypeScript source checker 对三个旧成员建立 198 个符号组和 493 个绑定引用；9 处未解析引用均是 `hostRemoteWorkspaceServices.test.ts` 本地 fake 的属性读取，已按实际构造一并更改。`candidate.json` 记录每组声明、逐位置编辑和 142 个产品文件的前后 SHA；另有 spec 一份，最终比对见 `final-audit.json` 与 `contract-and-declarations-audit.json`。未修改 ledger、scope 或锁文件。
+基线 `21c06e804020be17dc4dde62fbc0ee4d2b96beb4`。先更新 `specs/zody-brand-residual-cleanup.md` 的访问器/通道边界，再以 TypeScript source checker 对三个旧成员建立 198 个符号组和 493 个绑定引用；9 处未解析引用均是 `hostRemoteWorkspaceServices.test.ts` 本地 fake 的属性读取，已按实际构造一并更改。`candidate.json` 记录每组声明、逐位置编辑和 142 个产品文件的前后 SHA；另有 spec 一份，最终比对见 `final-audit.json` 与 `contract-and-declarations-audit.json`。实施者未修改 ledger、scope 或锁文件；主控在实施后追加了审查 receipt 和账本/scope 元数据，最终提交包含这些独立记录。
 
 `IServiceAccessor`、`RemoteServiceAccess`、Desktop 远程 workspace、本地 helper/adapter/plugin 依赖、UI 和 Web 的服务成员统一为 `zodyTaskService`、`zodyAgentService`、`zodySessionService`。Desktop `legacyRemoteWorkspaceRpcContract` 的字符串数组反射访问器本地属性，因此同步修改数组和测试诊断；indexed-access 类型及两条活跃 mobile E2E fake 也同步。实际 `ServiceChannels` 文件前后 SHA 完全相同，`zcode-task`、`zcode-agent`、`zcode-session` 值保持，未改 wire、env、builtin 或插件桥身份。
 

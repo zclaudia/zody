@@ -16,7 +16,7 @@ import {
 } from "./memory-e2e-provider.mjs";
 import {
   createScenarioPaths,
-  loadZCodeModules,
+  loadZodyModules,
   runMemoryScenarios,
 } from "./memory-e2e-runtime.mjs";
 
@@ -28,7 +28,7 @@ async function main() {
   const runRoot = await mkdtemp(join(tmpdir(), "zcode-memory-e2e-run-"));
   await mkdir(artifactsRoot, { recursive: true });
 
-  const modules = await loadZCodeModules();
+  const modules = await loadZodyModules();
   const retrievalBranch =
     modules.projectMemoryRetrievalBranch.ACTIVE_PROJECT_MEMORY_RETRIEVAL_BRANCH;
   const paths = await createScenarioPaths(runRoot, modules);

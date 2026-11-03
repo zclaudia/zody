@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { normalizeZodyUiError, normalizeRestoredTaskFailureError } from "@/lib/zodyUiError.js";
 
-describe("normalizeZCodeUiError", () => {
+describe("normalizeZodyUiError", () => {
   it.each([
     (error: object) => error,
     (error: object) => ({ data: error }),

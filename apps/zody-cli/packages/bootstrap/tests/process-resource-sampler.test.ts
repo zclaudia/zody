@@ -14,7 +14,7 @@ const memoryUsage: ProcessMemoryUsageSnapshot = {
   arrayBuffers: 1024 * 1024,
 };
 
-describe("createZCodeProcessResourceSampler", () => {
+describe("createZodyProcessResourceSampler", () => {
   it("每 60 秒按差分计算 CPU 核心数、整机百分比和 RSS，并把完整内存快照作为第二参数交给 onSample", () => {
     const onSample = vi.fn();
     const unref = vi.fn();

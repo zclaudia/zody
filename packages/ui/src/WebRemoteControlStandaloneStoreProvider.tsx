@@ -6,9 +6,9 @@ import type { BroadcastMessage, IBroadcastService } from "@zody/services";
 /**
  * 无 host services 的独立远控页面（如空态启动页）所需的本地 store 上下文。
  *
- * 修复原因：空态 StartPage 的渲染树只有 ZCodeIntlProvider，而页面头部的
- * WebRemoteControlThemeMenu 无条件使用 useZCodeStore——没有 StoreProvider 时
- * 整页抛「useZCodeStore 必须在 StoreProvider 内使用」白屏（A-MO-01 实测发现）。
+ * 修复原因：空态 StartPage 的渲染树只有 ZodyIntlProvider，而页面头部的
+ * WebRemoteControlThemeMenu 无条件使用 useZodyStore——没有 StoreProvider 时
+ * 整页抛「useZodyStore 必须在 StoreProvider 内使用」白屏（A-MO-01 实测发现）。
  * 聊天页走 Root 自带 Provider 不受影响。
  *
  * 这里的 IBroadcastService 是进程内 no-op 实现：独立页面没有可同步的对端窗口

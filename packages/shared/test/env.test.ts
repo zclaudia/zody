@@ -87,7 +87,7 @@ describe("shared runtime env", () => {
     expect(env.ZCODE_PRODUCT_FLAVOR).toBe("preview");
   });
 
-  it("mapZCodeEnvToArmsRumEnv 将非本地 production 映射为 prod", async () => {
+  it("mapZodyEnvToArmsRumEnv 将非本地 production 映射为 prod", async () => {
     vi.stubGlobal("__ZCODE_ENV__", "production");
 
     const env = await importFreshEnvModule();
@@ -95,7 +95,7 @@ describe("shared runtime env", () => {
     expect(env.mapZodyEnvToArmsRumEnv("production")).toBe("prod");
   });
 
-  it("mapZCodeEnvToArmsRumEnv 在本地开发态忽略 production 产品环境并映射为 local", async () => {
+  it("mapZodyEnvToArmsRumEnv 在本地开发态忽略 production 产品环境并映射为 local", async () => {
     vi.stubGlobal("__ZCODE_ENV__", "production");
 
     const env = await importFreshEnvModule();

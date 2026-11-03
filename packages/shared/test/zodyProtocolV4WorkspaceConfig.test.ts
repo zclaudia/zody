@@ -1,6 +1,6 @@
 // workspace-config topic 黄金测试（M5 删波次 2 additive 演进纪律：新增 topic 必须带黄金测试）。
 // 覆盖：帧信封 round-trip（snapshot / deltas）、topic key 对偶、载荷与 host 侧
-// ZCodeConfigOption / ZCodeSlashCommand 的结构对齐（syncer 零映射直通的前提）。
+// ZodyConfigOption / ZodySlashCommand 的结构对齐（syncer 零映射直通的前提）。
 import { describe, expect, it } from "vitest";
 import { zodySessionSettingsToZodyConfigOptions } from "../src/zody-agent-model-state.js";
 import type { ZodySessionSettingsState } from "../src/zody-protocol/index.js";

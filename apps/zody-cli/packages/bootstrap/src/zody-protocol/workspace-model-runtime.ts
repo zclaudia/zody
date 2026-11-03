@@ -95,7 +95,7 @@ export async function createWorkspaceZodyApp(
     providerRuntimeHeadersPort,
     runtimeConfig: {
       ...options.runtimeConfig,
-      // createZCodeApp 会把 workingDirectory 规范化为执行 cwd。把协议入口的
+      // createZodyApp 会把 workingDirectory 规范化为执行 cwd。把协议入口的
       // workspacePath 单独注入 runtime，session 持久化才能保留本地 workspaceKey 的路径表示。
       workspacePath: workspace.workspacePath,
       // 远端 session 是 shared-host CUA 的第二层隔离边界：不能只传 workspacePath/identity，

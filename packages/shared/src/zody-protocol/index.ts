@@ -20,13 +20,13 @@ export { conversationQuoteSchema, conversationQuotesSchema } from "../conversati
 /* oxlint-disable eslint(max-lines) -- ZCode Protocol schema 需要单文件导出，方便 app 与 agent 共享同一份协议契约。 */
 // ── 旧协议删除边界──────────────────────
 // 剩余 ~257 个导出：旧 ZCode Protocol 方法契约、请求/响应/事件 schema、
-// session/workspace state snapshot 投影等（承重类型已迁 zcode-protocol-legacy-types.ts）。
+// session/workspace state snapshot 投影等（承重类型已迁 zody-protocol-legacy-types.ts）。
 // 已连根删除的死词（词表+schema+两侧实现）：session/steer、session/rewind、
 // session/rewindCascade、session/previewFileRewind、session/applyFileRewind、
 // prompt/enhance 全簇（含 promptEnhanceResult 通知）、plugins/marketplace/list；
 // session/fork 客户端链已删（op+schema 留存 = v4 forkSessionAtMessage 钩子消费）。
-// 消费者：services 旧栈（zcodeProtocolClient/zcodeAgent/zcodeAgentService/zcodeSession*）、
-// CLI bootstrap 旧协议 server（zcode-protocol/server-operations、plugins、session-mapper 等）、
+// 消费者：services 旧栈（zcodeProtocolClient/zcodeAgent/zodyAgentService/zcodeSession*）、
+// CLI bootstrap 旧协议 server（zody-protocol/server-operations、plugins、session-mapper 等）、
 // UI 旧投影（zcodeSessionProjection 等读路径）。
 // 上述旧协议 client/server 组删除时，本文件整体删除。
 // 注：外部零消费 schema 多为存活 schema 联合的内部依赖，随宿主文件一起处理，勿单删。
@@ -1376,7 +1376,7 @@ const zodyComputerUseToolScheduledEventSchema = zodyComputerUseOperationEventBas
   toolName: nonEmptyString,
   // 这个 cell 是否在用 Computer Use。只表达布尔事实，不再携带动作名——旧的
   // operationAction 靠从模型源码里抽取动作名得到，SDK 面一变就整体失配（见
-  // bootstrap/src/zcode-protocol/computer-use-operation-event.ts 的 usesComputerUse）。
+  // bootstrap/src/zody-protocol/computer-use-operation-event.ts 的 usesComputerUse）。
   // 只挂在 scheduled 上：ToolCallStartedPayload 没有 input，start 时已拿不到模型源码。
   computerUse: z.literal(true).optional(),
 });
@@ -2459,7 +2459,7 @@ export const zodyProviderUpdateAccountConfigParamsSchema = z
   .object({
     revision: nonEmptyString,
     basedOnZCodeBuiltinRevision: nonEmptyString,
-    // Provider Config 的字段校验由 @zcode/provider 负责；协议层只约束可传输信封。
+    // Provider Config 的字段校验由 @zody/provider 负责；协议层只约束可传输信封。
     providers: z.record(z.string(), z.unknown()),
     // 账号状态与 Overlay 必须一起传递，否则 Worker 会丢失非当前套餐的执行门禁。
     states: z.record(
@@ -2756,7 +2756,7 @@ export type ZodyProviderRuntimeHeadersResponse = z.infer<
 // interaction/requestOfficialMcpAuthHeaders 请求/响应 schema 随鉴权链删除。
 
 // ── Plugin management (list + enable/disable) ──
-// 镜像 @zcode/contracts 的 PluginMetadata, 仅保留 UI 需要的可序列化字段。
+// 镜像 @zody/contracts 的 PluginMetadata, 仅保留 UI 需要的可序列化字段。
 export const zodyPluginOptionValueSchema = z.union([z.string(), z.number(), z.boolean()]);
 export type ZodyPluginOptionValue = z.infer<typeof zodyPluginOptionValueSchema>;
 export const zodyPluginScopeSchema = z.enum(["user", "workspace"]);
@@ -2790,7 +2790,7 @@ export const zodyPluginUserConfigOptionSchema = z
 export type ZodyPluginUserConfigOption = z.infer<typeof zodyPluginUserConfigOptionSchema>;
 
 // 组件类型与详情弹窗/市场详情共用的分组顺序保持一致：agent / command / skill / hook / mcp。
-// 注意：这三个 schema 必须定义在 zcodePluginInfoSchema 之前，因为后者（.strict()）的 components 字段引用了它们。
+// 注意：这三个 schema 必须定义在 zodyPluginInfoSchema 之前，因为后者（.strict()）的 components 字段引用了它们。
 export const zodyPluginComponentKindSchema = z.enum(["agent", "command", "skill", "hook", "mcp"]);
 export type ZodyPluginComponentKind = z.infer<typeof zodyPluginComponentKindSchema>;
 
@@ -2992,7 +2992,7 @@ export type ZodySkillsReferenceCatalogResult = z.infer<
 
 // ── 已保存工作流的 GUI 中枢──
 // workspace 级、无会话的五个方法，照 skills/referenceCatalog 的先例：每次调用现扫
-// `<cwd>/.zody/workflows/`（挂载时快照会漏掉手改的文件）。形状与 @zcode/contracts 的
+// `<cwd>/.zody/workflows/`（挂载时快照会漏掉手改的文件）。形状与 @zody/contracts 的
 // saved-workflow.ts 逐字对齐——依赖方向是 contracts → shared，所以这里结构化地再声明一遍，
 // 而不是 import；两边的 strict 形状由 bootstrap 侧的协议测试互相钉住。
 export const zodySavedWorkflowArgTypeSchema = z.enum(["string", "number", "boolean", "json"]);
@@ -3931,11 +3931,11 @@ export const zodyProtocolMethods = {
   sessionCompact: "session/compact",
   sessionGoal: "session/goal",
   sessionClose: "session/close",
-  // setModel 仍被 zcodeSessionService 的 desktop 旧链路消费；replayable
+  // setModel 仍被 zodySessionService 的 desktop 旧链路消费；replayable
   // switchModelConfig 已直接由目标 Environment Registry 解析 Selection。
   sessionSetModel: "session/setModel",
   // replayable facade 的思考深度/模式已收敛 v4 switchModelConfig/
-  // switchCollaborationMode；剩余消费 = zcodeSessionService（desktop 旧链路，随
+  // switchCollaborationMode；剩余消费 = zodySessionService（desktop 旧链路，随
   // 桌面 v4 UI 收口清零）与 setMode 的 auto 值残留（v4 值域刻意排除 auto）。
   sessionSetThoughtLevel: "session/setThoughtLevel",
   sessionSetMode: "session/setMode",
@@ -4014,7 +4014,7 @@ export const zodyProtocolMethods = {
   automationList: "automation/list",
   automationDelete: "automation/delete",
   // fork（F4.3）：offPeakCreate/offPeakList 方法族随闲时任务全链路删除。
-  // @deprecated：host 消费已清零（zcodeAgentService 改走 v4/usage/stats）。
+  // @deprecated：host 消费已清零（zodyAgentService 改走 v4/usage/stats）。
   // 仅剩 CLI server 的 wire 兼容 case；随旧词整体删除时一并移除。
   usageStats: "usage/stats",
   // ZCode Protocol 对 agent 只暴露 session-first 方法；task 是 UI 投影概念，不能泄露进协议方法名。

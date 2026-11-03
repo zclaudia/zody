@@ -63,7 +63,7 @@ import { resolveOfficialPluginHostMcpServerNames } from "../app/official-plugin-
 import { createConfig, resolvePath, type ConfigResult } from "@zody/adapters/config";
 import { parseParams, type ZodyProtocolAgentServerContext } from "./server-types.js";
 
-// 把 CLI 的 PluginMetadata 投影成协议可序列化的 ZCodePluginInfo (只保留 UI 需要的字段)。
+// 把 CLI 的 PluginMetadata 投影成协议可序列化的 ZodyPluginInfo (只保留 UI 需要的字段)。
 function toPluginInfo(plugin: PluginMetadata, configResult?: ConfigResult): ZodyPluginInfo {
   const hostMcpServerNames = resolveOfficialPluginHostMcpServerNames(plugin.id);
   const configuredOptions = Object.fromEntries(
@@ -407,9 +407,9 @@ export async function updatePlugin(
   return withPluginStorageLock(pluginStorageRoot, async () => {
     const installedPlugins: ZodyInstalledPluginSummary[] = [];
     const dependencyClosure: string[] = [];
-    // 聚合每条记录重装产生的诊断：installZCodeMarketplacePlugin 失败时不抛错，而是返回
+    // 聚合每条记录重装产生的诊断：installZodyMarketplacePlugin 失败时不抛错，而是返回
     // CLI 形态的 PluginDiagnostic（见其错误分支的 toMarketplaceInstallDiagnostic），
-    // 这里逐条经协议侧 toPluginDiagnostic 投影成 ZCodePluginDiagnostic 回传，
+    // 这里逐条经协议侧 toPluginDiagnostic 投影成 ZodyPluginDiagnostic 回传，
     // 让失败的重装显式暴露，而不是静默"成功"。
     const diagnostics: ZodyPluginDiagnostic[] = [];
     for (const record of installed) {

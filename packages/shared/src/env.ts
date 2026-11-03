@@ -1,7 +1,7 @@
 import type { ZodyRuntimeEnv } from "./runtimeEnv.js";
 
 export type ZodyEnv = "test" | "production";
-/** 安装包身份：决定应用名、app id、Electron 数据目录与更新策略；与后端环境 `ZCodeEnv` 是两个轴。 */
+/** 安装包身份：决定应用名、app id、Electron 数据目录与更新策略；与后端环境 `ZodyEnv` 是两个轴。 */
 export type ZodyProductFlavor = "production" | "preview";
 export type ArmsRumEnv = "local" | "prod";
 

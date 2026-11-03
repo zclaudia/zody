@@ -65,7 +65,7 @@ export function resolveWorkspaceProviderConfigZodyService(params: {
 /**
  * 读取当前 workspace + provider 的主配置文件路径。
  *
- * 统一通过 zcodeTaskService 获取路径规则，避免 UI 层拼接 provider 配置路径。
+ * 统一通过 zodyTaskService 获取路径规则，避免 UI 层拼接 provider 配置路径。
  */
 export function useWorkspaceProviderConfigFile(
   workspacePath: string,

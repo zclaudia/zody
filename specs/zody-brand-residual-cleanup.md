@@ -82,3 +82,5 @@ shared、bootstrap、services 和其消费者的内部声明、导出、动态�
 `IServiceAccessor` 的 task、agent、session 三个进程内服务代理成员统一使用 `zodyTaskService`、`zodyAgentService`、`zodySessionService`；本地和远端实现、workspace 路由、UI 与手机 Web、内部 helper 参数及测试 double 同步使用新成员名。服务对象只在当前进程作为依赖传递；远端调用由 descriptor 的 `channelName` 选择通道，成员名不作为通道名称或消息字段。现有 `zcode-task`、`zcode-agent`、`zcode-session` 通道值及其协议数据保持原合同，后续代际切换依对应远程协议任务执行。 Desktop legacy 远端访问器的完整性检查通过字段名数组反射本地对象，因此数组和缺失字段诊断随访问器成员更新，不更改远端 channel 值。
 
 验收覆盖本地及远端访问器创建、workspace identity 路由、Desktop 连续流与手机可恢复 attachment 的实际消费者、内部注入和 mock；不能因同名变量而重命名插件桥、持久化字段、环境变量、builtin 配置或其他外部键。
+
+现行注释、测试标题与开发说明中的内部符号和源码路径随已实施改名同步；独立 JS 测试工具的局部导出及消费者一起改名。协议名、日志与遥测字段、外部错误身份、兼容输入及历史来源仍由各自契约管理，文字修正不改变其值。

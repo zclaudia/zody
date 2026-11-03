@@ -1272,7 +1272,7 @@ export function createZodyTaskServiceAdapter(
       const legacyMeta: ZodyTaskMeta = {
         ...legacyFile.meta,
         // Bugfix: 旧 ACP task 只落在 ~/.zcode/v2/sessions/*.json，没有写入
-        // zcode-cli 的 sqlite session 表。新协议 resume 会把 taskId 当 sessionId
+        // CLI 的 sqlite session 表。新协议 resume 会把 taskId 当 sessionId
         // 直接报 Session not found；这里按旧快照恢复只读历史内容，并用 task index
         // 补齐用户改名、归档状态和终态 status，避免把旧 task 误当成可订阅的新 session。
         taskId: params.taskId,
@@ -3247,7 +3247,7 @@ export function createZodyTaskServiceAdapter(
       return (listener) => {
         const localDisposable = getTaskEmitter(target).event(listener);
         if (legacySnapshotTaskKeys.has(taskKey(target))) {
-          // Bugfix: legacy ACP task 没有 zcode-cli sqlite session，恢复后只能作为只读历史。
+          // Bugfix: legacy ACP task 没有 CLI sqlite session，恢复后只能作为只读历史。
           // 若继续向 ZCode Protocol 建 desktop-continuous/replayable 订阅，会反复触发
           // Session is not active 并刷爆日志；本地 emitter 已足够承接 rename/archive 等元数据事件。
           return localDisposable;
@@ -3255,7 +3255,7 @@ export function createZodyTaskServiceAdapter(
         // M5 ③-2 复核（2026-07-06）：这里仍是 services/ 内旧 session/subscribe 词表的
         // 最后消费点（replayable/bots 的 stream 投影源）。写路径（send/stop/交互回执）
         // 本波已收敛 v4 命令；读路径消费方是 bots handleStreamEvent（10 种事件词表）与
-        // host 镜像 taskRealtimePort（词表同为 ZCodeStreamEvent），二者换 v4 帧 = relay
+        // host 镜像 taskRealtimePort（词表同为 ZodyStreamEvent），二者换 v4 帧 = relay
         // 协议 + 手机 store + bots 投影整波重做（且 ui/store 本波由并行 agent 主修，避让）。
         // 死期改判 = replayable 读路径 v4 store 波次（波次 3），与 host/index.ts 镜像、
         // mapStateUpdated/mapServiceEvent、agentService.onDynamicSessionEvent 同批摘除。
@@ -3301,7 +3301,7 @@ export function createZodyTaskServiceAdapter(
       }
       disposed = true;
       // app 退出必须先断开 task index syncer 的订阅，再等待 agent 进程树完成清理；
-      // 否则 host 退出时会把 zcode-cli 的 SIGKILL 兜底 timer 一起带走。
+      // 否则 host 退出时会把 CLI 的 SIGKILL 兜底 timer 一起带走。
       taskIndexSyncer.disposeAll();
       await disposeZodyAgentServiceAndWait();
       disposeLocalTaskState();
@@ -3415,7 +3415,7 @@ function limitTaskSnapshotMessages(
 function parseModelPickerValue(value: string): ModelSelection {
   const customModel = decodeCustomModelValue(value);
   if (customModel?.providerId && customModel.modelName) {
-    // UI 下拉的 custom:provider:model 只是展示态，不能原样传给 zcode-cli。
+    // UI 下拉的 custom:provider:model 只是展示态，不能原样传给 CLI。
     // 旧解析会先按冒号截断成 custom，最终下发 glm/custom，触发 Unsupported model。
     return {
       providerId: customModel.providerId,

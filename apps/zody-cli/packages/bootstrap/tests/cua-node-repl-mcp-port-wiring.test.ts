@@ -50,7 +50,7 @@ function fakeMcpPort(): { port: McpPort; closed: () => boolean } {
   };
 }
 
-describe("createZCodeApp cua node_repl composition", () => {
+describe("createZodyApp cua node_repl composition", () => {
   it("wraps the real app base McpPort only with explicit capture and factory", async () => {
     const root = await mkdtemp(join(tmpdir(), "zody-cua-node-repl-wiring-"));
     roots.push(root);

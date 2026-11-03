@@ -38,8 +38,8 @@ export function StoreProvider({
  * 消费 Zustand store 的 hook
  *
  * 用法：
- *   const theme = useZCodeStore(s => s.theme);
- *   const setTheme = useZCodeStore(s => s.setTheme);
+ *   const theme = useZodyStore(s => s.theme);
+ *   const setTheme = useZodyStore(s => s.setTheme);
  */
 export function useZodyStore<T>(selector: (state: ZodyState) => T): T {
   const store = useContext(StoreContext);
@@ -50,7 +50,7 @@ export function useZodyStore<T>(selector: (state: ZodyState) => T): T {
 }
 
 /**
- * 带默认值的容错版 useZCodeStore（store 耦合剥离配套）。
+ * 带默认值的容错版 useZodyStore（store 耦合剥离配套）。
  *
  * 使用场景：宿主组件（PermissionDialog / 各 markdown 弹窗等）负责从 store 取
  * theme / codePreviewSettings，再通过 props 注入纯展示组件。这些宿主在单测里常被

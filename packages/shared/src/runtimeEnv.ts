@@ -149,7 +149,7 @@ const capturedZodyAgentTelemetryEnv: Record<string, string> = {};
 // 解析全局 ~/.zody/cli/config.json 里的 `zcode-cua` server 之前就会先 sanitize process.env，导致
 // 定向注入时已经读不到凭据 → 全局 zcode-cua 回退 `--backend auto`，让 Python/uvx 成为 TCC 主体
 // （fail-open，违反 "Python/uvx must never become the implicit permission owner"）。因此在剔除前把
-// 凭据捕获进本进程私有存储，只经 getCapturedZCodeCuaBrokerCredentials() 暴露给 bootstrap 的定向
+// 凭据捕获进本进程私有存储，只经 getCapturedZodyCuaBrokerCredentials() 暴露给 bootstrap 的定向
 // 注入路径，绝不写回任何子进程 env。
 function captureZodyCuaBrokerCredentials(env: Record<string, string | undefined>): void {
   const socket = env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY]?.trim();

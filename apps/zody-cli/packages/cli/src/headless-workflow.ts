@@ -53,8 +53,8 @@ export const createHeadlessPermissionBroker = (): NonNullable<
 /**
  * stream-json 里 dwf 进度行的 `type`。
  *
- * 刻意**不**进 `zcodeSessionEventTypeSchema`（`shared/src/zcode-protocol/index.ts`）：
- * 那是个闭集 `z.enum` 且喂给 `zcodeSessionEventSchema` 的 discriminated union，加值等于让
+ * 刻意**不**进 `zodySessionEventTypeSchema`（`shared/src/zcode-protocol/index.ts`）：
+ * 那是个闭集 `z.enum` 且喂给 `zodySessionEventSchema` 的 discriminated union，加值等于让
  * v3 app-server 在类型面上宣告一个它永不发出的事件。stream-json 是 CLI 私有输出格式，
  * 不受协议 strict schema 约束。
  */
@@ -354,7 +354,7 @@ export const waitForHeadlessWorkflowSettle = async (input: {
  * 这个 app 的 runtime 能提供 busy 事实吗？
  *
  * 动态读取的理由见 `runtime-event-subscriber.ts` 的 `readRuntimeFunction`（同一个
- * `RunDependencies.createZCodeApp` 注入点边界）。
+ * `RunDependencies.createZodyApp` 注入点边界）。
  *
  * **不静默降级**：拿不到 busy 事实就不进等待——"这个宿主没有这个能力"的诚实答复，
  * 而不是假装等过了。

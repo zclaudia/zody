@@ -1,10 +1,10 @@
 import { run } from "../../packages/cli/src/run.ts";
 import { scheduleCliExitWatchdog } from "../../packages/cli/src/shutdown.ts";
-import { loadZCodeModules } from "./memory-e2e-runtime.mjs";
+import { loadZodyModules } from "./memory-e2e-runtime.mjs";
 
 // 只注入隔离配置和 scripted provider；参数、Runtime、Extraction、关闭与信号均走真实实现。
 const settings = JSON.parse(process.argv[2]);
-const modules = await loadZCodeModules();
+const modules = await loadZodyModules();
 const providerId = "memory-bench-provider";
 const modelId = "memory-bench-model";
 const providerRegistry = new modules.provider.ProviderRegistry([

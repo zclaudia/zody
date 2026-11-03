@@ -14,7 +14,7 @@ import {
 import { parseArgs, resolveCaseNames } from "./args.mjs";
 import { writeJsonFile } from "./artifacts.mjs";
 import { formatError } from "./diagnostics.mjs";
-import { loadZCodeModules } from "./case-utils.mjs";
+import { loadZodyModules } from "./case-utils.mjs";
 import { getCaseDefinitions } from "./suite-cases.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -57,7 +57,7 @@ async function main() {
       );
     }
 
-    const modules = await loadZCodeModules(repoRoot);
+    const modules = await loadZodyModules(repoRoot);
     const caseResults = [];
     for (const caseDef of caseDefinitions) {
       const caseRoot = join(runRoot, "cases", caseDef.name);

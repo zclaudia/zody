@@ -18,7 +18,7 @@ afterEach(async () => {
   await Promise.all(roots.splice(0).map((root) => rm(root, { force: true, recursive: true })));
 });
 
-describe("createZCodeApp workspace Hook admission", () => {
+describe("createZodyApp workspace Hook admission", () => {
   it("首次 activation 等待 Trust store load；pending blocked，exact pretrust 后执行同一 snapshot", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-workspace-hook-runtime-"));
     roots.push(root);

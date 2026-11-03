@@ -1,9 +1,9 @@
 /* oxlint-disable eslint(max-lines) -- re-home 产物：task 投影承重类型集中迁移，保持单文件契约面。 */
 // re-home 迁移产物（为删除旧协议树铺路）。
 // 本文件承载旧 task 投影中仍被存活栈消费的明星承重类型：ZCodeTaskMeta / ZCodeProvider /
-// ZCodeStreamEvent / TraceId/InputId/QueryId / ZCodePersistedMessage(Part) / ZCodeTaskSnapshot /
-// ZCodePlanStep / ZCodePermissionRequest 及其依赖闭包（含 realtime 传输基础类型）。
-// zcode-task-types.ts / task-realtime.ts 仍保留旧协议兼容面，共用本文件中的核心类型。
+// ZodyStreamEvent / TraceId/InputId/QueryId / ZodyPersistedMessage(Part) / ZodyTaskSnapshot /
+// ZodyPlanStep / ZodyPermissionRequest 及其依赖闭包（含 realtime 传输基础类型）。
+// zody-task-types.ts / task-realtime.ts 仍保留旧协议兼容面，共用本文件中的核心类型。
 
 import type { ZodyBackgroundTaskControlItem } from "./background-task-controls.js";
 import type { ToolCallDisplay } from "./zody-protocol-v4/toolDisplay.js";
@@ -320,7 +320,7 @@ export interface ZodyTaskMeta {
   /**
    * cron 身份标记：该 session 属于哪条 automation。
    *
-   * cron 身份必须定义在共享的 ZCodeTaskMeta 上，供持久化层、V4 UI 和服务契约
+   * cron 身份必须定义在共享的 ZodyTaskMeta 上，供持久化层、V4 UI 和服务契约
    * 共同使用，避免字段已持久化却无法经类型契约访问。
    */
   cronAutomationId?: string;
@@ -348,7 +348,7 @@ export interface ZodyTaskMeta {
   repairState?: ZodyTaskRepairState;
   /** 任务级文件改动摘要，仅用于列表/标题展示，真实回滚仍以 fileChanges 为准 */
   changeSummary?: ZodyTaskChangeSummary;
-  /** zcode-cli /goal 会话目标；null 表示已显式清空。 */
+  /** zody-cli /goal 会话目标；null 表示已显式清空。 */
   target?: ZodyTaskGoal | null;
 }
 export interface ZodyTaskRepairState {
@@ -844,7 +844,7 @@ export interface ZodyConfigOptionUpdate {
   inputId?: InputId;
   configOptions: ZodyConfigOption[];
 }
-/** zcode-cli/GLM agent 专属：模型变化后同步思考等级选项和上下文窗口。 */
+/** zody-cli/GLM agent 专属：模型变化后同步思考等级选项和上下文窗口。 */
 export interface ZodyGlmAgentModelStateUpdate extends ZodyGlmAgentModelStateUpdatePayload {
   type: "glm_agent_model_state_update";
   taskId: string;
@@ -895,7 +895,7 @@ export interface ZodySessionInfoUpdate {
    */
   apiRetry?: ZodyApiRetryStatus | null;
   /**
-   * zcode-cli 通过兼容 session_info_update._meta.zcode.target 投影的 /goal 状态补丁。
+   * zody-cli 通过兼容 session_info_update._meta.zcode.target 投影的 /goal 状态补丁。
    * `undefined` 表示本次没有 target 变化；`target: null` 表示清空。
    */
   target?: ZodyTaskGoalChangedPatch;

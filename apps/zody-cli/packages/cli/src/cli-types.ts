@@ -53,7 +53,7 @@ export interface RunDependencies extends PluginsCommandOverrides {
   /**
    * Session-event shaper for --output-format stream-json. Defaults to the
    * bootstrap module's, which is also what the protocol server uses; injectable
-   * so a caller that supplies its own `createZCodeApp` (tests, embedders) can
+   * so a caller that supplies its own `createZodyApp` (tests, embedders) can
    * still stream, since the bootstrap module is not loaded on that path.
    */
   mapSessionEvent?: BootstrapModule["mapSessionEvent"];

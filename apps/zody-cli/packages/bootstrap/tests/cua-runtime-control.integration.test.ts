@@ -171,7 +171,7 @@ function createNativeDuplexPair(): {
   return { server: Duplex.from({ readable: inbound, writable: outbound }), client: new FrameClient(outbound, inbound) };
 }
 
-describe("createZCodeApp CUA control composition", () => {
+describe("createZodyApp CUA control composition", () => {
   const createdDirs: string[] = [];
 
   afterEach(() => {

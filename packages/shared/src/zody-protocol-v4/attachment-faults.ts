@@ -6,7 +6,7 @@
 // 要求用稳定错误码，本模块即该契约的单一来源。
 //
 // 传输路径：CLI 侧抛出的 Error 带 `code` 字段，`toProtocolError` 会把 string code
-// 透传到 JSON-RPC `error.data.code`；客户端读回时用 readZCodeAttachmentFaultCode。
+// 透传到 JSON-RPC `error.data.code`；客户端读回时用 readZodyAttachmentFaultCode。
 
 export const ZCODE_ATTACHMENT_FAULT_CODES = {
   /** host 未实现 stat 能力。 */

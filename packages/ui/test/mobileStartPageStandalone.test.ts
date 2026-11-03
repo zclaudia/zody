@@ -9,9 +9,9 @@ import {
 } from "../src/index.js";
 
 /**
- * A-MO-01 回归：空态 StartPage 的渲染树只有 ZCodeIntlProvider（bootstrap 不挂 Root，
- * 没有 Root 自带的 StoreProvider），而头部 ThemeMenu 无条件使用 useZCodeStore。
- * 修复前直接白屏抛「useZCodeStore 必须在 StoreProvider 内使用」；
+ * A-MO-01 回归：空态 StartPage 的渲染树只有 ZodyIntlProvider（bootstrap 不挂 Root，
+ * 没有 Root 自带的 StoreProvider），而头部 ThemeMenu 无条件使用 useZodyStore。
+ * 修复前直接白屏抛「useZodyStore 必须在 StoreProvider 内使用」；
  * WebRemoteControlStandaloneStoreProvider 用本地 broadcast 补齐上下文。
  */
 

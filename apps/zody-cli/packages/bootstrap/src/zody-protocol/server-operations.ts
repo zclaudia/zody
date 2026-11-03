@@ -3154,7 +3154,7 @@ async function requestSessionRuntimePreferences(
   trace?: ZodyProtocolTrace,
 ): Promise<ZodySessionRuntimePreferencesResult> {
   const startedAt = Date.now();
-  // ZCodeProtocolTrace.traceId 是协议层的 string；LogContext 需要 branded TraceId，
+  // ZodyProtocolTrace.traceId 是协议层的 string；LogContext 需要 branded TraceId，
   // 按本文件既有惯例断言收口，避免多处日志构造重复转换。
   const traceId = trace?.traceId as TraceId | undefined;
   context.logger?.debug("ZCode Protocol runtime preferences request started", {

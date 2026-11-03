@@ -466,7 +466,7 @@ function resolveBundledWorkspaceZodyAgentCommand(
       storagePreparationEntry: distEntrypoint,
       cwd: context.workspacePath,
       // 桌面端 host 运行在 Electron utility process 中，process.execPath 指向 Electron Helper。
-      // 这里显式启用 Node 运行模式，避免内置 zcode-agent 被当成 Electron/Chromium 子进程启动并卡在 GPU 初始化。
+      // 这里显式启用 Node 运行模式，避免内置 Zody Agent 被当成 Electron/Chromium 子进程启动并卡在 GPU 初始化。
       env: { ELECTRON_RUN_AS_NODE: "1" },
     };
   }
@@ -490,7 +490,7 @@ function resolveDeployedZodyAgentBinaryCommand(
   // SSH 远端把 zody-server.cjs 单文件部署到 ~/.zody/server/，宿主进程的 cwd 不在仓库内、
   // env 也不会被 ssh exec 继承，即使 zcode-agent 已经部署到 ~/.zody/server/agents/glm/，
   // resolver 也找不到，第一次 getClient 就抛 "Zody agent server command is not configured"。
-  // 这里复用 findZCodeAgentRuntimeBinary 的候选链（含 GLM_BINARY_PATH env、
+  // 这里复用 findZodyAgentRuntimeBinary 的候选链（含 GLM_BINARY_PATH env、
   // packagedResourcesPath、~/.zody/server/agents/glm、bundled-agents 等），
   // 把已部署的原生 binary 当成最终兜底，远端/桌面打包形态都能命中。
   const binaryPath = findZodyAgentRuntimeBinary();
@@ -508,7 +508,7 @@ function resolveElectronRuntimeZodyAgentCommand(
   context: ZodyAgentCommandResolverContext,
 ): ZodyAgentCommand | null {
   // 桌面打包态：host 跑在 Electron utility process 里，process.execPath 指向 Electron Helper，
-  // 它内置的 Node runtime 与 zcode-cli 目标版本一致（Electron 41 = Node 24.x）。
+  // 它内置的 Node runtime 与 zody-cli 目标版本一致（Electron 41 = Node 24.x）。
   // 这里直接用 app 自带的 Electron Node 执行打进 resources/glm 的 zody.cjs，
   // 不再随包内置一份独立 Node 二进制（体积从 ~180MB 降到 ~16MB，且跨平台同一份 JS）。
   // 用 process.versions.electron 作为闸门：远端 SSH/WSL host 由系统 Node 运行、没有 electron，
@@ -853,7 +853,7 @@ export class ZodyAgentProcessManager {
   private disposeAllInFlight: Promise<void> | undefined;
   private disposed = false;
 
-  /** 进程换代通知（generation>1 时触发）；v4 订阅方据此重订，见 ZCodeAgentRuntimeRestartedEvent。 */
+  /** 进程换代通知（generation>1 时触发）；v4 订阅方据此重订，见 ZodyAgentRuntimeRestartedEvent。 */
   readonly onRuntimeRestarted = this.runtimeRestartedEmitter.event;
   /** 真实 spawn、启动握手与 single-flight 收口后 available；client 关闭后 unavailable。 */
   readonly onRuntimeLifecycle = this.runtimeLifecycleEmitter.event;
@@ -1886,7 +1886,7 @@ export class ZodyAgentProcessManager {
     this.startingByWorkspaceKey.clear();
 
     // app/host 退出时旧逻辑只同步 dispose client，底层进程树的 SIGKILL 兜底
-    // 依赖 unref timer，host 自己退出后 timer 不会再执行，zcode-cli 会残留为孤儿进程。
+    // 依赖 unref timer，host 自己退出后 timer 不会再执行，CLI 会残留为孤儿进程。
     // 这里让 host 可以等待每个 workspace 的 agent 进程树完成 graceful + force 清理。
     this.disposeAllInFlight = Promise.all(
       managedProcesses.map((managed) => this.cleanupManagedProcessForShutdown(managed)),

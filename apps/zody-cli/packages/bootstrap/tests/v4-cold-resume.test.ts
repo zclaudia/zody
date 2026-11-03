@@ -5,7 +5,7 @@
 // 两层覆盖：
 // - gateway 单元（stub host）：单飞幂等 / 完整事件日志 hydration 路径 /
 //   notFound vs resumeFailed 错误分型 / 宿主未实现钩子的退化行为。
-// - 集成（真 sqlite sessionStore + ZCodeProtocolAgentServer + binder）：
+// - 集成（真 sqlite sessionStore + ZodyProtocolAgentServer + binder）：
 //   写 transcript → 关库重开（模拟 CLI 重启，context.sessions 为空）→
 //   v4 subscribe → snapshot 含历史行（transcript 合成路径）→ sendText 再发一轮成功；
 //   restoreWarning 语义保真（workspace 无可用模型时 sendText 被拒）；
@@ -865,7 +865,7 @@ describe("v4 冷恢复（gateway 单元）", () => {
   });
 });
 
-// ── 集成层（真 sqlite store + ZCodeProtocolAgentServer + binder）─────────────
+// ── 集成层（真 sqlite store + ZodyProtocolAgentServer + binder）─────────────
 
 const WORKSPACE_PATH = "/workspace/cold-resume";
 const workspace = { workspacePath: WORKSPACE_PATH, workspaceKey: WORKSPACE_PATH };
@@ -1004,7 +1004,7 @@ async function saveAssistantTextMessage(
   });
 }
 
-/** 冷恢复集成用最小 fake app（子集自 zcode-protocol.test.ts createFakeApp）。 */
+/** 冷恢复集成用最小 fake app（子集自 zody-protocol.test.ts createFakeApp）。 */
 interface ColdFakeAppProbe {
   persistedMessagesReloadRequired?: boolean;
   /** 模拟 resume 修补中断 compact timeline：在 reload 前写回 M1。 */
@@ -1682,7 +1682,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           "id" in message &&
           message.method === zodyProtocolMethods.sessionRequestRuntimePreferences
         ) {
-          // activation 在 createZCodeApp 前会等待宿主偏好；history 不依赖它。
+          // activation 在 createZodyApp 前会等待宿主偏好；history 不依赖它。
           void server.handleMessage({
             id: message.id,
             result: {

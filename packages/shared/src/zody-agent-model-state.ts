@@ -1,12 +1,12 @@
 // ── 旧协议兼容面（过渡期）──────────────────────────────
 // 剩余 5 个导出：旧 configOptions 投影函数（formatModelPickerValue/normalizeAvailableZCodeMode/
-// getZCodeAgentModeSelectOptions/getZCodeAgentAvailableModes/
-// zcodeSessionSettingsToZCodeConfigOptions；B 类，死期=波次3）。
+// getZodyAgentModeSelectOptions/getZodyAgentAvailableModes/
+// zodySessionSettingsToZodyConfigOptions；B 类，死期=波次3）。
 // 消费者：services zcodeConfigOptions、UI zcodeSessionProjection 等旧栈
 // （fork：bots 消费方随第三方 IM bot channels 全量删除）。
 // 2026-09 Guarded 收尾后，ZCODE_AGENT_MODE_OPTIONS 成为 Desktop/手机 Composer、Automation
 // 表单共用的唯一模式目录（UI zcodeSessionProjection / automationAgentConfigOptions 直接消费
-// getZCodeAgentAvailableModes / getZCodeAgentModeSelectOptions / normalizeAvailableZCodeMode）。
+// getZodyAgentAvailableModes / getZodyAgentModeSelectOptions / normalizeAvailableZodyMode）。
 // 波次3 删除这些导出前必须先把模式目录迁到非 legacy 位置，不能连带删掉目录本身。
 import { formatModelPickerValue } from "./model-selection.js";
 import type { ZodySessionMode, ZodySessionSettingsState } from "./zody-protocol/index.js";

@@ -100,7 +100,7 @@ export function readCurrentZodyMode(
     return undefined;
   }
 
-  // Bugfix: 之前只白名单了本地 ZCodeTaskMode，导致 provider 原生模式
+  // Bugfix: 之前只白名单了本地 ZodyTaskMode，导致 provider 原生模式
   // 在首发建 session 时被丢弃。这里先归一化，避免 UI 已选模式和真实 ZCode Agent session 模式不一致。
   return normalizeZodyModeForTaskCreation(currentValue, provider);
 }

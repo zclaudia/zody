@@ -20,7 +20,7 @@ const zodyAgentService = {
     >(),
 };
 // fork（bot-channels 移除）：botsService mock 与等待其 ACK 的断言随 BotsService 删除
-//（specs/bot-channels-removal.md），update 现在只等 zcodeAgentService 的 Host ACK。
+//（specs/bot-channels-removal.md），update 现在只等 zodyAgentService 的 Host ACK。
 
 vi.mock("@/hooks/useServices.js", () => ({
   useServices: () => ({

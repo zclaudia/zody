@@ -1,5 +1,5 @@
 // ── 旧协议兼容面（过渡期）──────────────────────────────
-// 剩余 1 个导出：deriveZCodeTaskStatusFromSessionSnapshot。
+// 剩余 1 个导出：deriveZodyTaskStatusFromSessionSnapshot。
 // 消费者：zcodeTaskServiceAdapter/zcodeTaskIndexSyncer/zcodeSessionProjection（旧投影栈）。
 import type { ZodySessionStateSnapshot } from "./zody-protocol/index.js";
 import { getZodyUserVisibleMessages } from "./zody-session-visible-content.js";

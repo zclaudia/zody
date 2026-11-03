@@ -1,6 +1,6 @@
 # Memory E2E
 
-这套 E2E 从真实 `createZCodeApp` 入口运行，使用隔离的临时 workspace/storage 和本地
+这套 E2E 从真实 `createZodyApp` 入口运行，使用隔离的临时 workspace/storage 和本地
 scripted provider。它验证 Memory 主链路已经正确组合，不依赖线上模型：
 
 - Main Memory prompt 与冻结 fixture 逐字一致，并在 tool continuation 中持续存在；

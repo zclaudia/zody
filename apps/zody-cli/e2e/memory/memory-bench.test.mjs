@@ -11,7 +11,7 @@ import {
   writeScriptedCaptureFile,
 } from "../compact-microcompact/scripted-provider.mjs";
 import { classifyRequest, requestText } from "./memory-e2e-provider.mjs";
-import { loadZCodeModules } from "./memory-e2e-runtime.mjs";
+import { loadZodyModules } from "./memory-e2e-runtime.mjs";
 
 const artifactsRoot = await mkdtemp(join(tmpdir(), "zcode-memory-bench-artifacts-"));
 const memoryContent =
@@ -26,7 +26,7 @@ for (const scenario of ["wait", "default", "disabled", "cancel"]) {
     const storageRoot = join(runRoot, "storage");
     const artifacts = join(artifactsRoot, scenario);
     await Promise.all([mkdir(workspace), mkdir(artifacts)]);
-    const modules = await loadZCodeModules();
+    const modules = await loadZodyModules();
     const memoryRoot = modules.core.resolveProjectMemoryRoot({
       cliStorageRoot: join(storageRoot, "cli"),
       workspacePath: workspace,

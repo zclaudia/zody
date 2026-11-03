@@ -271,3 +271,9 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 ## Internal service accessor members
 
 - Three member names migrated across198 checker groups/493 bound references and exact supplemental dynamic/test locations,142 product files plus spec. Actual channel file unchanged. Controller143-file scope/hash verified, independent14tests115pass plus1source test pass, roottypes/lint0. Terra broader772pass/1 unchanged gateway failure reproduced in clean7c; actual browser onboarding four scenarios and mobile settings passed. Main85 remains failed with full normalized-text equality. Candidate pending independent review; current text and final R21/R22 still open.
+
+- Internal service-member batch66af independently accepted by DeepSeek B;142product files/3name families/198checker groups preserve actual channel values. Implementation report now explicitly distinguishes Terra source work from controller metadata additions.
+## Current text and independent JS bindings
+
+- Applied87 current source/spec/doc files rebased on66af;7JS files exactly preserve literals/payloads while renaming two independent loader bindings and one local fixture schema. Original1602 declaration audit and explicit future-contract/historical retentions remain recorded. Controller hashes87files and verifies7JS byte/AST literal equality, root16/docs18/types/lint passed, isolatedcompact7/memory4 passed with existing build. Initial memory wrapper failed to spawn pnpm in isolatedPATH; successful prior subprocess statuses and corrected direct-node memory invocation retained separately, no whole-wrapper pass claim.
+- Graph resource basename identified as active internal R21 path rather than permanent external identity; precise move plus9active consumers will be handled before complete final install/generation candidate. Notices/inventory and R22 remain open.

@@ -1,9 +1,9 @@
 /* oxlint-disable eslint(max-lines) -- re-home 产物：旧协议消息/会话承重类型集中迁移，保持单文件契约面。 */
 // re-home 迁移产物（为删除旧协议树铺路）。
 // 本文件承载旧 ZCode Protocol 中仍被存活栈（validation/background-task-notifications/
-// v4 投影等）消费的承重类型与 schema：ZCodeSessionInfo / ZCodeMessageWithParts /
-// ZCodePermissionResponse / ZCodeInteractionRequestOrigin 及其依赖闭包。
-// 旧协议死亡（zcode-protocol/index.ts 删除）后，这是该协议面的唯一幸存面。
+// v4 投影等）消费的承重类型与 schema：ZodySessionInfo / ZodyMessageWithParts /
+// ZodyPermissionResponse / ZodyInteractionRequestOrigin 及其依赖闭包。
+// 旧协议死亡（zody-protocol/index.ts 删除）后，这是该协议面的唯一幸存面。
 
 import { z } from "zod";
 import { modelSelectionSchema } from "./model-selection.js";

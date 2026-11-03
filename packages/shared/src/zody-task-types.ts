@@ -1,10 +1,10 @@
 /* oxlint-disable eslint(max-lines) -- ZCode task 投影类型当前集中在单文件维护，新增 workspace 事件先保持就近声明。 */
 // ── 旧协议兼容面（过渡期）──────────────────────────────
 // 剩余 29 个导出：workspace 预热/workspace 事件、turn steer 结果、session binding/import、
-// trace/input/query id 工厂函数、ZCodeError、ZCodeTaskCreateResult 等。
-// 消费者：services 旧栈（zcodeAgentService/zcodeTaskServiceAdapter/zcodeTaskService）、
+// trace/input/query id 工厂函数、ZodyError、ZodyTaskCreateResult 等。
+// 消费者：services 旧栈（zodyAgentService/zodyTaskServiceAdapter/zodyTaskService）、
 // UI 旧 store/投影。明星承重类型（ZCodeTaskMeta/ZCodeStreamEvent/ZCodeTaskSnapshot 等）
-// 已迁 zcode-task-types-core.ts（幸存面）。本文件与旧 task service 组同生命周期。
+// 已迁 zody-task-types-core.ts（幸存面）。本文件与旧 task service 组同生命周期。
 import { createUuid } from "./uuid.js";
 import type {
   TaskRealtimeReason,
@@ -169,8 +169,8 @@ export interface ZodyCancelTaskCommandResult {
  * Workspace 级别事件，用于在 task 创建前把 ZCode Agent 异步推送的
  * 通知（如 slash commands、configOptions）实时传递到 UI。
  *
- * 与 ZCodeStreamEvent 的区别：ZCodeStreamEvent 绑定到具体 taskId，
- * ZCodeWorkspaceEvent 绑定到 workspacePath，覆盖 task 创建前的空档期。
+ * 与 ZodyStreamEvent 的区别：ZodyStreamEvent 绑定到具体 taskId，
+ * ZodyWorkspaceEvent 绑定到 workspacePath，覆盖 task 创建前的空档期。
  */
 export type ZodyWorkspaceEvent =
   | ZodyWorkspaceSlashCommandsUpdate

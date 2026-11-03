@@ -139,7 +139,7 @@ async function requestPermission(
         zodyPermissionResponseSchema,
         withInteractionRequestRecovery(options, signal),
       ),
-    // v4 answer → ZCodePermissionResponse：optionId 语义来自 v4 reducer 合成的
+    // v4 answer → ZodyPermissionResponse：optionId 语义来自 v4 reducer 合成的
     // allowOnce/allowAlways/deny（见 product-projection onPermissionRequested）。
     (answer) => {
       // 工作流确认窗里调整过的设置随放行应答一起走（docs/dynamic-workflow/launch.md

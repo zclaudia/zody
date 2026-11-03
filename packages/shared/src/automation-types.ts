@@ -109,7 +109,7 @@ export interface ZodyAutomationRunIdParts {
 }
 
 /**
- * runId 契约（见 ZCodeAutomationRun.runId）的唯一解析入口；desktop host/scheduler 与
+ * runId 契约（见 ZodyAutomationRun.runId）的唯一解析入口；desktop host/scheduler 与
  * CLI telemetry 不各自按字符串猜格式。不符合两种声明格式的输入一律返回 null。
  */
 export function parseAutomationRunId(runId: string): ZodyAutomationRunIdParts | null {

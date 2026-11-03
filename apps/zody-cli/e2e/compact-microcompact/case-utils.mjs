@@ -17,7 +17,7 @@ const OUTPUT_TOKEN_FIELDS = {
   "openai-responses": "max_output_tokens",
 };
 
-export async function loadZCodeModules(repoRoot) {
+export async function loadZodyModules(repoRoot) {
   try {
     const [bootstrap, contracts, providerConfig, providerRegistry] = await Promise.all([
       import(pathToFileURL(join(repoRoot, "packages", "bootstrap", "dist", "index.js")).href),

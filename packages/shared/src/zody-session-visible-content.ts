@@ -1,8 +1,8 @@
 // ── 旧协议兼容面（过渡期）──────────────────────────────
 // 剩余 11 个导出：goal 迭代/可见消息投影函数。
-// 消费者：zcodeTaskServiceAdapter/zcodeSessionProjection/zcodeTaskIndexSyncer、
-// CLI bootstrap session-mapper。textFromZCodeMessageParts 已迁
-// zcode-protocol-legacy-types.ts（幸存面）。本文件与旧投影栈同生命周期。
+// 消费者：zcodeTaskServiceAdapter/zcodeSessionProjection/zodyTaskIndexSyncer、
+// CLI bootstrap session-mapper。textFromZodyMessageParts 已迁
+// zody-protocol-legacy-types.ts（幸存面）。本文件与旧投影栈同生命周期。
 import type { ZodySessionGoal } from "./zody-protocol/index.js";
 import { getConversationMessageProjectionPolicy } from "./conversation-message-projection-policy.js";
 import {

@@ -37,7 +37,7 @@ const mockBroadcastService: IBroadcastService = {
   onMessage: () => ({ dispose: () => {} }),
 };
 
-describe("createZCodeStore global state", () => {
+describe("createZodyStore global state", () => {
   beforeEach(() => {
     localStorageState.clear();
   });
