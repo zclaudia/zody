@@ -7,8 +7,8 @@ import {
   TID_WORKFLOW_ACTION_DELETE,
   TID_WORKFLOW_ACTION_MOVE,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
@@ -35,7 +35,7 @@ export function SavedWorkflowLastRunBadge({
   run,
   now,
 }: {
-  run: ZCodeSavedWorkflowRun | undefined;
+  run: ZodySavedWorkflowRun | undefined;
   now: number;
 }) {
   const { intl } = useZCodeIntl();
@@ -86,17 +86,17 @@ export function SavedWorkflowLastRunBadge({
 }
 
 interface SavedWorkflowCardProps {
-  entry: ZCodeSavedWorkflowEntry;
-  lastRun: ZCodeSavedWorkflowRun | undefined;
+  entry: ZodySavedWorkflowEntry;
+  lastRun: ZodySavedWorkflowRun | undefined;
   now: number;
   busy?: boolean;
-  onOpen: (entry: ZCodeSavedWorkflowEntry) => void;
-  onRun: (entry: ZCodeSavedWorkflowEntry) => void;
-  onRevise: (entry: ZCodeSavedWorkflowEntry) => void;
-  onCopyPath: (entry: ZCodeSavedWorkflowEntry) => void;
+  onOpen: (entry: ZodySavedWorkflowEntry) => void;
+  onRun: (entry: ZodySavedWorkflowEntry) => void;
+  onRevise: (entry: ZodySavedWorkflowEntry) => void;
+  onCopyPath: (entry: ZodySavedWorkflowEntry) => void;
   /** 作用域动作：项目档「提升为全局」（AI 概括）/ 全局档「移到项目…」；仅在传入时出现。 */
-  onMove?: (entry: ZCodeSavedWorkflowEntry) => void;
-  onDelete: (entry: ZCodeSavedWorkflowEntry) => void;
+  onMove?: (entry: ZodySavedWorkflowEntry) => void;
+  onDelete: (entry: ZodySavedWorkflowEntry) => void;
 }
 
 /**

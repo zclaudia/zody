@@ -5,7 +5,7 @@ import os from "node:os";
 import {
   formatZCodeAgentProcessName,
   type HostResourceUsageProcess,
-  type ZCodeProcessChildProcess,
+  type ZodyProcessChildProcess,
 } from "@zody/shared";
 
 /**
@@ -334,7 +334,7 @@ export interface HostResourceUsageAgent {
   provider: string;
   workspacePath: string;
   /** CLI `process/childProcesses` 的回报；请求失败时为空数组，其后代全部归入 cli */
-  children: readonly ZCodeProcessChildProcess[];
+  children: readonly ZodyProcessChildProcess[];
 }
 
 export interface AttributeHostProcessTreeOptions {
@@ -347,7 +347,7 @@ export interface AttributeHostProcessTreeOptions {
 
 type Owner =
   | { kind: "agent"; agent: HostResourceUsageAgent }
-  | { kind: "mcp"; child: ZCodeProcessChildProcess }
+  | { kind: "mcp"; child: ZodyProcessChildProcess }
   | { kind: "builtin"; pluginName: string };
 
 function commandDisplayName(command: string): string {

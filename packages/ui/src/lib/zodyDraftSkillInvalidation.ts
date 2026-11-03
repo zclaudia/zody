@@ -1,4 +1,4 @@
-import type { IZCodeSessionService } from "@zody/services";
+import type { IZodySessionService } from "@zody/services";
 import { logger } from "@/logger.js";
 import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 
@@ -7,7 +7,7 @@ interface DeferredDraftRuntimeChangeParams {
   reason: string;
   workspacePath?: string | null;
   workspaceIdentity?: string | null;
-  zcodeSessionService: Pick<IZCodeSessionService, "closeSession">;
+  zcodeSessionService: Pick<IZodySessionService, "closeSession">;
 }
 
 export async function invalidateDeferredDraftSessionForRuntimeChange(

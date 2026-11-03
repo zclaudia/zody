@@ -1,6 +1,6 @@
 import { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
 
-export type BuiltinZCodeSlashCommandHelpEntry = {
+export type BuiltinZodySlashCommandHelpEntry = {
   aliases?: readonly string[];
   details: readonly string[];
   name: string;
@@ -8,7 +8,7 @@ export type BuiltinZCodeSlashCommandHelpEntry = {
   usage: string;
 };
 
-export const BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES: readonly BuiltinZCodeSlashCommandHelpEntry[] =
+export const BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES: readonly BuiltinZodySlashCommandHelpEntry[] =
   [
     {
       details: [

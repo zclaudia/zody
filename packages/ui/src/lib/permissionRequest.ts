@@ -1,5 +1,5 @@
 import { PERMISSION_FULL_ACCESS_OPTION_ID } from "@zody/shared/zody-protocol-v4";
-import type { ZCodePermissionOption } from "@zody/shared";
+import type { ZodyPermissionOption } from "@zody/shared";
 
 export {
   getPermissionRequestPreview,
@@ -160,7 +160,7 @@ export function getPermissionOptionDisplayKind(kind: string): PermissionOptionDi
 }
 
 export function shouldPreferPermissionOptionName(
-  option: Pick<ZCodePermissionOption, "kind" | "name">,
+  option: Pick<ZodyPermissionOption, "kind" | "name">,
 ): boolean {
   const normalizedName = normalizeInlineText(option.name).toLowerCase();
   if (normalizedName.length === 0) {
@@ -191,8 +191,8 @@ function getPermissionOptionSortPriority(kind: string): number {
 }
 
 export function sortPermissionOptions(
-  options: readonly ZCodePermissionOption[],
-): ZCodePermissionOption[] {
+  options: readonly ZodyPermissionOption[],
+): ZodyPermissionOption[] {
   return options
     .map((option, index) => ({ option, index }))
     .sort((left, right) => {

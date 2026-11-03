@@ -97,8 +97,8 @@ import type {
 import type {
   BackgroundBashOutputResult,
   SubagentRuntimeConfig,
-  ZCodeModelOption,
-  ZCodeToolExecResource,
+  ZodyModelOption,
+  ZodyToolExecResource,
 } from "@zody/shared";
 import type { McpAppsToolVisibility } from "@zody/shared/mcp-apps";
 import type { EffectiveModelSelectionResult } from "@zody/shared/model-selection";
@@ -119,7 +119,7 @@ import type {
 } from "./cua-runtime-native-capture.js";
 import type { ProviderRegistryModelSource } from "./provider-registry-model-runtime.js";
 import type { WorkspaceHookReviewCommandResult } from "./workspace-hook-review-controller.js";
-export type { ZCodeModelOption } from "@zody/shared";
+export type { ZodyModelOption } from "@zody/shared";
 
 export interface WorkspaceHookReviewHostContext {
   taskId: string;
@@ -192,7 +192,7 @@ export interface ZCodeAppOptions {
   pluginStorageRoot?: string;
   executionPort?: ExecutionPort;
   /** 资源遥测旁路；由协议宿主注入，主任务和 workflow 的执行适配器共用。 */
-  onToolExecResource?: (sample: ZCodeToolExecResource) => void;
+  onToolExecResource?: (sample: ZodyToolExecResource) => void;
   /** browser-use 控制端口；注入后 node_repl 的 agent.browsers.* 可用。缺省则不可用。 */
   browserControlPort?: BrowserControlPort;
   /** 可由协议宿主注入的进程级 node_repl Browser broker；缺省时 app 自建并拥有。 */
@@ -393,9 +393,9 @@ export interface ZCodeApp {
   getMode(): CollaborationMode;
   getModel(): string;
   /** current-only 协议快照精确读取当前 Registry 模型，避免枚举整个目录。 */
-  getCurrentModelOption?(): ZCodeModelOption | undefined;
+  getCurrentModelOption?(): ZodyModelOption | undefined;
   /** 只读 Registry 元数据；不要求选项完整，也不绑定执行模型。 */
-  getModelOption?(selection: ModelSelection): ZCodeModelOption | undefined;
+  getModelOption?(selection: ModelSelection): ZodyModelOption | undefined;
   getLocale(): SupportedLocale;
   getTheme(): UiThemePreference;
   getDefaultThoughtLevel(): string | undefined;
@@ -404,7 +404,7 @@ export interface ZCodeApp {
   readSubagents(input?: {
     endedCursor?: string;
     endedLimit?: number;
-  }): Promise<import("@zody/shared").ZCodeSessionSubagentsResult>;
+  }): Promise<import("@zody/shared").ZodySessionSubagentsResult>;
   readSubagentTranscript(
     childSessionId: string,
   ): Promise<import("./subagent-observation.js").SubagentTranscriptSnapshot>;
@@ -456,7 +456,7 @@ export interface ZCodeApp {
     kind?: InputHistoryKind,
   ): Promise<InputHistoryEntry | null>;
   recallPreviousInputHistory(skip?: number): Promise<InputHistoryEntry | null>;
-  listModels(): ZCodeModelOption[];
+  listModels(): ZodyModelOption[];
   listThoughtLevels(): string[];
   listPlugins(): Promise<PluginLoadOutcome>;
   setPluginEnabled(plugin: string, enabled: boolean): Promise<ZCodePluginSetResult>;

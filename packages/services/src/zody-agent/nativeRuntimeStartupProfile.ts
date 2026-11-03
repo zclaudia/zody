@@ -11,7 +11,7 @@ import type { ZodyAgentNativeRuntimeStartupContext } from "./zodyAgentProcessMan
  * cross-process configuration identity. This digest is built only from public, non-secret
  * provider/model facts. Credentials and provider headers are deliberately excluded.
  */
-export interface ZCodeAgentNativeRuntimeProviderSnapshot {
+export interface ZodyAgentNativeRuntimeProviderSnapshot {
   readonly schemaVersion: 1;
   readonly providers: readonly unknown[];
 }
@@ -103,7 +103,7 @@ function projectProvider(providerValue: unknown): unknown {
 
 export function projectZCodeAgentNativeRuntimeProviderSnapshot(
   view: ProviderSettingsView,
-): ZCodeAgentNativeRuntimeProviderSnapshot {
+): ZodyAgentNativeRuntimeProviderSnapshot {
   const providers = Array.isArray(view?.providers) ? view.providers : [];
   return {
     schemaVersion: 1,
@@ -138,7 +138,7 @@ export function normalizeZCodeAgentNativeRuntimeSelection(
   };
 }
 
-export interface ZCodeAgentNativeRuntimeNormalizedNetwork {
+export interface ZodyAgentNativeRuntimeNormalizedNetwork {
   readonly httpProxy: string | null;
   readonly noProxy: string | null;
   readonly caCertPath: string | null;
@@ -148,7 +148,7 @@ export function normalizeZCodeAgentNativeRuntimeNetwork(input: {
   readonly httpProxy?: string | null;
   readonly noProxy?: string | null;
   readonly caCertPath?: string | null;
-}): ZCodeAgentNativeRuntimeNormalizedNetwork {
+}): ZodyAgentNativeRuntimeNormalizedNetwork {
   return {
     httpProxy: nonEmptyString(input.httpProxy),
     noProxy: nonEmptyString(input.noProxy),

@@ -24,7 +24,7 @@ vi.mock("../src/plugins.js", async (importOriginal) => {
 });
 
 import { listPlugins } from "../src/zody-protocol/plugins.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 describe("plugins protocol logger propagation", () => {
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe("plugins protocol logger propagation", () => {
   it("forwards the protocol logger to degraded plugin cache handling", async () => {
     const logger = createLogger();
 
-    await listPlugins({ logger } as ZCodeProtocolAgentServerContext, {
+    await listPlugins({ logger } as ZodyProtocolAgentServerContext, {
       workspace: { workspaceKey: "/workspace", workspacePath: "/workspace" },
     });
 

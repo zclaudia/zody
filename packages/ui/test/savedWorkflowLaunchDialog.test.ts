@@ -10,7 +10,7 @@ import {
   TID_WORKFLOW_LAUNCH_SUBMIT,
   TID_WORKFLOW_LAUNCH_TARGET,
   testId,
-  type ZCodeSavedWorkflowEntry,
+  type ZodySavedWorkflowEntry,
 } from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import {
@@ -20,7 +20,7 @@ import {
 import { SavedWorkflowLaunchDialog } from "@/settings/saved-workflows/SavedWorkflowLaunchDialog.js";
 import type { SavedWorkflowLaunchError } from "@/settings/saved-workflows/useSavedWorkflowLauncher.js";
 
-const ENTRY: ZCodeSavedWorkflowEntry = {
+const ENTRY: ZodySavedWorkflowEntry = {
   name: "release-check",
   description: "发布前检查",
   scope: "project",
@@ -33,7 +33,7 @@ const ENTRY: ZCodeSavedWorkflowEntry = {
   },
 };
 
-const GLOBAL_ENTRY: ZCodeSavedWorkflowEntry = {
+const GLOBAL_ENTRY: ZodySavedWorkflowEntry = {
   name: "deep-research",
   description: "深度调研",
   scope: "global",
@@ -58,7 +58,7 @@ afterEach(() => {
 });
 
 function mount(
-  entry: ZCodeSavedWorkflowEntry | null,
+  entry: ZodySavedWorkflowEntry | null,
   extra: {
     targets?: readonly AutomationWorkspaceOption[];
     defaultTargetKey?: string | null;

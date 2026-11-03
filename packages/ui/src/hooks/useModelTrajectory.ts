@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ZCodeModelTrajectory } from "@zody/services";
+import type { ZodyModelTrajectory } from "@zody/services";
 import { logger } from "@/logger.js";
 import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
 
 export interface ModelTrajectoryState {
   loading: boolean;
-  data: ZCodeModelTrajectory | null;
+  data: ZodyModelTrajectory | null;
   error: string | null;
 }
 

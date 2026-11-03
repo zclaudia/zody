@@ -4,7 +4,7 @@ import {
   TID_WORKFLOW_ACTION_DELETE,
   TID_WORKFLOW_ACTION_MOVE,
   testId,
-  type ZCodeSavedWorkflowEntry,
+  type ZodySavedWorkflowEntry,
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
@@ -24,7 +24,7 @@ import {
 interface SavedWorkflowDetailHeaderProps {
   name: string;
   description: string;
-  entry: ZCodeSavedWorkflowEntry | undefined;
+  entry: ZodySavedWorkflowEntry | undefined;
   busy: boolean;
   onRun: () => void;
   onRevise: () => void;

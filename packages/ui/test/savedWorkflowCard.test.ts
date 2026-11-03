@@ -9,8 +9,8 @@ import {
   TID_WORKFLOW_CARD_RUN,
   TID_WORKFLOW_ACTION_MOVE,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
 } from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 import {
@@ -24,7 +24,7 @@ afterEach(() => {
   cleanup();
 });
 
-function entry(overrides: Partial<ZCodeSavedWorkflowEntry> = {}): ZCodeSavedWorkflowEntry {
+function entry(overrides: Partial<ZodySavedWorkflowEntry> = {}): ZodySavedWorkflowEntry {
   return {
     name: "release-check",
     description: "跑测试、比对 changelog、准备发布说明。",
@@ -34,7 +34,7 @@ function entry(overrides: Partial<ZCodeSavedWorkflowEntry> = {}): ZCodeSavedWork
   };
 }
 
-function run(overrides: Partial<ZCodeSavedWorkflowRun> = {}): ZCodeSavedWorkflowRun {
+function run(overrides: Partial<ZodySavedWorkflowRun> = {}): ZodySavedWorkflowRun {
   return {
     runId: "run-1",
     name: "release-check",

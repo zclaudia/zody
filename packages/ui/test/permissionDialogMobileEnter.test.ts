@@ -3,7 +3,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePermissionRequest } from "@zody/shared";
+import type { ZodyPermissionRequest } from "@zody/shared";
 import { PermissionDialog } from "../src/PermissionDialog.js";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
 
@@ -39,7 +39,7 @@ function stubMatchMedia(matchesTouchViewport: boolean) {
   );
 }
 
-function createFeedbackRequest(): ZCodePermissionRequest {
+function createFeedbackRequest(): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId: "task-feedback-enter",
@@ -57,7 +57,7 @@ function createFeedbackRequest(): ZCodePermissionRequest {
       },
     ],
     raw: { command: "ls" },
-  } as ZCodePermissionRequest;
+  } as ZodyPermissionRequest;
 }
 
 function renderFeedbackDialog(onRespond: () => void) {

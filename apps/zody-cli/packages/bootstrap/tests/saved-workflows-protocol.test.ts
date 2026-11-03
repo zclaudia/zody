@@ -25,7 +25,7 @@ import {
   moveSavedWorkflowOp,
   updateSavedWorkflowMetaOp,
 } from "../src/zody-protocol/saved-workflows.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 const SCRIPT = [
   'const reviewer = agent("检查员");',
@@ -45,11 +45,11 @@ function workspace() {
   return { workspacePath: cwd, workspaceKey: cwd };
 }
 
-function contextWith(sessionStore?: unknown): ZCodeProtocolAgentServerContext {
+function contextWith(sessionStore?: unknown): ZodyProtocolAgentServerContext {
   return {
     deps: { env: {}, sessionStore },
     sessions: new Map(),
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
 }
 
 function projectDir() {

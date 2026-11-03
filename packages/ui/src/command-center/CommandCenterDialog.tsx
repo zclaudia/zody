@@ -13,7 +13,7 @@ import {
   SearchIcon,
   Trash2Icon,
 } from "lucide-react";
-import type { WorkspaceFileEntry, ZCodeTaskChangeSummary, ZCodeTaskMeta } from "@zody/shared";
+import type { WorkspaceFileEntry, ZodyTaskChangeSummary, ZodyTaskMeta } from "@zody/shared";
 import {
   Command,
   CommandDialog,
@@ -78,11 +78,11 @@ const commandCenterListClassName = cn(
 );
 
 type CommandCenterSectionId = "commands" | "conversations" | "files";
-type TaskSearchResultItem = ZCodeTaskMeta & {
+type TaskSearchResultItem = ZodyTaskMeta & {
   searchSnippet?: string;
   searchSnippets?: string[];
 };
-type TaskChangedFileSummary = ZCodeTaskChangeSummary["files"][number];
+type TaskChangedFileSummary = ZodyTaskChangeSummary["files"][number];
 type TaskSearchResultRow = {
   key: string;
   task: TaskSearchResultItem;
@@ -148,7 +148,7 @@ function getUniqueTaskSearchSnippets(task: TaskSearchResultItem): string[] {
   return uniqueSnippets;
 }
 
-function getTaskTitle(task: ZCodeTaskMeta, untitledLabel: string): string {
+function getTaskTitle(task: ZodyTaskMeta, untitledLabel: string): string {
   return task.title.trim() || untitledLabel;
 }
 
@@ -419,7 +419,7 @@ export const CommandCenterDialog = memo(function CommandCenterDialogComponent({
   workspaceAbsPath: string;
   workspaceIdentity?: string;
   activeTaskId?: string | null;
-  activeTaskChangeSummary?: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary?: ZodyTaskChangeSummary | null;
   workspaceTabs: WorkspaceTabState[];
   onOpenChange: (open: boolean) => void;
   onSelectTask: (
@@ -694,7 +694,7 @@ export const CommandCenterDialog = memo(function CommandCenterDialogComponent({
   );
 
   const selectRecentTask = useCallback(
-    (task: ZCodeTaskMeta) => {
+    (task: ZodyTaskMeta) => {
       onSelectTask(task.workspacePath, task.taskId, task.workspaceIdentity);
       closeDialog();
     },
@@ -782,7 +782,7 @@ export const CommandCenterDialog = memo(function CommandCenterDialogComponent({
     rows = recentTaskPreviewRows,
     showEmpty = false,
   }: {
-    rows?: ZCodeTaskMeta[];
+    rows?: ZodyTaskMeta[];
     showEmpty?: boolean;
   } = {}) => {
     if (hasSearchQuery || (rows.length === 0 && !showEmpty)) {

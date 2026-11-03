@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { ZCodePermissionRequest } from "@zody/shared";
+import type { ZodyPermissionRequest } from "@zody/shared";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
@@ -49,8 +49,8 @@ const SESSION_OPTION = {
 };
 
 function buildWorkflowRequest(
-  overrides: Partial<ZCodePermissionRequest> = {},
-): ZCodePermissionRequest {
+  overrides: Partial<ZodyPermissionRequest> = {},
+): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId: "task-1",
@@ -88,7 +88,7 @@ function buildWorkflowRequest(
 }
 
 function renderDialog(
-  request: ZCodePermissionRequest = buildWorkflowRequest(),
+  request: ZodyPermissionRequest = buildWorkflowRequest(),
   locale: "en-US" | "zh-CN" = "en-US",
   onRespond: (requestId: string, option: unknown, feedback?: string) => void = () => {},
 ) {
@@ -225,7 +225,7 @@ describe("WorkflowPermissionBlock", () => {
   // 「The confirmation window」）──只对别的会话的 run 出现：问句换词，多一行 lineage。事实从**工具
   // 入参**渲染（`run_id` 与 CLI 回填的 `predecessor`），display 一个字节都不变——图仍是 create_workflow。
 
-  function buildAmendRequest(raw: Record<string, unknown>): ZCodePermissionRequest {
+  function buildAmendRequest(raw: Record<string, unknown>): ZodyPermissionRequest {
     return buildWorkflowRequest({
       kind: "AmendWorkflow",
       title: "AmendWorkflow",
@@ -606,7 +606,7 @@ const REFINE_OPTION = {
   response: { decision: "deny" as const, reason: "Denied" },
 };
 
-function buildRefineRequest(): ZCodePermissionRequest {
+function buildRefineRequest(): ZodyPermissionRequest {
   const base = buildWorkflowRequest();
   return { ...base, options: [...base.options, REFINE_OPTION] };
 }

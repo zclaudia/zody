@@ -20,7 +20,7 @@ import {
   resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
   type ModelSelection,
-  type ZCodeModelOption,
+  type ZodyModelOption,
 } from "@zody/shared";
 import type { RunContext } from "@zody/shared-types";
 import type { TuiOptions } from "@zody/tui";
@@ -115,7 +115,7 @@ const createTestModelOption = (
     label = modelId,
     levels = ["low", "medium", "high"],
   }: { defaultLevel?: string; label?: string; levels?: readonly string[] } = {},
-): ZCodeModelOption => ({
+): ZodyModelOption => ({
   ref: { providerId, modelId },
   label,
   providerLabel: providerId,
@@ -136,7 +136,7 @@ const createTestModelOption = (
 });
 
 /** 至少一个未禁用的模型，表示 Provider/账号已可用，普通 prompt 不会被登录提示拦截。 */
-const selectableTestModels = (): ZCodeModelOption[] => [
+const selectableTestModels = (): ZodyModelOption[] => [
   createTestModelOption("openai", "gpt-test"),
 ];
 

@@ -3,8 +3,8 @@ import {
   TID_CHAT_THOUGHT_LEVEL_SELECT_ITEM,
   TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER,
   testId,
-  type ZCodeConfigOption,
-  type ZCodeProvider,
+  type ZodyConfigOption,
+  type ZodyProvider,
 } from "@zody/shared";
 import { BrainIcon, ChevronDownIcon } from "lucide-react";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
@@ -52,8 +52,8 @@ export function ThoughtLevelCycleControl({
   indicatorClassName?: string;
   intl: ReturnType<typeof useZCodeIntl>["intl"];
   labelVisibilityClassName?: string;
-  option: ZCodeConfigOption;
-  provider?: ZCodeProvider;
+  option: ZodyConfigOption;
+  provider?: ZodyProvider;
   showInvalidCurrentValue?: boolean;
   restoreFocusSelector?: string | null;
   shortcutLabel?: string;

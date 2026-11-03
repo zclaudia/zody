@@ -1,9 +1,9 @@
 /* eslint-disable max-lines */
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
-  ZCodePersistedFileChange,
-  ZCodePersistedFileSnapshot,
-  ZCodeTaskChangeSummary,
+  ZodyPersistedFileChange,
+  ZodyPersistedFileSnapshot,
+  ZodyTaskChangeSummary,
   GitBranchComparison,
   GitChangeSectionId,
   GitChangeSourceId,
@@ -285,8 +285,8 @@ function buildRepositoryDatasets(options: {
 
 function createLastTurnChange(
   workspacePath: string,
-  snapshotByPath: Map<string, ZCodePersistedFileSnapshot>,
-  file: ZCodeTaskChangeSummary["files"][number],
+  snapshotByPath: Map<string, ZodyPersistedFileSnapshot>,
+  file: ZodyTaskChangeSummary["files"][number],
 ): GitPaneFileChange {
   const relativePath = toWorkspaceRelativePath(workspacePath, file.path);
   const snapshot = snapshotByPath.get(file.path);
@@ -316,10 +316,10 @@ function createLastTurnChange(
 function buildLastTurnDataset(options: {
   workspacePath: string;
   turnIndex: number | null;
-  fileChange: ZCodePersistedFileChange | null;
-  summary: ZCodeTaskChangeSummary | null;
+  fileChange: ZodyPersistedFileChange | null;
+  summary: ZodyTaskChangeSummary | null;
 }): GitPaneDataset {
-  const snapshotByPath = new Map<string, ZCodePersistedFileSnapshot>(
+  const snapshotByPath = new Map<string, ZodyPersistedFileSnapshot>(
     options.fileChange?.snapshots.map((snapshot) => [snapshot.path, snapshot]) ?? [],
   );
 

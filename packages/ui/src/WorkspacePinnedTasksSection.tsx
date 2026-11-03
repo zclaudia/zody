@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- pinned 列表现在同时承载本地查询、远端主动注入结果和任务操作分发，先集中保持交互一致。 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu.js";
 import { useGlobalTaskList } from "@/hooks/useGlobalTaskList.js";
@@ -36,7 +36,7 @@ interface PinnedTaskItemHandlers {
   onArchiveTask: (taskId: string) => void;
   onMarkTaskAsUnread: (taskId: string) => void;
   onOpenTaskContextMenu: (taskId: string) => void;
-  onOpenFileTree: (task: ZCodeTaskMeta) => void;
+  onOpenFileTree: (task: ZodyTaskMeta) => void;
 }
 
 function PinnedTasksSectionTitle({ title }: { title: string }) {
@@ -157,7 +157,7 @@ export function WorkspacePinnedTasksSection({
   const sectionTitle = intl.formatMessage({ id: "taskList.pinnedSection" });
   const activeWorkspaceKey = buildTaskWorkspaceKey(activeWorkspacePath, activeWorkspaceIdentity);
   const itemByKey = useMemo(() => {
-    const nextItemByKey = new Map<string, ZCodeTaskMeta>();
+    const nextItemByKey = new Map<string, ZodyTaskMeta>();
     for (const item of items) {
       nextItemByKey.set(
         buildPinnedItemKey(item.workspacePath, item.taskId, item.workspaceIdentity),

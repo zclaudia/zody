@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { ZCodeConfigOption, ZCodeProvider } from "@zody/shared";
+import type { ZodyConfigOption, ZodyProvider } from "@zody/shared";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { ConfigSelect } from "@/chat-input-toolbar/display.js";
 import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -24,14 +24,14 @@ export function ChatModeSwitchControl({
   disabledReason?: string;
   intl: ReturnType<typeof useZCodeIntl>["intl"];
   labelVisibilityClassName?: string;
-  modeOption: ZCodeConfigOption;
+  modeOption: ZodyConfigOption;
   modeShortcutLabel: string;
   modeTriggerRef: RefObject<HTMLSpanElement | null>;
-  onConfigValueChange: (option: ZCodeConfigOption, value: string) => void;
+  onConfigValueChange: (option: ZodyConfigOption, value: string) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   restoreFocusSelector?: string | null;
-  selectedProvider: ZCodeProvider;
+  selectedProvider: ZodyProvider;
 }) {
   return (
     <ConfigSelect

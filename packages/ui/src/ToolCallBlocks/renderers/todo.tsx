@@ -1,7 +1,7 @@
 import { ArrowRightIcon, CircleCheckIcon, CircleIcon, ListTodoIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import { extractPlanStepsFromToolInput, extractPlanStepsFromToolOutput } from "@zody/shared";
-import type { ZCodePlanStep } from "@zody/shared";
+import type { ZodyPlanStep } from "@zody/shared";
 import { ToolCallBody } from "@/ToolCallBlocks/ToolCallBody.js";
 import { ToolSnapshotFieldNotice } from "@/ToolCallBlocks/ToolSnapshotFieldNotice.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -11,13 +11,13 @@ import type { ToolCallBlockRenderContext } from "../shared.js";
 
 const TODO_TOOL_ICON = <ListTodoIcon className="size-4 shrink-0 text-foreground-subtle" />;
 
-const todoTextClasses: Record<ZCodePlanStep["status"], string> = {
+const todoTextClasses: Record<ZodyPlanStep["status"], string> = {
   pending: "text-foreground-subtle",
   in_progress: "text-foreground",
   completed: "text-foreground-subtlest line-through",
 };
 
-function readTodoPlan(context: ToolCallBlockRenderContext): ZCodePlanStep[] | null {
+function readTodoPlan(context: ToolCallBlockRenderContext): ZodyPlanStep[] | null {
   const { toolCall } = context.toolCallNode;
   return (
     extractPlanStepsFromToolOutput({
@@ -33,7 +33,7 @@ function readTodoPlan(context: ToolCallBlockRenderContext): ZCodePlanStep[] | nu
   );
 }
 
-function TodoStatusIcon({ status }: { status: ZCodePlanStep["status"] }) {
+function TodoStatusIcon({ status }: { status: ZodyPlanStep["status"] }) {
   if (status === "completed") {
     return <CircleCheckIcon className="size-3.5 shrink-0 text-success" />;
   }

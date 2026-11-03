@@ -1,6 +1,6 @@
 // 运行历史的归组与呈现（docs/dynamic-workflow/launch.md「Cards」）。
 import { describe, expect, it } from "vitest";
-import type { ZCodeSavedWorkflowRun } from "@zody/shared";
+import type { ZodySavedWorkflowRun } from "@zody/shared";
 import {
   formatSavedWorkflowRunArgs,
   formatSavedWorkflowTokens,
@@ -9,7 +9,7 @@ import {
   savedWorkflowRunDurationMs,
 } from "@/settings/saved-workflows/savedWorkflowRunHistory.js";
 
-function run(overrides: Partial<ZCodeSavedWorkflowRun> & { runId: string }): ZCodeSavedWorkflowRun {
+function run(overrides: Partial<ZodySavedWorkflowRun> & { runId: string }): ZodySavedWorkflowRun {
   return {
     status: "completed",
     createdAt: 1_000,

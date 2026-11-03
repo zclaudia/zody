@@ -7,7 +7,7 @@ import {
   ZCODE_AGENT_PROVIDER,
   getZCodeAgentAvailableModes,
   testId,
-  type ZCodeConfigOption,
+  type ZodyConfigOption,
 } from "@zody/shared";
 import {
   DropdownMenu,
@@ -71,7 +71,7 @@ function V4ComposerModeSwitchImpl({
   const planLabel = label(plan);
   // Plan 拆成独立勾选项后仍需保留原菜单说明，复用相同的国际化映射。
   const planDescriptionId = getModeOptionDescriptionMessageId(displayProvider, { value: plan.id });
-  const modeOption = useMemo<ZCodeConfigOption>(
+  const modeOption = useMemo<ZodyConfigOption>(
     () => ({
       id: "mode",
       name: "Mode",

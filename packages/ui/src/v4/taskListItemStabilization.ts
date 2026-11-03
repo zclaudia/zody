@@ -5,9 +5,9 @@
 // grouped 视图整树 refresh、虚拟器重测量、workspace 行缓存被 invalidate——表现为
 // 「右侧输出 tool 结果时左侧列表整个重新加载」。这里做逐条引用稳定化：内容等价复用旧对象；
 // 整表等价复用旧数组，让依赖数组/元素身份的 memo 与 effect 全部短路。
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 
-export function buildTaskListItemIdentityKey(meta: ZCodeTaskMeta): string {
+export function buildTaskListItemIdentityKey(meta: ZodyTaskMeta): string {
   return `${meta.workspaceIdentity?.trim() || meta.workspacePath}::${meta.taskId}`;
 }
 
@@ -43,12 +43,12 @@ export function areStabilizedValuesEquivalent(left: unknown, right: unknown): bo
 }
 
 /** 逐字段等价（嵌套字段结构比较；task meta 是小对象，代价可忽略）。 */
-export function areTaskListItemsEquivalent(left: ZCodeTaskMeta, right: ZCodeTaskMeta): boolean {
+export function areTaskListItemsEquivalent(left: ZodyTaskMeta, right: ZodyTaskMeta): boolean {
   return areStabilizedValuesEquivalent(left, right);
 }
 
 /** 引用稳定化：等价条目复用旧对象；顺序与内容全等时复用整个旧数组。 */
-export function stabilizeTaskListItems<T extends ZCodeTaskMeta>(previous: T[], next: T[]): T[] {
+export function stabilizeTaskListItems<T extends ZodyTaskMeta>(previous: T[], next: T[]): T[] {
   if (previous.length === 0) {
     return next;
   }

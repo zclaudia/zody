@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import {
   VIDEO_INPUT_MAX_BYTES,
   type CreateTempTextAttachmentResult,
-  type ZCodePromptAttachment,
+  type ZodyPromptAttachment,
 } from "@zody/shared";
 import { PROTOCOL_V4_LIMITS } from "@zody/shared/zody-protocol-v4";
 import {
@@ -165,7 +165,7 @@ function estimateDecodedBase64Bytes(dataBase64: string) {
 }
 
 export function restoreChatComposerAttachment(
-  attachment: ZCodePromptAttachment,
+  attachment: ZodyPromptAttachment,
 ): ChatComposerAttachment {
   const mimeType = normalizeComposerMimeType(
     attachment.mimeType || inferAttachmentMimeType(attachment.filename),
@@ -311,7 +311,7 @@ export function revokeChatComposerAttachment(attachment: ChatComposerAttachment)
 
 export async function serializeChatComposerAttachment(
   attachment: ChatComposerAttachment,
-): Promise<ZCodePromptAttachment> {
+): Promise<ZodyPromptAttachment> {
   const mimeType = normalizeComposerMimeType(
     attachment.mimeType || inferAttachmentMimeType(attachment.filename),
   );
@@ -452,7 +452,7 @@ async function readAttachmentBase64(attachment: ChatComposerAttachment): Promise
   return dataUrl.slice(base64MarkerIndex + 1);
 }
 
-export function getChatAttachmentPreviewUrl(attachment: ZCodePromptAttachment): string | null {
+export function getChatAttachmentPreviewUrl(attachment: ZodyPromptAttachment): string | null {
   if (!attachment.dataBase64) {
     return null;
   }

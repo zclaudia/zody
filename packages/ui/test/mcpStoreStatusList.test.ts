@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeMcpServer } from "@zody/shared";
+import type { ZodyMcpServer } from "@zody/shared";
 import { mergeMcpServerStatusSnapshots } from "../src/store/mcpStoreStatusList.js";
 
-const server: ZCodeMcpServer = {
+const server: ZodyMcpServer = {
   config: { command: "node" },
   enabled: true,
   id: "zcodeagentmcp:demo",
@@ -43,7 +43,7 @@ describe("MCP store status diagnostics", () => {
   });
 
   it("clears stale diagnostics when a later snapshot is connected", () => {
-    const failedServer: ZCodeMcpServer = {
+    const failedServer: ZodyMcpServer = {
       ...server,
       error: "old error",
       failureKind: "server_unavailable",

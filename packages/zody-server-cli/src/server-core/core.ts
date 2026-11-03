@@ -5,7 +5,7 @@ import {
   getAppConfigDir,
   ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/services/node";
-import { IZCodeAgentService } from "@zody/services";
+import { IZodyAgentService } from "@zody/services";
 import { ZCODE_VERSION } from "@zody/shared";
 import { createCoreHttpServer } from "./http.js";
 import { installParentDisconnectHandler } from "./parentDisconnect.js";
@@ -43,7 +43,7 @@ export async function runServerCore(generation: number): Promise<void> {
     zcodeBuiltinProviderConfigFilePath,
     serviceAuthorityMode: "standalone-server",
   });
-  const taskActivityTracker = createTaskActivityTracker(services.getOptional(IZCodeAgentService));
+  const taskActivityTracker = createTaskActivityTracker(services.getOptional(IZodyAgentService));
   const http = await createCoreHttpServer(services, {
     serverId: await resolveCoreServerId(),
   });

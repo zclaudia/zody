@@ -1,4 +1,4 @@
-import type { ZCodeUsage } from "@zody/shared";
+import type { ZodyUsage } from "@zody/shared";
 import type { TaskUsageState } from "@/store/zodySessionStoreTypes.js";
 
 interface TaskUsageKeyParams {
@@ -78,7 +78,7 @@ export function buildPromptCompletionUsageFallback(
   params: TaskUsageKeyParams & {
     currentUsage: TaskUsageState | null | undefined;
     currentContextWindow?: number | null;
-    usage?: ZCodeUsage;
+    usage?: ZodyUsage;
   },
 ): TaskUsageState | null {
   const { currentUsage, currentContextWindow, usage } = params;

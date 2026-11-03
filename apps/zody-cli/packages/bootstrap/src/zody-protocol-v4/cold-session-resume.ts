@@ -10,7 +10,7 @@
 //   message 附带 reasonCode——renderer 订阅错误块直显 lastError，无需 UI 改动即透出。
 
 import type { MessageWithParts } from "@zody/contracts";
-import type { ZCodeWorkspaceRef } from "@zody/shared";
+import type { ZodyWorkspaceRef } from "@zody/shared";
 
 export type ColdSessionResumeOutcome =
   | {
@@ -32,7 +32,7 @@ export interface ColdSessionResumeHost {
   resumePersistedSession?(
     sessionId: string,
     resumeThoughtLevel?: string,
-    workspace?: ZCodeWorkspaceRef,
+    workspace?: ZodyWorkspaceRef,
   ): Promise<ColdSessionResumeOutcome>;
   onDebug?(message: string): void;
   onError?(scope: string, error: unknown, context?: Record<string, unknown>): void;
@@ -60,7 +60,7 @@ export class ColdSessionResumeCoordinator {
   ensureResumed(
     sessionId: string,
     resumeThoughtLevel?: string,
-    workspace?: ZCodeWorkspaceRef,
+    workspace?: ZodyWorkspaceRef,
   ): Promise<ColdSessionResumeResult> {
     const inFlight = this.flights.get(sessionId);
     if (inFlight) {
@@ -83,7 +83,7 @@ export class ColdSessionResumeCoordinator {
   private async resume(
     sessionId: string,
     resumeThoughtLevel?: string,
-    workspace?: ZCodeWorkspaceRef,
+    workspace?: ZodyWorkspaceRef,
   ): Promise<ColdSessionResumeResult> {
     const resume = this.host.resumePersistedSession;
     if (!resume) {

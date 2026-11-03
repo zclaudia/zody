@@ -16,7 +16,7 @@ import {
 } from "@zody/rpc";
 import {
   createZCodeAgentConnectionScope,
-  IZCodeAgentService,
+  IZodyAgentService,
   ServiceCollection,
 } from "@zody/services";
 import { createServiceLogger } from "@zody/services/node";
@@ -95,7 +95,7 @@ function exposeWebSocket(
   const protocol = new SocketProtocol(socket);
   const rawServer = new ChannelServer(protocol, "server");
   const server = new LoggingChannelServer(rawServer, (...args) => log.debug(undefined, ...args));
-  const agentService = services.getOptional(IZCodeAgentService);
+  const agentService = services.getOptional(IZodyAgentService);
   // fork（bot channels 移除）：第三方 IM bot 的 topic-resource relay 注册（TopicResourcePeers
   // attach + wrapAgent）随 bot channels 整体删除；desktop-continuous 受信 Host 连接仍保留
   // 反向 ChannelClient 结构，仅不再挂载 relay 频道（与 packages/server/src/http.ts 成对）。
@@ -110,7 +110,7 @@ function exposeWebSocket(
     : undefined;
   services.exposeOnChannelServer(
     server,
-    scope ? new Map([[IZCodeAgentService.channelName, scope.service]]) : new Map(),
+    scope ? new Map([[IZodyAgentService.channelName, scope.service]]) : new Map(),
   );
   socket.onClose(() => {
     reverseClient?.dispose();

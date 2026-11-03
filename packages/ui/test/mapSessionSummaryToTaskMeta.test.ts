@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type { SessionSummary } from "@zody/shared/zody-protocol-v4";
 import { mapSessionSummaryToTaskMeta } from "@/v4/mapSessionSummaryToTaskMeta.js";
 import { getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
@@ -104,7 +104,7 @@ describe("mapSessionSummaryToTaskMeta", () => {
       titleOverridden: true,
       provider: "claude",
       mode: "plan",
-    } as unknown as ZCodeTaskMeta;
+    } as unknown as ZodyTaskMeta;
     const meta = mapSessionSummaryToTaskMeta(
       summary({ title: "Fork of 项目代码Bug排查", titleSource: "generated" }),
       { workspacePath: "/ws", previous },
@@ -121,7 +121,7 @@ describe("mapSessionSummaryToTaskMeta", () => {
       title: "旧 task-index 标题",
       titleOverridden: true,
       mode: "plan",
-    } as unknown as ZCodeTaskMeta;
+    } as unknown as ZodyTaskMeta;
     const meta = mapSessionSummaryToTaskMeta(
       summary({ title: "新的自定义标题", titleSource: "custom" }),
       { workspacePath: "/ws", previous },

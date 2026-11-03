@@ -1,7 +1,7 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 
 const {
@@ -16,13 +16,13 @@ const {
   capturedTaskItemProps: [] as Array<Record<string, unknown>>,
   globalTaskListResult: {
     hasMore: false,
-    items: [] as ZCodeTaskMeta[],
+    items: [] as ZodyTaskMeta[],
     loading: false,
     total: 0,
   },
   remoteTimelineState: {
     hasMoreByWorkspaceKey: {} as Record<string, boolean>,
-    itemsByWorkspaceKey: {} as Record<string, ZCodeTaskMeta[]>,
+    itemsByWorkspaceKey: {} as Record<string, ZodyTaskMeta[]>,
     loadingByWorkspaceKey: {} as Record<string, boolean>,
     totalByWorkspaceKey: {} as Record<string, number>,
   },
@@ -86,7 +86,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
 vi.mock("@/TaskListItem.js", () => ({
   MemoTaskItem: (props: Record<string, unknown>) => {
     capturedTaskItemProps.push(props);
-    return createElement("li", null, (props.task as ZCodeTaskMeta).title);
+    return createElement("li", null, (props.task as ZodyTaskMeta).title);
   },
   TaskListItemContextMenuContent: () => null,
 }));
@@ -143,7 +143,7 @@ vi.mock("@/store/remoteWorkspaceSessionStore.js", () => ({
   ) => selector(remoteWorkspaceSessionState),
 }));
 
-function createTask(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTask(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",

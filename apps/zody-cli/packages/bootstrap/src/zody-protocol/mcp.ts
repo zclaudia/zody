@@ -3,7 +3,7 @@ import type { Logger, McpConnectionSnapshot, McpPort, McpServerStatus } from "@z
 import {
   zcodeMcpListParamsSchema,
   zcodeMcpListResultSchema,
-  type ZCodeMcpListResult,
+  type ZodyMcpListResult,
 } from "@zody/shared";
 import {
   listMcpServerStatuses,
@@ -14,7 +14,7 @@ import { StartupTimer, startupNow } from "../startup-logging.js";
 import { getCliStorageRoot } from "../app/paths.js";
 import { resolveStartupPlugins } from "../app/startup-marks.js";
 import { protocolMcpServersToRuntimeMcpConfig } from "./protocol-mcp-config.js";
-import { parseParams, type ZCodeProtocolAgentServerContext } from "./server-types.js";
+import { parseParams, type ZodyProtocolAgentServerContext } from "./server-types.js";
 
 const noopLogger: Logger = {
   debug: () => undefined,
@@ -28,9 +28,9 @@ const MCP_OAUTH_AUTHORIZATION_STATUS_WAIT_MS = 5_000;
 const MCP_OAUTH_AUTHORIZATION_STATUS_POLL_MS = 100;
 
 export async function listMcpServers(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodeMcpListResult> {
+): Promise<ZodyMcpListResult> {
   const params = parseParams(zcodeMcpListParamsSchema, rawParams);
   const workingDirectory = params.workspace.workspacePath;
   const configResult = createConfig({

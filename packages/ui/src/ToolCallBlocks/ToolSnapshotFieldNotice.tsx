@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
-import type { ZCodeTaskSnapshotToolFieldRef } from "@zody/shared";
+import type { ZodyTaskSnapshotToolFieldRef } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 
@@ -8,7 +8,7 @@ export function ToolSnapshotFieldNotice({
   refs,
   onLoadFullToolCallFields,
 }: {
-  refs: readonly ZCodeTaskSnapshotToolFieldRef[];
+  refs: readonly ZodyTaskSnapshotToolFieldRef[];
   onLoadFullToolCallFields?: () => Promise<boolean | void> | boolean | void;
 }) {
   const { intl, locale } = useZCodeIntl();

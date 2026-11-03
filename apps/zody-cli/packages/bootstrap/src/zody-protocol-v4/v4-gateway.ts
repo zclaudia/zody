@@ -30,7 +30,7 @@ import type {
 } from "@zody/contracts";
 import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { SessionEventType, isFileSystemPortError } from "@zody/contracts";
-import type { ZCodeWorkspaceRef } from "@zody/shared";
+import type { ZodyWorkspaceRef } from "@zody/shared";
 import { extractMarkdownArtifactImageRefs } from "@zody/shared";
 import type {
   CommandAck,
@@ -217,7 +217,7 @@ export interface V4GatewayHost {
   resumePersistedSession?(
     sessionId: string,
     resumeThoughtLevel?: string,
-    workspace?: ZCodeWorkspaceRef,
+    workspace?: ZodyWorkspaceRef,
   ): Promise<ColdSessionResumeOutcome>;
   /**
    * 下行物理帧出口（宿主负责投递：stdio notification / MessagePort / ws）。
@@ -2995,7 +2995,7 @@ export class ConversationV4Gateway {
   private ensureColdReadyPublisher(
     sessionId: string,
     resumeThoughtLevel?: string,
-    workspace?: ZCodeWorkspaceRef,
+    workspace?: ZodyWorkspaceRef,
   ): Promise<ConversationTopicPublisher> {
     return this.ensureColdFlight(sessionId, resumeThoughtLevel, workspace).ready;
   }
@@ -3004,7 +3004,7 @@ export class ConversationV4Gateway {
   private ensureColdFlight(
     sessionId: string,
     resumeThoughtLevel?: string,
-    workspace?: ZCodeWorkspaceRef,
+    workspace?: ZodyWorkspaceRef,
   ): ColdSessionFlight {
     const existing = this.coldFlights.get(sessionId);
     if (existing) return existing;
@@ -3074,7 +3074,7 @@ export class ConversationV4Gateway {
     flight: ColdSessionFlight,
     sessionId: string,
     resumeThoughtLevel?: string,
-    workspace?: ZCodeWorkspaceRef,
+    workspace?: ZodyWorkspaceRef,
   ): Promise<ConversationTopicPublisher> {
     try {
       // activation 与 history 并行推进；只在 hydration 前等 history 的单飞结束。

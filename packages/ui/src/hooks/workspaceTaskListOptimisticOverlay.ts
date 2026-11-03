@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 import { buildTaskEntityKey, buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
 import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
@@ -10,7 +10,7 @@ import { mergeTaskListMembershipFields } from "@/v4/taskListRowActivity.js";
 
 export interface WorkspaceOptimisticTaskOverlay {
   activeTaskId: string | null;
-  tasks: ZCodeTaskMeta[];
+  tasks: ZodyTaskMeta[];
   promotedGroupedDraftTaskByTaskId: Record<string, GroupedDraftTaskState>;
 }
 
@@ -23,12 +23,12 @@ interface WorkspaceOptimisticScope {
 }
 
 export function mergeWorkspaceTaskListItemsWithOptimistic(params: {
-  items: readonly ZCodeTaskMeta[];
-  optimisticTasks: readonly ZCodeTaskMeta[];
+  items: readonly ZodyTaskMeta[];
+  optimisticTasks: readonly ZodyTaskMeta[];
   activeTaskId: string | null;
   sortBy: WorkspaceTaskListSortBy;
   visibleLimit: number | null;
-}): ZCodeTaskMeta[] {
+}): ZodyTaskMeta[] {
   const taskByKey = new Map(params.items.map((task) => [buildTaskEntityKey(task), task] as const));
 
   for (const optimisticTask of params.optimisticTasks) {

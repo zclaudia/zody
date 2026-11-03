@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
-  ZCodePluginReferenceCatalogEntry,
-  ZCodePluginsReferenceCatalogResult,
+  ZodyPluginReferenceCatalogEntry,
+  ZodyPluginsReferenceCatalogResult,
 } from "@zody/shared";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { logger } from "@/logger.js";
 
 export interface PluginReferenceCatalogState {
-  entries: ZCodePluginReferenceCatalogEntry[];
+  entries: ZodyPluginReferenceCatalogEntry[];
   authority: "session" | "workspace" | null;
   loading: boolean;
   error: string | null;
@@ -41,7 +41,7 @@ export interface PluginReferenceCatalogOptions {
 
 let sessionCatalogRequests = new WeakMap<
   object,
-  Map<string, Promise<ZCodePluginsReferenceCatalogResult>>
+  Map<string, Promise<ZodyPluginsReferenceCatalogResult>>
 >();
 
 export function clearPluginReferenceCatalogCacheForTest(): void {
@@ -50,9 +50,9 @@ export function clearPluginReferenceCatalogCacheForTest(): void {
 
 function releaseSessionCatalogRequest(
   services: object,
-  serviceCache: Map<string, Promise<ZCodePluginsReferenceCatalogResult>>,
+  serviceCache: Map<string, Promise<ZodyPluginsReferenceCatalogResult>>,
   requestKey: string,
-  request: Promise<ZCodePluginsReferenceCatalogResult>,
+  request: Promise<ZodyPluginsReferenceCatalogResult>,
 ): void {
   // 成功 Promise 曾永久驻留，并在 Agent runtime 换代后继续冒充新
   // runtime 的 Session authority。缓存只能做挂载期的 in-flight 单飞；旧请求
@@ -66,9 +66,9 @@ function releaseSessionCatalogRequest(
 
 function releaseSessionCatalogRequestWhenSettled(
   services: object,
-  serviceCache: Map<string, Promise<ZCodePluginsReferenceCatalogResult>>,
+  serviceCache: Map<string, Promise<ZodyPluginsReferenceCatalogResult>>,
   requestKey: string,
-  request: Promise<ZCodePluginsReferenceCatalogResult>,
+  request: Promise<ZodyPluginsReferenceCatalogResult>,
 ): void {
   const release = () => releaseSessionCatalogRequest(services, serviceCache, requestKey, request);
   void request.then(release, release);
@@ -141,8 +141,8 @@ export function usePluginReferenceCatalog(
       ...(remoteSessionId ? { remoteSessionId } : {}),
       ...(sessionId ? { sessionId } : {}),
     };
-    let request: Promise<ZCodePluginsReferenceCatalogResult>;
-    let requestServiceCache: Map<string, Promise<ZCodePluginsReferenceCatalogResult>> | undefined;
+    let request: Promise<ZodyPluginsReferenceCatalogResult>;
+    let requestServiceCache: Map<string, Promise<ZodyPluginsReferenceCatalogResult>> | undefined;
     if (options?.dedupeSessionRequest && sessionId) {
       let serviceCache = sessionCatalogRequests.get(services);
       if (!serviceCache) {

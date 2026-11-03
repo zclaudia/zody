@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods, type ZCodeProtocolMessage } from "@zody/shared";
+import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
 
 async function request(server: ZCodeProtocolAgentServer, method: string, params: unknown) {
-  const response = await server.handleMessage({ id: 1, method, params } as ZCodeProtocolMessage);
+  const response = await server.handleMessage({ id: 1, method, params } as ZodyProtocolMessage);
   if (!response || !("result" in response)) throw new Error(JSON.stringify(response));
   return response.result;
 }

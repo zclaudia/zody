@@ -1,9 +1,9 @@
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
 import { parseModelPickerValue } from "@/lib/zodySessionProjection.js";
 
 function resolveModelDisplayValue(
-  options: readonly ZCodeConfigOption[],
+  options: readonly ZodyConfigOption[],
   config: Pick<SessionConfigState, "provider" | "model">,
 ): string {
   const provider = config.provider.trim();
@@ -31,9 +31,9 @@ function resolveModelDisplayValue(
  * 目录项和候选列表保持原引用语义，仅替换 model/mode/thought 的 currentValue。
  */
 export function projectSessionConfigToTaskConfigOptions(
-  options: readonly ZCodeConfigOption[],
+  options: readonly ZodyConfigOption[],
   config: Pick<SessionConfigState, "provider" | "model" | "mode" | "thought">,
-): ZCodeConfigOption[] {
+): ZodyConfigOption[] {
   const modelValue = resolveModelDisplayValue(options, config);
   return options.map((option) => {
     if (option.type !== "select") {

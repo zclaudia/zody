@@ -1,10 +1,10 @@
 import type { IDisposable } from "@zody/rpc";
-import type { IZCodeAgentService } from "@zody/services";
+import type { IZodyAgentService } from "@zody/services";
 import type { ProcessResourceRuntimeSurface } from "@zody/shared";
 import { HostResponseTypes } from "@zody/shared";
 
 interface RegisterHostMcpTelemetryOptions {
-  agentService: Pick<IZCodeAgentService, "onDynamicMcpTelemetry">;
+  agentService: Pick<IZodyAgentService, "onDynamicMcpTelemetry">;
   postMessage(message: unknown): void;
   runtimeSurface: ProcessResourceRuntimeSurface;
 }

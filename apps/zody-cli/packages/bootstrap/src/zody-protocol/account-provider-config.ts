@@ -1,12 +1,12 @@
 import {
   zcodeProviderUpdateAccountConfigParamsSchema,
-  type ZCodeProviderUpdateAccountConfigResult,
+  type ZodyProviderUpdateAccountConfigResult,
 } from "@zody/shared";
 import { parseProcessAccountProviderConfigSnapshot } from "../app/process-provider-registry-runtime.js";
 import {
   parseParams,
   ProtocolRequestError,
-  type ZCodeProtocolAgentServerContext,
+  type ZodyProtocolAgentServerContext,
 } from "./server-types.js";
 
 /**
@@ -15,9 +15,9 @@ import {
  * 该协议传 Account Overlay 与对应状态；API Key、JWT 和动态 Header 由请求期鉴权协议处理。
  */
 export async function updateAccountProviderConfig(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   params: unknown,
-): Promise<ZCodeProviderUpdateAccountConfigResult> {
+): Promise<ZodyProviderUpdateAccountConfigResult> {
   const envelope = parseParams(zcodeProviderUpdateAccountConfigParamsSchema, params);
   const snapshot = parseProcessAccountProviderConfigSnapshot(envelope);
   if (!context.deps.syncAccountProviderConfig) {

@@ -14,22 +14,22 @@ import {
   zcodePluginsValidateParamsSchema,
   zcodePluginsDescribeParamsSchema,
   zcodePluginsRestoreBuiltinParamsSchema,
-  type ZCodeAvailablePluginSummary,
-  type ZCodeInstalledPluginSummary,
-  type ZCodePluginComponentGroup,
-  type ZCodePluginDiagnostic,
-  type ZCodePluginInfo,
-  type ZCodePluginMarketplaceSummary,
-  type ZCodePluginsConfigureResult,
-  type ZCodePluginsDescribeResult,
-  type ZCodePluginsInstallResult,
-  type ZCodePluginsListResult,
-  type ZCodePluginsMarketplaceMutationResult,
-  type ZCodePluginsOverviewResult,
-  type ZCodePluginsRestoreBuiltinResult,
-  type ZCodePluginsSetEnabledResult,
-  type ZCodePluginsUninstallResult,
-  type ZCodePluginsValidateResult,
+  type ZodyAvailablePluginSummary,
+  type ZodyInstalledPluginSummary,
+  type ZodyPluginComponentGroup,
+  type ZodyPluginDiagnostic,
+  type ZodyPluginInfo,
+  type ZodyPluginMarketplaceSummary,
+  type ZodyPluginsConfigureResult,
+  type ZodyPluginsDescribeResult,
+  type ZodyPluginsInstallResult,
+  type ZodyPluginsListResult,
+  type ZodyPluginsMarketplaceMutationResult,
+  type ZodyPluginsOverviewResult,
+  type ZodyPluginsRestoreBuiltinResult,
+  type ZodyPluginsSetEnabledResult,
+  type ZodyPluginsUninstallResult,
+  type ZodyPluginsValidateResult,
 } from "@zody/shared";
 import type { PluginDiagnostic, PluginMetadata } from "@zody/contracts";
 import {
@@ -61,10 +61,10 @@ import {
 import { getCliStorageRoot, getPluginStorageRoot } from "../app/paths.js";
 import { resolveOfficialPluginHostMcpServerNames } from "../app/official-plugin-definitions.js";
 import { createConfig, resolvePath, type ConfigResult } from "@zody/adapters/config";
-import { parseParams, type ZCodeProtocolAgentServerContext } from "./server-types.js";
+import { parseParams, type ZodyProtocolAgentServerContext } from "./server-types.js";
 
 // 把 CLI 的 PluginMetadata 投影成协议可序列化的 ZCodePluginInfo (只保留 UI 需要的字段)。
-function toPluginInfo(plugin: PluginMetadata, configResult?: ConfigResult): ZCodePluginInfo {
+function toPluginInfo(plugin: PluginMetadata, configResult?: ConfigResult): ZodyPluginInfo {
   const hostMcpServerNames = resolveOfficialPluginHostMcpServerNames(plugin.id);
   const configuredOptions = Object.fromEntries(
     Object.entries(plugin.configuredOptions ?? {}).filter(
@@ -137,7 +137,7 @@ function resolveInlinePluginRootSource(
 }
 
 function createPluginConfigView(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   workspacePath: string,
   configScope: "user" | "workspace" | undefined,
 ): ConfigResult {
@@ -154,7 +154,7 @@ function createPluginConfigView(
 function createMissingConfiguredPluginInfos(
   configResult: ConfigResult,
   discoveredPluginIds: ReadonlySet<string>,
-): ZCodePluginInfo[] {
+): ZodyPluginInfo[] {
   const configuredPluginIds = new Set([
     ...Object.keys(configResult.config.plugins.enabledPlugins),
     ...Object.keys(configResult.config.plugins.options),
@@ -203,7 +203,7 @@ export function normalizePluginRootForComparison(
     : resolvedRoot;
 }
 
-function toPluginDiagnostic(diagnostic: PluginDiagnostic): ZCodePluginDiagnostic {
+function toPluginDiagnostic(diagnostic: PluginDiagnostic): ZodyPluginDiagnostic {
   return {
     code: diagnostic.code,
     message: diagnostic.message,
@@ -213,9 +213,9 @@ function toPluginDiagnostic(diagnostic: PluginDiagnostic): ZCodePluginDiagnostic
 }
 
 export async function listPlugins(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsListResult> {
+): Promise<ZodyPluginsListResult> {
   const params = parseParams(zcodePluginsListParamsSchema, rawParams);
   const configResult = createPluginConfigView(
     context,
@@ -243,10 +243,10 @@ export async function listPlugins(
 }
 
 export async function setPluginEnabled(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   abortSignal?: AbortSignal,
-): Promise<ZCodePluginsSetEnabledResult> {
+): Promise<ZodyPluginsSetEnabledResult> {
   const params = parseParams(zcodePluginsSetEnabledParamsSchema, rawParams);
   abortSignal?.throwIfAborted();
   const result = await setZCodePluginEnabled({
@@ -268,9 +268,9 @@ export async function setPluginEnabled(
 }
 
 export async function getPluginsOverview(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsOverviewResult> {
+): Promise<ZodyPluginsOverviewResult> {
   const params = parseParams(zcodePluginsOverviewParamsSchema, rawParams);
   const overview = getZCodePluginsOverview({
     configResult: createPluginConfigView(
@@ -292,10 +292,10 @@ export async function getPluginsOverview(
 }
 
 export async function addPluginMarketplace(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   abortSignal?: AbortSignal,
-): Promise<ZCodePluginsMarketplaceMutationResult> {
+): Promise<ZodyPluginsMarketplaceMutationResult> {
   const params = parseParams(zcodePluginsMarketplaceAddParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const marketplace = await withPluginStorageLock(pluginStorageRoot, async () =>
@@ -311,9 +311,9 @@ export async function addPluginMarketplace(
 }
 
 export async function removePluginMarketplace(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsMarketplaceMutationResult> {
+): Promise<ZodyPluginsMarketplaceMutationResult> {
   const params = parseParams(zcodePluginsMarketplaceRemoveParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   await withPluginStorageLock(pluginStorageRoot, async () =>
@@ -327,10 +327,10 @@ export async function removePluginMarketplace(
 }
 
 export async function updatePluginMarketplace(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   abortSignal?: AbortSignal,
-): Promise<ZCodePluginsMarketplaceMutationResult> {
+): Promise<ZodyPluginsMarketplaceMutationResult> {
   const params = parseParams(zcodePluginsMarketplaceUpdateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageLock(pluginStorageRoot, async () =>
@@ -348,10 +348,10 @@ export async function updatePluginMarketplace(
 }
 
 export async function installPlugin(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   abortSignal?: AbortSignal,
-): Promise<ZCodePluginsInstallResult> {
+): Promise<ZodyPluginsInstallResult> {
   const params = parseParams(zcodePluginsInstallParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageLock(pluginStorageRoot, async () =>
@@ -373,9 +373,9 @@ export async function installPlugin(
 }
 
 export async function uninstallPlugin(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsUninstallResult> {
+): Promise<ZodyPluginsUninstallResult> {
   const params = parseParams(zcodePluginsUninstallParamsSchema, rawParams);
   const removed = await uninstallZCodeMarketplacePlugin({
     logger: context.logger,
@@ -392,9 +392,9 @@ export async function uninstallPlugin(
 }
 
 export async function updatePlugin(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsInstallResult> {
+): Promise<ZodyPluginsInstallResult> {
   const params = parseParams(zcodePluginsUpdateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const installed = listInstalledPluginRecords(pluginStorageRoot).filter((record) => {
@@ -405,13 +405,13 @@ export async function updatePlugin(
   // 与 uninstall 一样把整个重装循环串行化到同一 storageRoot 的 in-process 锁里，
   // 避免并发 update/install 交错读改写 installed_plugins.json / cache。
   return withPluginStorageLock(pluginStorageRoot, async () => {
-    const installedPlugins: ZCodeInstalledPluginSummary[] = [];
+    const installedPlugins: ZodyInstalledPluginSummary[] = [];
     const dependencyClosure: string[] = [];
     // 聚合每条记录重装产生的诊断：installZCodeMarketplacePlugin 失败时不抛错，而是返回
     // CLI 形态的 PluginDiagnostic（见其错误分支的 toMarketplaceInstallDiagnostic），
     // 这里逐条经协议侧 toPluginDiagnostic 投影成 ZCodePluginDiagnostic 回传，
     // 让失败的重装显式暴露，而不是静默"成功"。
-    const diagnostics: ZCodePluginDiagnostic[] = [];
+    const diagnostics: ZodyPluginDiagnostic[] = [];
     for (const record of installed) {
       const result = await installZCodeMarketplacePlugin({
         logger: context.logger,
@@ -431,9 +431,9 @@ export async function updatePlugin(
 // 恢复一个被抑制（"卸载"）的内置插件：清除 suppressedBuiltins 标记并立即重新 seed。
 // bootstrap 侧的同名函数被别名为 restoreBuiltinPluginCore，避免与本协议处理器重名。
 export async function restoreBuiltinPlugin(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsRestoreBuiltinResult> {
+): Promise<ZodyPluginsRestoreBuiltinResult> {
   const params = parseParams(zcodePluginsRestoreBuiltinParamsSchema, rawParams);
   await restoreBuiltinPluginCore({
     logger: context.logger,
@@ -444,9 +444,9 @@ export async function restoreBuiltinPlugin(
 }
 
 export async function configurePlugin(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsConfigureResult> {
+): Promise<ZodyPluginsConfigureResult> {
   const params = parseParams(zcodePluginsConfigureParamsSchema, rawParams);
   await configureZCodePlugin({
     clearOptionKeys: params.clearOptionKeys,
@@ -461,9 +461,9 @@ export async function configurePlugin(
 }
 
 export async function resetPluginConfig(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsConfigureResult> {
+): Promise<ZodyPluginsConfigureResult> {
   const params = parseParams(zcodePluginsResetConfigParamsSchema, rawParams);
   await resetZCodePluginConfig({
     logger: context.logger,
@@ -508,9 +508,9 @@ function isCommittedInstalledPluginRead(
 }
 
 export async function validatePlugin(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsValidateResult> {
+): Promise<ZodyPluginsValidateResult> {
   const params = parseParams(zcodePluginsValidateParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const diagnostics = await withPluginStorageWriteGateWhenNeeded(
@@ -543,9 +543,9 @@ export async function validatePlugin(
 }
 
 export async function describePlugin(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodePluginsDescribeResult> {
+): Promise<ZodyPluginsDescribeResult> {
   const params = parseParams(zcodePluginsDescribeParamsSchema, rawParams);
   const pluginStorageRoot = resolvePluginStorageRoot(params.workspace.workspacePath);
   const result = await withPluginStorageWriteGateWhenNeeded(
@@ -565,7 +565,7 @@ export async function describePlugin(
         workingDirectory: params.workspace.workspacePath,
       }),
   );
-  const components: ZCodePluginComponentGroup[] = result.components.map((group) => ({
+  const components: ZodyPluginComponentGroup[] = result.components.map((group) => ({
     kind: group.kind,
     items: group.items.map((item) => ({
       name: item.name,
@@ -589,8 +589,8 @@ function toMarketplaceSummary(input: {
   pluginCount: number;
   isOfficial?: boolean;
   featured?: string[];
-  refreshFailure?: ZCodePluginMarketplaceSummary["refreshFailure"];
-}): ZCodePluginMarketplaceSummary {
+  refreshFailure?: ZodyPluginMarketplaceSummary["refreshFailure"];
+}): ZodyPluginMarketplaceSummary {
   return {
     id: input.id,
     name: input.name,
@@ -612,8 +612,8 @@ function toAvailablePluginSummary(input: {
   version?: string;
   installed: boolean;
   componentTypes?: string[];
-  listing?: ZCodeAvailablePluginSummary["listing"];
-}): ZCodeAvailablePluginSummary {
+  listing?: ZodyAvailablePluginSummary["listing"];
+}): ZodyAvailablePluginSummary {
   return {
     id: input.id,
     name: input.name,
@@ -637,11 +637,11 @@ function toInstalledPluginSummary(input: {
   installPath?: string;
   installedAt?: string;
   componentTypes?: string[];
-  hookDetails?: ZCodeInstalledPluginSummary["hookDetails"];
+  hookDetails?: ZodyInstalledPluginSummary["hookDetails"];
   updateStatus?: "none" | "update-available" | "version-changed";
   latestVersion?: string;
-  listing?: ZCodeInstalledPluginSummary["listing"];
-}): ZCodeInstalledPluginSummary {
+  listing?: ZodyInstalledPluginSummary["listing"];
+}): ZodyInstalledPluginSummary {
   return {
     id: input.id,
     name: input.name,

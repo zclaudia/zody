@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   coalesceConsecutiveZCodeAssistants,
-  type ZCodePersistedMessage,
+  type ZodyPersistedMessage,
 } from "../src/index.js";
 
 function userMessage(
-  overrides: Partial<ZCodePersistedMessage> = {},
-): ZCodePersistedMessage {
+  overrides: Partial<ZodyPersistedMessage> = {},
+): ZodyPersistedMessage {
   return {
     role: "user",
     content: "hello",
@@ -16,8 +16,8 @@ function userMessage(
 }
 
 function assistantMessage(
-  overrides: Partial<ZCodePersistedMessage> = {},
-): ZCodePersistedMessage {
+  overrides: Partial<ZodyPersistedMessage> = {},
+): ZodyPersistedMessage {
   return {
     role: "assistant",
     content: "ok",

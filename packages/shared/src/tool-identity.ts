@@ -39,9 +39,9 @@ export const ZCODE_KNOWN_TOOL_NAMES = [
   "submit_result",
 ] as const;
 
-export type ZCodeKnownToolName = (typeof ZCODE_KNOWN_TOOL_NAMES)[number];
+export type ZodyKnownToolName = (typeof ZCODE_KNOWN_TOOL_NAMES)[number];
 
-export type ZCodeToolFamily =
+export type ZodyToolFamily =
   | "file-read"
   | "file-write"
   | "shell"
@@ -57,7 +57,7 @@ export type ZCodeToolFamily =
   | "node-repl"
   | "workflow";
 
-const TOOL_FAMILY_BY_NAME: Record<ZCodeKnownToolName, ZCodeToolFamily> = {
+const TOOL_FAMILY_BY_NAME: Record<ZodyKnownToolName, ZodyToolFamily> = {
   Read: "file-read",
   Write: "file-write",
   Edit: "file-write",
@@ -95,13 +95,13 @@ const TOOL_FAMILY_BY_NAME: Record<ZCodeKnownToolName, ZCodeToolFamily> = {
   submit_result: "workflow",
 };
 
-const TOOL_NAME_BY_LOWER = new Map<string, ZCodeKnownToolName>(
+const TOOL_NAME_BY_LOWER = new Map<string, ZodyKnownToolName>(
   ZCODE_KNOWN_TOOL_NAMES.map((toolName) => [toolName.toLowerCase(), toolName]),
 );
 
 export function normalizeZCodeToolName(
   value: string | null | undefined,
-): ZCodeKnownToolName | null {
+): ZodyKnownToolName | null {
   const normalized = value?.trim();
   if (!normalized) {
     return null;
@@ -112,14 +112,14 @@ export function normalizeZCodeToolName(
 
 export function getZCodeToolFamilyForName(
   value: string | null | undefined,
-): ZCodeToolFamily | null {
+): ZodyToolFamily | null {
   const toolName = normalizeZCodeToolName(value);
   return toolName ? TOOL_FAMILY_BY_NAME[toolName] : null;
 }
 
 export function isZCodeToolFamily(
   value: string | null | undefined,
-  family: ZCodeToolFamily,
+  family: ZodyToolFamily,
 ): boolean {
   return getZCodeToolFamilyForName(value) === family;
 }

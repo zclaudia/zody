@@ -1,14 +1,14 @@
 // ── 旧协议兼容面（过渡期）──────────────────────────────
 // 剩余 1 个导出：deriveZCodeTaskStatusFromSessionSnapshot。
 // 消费者：zcodeTaskServiceAdapter/zcodeTaskIndexSyncer/zcodeSessionProjection（旧投影栈）。
-import type { ZCodeSessionStateSnapshot } from "./zody-protocol/index.js";
+import type { ZodySessionStateSnapshot } from "./zody-protocol/index.js";
 import { getZCodeUserVisibleMessages } from "./zody-session-visible-content.js";
-import type { ZCodeTaskMeta } from "./zody-task-types-core.js";
-type ZCodeTaskStatus = ZCodeTaskMeta["status"];
+import type { ZodyTaskMeta } from "./zody-task-types-core.js";
+type ZodyTaskStatus = ZodyTaskMeta["status"];
 
 function statusFromZCodeSession(
-  status: ZCodeSessionStateSnapshot["session"]["status"],
-): ZCodeTaskStatus {
+  status: ZodySessionStateSnapshot["session"]["status"],
+): ZodyTaskStatus {
   if (status === "running" || status === "waiting" || status === "paused") {
     return "running";
   }
@@ -17,7 +17,7 @@ function statusFromZCodeSession(
   return undefined;
 }
 
-function hasBlockingActiveSnapshotRuntime(snapshot: ZCodeSessionStateSnapshot): boolean {
+function hasBlockingActiveSnapshotRuntime(snapshot: ZodySessionStateSnapshot): boolean {
   if (snapshot.runtime.activeTurnId || snapshot.runtime.activeTurnKind) {
     return true;
   }
@@ -31,7 +31,7 @@ function hasBlockingActiveSnapshotRuntime(snapshot: ZCodeSessionStateSnapshot): 
   );
 }
 
-function hasActiveSnapshotRuntime(snapshot: ZCodeSessionStateSnapshot): boolean {
+function hasActiveSnapshotRuntime(snapshot: ZodySessionStateSnapshot): boolean {
   return hasBlockingActiveSnapshotRuntime(snapshot);
 }
 
@@ -40,7 +40,7 @@ function isToolCallContinuationFinish(finish: string | undefined): boolean {
   return normalized === "tool-calls";
 }
 
-function hasCompletedVisibleAssistantTurn(snapshot: ZCodeSessionStateSnapshot): boolean {
+function hasCompletedVisibleAssistantTurn(snapshot: ZodySessionStateSnapshot): boolean {
   const visibleMessages = getZCodeUserVisibleMessages(snapshot.messages, {
     target: snapshot.projection.target,
   });
@@ -55,8 +55,8 @@ function hasCompletedVisibleAssistantTurn(snapshot: ZCodeSessionStateSnapshot): 
 }
 
 export function deriveZCodeTaskStatusFromSessionSnapshot(
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodeTaskStatus {
+  snapshot: ZodySessionStateSnapshot,
+): ZodyTaskStatus {
   if (snapshot.projection.lastError) {
     return "error";
   }

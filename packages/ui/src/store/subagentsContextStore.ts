@@ -4,14 +4,14 @@ import {
   normalizeAgentProviderToZCodeAgent,
   type AgentSummary,
   type AgentsCapability,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import { logger } from "@/logger.js";
 
 export interface SubagentsContextSnapshot {
   workspacePath: string;
   workspaceIdentity: string | null;
-  provider: ZCodeProvider;
+  provider: ZodyProvider;
   agents: AgentSummary[];
   capability: AgentsCapability | null;
   loading: boolean;
@@ -23,19 +23,19 @@ interface SubagentsContextStoreState {
   contexts: Record<string, SubagentsContextSnapshot>;
   initialize: (
     workspacePath: string,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     subagentsService: ISubagentsService,
     workspaceIdentity?: string,
   ) => Promise<void>;
   refresh: (
     workspacePath: string,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     subagentsService: ISubagentsService,
     workspaceIdentity?: string,
   ) => Promise<void>;
   setEnabled: (
     workspacePath: string,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     agentId: string,
     enabled: boolean,
     subagentsService: ISubagentsService,
@@ -49,7 +49,7 @@ let nextRequestId = 0;
 
 export function getSubagentsContextKey(
   workspacePath: string,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   workspaceIdentity?: string | null,
 ): string {
   return `${workspaceIdentity?.trim() || workspacePath}::${normalizeAgentProviderToZCodeAgent(provider)}`;
@@ -66,7 +66,7 @@ function updateContext(
 function loadAgents(
   key: string,
   workspacePath: string,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   subagentsService: ISubagentsService,
   workspaceIdentity?: string,
   bypassCache = false,
@@ -87,7 +87,7 @@ function loadAgents(
 async function loadContext(
   params: {
     workspacePath: string;
-    provider: ZCodeProvider;
+    provider: ZodyProvider;
     subagentsService: ISubagentsService;
     workspaceIdentity?: string;
     bypassCache: boolean;

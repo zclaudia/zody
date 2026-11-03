@@ -13,7 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, sep } from "node:path";
 import type { ExecutionRequest, ExecutionShellSelection } from "@zody/contracts";
-import type { ZCodeToolExecResource } from "@zody/shared";
+import type { ZodyToolExecResource } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import { resolveWindowsGitBashShell } from "../src/exec/bash-shell-provider.js";
 import type { ExecutionOutputPaths } from "../src/exec/execution-adapter-types.js";
@@ -194,7 +194,7 @@ it.each(["explicit", "auto_on_timeout"] as const)(
 );
 
 it("运行时烟测：真实慢命令经平台探针产生非零 RSS，通知失败不影响输出", async () => {
-  const onToolExecResource = vi.fn((_sample: ZCodeToolExecResource) => {
+  const onToolExecResource = vi.fn((_sample: ZodyToolExecResource) => {
     throw new Error("telemetry sink closed");
   });
   const fixture = await gatedCommand(onToolExecResource);

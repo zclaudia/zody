@@ -10,8 +10,8 @@ import {
 } from "@zody/adapters/mcp";
 import {
   zcodeProtocolNotifications,
-  type ZCodeMcpResourceSample,
-  type ZCodeMcpTelemetryEvent,
+  type ZodyMcpResourceSample,
+  type ZodyMcpTelemetryEvent,
 } from "@zody/shared";
 import type { SqliteSessionStore } from "@zody/adapters/storage";
 import { traceContextToLogContext, createRootTraceContext } from "@zody/contracts";
@@ -119,8 +119,8 @@ export async function runZCodeProtocolAgent(
   let mcpConnectionPool: McpConnectionPool | undefined;
   let mcpPort: McpPort | undefined;
   let mcpTelemetryTracker: McpTelemetryTracker | undefined;
-  let mcpResourceSink: ((samples: ZCodeMcpResourceSample[]) => void) | undefined;
-  let mcpTelemetrySink: ((event: ZCodeMcpTelemetryEvent) => void) | undefined;
+  let mcpResourceSink: ((samples: ZodyMcpResourceSample[]) => void) | undefined;
+  let mcpTelemetrySink: ((event: ZodyMcpTelemetryEvent) => void) | undefined;
   let processResourceSampler: ZCodeProcessResourceSampler | undefined;
   let providerRegistryRuntime:
     | Awaited<ReturnType<typeof startProcessProviderRegistryRuntime>>

@@ -10,12 +10,12 @@ import {
 import type { KeyboardEvent } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type {
-  ZCodeGroupedTaskViewNode,
-  ZCodeTaskGroupColor,
+  ZodyGroupedTaskViewNode,
+  ZodyTaskGroupColor,
 } from "@zody/services";
 import {
   CRON_DEFAULT_GROUP_ID,
-  type ZCodeTaskMeta,
+  type ZodyTaskMeta,
 } from "@zody/shared";
 import {
   ChevronDownIcon,
@@ -97,21 +97,21 @@ export function GroupItem({
   activeDragGroupId,
   tooltipsDisabled,
 }: {
-  node: Extract<ZCodeGroupedTaskViewNode, { type: "group" }>;
+  node: Extract<ZodyGroupedTaskViewNode, { type: "group" }>;
   groups: TaskGroupMenuItem[];
   activeWorkspacePath: string;
   activeWorkspaceIdentity?: string;
   activeTaskId: string | null;
   mobileActiveTaskKey?: string | null;
-  getTaskRemoteSessionId: (task: ZCodeTaskMeta) => string | undefined;
-  getTaskWorkspaceLabel: (task: ZCodeTaskMeta) => string;
+  getTaskRemoteSessionId: (task: ZodyTaskMeta) => string | undefined;
+  getTaskWorkspaceLabel: (task: ZodyTaskMeta) => string;
   onSelectTask: (
     workspacePath: string,
     taskId: string,
     workspaceIdentity?: string,
   ) => void;
-  onCloseTask: (task: ZCodeTaskMeta) => void;
-  onOpenFileTree?: (task: ZCodeTaskMeta) => void;
+  onCloseTask: (task: ZodyTaskMeta) => void;
+  onOpenFileTree?: (task: ZodyTaskMeta) => void;
   onCreateTask: () => void;
   hasDraftTask?: boolean;
   draftTaskActive?: boolean;
@@ -119,13 +119,13 @@ export function GroupItem({
   onSelectDraftTask?: () => void;
   onCloseDraftTask?: () => void;
   onRenameGroup: (groupId: string, title: string) => void;
-  onUpdateGroupColor: (groupId: string, color: ZCodeTaskGroupColor) => void;
+  onUpdateGroupColor: (groupId: string, color: ZodyTaskGroupColor) => void;
   onUngroupGroup: (groupId: string) => void;
-  onMoveTaskToGroup: (task: ZCodeTaskMeta, groupId: string | null) => void;
-  onMoveTaskToTop: (task: ZCodeTaskMeta) => void;
-  onStartRenameTask: (task: ZCodeTaskMeta) => void;
-  onArchiveTask: (task: ZCodeTaskMeta) => void;
-  onMarkTaskAsUnread: (task: ZCodeTaskMeta) => void;
+  onMoveTaskToGroup: (task: ZodyTaskMeta, groupId: string | null) => void;
+  onMoveTaskToTop: (task: ZodyTaskMeta) => void;
+  onStartRenameTask: (task: ZodyTaskMeta) => void;
+  onArchiveTask: (task: ZodyTaskMeta) => void;
+  onMarkTaskAsUnread: (task: ZodyTaskMeta) => void;
   newGroupSetup: boolean;
   onNewGroupSetupStarted: (groupId: string) => void;
   collapsed: boolean;
@@ -440,7 +440,7 @@ export function GroupItem({
 
   const handleGroupColorChange = useCallback(
     (color: string) => {
-      onUpdateGroupColor(node.group.id, color as ZCodeTaskGroupColor);
+      onUpdateGroupColor(node.group.id, color as ZodyTaskGroupColor);
     },
     [node.group.id, onUpdateGroupColor],
   );

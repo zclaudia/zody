@@ -13,7 +13,7 @@ import type {
   GitCommitMessageConversationContext,
   GitIdentity,
   GitRepositorySummary,
-  ZCodeTaskChangeSummary,
+  ZodyTaskChangeSummary,
 } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
@@ -66,7 +66,7 @@ interface GitActionMenuProps {
   workspacePath: string;
   workspaceIdentity?: string;
   gitSummary: GitRepositorySummary;
-  activeTaskChangeSummary?: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary?: ZodyTaskChangeSummary | null;
   commitMessageConversationContext?: GitCommitMessageConversationContext | null;
   onRefreshGit: () => void;
   className?: string;
@@ -103,7 +103,7 @@ function isCommitMessageTextAreaTarget(target: EventTarget | null): target is HT
 interface GitCommitDialogState {
   summary: GitRepositorySummary;
   identity: GitIdentity | null;
-  activeTaskChangeSummary: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary: ZodyTaskChangeSummary | null;
   stagedFiles: GitCommitPreviewFile[];
   unstagedFiles: GitCommitPreviewFile[];
 }

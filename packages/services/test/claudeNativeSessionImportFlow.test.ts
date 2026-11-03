@@ -31,7 +31,7 @@ afterEach(async () => {
 });
 
 describe("Claude native import flow", () => {
-  it("将 Claude jsonl 归一为 ZCodeSessionFile 并写入 legacy snapshot", async () => {
+  it("将 Claude jsonl 归一为 ZodySessionFile 并写入 legacy snapshot", async () => {
     const home = makeTempDir("zcode-claude-import-flow-");
     process.env.HOME = home;
     process.env.ZCODE_DATA_BASE_DIR = home;

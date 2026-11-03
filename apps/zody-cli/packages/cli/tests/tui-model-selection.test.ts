@@ -9,7 +9,7 @@ import {
   NodeModelSelectionConfigRepository,
   NodePersonalProviderConfigRepository,
 } from "@zody/provider-node";
-import { modelSelectionSchema, type ModelSelection, type ZCodeModelOption } from "@zody/shared";
+import { modelSelectionSchema, type ModelSelection, type ZodyModelOption } from "@zody/shared";
 import { createCommandCenter, type CommandCenterApp } from "../src/command-center.js";
 import { handleModelCommand } from "../src/command-center/handlers/model.js";
 import { readTuiSessionMetadata } from "../src/tui-prompt-handler-queries.js";
@@ -22,7 +22,7 @@ import { createTuiSubmitPrompt } from "../src/tui-prompt-handler.js";
 import { createCliModeState } from "../src/tui-command-state.js";
 import type { RunDependencies } from "../src/cli-types.js";
 
-function model(providerId = "personal", modelId = "vendor/model$literal:free"): ZCodeModelOption {
+function model(providerId = "personal", modelId = "vendor/model$literal:free"): ZodyModelOption {
   return {
     ref: { providerId, modelId },
     label: "Reasoning Model",
@@ -114,7 +114,7 @@ function fixture(initial?: ModelSelection) {
     deps,
     writes,
     defaultWrites,
-    setCatalog: (next: ZCodeModelOption[]) => {
+    setCatalog: (next: ZodyModelOption[]) => {
       catalog = next;
     },
   };

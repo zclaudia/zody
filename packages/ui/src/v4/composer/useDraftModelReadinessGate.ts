@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   isZCodeAgentProvider,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import type { IModelSelectionService, ModelSelectionView } from "@zody/services";
 import {
@@ -48,7 +48,7 @@ export function resolveModelSelectionReadinessStatus(
 export function useDraftModelReadinessGate(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   sessionId: string | null;
   modelSelectionService: Pick<IModelSelectionService, "getView" | "onDidChange">;
 }): DraftModelReadinessGate {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zody/shared";
+import type { ZodyTaskMeta, ZodyWorkspaceTaskListChanged } from "@zody/shared";
 import {
   clearTaskListWorkspaceEventCoordinatorForTest,
   handleTaskListWorkspaceEventCacheSync,
@@ -13,7 +13,7 @@ import { useZCodeSessionStore } from "@/store/zodySessionStore.js";
 
 const WORKSPACE_PATH = "/repo/event-coordinator";
 
-function createTask(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTask(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -42,7 +42,7 @@ function taskIdsFor(queryKey: string): string[] {
   return result?.taskKeys.map((taskKey) => cacheState.taskMetaByEntityKey[taskKey]?.taskId ?? "") ?? [];
 }
 
-function createDeleteEvent(taskId: string): ZCodeWorkspaceTaskListChanged {
+function createDeleteEvent(taskId: string): ZodyWorkspaceTaskListChanged {
   return {
     reason: "task_deleted",
     taskId,
@@ -137,7 +137,7 @@ describe("taskListWorkspaceEventCoordinator", () => {
       queryKey: "archived-archive-once",
       total: 0,
     });
-    const event: ZCodeWorkspaceTaskListChanged = {
+    const event: ZodyWorkspaceTaskListChanged = {
       reason: "task_archived",
       taskId: "archive-once",
       taskMeta: task,
@@ -178,14 +178,14 @@ describe("taskListWorkspaceEventCoordinator", () => {
       queryKey: "active-meta-updates",
       total: 1,
     });
-    const firstEvent: ZCodeWorkspaceTaskListChanged = {
+    const firstEvent: ZodyWorkspaceTaskListChanged = {
       reason: "task_meta_changed",
       taskId: "meta-updates",
       taskMeta: { ...task, title: "second title" },
       type: "workspace_task_list_changed",
       workspacePath: WORKSPACE_PATH,
     };
-    const secondEvent: ZCodeWorkspaceTaskListChanged = {
+    const secondEvent: ZodyWorkspaceTaskListChanged = {
       ...firstEvent,
       taskMeta: { ...task, title: "third title latest" },
     };

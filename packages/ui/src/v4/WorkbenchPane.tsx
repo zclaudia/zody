@@ -15,8 +15,8 @@ import { TID_V4_PANE_SHELL, testId } from "@zody/shared";
 import type {
   GitChangeSourceId,
   GitRepositorySummary,
-  ZCodeProvider,
-  ZCodeTaskChangeSummary,
+  ZodyProvider,
+  ZodyTaskChangeSummary,
 } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import { useServices } from "@/hooks/useServices.js";
@@ -263,7 +263,7 @@ export interface WorkbenchShellBinding {
   /** Shell 当前真正激活的 task；split pane 接管 active task 时不等于 primary sessionId。 */
   activeSessionId?: string | null;
   activeSelectionSideChatSessionId?: string | null;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   onSessionCreated?: (sessionId: string) => void;
   onSessionDeleted?: () => void;
   draftComposerHeader?: ReactNode;
@@ -274,7 +274,7 @@ export interface WorkbenchShellBinding {
   gitDirtyFileCount?: number;
   gitWorktreeReviewSourceId?: GitChangeSourceId | null;
   gitWorktreeChangeSummary?: { added: number; removed: number } | null;
-  activeTaskChangeSummary?: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary?: ZodyTaskChangeSummary | null;
   summaryPanelVariantOverride?: ChatViewSummaryPanelVariant | null;
   onSummaryPanelVariantOverrideChange?: (variant: ChatViewSummaryPanelVariant | null) => void;
   onRefreshGit?: () => void;

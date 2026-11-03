@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type {
   WindowHostControllerTaskListItem,
-  ZCodeTaskListKind,
-  ZCodeTaskListWorkspaceScope,
+  ZodyTaskListKind,
+  ZodyTaskListWorkspaceScope,
 } from "@zody/services";
 import { logger } from "@/logger.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
@@ -18,8 +18,8 @@ type GlobalTaskListItem = WindowHostControllerTaskListItem;
 const subscribeToNothing = () => () => {};
 const zeroRevision = () => 0;
 
-function buildWorkspaceScopes(workspaceTabs: WorkspaceTabState[]): ZCodeTaskListWorkspaceScope[] {
-  const scopes = new Map<string, ZCodeTaskListWorkspaceScope>();
+function buildWorkspaceScopes(workspaceTabs: WorkspaceTabState[]): ZodyTaskListWorkspaceScope[] {
+  const scopes = new Map<string, ZodyTaskListWorkspaceScope>();
   for (const tab of workspaceTabs) {
     const scope = {
       workspacePath: tab.workspacePath,
@@ -34,7 +34,7 @@ function buildWorkspaceScopes(workspaceTabs: WorkspaceTabState[]): ZCodeTaskList
 }
 
 export function useGlobalTaskList(params: {
-  kind: ZCodeTaskListKind;
+  kind: ZodyTaskListKind;
   workspaceTabs: WorkspaceTabState[];
   sortBy: "created" | "updated";
   searchQuery: string;

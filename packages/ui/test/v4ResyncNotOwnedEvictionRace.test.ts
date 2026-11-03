@@ -34,7 +34,7 @@ import type {
 import {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,
-  type IZCodeAgentService,
+  type IZodyAgentService,
 } from "@zody/services";
 import { describe, expect, it, vi } from "vitest";
 import { createAgentConversationTransport } from "@/v4/agentConversationTransport.js";
@@ -91,14 +91,14 @@ function setupBase() {
     setConnectionFlowStateV4: vi.fn(async () => {}),
   };
   return {
-    base: mocks as unknown as IZCodeAgentService,
+    base: mocks as unknown as IZodyAgentService,
     mocks,
     conversationFrames,
   };
 }
 
 // ── RPC 延迟闸门：模拟 renderer→host 链路上的在途请求（远程 SSH 下真实存在的时延）──
-function createRpcGate(service: IZCodeAgentService) {
+function createRpcGate(service: IZodyAgentService) {
   const holding = new Set<string>();
   const held = new Map<string, Array<() => void>>();
   const proxy = new Proxy(service as unknown as Record<string, unknown>, {
@@ -119,7 +119,7 @@ function createRpcGate(service: IZCodeAgentService) {
         });
       };
     },
-  }) as unknown as IZCodeAgentService;
+  }) as unknown as IZodyAgentService;
   return {
     service: proxy,
     hold(method: string) {

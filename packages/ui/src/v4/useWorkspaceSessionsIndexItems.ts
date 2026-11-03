@@ -4,7 +4,7 @@
 // scope 携带 endpoint 维度与该 endpoint 的 agentService（resolveWorkspaceServices 产物），
 // remote shard（web/手机远控/SSH workspace）经 @zcode/rpc proxy 走同一条 sessions-index 链路。
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { compareZCodeTaskListItems } from "@/lib/taskListOrdering.js";
 import { mapSessionSummaryToTaskMeta } from "@/v4/mapSessionSummaryToTaskMeta.js";
@@ -35,7 +35,7 @@ export interface WorkspaceSessionsIndexScope {
 
 export interface WorkspaceSessionsIndexItemsResult {
   /** 聚合会话 meta（running 置顶；其余按 updatedAt 降序；tick 驱动重算，引用稳定）。 */
-  items: ZCodeTaskMeta[];
+  items: ZodyTaskMeta[];
   /**
    * 每个 endpoint + workspace scope 的只读代次。包含 service binding 与 store 的
    * logEpoch/seq，供异步 tasks-index membership join 精确拒绝旧 activity 快照。
@@ -151,10 +151,10 @@ export function useWorkspaceSessionsIndexItems(
   );
 
   // 从各 store 聚合会话 → ZCodeTaskMeta + hydration 状态（tick 驱动重算，引用稳定）。
-  const previousItemsRef = useRef<ZCodeTaskMeta[]>([]);
+  const previousItemsRef = useRef<ZodyTaskMeta[]>([]);
   const previousHydratingRef = useRef<string[]>([]);
   return useMemo(() => {
-    const metas: ZCodeTaskMeta[] = [];
+    const metas: ZodyTaskMeta[] = [];
     const hydratingEndpointKeys = new Set<string>();
     const sourceRevisionByScopeKey: Record<string, string> = {};
     const previousByKey = new Map(

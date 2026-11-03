@@ -6,7 +6,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { MinusIcon, PlusIcon } from "lucide-react";
-import { ZCODE_AGENT_PROVIDER, type ZCodeConfigOption } from "@zody/shared";
+import { ZCODE_AGENT_PROVIDER, type ZodyConfigOption } from "@zody/shared";
 import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycleControl.js";
 import { cn } from "@/components/lib/utils.js";
 import {
@@ -57,7 +57,7 @@ export function WorkflowRunSettingsModelField({
   onLevelChange: (level: string) => void;
   onValueChange: (value: string) => void;
   /** 所选模型的思考档；缺席即不画思考档控件。 */
-  thoughtOption: ZCodeConfigOption | null;
+  thoughtOption: ZodyConfigOption | null;
   triggerLabel: string;
   value: string;
 }) {

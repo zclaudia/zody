@@ -3,7 +3,7 @@ import {
   TID_MCP_SERVER_ROW,
   testId,
   type McpServerStatus,
-  type ZCodeMcpServer,
+  type ZodyMcpServer,
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Switch } from "@/components/ui/switch.js";
@@ -68,10 +68,10 @@ function McpServerItem({
   onOpenAuthorization,
   hideMetadata,
 }: {
-  server: ZCodeMcpServer;
-  onEdit: (server: ZCodeMcpServer) => void;
+  server: ZodyMcpServer;
+  onEdit: (server: ZodyMcpServer) => void;
   onToggle: (id: string, enabled: boolean) => void;
-  onOpenAuthorization?: (server: ZCodeMcpServer) => void;
+  onOpenAuthorization?: (server: ZodyMcpServer) => void;
   hideMetadata: boolean;
 }) {
   const { intl } = useZCodeIntl();
@@ -175,11 +175,11 @@ export function McpServerList({
   emptyDescription,
   hideMetadata = false,
 }: {
-  servers: ZCodeMcpServer[];
+  servers: ZodyMcpServer[];
   onCreate: () => void;
-  onEdit: (server: ZCodeMcpServer) => void;
+  onEdit: (server: ZodyMcpServer) => void;
   onToggle: (id: string, enabled: boolean) => void;
-  onOpenAuthorization?: (server: ZCodeMcpServer) => void;
+  onOpenAuthorization?: (server: ZodyMcpServer) => void;
   emptyTitle: string;
   emptyDescription: string;
   hideMetadata?: boolean;

@@ -1,4 +1,4 @@
-import type { ZCodeModelTrajectoryMessage } from "@zody/services";
+import type { ZodyModelTrajectoryMessage } from "@zody/services";
 import { ArrowRightIcon, ChevronRightIcon, CircleAlertIcon, CopyIcon } from "lucide-react";
 import { useContext, useState } from "react";
 import { Badge } from "@/components/ui/badge.js";
@@ -39,7 +39,7 @@ export function ExpandableTrajectoryMessage({
   intl,
   expansionKey,
 }: {
-  message: ZCodeModelTrajectoryMessage;
+  message: ZodyModelTrajectoryMessage;
   role: "system" | "user" | "assistant" | "tool";
   visualRole?: TrajectoryVisualRole;
   roleLabel: string;
@@ -271,7 +271,7 @@ export function ExpandableTrajectoryMessage({
 }
 
 function messagePreview(
-  message: ZCodeModelTrajectoryMessage,
+  message: ZodyModelTrajectoryMessage,
   role: "system" | "user" | "assistant" | "tool",
 ): string {
   if (role === "tool" && message.parts.some((part) => part.kind === "tool-result")) {
@@ -289,7 +289,7 @@ function messagePreview(
   return firstLinePreview(message);
 }
 
-function compactTextPreview(message: ZCodeModelTrajectoryMessage): string {
+function compactTextPreview(message: ZodyModelTrajectoryMessage): string {
   const text = message.parts
     .flatMap((part) => ("text" in part && typeof part.text === "string" ? [part.text] : []))
     .join(" ")
@@ -310,7 +310,7 @@ function compactPreviewValue(value: unknown): string {
   }
 }
 
-function firstLinePreview(message: ZCodeModelTrajectoryMessage): string {
+function firstLinePreview(message: ZodyModelTrajectoryMessage): string {
   for (const part of message.parts) {
     if ("text" in part && typeof part.text === "string") {
       const firstLine = part.text
@@ -323,7 +323,7 @@ function firstLinePreview(message: ZCodeModelTrajectoryMessage): string {
   return "—";
 }
 
-function messageClipboardText(message: ZCodeModelTrajectoryMessage): string {
+function messageClipboardText(message: ZodyModelTrajectoryMessage): string {
   if (message.role === "tool") return trajectoryToolOutputs(message).join("\n\n");
   return message.parts
     .map((part) => {

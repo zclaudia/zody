@@ -1,12 +1,12 @@
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 
 function areJsonEquivalent(left: unknown, right: unknown): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
 export function areConfigOptionsEquivalent(
-  left: readonly ZCodeConfigOption[] | null | undefined,
-  right: readonly ZCodeConfigOption[] | null | undefined,
+  left: readonly ZodyConfigOption[] | null | undefined,
+  right: readonly ZodyConfigOption[] | null | undefined,
 ): boolean {
   if (left === right) {
     return true;

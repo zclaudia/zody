@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AddressInfo } from "node:net";
 import { WebSocket, type RawData } from "ws";
 import { Emitter, Event, SocketProtocol, VSBuffer, type ISocket } from "@zody/rpc";
-import { ServiceCollection, ISystemService, IZCodeAgentService } from "@zody/services";
+import { ServiceCollection, ISystemService, IZodyAgentService } from "@zody/services";
 import { createHttpServer } from "@zody/server";
 import { connectViaProtocol, connectViaWebSocket } from "@zody/client";
 import {
@@ -147,7 +147,7 @@ describe("server remote connection", () => {
           totalTargets: 0,
         })),
       })
-      .register(IZCodeAgentService, {
+      .register(IZodyAgentService, {
         helloConversationV4: vi.fn(),
         initializeConversationV4: vi.fn(),
       } as never);
@@ -213,7 +213,7 @@ describe("server remote connection", () => {
   });
 
   it("connector 使用 token 贯穿受保护的 capability endpoint 与 /ws/host", async () => {
-    const services = new ServiceCollection().register(IZCodeAgentService, {
+    const services = new ServiceCollection().register(IZodyAgentService, {
       helloConversationV4: vi.fn(),
       initializeConversationV4: vi.fn(),
     } as never);
@@ -273,7 +273,7 @@ describe("server remote connection", () => {
           : {}),
       };
       const server = createHttpServer(
-        new ServiceCollection().register(IZCodeAgentService, service as never),
+        new ServiceCollection().register(IZodyAgentService, service as never),
         0,
       );
       servers.push(server);
@@ -295,7 +295,7 @@ describe("server remote connection", () => {
       const postMessage = vi.fn();
       const telemetry = registerHostServiceResourceTelemetry({
         services: new ServiceCollection().register(
-          IZCodeAgentService,
+          IZodyAgentService,
           connection.services.zcodeAgentService,
         ),
         runtimeSurface: "remote",
@@ -329,7 +329,7 @@ describe("server remote connection", () => {
   );
 
   it("/ws/host 只接受已申请的一次性 capability，重放被拒绝", async () => {
-    const services = new ServiceCollection().register(IZCodeAgentService, {
+    const services = new ServiceCollection().register(IZodyAgentService, {
       helloConversationV4: vi.fn(),
       initializeConversationV4: vi.fn(),
     } as never);

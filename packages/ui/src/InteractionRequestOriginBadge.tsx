@@ -1,4 +1,4 @@
-import type { ZCodeInteractionRequestOrigin } from "@zody/shared";
+import type { ZodyInteractionRequestOrigin } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import { Badge } from "@/components/ui/badge.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
@@ -8,7 +8,7 @@ export function InteractionRequestOriginBadge({
   origin,
 }: {
   className?: string;
-  origin?: ZCodeInteractionRequestOrigin;
+  origin?: ZodyInteractionRequestOrigin;
 }) {
   const { intl } = useZCodeIntl();
   if (origin?.kind !== "subagent") {

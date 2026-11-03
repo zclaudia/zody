@@ -9,7 +9,7 @@ import {
 } from "../src/zody-protocol/automation-port.js";
 import {
   ProtocolRequestError,
-  type ZCodeProtocolAgentServerContext,
+  type ZodyProtocolAgentServerContext,
 } from "../src/zody-protocol/server-types.js";
 
 describe("createProtocolAutomationPort", () => {
@@ -35,7 +35,7 @@ describe("createProtocolAutomationPort", () => {
           },
         ],
       ]),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await expect(
       port.create(
@@ -77,7 +77,7 @@ describe("createProtocolAutomationPort", () => {
           },
         ],
       ]),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await expect(
       port.create(
@@ -146,7 +146,7 @@ describe("createProtocolAutomationPort", () => {
             },
           ],
         ]),
-      } as unknown as ZCodeProtocolAgentServerContext);
+      } as unknown as ZodyProtocolAgentServerContext);
 
       await expect(
         port.create(
@@ -260,7 +260,7 @@ describe("createProtocolAutomationPort", () => {
           },
         ],
       ]),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     const created = await port.create(
       {
@@ -349,7 +349,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await expect(
       port.create(
@@ -401,7 +401,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await expect(
       port.create(
@@ -443,7 +443,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await port.create({
       delayMinutes: 3,
@@ -484,7 +484,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     // Bug 原因：`delayMinutes !== null` 判定下，省略字段（很多 provider 不稳定保留
     // null 字段）会被误当成相对任务，把普通 recurring 调度错建成一次性。
@@ -539,7 +539,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     const automations = await port.list();
 
@@ -561,7 +561,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     const error = await port
       .create(
@@ -586,7 +586,7 @@ describe("createProtocolAutomationPort", () => {
       logger,
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await expect(
       port.create(
@@ -659,7 +659,7 @@ describe("createProtocolAutomationPort", () => {
           },
         ],
       ]),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await port.create(
       {
@@ -733,7 +733,7 @@ describe("createProtocolAutomationPort", () => {
           },
         ],
       ]),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await port.create(
       {
@@ -786,7 +786,7 @@ describe("createProtocolAutomationPort", () => {
           },
         ],
       ]),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await port.create(
       {
@@ -820,7 +820,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await expect(
       port.update({
@@ -863,7 +863,7 @@ describe("createProtocolAutomationPort", () => {
     const port = createProtocolAutomationPort({
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext);
+    } as unknown as ZodyProtocolAgentServerContext);
 
     await expect(port.delete({ id: "stale-id" })).resolves.toBe(false);
     expect(requestClient).toHaveBeenCalledWith(
@@ -914,7 +914,7 @@ describe("createProtocolAutomationPort", () => {
         requestClient,
         // 归属会话故意不在 sessions map 中，模拟 V4/desktop 场景。
         sessions: new Map(),
-      } as unknown as ZCodeProtocolAgentServerContext,
+      } as unknown as ZodyProtocolAgentServerContext,
       () => ownSession as unknown as never,
     );
 

@@ -41,7 +41,7 @@ import {
   TID_V4_ATTACHMENT_UPLOAD_RETRY,
   TID_V4_STOP,
   testId,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import type {
   AttachmentRef,
@@ -418,7 +418,7 @@ export interface ConversationComposerProps {
   onRuntimeRestart?: (listener: () => void) => () => void;
   /** 承载 transport 暴露 runtime 存活态时优先用它，替代 onRuntimeRestart。 */
   onRuntimeLifecycle?: (listener: (state: "available" | "unavailable") => void) => () => void;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   /** 宿主 pane 与 workspace 遮罩共同裁决的真实可见性，仅用于 visible-only telemetry。 */
   telemetryVisible?: boolean;
   /** 点击发送时读取套餐身份；二次确认会继续复用同一份冻结 seed。 */

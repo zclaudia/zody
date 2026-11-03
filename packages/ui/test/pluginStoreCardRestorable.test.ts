@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeAvailablePluginSummary, ZCodePluginInfo } from "@zody/shared";
+import type { ZodyAvailablePluginSummary, ZodyPluginInfo } from "@zody/shared";
 import type { StorePluginItem } from "../src/settings/pluginStoreListing.js";
 import type { PluginStoreActions } from "../src/settings/PluginStoreCard.js";
 
@@ -20,7 +20,7 @@ vi.mock("@/components/ui/button.js", () => ({
 }));
 
 function restorableItem(overrides: Partial<StorePluginItem> = {}): StorePluginItem {
-  const summary: ZCodeAvailablePluginSummary = {
+  const summary: ZodyAvailablePluginSummary = {
     id: "skill-creator@zcode-plugins-official",
     name: "skill-creator",
     marketplace: "zcode-plugins-official",
@@ -54,7 +54,7 @@ function makeActions(overrides: Partial<PluginStoreActions> = {}): PluginStoreAc
 
 function installedItemWithRuntimeInfo(): StorePluginItem {
   const item = restorableItem({ installed: true, restorable: false });
-  const info: ZCodePluginInfo = {
+  const info: ZodyPluginInfo = {
     id: item.id,
     name: item.name,
     marketplace: item.marketplace,

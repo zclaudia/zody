@@ -3,7 +3,7 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { act, render } from "@testing-library/react";
-import type { GitRepositorySummary, ZCodeSessionRunningSubagent } from "@zody/shared";
+import type { GitRepositorySummary, ZodySessionRunningSubagent } from "@zody/shared";
 import type {
   BackgroundWorkSummary,
   GoalState,
@@ -271,8 +271,8 @@ function backgroundWork(overrides: Partial<BackgroundWorkSummary> = {}): Backgro
 }
 
 function runningSubagent(
-  overrides: Partial<ZCodeSessionRunningSubagent> = {},
-): ZCodeSessionRunningSubagent {
+  overrides: Partial<ZodySessionRunningSubagent> = {},
+): ZodySessionRunningSubagent {
   return {
     childSessionId: "child-session",
     subagentType: "Explore",

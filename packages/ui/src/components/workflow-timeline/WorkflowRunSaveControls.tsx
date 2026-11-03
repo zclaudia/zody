@@ -10,8 +10,8 @@ import { useMemo, useRef, useState, type ReactNode } from "react";
 import { CheckIcon, ArrowUpRightIcon, PlayIcon, SaveIcon } from "lucide-react";
 import {
   resolveWorkspaceKey,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeWorkflowsForRunCandidate,
+  type ZodySavedWorkflowEntry,
+  type ZodyWorkflowsForRunCandidate,
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Spinner } from "@/components/ui/spinner.js";
@@ -39,7 +39,7 @@ export interface WorkflowRunSaveSlotsHost {
   /** run 名：弹层用它预填说明，交给 ZCode 的那条消息用它指认「刚跑完的哪一个」。 */
   runName?: string;
   /** 转写里 SaveWorkflow 认领过这次 run 的候选（`buildWorkflowSaveCandidatesByRunId`）。 */
-  candidates?: readonly ZCodeWorkflowsForRunCandidate[];
+  candidates?: readonly ZodyWorkflowsForRunCandidate[];
   /**
    * 两道门（只读、灰度）都开着：缺省 false。关着时整个 trailing 缺席——写文件与起引擎都
    * 属于「Resume 被收走的地方一并收走」。芯片是事实，不受这道门影响。
@@ -68,7 +68,7 @@ export function useWorkflowRunSaveSlots(host: WorkflowRunSaveSlotsHost): Workflo
   const hub = useSavedWorkflowHub();
   const anchorRef = useRef<HTMLElement | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [launchEntry, setLaunchEntry] = useState<ZCodeSavedWorkflowEntry | null>(null);
+  const [launchEntry, setLaunchEntry] = useState<ZodySavedWorkflowEntry | null>(null);
   const [announcement, setAnnouncement] = useState<string | null>(null);
 
   const controller = useWorkflowRunSave({
@@ -313,7 +313,7 @@ function WorkflowRunSavedChip({
   label,
   onOpen,
 }: {
-  entry: ZCodeSavedWorkflowEntry;
+  entry: ZodySavedWorkflowEntry;
   hint?: string;
   label: string;
   /** 缺席即中枢不可达（手机远控壳）：芯片画成纯文字。 */

@@ -3,7 +3,7 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePermissionRequest } from "@zody/shared";
+import type { ZodyPermissionRequest } from "@zody/shared";
 import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { PermissionDialog } from "@/PermissionDialog.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
@@ -82,7 +82,7 @@ describe("PermissionDialog focus", () => {
     vi.unstubAllGlobals();
   });
 
-  const request: ZCodePermissionRequest = {
+  const request: ZodyPermissionRequest = {
     type: "permission_request",
     taskId: "task-focus",
     traceId: "trace-focus",

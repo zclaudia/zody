@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { buildTaskEntityKey } from "@/lib/taskQueryCache.js";
 import { taskNavigationTargetExists } from "@/lib/taskNavigationTarget.js";
 
-function createTask(taskId: string): ZCodeTaskMeta {
+function createTask(taskId: string): ZodyTaskMeta {
   return {
     taskId,
     traceId: `trace-${taskId}`,

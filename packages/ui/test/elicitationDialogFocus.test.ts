@@ -3,7 +3,7 @@
 import { act, cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeElicitationRequest } from "@zody/shared";
+import type { ZodyElicitationRequest } from "@zody/shared";
 import { ElicitationDialog } from "@/ElicitationDialog.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 
@@ -20,7 +20,7 @@ describe("ElicitationDialog custom answer focus", () => {
         window.setTimeout(() => callback(performance.now()), 0),
       );
       vi.stubGlobal("cancelAnimationFrame", (id: number) => window.clearTimeout(id));
-      const request: ZCodeElicitationRequest = {
+      const request: ZodyElicitationRequest = {
         type: "elicitation_request",
         taskId: "task-focus",
         traceId: "trace-focus",

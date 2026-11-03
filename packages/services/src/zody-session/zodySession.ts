@@ -1,55 +1,55 @@
 import { ServiceChannels } from "@zody/shared";
 import type {
   TraceId,
-  ZCodeAgentMcpServer,
-  ZCodeDeliveryKind,
-  ZCodeMessageWithParts,
+  ZodyAgentMcpServer,
+  ZodyDeliveryKind,
+  ZodyMessageWithParts,
   ModelSelection,
-  ZCodePermissionRequestParams,
-  ZCodeProviderRuntimeHeadersRequestParams,
-  ZCodeUserInputRequestParams,
-  ZCodeUserInputResponse,
-  ZCodeSessionInfo,
-  ZCodeSessionImportHistory,
-  ZCodeSessionEvent,
-  ZCodeSessionMode,
-  ZCodeSessionPersistence,
-  ZCodeSessionStateSnapshot,
-  ZCodeStateUpdatedNotification,
-  ZCodeWorkspacePresentation,
+  ZodyPermissionRequestParams,
+  ZodyProviderRuntimeHeadersRequestParams,
+  ZodyUserInputRequestParams,
+  ZodyUserInputResponse,
+  ZodySessionInfo,
+  ZodySessionImportHistory,
+  ZodySessionEvent,
+  ZodySessionMode,
+  ZodySessionPersistence,
+  ZodySessionStateSnapshot,
+  ZodyStateUpdatedNotification,
+  ZodyWorkspacePresentation,
 } from "@zody/shared";
 import { createServiceDescriptor } from "#src/descriptors.js";
 import type { ProviderRuntimeHeadersUiResponse } from "#src/zody-agent/zodyAgent.js";
 
-export interface ZCodeSessionWorkspaceTarget {
+export interface ZodySessionWorkspaceTarget {
   workspacePath: string;
   workspaceIdentity?: string;
   remoteSessionId?: string;
 }
 
-export type ZCodeSessionReadWorkspacePresentationParams = ZCodeSessionWorkspaceTarget;
+export type ZodySessionReadWorkspacePresentationParams = ZodySessionWorkspaceTarget;
 
-export interface ZCodeTaskTarget extends ZCodeSessionWorkspaceTarget {
+export interface ZodyTaskTarget extends ZodySessionWorkspaceTarget {
   sessionId: string;
 }
 
-export interface ZCodeSessionCreateParams extends ZCodeSessionWorkspaceTarget {
+export interface ZodySessionCreateParams extends ZodySessionWorkspaceTarget {
   /** 仅导入事务使用的预分配 ID；普通新会话继续由 Agent 分配。 */
   sessionId?: string;
   sessionTraceId?: TraceId;
   parentSessionId?: string;
-  mode?: ZCodeSessionMode;
+  mode?: ZodySessionMode;
   model?: ModelSelection;
-  persistence?: ZCodeSessionPersistence;
+  persistence?: ZodySessionPersistence;
   thoughtLevel?: string;
-  mcpServers?: ZCodeAgentMcpServer[];
-  importedHistory?: ZCodeSessionImportHistory;
+  mcpServers?: ZodyAgentMcpServer[];
+  importedHistory?: ZodySessionImportHistory;
 }
 
-export interface ZCodeSessionResumeParams extends ZCodeTaskTarget {
+export interface ZodySessionResumeParams extends ZodyTaskTarget {
   model?: ModelSelection;
   thoughtLevel?: string;
-  mcpServers?: ZCodeAgentMcpServer[];
+  mcpServers?: ZodyAgentMcpServer[];
   /**
    * 默认广播 resume 得到的历史快照，并让 shadow 订阅请求初始 snapshot。
    * 续聊发送前的 runtime 预恢复会关闭它，避免旧终态快照覆盖本地已开始的新输入运行态。
@@ -57,51 +57,51 @@ export interface ZCodeSessionResumeParams extends ZCodeTaskTarget {
   broadcastSnapshot?: boolean;
 }
 
-export interface ZCodeSessionListParams extends ZCodeSessionWorkspaceTarget {
+export interface ZodySessionListParams extends ZodySessionWorkspaceTarget {
   includeArchived?: boolean;
   limit?: number;
 }
 
-export interface ZCodeSessionReadParams extends ZCodeTaskTarget {
-  deliveryKind?: ZCodeDeliveryKind;
+export interface ZodySessionReadParams extends ZodyTaskTarget {
+  deliveryKind?: ZodyDeliveryKind;
   messageLimit?: number;
   afterSeq?: number;
 }
 
-export interface ZCodeSessionMessagesParams extends ZCodeTaskTarget {
+export interface ZodySessionMessagesParams extends ZodyTaskTarget {
   afterMessageId?: string;
   limit?: number;
 }
 
-export interface ZCodeSessionEventsParams extends ZCodeTaskTarget {
+export interface ZodySessionEventsParams extends ZodyTaskTarget {
   afterSeq?: number;
   limit?: number;
 }
 
-export interface ZCodeSessionSetModelParams extends ZCodeTaskTarget {
+export interface ZodySessionSetModelParams extends ZodyTaskTarget {
   model: ModelSelection;
   expectedRevision?: number;
   persistAsWorkspaceLastUsed?: boolean;
 }
 
-export interface ZCodeSessionSetThoughtLevelParams extends ZCodeTaskTarget {
+export interface ZodySessionSetThoughtLevelParams extends ZodyTaskTarget {
   thoughtLevel?: string;
   expectedRevision?: number;
   persistAsWorkspaceLastUsed?: boolean;
 }
 
-export interface ZCodeSessionSetModeParams extends ZCodeTaskTarget {
-  mode: ZCodeSessionMode;
+export interface ZodySessionSetModeParams extends ZodyTaskTarget {
+  mode: ZodySessionMode;
   expectedRevision?: number;
 }
 
-export interface ZCodeSessionRespondProviderRuntimeHeadersParams extends ZCodeTaskTarget {
+export interface ZodySessionRespondProviderRuntimeHeadersParams extends ZodyTaskTarget {
   requestId: string;
   response: ProviderRuntimeHeadersUiResponse;
 }
 
-export interface ZCodeSessionSubscribeParams extends ZCodeTaskTarget {
-  deliveryKind: ZCodeDeliveryKind;
+export interface ZodySessionSubscribeParams extends ZodyTaskTarget {
+  deliveryKind: ZodyDeliveryKind;
   afterSeq?: number;
   includeSnapshot?: boolean;
   eventCoalescing?: {
@@ -110,20 +110,20 @@ export interface ZCodeSessionSubscribeParams extends ZCodeTaskTarget {
   };
 }
 
-export type ZCodeSessionServiceEvent =
-  | { type: "session.event"; event: ZCodeSessionEvent }
-  | { type: "state.updated"; notification: ZCodeStateUpdatedNotification }
-  | { type: "permission.request"; request: ZCodePermissionRequestParams }
-  | { type: "userInput.request"; request: ZCodeUserInputRequestParams }
+export type ZodySessionServiceEvent =
+  | { type: "session.event"; event: ZodySessionEvent }
+  | { type: "state.updated"; notification: ZodyStateUpdatedNotification }
+  | { type: "permission.request"; request: ZodyPermissionRequestParams }
+  | { type: "userInput.request"; request: ZodyUserInputRequestParams }
   | {
       type: "userInput.response";
       requestId: string;
-      response: ZCodeUserInputResponse;
+      response: ZodyUserInputResponse;
     }
-  | { type: "providerRuntimeHeaders.request"; request: ZCodeProviderRuntimeHeadersRequestParams }
-  | { type: "snapshot"; snapshot: ZCodeSessionStateSnapshot };
+  | { type: "providerRuntimeHeaders.request"; request: ZodyProviderRuntimeHeadersRequestParams }
+  | { type: "snapshot"; snapshot: ZodySessionStateSnapshot };
 
-export interface ZCodeSessionInitializeResult {
+export interface ZodySessionInitializeResult {
   available: boolean;
   workspaceKey: string;
   protocolName?: string;
@@ -133,41 +133,41 @@ export interface ZCodeSessionInitializeResult {
   reasonCode?: "provider_not_ready";
 }
 
-export interface ZCodeSessionWorkspaceRuntimeIdentity {
+export interface ZodySessionWorkspaceRuntimeIdentity {
   generation: number;
   identity: string;
   processId?: number;
   workspaceKey: string;
 }
 
-export interface IZCodeSessionService {
-  initializeWorkspace(params: ZCodeSessionWorkspaceTarget): Promise<ZCodeSessionInitializeResult>;
+export interface IZodySessionService {
+  initializeWorkspace(params: ZodySessionWorkspaceTarget): Promise<ZodySessionInitializeResult>;
   getWorkspaceRuntimeIdentity(
-    params: ZCodeSessionWorkspaceTarget,
-  ): Promise<ZCodeSessionWorkspaceRuntimeIdentity>;
+    params: ZodySessionWorkspaceTarget,
+  ): Promise<ZodySessionWorkspaceRuntimeIdentity>;
   readWorkspacePresentation(
-    params: ZCodeSessionReadWorkspacePresentationParams,
-  ): Promise<ZCodeWorkspacePresentation>;
-  createSession(params: ZCodeSessionCreateParams): Promise<ZCodeSessionStateSnapshot>;
-  resumeSession(params: ZCodeSessionResumeParams): Promise<ZCodeSessionStateSnapshot>;
-  listSessions(params: ZCodeSessionListParams): Promise<ZCodeSessionInfo[]>;
-  readSession(params: ZCodeSessionReadParams): Promise<ZCodeSessionStateSnapshot>;
-  readSessionMessages(params: ZCodeSessionMessagesParams): Promise<ZCodeMessageWithParts[]>;
-  readSessionEvents(params: ZCodeSessionEventsParams): Promise<ZCodeSessionEvent[]>;
-  promoteDeferredDraftSession(params: ZCodeTaskTarget): Promise<void>;
-  closeSession(params: ZCodeTaskTarget): Promise<void>;
-  closeDeferredDraftSession(params: ZCodeTaskTarget): Promise<boolean>;
-  setModel(params: ZCodeSessionSetModelParams): Promise<ZCodeSessionStateSnapshot>;
-  setThoughtLevel(params: ZCodeSessionSetThoughtLevelParams): Promise<ZCodeSessionStateSnapshot>;
-  setMode(params: ZCodeSessionSetModeParams): Promise<ZCodeSessionStateSnapshot>;
+    params: ZodySessionReadWorkspacePresentationParams,
+  ): Promise<ZodyWorkspacePresentation>;
+  createSession(params: ZodySessionCreateParams): Promise<ZodySessionStateSnapshot>;
+  resumeSession(params: ZodySessionResumeParams): Promise<ZodySessionStateSnapshot>;
+  listSessions(params: ZodySessionListParams): Promise<ZodySessionInfo[]>;
+  readSession(params: ZodySessionReadParams): Promise<ZodySessionStateSnapshot>;
+  readSessionMessages(params: ZodySessionMessagesParams): Promise<ZodyMessageWithParts[]>;
+  readSessionEvents(params: ZodySessionEventsParams): Promise<ZodySessionEvent[]>;
+  promoteDeferredDraftSession(params: ZodyTaskTarget): Promise<void>;
+  closeSession(params: ZodyTaskTarget): Promise<void>;
+  closeDeferredDraftSession(params: ZodyTaskTarget): Promise<boolean>;
+  setModel(params: ZodySessionSetModelParams): Promise<ZodySessionStateSnapshot>;
+  setThoughtLevel(params: ZodySessionSetThoughtLevelParams): Promise<ZodySessionStateSnapshot>;
+  setMode(params: ZodySessionSetModeParams): Promise<ZodySessionStateSnapshot>;
   respondProviderRuntimeHeaders(
-    params: ZCodeSessionRespondProviderRuntimeHeadersParams,
+    params: ZodySessionRespondProviderRuntimeHeadersParams,
   ): Promise<void>;
   // M5 删波次 2：onDynamicSessionEvent（旧 session/subscribe 词表的 renderer 订阅面）
   // 已删除——v4 UI 走 agentService 的 conversation/sessions-index 帧通道，
   // 该方法在 renderer 侧已无任何调用者（grep packages/ui packages/desktop 为零）。
 }
 
-export const IZCodeSessionService = createServiceDescriptor<IZCodeSessionService>(
+export const IZodySessionService = createServiceDescriptor<IZodySessionService>(
   ServiceChannels.ZCodeSession,
 );

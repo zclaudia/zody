@@ -5,20 +5,20 @@ import {
   isRemoteWorkspaceIdentity,
   zcodeProviderTestModelConnectivityParamsSchema,
   zcodeWorkspaceReadPresentationParamsSchema,
-  type ZCodeWorkspaceRef,
+  type ZodyWorkspaceRef,
 } from "@zody/shared";
 import type { ZCodeApp, ZCodeAppOptions } from "../app/types.js";
 import { listProtocolSlashCommands } from "./slash-commands.js";
 import {
   parseParams,
-  type ZCodeProtocolAgentServerContext,
-  type ZCodeProtocolSessionRecord,
+  type ZodyProtocolAgentServerContext,
+  type ZodyProtocolSessionRecord,
 } from "./server-types.js";
 import { runSessionModelConfigMutation } from "../zody-protocol-v4/model-config-mutation.js";
 import { createProviderRuntimeHeadersPort } from "./provider-runtime-headers.js";
 
 export async function readWorkspacePresentation(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
   const params = parseParams(zcodeWorkspaceReadPresentationParamsSchema, rawParams);
@@ -36,7 +36,7 @@ export async function readWorkspacePresentation(
 }
 
 export async function testProviderModelConnectivity(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ) {
@@ -68,8 +68,8 @@ export async function testProviderModelConnectivity(
 }
 
 export async function createWorkspaceZCodeApp(
-  context: ZCodeProtocolAgentServerContext,
-  workspace: ZCodeWorkspaceRef,
+  context: ZodyProtocolAgentServerContext,
+  workspace: ZodyWorkspaceRef,
   options: Omit<ZCodeAppOptions, "providerRegistry">,
 ): Promise<ZCodeApp> {
   // 只接受本进程 startup 帧固定下来的 Host/runtime 身份；调用方 options 的同名字段一律丢弃。
@@ -118,16 +118,16 @@ export async function createWorkspaceZCodeApp(
 }
 
 export function hasSessionModelProvider(
-  _context: ZCodeProtocolAgentServerContext,
-  record: Pick<ZCodeProtocolSessionRecord, "app" | "workspace">,
+  _context: ZodyProtocolAgentServerContext,
+  record: Pick<ZodyProtocolSessionRecord, "app" | "workspace">,
   providerId: string,
 ): boolean {
   return record.app.listModels().some((model) => model.ref.providerId === providerId);
 }
 
 async function ensureSessionModelAvailableUnlocked(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ): Promise<boolean> {
   // 存量模型失效时不能静默改成 Registry 第一项覆盖用户选择；失效选择保持未绑定，
   // 由恢复/Composer 的选择校验和首发门禁处理；这里不能再写入另一份默认模型事实。
@@ -138,8 +138,8 @@ async function ensureSessionModelAvailableUnlocked(
 }
 
 export async function ensureSessionModelAvailable(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ): Promise<boolean> {
   return runSessionModelConfigMutation(record.app, () =>
     ensureSessionModelAvailableUnlocked(context, record),
@@ -147,8 +147,8 @@ export async function ensureSessionModelAvailable(
 }
 
 export function resolveSessionModelContextWindow(
-  _context: ZCodeProtocolAgentServerContext,
-  record: Pick<ZCodeProtocolSessionRecord, "app" | "workspace" | "restoredModelSelection">,
+  _context: ZodyProtocolAgentServerContext,
+  record: Pick<ZodyProtocolSessionRecord, "app" | "workspace" | "restoredModelSelection">,
 ): number | undefined {
   // 缺档位会让恢复选择暂不绑定 Runtime，但模型身份仍可只读查询容量，不能伪造 20 万。
   const selection = record.app.runtime.getSessionModelSelection() ?? record.restoredModelSelection;

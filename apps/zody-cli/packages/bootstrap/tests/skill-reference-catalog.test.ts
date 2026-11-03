@@ -12,8 +12,8 @@ import {
 import type { SkillLoadOutcome } from "@zody/contracts";
 import { getSkillReferenceCatalog } from "../src/zody-protocol/skill-reference-catalog.js";
 import type {
-  ZCodeProtocolAgentServerContext,
-  ZCodeProtocolSessionRecord,
+  ZodyProtocolAgentServerContext,
+  ZodyProtocolSessionRecord,
 } from "../src/zody-protocol/server-types.js";
 
 const SESSION_CATALOG: SkillLoadOutcome = {
@@ -34,16 +34,16 @@ const SESSION_CATALOG: SkillLoadOutcome = {
   totalDiscovered: 1,
 };
 
-function contextWithSession(sessionId: string): ZCodeProtocolAgentServerContext {
+function contextWithSession(sessionId: string): ZodyProtocolAgentServerContext {
   const record = {
     app: {
       getSkillCatalog: async () => SESSION_CATALOG,
     },
-  } as unknown as ZCodeProtocolSessionRecord;
+  } as unknown as ZodyProtocolSessionRecord;
   return {
     deps: { env: {} },
     sessions: new Map([[sessionId, record]]),
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
 }
 
 describe("skills/referenceCatalog protocol", () => {
@@ -121,7 +121,7 @@ describe("skills/referenceCatalog protocol", () => {
             },
           },
           sessions: new Map(),
-        } as unknown as ZCodeProtocolAgentServerContext,
+        } as unknown as ZodyProtocolAgentServerContext,
         { workspace: { workspacePath: root, workspaceKey: root } },
       );
 

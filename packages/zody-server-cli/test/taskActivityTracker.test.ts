@@ -1,8 +1,8 @@
 import { Emitter } from "@zody/rpc";
 import type {
-  IZCodeAgentService,
+  IZodyAgentService,
   ZodyAgentRuntimeLifecycleEvent,
-  ZCodeAgentWorkspaceTarget,
+  ZodyAgentWorkspaceTarget,
 } from "@zody/services";
 import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it } from "vitest";
@@ -28,11 +28,11 @@ describe("Core-local TaskActivityTracker", () => {
   it("counts authoritative turn facts for all workspace clients and deduplicates by workspaceKey + sessionId", () => {
     const lifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
     const telemetryByWorkspace = new Map<string, Emitter<ConversationTelemetryFact>>();
-    const workspaceKey = (target: ZCodeAgentWorkspaceTarget): string =>
+    const workspaceKey = (target: ZodyAgentWorkspaceTarget): string =>
       target.workspaceIdentity?.trim() || target.workspacePath;
     const agentService = {
       onAgentRuntimeLifecycle: lifecycle.event,
-      onDynamicConversationTelemetryFact(target: ZCodeAgentWorkspaceTarget) {
+      onDynamicConversationTelemetryFact(target: ZodyAgentWorkspaceTarget) {
         const key = workspaceKey(target);
         let emitter = telemetryByWorkspace.get(key);
         if (!emitter) {
@@ -41,7 +41,7 @@ describe("Core-local TaskActivityTracker", () => {
         }
         return emitter.event;
       },
-    } as Pick<IZCodeAgentService, "onAgentRuntimeLifecycle" | "onDynamicConversationTelemetryFact">;
+    } as Pick<IZodyAgentService, "onAgentRuntimeLifecycle" | "onDynamicConversationTelemetryFact">;
     const tracker = createTaskActivityTracker(agentService);
     const targetA = { workspacePath: "/same/path", workspaceIdentity: "ssh://host-a/repo" };
     const targetB = { workspacePath: "/same/path", workspaceIdentity: "ssh://host-b/repo" };
@@ -82,7 +82,7 @@ describe("Core-local TaskActivityTracker", () => {
     const agentService = {
       onAgentRuntimeLifecycle: lifecycle.event,
       onDynamicConversationTelemetryFact: () => telemetry.event,
-    } as Pick<IZCodeAgentService, "onAgentRuntimeLifecycle" | "onDynamicConversationTelemetryFact">;
+    } as Pick<IZodyAgentService, "onAgentRuntimeLifecycle" | "onDynamicConversationTelemetryFact">;
     const tracker = createTaskActivityTracker(agentService);
     const counts: number[] = [];
     const subscription = tracker.onDidChangeRunningTaskCount((count) => counts.push(count));

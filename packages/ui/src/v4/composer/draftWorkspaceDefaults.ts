@@ -1,5 +1,5 @@
 // 工具条只展示 Composer 的下一次提交选择；Session 不是存活编辑器的补值来源。
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 import type { ModelSelectionView } from "@zody/services";
 import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
 import { resolveModelThoughtOption } from "@/lib/modelThoughtOption.js";
@@ -24,7 +24,7 @@ export function resolveDraftModelThoughtOption(
   providerId: string,
   modelId: string,
   modelSelectionView: ModelSelectionView | null,
-): ZCodeConfigOption | null {
+): ZodyConfigOption | null {
   if (!modelSelectionView) return null;
   return resolveModelThoughtOption({
     modelSelectionView,

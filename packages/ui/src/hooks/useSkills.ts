@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ZCodeSkillReferenceCatalogEntry } from "@zody/shared";
+import type { ZodySkillReferenceCatalogEntry } from "@zody/shared";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { logger } from "@/logger.js";
 
 export interface ConversationSkillCatalogState {
-  skills: ZCodeSkillReferenceCatalogEntry[];
+  skills: ZodySkillReferenceCatalogEntry[];
   authority: "session" | "workspace" | null;
   loading: boolean;
   error: string | null;

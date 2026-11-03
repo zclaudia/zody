@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 import { projectSessionConfigToTaskConfigOptions } from "@/v4/composer/sessionConfigTaskCache.js";
 
-const OPTIONS: ZCodeConfigOption[] = [
+const OPTIONS: ZodyConfigOption[] = [
   {
     id: "model",
     name: "Model",

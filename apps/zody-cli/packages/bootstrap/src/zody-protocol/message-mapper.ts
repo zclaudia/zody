@@ -1,8 +1,8 @@
-import type { ZCodeMessagePart, ZCodeMessageWithParts, ZCodeToolState } from "@zody/shared";
+import type { ZodyMessagePart, ZodyMessageWithParts, ZodyToolState } from "@zody/shared";
 import type { MessagePart, MessageWithParts, ToolState } from "@zody/contracts";
 import { shouldHideInvalidToolCallFromProduct } from "../tool-call-product-visibility.js";
 
-export function mapMessageWithParts(message: MessageWithParts): ZCodeMessageWithParts {
+export function mapMessageWithParts(message: MessageWithParts): ZodyMessageWithParts {
   return {
     info:
       message.info.role === "user"
@@ -60,7 +60,7 @@ export function mapMessageWithParts(message: MessageWithParts): ZCodeMessageWith
   };
 }
 
-function mapMessagePart(part: MessagePart): ZCodeMessagePart {
+function mapMessagePart(part: MessagePart): ZodyMessagePart {
   const base = {
     messageId: String(part.messageID),
     partId: String(part.id),
@@ -215,7 +215,7 @@ function mapToolPartMetadata(
   return Object.keys(visibleMetadata).length > 0 ? visibleMetadata : undefined;
 }
 
-function mapToolState(state: ToolState): ZCodeToolState {
+function mapToolState(state: ToolState): ZodyToolState {
   switch (state.status) {
     case "pending":
       return { input: state.input, raw: state.raw, status: "pending" };

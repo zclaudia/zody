@@ -1,11 +1,11 @@
 import type {
-  ZCodeMcpReadResourceResult,
-  ZCodeMcpUiCallToolResult,
-  ZCodeMcpUiCancelCallResult,
-  ZCodeMcpUiListResourceTemplatesResult,
-  ZCodeMcpUiListResourcesResult,
-  ZCodeMcpUiReadResourceResult,
-  ZCodePluginsListUiSurfacesResult,
+  ZodyMcpReadResourceResult,
+  ZodyMcpUiCallToolResult,
+  ZodyMcpUiCancelCallResult,
+  ZodyMcpUiListResourceTemplatesResult,
+  ZodyMcpUiListResourcesResult,
+  ZodyMcpUiReadResourceResult,
+  ZodyPluginsListUiSurfacesResult,
 } from "@zody/shared";
 import type {
   McpAppResourceMeta,
@@ -46,33 +46,33 @@ export interface PluginUiBridgeServiceDependencies {
     serverName: string;
     uri: string;
     instance: import("@zody/shared/mcp-apps").McpAppInstance;
-  }) => Promise<ZCodeMcpReadResourceResult>;
+  }) => Promise<ZodyMcpReadResourceResult>;
   callMcpToolForUi?: (
     params: PluginUiCallToolParams,
     options?: { signal?: AbortSignal },
-  ) => Promise<ZCodeMcpUiCallToolResult>;
+  ) => Promise<ZodyMcpUiCallToolResult>;
   /** 取消带 callId 的进行中调用。 */
   cancelMcpToolCallForUi?: (
     params: PluginUiCancelToolCallParams,
-  ) => Promise<ZCodeMcpUiCancelCallResult>;
+  ) => Promise<ZodyMcpUiCancelCallResult>;
   /** 页面发起的 `resources/read`，agent 侧 `mcp/uiReadResource` 做归属与 mimeType 校验。 */
   readMcpResourceForUi?: (
     params: PluginUiReadResourceParams,
-  ) => Promise<ZCodeMcpUiReadResourceResult>;
+  ) => Promise<ZodyMcpUiReadResourceResult>;
   /** 资源列表 / 模板 / 订阅代理；缺省（web / 远程）时对应方法抛 unavailable。 */
   listMcpResourcesForUi?: (
     params: PluginUiListResourcesParams,
-  ) => Promise<ZCodeMcpUiListResourcesResult>;
+  ) => Promise<ZodyMcpUiListResourcesResult>;
   listMcpResourceTemplatesForUi?: (
     params: PluginUiListResourcesParams,
-  ) => Promise<ZCodeMcpUiListResourceTemplatesResult>;
+  ) => Promise<ZodyMcpUiListResourceTemplatesResult>;
   subscribeMcpResourceForUi?: (params: PluginUiResourceSubscriptionParams) => Promise<unknown>;
   unsubscribeMcpResourceForUi?: (params: PluginUiResourceSubscriptionParams) => Promise<unknown>;
   registerSandbox?: (input: PluginSandboxRegisterInput) => Promise<PluginSandboxHandle>;
   /** 工作区级 `plugins/listUiSurfaces`。 */
   listPluginUiSurfaces?: (
     params: PluginUiWorkspaceTarget,
-  ) => Promise<ZCodePluginsListUiSurfacesResult>;
+  ) => Promise<ZodyPluginsListUiSurfacesResult>;
   /** 由 display.ui 提供的 CSP / prefersBorder 在 prepare 时随 params 传入；这里只做透传。 */
 }
 
@@ -126,7 +126,7 @@ export function createPluginUiBridgeService(
       scopeId: params.scopeId,
       resourceUri: params.resourceUri,
     });
-    let result: ZCodeMcpReadResourceResult;
+    let result: ZodyMcpReadResourceResult;
     try {
       result = await dependencies.readMcpResource({ ...bound, uri: params.resourceUri });
     } catch (error) {
@@ -287,7 +287,7 @@ function unavailable(feature: string): PluginUiBridgeError {
  * 8 MiB 总量守卫：结果经 MessagePort 结构化克隆进沙箱，
  * agent 侧已按同一常量限流，这里再算一次解码后大小（text 按 UTF-8、blob 按 base64 解码长度）防止旧 agent 漏检。
  */
-export function assertUiReadResourceSize(result: ZCodeMcpUiReadResourceResult, uri: string): void {
+export function assertUiReadResourceSize(result: ZodyMcpUiReadResourceResult, uri: string): void {
   let total = 0;
   for (const content of result.contents) {
     if (typeof content.text === "string") total += Buffer.byteLength(content.text, "utf8");
@@ -309,7 +309,7 @@ function decodedBase64Length(value: string): number {
 }
 
 /** 兼容旧调用：只要 HTML 文本。 */
-export function pickHtmlContent(result: ZCodeMcpReadResourceResult, uri: string): string {
+export function pickHtmlContent(result: ZodyMcpReadResourceResult, uri: string): string {
   return pickHtmlResource(result, uri).html;
 }
 
@@ -355,7 +355,7 @@ async function readListLevelResourceMeta(
  * blob、超限一律拒绝，不降级、不截断；没有任何 HTML 项时按第一项的 mimeType 报错。
  */
 export function pickHtmlResource(
-  result: ZCodeMcpReadResourceResult,
+  result: ZodyMcpReadResourceResult,
   uri: string,
 ): { html: string; meta: McpAppResourceMeta | null } {
   if (result.contents.length === 0) {

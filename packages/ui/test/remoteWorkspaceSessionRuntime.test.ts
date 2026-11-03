@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import {
   DEFAULT_TASK_RUNTIME_STATE,
   getDefaultWorkspaceState,
 } from "@/store/zodySessionStore.js";
 import { markRemoteWorkspaceRunningTasksFailed } from "@/lib/remoteWorkspaceSessionRuntime.js";
 
-function createTask(taskId: string, status: ZCodeTaskMeta["status"]): ZCodeTaskMeta {
+function createTask(taskId: string, status: ZodyTaskMeta["status"]): ZodyTaskMeta {
   return {
     taskId,
     traceId: `trace-${taskId}`,

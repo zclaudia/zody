@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import zh from "@/i18n/locales/zh-CN.js";
 import { WorkspaceLastActivity } from "@/WorkspaceHeaderSections/WorkspaceLastActivity.js";
 vi.mock("@/i18n/IntlProvider.js", () => ({
@@ -19,7 +19,7 @@ describe("current task last activity", () => {
     vi.setSystemTime(1_000_000);
     expect(
       renderToStaticMarkup(
-        createElement(WorkspaceLastActivity, { task: { updatedAt: 880_000 } as ZCodeTaskMeta }),
+        createElement(WorkspaceLastActivity, { task: { updatedAt: 880_000 } as ZodyTaskMeta }),
       ),
     ).toContain("最近活动 2 分钟前");
   });
@@ -29,7 +29,7 @@ describe("current task last activity", () => {
     const task = {
       updatedAt: 1,
       __zcodeSessionActivity: { lastActivityAt: 999_000 },
-    } as unknown as ZCodeTaskMeta;
+    } as unknown as ZodyTaskMeta;
     expect(renderToStaticMarkup(createElement(WorkspaceLastActivity, { task }))).toContain(
       "最近活动 刚刚",
     );

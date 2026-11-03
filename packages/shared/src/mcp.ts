@@ -105,7 +105,7 @@ export interface McpConfig {
   opencodemcp: CliMcpConfig;
 }
 
-export interface ZCodeMcpServer {
+export interface ZodyMcpServer {
   id: string;
   name: string;
   config: McpServerConfig;
@@ -158,7 +158,7 @@ export interface McpTestResult {
   response_time?: number;
 }
 
-export type ZCodeAgentMcpServer =
+export type ZodyAgentMcpServer =
   | {
       name: string;
       command: string;
@@ -255,7 +255,7 @@ export function isZCodeCuaMcpPackageArg(value: string): boolean {
 export function convertToZCodeAgentMcpServer(
   name: string,
   config: McpServerConfig,
-): ZCodeAgentMcpServer | null {
+): ZodyAgentMcpServer | null {
   let inferredType = config.type;
   if (!inferredType) {
     if (config.command) inferredType = "stdio";

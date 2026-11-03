@@ -1,4 +1,4 @@
-import { resolveWorkspaceKey, type ZCodeComputerUseOperationEvent } from "@zody/shared";
+import { resolveWorkspaceKey, type ZodyComputerUseOperationEvent } from "@zody/shared";
 import type { PipSessionEvent } from "@zody/zody-cua/pip-session";
 
 export interface CuaOperationWorkspaceTarget {
@@ -19,7 +19,7 @@ export interface CuaOperationStateReporter {
 }
 
 export interface CuaOperationTurnTracker {
-  accept(workspace: CuaOperationWorkspaceTarget, event: ZCodeComputerUseOperationEvent): void;
+  accept(workspace: CuaOperationWorkspaceTarget, event: ZodyComputerUseOperationEvent): void;
   /** 当前是否存在仍在执行 Computer Use 工具的 turn。 */
   hasActiveTurn(): boolean;
   clearWorkspaceKey(workspaceKey: string): void;
@@ -167,7 +167,7 @@ export function createCuaOperationTurnTracker(options: {
 
   function accept(
     workspace: CuaOperationWorkspaceTarget,
-    event: ZCodeComputerUseOperationEvent,
+    event: ZodyComputerUseOperationEvent,
   ): void {
     const workspaceKey = resolveWorkspaceKey(workspace);
     const sessionKey = sessionKeyFor(workspaceKey, event.sessionId);

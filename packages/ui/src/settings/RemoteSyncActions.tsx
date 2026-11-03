@@ -5,7 +5,7 @@ import type {
   IMcpSyncService,
   IPluginSyncService,
   ISkillSyncService,
-  IZCodeAgentService,
+  IZodyAgentService,
 } from "@zody/services";
 import { Button } from "@/components/ui/button.js";
 import {
@@ -268,8 +268,8 @@ export function RemoteSyncDialogs({
   remoteMcpSyncService?: IMcpSyncService | null;
   localPluginSyncService?: IPluginSyncService | null;
   remotePluginSyncService?: IPluginSyncService | null;
-  localZCodeAgentService?: IZCodeAgentService | null;
-  remoteZCodeAgentService?: IZCodeAgentService | null;
+  localZCodeAgentService?: IZodyAgentService | null;
+  remoteZCodeAgentService?: IZodyAgentService | null;
   remoteTarget?: RemoteTarget | null;
   skillWorkspacePath: string;
   mcpWorkspacePath: string;

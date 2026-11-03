@@ -1,21 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveZCodeTaskStatusFromSessionSnapshot,
-  type ZCodeSessionStateSnapshot,
+  type ZodySessionStateSnapshot,
 } from "../src/index.js";
 
 type SnapshotOptions = {
-  sessionStatus?: ZCodeSessionStateSnapshot["session"]["status"];
+  sessionStatus?: ZodySessionStateSnapshot["session"]["status"];
   assistantCompletedAt?: number;
   assistantFinish?: string;
-  activeTurnKind?: ZCodeSessionStateSnapshot["runtime"]["activeTurnKind"];
+  activeTurnKind?: ZodySessionStateSnapshot["runtime"]["activeTurnKind"];
   activeTurnId?: string;
   currentTurnId?: string;
-  lastError?: ZCodeSessionStateSnapshot["projection"]["lastError"];
+  lastError?: ZodySessionStateSnapshot["projection"]["lastError"];
 };
 
-function snapshot(options: SnapshotOptions = {}): ZCodeSessionStateSnapshot {
-  const messages: ZCodeSessionStateSnapshot["messages"] = [
+function snapshot(options: SnapshotOptions = {}): ZodySessionStateSnapshot {
+  const messages: ZodySessionStateSnapshot["messages"] = [
     {
       info: {
         messageId: "msg_user",
@@ -24,7 +24,7 @@ function snapshot(options: SnapshotOptions = {}): ZCodeSessionStateSnapshot {
       },
       parts: [{ partId: "part_user", type: "text", text: "continue" }],
     },
-  ] as ZCodeSessionStateSnapshot["messages"];
+  ] as ZodySessionStateSnapshot["messages"];
   if (typeof options.assistantCompletedAt === "number" || options.assistantFinish) {
     messages.push({
       info: {
@@ -41,7 +41,7 @@ function snapshot(options: SnapshotOptions = {}): ZCodeSessionStateSnapshot {
         finish: options.assistantFinish,
       },
       parts: [{ partId: "part_assistant", type: "text", text: "done" }],
-    } as ZCodeSessionStateSnapshot["messages"][number]);
+    } as ZodySessionStateSnapshot["messages"][number]);
   }
 
   return {
@@ -60,7 +60,7 @@ function snapshot(options: SnapshotOptions = {}): ZCodeSessionStateSnapshot {
       activeTurnKind: options.activeTurnKind,
     },
     messages,
-  } as unknown as ZCodeSessionStateSnapshot;
+  } as unknown as ZodySessionStateSnapshot;
 }
 
 describe("deriveZCodeTaskStatusFromSessionSnapshot", () => {

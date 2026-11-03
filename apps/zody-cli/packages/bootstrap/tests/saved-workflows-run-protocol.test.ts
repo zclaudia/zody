@@ -16,7 +16,7 @@ import {
   findSavedWorkflowForRunOp,
   saveSavedWorkflowFromRunOp,
 } from "../src/zody-protocol/saved-workflows-run.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 const SCRIPT = [
   'const reviewer = agent("检查员");',
@@ -46,7 +46,7 @@ function workspace() {
 }
 
 /** 只实现 `getRun`：两个方法从 journal 读的就只有这一行。 */
-function contextWithRuns(runs: readonly FakeRun[]): ZCodeProtocolAgentServerContext {
+function contextWithRuns(runs: readonly FakeRun[]): ZodyProtocolAgentServerContext {
   const journal = {
     getRun: (runId: string) => {
       const run = runs.find((candidate) => candidate.runId === runId);
@@ -58,7 +58,7 @@ function contextWithRuns(runs: readonly FakeRun[]): ZCodeProtocolAgentServerCont
   return {
     deps: { env: {}, sessionStore: { workflowJournalStore: () => journal } },
     sessions: new Map(),
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
 }
 
 function projectDir() {

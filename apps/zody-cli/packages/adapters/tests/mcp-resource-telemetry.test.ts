@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import type { ZCodeMcpResourceSample } from "@zody/shared";
+import type { ZodyMcpResourceSample } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createMcpTelemetryTracker } from "../src/mcp/telemetry.js";
 import type { ProcessProbe } from "../src/device/process-probe.js";
@@ -201,7 +201,7 @@ describe("MCP 五分钟资源采样", () => {
       ],
       { stdio: ["ignore", "ignore", "ignore", "ipc"] },
     );
-    const batches: ZCodeMcpResourceSample[][] = [];
+    const batches: ZodyMcpResourceSample[][] = [];
     const tracker = createMcpTelemetryTracker({
       idSalt: "runtime-smoke",
       onEvent: vi.fn(),

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { ZCodeTaskGoal, ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskGoal, ZodyTaskMeta } from "@zody/shared";
 import {
   initializeBackgroundTaskInTaskCaches,
   insertTaskIntoTaskCaches,
@@ -25,7 +25,7 @@ import {
 const WORKSPACE_PATH = "/repo/goal-clear-cache";
 const TASK_ID = "task-goal-clear-cache";
 
-function createGoal(): ZCodeTaskGoal {
+function createGoal(): ZodyTaskGoal {
   return {
     objective: "清理残留目标面板",
     sessionID: "session-goal-clear-cache",
@@ -42,7 +42,7 @@ function createGoal(): ZCodeTaskGoal {
   };
 }
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",

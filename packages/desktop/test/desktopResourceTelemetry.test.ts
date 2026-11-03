@@ -1293,7 +1293,7 @@ it.each(["linux", "win32"] as const)(
       platform: "darwin",
     });
     sendCustomMock.mockClear();
-    const emitter = new Emitter<import("@zody/shared").ZCodeToolExecResource>();
+    const emitter = new Emitter<import("@zody/shared").ZodyToolExecResource>();
     const registration = registerHostToolExecResourceTelemetry({
       agentService: { onDynamicToolExecResource: () => emitter.event },
       runtimeSurface: "remote",
@@ -1359,7 +1359,7 @@ it("PRT-032 多个 Host 转发同一完成事实只上报一次，同指标不�
     platform: "darwin",
   });
   sendCustomMock.mockClear();
-  const emitter = new Emitter<import("@zody/shared").ZCodeToolExecResource>();
+  const emitter = new Emitter<import("@zody/shared").ZodyToolExecResource>();
   const registrations = Array.from({ length: 2 }, () =>
     registerHostToolExecResourceTelemetry({
       agentService: { onDynamicToolExecResource: () => emitter.event },

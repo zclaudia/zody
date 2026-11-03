@@ -1,6 +1,6 @@
 import { ChevronRightIcon, Save } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
-import type { ZCodePermissionRequest } from "@zody/shared";
+import type { ZodyPermissionRequest } from "@zody/shared";
 import { CodeBlock } from "@/components/ai-elements/code-block.js";
 import {
   Collapsible,
@@ -114,7 +114,7 @@ function WorkflowArgsTable({ args }: { args: readonly WorkflowArgDeclaration[] }
  * 刻意**不**接 Refine：Refine 的语义是「拒绝这次运行并告诉模型怎么改工作流」，
  * 而保存是一次写盘，改法是模型换一组元数据重新调用，不需要第三个选项。
  */
-export function SaveWorkflowPermissionBlock({ request }: { request: ZCodePermissionRequest }) {
+export function SaveWorkflowPermissionBlock({ request }: { request: ZodyPermissionRequest }) {
   const { intl } = useZCodeIntl();
 
   const input = readSaveWorkflowInput(request.raw);

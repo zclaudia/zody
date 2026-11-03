@@ -1,14 +1,14 @@
 import { resolveWorkspaceKey, ZCODE_AGENT_PROVIDER } from "@zody/shared";
 import type { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
-import type { IZCodeAgentService, ZCodeAgentWorkspaceTarget } from "#src/zody-agent/zodyAgent.js";
+import type { IZodyAgentService, ZodyAgentWorkspaceTarget } from "#src/zody-agent/zodyAgent.js";
 
 const IDENTITY_QUERY_BATCH_SIZE = 64;
 
 /** 旧版本曾把冷恢复 child 写入主列表；只清理权威身份确认的派生索引，不删除 Agent 转录。 */
 export async function repairSubagentTaskIndex(params: {
-  target: ZCodeAgentWorkspaceTarget;
+  target: ZodyAgentWorkspaceTarget;
   visibleSessionIds: ReadonlySet<string>;
-  agentService: Pick<IZCodeAgentService, "listSessions">;
+  agentService: Pick<IZodyAgentService, "listSessions">;
   taskIndexRepo: Pick<TaskIndexRepo, "listTaskMetas" | "updateTaskState">;
   isCurrent: () => boolean;
   onRemoved: () => void;

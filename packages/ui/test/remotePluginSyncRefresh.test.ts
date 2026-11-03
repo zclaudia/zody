@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CommandsListResult, ZCodeCommand } from "@zody/shared";
+import type { CommandsListResult, ZodyCommand } from "@zody/shared";
 import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
 import { refreshWorkspacePluginCapabilitiesAfterRemoteSync } from "../src/lib/remotePluginSyncRefresh.js";
 import { useCommandsStore } from "../src/store/commandsStore.js";
@@ -7,8 +7,8 @@ import { useSkillStore } from "../src/store/skillStore.js";
 import { useZCodeSessionStore } from "../src/store/zodySessionStore.js";
 
 function makePluginCommand(
-  overrides: Partial<Extract<ZCodeCommand, { source: "plugin" }>>,
-): Extract<ZCodeCommand, { source: "plugin" }> {
+  overrides: Partial<Extract<ZodyCommand, { source: "plugin" }>>,
+): Extract<ZodyCommand, { source: "plugin" }> {
   return {
     id: "plugin:team-market:hello-world:hello:/remote/commands/hello.md",
     name: "hello",

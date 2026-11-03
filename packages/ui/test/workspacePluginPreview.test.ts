@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
+import type { ZodyPluginReferenceCatalogEntry } from "@zody/shared";
 import {
   buildWorkspacePluginMention,
   isWorkspacePluginReferenceable,
 } from "../src/WorkspacePluginPreview.js";
 
 function entry(
-  overrides: Partial<ZCodePluginReferenceCatalogEntry> = {},
-): ZCodePluginReferenceCatalogEntry {
+  overrides: Partial<ZodyPluginReferenceCatalogEntry> = {},
+): ZodyPluginReferenceCatalogEntry {
   return {
     pluginId: "pdf@zcode-plugins-official",
     name: "pdf",

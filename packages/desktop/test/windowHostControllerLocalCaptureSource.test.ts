@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { Event } from "@zody/rpc";
-import type { ZCodeTaskMeta } from "@zody/shared";
-import type { IZCodeAgentService, IZCodeTaskService } from "@zody/services";
+import type { ZodyTaskMeta } from "@zody/shared";
+import type { IZodyAgentService, IZodyTaskService } from "@zody/services";
 import { createWindowHostControllerRuntime } from "../src/host/windowHostControllerService.js";
 
-function meta(params: { taskId: string; workspacePath?: string }): ZCodeTaskMeta {
+function meta(params: { taskId: string; workspacePath?: string }): ZodyTaskMeta {
   return {
     taskId: params.taskId,
     traceId: `trace-${params.taskId}`,
@@ -16,24 +16,24 @@ function meta(params: { taskId: string; workspacePath?: string }): ZCodeTaskMeta
   };
 }
 
-function localTaskService(tasks: ZCodeTaskMeta[]): IZCodeTaskService {
+function localTaskService(tasks: ZodyTaskMeta[]): IZodyTaskService {
   return {
     listTasks: vi.fn(async () => tasks),
     listPinnedTasks: vi.fn(async () => []),
     listArchivedTasks: vi.fn(async () => []),
     listTaskList: vi.fn(async () => ({ items: [], total: 0, hasMore: false })),
-  } as unknown as IZCodeTaskService;
+  } as unknown as IZodyTaskService;
 }
 
 /** 与 Host 本地 services 就绪时持有的 sessions-index 观察器依赖一致的最小 agent。 */
-function localAgentService(): IZCodeAgentService {
+function localAgentService(): IZodyAgentService {
   return {
     onDynamicSessionsIndexFrame: vi.fn(() => Event.None),
     onAgentRuntimeRestarted: vi.fn(() => ({ dispose: vi.fn() })),
     subscribeSessionsIndexV4: vi.fn(async () => ({ ack: { subscriptionId: "sessions-sub" } })),
     unsubscribeSessionsIndexV4: vi.fn(async () => undefined),
     resyncSessionsIndexV4: vi.fn(async () => undefined),
-  } as unknown as IZCodeAgentService;
+  } as unknown as IZodyAgentService;
 }
 
 describe("WindowHostController local capture source (MN01)", () => {

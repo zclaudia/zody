@@ -1,10 +1,10 @@
 import type {
   PluginStoreModeOrder,
-  ZCodeAvailablePluginSummary,
-  ZCodeInstalledPluginSummary,
-  ZCodePluginInfo,
-  ZCodePluginMarketplaceSummary,
-  ZCodePluginStoreListing,
+  ZodyAvailablePluginSummary,
+  ZodyInstalledPluginSummary,
+  ZodyPluginInfo,
+  ZodyPluginMarketplaceSummary,
+  ZodyPluginStoreListing,
 } from "@zody/shared";
 import {
   sortPluginStoreEntries,
@@ -36,11 +36,11 @@ export { isTrustedImageUrl } from "@/lib/trustedImageUrl.js";
  * 会把第三方条目的品牌和图标误挂到另一个 marketplace，安全降级为 slug 更可靠。
  */
 export function resolveUniquePluginListingByName(
-  plugins: readonly Pick<ZCodeAvailablePluginSummary, "name" | "listing">[],
+  plugins: readonly Pick<ZodyAvailablePluginSummary, "name" | "listing">[],
   name: string,
-): ZCodePluginStoreListing | undefined {
+): ZodyPluginStoreListing | undefined {
   const normalizedName = name.trim().toLocaleLowerCase();
-  let match: ZCodePluginStoreListing | undefined;
+  let match: ZodyPluginStoreListing | undefined;
   let count = 0;
   for (const plugin of plugins) {
     if (plugin.name.trim().toLocaleLowerCase() !== normalizedName) continue;
@@ -63,14 +63,14 @@ export interface StorePluginItem {
   restorable: boolean;
   /** 已安装但原 marketplace 已移除；仍可运行和管理，但不能更新。 */
   orphaned: boolean;
-  listing?: ZCodePluginStoreListing;
-  summary?: ZCodeAvailablePluginSummary;
+  listing?: ZodyPluginStoreListing;
+  summary?: ZodyAvailablePluginSummary;
   /** 运行时信息（仅已发现的已安装插件有）：启用态、组件、manifest 回退字段。 */
-  info?: ZCodePluginInfo;
-  installedMeta?: ZCodeInstalledPluginSummary;
+  info?: ZodyPluginInfo;
+  installedMeta?: ZodyInstalledPluginSummary;
 }
 
-export type PluginUpdateStatus = NonNullable<ZCodeInstalledPluginSummary["updateStatus"]>;
+export type PluginUpdateStatus = NonNullable<ZodyInstalledPluginSummary["updateStatus"]>;
 
 export function isPluginUpdatePending(
   updateStatus: PluginUpdateStatus | undefined,
@@ -121,7 +121,7 @@ export function resolveItemDescription(item: StorePluginItem, locale: string): s
 
 /** 管理列表与商店复用完整 ID 关联的展示信息，避免英文 manifest 绕过本地化。 */
 export function resolveManagedPluginDisplay(
-  plugin: ZCodePluginInfo,
+  plugin: ZodyPluginInfo,
   item: StorePluginItem | undefined,
   locale: string,
 ): { name: string; description: string | undefined } {
@@ -171,9 +171,9 @@ const OFFICIAL_MARKETPLACE_ORDER = [
  * 同一时间使用本地化名称稳定兜底，避免市场源顺序随持久化数组历史漂移。
  */
 export function sortMarketplaceSources(
-  marketplaces: readonly ZCodePluginMarketplaceSummary[],
+  marketplaces: readonly ZodyPluginMarketplaceSummary[],
   locale: string,
-): ZCodePluginMarketplaceSummary[] {
+): ZodyPluginMarketplaceSummary[] {
   const officialRank = new Map(OFFICIAL_MARKETPLACE_ORDER.map((id, index) => [id, index]));
   return marketplaces.toSorted((left, right) => {
     const leftRank = officialRank.get(left.id);
@@ -199,7 +199,7 @@ export function sortMarketplaceSources(
  */
 export function sortPersonalMarketplaceGroups(
   groups: PersonalMarketplaceGroup[],
-  marketplaces: readonly ZCodePluginMarketplaceSummary[],
+  marketplaces: readonly ZodyPluginMarketplaceSummary[],
   locale: string,
 ): PersonalMarketplaceGroup[] {
   const lastUpdatedById = new Map(
@@ -221,12 +221,12 @@ export function sortPersonalMarketplaceGroups(
  * 条目宇宙 = availablePlugins ∪ restorableBuiltins ∪ 实际发现的插件包（覆盖 inline/孤儿插件）。
  */
 export function buildStoreItems(input: {
-  marketplaces: ZCodePluginMarketplaceSummary[];
+  marketplaces: ZodyPluginMarketplaceSummary[];
   marketplaceAvailabilityKnown: boolean;
-  availablePlugins: ZCodeAvailablePluginSummary[];
-  installedPlugins: ZCodeInstalledPluginSummary[];
-  plugins: ZCodePluginInfo[];
-  restorableBuiltins: ZCodeAvailablePluginSummary[];
+  availablePlugins: ZodyAvailablePluginSummary[];
+  installedPlugins: ZodyInstalledPluginSummary[];
+  plugins: ZodyPluginInfo[];
+  restorableBuiltins: ZodyAvailablePluginSummary[];
 }): StorePluginItem[] {
   const infoById = new Map(input.plugins.map((plugin) => [plugin.id, plugin]));
   const metaById = new Map(input.installedPlugins.map((item) => [item.id, item]));
@@ -311,7 +311,7 @@ export function buildStoreItems(input: {
 /** 公开分段：Featured（CDN featured 名单按序）+ 分类聚合（无分类归 other，排最后）。 */
 export function selectFeaturedItems(
   publicItems: StorePluginItem[],
-  marketplaces: ZCodePluginMarketplaceSummary[],
+  marketplaces: ZodyPluginMarketplaceSummary[],
 ): StorePluginItem[] {
   const byName = new Map<string, StorePluginItem>();
   for (const item of publicItems) {

@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { setDataBaseDir } from "../src/paths.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 
@@ -45,8 +45,8 @@ function createTrackedRepo(): TaskIndexRepo {
 function createTask(
   taskId: string,
   createdAt: number,
-  overrides: Partial<ZCodeTaskMeta> = {},
-): ZCodeTaskMeta {
+  overrides: Partial<ZodyTaskMeta> = {},
+): ZodyTaskMeta {
   return {
     taskId,
     traceId: `trace-${taskId}`,
@@ -64,8 +64,8 @@ async function seedTask(
   repo: TaskIndexRepo,
   taskId: string,
   createdAt: number,
-  overrides: Partial<ZCodeTaskMeta> = {},
-): Promise<ZCodeTaskMeta> {
+  overrides: Partial<ZodyTaskMeta> = {},
+): Promise<ZodyTaskMeta> {
   return repo.syncTaskMeta({ meta: createTask(taskId, createdAt, overrides) });
 }
 

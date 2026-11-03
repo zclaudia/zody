@@ -1,4 +1,4 @@
-import type { ZCodePermissionRequest } from "./zody-task-types-core.js";
+import type { ZodyPermissionRequest } from "./zody-task-types-core.js";
 
 export type PermissionRequestScope = "command" | "file" | "generic";
 
@@ -336,7 +336,7 @@ function collectFileChanges(
 }
 
 export function getPermissionRequestPreview(
-  request: Pick<ZCodePermissionRequest, "title" | "description" | "kind" | "raw">,
+  request: Pick<ZodyPermissionRequest, "title" | "description" | "kind" | "raw">,
 ): PermissionRequestPreview {
   const rawSource = request.raw;
   const filePaths: string[] = [];

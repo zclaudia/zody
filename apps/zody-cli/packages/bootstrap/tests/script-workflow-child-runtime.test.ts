@@ -35,7 +35,7 @@ import {
   type ScriptWorkflowAgentRuntimeDeps,
 } from "../src/app/script-workflow-child-runtime.js";
 import { createProtocolBrowserControlBroker } from "../src/zody-protocol/browser-control-broker.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import {
   parseWorkflowSubagentPermissionMode,
   workflowActorInteractionDescription,
@@ -1015,7 +1015,7 @@ describe("script workflow child runtime — 子代理的 Browser Use", () => {
           },
         ],
       ]),
-    } as unknown as ZCodeProtocolAgentServerContext;
+    } as unknown as ZodyProtocolAgentServerContext;
   }
 
   function makeActorRuntime(

@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { IModelSelectionService, IZCodeAgentService } from "@zody/services";
+import { IModelSelectionService, IZodyAgentService } from "@zody/services";
 import {
   disposeServiceResourcesAndWait,
   resolveDefaultZodyAgentCommand,
@@ -206,7 +206,7 @@ describe("stdio Desktop presentation surface", () => {
         },
       );
       await expect(
-        bootstrap.services.get(IZCodeAgentService).initialize({
+        bootstrap.services.get(IZodyAgentService).initialize({
           workspaceIdentity: "ssh://host/workspace/project",
           workspacePath: "/workspace/project",
         }),

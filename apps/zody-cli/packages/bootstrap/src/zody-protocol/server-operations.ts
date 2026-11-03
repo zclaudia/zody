@@ -72,19 +72,19 @@ import {
   getConversationMessageProjectionPolicy,
   isRemoteWorkspaceIdentity,
   parseRemoteWorkspaceIdentity,
-  type ZCodeSessionCreateParams,
-  type ZCodeDeliveryKind,
+  type ZodySessionCreateParams,
+  type ZodyDeliveryKind,
   type IntegratedTerminalShellSelection,
-  type ZCodeSessionRuntimePreferencesScope,
-  type ZCodeSessionRuntimePreferencesResult,
-  type ZCodeModelContextBudgetStrategy,
-  type ZCodeProtocolTrace,
-  type ZCodeSessionEvent,
-  type ZCodeSessionHistoryTarget,
-  type ZCodeSessionResumeParams,
-  type ZCodeSessionPersistence,
-  type ZCodeWorkspaceRef,
-  type ZCodeStateUpdatedNotification,
+  type ZodySessionRuntimePreferencesScope,
+  type ZodySessionRuntimePreferencesResult,
+  type ZodyModelContextBudgetStrategy,
+  type ZodyProtocolTrace,
+  type ZodySessionEvent,
+  type ZodySessionHistoryTarget,
+  type ZodySessionResumeParams,
+  type ZodySessionPersistence,
+  type ZodyWorkspaceRef,
+  type ZodyStateUpdatedNotification,
 } from "@zody/shared";
 import {
   buildSessionSnapshot,
@@ -104,9 +104,9 @@ import {
   protocolTraceFromTraceContext,
   parseParams,
   requireSession,
-  type ZCodeProtocolAgentServerContext,
-  type ZCodeProtocolSessionRecord,
-  type ZCodeProtocolToolInputTransmissionState,
+  type ZodyProtocolAgentServerContext,
+  type ZodyProtocolSessionRecord,
+  type ZodyProtocolToolInputTransmissionState,
 } from "./server-types.js";
 import { createWorkspaceZCodeApp, ensureSessionModelAvailable } from "./workspace-model-runtime.js";
 import { buildAppUsageSnapshot, resolveTzOffsetMs } from "./usage-stats-builder.js";
@@ -138,36 +138,36 @@ const REMOTE_AUTOMATION_TOOL_NAMES = [
 ] as const;
 
 type ProtocolGoalTarget = NonNullable<
-  Awaited<ReturnType<NonNullable<ZCodeProtocolSessionRecord["app"]["readTarget"]>>>
+  Awaited<ReturnType<NonNullable<ZodyProtocolSessionRecord["app"]["readTarget"]>>>
 >;
 
-type ZCodeSessionRecordParams = (
-  | ZCodeSessionCreateParams
-  | (ZCodeSessionResumeParams & {
-      mode?: ZCodeSessionCreateParams["mode"];
-      model?: ZCodeSessionCreateParams["model"];
-      parentSessionId?: ZCodeSessionCreateParams["parentSessionId"];
-      thoughtLevel?: ZCodeSessionCreateParams["thoughtLevel"];
+type ZodySessionRecordParams = (
+  | ZodySessionCreateParams
+  | (ZodySessionResumeParams & {
+      mode?: ZodySessionCreateParams["mode"];
+      model?: ZodySessionCreateParams["model"];
+      parentSessionId?: ZodySessionCreateParams["parentSessionId"];
+      thoughtLevel?: ZodySessionCreateParams["thoughtLevel"];
       // 自动化会话会在创建期关闭标题二次生成，而 create/resume
       // 共用 record 初始化函数；resume 兼容分支也必须声明该策略字段。
-      titleGenerationEnabled?: ZCodeSessionCreateParams["titleGenerationEnabled"];
+      titleGenerationEnabled?: ZodySessionCreateParams["titleGenerationEnabled"];
     })
 ) & { taskType?: SessionTaskType };
 
 interface SessionStartupPreferences {
   subagentRuntimeConfigEnabled?: boolean;
   memoryEnabled: boolean;
-  modelContextBudgetStrategy: ZCodeModelContextBudgetStrategy;
+  modelContextBudgetStrategy: ZodyModelContextBudgetStrategy;
   nativeSearchEnhancementsEnabled: boolean;
   resolveInitialBashShellSelection: () => Promise<ExecutionShellSelection | undefined>;
 }
 
 type SessionStartupPreferencesSource =
   | { kind: "host" }
-  | { kind: "inherit"; parent: ZCodeProtocolSessionRecord };
+  | { kind: "inherit"; parent: ZodyProtocolSessionRecord };
 
 function resolveSupportedAppThoughtLevel(
-  app: Pick<ZCodeProtocolSessionRecord["app"], "listThoughtLevels">,
+  app: Pick<ZodyProtocolSessionRecord["app"], "listThoughtLevels">,
   thoughtLevel: string | undefined,
 ): string | undefined {
   const normalizedThoughtLevel = thoughtLevel?.trim();
@@ -212,17 +212,17 @@ interface LiveProtocolStreamingDeltaBatch {
 }
 
 const liveProtocolStreamingDeltaBatches = new WeakMap<
-  ZCodeProtocolSessionRecord,
+  ZodyProtocolSessionRecord,
   Map<string, LiveProtocolStreamingDeltaBatch>
 >();
 
-function protocolEventSequenceKey(deliveryKind?: ZCodeDeliveryKind): string {
+function protocolEventSequenceKey(deliveryKind?: ZodyDeliveryKind): string {
   return deliveryKind ?? DEFAULT_PROTOCOL_EVENT_SEQUENCE_KEY;
 }
 
 function getProtocolEventSequenceState(
-  record: ZCodeProtocolSessionRecord,
-  deliveryKind?: ZCodeDeliveryKind,
+  record: ZodyProtocolSessionRecord,
+  deliveryKind?: ZodyDeliveryKind,
 ) {
   const key = protocolEventSequenceKey(deliveryKind);
   const existing = record.protocolEventSequences.get(key);
@@ -238,15 +238,15 @@ function getProtocolEventSequenceState(
 }
 
 function getProtocolToolInputTransmissionState(
-  record: ZCodeProtocolSessionRecord,
-  deliveryKind?: ZCodeDeliveryKind,
-): ZCodeProtocolToolInputTransmissionState {
+  record: ZodyProtocolSessionRecord,
+  deliveryKind?: ZodyDeliveryKind,
+): ZodyProtocolToolInputTransmissionState {
   const key = protocolEventSequenceKey(deliveryKind);
   const existing = record.protocolToolInputTransmissions.get(key);
   if (existing) {
     return existing;
   }
-  const created: ZCodeProtocolToolInputTransmissionState = {
+  const created: ZodyProtocolToolInputTransmissionState = {
     streamedToolCallIdsWithInput: new Set(),
   };
   record.protocolToolInputTransmissions.set(key, created);
@@ -258,9 +258,9 @@ function protocolSourceEventKey(event: SessionEvent): string {
 }
 
 function assignProtocolEventSeq(
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
   event: SessionEvent,
-  deliveryKind?: ZCodeDeliveryKind,
+  deliveryKind?: ZodyDeliveryKind,
 ): number {
   const state = getProtocolEventSequenceState(record, deliveryKind);
   const sourceEventKey = protocolSourceEventKey(event);
@@ -287,8 +287,8 @@ function numberValue(value: unknown): number | undefined {
 }
 
 function getLiveProtocolStreamingDeltaBatchState(
-  record: ZCodeProtocolSessionRecord,
-  deliveryKind?: ZCodeDeliveryKind,
+  record: ZodyProtocolSessionRecord,
+  deliveryKind?: ZodyDeliveryKind,
 ): LiveProtocolStreamingDeltaBatch {
   let byDeliveryKind = liveProtocolStreamingDeltaBatches.get(record);
   if (!byDeliveryKind) {
@@ -458,8 +458,8 @@ function shouldFlushProtocolStreamingDeltaBatchForInterval(
 }
 
 function markStreamedToolInputIfPresent(
-  mappedEvent: ZCodeSessionEvent,
-  toolInputTransmissions: ZCodeProtocolToolInputTransmissionState,
+  mappedEvent: ZodySessionEvent,
+  toolInputTransmissions: ZodyProtocolToolInputTransmissionState,
 ): void {
   if (mappedEvent.type !== "model.streaming") {
     return;
@@ -477,9 +477,9 @@ function markStreamedToolInputIfPresent(
 
 function omitDuplicateScheduledToolInput(
   event: SessionEvent,
-  mappedEvent: ZCodeSessionEvent,
-  toolInputTransmissions: ZCodeProtocolToolInputTransmissionState,
-): ZCodeSessionEvent {
+  mappedEvent: ZodySessionEvent,
+  toolInputTransmissions: ZodyProtocolToolInputTransmissionState,
+): ZodySessionEvent {
   markStreamedToolInputIfPresent(mappedEvent, toolInputTransmissions);
   if (event.type !== SessionEventType.ToolCallScheduled || mappedEvent.type !== "tool.updated") {
     return mappedEvent;
@@ -623,7 +623,7 @@ function decodeTextProtocolAttachment(record: Record<string, unknown>): string |
 }
 
 function shouldHideProtocolSessionEvent(
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
   event: SessionEvent,
 ): boolean {
   const payload = asRecord(event.payload);
@@ -644,14 +644,14 @@ function shouldHideProtocolSessionEvent(
 }
 
 function mapProtocolSessionEvent(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   event: SessionEvent,
-  deliveryKind?: ZCodeDeliveryKind,
+  deliveryKind?: ZodyDeliveryKind,
   options: {
-    toolInputTransmissions?: ZCodeProtocolToolInputTransmissionState;
+    toolInputTransmissions?: ZodyProtocolToolInputTransmissionState;
   } = {},
-): ZCodeSessionEvent | null {
+): ZodySessionEvent | null {
   if (shouldHideProtocolSessionEvent(record, event)) {
     return null;
   }
@@ -689,14 +689,14 @@ function mapProtocolSessionEvent(
 }
 
 async function readProtocolSessionEvents(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
-  deliveryKind?: ZCodeDeliveryKind,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
+  deliveryKind?: ZodyDeliveryKind,
   options: { afterSeq?: number; limit?: number } = {},
-): Promise<ZCodeSessionEvent[]> {
+): Promise<ZodySessionEvent[]> {
   const events = await record.eventStore.getEvents(record.app.sessionId as SessionId);
-  const visibleEvents: ZCodeSessionEvent[] = [];
-  const toolInputTransmissions: ZCodeProtocolToolInputTransmissionState = {
+  const visibleEvents: ZodySessionEvent[] = [];
+  const toolInputTransmissions: ZodyProtocolToolInputTransmissionState = {
     streamedToolCallIdsWithInput: new Set(),
   };
   let pendingStreamingDeltaBatch: ProtocolStreamingDeltaBatch | undefined;
@@ -769,18 +769,18 @@ async function readProtocolSessionEvents(
 }
 
 async function getProtocolEventSeq(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
-  deliveryKind?: ZCodeDeliveryKind,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
+  deliveryKind?: ZodyDeliveryKind,
 ): Promise<number> {
   await readProtocolSessionEvents(context, record, deliveryKind);
   return getProtocolEventSequenceState(record, deliveryKind).lastSeq;
 }
 
 function logProtocolSessionEventSent(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sourceEvent: SessionEvent,
-  mappedEvent: ZCodeSessionEvent,
+  mappedEvent: ZodySessionEvent,
 ): void {
   const payload =
     typeof mappedEvent.payload === "object" && mappedEvent.payload !== null
@@ -971,7 +971,7 @@ function slugifyImportedSession(value: string): string {
 
 function isImportedHistoryMessage(
   message: MessageWithParts,
-  source: NonNullable<ZCodeSessionCreateParams["importedHistory"]>["source"],
+  source: NonNullable<ZodySessionCreateParams["importedHistory"]>["source"],
 ): boolean {
   const messageId = String(message.info.id);
   if (/^msg_import_\d+$/u.test(messageId) || messageId.startsWith("msg_claude-import-")) {
@@ -988,9 +988,9 @@ function isImportedHistoryMessage(
 }
 
 async function removePreviousImportedSessionHistory(params: {
-  sessionStore: NonNullable<ZCodeProtocolAgentServerContext["deps"]["sessionStore"]>;
+  sessionStore: NonNullable<ZodyProtocolAgentServerContext["deps"]["sessionStore"]>;
   sessionId: SessionId;
-  source: NonNullable<ZCodeSessionCreateParams["importedHistory"]>["source"];
+  source: NonNullable<ZodySessionCreateParams["importedHistory"]>["source"];
 }): Promise<number> {
   const existingMessages = await params.sessionStore.messages({
     sessionID: params.sessionId,
@@ -1014,10 +1014,10 @@ async function removePreviousImportedSessionHistory(params: {
 }
 
 async function persistImportedSessionHistory(params: {
-  context: ZCodeProtocolAgentServerContext;
-  record: ZCodeProtocolSessionRecord;
+  context: ZodyProtocolAgentServerContext;
+  record: ZodyProtocolSessionRecord;
   sessionId: SessionId;
-  createParams: ZCodeSessionCreateParams;
+  createParams: ZodySessionCreateParams;
 }): Promise<void> {
   const importedHistory = params.createParams.importedHistory;
   const sessionStore = params.context.deps.sessionStore;
@@ -1230,9 +1230,9 @@ async function persistImportedSessionHistory(params: {
 }
 
 export async function createSession(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-  trace?: ZCodeProtocolTrace,
+  trace?: ZodyProtocolTrace,
 ) {
   return createSessionWithProjection(context, rawParams, trace, async (record) => {
     const result = await snapshotWithDiagnostics(context, record);
@@ -1246,7 +1246,7 @@ export async function createSession(
 
 /** V4 创建只需要 record；不要为了丢弃的 legacy snapshot 强制解析空模型。 */
 export async function createSessionRecordForV4(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
   return createSessionWithProjection(context, rawParams, undefined, async (record) => ({
@@ -1255,11 +1255,11 @@ export async function createSessionRecordForV4(
 }
 
 async function createSessionWithProjection<T>(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-  trace: ZCodeProtocolTrace | undefined,
+  trace: ZodyProtocolTrace | undefined,
   project: (
-    record: ZCodeProtocolSessionRecord,
+    record: ZodyProtocolSessionRecord,
   ) => Promise<{ value: T; phaseDurationsMs?: SnapshotPhaseDurationsMs; messageCount?: number }>,
 ): Promise<T> {
   const params = parseParams(zcodeSessionCreateParamsSchema, rawParams);
@@ -1413,7 +1413,7 @@ async function createSessionWithProjection<T>(
 }
 
 export interface ActivatedSessionForResume {
-  record: ZCodeProtocolSessionRecord;
+  record: ZodyProtocolSessionRecord;
   knownSession?: SessionInfo;
   /** 仅供启动本次 V4 hydration，不写入 record 或跨请求缓存。 */
   persistedMessages?: MessageWithParts[];
@@ -1429,8 +1429,8 @@ export interface ActivatedSessionForResume {
  * snapshot 之前的原有顺序与副作用，让 V4 随后用自己的 durable projection 水合。
  */
 export async function activateSessionForResume(
-  context: ZCodeProtocolAgentServerContext,
-  params: ZCodeSessionResumeParams,
+  context: ZodyProtocolAgentServerContext,
+  params: ZodySessionResumeParams,
   options: { reusePersistedMessages?: boolean } = {},
 ): Promise<ActivatedSessionForResume> {
   const resumeStartedAt = Date.now();
@@ -1541,14 +1541,14 @@ export async function activateSessionForResume(
   };
 }
 
-export async function resumeSession(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function resumeSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionResumeParamsSchema, rawParams);
   const activated = await activateSessionForResume(context, params);
   return await snapshot(context, activated.record, activated.knownSession);
 }
 
 async function repairLegacyRemoteSessionWorkspaceForResume(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   session: SessionInfo,
 ): Promise<SessionInfo> {
   if (session.workspaceID || !context.deps.sessionStore?.repairLegacyRemoteSessionWorkspace) {
@@ -1613,7 +1613,7 @@ async function repairLegacyRemoteSessionWorkspaceForResume(
 }
 
 function resolveLegacyRemoteWorkspace(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   legacyWorkspaceDirectory: string,
 ): { workspaceIdentity: WorkspaceId; workspacePath: string } | null {
   const currentWorkspacePath = context.deps.cwd ?? process.cwd();
@@ -1644,7 +1644,7 @@ function resolveLegacyRemoteWorkspace(
   };
 }
 
-export async function listSessions(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function listSessions(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionListParamsSchema, rawParams ?? {});
   const store = context.deps.sessionStore;
   // 显式 ID 查询只读持久化身份，供 Host 修复旧索引；不能为了识别 child 激活 runtime。
@@ -1696,7 +1696,7 @@ export async function listSessions(context: ZCodeProtocolAgentServerContext, raw
 }
 
 export async function listSessionSubagents(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   persistedMessages?: MessageWithParts[],
 ) {
@@ -1790,7 +1790,7 @@ export async function listSessionSubagents(
 
 const APP_USAGE_RANGE_DAYS: Record<string, number> = { "7d": 7, "30d": 30 };
 
-export async function getUsageStats(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function getUsageStats(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeUsageStatsParamsSchema, rawParams ?? {});
   const timeZone = params.timeZone ?? "UTC";
   const until = Date.now();
@@ -1844,7 +1844,7 @@ export async function getUsageStats(context: ZCodeProtocolAgentServerContext, ra
   return buildAppUsageSnapshot(result, buildOptions);
 }
 
-export async function readSession(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function readSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionReadParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     deliveryKind: params.deliveryKind,
@@ -1864,7 +1864,7 @@ export async function readSession(context: ZCodeProtocolAgentServerContext, rawP
  * V4 冷恢复 usage 的窄读取：复用 legacy snapshot 的 meter 计算，但不映射完整协议快照。
  */
 export async function readSessionContextUsage(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
   persistedMessages?: MessageWithParts[],
 ) {
@@ -1891,7 +1891,7 @@ export async function readSessionContextUsage(
   });
 }
 
-export async function readMessages(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function readMessages(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionMessagesParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   const allMessages = await readActiveSessionMessages(context, record);
@@ -1904,7 +1904,7 @@ export async function readMessages(context: ZCodeProtocolAgentServerContext, raw
   };
 }
 
-export async function readEvents(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function readEvents(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionEventsParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   return {
@@ -1916,7 +1916,7 @@ export async function readEvents(context: ZCodeProtocolAgentServerContext, rawPa
 }
 
 export async function subscribeSession(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
   const params = parseParams(zcodeSessionSubscribeParamsSchema, rawParams);
@@ -1943,7 +1943,7 @@ export async function subscribeSession(
   };
 }
 
-export async function sendPrompt(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function sendPrompt(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionSendParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   // legacy 输入入口同样必须保持子代理只读，不能绕过 V4 用户输入准入。
@@ -2034,7 +2034,7 @@ export async function sendPrompt(context: ZCodeProtocolAgentServerContext, rawPa
   return afterPromptAccepted(context, record, "prompt_started");
 }
 
-export async function compactSession(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function compactSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionCompactParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
@@ -2094,8 +2094,8 @@ export async function compactSession(context: ZCodeProtocolAgentServerContext, r
 }
 
 async function runCompactTurnInBackground(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   params: {
     abortController: AbortController;
     command: string;
@@ -2141,7 +2141,7 @@ async function runCompactTurnInBackground(
   await afterStateMutation(context, record, mutationReason);
 }
 
-export async function goalSession(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function goalSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionGoalParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
@@ -2248,7 +2248,7 @@ export async function goalSession(context: ZCodeProtocolAgentServerContext, rawP
   });
 }
 
-export async function forkSession(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function forkSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionForkParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
@@ -2276,9 +2276,9 @@ export async function forkSession(context: ZCodeProtocolAgentServerContext, rawP
  * 但不会进入 forkSession 的 active-turn guard / workspace fork；runtimeConfig 可固定在 fork 点。
  */
 export async function registerForkedSession(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
-  fork: Awaited<ReturnType<ZCodeProtocolSessionRecord["app"]["forkFromCheckpoint"]>>,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
+  fork: Awaited<ReturnType<ZodyProtocolSessionRecord["app"]["forkFromCheckpoint"]>>,
   options: {
     runtimeConfig: {
       mode: CollaborationMode;
@@ -2349,9 +2349,9 @@ export async function registerForkedSession(
 }
 
 async function inheritForkedSessionTarget(
-  context: ZCodeProtocolAgentServerContext,
-  parentRecord: ZCodeProtocolSessionRecord,
-  forkRecord: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  parentRecord: ZodyProtocolSessionRecord,
+  forkRecord: ZodyProtocolSessionRecord,
   forkedSessionId: string,
 ) {
   const parentTarget = await parentRecord.app.readTarget();
@@ -2380,8 +2380,8 @@ async function inheritForkedSessionTarget(
 }
 
 async function runPromptTurnInBackground(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   params: {
     abortController: AbortController;
     intent?: SendInputOptions["intent"];
@@ -2512,8 +2512,8 @@ function resolvePromptTurnAutomationId(params: {
 }
 
 async function continueGoalAfterChange(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   params: {
     inputId?: string;
     reason: string;
@@ -2549,8 +2549,8 @@ async function continueGoalAfterChange(
 }
 
 async function runGoalContinuationInBackground(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   params: {
     abortController: AbortController;
     inputId?: string;
@@ -2574,7 +2574,7 @@ async function runGoalContinuationInBackground(
   await afterStateMutation(context, record, mutationReason);
 }
 
-export async function stopSession(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function stopSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionStopParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   const hadActivePrompt = Boolean(record.activeAbortController);
@@ -2597,8 +2597,8 @@ export async function stopSession(context: ZCodeProtocolAgentServerContext, rawP
 }
 
 async function pauseActiveGoalForSessionStop(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   params: { sessionId: string },
 ): Promise<ProtocolGoalTarget | null> {
   if (!record.app.readTarget || !record.app.updateTargetStatus) {
@@ -2633,7 +2633,7 @@ async function pauseActiveGoalForSessionStop(
 }
 
 export async function cancelBackgroundTask(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
   const params = parseParams(zcodeSessionCancelBackgroundTaskParamsSchema, rawParams);
@@ -2662,7 +2662,7 @@ export async function cancelBackgroundTask(
   return result;
 }
 
-export async function setModel(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function setModel(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionSetModelParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
@@ -2674,7 +2674,7 @@ export async function setModel(context: ZCodeProtocolAgentServerContext, rawPara
 }
 
 export async function setThoughtLevel(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
   const params = parseParams(zcodeSessionSetThoughtLevelParamsSchema, rawParams);
@@ -2690,7 +2690,7 @@ export async function setThoughtLevel(
   return await afterStateMutation(context, record, "thought_level_changed");
 }
 
-export async function setMode(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function setMode(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionSetModeParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   assertExpectedRevision(record, params.expectedRevision);
@@ -2698,7 +2698,7 @@ export async function setMode(context: ZCodeProtocolAgentServerContext, rawParam
   return await afterStateMutation(context, record, "mode_changed");
 }
 
-export async function closeSession(context: ZCodeProtocolAgentServerContext, rawParams: unknown) {
+export async function closeSession(context: ZodyProtocolAgentServerContext, rawParams: unknown) {
   const params = parseParams(zcodeSessionCloseParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId);
   if (!shouldCloseSessionForExpectedPersistence(record.persistence, params.expectedPersistence)) {
@@ -2725,14 +2725,14 @@ export async function closeSession(context: ZCodeProtocolAgentServerContext, raw
 }
 
 export function shouldCloseSessionForExpectedPersistence(
-  currentPersistence: ZCodeSessionPersistence,
-  expectedPersistence?: ZCodeSessionPersistence,
+  currentPersistence: ZodySessionPersistence,
+  expectedPersistence?: ZodySessionPersistence,
 ): boolean {
   return expectedPersistence === undefined || currentPersistence === expectedPersistence;
 }
 
 export async function generateWorkspaceText(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   abortSignal?: AbortSignal,
 ) {
@@ -2784,7 +2784,7 @@ export async function generateWorkspaceText(
   }
 }
 
-function ensureNoActiveTurn(record: ZCodeProtocolSessionRecord, message: string): void {
+function ensureNoActiveTurn(record: ZodyProtocolSessionRecord, message: string): void {
   if (!record.activeAbortController) {
     return;
   }
@@ -2819,8 +2819,8 @@ function formatGoalChanged(title: string, target: ProtocolGoalTarget): string {
 }
 
 function assertExpectedProviderRevision(
-  _context: ZCodeProtocolAgentServerContext,
-  _record: ZCodeProtocolSessionRecord,
+  _context: ZodyProtocolAgentServerContext,
+  _record: ZodyProtocolSessionRecord,
   expectedProviderRevision: string | undefined,
 ): void {
   // 兼容旧客户端字段。Provider revision 已由进程 Registry 自己管理，不再接受 Host CAS。
@@ -2828,8 +2828,8 @@ function assertExpectedProviderRevision(
 }
 
 export async function ensureSessionModelAvailableForNextTurn(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ): Promise<void> {
   if (await ensureSessionModelAvailable(context, record)) {
     record.stateRevision++;
@@ -2837,9 +2837,9 @@ export async function ensureSessionModelAvailableForNextTurn(
 }
 
 async function resolveForkTarget(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
-  target: ZCodeSessionHistoryTarget,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
+  target: ZodySessionHistoryTarget,
 ): Promise<{ targetCheckpointId?: string; targetMessageId?: string }> {
   if (target.kind === "latestCheckpoint") {
     return {};
@@ -2856,8 +2856,8 @@ async function resolveForkTarget(
 }
 
 async function resolveTurnMessageId(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   turnIndex: number,
   role: "assistant" | "user",
 ): Promise<MessageId> {
@@ -2895,7 +2895,7 @@ async function resolveTurnMessageId(
 }
 
 export async function getTaskTokenUsage(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ) {
   const params = parseParams(zcodeTaskTokenUsageParamsSchema, rawParams ?? {});
@@ -2972,14 +2972,14 @@ function isNonActivitySessionEvent(event: SessionEvent): boolean {
  * （SessionTitleUpdated first_input），紧随其后的 ingest 便把会话推进 sessions-index。
  * 测试桩的 runtime 可能没有这个方法（`as never`），缺席即不对齐。
  */
-function reconcileRecordPersistence(record: ZCodeProtocolSessionRecord): void {
+function reconcileRecordPersistence(record: ZodyProtocolSessionRecord): void {
   if (record.persistence !== "deferred") return;
   if (record.app.runtime?.isSessionPersisted?.() === true) record.persistence = "immediate";
 }
 
 export function onSessionEvent(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   event: SessionEvent,
 ): void {
   const computerUseOperationEvent = mapComputerUseOperationEvent(event);
@@ -3074,9 +3074,9 @@ export function onSessionEvent(
 }
 
 function flushLiveProtocolStreamingDeltaBatch(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
-  deliveryKind?: ZCodeDeliveryKind,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
+  deliveryKind?: ZodyDeliveryKind,
 ): void {
   const batchState = getLiveProtocolStreamingDeltaBatchState(record, deliveryKind);
   if (!batchState.batch) {
@@ -3092,9 +3092,9 @@ function flushLiveProtocolStreamingDeltaBatch(
 }
 
 function resetLiveProtocolStreamingDeltaBatch(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
-  deliveryKind?: ZCodeDeliveryKind,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
+  deliveryKind?: ZodyDeliveryKind,
 ): void {
   const batchState = getLiveProtocolStreamingDeltaBatchState(record, deliveryKind);
   flushLiveProtocolStreamingDeltaBatch(context, record, deliveryKind);
@@ -3103,10 +3103,10 @@ function resetLiveProtocolStreamingDeltaBatch(
 }
 
 function sendProtocolSessionEvent(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   event: SessionEvent,
-  deliveryKind?: ZCodeDeliveryKind,
+  deliveryKind?: ZodyDeliveryKind,
 ): void {
   const mappedEvent = mapProtocolSessionEvent(context, record, event, deliveryKind);
   if (!mappedEvent) return;
@@ -3136,7 +3136,7 @@ function integratedTerminalShellToExecutionSelection(
 }
 
 function resolveProtocolBashShellSelection(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   selection: IntegratedTerminalShellSelection | undefined,
 ): ExecutionShellSelection {
   const configuredSelection = integratedTerminalShellToExecutionSelection(selection);
@@ -3148,11 +3148,11 @@ function resolveProtocolBashShellSelection(
 }
 
 async function requestSessionRuntimePreferences(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: SessionId,
-  scope: ZCodeSessionRuntimePreferencesScope,
-  trace?: ZCodeProtocolTrace,
-): Promise<ZCodeSessionRuntimePreferencesResult> {
+  scope: ZodySessionRuntimePreferencesScope,
+  trace?: ZodyProtocolTrace,
+): Promise<ZodySessionRuntimePreferencesResult> {
   const startedAt = Date.now();
   // ZCodeProtocolTrace.traceId 是协议层的 string；LogContext 需要 branded TraceId，
   // 按本文件既有惯例断言收口，避免多处日志构造重复转换。
@@ -3223,10 +3223,10 @@ async function requestSessionRuntimePreferences(
 }
 
 async function resolveSessionStartupPreferences(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: SessionId,
   source: SessionStartupPreferencesSource,
-  trace?: ZCodeProtocolTrace,
+  trace?: ZodyProtocolTrace,
 ): Promise<SessionStartupPreferences> {
   if (source.kind === "inherit") {
     const inheritedShellSelection = source.parent.app.runtime.getSessionShellSelection();
@@ -3270,13 +3270,13 @@ async function resolveSessionStartupPreferences(
 }
 
 async function materializeSessionRecord(
-  context: ZCodeProtocolAgentServerContext,
-  params: ZCodeSessionRecordParams,
+  context: ZodyProtocolAgentServerContext,
+  params: ZodySessionRecordParams,
   sessionId: SessionId,
   resume: boolean,
   source: SessionStartupPreferencesSource,
-  trace?: ZCodeProtocolTrace,
-): Promise<ZCodeProtocolSessionRecord> {
+  trace?: ZodyProtocolTrace,
+): Promise<ZodyProtocolSessionRecord> {
   const startupPreferences = await resolveSessionStartupPreferences(
     context,
     sessionId,
@@ -3287,13 +3287,13 @@ async function materializeSessionRecord(
 }
 
 async function createRecord(
-  context: ZCodeProtocolAgentServerContext,
-  params: ZCodeSessionRecordParams,
+  context: ZodyProtocolAgentServerContext,
+  params: ZodySessionRecordParams,
   sessionId: SessionId,
   resume: boolean,
   startupPreferences: SessionStartupPreferences,
-  trace?: ZCodeProtocolTrace,
-): Promise<ZCodeProtocolSessionRecord> {
+  trace?: ZodyProtocolTrace,
+): Promise<ZodyProtocolSessionRecord> {
   const workspace =
     "workspace" in params && params.workspace
       ? params.workspace
@@ -3320,7 +3320,7 @@ async function createRecord(
   });
   // automation-port 需要读取「本会话」的实时 model/mode/thought；record 在 app 之后才建。
   // 用可变持有者做惰性绑定：CronCreate 在 turn 中调用 create() 时 record 早已就绪。
-  let ownSessionRecord: ZCodeProtocolSessionRecord | undefined;
+  let ownSessionRecord: ZodyProtocolSessionRecord | undefined;
   const app = await createWorkspaceZCodeApp(context, workspace, {
     env: context.deps.env,
     eventStore,
@@ -3418,7 +3418,7 @@ async function createRecord(
     modelIoFullRetentionEnabled: context.appRuntimePreferences.modelIoFullRetentionEnabled,
   });
   const now = Date.now();
-  const record: ZCodeProtocolSessionRecord = {
+  const record: ZodyProtocolSessionRecord = {
     app,
     createdAt: now,
     eventStore,
@@ -3448,8 +3448,8 @@ async function createRecord(
 }
 
 function resolveSessionToolDenylist(
-  params: Pick<ZCodeSessionCreateParams, "toolDenylist">,
-  workspace: ZCodeWorkspaceRef,
+  params: Pick<ZodySessionCreateParams, "toolDenylist">,
+  workspace: ZodyWorkspaceRef,
 ): readonly string[] | undefined {
   const tools = new Set(params.toolDenylist ?? []);
   if (workspace.workspaceIdentity && isRemoteWorkspaceIdentity(workspace.workspaceIdentity)) {
@@ -3464,7 +3464,7 @@ function resolveSessionToolDenylist(
 }
 
 async function readPersistedSessionMessages(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
 ): Promise<MessageWithParts[]> {
   return await (context.deps.sessionStore?.messages({
@@ -3474,7 +3474,7 @@ async function readPersistedSessionMessages(
 
 function derivePersistedSessionMode(
   messages: readonly MessageWithParts[],
-): ZCodeSessionCreateParams["mode"] | undefined {
+): ZodySessionCreateParams["mode"] | undefined {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const info = messages[index]?.info;
     if (info?.role === "assistant" && isZCodeSessionMode(info.mode)) return info.mode;
@@ -3484,7 +3484,7 @@ function derivePersistedSessionMode(
 
 function isZCodeSessionMode(
   value: unknown,
-): value is NonNullable<ZCodeSessionCreateParams["mode"]> {
+): value is NonNullable<ZodySessionCreateParams["mode"]> {
   return (
     value === "plan" ||
     value === "build" ||
@@ -3496,7 +3496,7 @@ function isZCodeSessionMode(
 }
 
 function toRuntimeModelSelection(
-  model: ZCodeSessionCreateParams["model"],
+  model: ZodySessionCreateParams["model"],
 ): ModelSelection | undefined {
   if (!model) return undefined;
   return {
@@ -3524,8 +3524,8 @@ interface SnapshotWithDiagnostics {
 }
 
 async function snapshot(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   knownSession?: SessionInfo | null,
   options: {
     messageLimit?: number;
@@ -3536,8 +3536,8 @@ async function snapshot(
 }
 
 async function snapshotWithDiagnostics(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   knownSession?: SessionInfo | null,
   options: {
     messageLimit?: number;
@@ -3643,8 +3643,8 @@ async function snapshotWithDiagnostics(
 }
 
 async function readSnapshotTarget(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ) {
   try {
     return await record.app.readTarget();
@@ -3661,8 +3661,8 @@ async function readSnapshotTarget(
 }
 
 async function readSnapshotTodos(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ) {
   try {
     return await record.app.readTodos();
@@ -3679,8 +3679,8 @@ async function readSnapshotTodos(
 }
 
 async function readSessionTargetCompletionVerificationEvents(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ): Promise<SessionEvent[]> {
   const sessionStore = context.deps.sessionStore;
   if (!sessionStore?.sessionEntries) {
@@ -3799,8 +3799,8 @@ function limitMessages<T>(messages: T[], limit?: number): T[] {
 }
 
 async function readSessionMessages(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ) {
   if (!context.deps.sessionStore) return [];
   return await context.deps.sessionStore.messages({
@@ -3809,15 +3809,15 @@ async function readSessionMessages(
 }
 
 async function readSessionContextUsageBreakdownEvents(
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
 ): Promise<SessionEvent[]> {
   const events = await record.eventStore.getEvents(record.app.sessionId as SessionId);
   return events.filter((event) => event.type === SessionEventType.ModelComplete);
 }
 
 async function readActiveSessionMessages(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
 ): Promise<MessageWithParts[]> {
   const [messages, session, rewindEvents] = await Promise.all([
     readSessionMessages(context, record),
@@ -3828,7 +3828,7 @@ async function readActiveSessionMessages(
 }
 
 async function readSessionRewindEvents(
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
 ): Promise<SessionEvent[]> {
   const events = await record.eventStore.getEvents(record.app.sessionId as SessionId);
   return events.filter((event) => event.type === SessionEventType.RewindTriggered);
@@ -4000,7 +4000,7 @@ function applyRewindBranch(
 }
 
 async function getPersistedSession(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
 ): Promise<SessionInfo | null> {
   const sessionStore = context.deps.sessionStore;
@@ -4032,8 +4032,8 @@ const CONFIG_ONLY_MUTATION_REASONS = new Set([
 ]);
 
 export async function afterStateMutation(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   reason: string,
 ) {
   if (!record.activeAbortController) {
@@ -4055,8 +4055,8 @@ export async function afterStateMutation(
 }
 
 function afterPromptAccepted(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   reason: string,
 ) {
   record.stateRevision++;
@@ -4070,12 +4070,12 @@ function afterPromptAccepted(
 }
 
 function emitStateUpdated(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   reason: string,
   patch: unknown,
 ): void {
-  const notification: ZCodeStateUpdatedNotification = {
+  const notification: ZodyStateUpdatedNotification = {
     patch,
     reason,
     revision: record.stateRevision,

@@ -3,7 +3,7 @@ import { freemem } from "node:os";
 import {
   BASH_RESOURCE_MAX_SAMPLES,
   BASH_RESOURCE_SAMPLE_INTERVAL_MS,
-  type ZCodeToolExecResource,
+  type ZodyToolExecResource,
 } from "@zody/shared";
 import { createProcessProbe, type ProcessProbe } from "../device/process-probe.js";
 
@@ -16,13 +16,13 @@ interface BashResourceTelemetryOptions {
   processGroupId?: number;
   platform?: NodeJS.Platform;
   probe?: Pick<ProcessProbe, "sampleProcessGroup">;
-  onComplete: (sample: ZCodeToolExecResource) => void;
-  readContext?: () => Pick<ZCodeToolExecResource, "cliRssKb" | "systemFreeMemoryKb">;
+  onComplete: (sample: ZodyToolExecResource) => void;
+  readContext?: () => Pick<ZodyToolExecResource, "cliRssKb" | "systemFreeMemoryKb">;
 }
 
 /** 每条命令独占状态与探针失败预算；finish 同步封口，绝不等待遥测 IO。 */
 export function createBashResourceTelemetry(options: BashResourceTelemetryOptions): {
-  finish(exitKind: ZCodeToolExecResource["exitKind"]): void;
+  finish(exitKind: ZodyToolExecResource["exitKind"]): void;
 } {
   const platform = options.platform ?? process.platform;
   const startedAt = performance.now();

@@ -1,8 +1,8 @@
 import type {
-  ZCodePermissionOption,
-  ZCodePermissionRequest,
-  ZCodePermissionResponse,
-  ZCodeElicitationRequest,
+  ZodyPermissionOption,
+  ZodyPermissionRequest,
+  ZodyPermissionResponse,
+  ZodyElicitationRequest,
 } from "@zody/shared";
 import type {
   PendingInteraction,
@@ -21,7 +21,7 @@ const LEGACY_PERMISSION_RULE_INPUT_KEYS = [
 function permissionKindToResponse(
   kind: string,
   payload: PermissionRequestPayload,
-): ZCodePermissionResponse {
+): ZodyPermissionResponse {
   if (kind === "deny" || kind === "rejectOnce" || kind === "rejectAlways") {
     return { decision: "deny" };
   }
@@ -58,12 +58,12 @@ function permissionKindToResponse(
 export function pendingPermissionToLegacyRequest(
   sessionId: string,
   interaction: PendingInteraction & { payload: PermissionRequestPayload },
-): ZCodePermissionRequest {
+): ZodyPermissionRequest {
   const { payload } = interaction;
   const advertisedOptions = payload.fullAccessOption
     ? [...payload.options, payload.fullAccessOption]
     : payload.options;
-  const options: ZCodePermissionOption[] = advertisedOptions.map((option) => ({
+  const options: ZodyPermissionOption[] = advertisedOptions.map((option) => ({
     optionId: option.optionId,
     kind: option.kind,
     name: option.label,
@@ -116,7 +116,7 @@ export function pendingUserInputToViewModel(
 export function pendingUserInputToElicitationRequest(
   sessionId: string,
   interaction: PendingInteraction & { payload: UserInputRequestPayload },
-): ZCodeElicitationRequest | null {
+): ZodyElicitationRequest | null {
   const { payload } = interaction;
   if (!payload.questions || payload.questions.length === 0) {
     return null;

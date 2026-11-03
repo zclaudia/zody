@@ -1,7 +1,7 @@
 import {
   normalizeAgentProviderToZCodeAgent,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import { ZCODE_AGENT_PROVIDERS } from "./zodyProviders.js";
 
@@ -24,11 +24,11 @@ function getBrowserStorage(): StorageLike | null {
   }
 }
 
-function isAgentProvider(value: unknown): value is ZCodeProvider {
-  return typeof value === "string" && ZCODE_AGENT_PROVIDERS.includes(value as ZCodeProvider);
+function isAgentProvider(value: unknown): value is ZodyProvider {
+  return typeof value === "string" && ZCODE_AGENT_PROVIDERS.includes(value as ZodyProvider);
 }
 
-export function readLastSelectedAgentProvider(storage: StorageLike | null = getBrowserStorage()): ZCodeProvider | null {
+export function readLastSelectedAgentProvider(storage: StorageLike | null = getBrowserStorage()): ZodyProvider | null {
   const rawValue = storage?.getItem(LAST_SELECTED_AGENT_PROVIDER_STORAGE_KEY);
   if (!isAgentProvider(rawValue)) {
     return ZCODE_AGENT_PROVIDER;
@@ -40,7 +40,7 @@ export function readLastSelectedAgentProvider(storage: StorageLike | null = getB
 }
 
 export function persistLastSelectedAgentProvider(
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   storage: StorageLike | null = getBrowserStorage(),
 ) {
   // Bugfix: 迁移到单 ZCode Agent 后，旧本地存储里可能还保存已移除的第三方 provider。

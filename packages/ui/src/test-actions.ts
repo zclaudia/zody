@@ -2,7 +2,7 @@ import type { TaskChatMessage as ChatMessage } from "@/lib/taskChatMessageTypes.
 import { shouldExposeE2EStoreBridge } from "@/lib/e2eStoreBridge.js";
 // fork（bot-channels 移除）：IBotsService / IZCodeTaskService 引用随 BotsService 与 bot
 // 群投递链删除（specs/bot-channels-removal.md）。
-import type { IZCodeAgentService } from "@zody/services";
+import type { IZodyAgentService } from "@zody/services";
 import type { TaskListE2EActions } from "@/lib/taskListE2EActions.js";
 import { useEffect } from "react";
 
@@ -32,17 +32,17 @@ export interface TestActions extends TaskListE2EActions {
   /** 获取当前 mock 消息数量 */
   getChatMessageCount: () => number;
   /** E2E 通过真实 zcodeAgentService 拉取插件 overview */
-  getPluginsOverview: IZCodeAgentService["getPluginsOverview"];
+  getPluginsOverview: IZodyAgentService["getPluginsOverview"];
   /** E2E 通过真实 zcodeAgentService 添加 marketplace */
-  addPluginMarketplace: IZCodeAgentService["addPluginMarketplace"];
+  addPluginMarketplace: IZodyAgentService["addPluginMarketplace"];
   /** E2E 通过真实 zcodeAgentService 刷新 marketplace */
-  updatePluginMarketplace: IZCodeAgentService["updatePluginMarketplace"];
+  updatePluginMarketplace: IZodyAgentService["updatePluginMarketplace"];
   /** E2E 通过真实 zcodeAgentService 安装 marketplace plugin */
-  installPlugin: IZCodeAgentService["installPlugin"];
+  installPlugin: IZodyAgentService["installPlugin"];
   /** E2E 通过真实 zcodeAgentService 触发插件 discover */
-  listPlugins: IZCodeAgentService["listPlugins"];
+  listPlugins: IZodyAgentService["listPlugins"];
   /** E2E 通过真实 zcodeAgentService 查询 Workspace/Session Plugin catalog */
-  getPluginReferenceCatalog: IZCodeAgentService["getPluginReferenceCatalog"];
+  getPluginReferenceCatalog: IZodyAgentService["getPluginReferenceCatalog"];
 }
 
 declare global {

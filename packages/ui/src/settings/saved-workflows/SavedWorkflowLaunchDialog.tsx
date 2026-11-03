@@ -7,7 +7,7 @@ import {
   TID_WORKFLOW_LAUNCH_SUBMIT,
   TID_WORKFLOW_LAUNCH_TARGET,
   testId,
-  type ZCodeSavedWorkflowEntry,
+  type ZodySavedWorkflowEntry,
 } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
@@ -46,7 +46,7 @@ import {
 import type { SavedWorkflowLaunchError } from "@/settings/saved-workflows/useSavedWorkflowLauncher.js";
 
 interface SavedWorkflowLaunchDialogProps {
-  entry: ZCodeSavedWorkflowEntry | null;
+  entry: ZodySavedWorkflowEntry | null;
   /** 作用域徽标与「将立即在 X 的新会话中运行」文案都要它；也决定启动命令的 scope。 */
   scope: "project" | "global";
   /**
@@ -56,7 +56,7 @@ interface SavedWorkflowLaunchDialogProps {
   projectLabel: string;
   onOpenChange: (open: boolean) => void;
   onSubmit: (
-    entry: ZCodeSavedWorkflowEntry,
+    entry: ZodySavedWorkflowEntry,
     args: Record<string, unknown>,
     target?: AutomationWorkspaceOption,
   ) => void;

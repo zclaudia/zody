@@ -17,7 +17,7 @@ import {
   type SettingsDirectoryLocation,
   type SettingsDirectorySource,
   type UserCommand,
-  type ZCodeCommand,
+  type ZodyCommand,
 } from "@zody/shared";
 import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { ICommandsService } from "./commands.js";
@@ -561,7 +561,7 @@ export function createCommandsService(_options?: CommandsServiceOptions): IComma
         : [];
 
     return {
-      commands: [...dedupedUserCommands, ...pluginCommands] as ZCodeCommand[],
+      commands: [...dedupedUserCommands, ...pluginCommands] as ZodyCommand[],
       userCommands: dedupedUserCommands,
       pluginCommands,
       capability: { userScopeAvailable: true },

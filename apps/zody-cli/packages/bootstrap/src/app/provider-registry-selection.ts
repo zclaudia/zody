@@ -5,7 +5,7 @@ import {
   type Provider,
   type ProviderModel,
 } from "@zody/provider";
-import type { ZCodeModelOption } from "@zody/shared";
+import type { ZodyModelOption } from "@zody/shared";
 import type { ProviderRegistryModelSource } from "./provider-registry-model-runtime.js";
 
 export interface ResolvedRegistrySelection {
@@ -20,7 +20,7 @@ export interface ResolvedRegistrySelection {
  */
 export function listRegistryBackedModels(
   registry: ProviderRegistryModelSource,
-): ZCodeModelOption[] {
+): ZodyModelOption[] {
   const view = registry.getView();
   return view.providers.flatMap((provider) =>
     provider.models.map((model) => toModelOption(provider, model)),
@@ -30,7 +30,7 @@ export function listRegistryBackedModels(
 export function getRegistryBackedModel(
   registry: ProviderRegistryModelSource,
   selection: ModelSelection,
-): ZCodeModelOption | undefined {
+): ZodyModelOption | undefined {
   const provider = registry.getProvider(selection.providerId);
   const model = registry.getModel(selection.providerId, selection.modelId);
   return provider && model ? toModelOption(provider, model) : undefined;
@@ -207,7 +207,7 @@ export function requireRegistryThoughtLevel(
   return requested;
 }
 
-function toModelOption(provider: Provider, model: ProviderModel): ZCodeModelOption {
+function toModelOption(provider: Provider, model: ProviderModel): ZodyModelOption {
   const properties = model.config.properties;
   const optionSpecs = model.config.optionSpecs;
   const reasoning = optionSpecs.reasoningLevel;

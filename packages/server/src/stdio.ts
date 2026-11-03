@@ -8,7 +8,7 @@ import {
   type ISocket,
 } from "@zody/rpc";
 import {
-  IZCodeAgentService,
+  IZodyAgentService,
   createZCodeAgentConnectionScope,
   type ServiceCollection,
 } from "@zody/services";
@@ -69,7 +69,7 @@ export function createStdioServer(
   const channelServer = new ChannelServer(protocol, "stdio");
   const reverseClient = onReverseClientReady ? new ChannelClient(protocol) : undefined;
   if (reverseClient) onReverseClientReady?.(reverseClient);
-  const agentService = services.getOptional(IZCodeAgentService);
+  const agentService = services.getOptional(IZodyAgentService);
   const connectionScope = agentService
     ? createZCodeAgentConnectionScope(agentService, {
         connectionId: `server-stdio-${randomUUID()}`,
@@ -80,7 +80,7 @@ export function createStdioServer(
   services.exposeOnChannelServer(
     channelServer,
     connectionScope
-      ? new Map([[IZCodeAgentService.channelName, connectionScope.service]])
+      ? new Map([[IZodyAgentService.channelName, connectionScope.service]])
       : new Map(),
   );
   let stopPromise: Promise<void> | undefined;

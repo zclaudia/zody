@@ -4,7 +4,7 @@
  */
 import { create } from "zustand";
 import type {
-  ZCodeAgentMcpServer,
+  ZodyAgentMcpServer,
   CliMcpSource,
   McpConfig,
   McpScope,
@@ -12,9 +12,9 @@ import type {
   McpServerStatus,
   McpSource,
   NativeMcpServerRecord,
-  ZCodeMcpListMode,
-  ZCodeMcpServerStatusSnapshot,
-  ZCodeMcpServer,
+  ZodyMcpListMode,
+  ZodyMcpServerStatusSnapshot,
+  ZodyMcpServer,
 } from "@zody/shared";
 import { convertToZCodeAgentMcpServer } from "@zody/shared";
 import { logger } from "@/logger.js";
@@ -56,8 +56,8 @@ interface UpdateServerStatusOptions {
 interface McpStoreState {
   config: McpConfig;
   nativeServers: NativeMcpServerRecord[];
-  servers: ZCodeMcpServer[];
-  statusSnapshots: Record<string, ZCodeMcpServerStatusSnapshot>;
+  servers: ZodyMcpServer[];
+  statusSnapshots: Record<string, ZodyMcpServerStatusSnapshot>;
   currentProjectPath: string;
   currentWorkspaceIdentity?: string;
   enabledStates: Record<string, boolean>;
@@ -103,24 +103,24 @@ interface McpStoreState {
     error?: string,
     options?: UpdateServerStatusOptions,
   ) => void;
-  beginServerStatusListRefresh: (mode?: ZCodeMcpListMode) => number;
+  beginServerStatusListRefresh: (mode?: ZodyMcpListMode) => number;
   markServerStatusListRefreshFailed: (
     error: string,
     requestEpoch: number,
-    mode?: ZCodeMcpListMode,
+    mode?: ZodyMcpListMode,
   ) => void;
   mergeServerStatusSnapshots: (
-    statuses: Record<string, ZCodeMcpServerStatusSnapshot>,
+    statuses: Record<string, ZodyMcpServerStatusSnapshot>,
     requestEpoch: number,
     mode?: "connect" | "status",
   ) => void;
-  getServer: (id: string) => ZCodeMcpServer | undefined;
+  getServer: (id: string) => ZodyMcpServer | undefined;
   setCurrentProjectPath: (
     path: string,
     workspaceIdentity?: string,
     directoryService?: McpDirectoryService | null,
   ) => void;
-  getEnabledMcpServersForZCode: (provider: string) => ZCodeAgentMcpServer[];
+  getEnabledMcpServersForZCode: (provider: string) => ZodyAgentMcpServer[];
   checkAllServerStatus: (tester: (config: McpServerConfig) => Promise<{ success: boolean; error?: string }>) => Promise<void>;
   mergePreloadedMcpServers: (preloaded: Record<string, McpServerConfig>) => void;
   deletePreloadedMcpServer: (source: McpSource, name: string) => void;
@@ -130,7 +130,7 @@ interface McpStoreState {
 export const useMcpStore = create<McpStoreState>((set, get) => {
   let loadMcpPromise: Promise<boolean> | null = null;
   let loadMcpWorkspaceKey: string | null = null;
-  const statusListEpochs: Record<ZCodeMcpListMode, number> = {
+  const statusListEpochs: Record<ZodyMcpListMode, number> = {
     connect: 0,
     status: 0,
   };
@@ -560,7 +560,7 @@ export const useMcpStore = create<McpStoreState>((set, get) => {
 
     getEnabledMcpServersForZCode: (_provider) => {
       const { servers, enabledStates, currentProjectPath } = get();
-      const candidates = new Map<string, ZCodeMcpServer>();
+      const candidates = new Map<string, ZodyMcpServer>();
 
       for (const server of servers) {
         const isEnabled = enabledStates[server.id] ?? server.enabled;
@@ -574,7 +574,7 @@ export const useMcpStore = create<McpStoreState>((set, get) => {
         }
       }
 
-      const result: ZCodeAgentMcpServer[] = [];
+      const result: ZodyAgentMcpServer[] = [];
       for (const server of candidates.values()) {
         const zcodeAgentServer = convertToZCodeAgentMcpServer(server.name, server.config);
         if (zcodeAgentServer) result.push(zcodeAgentServer);

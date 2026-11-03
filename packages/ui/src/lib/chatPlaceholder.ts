@@ -1,4 +1,4 @@
-import type { ZCodeTaskRuntimeStatus } from "@zody/shared";
+import type { ZodyTaskRuntimeStatus } from "@zody/shared";
 
 type ChatPlaceholderMessageKey =
   | "chat.placeholder.newTask"
@@ -28,7 +28,7 @@ export function resolveChatPlaceholderKey(options: {
 
 export function shouldDeferChatPlaceholder(options: {
   hasBoundTask: boolean;
-  taskStatus: ZCodeTaskRuntimeStatus;
+  taskStatus: ZodyTaskRuntimeStatus;
 }): boolean {
   const { hasBoundTask, taskStatus } = options;
 

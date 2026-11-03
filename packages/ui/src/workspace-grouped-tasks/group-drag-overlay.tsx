@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react";
-import type { ZCodeGroupedTaskViewNode } from "@zody/services";
+import type { ZodyGroupedTaskViewNode } from "@zody/services";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { TaskGroupColorMark } from "@/workspace-grouped-tasks/colors.js";
 import { getTaskGroupDisplayTitle } from "@/workspace-grouped-tasks/group-title.js";
 
-type GroupNode = Extract<ZCodeGroupedTaskViewNode, { type: "group" }>;
+type GroupNode = Extract<ZodyGroupedTaskViewNode, { type: "group" }>;
 
 function GroupDragOverlay({
   node,

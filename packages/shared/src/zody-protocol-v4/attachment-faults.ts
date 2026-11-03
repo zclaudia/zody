@@ -33,12 +33,12 @@ export const ZCODE_ATTACHMENT_FAULT_CODES = {
   previewNotMedia: "fault.attachment.previewNotMedia",
 } as const;
 
-export type ZCodeAttachmentFaultCode =
+export type ZodyAttachmentFaultCode =
   (typeof ZCODE_ATTACHMENT_FAULT_CODES)[keyof typeof ZCODE_ATTACHMENT_FAULT_CODES];
 
 const KNOWN_FAULT_CODES = new Set<string>(Object.values(ZCODE_ATTACHMENT_FAULT_CODES));
 
-export function isZCodeAttachmentFaultCode(value: unknown): value is ZCodeAttachmentFaultCode {
+export function isZCodeAttachmentFaultCode(value: unknown): value is ZodyAttachmentFaultCode {
   return typeof value === "string" && KNOWN_FAULT_CODES.has(value);
 }
 
@@ -47,9 +47,9 @@ export function isZCodeAttachmentFaultCode(value: unknown): value is ZCodeAttach
  * JSON-RPC `error.data.code`，因此同进程与跨进程都能按码分类。
  */
 export class ZCodeAttachmentFaultError extends Error {
-  readonly code: ZCodeAttachmentFaultCode;
+  readonly code: ZodyAttachmentFaultCode;
 
-  constructor(code: ZCodeAttachmentFaultCode, options?: { cause?: unknown; message?: string }) {
+  constructor(code: ZodyAttachmentFaultCode, options?: { cause?: unknown; message?: string }) {
     // message 默认就是 fault 码本身，旧版本客户端的文本匹配仍能命中。
     super(
       options?.message ?? code,
@@ -66,7 +66,7 @@ export class ZCodeAttachmentFaultError extends Error {
  * - 跨 JSON-RPC 回传的 `error.data.code`；
  * - 旧版本 CLI 只有消息文本时的兼容兜底（见下方注释）。
  */
-export function readZCodeAttachmentFaultCode(error: unknown): ZCodeAttachmentFaultCode | undefined {
+export function readZCodeAttachmentFaultCode(error: unknown): ZodyAttachmentFaultCode | undefined {
   if (!error || typeof error !== "object") return undefined;
   const candidate = error as { code?: unknown; data?: unknown };
   if (isZCodeAttachmentFaultCode(candidate.code)) return candidate.code;

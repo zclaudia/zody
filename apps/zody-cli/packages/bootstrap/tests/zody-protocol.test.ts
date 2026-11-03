@@ -23,8 +23,8 @@ import {
   zcodeWorkspaceCancelGenerateTextResultSchema,
   zcodeWorkspacePresentationSchema,
   zcodeWorkspaceUpdateInteractionPreferencesResultSchema,
-  type ZCodeProtocolMessage,
-  type ZCodeProtocolNotification,
+  type ZodyProtocolMessage,
+  type ZodyProtocolNotification,
 } from "@zody/shared";
 import {
   V4_METHODS,
@@ -71,7 +71,7 @@ import {
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { ZCodeProtocolNdjsonConnection } from "../src/zody-protocol/transport.js";
 import { shouldCloseSessionForExpectedPersistence } from "../src/zody-protocol/server-operations.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import {
   buildSessionSnapshot,
   mapMessageWithParts,
@@ -197,7 +197,7 @@ describe("ZCodeProtocolAgentServer", () => {
           id: `retired-provider-writer-${index}`,
           method,
           params: {},
-        } as ZCodeProtocolMessage),
+        } as ZodyProtocolMessage),
       ).resolves.toMatchObject({
         id: `retired-provider-writer-${index}`,
         error: { code: -32601 },
@@ -870,7 +870,7 @@ describe("ZCodeProtocolAgentServer", () => {
 
   it("emits Computer Use lifecycle metadata without a legacy deliveryKind", () => {
     const ingest = vi.fn();
-    const notify = vi.fn<(notification: ZCodeProtocolNotification) => void>();
+    const notify = vi.fn<(notification: ZodyProtocolNotification) => void>();
     const record = {
       app: { sessionId: "sess_cua_sideband" },
       updatedAt: 1_700,
@@ -2000,7 +2000,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("cancels background bash tasks through the session protocol", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     let cancelledTaskId: string | undefined;
     let backgroundTasks: BackgroundTaskInfo[] = [
       {
@@ -2075,7 +2075,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("sends contiguous protocol seq for the visible session event stream", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     const logs: RecordedLog[] = [];
     let eventStore: ZCodeAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
@@ -2237,7 +2237,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("omits repeated scheduled tool input after model streaming tool calls", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     let eventStore: ZCodeAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
@@ -2380,7 +2380,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("coalesces streaming tool input deltas with eager and timestamp-budgeted flushes", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     let eventStore: ZCodeAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
@@ -2508,7 +2508,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("coalesces text and reasoning streaming deltas after the first visible token", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     let eventStore: ZCodeAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
@@ -2632,7 +2632,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("keeps separate text streaming parts in separate protocol batches", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     let eventStore: ZCodeAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
@@ -2874,7 +2874,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("keeps session title generation internals out of the visible event stream", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     let eventStore: ZCodeAppOptions["eventStore"];
     let liveSink: ((event: SessionEvent) => void | Promise<void>) | undefined;
     const server = new ZCodeProtocolAgentServer({
@@ -3980,7 +3980,7 @@ describe("ZCodeProtocolAgentServer", () => {
           "id" in message &&
           message.method === zcodeProtocolMethods.sessionRequestRuntimePreferences
         ) {
-          void server.handleMessage({ id: message.id, ...response } as ZCodeProtocolMessage);
+          void server.handleMessage({ id: message.id, ...response } as ZodyProtocolMessage);
         }
       });
 
@@ -4123,7 +4123,7 @@ describe("ZCodeProtocolAgentServer", () => {
     const messages = written
       .trim()
       .split("\n")
-      .map((line) => JSON.parse(line) as ZCodeProtocolMessage);
+      .map((line) => JSON.parse(line) as ZodyProtocolMessage);
     expect(
       messages.filter(
         (message) =>
@@ -4540,7 +4540,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("keeps server-owned model state and emits state update notifications", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     const server = new ZCodeProtocolAgentServer({
       createZCodeApp: (options) => createFakeApp(options),
       cwd: workspace.workspacePath,
@@ -4747,7 +4747,7 @@ describe("ZCodeProtocolAgentServer", () => {
       });
 
       const record = (
-        server as unknown as { context: ZCodeProtocolAgentServerContext }
+        server as unknown as { context: ZodyProtocolAgentServerContext }
       ).context.sessions.get(sessionId);
       expect(record?.taskType).toBe("workflow_child");
     } finally {
@@ -4983,7 +4983,7 @@ describe("ZCodeProtocolAgentServer", () => {
         !secondSendDuringCompleted
       ) {
         const record = (
-          server as unknown as { context: ZCodeProtocolAgentServerContext }
+          server as unknown as { context: ZodyProtocolAgentServerContext }
         ).context.sessions.get(sessionId);
         finalizationCountDuringCompleted = record?.residencyFinalizationCount;
         activeLockDuringCompleted = record?.activeAbortController;
@@ -5034,7 +5034,7 @@ describe("ZCodeProtocolAgentServer", () => {
     expect(finalizationCountDuringCompleted).toBe(1);
     await vi.waitFor(() => {
       const record = (
-        server as unknown as { context: ZCodeProtocolAgentServerContext }
+        server as unknown as { context: ZodyProtocolAgentServerContext }
       ).context.sessions.get(sessionId);
       expect(record?.residencyFinalizationCount).toBe(0);
     });
@@ -5115,7 +5115,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("bridges protocol permission requests through server-to-client JSON-RPC", async () => {
-    const outgoing: ZCodeProtocolMessage[] = [];
+    const outgoing: ZodyProtocolMessage[] = [];
     const origin = {
       kind: "subagent",
       agentId: "agent_perm",
@@ -5216,7 +5216,7 @@ describe("ZCodeProtocolAgentServer", () => {
   it("reannounces pending protocol permission requests so a later client request can be answered", async () => {
     vi.useFakeTimers();
     try {
-      const outgoing: ZCodeProtocolMessage[] = [];
+      const outgoing: ZodyProtocolMessage[] = [];
       let brokerResultPromise:
         | ReturnType<NonNullable<ZCodeAppOptions["permissionBroker"]>["requestPermission"]>
         | undefined;
@@ -5301,7 +5301,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("bridges AskUserQuestion through protocol user input requests", async () => {
-    const outgoing: ZCodeProtocolMessage[] = [];
+    const outgoing: ZodyProtocolMessage[] = [];
     const origin = {
       kind: "subagent",
       agentId: "agent_ask",
@@ -5411,7 +5411,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("bridges ExitPlanMode approval through protocol user input requests", async () => {
-    const outgoing: ZCodeProtocolMessage[] = [];
+    const outgoing: ZodyProtocolMessage[] = [];
     const origin = {
       kind: "subagent",
       agentId: "agent_exit_plan",
@@ -5514,7 +5514,7 @@ describe("ZCodeProtocolAgentServer", () => {
   it("reannounces pending ExitPlanMode approval so a later client request can be answered", async () => {
     vi.useFakeTimers();
     try {
-      const outgoing: ZCodeProtocolMessage[] = [];
+      const outgoing: ZodyProtocolMessage[] = [];
       let brokerResultPromise:
         | ReturnType<NonNullable<ZCodeAppOptions["permissionBroker"]>["requestPermission"]>
         | undefined;
@@ -6352,7 +6352,7 @@ describe("ZCodeProtocolAgentServer", () => {
   });
 
   it("pauses an active goal when session stop cancels goal continuation", async () => {
-    const notifications: ZCodeProtocolNotification[] = [];
+    const notifications: ZodyProtocolNotification[] = [];
     const abortReasons: string[] = [];
     let resolveContinuationStarted!: () => void;
     const continuationStarted = new Promise<void>((resolve) => {
@@ -7799,7 +7799,7 @@ function messageTexts(
   );
 }
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZCodeProtocolMessage) {
+async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -7845,8 +7845,8 @@ function attachSessionRuntimePreferencesResponder(
           path: string;
         };
   },
-): ZCodeProtocolMessage[] {
-  const requests: ZCodeProtocolMessage[] = [];
+): ZodyProtocolMessage[] {
+  const requests: ZodyProtocolMessage[] = [];
   server.setNotificationSink((message) => {
     if (
       "id" in message &&

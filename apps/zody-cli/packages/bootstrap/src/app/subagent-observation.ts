@@ -6,7 +6,7 @@ import {
   type SessionStorePort,
 } from "@zody/contracts";
 import type { AgentRuntime } from "@zody/core";
-import type { ZCodeSessionSubagentsResult } from "@zody/shared";
+import type { ZodySessionSubagentsResult } from "@zody/shared";
 import { projectSessionTranscript, type SessionTranscriptMessage } from "../session-transcript.js";
 import {
   collectSubagentChildSessionIds,
@@ -33,7 +33,7 @@ export function createSubagentObservation(deps: ObservationDeps) {
   return {
     async readSubagents(
       input: { endedCursor?: string; endedLimit?: number } = {},
-    ): Promise<ZCodeSessionSubagentsResult> {
+    ): Promise<ZodySessionSubagentsResult> {
       const eventStore = deps.runtime.getSessionEventStore();
       const parentSession = await deps.sessionStore.getSession(deps.sessionId);
       if (!parentSession)

@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type {
-  ZCodeModelTrajectoryContentPart,
-  ZCodeModelTrajectoryRecord,
-  ZCodeModelTrajectoryUsage,
+  ZodyModelTrajectoryContentPart,
+  ZodyModelTrajectoryRecord,
+  ZodyModelTrajectoryUsage,
 } from "@zody/services";
 import { Badge } from "@/components/ui/badge.js";
 import { cn } from "@/components/lib/utils.js";
@@ -16,7 +16,7 @@ export function ContentPartView({
   sectionLabel,
   showToolHeader = true,
 }: {
-  part: ZCodeModelTrajectoryContentPart;
+  part: ZodyModelTrajectoryContentPart;
   intl: IntlShape;
   sectionLabel?: string;
   showToolHeader?: boolean;
@@ -164,7 +164,7 @@ export function UsageBadges({
   usage,
   intl,
 }: {
-  usage?: ZCodeModelTrajectoryUsage;
+  usage?: ZodyModelTrajectoryUsage;
   intl: IntlShape;
 }) {
   if (!usage) {
@@ -225,7 +225,7 @@ export function EmptyState({
   );
 }
 
-export function summarizeRecords(records: ZCodeModelTrajectoryRecord[]): {
+export function summarizeRecords(records: ZodyModelTrajectoryRecord[]): {
   totalTokens: number;
   models: string[];
 } {

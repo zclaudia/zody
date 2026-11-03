@@ -2,7 +2,7 @@ import {
   ZCODE_AGENT_PROVIDER,
   ZCODE_COMMAND_AGENT_SOURCES,
   ZCODE_DATA_ROOT_DIR_NAME,
-  type ZCodeProvider,
+  type ZodyProvider,
   type CommandAgentSource,
 } from "@zody/shared";
 
@@ -14,7 +14,7 @@ export const COMMAND_AGENT_SOURCE_META: Record<
   CommandAgentSource,
   {
     labelId: string;
-    provider: ZCodeProvider;
+    provider: ZodyProvider;
     pathHint: string;
   }
 > = {

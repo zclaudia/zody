@@ -10,14 +10,14 @@ import {
   resolveZCodeVisibleSessionTitle,
   ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeTaskGoal,
-  type ZCodeTaskMode,
-  type ZCodeTaskMeta,
-  type ZCodeMessagePart,
-  type ZCodeSessionMode,
-  type ZCodeSessionStateSnapshot,
-  type ZCodeWorkspaceEvent,
-  type ZCodeWorkspaceTaskListChanged,
+  type ZodyTaskGoal,
+  type ZodyTaskMode,
+  type ZodyTaskMeta,
+  type ZodyMessagePart,
+  type ZodySessionMode,
+  type ZodySessionStateSnapshot,
+  type ZodyWorkspaceEvent,
+  type ZodyWorkspaceTaskListChanged,
 } from "@zody/shared";
 import {
   PROTOCOL_V4_LIMITS,
@@ -38,11 +38,11 @@ import {
 import { Emitter, type Event, type IDisposable } from "@zody/rpc";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
-import type { ZCodeWorkspaceEventSubscriptionParams } from "#src/session/zodyTaskListTypes.js";
+import type { ZodyWorkspaceEventSubscriptionParams } from "#src/session/zodyTaskListTypes.js";
 import type {
-  IZCodeAgentService,
-  ZCodeAgentSessionTarget,
-  ZCodeAgentWorkspaceTarget,
+  IZodyAgentService,
+  ZodyAgentSessionTarget,
+  ZodyAgentWorkspaceTarget,
 } from "./zodyAgent.js";
 import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zodyAgent.js";
 import { formatTaskMetaModelSelectionFromSnapshot } from "./zodyConfigOptions.js";
@@ -71,7 +71,7 @@ type TopicSubscribeReason =
 type TopicRetryKind = "provider-not-ready" | "transient";
 type TaskIndexTopicKind = "sessions-index" | "workspace-config";
 
-type WorkspaceEventInput = string | ZCodeWorkspaceEventSubscriptionParams;
+type WorkspaceEventInput = string | ZodyWorkspaceEventSubscriptionParams;
 
 interface WorkspaceBroadcastTarget {
   workspacePath: string;
@@ -79,32 +79,32 @@ interface WorkspaceBroadcastTarget {
   taskId?: string;
 }
 
-export interface ZCodeTaskIndexTerminalEvent {
-  target: ZCodeAgentSessionTarget;
+export interface ZodyTaskIndexTerminalEvent {
+  target: ZodyAgentSessionTarget;
   /** v4 phase 终态映射：completedSuccess/completedInterrupted → turn.completed；error → turn.failed。 */
   kind: "turn.completed" | "turn.failed";
 }
 
-export interface ZCodeTaskIndexReadyEvent {
-  target: ZCodeAgentSessionTarget;
+export interface ZodyTaskIndexReadyEvent {
+  target: ZodyAgentSessionTarget;
   /** v4 phase 终态映射：agent 收口后可接受下一条输入的 ready 边界。 */
   reason: "prompt_completed" | "prompt_failed";
 }
 
-export interface ZCodeTaskIndexSyncer {
+export interface ZodyTaskIndexSyncer {
   /**
    * 幂等地为指定 workspace 建立 v4 后台摄入订阅（sessions-index + workspace-config），
    * 把 CLI 权威投影的会话终态/标题/配置目录落到 task index sqlite 与 workspace 广播。
    * 同一 workspace 多次调用只会建立一次。
    */
-  ensureWorkspaceSubscription(target: ZCodeAgentWorkspaceTarget): void;
+  ensureWorkspaceSubscription(target: ZodyAgentWorkspaceTarget): void;
   /**
    * 兼容入口（旧 shadow 订阅 API 形状）：session 维度的激活信号统一收敛为
    * workspace 级 v4 订阅。options.includeSnapshot 在 v4 摄入下无对应语义（初始
    * sessions-index snapshot 只静默补缺失行，不回放终态/广播），保留参数只为不动调用面。
    */
   ensureSessionSubscription(
-    target: ZCodeAgentSessionTarget,
+    target: ZodyAgentSessionTarget,
     options?: {
       includeSnapshot?: boolean;
     },
@@ -116,26 +116,26 @@ export interface ZCodeTaskIndexSyncer {
    * v4 命令 + sessions-index/workspace 事件），让 sqlite 拿到最新 title/updatedAt 并触发 UI 列表刷新。
    */
   syncSnapshotAndBroadcast(
-    snapshot: ZCodeSessionStateSnapshot,
+    snapshot: ZodySessionStateSnapshot,
     options: {
       modelOverride?: string;
       thoughtLevelOverride?: string;
       moveGroupedTaskToTop?: boolean;
-      unreadSignal?: ZCodeWorkspaceTaskListChanged["unreadSignal"];
+      unreadSignal?: ZodyWorkspaceTaskListChanged["unreadSignal"];
       /**
        * 设计修正：必填。切模型（task_model_changed）/快照收敛（task_status_changed）
        * 这类变更不得落到 task_meta_changed——后者会被 UI 当成归属相关变更
        * 触发全局 membership 重拉和列表整刷。
        */
-      broadcastReason: ZCodeWorkspaceTaskListChanged["reason"];
+      broadcastReason: ZodyWorkspaceTaskListChanged["reason"];
     },
-  ): Promise<ZCodeTaskMeta>;
+  ): Promise<ZodyTaskMeta>;
   /**
    * 只更新 task index 中的模型记录，不广播历史 snapshot。
    * 发送前 resume 会关闭 snapshot 广播，避免旧终态覆盖本地 streaming UI，
    * 但仍需要把 sqlite 的 model 从已删除历史模型更新到本次实际使用的可用模型。
    */
-  syncTaskModel(target: ZCodeAgentSessionTarget, model: string): Promise<ZCodeTaskMeta | null>;
+  syncTaskModel(target: ZodyAgentSessionTarget, model: string): Promise<ZodyTaskMeta | null>;
   /**
    * 主动触发一次 workspace_task_list_changed 广播。
    * 给 adapter 用：archive / rename / pin / delete 等 task 元数据变更后仍要广播。
@@ -145,34 +145,34 @@ export interface ZCodeTaskIndexSyncer {
    */
   emitWorkspaceTaskListChanged(
     target: WorkspaceBroadcastTarget,
-    meta: ZCodeTaskMeta | undefined,
-    reason: ZCodeWorkspaceTaskListChanged["reason"],
-    options?: Pick<ZCodeWorkspaceTaskListChanged, "unreadSignal">,
+    meta: ZodyTaskMeta | undefined,
+    reason: ZodyWorkspaceTaskListChanged["reason"],
+    options?: Pick<ZodyWorkspaceTaskListChanged, "unreadSignal">,
   ): void;
   /**
    * 获取共享的 workspace emitter，给 adapter 用来 fire 非 task_list_changed 类事件
    * （如 workspace_config_options_update）。这样 adapter 和 syncer 共用同一 emitter，
    * 订阅者只需要订阅一次即可收到全部事件。
    */
-  getWorkspaceEmitter(workspace: WorkspaceEventInput): Emitter<ZCodeWorkspaceEvent>;
+  getWorkspaceEmitter(workspace: WorkspaceEventInput): Emitter<ZodyWorkspaceEvent>;
   /** 订阅 workspace 维度事件流。adapter.onDynamicWorkspaceEvent 直接转发到这里。 */
-  onDynamicWorkspaceEvent(workspace: WorkspaceEventInput): Event<ZCodeWorkspaceEvent>;
+  onDynamicWorkspaceEvent(workspace: WorkspaceEventInput): Event<ZodyWorkspaceEvent>;
   /**
    * 订阅 v4 sessions-index 观察到的会话 phase 终态迁移。
    * 这不是 UI stream，只给 host runtime command queue 等 services 内部状态收口使用。
    */
-  onSessionTerminalEvent: Event<ZCodeTaskIndexTerminalEvent>;
+  onSessionTerminalEvent: Event<ZodyTaskIndexTerminalEvent>;
   /**
    * 订阅会话收口后的 prompt ready 状态（phase 进入 completedSuccess/completedInterrupted/error）。
    * 手机 host command queue 只能以这个事件作为继续发送下一条的边界。
    */
-  onSessionReadyEvent: Event<ZCodeTaskIndexReadyEvent>;
+  onSessionReadyEvent: Event<ZodyTaskIndexReadyEvent>;
   /** 释放所有 v4 订阅和 workspace emitter；不关闭注入的 taskIndexRepo。 */
   disposeAll(): void;
 }
 
-interface CreateZCodeTaskIndexSyncerOptions {
-  agentService: IZCodeAgentService;
+interface CreateZodyTaskIndexSyncerOptions {
+  agentService: IZodyAgentService;
   taskIndexRepo: TaskIndexRepo;
 }
 
@@ -183,7 +183,7 @@ function isTerminalPhase(phase: SessionPhase): boolean {
 
 function resolveTerminalUnreadSignal(
   summary: Pick<SessionSummary, "phase" | "goalStatus">,
-): ZCodeWorkspaceTaskListChanged["unreadSignal"] {
+): ZodyWorkspaceTaskListChanged["unreadSignal"] {
   if (summary.phase === "error") {
     return "background_terminal";
   }
@@ -196,7 +196,7 @@ function resolveTerminalUnreadSignal(
   return undefined;
 }
 
-function taskStatusFromSummaryPhase(phase: SessionPhase): ZCodeTaskMeta["status"] {
+function taskStatusFromSummaryPhase(phase: SessionPhase): ZodyTaskMeta["status"] {
   switch (phase) {
     case "running":
     case "prewarming":
@@ -212,9 +212,9 @@ function taskStatusFromSummaryPhase(phase: SessionPhase): ZCodeTaskMeta["status"
 }
 
 function buildBaselineMetaFromSummary(
-  target: ZCodeAgentWorkspaceTarget,
+  target: ZodyAgentWorkspaceTarget,
   summary: SessionSummary,
-): ZCodeTaskMeta {
+): ZodyTaskMeta {
   const status = taskStatusFromSummaryPhase(summary.phase);
   return {
     taskId: summary.sessionId,
@@ -233,7 +233,7 @@ function buildBaselineMetaFromSummary(
 }
 
 interface WorkspaceIngestState {
-  target: ZCodeAgentWorkspaceTarget;
+  target: ZodyAgentWorkspaceTarget;
   /** 当前已 attach 的 Agent runtime generation；null = dormant。 */
   runtimeGeneration: number | null;
   /** sessions-index 订阅代际（帧过滤闸门；null = 订阅建立中）。 */
@@ -298,8 +298,8 @@ interface PendingTopicFrames<TFrame> {
 }
 
 export function createZCodeTaskIndexSyncer(
-  options: CreateZCodeTaskIndexSyncerOptions,
-): ZCodeTaskIndexSyncer {
+  options: CreateZodyTaskIndexSyncerOptions,
+): ZodyTaskIndexSyncer {
   const { agentService, taskIndexRepo } = options;
   // task index 的事件摄入从旧协议 shadow 订阅（session/subscribe +
   // session/event + state.updated）整体迁到 v4 帧——sessions-index topic 提供
@@ -310,9 +310,9 @@ export function createZCodeTaskIndexSyncer(
   // 之前 workspaceEmitters 私有在 adapter 里，syncer 写完 sqlite 没有广播渠道，
   // UI 永远收不到 workspace_task_list_changed。把 emitter 上提到 syncer，adapter 改为转发，
   // 让 adapter 路径和 desktop-continuous 路径共用同一份订阅，事件不再分裂。
-  const workspaceEmitters = new Map<string, Emitter<ZCodeWorkspaceEvent>>();
-  const terminalEventEmitter = new Emitter<ZCodeTaskIndexTerminalEvent>();
-  const readyEventEmitter = new Emitter<ZCodeTaskIndexReadyEvent>();
+  const workspaceEmitters = new Map<string, Emitter<ZodyWorkspaceEvent>>();
+  const terminalEventEmitter = new Emitter<ZodyTaskIndexTerminalEvent>();
+  const readyEventEmitter = new Emitter<ZodyTaskIndexReadyEvent>();
   let disposed = false;
 
   const indexTopicFor = (state: WorkspaceIngestState) =>
@@ -457,7 +457,7 @@ export function createZCodeTaskIndexSyncer(
     if (configSubscriptionId) void unsubscribeConfig(state, configSubscriptionId);
   };
 
-  function getWorkspaceEmitter(workspace: WorkspaceEventInput): Emitter<ZCodeWorkspaceEvent> {
+  function getWorkspaceEmitter(workspace: WorkspaceEventInput): Emitter<ZodyWorkspaceEvent> {
     const key =
       typeof workspace === "string"
         ? workspace
@@ -467,7 +467,7 @@ export function createZCodeTaskIndexSyncer(
           });
     let emitter = workspaceEmitters.get(key);
     if (!emitter) {
-      emitter = new Emitter<ZCodeWorkspaceEvent>();
+      emitter = new Emitter<ZodyWorkspaceEvent>();
       workspaceEmitters.set(key, emitter);
     }
     return emitter;
@@ -475,9 +475,9 @@ export function createZCodeTaskIndexSyncer(
 
   function emitWorkspaceTaskListChanged(
     target: WorkspaceBroadcastTarget,
-    taskMeta: ZCodeTaskMeta | undefined,
-    reason: ZCodeWorkspaceTaskListChanged["reason"],
-    options?: Pick<ZCodeWorkspaceTaskListChanged, "unreadSignal">,
+    taskMeta: ZodyTaskMeta | undefined,
+    reason: ZodyWorkspaceTaskListChanged["reason"],
+    options?: Pick<ZodyWorkspaceTaskListChanged, "unreadSignal">,
   ): void {
     // 排查日志（左侧列表随输入框操作刷新）：确认哪些操作在发 task list 广播、reason 是什么。
     logger.debug(
@@ -499,11 +499,11 @@ export function createZCodeTaskIndexSyncer(
   }
 
   async function resyncTaskIndexRowFromAgent(
-    target: ZCodeAgentSessionTarget,
+    target: ZodyAgentSessionTarget,
     reason: string,
     options?: {
       moveGroupedTaskToTop?: boolean;
-      unreadSignal?: ZCodeWorkspaceTaskListChanged["unreadSignal"];
+      unreadSignal?: ZodyWorkspaceTaskListChanged["unreadSignal"];
     },
   ): Promise<void> {
     try {
@@ -536,9 +536,9 @@ export function createZCodeTaskIndexSyncer(
   }
 
   function sessionTargetFrom(
-    workspace: ZCodeAgentWorkspaceTarget,
+    workspace: ZodyAgentWorkspaceTarget,
     sessionId: string,
-  ): ZCodeAgentSessionTarget {
+  ): ZodyAgentSessionTarget {
     return {
       workspacePath: workspace.workspacePath,
       workspaceIdentity: workspace.workspaceIdentity,
@@ -546,7 +546,7 @@ export function createZCodeTaskIndexSyncer(
     };
   }
 
-  function broadcastTargetFrom(target: ZCodeAgentSessionTarget): WorkspaceBroadcastTarget {
+  function broadcastTargetFrom(target: ZodyAgentSessionTarget): WorkspaceBroadcastTarget {
     return {
       workspacePath: target.workspacePath,
       workspaceIdentity: target.workspaceIdentity,
@@ -554,7 +554,7 @@ export function createZCodeTaskIndexSyncer(
     };
   }
 
-  function emitTerminalAndReady(target: ZCodeAgentSessionTarget, summary: SessionSummary): void {
+  function emitTerminalAndReady(target: ZodyAgentSessionTarget, summary: SessionSummary): void {
     const phase = summary.phase;
     const failed = phase === "error";
     // 顺序保持旧协议语义：先 turn 终态（收口当前 input），再 prompt ready（放行下一条）。
@@ -570,7 +570,7 @@ export function createZCodeTaskIndexSyncer(
 
   /** phase 终态迁移 → sqlite status 收敛 + 广播 + 回源正文索引。 */
   function applyTerminalTransition(
-    target: ZCodeAgentSessionTarget,
+    target: ZodyAgentSessionTarget,
     summary: SessionSummary,
     options?: { moveGroupedTaskToTop?: boolean },
   ): void {
@@ -629,7 +629,7 @@ export function createZCodeTaskIndexSyncer(
   }
 
   /** 标题变化 → sqlite title patch；行缺失回源完整 snapshot（对齐旧 first_input 语义）。 */
-  function applyTitleChange(target: ZCodeAgentSessionTarget, title: string): void {
+  function applyTitleChange(target: ZodyAgentSessionTarget, title: string): void {
     const updatedAt = Date.now();
     void taskIndexRepo
       .applyAgentPatch({
@@ -1608,7 +1608,7 @@ export function createZCodeTaskIndexSyncer(
         resubscribeWorkspaceAfterRuntimeRestart(event.workspaceKey),
       );
 
-  function ensureWorkspaceSubscription(target: ZCodeAgentWorkspaceTarget): void {
+  function ensureWorkspaceSubscription(target: ZodyAgentWorkspaceTarget): void {
     if (disposed) {
       return;
     }
@@ -1665,15 +1665,15 @@ export function createZCodeTaskIndexSyncer(
   }
 
   async function syncSnapshotAndBroadcast(
-    snapshot: ZCodeSessionStateSnapshot,
+    snapshot: ZodySessionStateSnapshot,
     options: {
       modelOverride?: string;
       thoughtLevelOverride?: string;
       moveGroupedTaskToTop?: boolean;
-      unreadSignal?: ZCodeWorkspaceTaskListChanged["unreadSignal"];
-      broadcastReason: ZCodeWorkspaceTaskListChanged["reason"];
+      unreadSignal?: ZodyWorkspaceTaskListChanged["unreadSignal"];
+      broadcastReason: ZodyWorkspaceTaskListChanged["reason"];
     },
-  ): Promise<ZCodeTaskMeta> {
+  ): Promise<ZodyTaskMeta> {
     const meta = buildMetaFromSnapshot(snapshot, options);
     // 旧 child 标签页的显式 resume 仍会同步快照；只读详情不能重新写成主任务。
     if (snapshot.session.sessionKind === "subagent_child") return meta;
@@ -1727,9 +1727,9 @@ export function createZCodeTaskIndexSyncer(
   }
 
   async function syncTaskModel(
-    target: ZCodeAgentSessionTarget,
+    target: ZodyAgentSessionTarget,
     model: string,
-  ): Promise<ZCodeTaskMeta | null> {
+  ): Promise<ZodyTaskMeta | null> {
     const normalizedModel = model.trim();
     if (!normalizedModel) {
       return null;
@@ -1751,7 +1751,7 @@ export function createZCodeTaskIndexSyncer(
     ensureWorkspaceSubscription,
 
     ensureSessionSubscription(
-      target: ZCodeAgentSessionTarget,
+      target: ZodyAgentSessionTarget,
       _options?: {
         includeSnapshot?: boolean;
       },
@@ -1821,15 +1821,15 @@ export function createZCodeTaskIndexSyncer(
 }
 
 function buildMetaFromSnapshot(
-  snapshot: ZCodeSessionStateSnapshot,
+  snapshot: ZodySessionStateSnapshot,
   options?: {
     modelOverride?: string;
     thoughtLevelOverride?: string;
   },
-): ZCodeTaskMeta {
+): ZodyTaskMeta {
   const modelOverride = options?.modelOverride?.trim();
   const thoughtLevelOverride = options?.thoughtLevelOverride?.trim();
-  const meta: ZCodeTaskMeta = {
+  const meta: ZodyTaskMeta = {
     taskId: snapshot.session.sessionId,
     traceId: snapshot.session.traceId ?? generateTraceId(snapshot.session.sessionId),
     title: deriveTitleFromSnapshot(snapshot),
@@ -1872,7 +1872,7 @@ function buildMetaFromSnapshot(
   return meta;
 }
 
-function deriveTitleFromSnapshot(snapshot: ZCodeSessionStateSnapshot): string {
+function deriveTitleFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
   return resolveZCodeVisibleSessionTitle({
     title: snapshot.session.title,
     messages: snapshot.messages,
@@ -1883,7 +1883,7 @@ function deriveTitleFromSnapshot(snapshot: ZCodeSessionStateSnapshot): string {
 // createSession 刚返回时 snapshot 既没有真实 title 也没有 user message，
 // 把这种"空白会话"广播出去会让侧边栏先闪一个 "New session" 占位符。
 // 这里判断"是否已有用户可见内容"，没有就只写 sqlite 不广播，等真实 title 到了再广播。
-function hasUserVisibleContent(snapshot: ZCodeSessionStateSnapshot): boolean {
+function hasUserVisibleContent(snapshot: ZodySessionStateSnapshot): boolean {
   const title = snapshot.session.title?.trim() ?? "";
   if (title && !isZCodeGoalContinuationReminderText(title)) {
     return true;
@@ -1903,7 +1903,7 @@ const TASK_SEARCH_TEXT_MAX_CHARS = 200_000;
 // 全局会话搜索只索引默认可见的聊天正文，不包含思考过程、tool 调用和 compaction 折叠区。
 // assistant 的 parts 可能既有历史正文又有 latest 正文，这里只取最后一段 text part，
 // 与 UI 默认折叠后展示的范围一致。
-function buildSearchableTextFromSnapshot(snapshot: ZCodeSessionStateSnapshot): string {
+function buildSearchableTextFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
   const parts: string[] = [];
   let total = 0;
   // /goal 自动续跑会把内部 system-reminder 作为 runtime user turn 持久化；
@@ -1912,7 +1912,7 @@ function buildSearchableTextFromSnapshot(snapshot: ZCodeSessionStateSnapshot): s
     target: snapshot.projection.target,
   })) {
     const textParts = message.parts.filter(
-      (part): part is Extract<ZCodeMessagePart, { type: "text" }> => part.type === "text",
+      (part): part is Extract<ZodyMessagePart, { type: "text" }> => part.type === "text",
     );
     if (textParts.length === 0) {
       continue;
@@ -1937,13 +1937,13 @@ function buildSearchableTextFromSnapshot(snapshot: ZCodeSessionStateSnapshot): s
   return parts.join("\n").slice(0, TASK_SEARCH_TEXT_MAX_CHARS);
 }
 
-function fromZCodeMode(mode: ZCodeSessionMode): ZCodeTaskMode {
+function fromZCodeMode(mode: ZodySessionMode): ZodyTaskMode {
   return mode === "build" ? "build" : mode;
 }
 
 function fromZCodeGoal(
-  goal: NonNullable<ZCodeSessionStateSnapshot["projection"]["target"]>,
-): ZCodeTaskGoal {
+  goal: NonNullable<ZodySessionStateSnapshot["projection"]["target"]>,
+): ZodyTaskGoal {
   return {
     sessionID: goal.sessionId,
     targetID: goal.targetId,

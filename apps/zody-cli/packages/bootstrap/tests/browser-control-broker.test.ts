@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { zcodeProtocolMethods } from "@zody/shared";
 import { createProtocolBrowserControlBroker } from "../src/zody-protocol/browser-control-broker.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 const IAB_DESCRIPTOR = {
   id: "iab-runtime-1",
@@ -24,7 +24,7 @@ function createContext(
     workspaceKey?: string;
     workspacePath?: string;
   } = {},
-): ZCodeProtocolAgentServerContext {
+): ZodyProtocolAgentServerContext {
   const sessionId = options.sessionId ?? "sess-1";
   const workspacePath = options.workspacePath ?? "/repo";
   return {
@@ -43,7 +43,7 @@ function createContext(
         },
       ],
     ]),
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
 }
 
 describe("createProtocolBrowserControlBroker", () => {
@@ -155,7 +155,7 @@ describe("createProtocolBrowserControlBroker", () => {
     const context = {
       requestClient,
       sessions: new Map(),
-    } as unknown as ZCodeProtocolAgentServerContext;
+    } as unknown as ZodyProtocolAgentServerContext;
     const broker = createProtocolBrowserControlBroker(context);
 
     await expect(broker.list({ sessionId: "missing-session" })).rejects.toThrow(

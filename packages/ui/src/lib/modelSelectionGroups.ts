@@ -1,6 +1,6 @@
 import {
   isZCodeAgentProvider,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import type { ModelSelectionView } from "@zody/services";
 import type { ModelSelectGroup } from "@/ModelConfigSelect.js";
@@ -19,7 +19,7 @@ export interface ModelProviderGroupLabelOptions {
 }
 
 function supportsRegistryApiFormat(
-  selectedProvider: ZCodeProvider,
+  selectedProvider: ZodyProvider,
   apiFormat: string | null | undefined,
 ): boolean {
   if (!apiFormat) return false;
@@ -28,7 +28,7 @@ function supportsRegistryApiFormat(
 }
 
 export function buildRegistryModelSelectGroups(
-  selectedProvider: ZCodeProvider,
+  selectedProvider: ZodyProvider,
   view: ModelSelectionView,
   // fork（F4.11）：账号套餐分组标签（Coding Plan/Start Plan/Team）随官方账号体系删除；
   // 参数保留是为了不一次性改动所有调用方，后续 UI 文案任务（F7.4）再清理。

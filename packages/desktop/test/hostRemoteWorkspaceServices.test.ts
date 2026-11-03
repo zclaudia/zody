@@ -14,9 +14,9 @@ import {
   IOnboardingRecordService,
   ICredentialService,
   IBroadcastService,
-  IZCodeAgentService,
-  IZCodeSessionService,
-  IZCodeTaskService,
+  IZodyAgentService,
+  IZodySessionService,
+  IZodyTaskService,
   IFileWatcherService,
   IModelSelectionService,
   IProviderSettingsService,
@@ -30,7 +30,7 @@ import {
   ISubagentsService,
   ICommandsService,
   ISettingsSyncService,
-  type ZCodeAgentSessionRuntimePreferencesRequest,
+  type ZodyAgentSessionRuntimePreferencesRequest,
 } from "@zody/services";
 import {
   type ApiClient,
@@ -100,7 +100,7 @@ function createPresetFetchMock(modelContextBudgetStrategy: "legacy" | "preflight
 }
 
 function makeRemoteServices() {
-  const runtimePreferencesEmitter = new Emitter<ZCodeAgentSessionRuntimePreferencesRequest>();
+  const runtimePreferencesEmitter = new Emitter<ZodyAgentSessionRuntimePreferencesRequest>();
 
   return {
     fileService: { remote: "file" },
@@ -184,11 +184,11 @@ describe("remote workspace host service wiring", () => {
     expect(services.get(ISystemService)).toBe(remoteServices.systemService);
     expect(services.get(ITerminalService)).toBe(remoteServices.terminalService);
     expect(services.get(IFileWatcherService)).toBe(remoteServices.fileWatcherService);
-    expect(services.get(IZCodeTaskService)).toEqual({
+    expect(services.get(IZodyTaskService)).toEqual({
       wrapped: remoteServices.zcodeTaskService,
     });
-    expect(services.get(IZCodeAgentService)).toBe(remoteServices.zcodeAgentService);
-    expect(services.get(IZCodeSessionService)).toBe(remoteServices.zcodeSessionService);
+    expect(services.get(IZodyAgentService)).toBe(remoteServices.zcodeAgentService);
+    expect(services.get(IZodySessionService)).toBe(remoteServices.zcodeSessionService);
 
     expect(services.get(IClientConfigService)).toBe(clientConfigService);
     expect(services.get(ISettingService)).toBeTruthy();
@@ -550,7 +550,7 @@ describe("remote workspace host service wiring", () => {
         }) as never,
     });
 
-    await services.get(IZCodeTaskService).sendPrompt({
+    await services.get(IZodyTaskService).sendPrompt({
       taskId: "task-1",
       traceId: "input-1",
       content: "read /tmp/host-paste.txt",

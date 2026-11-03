@@ -18,7 +18,7 @@ import {
 } from "@zody/rpc";
 import {
   ServiceCollection,
-  IZCodeAgentService,
+  IZodyAgentService,
   createZCodeAgentConnectionScope,
   IFileService,
   IGitService,
@@ -92,7 +92,7 @@ function setupChannelServer(
   const rawServer = new ChannelServer(protocol, "server");
   // 用日志中间件包装，统一记录所有 RPC 调用
   const server = new LoggingChannelServer(rawServer, log);
-  const agentService = services.getOptional(IZCodeAgentService);
+  const agentService = services.getOptional(IZodyAgentService);
   // fork（bot channels 移除）：第三方 IM bot 的 topic-resource relay 注册（TopicResourcePeers
   // attach + wrapAgent）随 bot channels 整体删除；desktop-continuous 受信 Host 连接仍保留
   // 反向 ChannelClient 结构（Server→Host 方向的通道客户端），仅不再挂载 relay 频道。
@@ -107,7 +107,7 @@ function setupChannelServer(
     : undefined;
   const overrides = new Map<string, unknown>();
   if (connectionScope) {
-    overrides.set(IZCodeAgentService.channelName, connectionScope.service);
+    overrides.set(IZodyAgentService.channelName, connectionScope.service);
   }
   // Provisioning 携带跨 Environment 凭据，只允许 Desktop trusted host 使用；普通 Web
   // remote/replayable 客户端即使知道频道名，也不能获得 target 写入接口。

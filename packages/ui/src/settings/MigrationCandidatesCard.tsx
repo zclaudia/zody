@@ -1,8 +1,8 @@
 import { Check, Download, Loader2, TriangleAlert } from "lucide-react";
 import type {
-  ZCodeImportSessionsResult,
-  ZCodeImportableSessionCandidate,
-  ZCodeImportedSessionSkippedItem,
+  ZodyImportSessionsResult,
+  ZodyImportableSessionCandidate,
+  ZodyImportedSessionSkippedItem,
 } from "@zody/shared";
 import type { ClaudeSessionMigrationSupportState } from "@/hooks/useClaudeSessionMigration.js";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.js";
@@ -30,7 +30,7 @@ function ImportIssuesList({
   items,
 }: {
   title: string;
-  items: ZCodeImportedSessionSkippedItem[];
+  items: ZodyImportedSessionSkippedItem[];
 }) {
   const { intl } = useZCodeIntl();
 
@@ -83,11 +83,11 @@ export function MigrationCandidatesCard({
   onImportSelected,
 }: {
   supportState: ClaudeSessionMigrationSupportState;
-  candidates: ZCodeImportableSessionCandidate[];
+  candidates: ZodyImportableSessionCandidate[];
   selectedSessionIds: string[];
   selectedCount: number;
   importError: string | null;
-  lastImportResult: ZCodeImportSessionsResult | null;
+  lastImportResult: ZodyImportSessionsResult | null;
   isImporting: boolean;
   dateTimeFormatter: Intl.DateTimeFormat;
   onToggleSelection: (sessionId: string) => void;

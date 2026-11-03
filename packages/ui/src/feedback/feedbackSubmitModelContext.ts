@@ -1,5 +1,5 @@
 import { decodeCustomModelValue } from "@zody/shared";
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 
 const FEEDBACK_MODEL_OPTIONS_PREVIEW_LIMIT = 12;
 
@@ -11,7 +11,7 @@ export interface FeedbackAgentModelContext {
 }
 
 export function readCurrentAgentModelContext(
-  configOptions?: readonly ZCodeConfigOption[] | null,
+  configOptions?: readonly ZodyConfigOption[] | null,
 ): FeedbackAgentModelContext {
   const modelOption = configOptions?.find(
     (option) => option.category === "model" && option.type === "select",

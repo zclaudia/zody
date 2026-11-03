@@ -1,4 +1,4 @@
-import type { ZCodeConfigOption, ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyConfigOption, ZodyTaskMeta } from "@zody/shared";
 import { getZCodeAgentModeSelectOptions } from "@zody/shared";
 import {
   decodeCustomModelValue,
@@ -52,7 +52,7 @@ export function resolveGlmRecoveredTaskModelValue(
 }
 
 export function resolveRecoveredTaskModelValue(
-  taskMeta: Pick<ZCodeTaskMeta, "provider" | "model">,
+  taskMeta: Pick<ZodyTaskMeta, "provider" | "model">,
 ): string | null {
   const normalizedTaskModel = taskMeta.model?.trim();
   if (!normalizedTaskModel || isSyntheticModelPlaceholder(normalizedTaskModel)) {
@@ -73,9 +73,9 @@ function resolveModelOptionName(modelValue: string): string {
 }
 
 function ensureModelOptionValue(
-  option: ZCodeConfigOption,
+  option: ZodyConfigOption,
   modelValue: string,
-): ZCodeConfigOption {
+): ZodyConfigOption {
   const options = option.options ?? [];
   const hasOption = options.some((candidate) => candidate.value === modelValue);
   if (hasOption && option.currentValue === modelValue) {
@@ -97,7 +97,7 @@ function ensureModelOptionValue(
   };
 }
 
-function createRecoveredModelOption(modelValue: string): ZCodeConfigOption {
+function createRecoveredModelOption(modelValue: string): ZodyConfigOption {
   return {
     category: "model",
     currentValue: modelValue,
@@ -113,7 +113,7 @@ function createRecoveredModelOption(modelValue: string): ZCodeConfigOption {
   };
 }
 
-function createRecoveredModeOption(modeValue: string): ZCodeConfigOption {
+function createRecoveredModeOption(modeValue: string): ZodyConfigOption {
   return {
     category: "mode",
     currentValue: modeValue,
@@ -124,7 +124,7 @@ function createRecoveredModeOption(modeValue: string): ZCodeConfigOption {
   };
 }
 
-function createRecoveredThoughtLevelOption(thoughtLevel: string): ZCodeConfigOption {
+function createRecoveredThoughtLevelOption(thoughtLevel: string): ZodyConfigOption {
   return {
     category: "thought_level",
     currentValue: thoughtLevel,
@@ -141,9 +141,9 @@ function createRecoveredThoughtLevelOption(thoughtLevel: string): ZCodeConfigOpt
 }
 
 function ensureSelectOptionCurrentValue(
-  option: ZCodeConfigOption,
+  option: ZodyConfigOption,
   value: string,
-): ZCodeConfigOption {
+): ZodyConfigOption {
   const options = option.options ?? [];
   const hasOption = options.some((candidate) => candidate.value === value);
   if (hasOption && option.currentValue === value) {
@@ -169,9 +169,9 @@ export function mergeRecoveredTaskModelConfigOptions({
   taskMeta,
   configOptions,
 }: {
-  taskMeta: Pick<ZCodeTaskMeta, "provider" | "model">;
-  configOptions: readonly ZCodeConfigOption[];
-}): ZCodeConfigOption[] | null {
+  taskMeta: Pick<ZodyTaskMeta, "provider" | "model">;
+  configOptions: readonly ZodyConfigOption[];
+}): ZodyConfigOption[] | null {
   const recoveredModelValue = resolveRecoveredTaskModelValue(taskMeta);
   if (!recoveredModelValue) {
     return null;
@@ -206,10 +206,10 @@ export function resolveTaskRestorePreloadConfigOptions({
   taskMeta,
   cachedTaskConfigOptions,
 }: {
-  taskMeta: Pick<ZCodeTaskMeta, "provider" | "model"> &
-    Partial<Pick<ZCodeTaskMeta, "mode" | "thoughtLevel">>;
-  cachedTaskConfigOptions?: readonly ZCodeConfigOption[];
-}): ZCodeConfigOption[] {
+  taskMeta: Pick<ZodyTaskMeta, "provider" | "model"> &
+    Partial<Pick<ZodyTaskMeta, "mode" | "thoughtLevel">>;
+  cachedTaskConfigOptions?: readonly ZodyConfigOption[];
+}): ZodyConfigOption[] {
   let cachedOptions = [...(cachedTaskConfigOptions ?? [])];
   const recoveredOptions = mergeRecoveredTaskModelConfigOptions({
     taskMeta,
@@ -265,9 +265,9 @@ export function mergeGlmRecoveredTaskModelConfigOptions({
   taskMeta,
   configOptions,
 }: {
-  taskMeta: Pick<ZCodeTaskMeta, "provider" | "model">;
-  configOptions: readonly ZCodeConfigOption[];
-}): ZCodeConfigOption[] | null {
+  taskMeta: Pick<ZodyTaskMeta, "provider" | "model">;
+  configOptions: readonly ZodyConfigOption[];
+}): ZodyConfigOption[] | null {
   if (taskMeta.provider !== "glm") {
     return null;
   }

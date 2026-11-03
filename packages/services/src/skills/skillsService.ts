@@ -16,7 +16,7 @@ import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parse as parseYaml } from "yaml";
 import type {
-  ZCodeProvider,
+  ZodyProvider,
   SkillDiagnostic,
   SkillMetadata,
   SkillScope,
@@ -241,7 +241,7 @@ function hashStableIdPart(value: string): string {
 }
 
 function buildSkillId(params: {
-  provider: ZCodeProvider;
+  provider: ZodyProvider;
   scope: SkillScope;
   name: string;
   path: string;
@@ -850,7 +850,7 @@ async function discoverSkills(params: {
   workspacePath: string;
   workspaceIdentity?: string;
   includeUserSkills: boolean;
-  provider: ZCodeProvider;
+  provider: ZodyProvider;
 }): Promise<DiscoverResult> {
   const workspaceRoots = dedupeRoots(await resolveAncestorWorkspaceRoots(params.workspacePath));
   const roots: SkillRootDescriptor[] = workspaceRoots.map((rootPath) => ({
@@ -1054,7 +1054,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
     async list(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
     }): Promise<SkillsListResult> {
       const capability = resolveCapabilities(options);
       const provider = "glm";
@@ -1075,7 +1075,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
     async setEnabled(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
       scope?: SkillScope;
       skillId: string;
       enabled: boolean;
@@ -1106,7 +1106,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
     async buildPromptContext(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
       prompt: string;
     }): Promise<SkillsPromptContext> {
       const mentionedSkillNames = collectMentionedSkillNames(params.prompt);

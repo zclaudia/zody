@@ -2,27 +2,27 @@ import { ZCodeStorageStartupGate } from "#src/zody-agent/zodyStorageStartupGate.
 import { Emitter } from "@zody/rpc";
 import type { IDisposable } from "@zody/rpc";
 import type {
-  ZCodeProtocolMethod,
-  ZCodeProtocolNotification,
-  ZCodeProtocolRequest,
-  ZCodeProtocolRequestId,
-  ZCodeProtocolTrace,
+  ZodyProtocolMethod,
+  ZodyProtocolNotification,
+  ZodyProtocolRequest,
+  ZodyProtocolRequestId,
+  ZodyProtocolTrace,
 } from "@zody/shared";
 import type { V4Method } from "@zody/shared/zody-protocol-v4";
 import type { z } from "zod";
-import type { ZCodeProtocolTransport } from "./zodyProtocolTransport.js";
+import type { ZodyProtocolTransport } from "./zodyProtocolTransport.js";
 
 /** 客户端可发的方法名：旧 zcodeProtocolMethods + v4/*（M3 起并存，M5 波次 2 收敛为 v4）。 */
-export type ZCodeProtocolClientMethod = ZCodeProtocolMethod | V4Method;
+export type ZodyProtocolClientMethod = ZodyProtocolMethod | V4Method;
 
-interface ZCodeProtocolClientOptions {
+interface ZodyProtocolClientOptions {
   requireStorageStartup?: boolean;
   requestTimeoutMs?: number;
 }
 
-export interface ZCodeProtocolRequestTimeoutEvent {
-  method: ZCodeProtocolClientMethod;
-  requestId: ZCodeProtocolRequestId;
+export interface ZodyProtocolRequestTimeoutEvent {
+  method: ZodyProtocolClientMethod;
+  requestId: ZodyProtocolRequestId;
   timeoutMs: number;
 }
 
@@ -39,11 +39,11 @@ interface PendingRequest<T> {
   cleanupAbort?: () => void;
 }
 
-interface ZCodeProtocolClientRequestOptions {
+interface ZodyProtocolClientRequestOptions {
   /** 观测不得参与 runtime 健康判定或业务空闲续期；默认保持业务请求语义。 */
   lifecycle?: "operation" | "observation";
   signal?: AbortSignal;
-  trace?: ZCodeProtocolTrace;
+  trace?: ZodyProtocolTrace;
   timeoutMs?: number;
 }
 
@@ -62,8 +62,8 @@ class ZCodeProtocolClientError extends Error {
 
 export class ZCodeProtocolRequestTimeoutError extends Error {
   constructor(
-    readonly method: ZCodeProtocolClientMethod,
-    readonly requestId: ZCodeProtocolRequestId,
+    readonly method: ZodyProtocolClientMethod,
+    readonly requestId: ZodyProtocolRequestId,
     readonly timeoutMs: number,
   ) {
     super(`ZCode Protocol request timed out: ${method}`);
@@ -74,9 +74,9 @@ export class ZCodeProtocolRequestTimeoutError extends Error {
 export class ZCodeProtocolClient implements IDisposable {
   readonly storageStartup: ZCodeStorageStartupGate;
   private readonly pending = new Map<string, PendingRequest<unknown>>();
-  private readonly notificationEmitter = new Emitter<ZCodeProtocolNotification>();
-  private readonly requestEmitter = new Emitter<ZCodeProtocolRequest>();
-  private readonly requestTimeoutEmitter = new Emitter<ZCodeProtocolRequestTimeoutEvent>();
+  private readonly notificationEmitter = new Emitter<ZodyProtocolNotification>();
+  private readonly requestEmitter = new Emitter<ZodyProtocolRequest>();
+  private readonly requestTimeoutEmitter = new Emitter<ZodyProtocolRequestTimeoutEvent>();
   // 业务请求归零时触发；观测完成不能给被观察进程续命。
   private readonly pendingDrainedEmitter = new Emitter<void>();
   private readonly closeEmitter = new Emitter<void>();
@@ -113,8 +113,8 @@ export class ZCodeProtocolClient implements IDisposable {
   }
 
   constructor(
-    private readonly transport: ZCodeProtocolTransport,
-    options?: ZCodeProtocolClientOptions,
+    private readonly transport: ZodyProtocolTransport,
+    options?: ZodyProtocolClientOptions,
   ) {
     this.storageStartup = new ZCodeStorageStartupGate(options?.requireStorageStartup ?? false);
     this.requestTimeoutMs = options?.requestTimeoutMs ?? DEFAULT_ZCODE_PROTOCOL_REQUEST_TIMEOUT_MS;
@@ -142,10 +142,10 @@ export class ZCodeProtocolClient implements IDisposable {
    * unhandled 噪声暴露，属可接受取舍（仓库内 void 调用点均自带 catch）。
    */
   request<T = unknown>(
-    method: ZCodeProtocolClientMethod,
+    method: ZodyProtocolClientMethod,
     params?: unknown,
     resultSchema?: z.ZodType<T>,
-    options?: ZCodeProtocolClientRequestOptions,
+    options?: ZodyProtocolClientRequestOptions,
   ): Promise<T> {
     const requestPromise = this.requestImpl(method, params, resultSchema, options);
     void requestPromise.catch(() => undefined);
@@ -153,10 +153,10 @@ export class ZCodeProtocolClient implements IDisposable {
   }
 
   private async requestImpl<T = unknown>(
-    method: ZCodeProtocolClientMethod,
+    method: ZodyProtocolClientMethod,
     params?: unknown,
     resultSchema?: z.ZodType<T>,
-    options?: ZCodeProtocolClientRequestOptions,
+    options?: ZodyProtocolClientRequestOptions,
   ): Promise<T> {
     this.assertNotDisposed();
     // 不先创建请求/启动 watchdog；只在真实 COMMIT 后进入原有协议请求生命周期。
@@ -253,18 +253,18 @@ export class ZCodeProtocolClient implements IDisposable {
     return resultPromise;
   }
 
-  async notify(method: ZCodeProtocolClientMethod, params?: unknown): Promise<void> {
+  async notify(method: ZodyProtocolClientMethod, params?: unknown): Promise<void> {
     this.assertNotDisposed();
     await this.transport.send({ method, params });
   }
 
-  async respond(id: ZCodeProtocolRequestId, result: unknown): Promise<void> {
+  async respond(id: ZodyProtocolRequestId, result: unknown): Promise<void> {
     this.assertNotDisposed();
     await this.transport.send({ id, result });
   }
 
   async respondError(
-    id: ZCodeProtocolRequestId,
+    id: ZodyProtocolRequestId,
     error: { code: number; message: string; data?: unknown },
   ): Promise<void> {
     this.assertNotDisposed();
@@ -302,7 +302,7 @@ export class ZCodeProtocolClient implements IDisposable {
 
     if ("result" in message && "id" in message) {
       this.resolveResponse(
-        (message as { id: ZCodeProtocolRequestId; result: unknown }).id,
+        (message as { id: ZodyProtocolRequestId; result: unknown }).id,
         (message as { result: unknown }).result,
       );
       return;
@@ -310,7 +310,7 @@ export class ZCodeProtocolClient implements IDisposable {
 
     if ("error" in message && "id" in message) {
       const errorMessage = message as {
-        id: ZCodeProtocolRequestId;
+        id: ZodyProtocolRequestId;
         error: { code: number; message: string; data?: unknown };
       };
       this.rejectResponse(
@@ -325,14 +325,14 @@ export class ZCodeProtocolClient implements IDisposable {
     }
 
     if ("method" in message && "id" in message) {
-      this.requestEmitter.fire(message as ZCodeProtocolRequest);
+      this.requestEmitter.fire(message as ZodyProtocolRequest);
       return;
     }
 
     if ("method" in message) {
       if (
         message.method === "startup/storageState" &&
-        this.storageStartup.accept((message as ZCodeProtocolNotification).params)
+        this.storageStartup.accept((message as ZodyProtocolNotification).params)
       ) {
         // 自定义/旧部署命令无法事先声明能力；首个请求可能已发出。只有首次合法启动帧
         // 能暂停这些计时器，ready 后恢复；该进程的终态不能被后续通知重新续期。
@@ -346,11 +346,11 @@ export class ZCodeProtocolClient implements IDisposable {
           );
         }
       }
-      this.notificationEmitter.fire(message as ZCodeProtocolNotification);
+      this.notificationEmitter.fire(message as ZodyProtocolNotification);
     }
   }
 
-  private resolveResponse(id: ZCodeProtocolRequestId, result: unknown): void {
+  private resolveResponse(id: ZodyProtocolRequestId, result: unknown): void {
     const requestKey = String(id);
     const pending = this.pending.get(requestKey);
     if (!pending) {
@@ -372,7 +372,7 @@ export class ZCodeProtocolClient implements IDisposable {
     }
   }
 
-  private rejectResponse(id: ZCodeProtocolRequestId, error: Error): void {
+  private rejectResponse(id: ZodyProtocolRequestId, error: Error): void {
     const requestKey = String(id);
     const pending = this.pending.get(requestKey);
     if (!pending) {

@@ -22,7 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.j
 import { Switch } from "@/components/ui/switch.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { TID_PLUGIN_STORE_BROWSE, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zody/shared";
-import type { ZCodePluginInfo, ZCodePluginScope, ZCodePluginUserConfigOption } from "@zody/shared";
+import type { ZodyPluginInfo, ZodyPluginScope, ZodyPluginUserConfigOption } from "@zody/shared";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
 import {
   useBaseWorkspaceServices,
@@ -140,7 +140,7 @@ function PluginList({
   onVisibleCountChange,
 }: {
   target: WorkspaceTabState | null;
-  configScope: ZCodePluginScope;
+  configScope: ZodyPluginScope;
   searchQuery: string;
   isWebRemoteControl: boolean;
   onAdd?: () => void;
@@ -387,9 +387,9 @@ function PluginList({
     }));
   };
   const getPluginOptionValue = (
-    plugin: ZCodePluginInfo,
+    plugin: ZodyPluginInfo,
     key: string,
-    option: ZCodePluginUserConfigOption,
+    option: ZodyPluginUserConfigOption,
   ): string | number | boolean => {
     const draft = pluginOptionsDrafts[plugin.id]?.[key];
     if (draft === null) return "";
@@ -400,7 +400,7 @@ function PluginList({
       (option.type === "boolean" ? false : "")
     );
   };
-  const savePluginOptions = async (plugin: ZCodePluginInfo) => {
+  const savePluginOptions = async (plugin: ZodyPluginInfo) => {
     const { options, clearOptionKeys } = buildPluginConfigPatch(
       plugin,
       pluginOptionsDrafts[plugin.id] ?? {},
@@ -461,7 +461,7 @@ function PluginList({
     });
   }, [initialize, pluginManagementService, configScope, target, targetServiceResolution.rpcReady]);
 
-  const renderPluginRows = (items: ZCodePluginInfo[]) => (
+  const renderPluginRows = (items: ZodyPluginInfo[]) => (
     <div className="overflow-hidden rounded-xl bg-surface">
       {items.map((plugin, index) => (
         <Fragment key={plugin.id}>

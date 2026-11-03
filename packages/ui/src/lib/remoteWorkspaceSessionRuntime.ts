@@ -1,4 +1,4 @@
-import type { ZCodeTaskRuntimeStatus } from "@zody/shared";
+import type { ZodyTaskRuntimeStatus } from "@zody/shared";
 import { getWorkspaceDisplayedTaskState } from "@/store/zodySessionStore.js";
 import type { ZCodeSessionStoreState, WorkspaceZCodeUIState } from "@/store/zodySessionStore.js";
 
@@ -14,7 +14,7 @@ interface MarkRemoteWorkspaceRunningTasksFailedParams {
   reason: string;
 }
 
-function isRunningRuntimeStatus(status: ZCodeTaskRuntimeStatus): boolean {
+function isRunningRuntimeStatus(status: ZodyTaskRuntimeStatus): boolean {
   return status === "creating" || status === "restoring" || status === "streaming";
 }
 

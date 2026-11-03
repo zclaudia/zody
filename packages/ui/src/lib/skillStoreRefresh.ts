@@ -2,7 +2,7 @@ import type { ISkillsService } from "@zody/services";
 import {
   normalizeAgentProviderToZCodeAgent,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import { useSkillStore } from "@/store/skillStore.js";
 
@@ -10,7 +10,7 @@ export async function refreshSharedSkillStoreForWorkspace(params: {
   workspacePath: string | null | undefined;
   workspaceIdentity?: string | null;
   skillsService: ISkillsService;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
 }): Promise<void> {
   const workspacePath = params.workspacePath;
   if (!workspacePath) {

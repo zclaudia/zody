@@ -1,5 +1,5 @@
-import type { ZCodeSessionEvent } from "@zody/shared";
-import type { ZCodeAgentServiceEvent } from "#src/zody-agent/zodyAgent.js";
+import type { ZodySessionEvent } from "@zody/shared";
+import type { ZodyAgentServiceEvent } from "#src/zody-agent/zodyAgent.js";
 
 const DEFAULT_BACKGROUND_SESSION_EVENT_COALESCE_MS = 1_500;
 const DEFAULT_BACKGROUND_SESSION_EVENT_MAX_ITEMS = 96;
@@ -10,7 +10,7 @@ const COALESCIBLE_MODEL_STREAMING_KINDS = new Set([
   "tool_input_delta",
 ]);
 
-type SessionServiceEvent = Extract<ZCodeAgentServiceEvent, { type: "session.event" }>;
+type SessionServiceEvent = Extract<ZodyAgentServiceEvent, { type: "session.event" }>;
 
 interface PendingBackgroundSessionEvent {
   key: string;
@@ -18,7 +18,7 @@ interface PendingBackgroundSessionEvent {
 }
 
 export interface BackgroundSessionEventCoalescer {
-  accept(event: ZCodeAgentServiceEvent): void;
+  accept(event: ZodyAgentServiceEvent): void;
   flush(): void;
   dispose(): void;
 }
@@ -34,7 +34,7 @@ function stringField(record: Record<string, unknown>, key: string): string | und
   return typeof value === "string" ? value : undefined;
 }
 
-function getBackgroundSessionEventCoalesceKey(event: ZCodeSessionEvent): string | null {
+function getBackgroundSessionEventCoalesceKey(event: ZodySessionEvent): string | null {
   const payload = asRecord(event.payload);
   if (event.type === "model.streaming") {
     const kind = stringField(payload, "kind");
@@ -81,9 +81,9 @@ function getBackgroundSessionEventCoalesceKey(event: ZCodeSessionEvent): string 
 }
 
 function mergeBackgroundSessionEvents(
-  current: ZCodeSessionEvent,
-  next: ZCodeSessionEvent,
-): ZCodeSessionEvent {
+  current: ZodySessionEvent,
+  next: ZodySessionEvent,
+): ZodySessionEvent {
   if (current.type === "model.streaming" && next.type === "model.streaming") {
     const currentPayload = asRecord(current.payload);
     const nextPayload = asRecord(next.payload);
@@ -95,7 +95,7 @@ function mergeBackgroundSessionEvents(
         ...nextPayload,
         delta: `${currentDelta}${nextDelta}`,
       },
-    } as ZCodeSessionEvent;
+    } as ZodySessionEvent;
   }
 
   // 性能优化：后台工具 progress 只用于“还在跑”的可见摘要，保留最新状态即可。
@@ -103,7 +103,7 @@ function mergeBackgroundSessionEvents(
 }
 
 export function createBackgroundSessionEventCoalescer(params: {
-  emit: (event: ZCodeAgentServiceEvent) => void;
+  emit: (event: ZodyAgentServiceEvent) => void;
   flushDelayMs?: number;
   maxItems?: number;
 }): BackgroundSessionEventCoalescer {
@@ -174,7 +174,7 @@ export function createBackgroundSessionEventCoalescer(params: {
   }
 
   return {
-    accept(event: ZCodeAgentServiceEvent): void {
+    accept(event: ZodyAgentServiceEvent): void {
       if (disposed) {
         return;
       }

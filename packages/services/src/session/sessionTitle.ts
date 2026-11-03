@@ -1,8 +1,8 @@
-import type { ZCodePromptAttachment } from "@zody/shared";
+import type { ZodyPromptAttachment } from "@zody/shared";
 
 export function deriveSessionTitle(
   content: string,
-  attachments: readonly ZCodePromptAttachment[],
+  attachments: readonly ZodyPromptAttachment[],
 ): string {
   if (content.length > 0) {
     return content.slice(0, 50) + (content.length > 50 ? "..." : "");

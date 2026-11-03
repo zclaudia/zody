@@ -1,8 +1,8 @@
 import type { McpServerConfig } from "@zody/contracts";
-import type { ZCodeProtocolMcpServer } from "@zody/shared";
+import type { ZodyProtocolMcpServer } from "@zody/shared";
 
 export function protocolMcpServersToRuntimeMcpConfig(
-  servers: ZCodeProtocolMcpServer[] | undefined,
+  servers: ZodyProtocolMcpServer[] | undefined,
 ): { enabled: true; servers: Record<string, McpServerConfig> } | undefined {
   if (!servers || servers.length === 0) {
     return undefined;

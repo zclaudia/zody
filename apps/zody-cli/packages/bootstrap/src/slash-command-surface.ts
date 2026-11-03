@@ -1,4 +1,4 @@
-import { BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES, type ZCodeSlashCommand } from "@zody/shared";
+import { BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES, type ZodySlashCommand } from "@zody/shared";
 
 /**
  * App `/` 面板与加号菜单按本顺序展示（UI 不维护排序白名单）。`workflow` 紧随 `goal`：两者都是
@@ -20,7 +20,7 @@ export const APP_PROTOCOL_APP_ONLY_BUILTIN_SLASH_COMMANDS = [
     name: "plan",
     source: "builtin",
   },
-] as const satisfies readonly ZCodeSlashCommand[];
+] as const satisfies readonly ZodySlashCommand[];
 
 const EXTRA_RESERVED_SLASH_COMMAND_NAMES = ["compress", "plan"] as const;
 

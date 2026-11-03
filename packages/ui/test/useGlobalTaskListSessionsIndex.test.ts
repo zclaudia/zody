@@ -5,8 +5,8 @@ import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Emitter } from "@zody/rpc";
-import type { IServiceAccessor, ZCodeTaskListKind } from "@zody/services";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { IServiceAccessor, ZodyTaskListKind } from "@zody/services";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type {
   SessionsIndexTopicFrame,
   SessionsIndexTopicWireFrame,
@@ -42,7 +42,7 @@ function createWorkspaceTab(): WorkspaceTabState {
   };
 }
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -52,7 +52,7 @@ function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
     updatedAt: 2,
     workspacePath: "/workspace",
     ...overrides,
-  } as ZCodeTaskMeta;
+  } as ZodyTaskMeta;
 }
 
 function createMinimalElement(ownerDocument: Document, tagName = "div") {
@@ -165,15 +165,15 @@ function physicalFrame(
 }
 
 interface HarnessOptions {
-  kind: ZCodeTaskListKind;
+  kind: ZodyTaskListKind;
   expanded?: boolean;
   searchQuery?: string;
   sessions: SessionSummary[];
   pinnedIds?: string[];
   archivedTaskIds?: string[];
-  activeTaskMetas?: ZCodeTaskMeta[];
-  archivedTaskMetas?: ZCodeTaskMeta[];
-  pinnedTaskMetas?: ZCodeTaskMeta[];
+  activeTaskMetas?: ZodyTaskMeta[];
+  archivedTaskMetas?: ZodyTaskMeta[];
+  pinnedTaskMetas?: ZodyTaskMeta[];
 }
 
 function v4Handshake() {
@@ -232,7 +232,7 @@ async function renderHarness(options: HarnessOptions) {
       createTaskMeta({ taskId, title: taskId, traceId: `trace-${taskId}` }),
     );
   const controllerFrames = new Emitter<never>();
-  const controllerListTaskList = vi.fn(async (params: { kind: ZCodeTaskListKind; search?: string; limit?: number }) => {
+  const controllerListTaskList = vi.fn(async (params: { kind: ZodyTaskListKind; search?: string; limit?: number }) => {
     if (params.search) {
       return listTaskList();
     }

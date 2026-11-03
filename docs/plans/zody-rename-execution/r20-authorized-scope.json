@@ -20140,8 +20140,11 @@
       "All behavior tests use isolated temporary HOME/USERPROFILE and databases. Use async file/child-process test helpers. Metadata JSON may be statically inspected; do not claim native E2E."
     ],
     "report": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-implementation.md",
-    "status": "controller-verified-pending-review",
-    "controllerReport": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-controller-verification.md"
+    "status": "scoped-review-PASS-after-manifest-test-correction",
+    "controllerReport": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-controller-verification.md",
+    "candidate": "83680ddc523fb95a06512ea43fc62c5a5b1ccb75",
+    "correctionCandidate": "3cb3a0050fb47771305fe084852fc6aed994eb92",
+    "review": "docs/plans/zody-rename-execution/reports/R20-directory-residual-deepseek-review.md"
   },
   "directoryConsumerCorrection": {
     "baseline": "7c4ff9113680a38e273032b09bee32ee6ba399af",
@@ -20155,9 +20158,11 @@
       "scripts/test/zody-manual-data-paths.test.mjs",
       ".agents/skills/zody-large-task-fixture/SKILL.md"
     ],
-    "status": "implemented-controller-verified-pending-fixed-review",
+    "status": "scoped-review-PASS",
     "implementationReport": "docs/plans/zody-rename-execution/reports/R20-directory-residual-implementation.md",
     "controllerReport": "docs/plans/zody-rename-execution/reports/R20-directory-residual-controller-verification.md",
-    "boundary": "Current path consumers and manual manifest regression only; preserve runtime identities and frozen sources."
+    "boundary": "Current path consumers and manual manifest regression only; preserve runtime identities and frozen sources.",
+    "candidate": "3cb3a0050fb47771305fe084852fc6aed994eb92",
+    "review": "docs/plans/zody-rename-execution/reports/R20-directory-residual-deepseek-review.md"
   }
 }

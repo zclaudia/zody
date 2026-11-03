@@ -1,5 +1,5 @@
 import { Terminal } from "lucide-react";
-import type { UserCommand, ZCodeCommand } from "@zody/shared";
+import type { UserCommand, ZodyCommand } from "@zody/shared";
 import { isPluginCommand, isUserCommand } from "@zody/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { Switch } from "@/components/ui/switch.js";
@@ -7,14 +7,14 @@ import { settingsResourceRowInteraction } from "@/settings/settingsResourceRowIn
 import { PluginStoreAvatar } from "@/settings/PluginStoreAvatar.js";
 import type { StorePluginItem } from "@/settings/pluginStoreListing.js";
 
-export function isEditableUserCommand(command: ZCodeCommand): command is UserCommand {
+export function isEditableUserCommand(command: ZodyCommand): command is UserCommand {
   return isUserCommand(command) && command.location.source === "zcode";
 }
 
 interface CommandCardProps {
-  command: ZCodeCommand;
-  onEdit?: (command: ZCodeCommand) => void;
-  onToggle?: (command: ZCodeCommand, enabled: boolean) => void;
+  command: ZodyCommand;
+  onEdit?: (command: ZodyCommand) => void;
+  onToggle?: (command: ZodyCommand, enabled: boolean) => void;
   isOperating?: boolean;
   pluginIconItem?: Pick<StorePluginItem, "name" | "listing">;
 }

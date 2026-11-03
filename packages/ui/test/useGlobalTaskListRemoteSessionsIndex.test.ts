@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Emitter } from "@zody/rpc";
 import type { IServiceAccessor } from "@zody/services";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type {
   SessionsIndexTopicFrame,
   SessionsIndexTopicWireFrame,
@@ -46,8 +46,8 @@ function createSession(
 
 function createTaskMeta(
   taskId: string,
-  overrides: Partial<ZCodeTaskMeta> = {},
-): ZCodeTaskMeta {
+  overrides: Partial<ZodyTaskMeta> = {},
+): ZodyTaskMeta {
   return {
     taskId,
     traceId: `trace-${taskId}`,
@@ -57,7 +57,7 @@ function createTaskMeta(
     updatedAt: 2,
     mode: "default",
     ...overrides,
-  } as ZCodeTaskMeta;
+  } as ZodyTaskMeta;
 }
 
 function createMinimalElement(ownerDocument: Document, tagName = "div") {
@@ -178,8 +178,8 @@ interface EndpointMockOptions {
   sessionsByWorkspaceKey?: Record<string, SessionSummary[]>;
   pinnedTaskIds?: string[];
   /** listTasks 返回的 tasks-index 持久行。 */
-  activeTaskMetas?: ZCodeTaskMeta[];
-  pinnedTaskMetas?: ZCodeTaskMeta[];
+  activeTaskMetas?: ZodyTaskMeta[];
+  pinnedTaskMetas?: ZodyTaskMeta[];
   /** 用于覆盖 ACK 延迟期间 scope 集合变化的竞态。 */
   subscribeGate?: Promise<void>;
   subscribeGatesByWorkspaceKey?: Record<string, Promise<void>>;
@@ -264,7 +264,7 @@ function createEndpointServices(options: EndpointMockOptions) {
   const defaultTaskMetasForScope = (params: {
     workspacePath: string;
     workspaceIdentity?: string;
-  }): ZCodeTaskMeta[] => {
+  }): ZodyTaskMeta[] => {
     const workspaceKey =
       params.workspaceIdentity?.trim() || params.workspacePath;
     const sessions =
@@ -331,7 +331,7 @@ function createEndpointServices(options: EndpointMockOptions) {
       listPinnedTaskIds: vi.fn(
         async (): Promise<string[]> => options.pinnedTaskIds ?? [],
       ),
-      listArchivedTasks: vi.fn(async (): Promise<ZCodeTaskMeta[]> => []),
+      listArchivedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
       listTasks: vi.fn(
         async (params: { workspacePath: string; workspaceIdentity?: string }) =>
           options.activeTaskMetas ??

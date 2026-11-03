@@ -11,4 +11,4 @@ export const ZCODE_PROVIDERS = ["glm"] as const;
 
 export const zcodeProviderSchema = z.enum(ZCODE_PROVIDERS);
 
-export type ZCodeProvider = (typeof ZCODE_PROVIDERS)[number];
+export type ZodyProvider = (typeof ZCODE_PROVIDERS)[number];

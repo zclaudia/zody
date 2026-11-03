@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { availableParallelism, totalmem } from "node:os";
 import {
   ZCODE_CLI_RESOURCE_SAMPLE_INTERVAL_MS,
-  type ZCodeProcessResourceSample,
+  type ZodyProcessResourceSample,
 } from "@zody/shared";
 
 /** 采样周期与 app 侧聚合共用 shared 的同一个常量，避免两侧节拍各自漂移。 */
@@ -50,9 +50,9 @@ interface CreateZCodeProcessResourceSamplerOptions {
    * 第二个参数是本周期完整的内存快照，供进程内本地诊断日志使用；
    * 协议样本自身只带 rss 与 heapUsed 两项内存字段。
    */
-  onSample(sample: ZCodeProcessResourceSample, memoryUsage: ProcessMemoryUsageSnapshot): void;
-  platform?: ZCodeProcessResourceSample["platform"];
-  arch?: ZCodeProcessResourceSample["arch"];
+  onSample(sample: ZodyProcessResourceSample, memoryUsage: ProcessMemoryUsageSnapshot): void;
+  platform?: ZodyProcessResourceSample["platform"];
+  arch?: ZodyProcessResourceSample["arch"];
   logicalCpuCount?: number;
   readCpuUsage?: () => CpuUsageSnapshot;
   readMonotonicTimeNs?: () => bigint;
@@ -100,8 +100,8 @@ function toRoundedUnit(value: number, divisor: number): number | undefined {
 export function createZCodeProcessResourceSampler(
   options: CreateZCodeProcessResourceSamplerOptions,
 ): ZCodeProcessResourceSampler {
-  const platform = options.platform ?? (process.platform as ZCodeProcessResourceSample["platform"]);
-  const arch = options.arch ?? (process.arch as ZCodeProcessResourceSample["arch"]);
+  const platform = options.platform ?? (process.platform as ZodyProcessResourceSample["platform"]);
+  const arch = options.arch ?? (process.arch as ZodyProcessResourceSample["arch"]);
   const logicalCpuCount = Math.max(
     1,
     Math.min(4_096, Math.trunc(options.logicalCpuCount ?? availableParallelism())),
@@ -151,7 +151,7 @@ export function createZCodeProcessResourceSampler(
       const rssKb = memoryUsage.rss / 1_024;
       const uptimeMinutes = toRoundedUnit(readUptimeSeconds(), 60);
       baseline = nextBaseline;
-      const resourceSample: ZCodeProcessResourceSample = {
+      const resourceSample: ZodyProcessResourceSample = {
         platform,
         arch,
         logicalCpuCount,

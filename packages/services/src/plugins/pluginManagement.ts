@@ -9,83 +9,83 @@
 // 那套接口按 pluginName+marketplace 寻址且方法语义过时，不复用避免签名冲突。
 import type { Event } from "@zody/rpc";
 import type {
-  ZCodePluginOperationProgressNotification,
-  ZCodePluginsConfigureResult,
-  ZCodePluginsCancelOperationResult,
-  ZCodePluginsDescribeResult,
-  ZCodePluginsInstallResult,
-  ZCodePluginsListResult,
-  ZCodePluginsMarketplaceMutationResult,
-  ZCodePluginsOverviewResult,
-  ZCodePluginsReferenceCatalogResult,
-  ZCodePluginsRestoreBuiltinResult,
-  ZCodePluginsSetEnabledResult,
-  ZCodePluginsUninstallResult,
-  ZCodePluginsValidateResult,
+  ZodyPluginOperationProgressNotification,
+  ZodyPluginsConfigureResult,
+  ZodyPluginsCancelOperationResult,
+  ZodyPluginsDescribeResult,
+  ZodyPluginsInstallResult,
+  ZodyPluginsListResult,
+  ZodyPluginsMarketplaceMutationResult,
+  ZodyPluginsOverviewResult,
+  ZodyPluginsReferenceCatalogResult,
+  ZodyPluginsRestoreBuiltinResult,
+  ZodyPluginsSetEnabledResult,
+  ZodyPluginsUninstallResult,
+  ZodyPluginsValidateResult,
 } from "@zody/shared";
 import { ServiceChannels } from "@zody/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 import type {
-  ZCodeAgentAddPluginMarketplaceParams,
-  ZCodeAgentConfigurePluginParams,
-  ZCodeAgentCancelPluginOperationParams,
-  ZCodeAgentDescribePluginParams,
-  ZCodeAgentInstallPluginParams,
-  ZCodeAgentPluginReferenceCatalogParams,
-  ZCodeAgentResolveSuggestedPluginReferenceParams,
-  ZCodeAgentResetPluginConfigParams,
-  ZCodeAgentPluginViewParams,
-  ZCodeAgentRemovePluginMarketplaceParams,
-  ZCodeAgentRestoreBuiltinPluginParams,
-  ZCodeAgentSetPluginEnabledParams,
-  ZCodeAgentUninstallPluginParams,
-  ZCodeAgentUpdatePluginMarketplaceParams,
-  ZCodeAgentUpdatePluginParams,
-  ZCodeAgentValidatePluginParams,
+  ZodyAgentAddPluginMarketplaceParams,
+  ZodyAgentConfigurePluginParams,
+  ZodyAgentCancelPluginOperationParams,
+  ZodyAgentDescribePluginParams,
+  ZodyAgentInstallPluginParams,
+  ZodyAgentPluginReferenceCatalogParams,
+  ZodyAgentResolveSuggestedPluginReferenceParams,
+  ZodyAgentResetPluginConfigParams,
+  ZodyAgentPluginViewParams,
+  ZodyAgentRemovePluginMarketplaceParams,
+  ZodyAgentRestoreBuiltinPluginParams,
+  ZodyAgentSetPluginEnabledParams,
+  ZodyAgentUninstallPluginParams,
+  ZodyAgentUpdatePluginMarketplaceParams,
+  ZodyAgentUpdatePluginParams,
+  ZodyAgentValidatePluginParams,
 } from "../zody-agent/zodyAgentPluginParams.js";
 
 export interface IPluginManagementService {
-  listPlugins(params: ZCodeAgentPluginViewParams): Promise<ZCodePluginsListResult>;
+  listPlugins(params: ZodyAgentPluginViewParams): Promise<ZodyPluginsListResult>;
   /**
    * Plugin 对话引用 catalog：
    * 带 sessionId → session-owned 冻结 catalog；不带 → workspace 当前 catalog。
    * 实现路由到 workspace 级 agent client，不走插件管理独立进程。
    */
   getPluginReferenceCatalog(
-    params: ZCodeAgentPluginReferenceCatalogParams,
-  ): Promise<ZCodePluginsReferenceCatalogResult>;
+    params: ZodyAgentPluginReferenceCatalogParams,
+  ): Promise<ZodyPluginsReferenceCatalogResult>;
   resolveSuggestedPluginReference(
-    params: ZCodeAgentResolveSuggestedPluginReferenceParams,
-  ): Promise<import("@zody/shared").ZCodePluginsResolveSuggestedReferenceResult>;
+    params: ZodyAgentResolveSuggestedPluginReferenceParams,
+  ): Promise<import("@zody/shared").ZodyPluginsResolveSuggestedReferenceResult>;
   onDynamicPluginOperationProgress(
     operationId: string,
-  ): Event<ZCodePluginOperationProgressNotification>;
-  getPluginsOverview(params: ZCodeAgentPluginViewParams): Promise<ZCodePluginsOverviewResult>;
+  ): Event<ZodyPluginOperationProgressNotification>;
+  getPluginsOverview(params: ZodyAgentPluginViewParams): Promise<ZodyPluginsOverviewResult>;
   addPluginMarketplace(
-    params: ZCodeAgentAddPluginMarketplaceParams,
-  ): Promise<ZCodePluginsMarketplaceMutationResult>;
+    params: ZodyAgentAddPluginMarketplaceParams,
+  ): Promise<ZodyPluginsMarketplaceMutationResult>;
   removePluginMarketplace(
-    params: ZCodeAgentRemovePluginMarketplaceParams,
-  ): Promise<ZCodePluginsMarketplaceMutationResult>;
+    params: ZodyAgentRemovePluginMarketplaceParams,
+  ): Promise<ZodyPluginsMarketplaceMutationResult>;
   updatePluginMarketplace(
-    params: ZCodeAgentUpdatePluginMarketplaceParams,
-  ): Promise<ZCodePluginsMarketplaceMutationResult>;
-  installPlugin(params: ZCodeAgentInstallPluginParams): Promise<ZCodePluginsInstallResult>;
+    params: ZodyAgentUpdatePluginMarketplaceParams,
+  ): Promise<ZodyPluginsMarketplaceMutationResult>;
+  installPlugin(params: ZodyAgentInstallPluginParams): Promise<ZodyPluginsInstallResult>;
   cancelPluginOperation(
-    params: ZCodeAgentCancelPluginOperationParams,
-  ): Promise<ZCodePluginsCancelOperationResult>;
-  uninstallPlugin(params: ZCodeAgentUninstallPluginParams): Promise<ZCodePluginsUninstallResult>;
-  updatePlugin(params: ZCodeAgentUpdatePluginParams): Promise<ZCodePluginsInstallResult>;
+    params: ZodyAgentCancelPluginOperationParams,
+  ): Promise<ZodyPluginsCancelOperationResult>;
+  uninstallPlugin(params: ZodyAgentUninstallPluginParams): Promise<ZodyPluginsUninstallResult>;
+  updatePlugin(params: ZodyAgentUpdatePluginParams): Promise<ZodyPluginsInstallResult>;
   restoreBuiltinPlugin(
-    params: ZCodeAgentRestoreBuiltinPluginParams,
-  ): Promise<ZCodePluginsRestoreBuiltinResult>;
-  configurePlugin(params: ZCodeAgentConfigurePluginParams): Promise<ZCodePluginsConfigureResult>;
+    params: ZodyAgentRestoreBuiltinPluginParams,
+  ): Promise<ZodyPluginsRestoreBuiltinResult>;
+  configurePlugin(params: ZodyAgentConfigurePluginParams): Promise<ZodyPluginsConfigureResult>;
   resetPluginConfig(
-    params: ZCodeAgentResetPluginConfigParams,
-  ): Promise<ZCodePluginsConfigureResult>;
-  validatePlugin(params: ZCodeAgentValidatePluginParams): Promise<ZCodePluginsValidateResult>;
-  describePlugin(params: ZCodeAgentDescribePluginParams): Promise<ZCodePluginsDescribeResult>;
-  setPluginEnabled(params: ZCodeAgentSetPluginEnabledParams): Promise<ZCodePluginsSetEnabledResult>;
+    params: ZodyAgentResetPluginConfigParams,
+  ): Promise<ZodyPluginsConfigureResult>;
+  validatePlugin(params: ZodyAgentValidatePluginParams): Promise<ZodyPluginsValidateResult>;
+  describePlugin(params: ZodyAgentDescribePluginParams): Promise<ZodyPluginsDescribeResult>;
+  setPluginEnabled(params: ZodyAgentSetPluginEnabledParams): Promise<ZodyPluginsSetEnabledResult>;
 }
 
 export const IPluginManagementService = createServiceDescriptor<IPluginManagementService>(

@@ -1,7 +1,7 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
 import type { IModelSelectionService, ModelSelectionView } from "@zody/services";
 import { resolveEffectiveModelSelection, type ProviderRegistryView } from "@zody/provider";
@@ -49,7 +49,7 @@ vi.mock("@/logger.js", () => ({
   },
 }));
 
-const WORKSPACE_PRESENTATION: ZCodeConfigOption[] = [
+const WORKSPACE_PRESENTATION: ZodyConfigOption[] = [
   {
     id: "mode",
     name: "Mode",
@@ -458,7 +458,7 @@ describe("useDraftConfigControl slash command hydration", () => {
   it("从 active task 新建草稿时不再从旧 workspace presentation 继承选择", async () => {
     const workspacePath = "/inherited-draft-workspace";
     const taskId = "task-custom-model";
-    const inheritedOptions: ZCodeConfigOption[] = [
+    const inheritedOptions: ZodyConfigOption[] = [
       {
         id: "model",
         name: "Model",
@@ -519,7 +519,7 @@ describe("useDraftConfigControl slash command hydration", () => {
   it("active session 切入草稿时，View 未 Ready 不提前用旧 task 配置初始化", async () => {
     const workspacePath = "/inherited-draft-render-transition";
     const taskId = "task-custom-model";
-    const inheritedOptions: ZCodeConfigOption[] = [
+    const inheritedOptions: ZodyConfigOption[] = [
       {
         id: "model",
         name: "Model",

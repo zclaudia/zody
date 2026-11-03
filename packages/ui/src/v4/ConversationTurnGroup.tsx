@@ -11,7 +11,7 @@ import {
   TID_CHAT_LOADING,
   TID_V4_ROW,
   testId,
-  type ZCodeApiRetryStatus,
+  type ZodyApiRetryStatus,
 } from "@zody/shared";
 import type {
   ApiRetryState,
@@ -110,7 +110,7 @@ interface CronAutomationTurnCard {
 
 const MIN_VISIBLE_API_RETRY_ATTEMPT = 3;
 
-function toRetryStatus(apiRetry: ApiRetryState): ZCodeApiRetryStatus {
+function toRetryStatus(apiRetry: ApiRetryState): ZodyApiRetryStatus {
   const attempt = Math.max(1, Math.floor(apiRetry.attempt));
   // v4 maxAttempts 包含首次请求，而展示口径是重试次数；直接展示会把
   // 默认 10 次重试写成 1/11。

@@ -1,5 +1,5 @@
 import type { ZCodeApp } from "../app/types.js";
-import type { ZCodeProtocolAgentDependencies } from "./server-types.js";
+import type { ZodyProtocolAgentDependencies } from "./server-types.js";
 
 /** 持有 app 资源而非业务 session；临时 workspace app、尚未登记的 app 也归此 owner。 */
 export class ProtocolRuntimeResources {
@@ -7,9 +7,9 @@ export class ProtocolRuntimeResources {
   private readonly apps = new Set<ZCodeApp>();
   private closePromise?: Promise<void>;
 
-  constructor(private readonly factory: ZCodeProtocolAgentDependencies["createZCodeApp"]) {}
+  constructor(private readonly factory: ZodyProtocolAgentDependencies["createZCodeApp"]) {}
 
-  readonly create: ZCodeProtocolAgentDependencies["createZCodeApp"] = async (options) => {
+  readonly create: ZodyProtocolAgentDependencies["createZCodeApp"] = async (options) => {
     this.assertServing();
     const app = await this.factory(options);
     const originalClose = app.close?.bind(app);

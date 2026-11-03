@@ -14,7 +14,7 @@ import {
   TriangleAlert,
   WandSparkles,
 } from "lucide-react";
-import type { ZCodePluginComponentKind, ZCodePluginsDescribeResult } from "@zody/shared";
+import type { ZodyPluginComponentKind, ZodyPluginsDescribeResult } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
@@ -46,9 +46,9 @@ import type { PluginComponentDisplayGroup } from "@/settings/PluginComponentGrou
 import type { PluginDescribeEntry } from "@/store/pluginManagementStore.js";
 
 // 组件分区顺序与截图一致：MCP 服务器 → 技能 → 命令 → 子智能体 → Hooks。
-const SECTION_ORDER: ZCodePluginComponentKind[] = ["mcp", "skill", "command", "agent", "hook"];
+const SECTION_ORDER: ZodyPluginComponentKind[] = ["mcp", "skill", "command", "agent", "hook"];
 
-const SECTION_TITLE_IDS: Record<ZCodePluginComponentKind, string> = {
+const SECTION_TITLE_IDS: Record<ZodyPluginComponentKind, string> = {
   mcp: "settings.plugins.store.section.mcp",
   skill: "settings.plugins.store.section.skills",
   command: "settings.plugins.store.section.commands",
@@ -57,7 +57,7 @@ const SECTION_TITLE_IDS: Record<ZCodePluginComponentKind, string> = {
 };
 
 // 与各资源设置列表共用同一图标语义，避免详情页用近似图标造成识别不一致。
-const SECTION_ICONS: Record<ZCodePluginComponentKind, typeof Server> = {
+const SECTION_ICONS: Record<ZodyPluginComponentKind, typeof Server> = {
   mcp: Server,
   skill: WandSparkles,
   command: Terminal,
@@ -360,7 +360,7 @@ function InfoSection({
   describeMetadata,
 }: {
   item: StorePluginItem;
-  describeMetadata: ZCodePluginsDescribeResult["metadata"];
+  describeMetadata: ZodyPluginsDescribeResult["metadata"];
 }) {
   const { intl } = useZCodeIntl();
   const platform = useOptionalPlatform();

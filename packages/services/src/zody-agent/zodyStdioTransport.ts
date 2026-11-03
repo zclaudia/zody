@@ -2,12 +2,12 @@ import type { Readable, Writable } from "node:stream";
 import type { ChildProcess } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
 import { Emitter } from "@zody/rpc";
-import type { ZCodeProtocolMessage } from "@zody/shared";
+import type { ZodyProtocolMessage } from "@zody/shared";
 import { zcodeProtocolMessageSchema } from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import type {
-  ZCodeProtocolTransport,
-  ZCodeProtocolTransportClosedEvent,
+  ZodyProtocolTransport,
+  ZodyProtocolTransportClosedEvent,
 } from "./zodyProtocolTransport.js";
 import {
   captureProcessGroupSnapshot,
@@ -19,14 +19,14 @@ import {
 import type { ProcessTreeSnapshot } from "#src/process/processTreeTerminator.js";
 import { AgentStderrCollector, EXIT_STDERR_DRAIN_MS } from "./agentStderrCollector.js";
 
-interface ZCodeStdioTransportOptions {
+interface ZodyStdioTransportOptions {
   onStderrLine?: (line: string) => void;
   ownedProcessGroupId?: number;
   ownedProcessStartedAtMs?: number;
 }
 
 /** Narrow stdio surface so a native launcher can expose protocol on fd6/7. */
-export interface ZCodeStdioChildLike {
+export interface ZodyStdioChildLike {
   readonly pid?: number;
   readonly stdin: Writable;
   readonly stdout: Readable;
@@ -48,11 +48,11 @@ const PROCESS_TREE_WINDOWS_TASKKILL_TIMEOUT_MS = 1_000;
 const PROCESS_TREE_WINDOWS_EXIT_OBSERVATION_GRACE_MS = 250;
 const processTreeLogger = createServiceLogger("zcode-agent-process-tree");
 
-export class ZCodeStdioTransport implements ZCodeProtocolTransport {
+export class ZCodeStdioTransport implements ZodyProtocolTransport {
   readonly kind = "stdio" as const;
 
-  private readonly messageEmitter = new Emitter<ZCodeProtocolMessage>();
-  private readonly closeEmitter = new Emitter<ZCodeProtocolTransportClosedEvent>();
+  private readonly messageEmitter = new Emitter<ZodyProtocolMessage>();
+  private readonly closeEmitter = new Emitter<ZodyProtocolTransportClosedEvent>();
   private readonly stderrCollector: AgentStderrCollector;
   private readonly stdoutDecoder = new StringDecoder("utf8");
   // 当前未完成行的分片；只在遇到 LF 时 join 一次，见 handleStdoutData 注释。
@@ -74,8 +74,8 @@ export class ZCodeStdioTransport implements ZCodeProtocolTransport {
   }
 
   constructor(
-    private readonly child: ZCodeStdioChildLike,
-    private readonly options?: ZCodeStdioTransportOptions,
+    private readonly child: ZodyStdioChildLike,
+    private readonly options?: ZodyStdioTransportOptions,
   ) {
     this.stderrCollector = new AgentStderrCollector(child.stderr, options?.onStderrLine);
 
@@ -99,7 +99,7 @@ export class ZCodeStdioTransport implements ZCodeProtocolTransport {
     });
   }
 
-  async send(message: ZCodeProtocolMessage): Promise<void> {
+  async send(message: ZodyProtocolMessage): Promise<void> {
     if (this.disposed || this.closed || this.child.killed || !this.child.stdin.writable) {
       throw new Error("ZCode agent stdio transport is closed");
     }
@@ -301,7 +301,7 @@ export class ZCodeStdioTransport implements ZCodeProtocolTransport {
     this.fireClose({ reason: `${stream}_error: ${error.message}` });
   }
 
-  private fireClose(event: ZCodeProtocolTransportClosedEvent): void {
+  private fireClose(event: ZodyProtocolTransportClosedEvent): void {
     if (this.closed) {
       return;
     }

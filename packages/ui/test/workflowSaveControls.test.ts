@@ -10,8 +10,8 @@ import {
   TID_WORKFLOW_LAUNCH_ARG,
   TID_WORKFLOW_LAUNCH_DIALOG,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeWorkflowsSaveResult,
+  type ZodySavedWorkflowEntry,
+  type ZodyWorkflowsSaveResult,
 } from "@zody/shared";
 
 vi.mock("@/logger.js", () => ({ logger: { debug: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
@@ -74,7 +74,7 @@ afterEach(() => {
   cleanup();
 });
 
-const ENTRY: ZCodeSavedWorkflowEntry = {
+const ENTRY: ZodySavedWorkflowEntry = {
   name: "pr-review",
   description: "分层评审",
   scope: "project",
@@ -94,7 +94,7 @@ function popoverHost(overrides: Partial<WorkflowSavePopoverHost> = {}): Workflow
     scopeLocked: false,
     saving: false,
     save: vi.fn(
-      async (): Promise<ZCodeWorkflowsSaveResult> => ({
+      async (): Promise<ZodyWorkflowsSaveResult> => ({
         ok: true,
         name: "pr-review",
         scope: "project",
@@ -211,7 +211,7 @@ describe("WorkflowSavePopover", () => {
   it("agent 拒绝（target_exists 之外）：画出它的原因与诊断，弹层留着——什么都没写", async () => {
     const host = popoverHost({
       save: vi.fn(
-        async (): Promise<ZCodeWorkflowsSaveResult> => ({
+        async (): Promise<ZodyWorkflowsSaveResult> => ({
           ok: false,
           reason: "compile_failed",
           detail: "L1:C1 bad",
@@ -249,7 +249,7 @@ describe("WorkflowSavePopover", () => {
 // ── 表头两个槽位 ──
 
 interface ControllerOverrides {
-  entry?: ZCodeSavedWorkflowEntry;
+  entry?: ZodySavedWorkflowEntry;
   runArgs?: Record<string, unknown>;
   launch?: ReturnType<typeof vi.fn>;
 }
@@ -382,7 +382,7 @@ describe("表头槽位", () => {
   });
 
   it("再次运行：有实参就开窗，预填这次 run 跑过的那一份", async () => {
-    const entry: ZCodeSavedWorkflowEntry = {
+    const entry: ZodySavedWorkflowEntry = {
       ...ENTRY,
       args: { base: { type: "string", default: "main" } },
     };

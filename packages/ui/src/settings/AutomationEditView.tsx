@@ -37,9 +37,9 @@ import {
   TID_AUTOMATION_YEAR_MONTH_OPTION,
   TID_AUTOMATION_YEAR_MONTHDAY,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeAutomation,
-  type ZCodeAutomationRun,
-  type ZCodeAutomationScheduleRule,
+  type ZodyAutomation,
+  type ZodyAutomationRun,
+  type ZodyAutomationScheduleRule,
 } from "@zody/shared";
 import {
   AutomationAddScheduleIcon,
@@ -1066,7 +1066,7 @@ export interface AutomationEditSubmit {
 
 export interface AutomationEditViewProps {
   /** null = 新建；否则编辑。 */
-  editing: ZCodeAutomation | null;
+  editing: ZodyAutomation | null;
   /** 新建预填(来自 More ideas 模板)。 */
   initialDraft?: { title: string; cronExpr: string; prompt: string } | null;
   /** 当前列表所在项目,作为新建的默认目标项目。 */
@@ -1077,9 +1077,9 @@ export interface AutomationEditViewProps {
   onSubmit: (params: AutomationEditSubmit) => Promise<boolean>;
   onBack: () => void;
   /** 编辑态:立即运行 / 启停 / 删除。 */
-  onRunNow?: (automation: ZCodeAutomation) => Promise<void> | void;
-  onToggle?: (automation: ZCodeAutomation, enabled: boolean) => void;
-  onDelete?: (automation: ZCodeAutomation) => void;
+  onRunNow?: (automation: ZodyAutomation) => Promise<void> | void;
+  onToggle?: (automation: ZodyAutomation, enabled: boolean) => void;
+  onDelete?: (automation: ZodyAutomation) => void;
   /** History tab 运行历史。 */
   runsEntry?: AutomationRunsEntry;
   onLoadRuns?: () => void;
@@ -1114,7 +1114,7 @@ function defaultBuilder(): CronBuilderState {
 }
 
 function initialBuilder(
-  editing: ZCodeAutomation | null,
+  editing: ZodyAutomation | null,
   initialDraft?: { title: string; cronExpr: string; prompt: string } | null,
 ): CronBuilderState {
   if (!editing) {
@@ -1141,7 +1141,7 @@ function initialBuilder(
 
 // ---- 运行历史状态映射(与 AutomationRunsDialog 保持一致) ----
 type RunStatusKind = "running" | "succeeded" | "failed" | "stopped" | "skipped";
-function resolveRunStatus(run: ZCodeAutomationRun): RunStatusKind {
+function resolveRunStatus(run: ZodyAutomationRun): RunStatusKind {
   if (run.dispatchStatus === "skipped") return "skipped";
   if (run.dispatchStatus === "failed_to_dispatch") return "failed";
   switch (run.outcome) {
@@ -1179,7 +1179,7 @@ const AUTOMATION_STATUS_DOT_CLASS: Record<AutomationStatusKind, string> = {
 };
 
 function normalizeAutomationScheduleRule(
-  rule: ZCodeAutomationScheduleRule | null | undefined,
+  rule: ZodyAutomationScheduleRule | null | undefined,
 ): Record<string, unknown> | null {
   if (!rule) return null;
   return {
@@ -1665,7 +1665,7 @@ export function AutomationEditView({
     [editing?.automationId, requiredFieldErrors],
   );
 
-  const currentScheduleRule = useMemo<ZCodeAutomationScheduleRule | undefined>(
+  const currentScheduleRule = useMemo<ZodyAutomationScheduleRule | undefined>(
     () =>
       builder.frequency === "custom"
         ? {

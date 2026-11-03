@@ -5,18 +5,18 @@ import { Emitter, type Event } from "@zody/rpc";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   SessionsIndexTopicWireFrame,
-  IZCodeAgentService,
+  IZodyAgentService,
   ZodyAgentRuntimeLifecycleEvent,
-  ZCodeAgentSessionTarget,
+  ZodyAgentSessionTarget,
 } from "../src/zody-agent/zodyAgent.js";
 import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 import { setDataBaseDir } from "../src/paths.js";
 import { createZCodeTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
 import type {
   ModelSelection,
-  ZCodeSessionStateSnapshot,
-  ZCodeTaskMeta,
-  ZCodeWorkspaceEvent,
+  ZodySessionStateSnapshot,
+  ZodyTaskMeta,
+  ZodyWorkspaceEvent,
 } from "@zody/shared";
 import { elideSessionSnapshotForIndex, ZCODE_AGENT_PROVIDER_NOT_READY_CODE } from "@zody/shared";
 import type {
@@ -57,7 +57,7 @@ afterEach(async () => {
 });
 
 interface TestEnv {
-  agent: IZCodeAgentService;
+  agent: IZodyAgentService;
   indexEmitter: TestTopicEmitter<SessionsIndexTopicFrame, SessionsIndexTopicWireFrame>;
   configEmitter: TestTopicEmitter<WorkspaceConfigTopicFrame, WorkspaceConfigTopicWireFrame>;
   lifecycleEmitter: Emitter<ZodyAgentRuntimeLifecycleEvent>;
@@ -99,9 +99,9 @@ function createTestTopicEmitter<
 
 const INDEX_SUBSCRIPTION_ID = "six-test-1";
 const CONFIG_SUBSCRIPTION_ID = "wcs-test-1";
-type IndexSubscribeResult = Awaited<ReturnType<IZCodeAgentService["subscribeSessionsIndexV4"]>>;
-type IndexResyncResult = Awaited<ReturnType<IZCodeAgentService["resyncSessionsIndexV4"]>>;
-type ConfigResyncResult = Awaited<ReturnType<IZCodeAgentService["resyncWorkspaceConfigV4"]>>;
+type IndexSubscribeResult = Awaited<ReturnType<IZodyAgentService["subscribeSessionsIndexV4"]>>;
+type IndexResyncResult = Awaited<ReturnType<IZodyAgentService["resyncSessionsIndexV4"]>>;
+type ConfigResyncResult = Awaited<ReturnType<IZodyAgentService["resyncWorkspaceConfigV4"]>>;
 
 function summaryOf(
   sessionId: string,
@@ -204,7 +204,7 @@ function setupEnv(
     WorkspaceConfigTopicWireFrame
   >();
   const lifecycleEmitter = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
-  const agent: IZCodeAgentService = {
+  const agent: IZodyAgentService = {
     subscribeSessionsIndexV4: vi.fn(async () => {
       const ack = {
         subscriptionId: INDEX_SUBSCRIPTION_ID,
@@ -244,16 +244,16 @@ function setupEnv(
       },
     })),
     onDynamicWorkspaceConfigFrame: vi.fn(() => configEmitter.event),
-    resumeSession: vi.fn(async (target: ZCodeAgentSessionTarget) =>
+    resumeSession: vi.fn(async (target: ZodyAgentSessionTarget) =>
       snapshotWith(target.sessionId, target.workspacePath),
     ),
     listSessions: vi.fn(async () => []),
-    readSession: vi.fn(async (target: ZCodeAgentSessionTarget) =>
+    readSession: vi.fn(async (target: ZodyAgentSessionTarget) =>
       snapshotWith(target.sessionId, target.workspacePath),
     ),
     hasActiveCuaOperationTurn: vi.fn(() => false),
     ...(options.runtimeLifecycle ? { onAgentRuntimeLifecycle: lifecycleEmitter.event } : {}),
-  } as unknown as IZCodeAgentService;
+  } as unknown as IZodyAgentService;
   const env = {
     agent,
     indexEmitter,
@@ -274,12 +274,12 @@ async function subscribed(env: TestEnv): Promise<void> {
   await new Promise((resolve) => setImmediate(resolve));
 }
 
-const seedTarget: ZCodeAgentSessionTarget = {
+const seedTarget: ZodyAgentSessionTarget = {
   workspacePath: "/repo",
   sessionId: "sess_complete",
 };
 
-async function seedRunningTask(repo: TaskIndexRepo): Promise<ZCodeTaskMeta> {
+async function seedRunningTask(repo: TaskIndexRepo): Promise<ZodyTaskMeta> {
   return repo.syncTaskMeta({
     meta: {
       taskId: seedTarget.sessionId,
@@ -304,14 +304,14 @@ function snapshotWith(
     userMessageText?: string;
     assistantMessageText?: string;
     assistantCompletedAt?: number;
-    sessionStatus?: ZCodeSessionStateSnapshot["session"]["status"];
+    sessionStatus?: ZodySessionStateSnapshot["session"]["status"];
     settingsModel?: ModelSelection;
     messageModel?: ModelSelection;
     thoughtLevel?: string;
-    target?: ZCodeSessionStateSnapshot["projection"]["target"];
+    target?: ZodySessionStateSnapshot["projection"]["target"];
     lastError?: { type: string; message: string; attribution?: ErrorAttribution };
   } = {},
-): ZCodeSessionStateSnapshot {
+): ZodySessionStateSnapshot {
   const settingsModel = overrides.settingsModel ?? {
     providerId: "anthropic",
     modelId: "haiku-4.5",
@@ -398,8 +398,8 @@ function snapshotWith(
       pendingPermissions: [],
     },
     runtime: { stream: { recovering: false } },
-    messages: messages as unknown as ZCodeSessionStateSnapshot["messages"],
-  } as unknown as ZCodeSessionStateSnapshot;
+    messages: messages as unknown as ZodySessionStateSnapshot["messages"],
+  } as unknown as ZodySessionStateSnapshot;
 }
 
 describe("createZCodeTaskIndexSyncer", () => {
@@ -412,7 +412,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: seedTarget.workspacePath,
     })((event) => broadcasts.push(event));
@@ -483,7 +483,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         agentService: env.agent,
         taskIndexRepo: env.repo,
       });
-      const broadcasts: ZCodeWorkspaceEvent[] = [];
+      const broadcasts: ZodyWorkspaceEvent[] = [];
       syncer.onDynamicWorkspaceEvent({
         workspacePath: seedTarget.workspacePath,
       })((event) => broadcasts.push(event));
@@ -525,7 +525,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     syncer.onDynamicWorkspaceEvent({ workspacePath: "/repo" })((event) => broadcasts.push(event));
     syncer.ensureSessionSubscription({
       workspacePath: "/repo",
@@ -573,7 +573,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: seedTarget.workspacePath,
     })((event) => broadcasts.push(event));
@@ -612,7 +612,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: seedTarget.workspacePath,
     })((event) => broadcasts.push(event));
@@ -644,7 +644,7 @@ describe("createZCodeTaskIndexSyncer", () => {
 
   it("falls back to a full snapshot when title arrives before task index row exists", async () => {
     const env = setupEnv();
-    const target: ZCodeAgentSessionTarget = {
+    const target: ZodyAgentSessionTarget = {
       workspacePath: "/repo",
       sessionId: "sess_missing",
     };
@@ -658,7 +658,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: "/repo",
     })((event) => broadcasts.push(event));
@@ -704,7 +704,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     const env = setupEnv({
       initialSessions: [summaryOf("sess-promoted", "draft")],
     });
-    const target: ZCodeAgentSessionTarget = {
+    const target: ZodyAgentSessionTarget = {
       workspacePath: "/repo",
       sessionId: "sess-promoted",
     };
@@ -715,7 +715,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({ workspacePath: "/repo" })((event) =>
       broadcasts.push(event),
     );
@@ -755,7 +755,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: "/repo",
     })((event) => broadcasts.push(event));
@@ -1053,7 +1053,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         meta: { ...(await seedRunningTask(env.repo)), provider: "glm" },
       });
       let finish:
-        | ((value: Awaited<ReturnType<IZCodeAgentService["listSessions"]>>) => void)
+        | ((value: Awaited<ReturnType<IZodyAgentService["listSessions"]>>) => void)
         | undefined;
       vi.mocked(env.agent.listSessions).mockImplementation(() =>
         failure === "failure"
@@ -1185,7 +1185,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: "/repo",
     })((event) => broadcasts.push(event));
@@ -1236,7 +1236,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: "/repo",
     })((event) => broadcasts.push(event));
@@ -1308,7 +1308,7 @@ describe("createZCodeTaskIndexSyncer", () => {
     const elided = elideSessionSnapshotForIndex(full);
     expect(JSON.stringify(elided).length).toBeLessThan(big.length / 10);
 
-    const capture = async (snapshot: ZCodeSessionStateSnapshot) => {
+    const capture = async (snapshot: ZodySessionStateSnapshot) => {
       const env = setupEnv();
       const writes: unknown[] = [];
       const original = env.repo.syncTaskMeta.bind(env.repo);
@@ -1320,7 +1320,7 @@ describe("createZCodeTaskIndexSyncer", () => {
         agentService: env.agent,
         taskIndexRepo: env.repo,
       });
-      const broadcasts: ZCodeWorkspaceEvent[] = [];
+      const broadcasts: ZodyWorkspaceEvent[] = [];
       const subscription = syncer.onDynamicWorkspaceEvent({ workspacePath: "/repo" })((event) =>
         broadcasts.push(event),
       );
@@ -1674,7 +1674,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const broadcasts: ZCodeWorkspaceEvent[] = [];
+    const broadcasts: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: "/repo",
     })((event) => broadcasts.push(event));
@@ -2038,7 +2038,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const workspaceEvents: ZCodeWorkspaceEvent[] = [];
+    const workspaceEvents: ZodyWorkspaceEvent[] = [];
     const terminalEvents: string[] = [];
     const workspaceSubscription = syncer.onDynamicWorkspaceEvent({ workspacePath: "/repo" })(
       (event) => workspaceEvents.push(event),
@@ -2507,7 +2507,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const workspaceEvents: ZCodeWorkspaceEvent[] = [];
+    const workspaceEvents: ZodyWorkspaceEvent[] = [];
     syncer.onDynamicWorkspaceEvent({ workspacePath: "/repo" })((event) =>
       workspaceEvents.push(event),
     );
@@ -2547,7 +2547,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const workspaceEvents: ZCodeWorkspaceEvent[] = [];
+    const workspaceEvents: ZodyWorkspaceEvent[] = [];
     syncer.onDynamicWorkspaceEvent({ workspacePath: "/repo" })((event) =>
       workspaceEvents.push(event),
     );
@@ -3185,7 +3185,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       agentService: env.agent,
       taskIndexRepo: env.repo,
     });
-    const received: ZCodeWorkspaceEvent[] = [];
+    const received: ZodyWorkspaceEvent[] = [];
     const subscription = syncer.onDynamicWorkspaceEvent({
       workspacePath: "/repo",
     })((event) => received.push(event));
@@ -3195,7 +3195,7 @@ describe("createZCodeTaskIndexSyncer", () => {
       type: "workspace_config_options_update",
       workspacePath: "/repo",
       configOptions: [],
-    } as ZCodeWorkspaceEvent);
+    } as ZodyWorkspaceEvent);
 
     expect(received.length).toBe(1);
     expect(received[0].type).toBe("workspace_config_options_update");

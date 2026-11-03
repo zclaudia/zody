@@ -16,7 +16,7 @@ export const ZCODE_SOURCE_HEADERS = {
   "User-Agent": "Zody/unknown",
 } as const;
 
-export interface BuildZCodeSourceHeadersFromContextOptions {
+export interface BuildZodySourceHeadersFromContextOptions {
   appVersion?: string;
   arch?: string;
   clientLanguage?: string;
@@ -36,7 +36,7 @@ export function normalizeZCodeSourceHeaderValue(value: string | undefined): stri
 }
 
 export function buildZCodeSourceHeadersFromContext(
-  options: BuildZCodeSourceHeadersFromContextOptions = {},
+  options: BuildZodySourceHeadersFromContextOptions = {},
 ): Record<string, string> {
   const appVersion = normalizeZCodeSourceHeaderValue(options.appVersion);
   const arch = normalizeZCodeSourceHeaderValue(options.arch);

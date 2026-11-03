@@ -20,12 +20,12 @@ import {
 } from "@zody/shared";
 import type {
   RemoteTarget,
-  ZCodeAvailablePluginSummary,
-  ZCodeAgentMcpServer,
-  ZCodeMcpListMode,
-  ZCodeMcpServer,
-  ZCodeMcpServerStatusSnapshot,
-  ZCodePluginInfo,
+  ZodyAvailablePluginSummary,
+  ZodyAgentMcpServer,
+  ZodyMcpListMode,
+  ZodyMcpServer,
+  ZodyMcpServerStatusSnapshot,
+  ZodyPluginInfo,
 } from "@zody/shared";
 import {
   isZCodeAgentMcpStatusModeUnsupportedError,
@@ -123,20 +123,20 @@ export async function refreshMcpServerStatusList({
   workspacePath,
   mcpSyncService,
 }: {
-  beginServerStatusListRefresh: (mode?: ZCodeMcpListMode) => number;
+  beginServerStatusListRefresh: (mode?: ZodyMcpListMode) => number;
   markServerStatusListRefreshFailed?: (
     error: string,
     requestEpoch: number,
-    mode?: ZCodeMcpListMode,
+    mode?: ZodyMcpListMode,
   ) => void;
   mergeServerStatusSnapshots: (
-    statuses: Record<string, ZCodeMcpServerStatusSnapshot>,
+    statuses: Record<string, ZodyMcpServerStatusSnapshot>,
     requestEpoch: number,
-    mode?: ZCodeMcpListMode,
+    mode?: ZodyMcpListMode,
   ) => void;
   getCurrentWorkspaceKey: () => string;
-  mode?: ZCodeMcpListMode;
-  mcpServers?: ZCodeAgentMcpServer[];
+  mode?: ZodyMcpListMode;
+  mcpServers?: ZodyAgentMcpServer[];
   requestedWorkspaceKey: string;
   workspaceIdentity?: string;
   workspacePath: string;
@@ -183,7 +183,7 @@ export async function refreshMcpServerStatusList({
 }
 
 export interface McpOAuthAuthorizationPendingRefresh {
-  mcpServers: ZCodeAgentMcpServer[];
+  mcpServers: ZodyAgentMcpServer[];
   pendingKey: string;
   workspaceKey: string;
 }
@@ -204,7 +204,7 @@ export function transitionMcpAutoStatusListRefreshKey(
 }
 
 export interface McpOAuthAuthorizationFollowupRefresh {
-  mcpServers: ZCodeAgentMcpServer[];
+  mcpServers: ZodyAgentMcpServer[];
   refreshKey: string;
   workspaceKey: string;
 }
@@ -219,7 +219,7 @@ export function transitionMcpOAuthAuthorizationPendingRefresh({
 }: {
   activeWorkspaceKey: string;
   existingFollowup?: McpOAuthAuthorizationFollowupRefresh | null;
-  mcpServers: ZCodeAgentMcpServer[];
+  mcpServers: ZodyAgentMcpServer[];
   now?: () => number;
   pendingKey: string;
   previous: McpOAuthAuthorizationPendingRefresh | null;
@@ -336,9 +336,9 @@ export function createMcpStatusListRefreshQueue(): McpStatusListRefreshQueue {
 }
 
 export function buildMcpOAuthAuthorizationStatusRefreshServers(
-  servers: ZCodeMcpServer[],
-  statusSnapshots: Record<string, ZCodeMcpServerStatusSnapshot> = {},
-): ZCodeAgentMcpServer[] {
+  servers: ZodyMcpServer[],
+  statusSnapshots: Record<string, ZodyMcpServerStatusSnapshot> = {},
+): ZodyAgentMcpServer[] {
   const pendingSnapshotNames = new Set(
     Object.entries(statusSnapshots)
       .filter(([, snapshot]) =>
@@ -346,7 +346,7 @@ export function buildMcpOAuthAuthorizationStatusRefreshServers(
       )
       .map(([serverName]) => serverName),
   );
-  const result: ZCodeAgentMcpServer[] = [];
+  const result: ZodyAgentMcpServer[] = [];
   const seenNames = new Set<string>();
 
   for (const server of servers) {
@@ -374,10 +374,10 @@ export function buildMcpOAuthAuthorizationStatusRefreshServers(
 }
 
 export function buildMcpOAuthAuthorizationStatusRefreshOptions(
-  mcpServers: ZCodeAgentMcpServer[],
+  mcpServers: ZodyAgentMcpServer[],
 ): {
   mode: "status";
-  mcpServers: ZCodeAgentMcpServer[];
+  mcpServers: ZodyAgentMcpServer[];
 } {
   return {
     // OAuth pending/follow-up/focus 刷新只读运行态，不能让 pending 子集进入 connect replace 路径。
@@ -386,7 +386,7 @@ export function buildMcpOAuthAuthorizationStatusRefreshOptions(
   };
 }
 
-export function buildMcpServerStatusListKey(servers: ZCodeMcpServer[]): string {
+export function buildMcpServerStatusListKey(servers: ZodyMcpServer[]): string {
   return servers
     .filter((server) => server.source === "zcodeagentmcp")
     .map((server) => {
@@ -397,7 +397,7 @@ export function buildMcpServerStatusListKey(servers: ZCodeMcpServer[]): string {
 }
 
 export function buildPluginMcpServerStatusListKey(
-  plugins: ZCodePluginInfo[],
+  plugins: ZodyPluginInfo[],
 ): string {
   return plugins
     .map((plugin) => {
@@ -432,8 +432,8 @@ export function shouldShowPluginMcpServersInMcpSettings(
 }
 
 export function buildPendingMcpOAuthAuthorizationRefreshKey(
-  servers: ZCodeMcpServer[],
-  statusSnapshots: Record<string, ZCodeMcpServerStatusSnapshot> = {},
+  servers: ZodyMcpServer[],
+  statusSnapshots: Record<string, ZodyMcpServerStatusSnapshot> = {},
 ): string {
   const localPendingKeys = servers
     .filter(
@@ -462,7 +462,7 @@ function PluginMcpServerList({
   items: PluginMcpServerItem[];
   pluginListingById: ReadonlyMap<
     string,
-    ZCodeAvailablePluginSummary["listing"]
+    ZodyAvailablePluginSummary["listing"]
   >;
   onOpenAuthorization?: (item: PluginMcpServerItem) => void;
 }) {
@@ -709,7 +709,7 @@ export function McpSettingsSection({
 
   const [showForm, setShowForm] = useState(false);
   const [formScopeKey, setFormScopeKey] = useState(parentScopeKey);
-  const [editingServer, setEditingServer] = useState<ZCodeMcpServer | null>(
+  const [editingServer, setEditingServer] = useState<ZodyMcpServer | null>(
     null,
   );
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -823,8 +823,8 @@ export function McpSettingsSection({
   const lastAutoStatusListRefreshKeyRef = useRef("");
   const requestMcpServerStatusList = useCallback(
     async (options?: {
-      mcpServers?: ZCodeAgentMcpServer[];
-      mode?: ZCodeMcpListMode;
+      mcpServers?: ZodyAgentMcpServer[];
+      mode?: ZodyMcpListMode;
       trigger?: McpStatusListRefreshTrigger;
     }) => {
       const trigger = options?.trigger ?? "auto";
@@ -1407,7 +1407,7 @@ export function McpSettingsSection({
     void requestMcpServerStatusList();
   }
 
-  async function handleSave(form: FormState, prev?: ZCodeMcpServer) {
+  async function handleSave(form: FormState, prev?: ZodyMcpServer) {
     if (!activeWorkspacePath) {
       return;
     }
@@ -1449,7 +1449,7 @@ export function McpSettingsSection({
     onFormScopeKeyChange?.(null);
   }
 
-  async function handleDelete(server: ZCodeMcpServer) {
+  async function handleDelete(server: ZodyMcpServer) {
     const confirmed = await confirmDialog({
       title: intl.formatMessage(
         { id: "settings.mcp.deleteConfirmTitle" },
@@ -1475,7 +1475,7 @@ export function McpSettingsSection({
     onFormScopeKeyChange?.(null);
   }
 
-  function handleEdit(server: ZCodeMcpServer) {
+  function handleEdit(server: ZodyMcpServer) {
     const ownerWorkspace = workspaceTabs.find(
       (tab) => tab.workspacePath === server.projectPath,
     );
@@ -1500,7 +1500,7 @@ export function McpSettingsSection({
     setShowForm(true);
   }
 
-  function handleOpenAuthorization(server: ZCodeMcpServer) {
+  function handleOpenAuthorization(server: ZodyMcpServer) {
     const authorizationUrl = server.authorization?.authorizationUrl;
     if (!authorizationUrl) {
       return;

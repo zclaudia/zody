@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zody/shared";
+import type { ZodyTaskMeta, ZodyWorkspaceTaskListChanged } from "@zody/shared";
 import {
   resetTaskStatusUnreadSyncForTest,
   shouldMarkStatusEventTaskUnread,
@@ -13,7 +13,7 @@ import {
 import { getTaskUnreadIndicator, useZCodeSessionStore } from "@/store/zodySessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: "task-1",
     traceId: "trace-1",
@@ -28,9 +28,9 @@ function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
 }
 
 function createStatusEvent(
-  taskMeta: ZCodeTaskMeta,
-  overrides: Partial<ZCodeWorkspaceTaskListChanged> = {},
-): ZCodeWorkspaceTaskListChanged {
+  taskMeta: ZodyTaskMeta,
+  overrides: Partial<ZodyWorkspaceTaskListChanged> = {},
+): ZodyWorkspaceTaskListChanged {
   return {
     type: "workspace_task_list_changed",
     workspacePath: taskMeta.workspacePath,
@@ -62,7 +62,7 @@ function createService() {
   };
 }
 
-function seedQueryTask(task: ZCodeTaskMeta): string {
+function seedQueryTask(task: ZodyTaskMeta): string {
   const descriptor = buildTaskListCacheDescriptor({
     kind: "workspace",
     workspaceScopes: [
@@ -85,7 +85,7 @@ function seedQueryTask(task: ZCodeTaskMeta): string {
   return queryKey;
 }
 
-function getQueryTask(task: ZCodeTaskMeta): ZCodeTaskMeta | undefined {
+function getQueryTask(task: ZodyTaskMeta): ZodyTaskMeta | undefined {
   return useTaskQueryCacheStore.getState().taskMetaByEntityKey[buildTaskEntityKey(task)];
 }
 
@@ -148,11 +148,11 @@ describe("task status unread sync", () => {
 
   it("keeps the unread overlay when an older membership result arrives in flight", async () => {
     const task = createTaskMeta({ status: "completed" });
-    let resolvePersistence!: (taskMeta: ZCodeTaskMeta) => void;
+    let resolvePersistence!: (taskMeta: ZodyTaskMeta) => void;
     const service = {
       setTaskUnread: vi.fn(
         () =>
-          new Promise<ZCodeTaskMeta>((resolve) => {
+          new Promise<ZodyTaskMeta>((resolve) => {
             resolvePersistence = resolve;
           }),
       ),
@@ -200,11 +200,11 @@ describe("task status unread sync", () => {
 
   it("stores the overlay before a newly created task row is published", async () => {
     const task = createTaskMeta({ status: "completed" });
-    let resolvePersistence!: (taskMeta: ZCodeTaskMeta) => void;
+    let resolvePersistence!: (taskMeta: ZodyTaskMeta) => void;
     const service = {
       setTaskUnread: vi.fn(
         () =>
-          new Promise<ZCodeTaskMeta>((resolve) => {
+          new Promise<ZodyTaskMeta>((resolve) => {
             resolvePersistence = resolve;
           }),
       ),

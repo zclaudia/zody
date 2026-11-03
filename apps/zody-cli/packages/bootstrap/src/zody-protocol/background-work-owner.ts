@@ -1,10 +1,10 @@
 import type { SessionId, SessionInfo } from "@zody/contracts";
 import type { BackgroundBashOutputResult } from "@zody/shared";
-import type { ZCodeProtocolAgentServerContext } from "./server-types.js";
+import type { ZodyProtocolAgentServerContext } from "./server-types.js";
 
 /** 只查询现存执行器，绝不为查看输出恢复 runtime。 */
 export async function readBackgroundBashOutputFromOwner(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
   workId: string,
 ): Promise<BackgroundBashOutputResult> {

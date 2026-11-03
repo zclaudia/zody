@@ -30,7 +30,7 @@ import { V4CapabilityUnsupportedError } from "../src/zody-protocol-v4/commands/h
 import { V4InteractionRegistry } from "../src/zody-protocol-v4/interaction-registry.js";
 import { createProtocolInteractionBroker } from "../src/zody-protocol/interaction-broker.js";
 import { PERMISSION_DENIED_BY_USER_CONTENT } from "../src/permission-options.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import type {
   V4CommandCoreHost,
   V4SessionRecordView,
@@ -837,7 +837,7 @@ function makeBrokerContext(options?: {
     },
     requestClient,
     v4Interactions: registry,
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
   return {
     broker: createProtocolInteractionBroker(context),
     registry,

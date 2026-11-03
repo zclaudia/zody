@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import type {
-  ZCodeImportSessionsResult,
-  ZCodeImportableSessionCandidate,
+  ZodyImportSessionsResult,
+  ZodyImportableSessionCandidate,
 } from "@zody/shared";
 import { logger } from "@/logger.js";
 import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
@@ -73,12 +73,12 @@ export function useClaudeSessionMigration(params: {
     useState<ClaudeMigrationWorkspaceFilterMode>("all");
   const [range, setRange] = useState<ClaudeMigrationRange>("30d");
   const [limitInput, setLimitInput] = useState(String(DEFAULT_LIMIT));
-  const [candidates, setCandidates] = useState<ZCodeImportableSessionCandidate[]>([]);
+  const [candidates, setCandidates] = useState<ZodyImportableSessionCandidate[]>([]);
   const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
   const [scanError, setScanError] = useState<string | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [lastImportResult, setLastImportResult] =
-    useState<ZCodeImportSessionsResult | null>(null);
+    useState<ZodyImportSessionsResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 

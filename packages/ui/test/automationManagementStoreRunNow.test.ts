@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
-  IZCodeAgentService,
-  ZCodeAgentRunAutomationNowResult,
+  IZodyAgentService,
+  ZodyAgentRunAutomationNowResult,
 } from "@zody/services";
-import type { ZCodeAutomation } from "@zody/shared";
+import type { ZodyAutomation } from "@zody/shared";
 import { useAutomationManagementStore } from "@/store/automationManagementStore.js";
 
 function deferred<T>() {
@@ -25,11 +25,11 @@ describe("automationManagementStore runAutomationNow", () => {
   });
 
   it("连续立即运行同一 automation 时只发送一次 RPC", async () => {
-    const pendingRun = deferred<ZCodeAgentRunAutomationNowResult>();
+    const pendingRun = deferred<ZodyAgentRunAutomationNowResult>();
     const agentService = {
       runAutomationNow: vi.fn(() => pendingRun.promise),
       listAllAutomations: vi.fn(async () => []),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
 
     useAutomationManagementStore.setState({
       workspacePath: "/tmp/ws",
@@ -56,7 +56,7 @@ describe("automationManagementStore runAutomationNow", () => {
     const agentService = {
       runAutomationNow: vi.fn(async () => ({ status: "duplicate" as const })),
       listAllAutomations: vi.fn(async () => []),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
 
     useAutomationManagementStore.setState({
       workspacePath: "/tmp/ws",
@@ -79,7 +79,7 @@ describe("automationManagementStore runAutomationNow", () => {
         .mockResolvedValueOnce({ status: "queued" as const })
         .mockResolvedValueOnce({ status: "duplicate" as const }),
       listAllAutomations: vi.fn(async () => []),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
 
     useAutomationManagementStore.setState({
       workspacePath: "/tmp/ws",
@@ -114,13 +114,13 @@ describe("automationManagementStore runAutomationNow", () => {
       recurring: true,
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    } satisfies ZCodeAutomation;
+    } satisfies ZodyAutomation;
     const agentService = {
       setAutomationEnabled: vi.fn(async () => undefined),
       listAllAutomations: vi.fn(async () => [
         { ...automation, enabled: false, lifecycleStatus: "paused" as const },
       ]),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
 
     useAutomationManagementStore.setState({
       workspacePath: "/tmp/current",

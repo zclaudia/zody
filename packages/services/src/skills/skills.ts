@@ -1,4 +1,4 @@
-import type { ZCodeProvider, SkillsPromptContext, SkillsListResult } from "@zody/shared";
+import type { ZodyProvider, SkillsPromptContext, SkillsListResult } from "@zody/shared";
 import { ServiceChannels } from "@zody/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
@@ -6,12 +6,12 @@ export interface ISkillsService {
   list(params: {
     workspacePath: string;
     workspaceIdentity?: string;
-    provider?: ZCodeProvider;
+    provider?: ZodyProvider;
   }): Promise<SkillsListResult>;
   setEnabled(params: {
     workspacePath: string;
     workspaceIdentity?: string;
-    provider?: ZCodeProvider;
+    provider?: ZodyProvider;
     scope?: "workspace" | "user" | "plugin";
     skillId: string;
     enabled: boolean;
@@ -19,7 +19,7 @@ export interface ISkillsService {
   buildPromptContext(params: {
     workspacePath: string;
     workspaceIdentity?: string;
-    provider?: ZCodeProvider;
+    provider?: ZodyProvider;
     prompt: string;
   }): Promise<SkillsPromptContext>;
   /** 将指定 skill 复制到通用目录（.zody/skills），成功后返回新 skill 的路径。 */

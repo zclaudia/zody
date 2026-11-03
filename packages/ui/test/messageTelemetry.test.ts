@@ -3,7 +3,7 @@ import {
   buildCustomSupplierKey,
   buildGhostSupplierKey,
   encodeCustomModelValue,
-  type ZCodePersistedFileChange,
+  type ZodyPersistedFileChange,
 } from "@zody/shared";
 
 import {
@@ -49,7 +49,7 @@ describe("messageTelemetry", () => {
   });
 
   it("builds message completion metrics from the active prompt lifecycle", () => {
-    const fileChanges: ZCodePersistedFileChange[] = [
+    const fileChanges: ZodyPersistedFileChange[] = [
       {
         turnIndex: 0,
         snapshots: [

@@ -27,13 +27,13 @@ import {
   parseWorkspaceConfigTopic,
 } from "@zody/shared/zody-protocol-v4";
 import type {
-  ZCodeProtocolError,
-  ZCodeProtocolMessage,
-  ZCodeProtocolMethod,
-  ZCodeProtocolNotification,
-  ZCodeProtocolRequest,
-  ZCodeProtocolRequestId,
-  ZCodeProtocolResponse,
+  ZodyProtocolError,
+  ZodyProtocolMessage,
+  ZodyProtocolMethod,
+  ZodyProtocolNotification,
+  ZodyProtocolRequest,
+  ZodyProtocolRequestId,
+  ZodyProtocolResponse,
 } from "@zody/shared";
 import {
   cancelBackgroundTask,
@@ -141,19 +141,19 @@ import {
   type ParamsSchema,
   parseParams,
   toProtocolError,
-  type ZCodeProtocolClientRequestOptions,
-  type ZCodeProtocolAgentDependencies,
-  type ZCodeProtocolAgentServerContext,
-  type ZCodeProtocolSessionRecord,
+  type ZodyProtocolClientRequestOptions,
+  type ZodyProtocolAgentDependencies,
+  type ZodyProtocolAgentServerContext,
+  type ZodyProtocolSessionRecord,
 } from "./server-types.js";
 import { createInMemorySessionEventStore } from "@zody/contracts";
 
-export type { ZCodeProtocolAgentDependencies, ZCodeProtocolSessionRecord };
+export type { ZodyProtocolAgentDependencies, ZodyProtocolSessionRecord };
 
 import { closeMcpUiInstance, openMcpUiInstance, validateMcpUiInstance } from "./mcp-ui/index.js";
 const MAX_CLIENT_REQUEST_REANNOUNCE_INTERVAL_MS = 10_000;
 
-type ZCodeProtocolOutboundMessage = ZCodeProtocolNotification | ZCodeProtocolRequest;
+type ZodyProtocolOutboundMessage = ZodyProtocolNotification | ZodyProtocolRequest;
 
 /**
  * Trust store 落盘后各 session 的 coordinator
@@ -163,7 +163,7 @@ type ZCodeProtocolOutboundMessage = ZCodeProtocolNotification | ZCodeProtocolReq
  */
 export async function notifyWorkspaceHookTrustGrantSessions(input: {
   grantedWorkspaceKey?: string;
-  sessions: Map<string, ZCodeProtocolSessionRecord>;
+  sessions: Map<string, ZodyProtocolSessionRecord>;
 }): Promise<void> {
   if (!input.grantedWorkspaceKey) return;
   await Promise.all(
@@ -216,8 +216,8 @@ function getOperationId(params: unknown): string | undefined {
     : undefined;
 }
 
-export interface ZCodeProtocolPostResponseBatch {
-  readonly messages: readonly ZCodeProtocolOutboundMessage[];
+export interface ZodyProtocolPostResponseBatch {
+  readonly messages: readonly ZodyProtocolOutboundMessage[];
   commit(): boolean;
 }
 
@@ -256,9 +256,9 @@ export class ZCodeProtocolAgentServer {
     routeMcpServerNotification(this.context, notification);
   }
 
-  private messageSink?: (message: ZCodeProtocolOutboundMessage) => void;
+  private messageSink?: (message: ZodyProtocolOutboundMessage) => void;
   private clientDisconnectError?: Error;
-  private readonly context: ZCodeProtocolAgentServerContext;
+  private readonly context: ZodyProtocolAgentServerContext;
   private readonly logger;
   private readonly pendingClientRequests = new Map<string, PendingClientRequest<unknown>>();
   private readonly pluginOperationControllers = new Map<string, AbortController>();
@@ -268,12 +268,12 @@ export class ZCodeProtocolAgentServer {
    * 再写 response line，最后按数组顺序写 notification，不能靠 microtask 猜时序。
    */
   private readonly postResponseOutbox = new Map<
-    ZCodeProtocolRequestId,
-    ZCodeProtocolPostResponseBatch
+    ZodyProtocolRequestId,
+    ZodyProtocolPostResponseBatch
   >();
   private nextClientRequestId = 1;
 
-  constructor(deps: ZCodeProtocolAgentDependencies) {
+  constructor(deps: ZodyProtocolAgentDependencies) {
     this.runtimeResources = new ProtocolRuntimeResources(deps.createZCodeApp);
     const resolvedDeps = {
       ...deps,
@@ -300,7 +300,7 @@ export class ZCodeProtocolAgentServer {
       notify: (notification) => this.messageSink?.(notification),
       requestClient: (method, params, resultSchema, options) =>
         this.requestClient(method, params, resultSchema, options),
-      sessions: new Map<string, ZCodeProtocolSessionRecord>(),
+      sessions: new Map<string, ZodyProtocolSessionRecord>(),
       // 交互应答登记表（broker 反向请求 × v4 resolveInteraction 命令的汇合点）。
       v4Interactions: new V4InteractionRegistry(
         resolveV4InteractionRegistryOptionsFromEnv(deps.env ?? process.env),
@@ -380,7 +380,7 @@ export class ZCodeProtocolAgentServer {
     return counters;
   }
 
-  setNotificationSink(sink: (message: ZCodeProtocolOutboundMessage) => void): void {
+  setNotificationSink(sink: (message: ZodyProtocolOutboundMessage) => void): void {
     this.runtimeResources.assertServing();
     this.clientDisconnectError = undefined;
     this.messageSink = sink;
@@ -429,14 +429,14 @@ export class ZCodeProtocolAgentServer {
   }
 
   /** 一次性取走某 request 的 post-response messages；重复 take 返回空数组。 */
-  takePostResponseMessages(requestId: ZCodeProtocolRequestId): ZCodeProtocolOutboundMessage[] {
+  takePostResponseMessages(requestId: ZodyProtocolRequestId): ZodyProtocolOutboundMessage[] {
     const batch = this.takePostResponseBatch(requestId);
     batch?.commit();
     return [...(batch?.messages ?? [])];
   }
 
   /** production NDJSON 取完整 batch；只有全部 write 成功后才调 commit。 */
-  takePostResponseBatch(requestId: ZCodeProtocolRequestId): ZCodeProtocolPostResponseBatch | null {
+  takePostResponseBatch(requestId: ZodyProtocolRequestId): ZodyProtocolPostResponseBatch | null {
     const batch = this.postResponseOutbox.get(requestId) ?? null;
     this.postResponseOutbox.delete(requestId);
     return batch;
@@ -448,8 +448,8 @@ export class ZCodeProtocolAgentServer {
   }
 
   async handleMessage(
-    message: ZCodeProtocolMessage,
-  ): Promise<ZCodeProtocolError | ZCodeProtocolResponse | undefined> {
+    message: ZodyProtocolMessage,
+  ): Promise<ZodyProtocolError | ZodyProtocolResponse | undefined> {
     this.runtimeResources.assertServing();
     if (isResponse(message)) {
       this.resolveClientRequest(message.id, message.result);
@@ -481,8 +481,8 @@ export class ZCodeProtocolAgentServer {
   }
 
   private async handleRequest(
-    request: ZCodeProtocolRequest,
-  ): Promise<ZCodeProtocolError | ZCodeProtocolResponse> {
+    request: ZodyProtocolRequest,
+  ): Promise<ZodyProtocolError | ZodyProtocolResponse> {
     // request id 可在前一请求完成后复用；新请求不能继承未消费的旧 outbox。
     this.postResponseOutbox.delete(request.id);
     let releaseResidencyOperation: (() => void) | undefined;
@@ -513,7 +513,7 @@ export class ZCodeProtocolAgentServer {
     }
   }
 
-  private async dispatchRequest(request: ZCodeProtocolRequest) {
+  private async dispatchRequest(request: ZodyProtocolRequest) {
     switch (request.method) {
       // ── v4 conversation 通道（竖切，与旧 session/* 并存）──
       case V4_METHODS.connectionFlow: {
@@ -836,7 +836,7 @@ export class ZCodeProtocolAgentServer {
   }
 
   private async withPluginOperationSignal<T>(
-    request: ZCodeProtocolRequest,
+    request: ZodyProtocolRequest,
     run: (signal?: AbortSignal) => Promise<T>,
   ): Promise<T> {
     const operationId = getPluginOperationId(request.params);
@@ -864,7 +864,7 @@ export class ZCodeProtocolAgentServer {
   }
 
   private async withWorkspaceGenerateTextSignal<T>(
-    request: ZCodeProtocolRequest,
+    request: ZodyProtocolRequest,
     run: (signal?: AbortSignal) => Promise<T>,
   ): Promise<T> {
     const operationId = getOperationId(request.params);
@@ -899,24 +899,24 @@ export class ZCodeProtocolAgentServer {
     return { operationId: params.operationId, cancelled: true };
   }
 
-  private ok(id: ZCodeProtocolRequestId, result: unknown): ZCodeProtocolResponse {
+  private ok(id: ZodyProtocolRequestId, result: unknown): ZodyProtocolResponse {
     return { id, result };
   }
 
   private fail(
-    id: ZCodeProtocolRequestId,
+    id: ZodyProtocolRequestId,
     code: number,
     message: string,
     data?: unknown,
-  ): ZCodeProtocolError {
+  ): ZodyProtocolError {
     return { error: { code, data, message }, id };
   }
 
   private requestClient<T>(
-    method: ZCodeProtocolMethod,
+    method: ZodyProtocolMethod,
     params: unknown,
     resultSchema: ParamsSchema<T>,
-    options?: ZCodeProtocolClientRequestOptions,
+    options?: ZodyProtocolClientRequestOptions,
   ): Promise<T> {
     if (this.clientDisconnectError) {
       throw this.clientDisconnectError;
@@ -1012,7 +1012,7 @@ export class ZCodeProtocolAgentServer {
     });
   }
 
-  private resolveClientRequest(id: ZCodeProtocolRequestId, result: unknown): void {
+  private resolveClientRequest(id: ZodyProtocolRequestId, result: unknown): void {
     const key = String(id);
     const pending = this.pendingClientRequests.get(key);
     if (!pending) {
@@ -1028,7 +1028,7 @@ export class ZCodeProtocolAgentServer {
     }
   }
 
-  private rejectClientRequest(id: ZCodeProtocolRequestId, error: Error): void {
+  private rejectClientRequest(id: ZodyProtocolRequestId, error: Error): void {
     const key = String(id);
     const pending = this.pendingClientRequests.get(key);
     if (!pending) {

@@ -1,8 +1,8 @@
 import { expect, it, vi } from "vitest";
 import { createProviderRuntimeHeadersPort } from "../src/zody-protocol/provider-runtime-headers.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import type { ZCodeAppOptions } from "../src/app/types.js";
-import type { ZCodeProviderRuntimeHeadersRequestParams } from "@zody/shared";
+import type { ZodyProviderRuntimeHeadersRequestParams } from "@zody/shared";
 const workspace = {
   workspacePath: "/work",
   workspaceIdentity: "ssh:host:/work",
@@ -13,7 +13,7 @@ it("真实工厂同样装配唯一请求端口，完整账号事实透传而不�
     await import("../src/zody-protocol/workspace-model-runtime.js");
   const requestAuth = { apiKey: "team-key", headers: { "X-Team": "team-a" } };
   const requestClient = vi.fn(
-    async (_method: string, _params: ZCodeProviderRuntimeHeadersRequestParams) => ({
+    async (_method: string, _params: ZodyProviderRuntimeHeadersRequestParams) => ({
       headersApplied: true,
       requestAuth,
     }),
@@ -24,7 +24,7 @@ it("真实工厂同样装配唯一请求端口，完整账号事实透传而不�
       deps: { createZCodeApp },
       requestClient,
       notify: vi.fn(),
-    } as unknown as ZCodeProtocolAgentServerContext,
+    } as unknown as ZodyProtocolAgentServerContext,
     workspace,
     {},
   );
@@ -67,7 +67,7 @@ it("取消 runtime headers 反向 RPC 后向 Host 发送同一请求的专用取
       }),
   );
   const port = createProviderRuntimeHeadersPort(
-    { requestClient, notify } as unknown as ZCodeProtocolAgentServerContext,
+    { requestClient, notify } as unknown as ZodyProtocolAgentServerContext,
     workspace,
   );
   const pending = port.refreshBeforeModelRequest({
@@ -102,7 +102,7 @@ it("成功或普通错误不发送取消，保留原始响应和失败原因", a
     .mockResolvedValueOnce(response)
     .mockRejectedValueOnce(new Error("network-failure"));
   const port = createProviderRuntimeHeadersPort(
-    { requestClient, notify } as unknown as ZCodeProtocolAgentServerContext,
+    { requestClient, notify } as unknown as ZodyProtocolAgentServerContext,
     workspace,
   );
   const input = {
@@ -125,7 +125,7 @@ it("无人应答在总时限后失败并取消，迟到响应失效且下一请�
     const server = new ZCodeProtocolAgentServer({ createZCodeApp: vi.fn() });
     const sink = vi.fn();
     server.setNotificationSink(sink);
-    const context = (server as unknown as { context: ZCodeProtocolAgentServerContext }).context;
+    const context = (server as unknown as { context: ZodyProtocolAgentServerContext }).context;
     const port = createProviderRuntimeHeadersPort(context, workspace);
     const input = {
       traceContext: { traceId: "timeout-trace" },
@@ -210,7 +210,7 @@ it("闲时 scope 经过执行投影和私有反向 RPC 保留，SSH workspace �
     });
   });
   const port = createProviderRuntimeHeadersPort(
-    { requestClient, notify: vi.fn() } as unknown as ZCodeProtocolAgentServerContext,
+    { requestClient, notify: vi.fn() } as unknown as ZodyProtocolAgentServerContext,
     workspace,
   );
   await expect(

@@ -5,7 +5,7 @@ import {
   isCuaPermissionStatusAvailable,
   type CuaPermissionRestartOptions,
   type CuaPermissionStatusResult,
-  type ZCodeAgentCuaPermissionObservation,
+  type ZodyAgentCuaPermissionObservation,
 } from "@zody/services";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
@@ -54,7 +54,7 @@ async function runWithOneRetry<T>(
 }
 
 export function cuaPermissionObservationKey(
-  observation: ZCodeAgentCuaPermissionObservation,
+  observation: ZodyAgentCuaPermissionObservation,
 ): string {
   const workspaceKey = observation.workspaceIdentity?.trim() || observation.workspacePath;
   const missing = requiredCuaPermissionsForRequestAccessStatus(observation.permissionStatus);

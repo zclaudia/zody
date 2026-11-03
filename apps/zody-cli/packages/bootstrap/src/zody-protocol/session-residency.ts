@@ -5,7 +5,7 @@ import type {
   SessionDeactivationDecision,
   SessionResidentPoolHost,
 } from "./session-resident-pool.js";
-import type { ZCodeProtocolAgentServerContext } from "./server-types.js";
+import type { ZodyProtocolAgentServerContext } from "./server-types.js";
 
 // residency 收尾 lease 已拆到无旧协议耦合的独立模块（v4 原生层引用它以满足
 // 08-phasing M4「无桥」边界）；此处 re-export 保持旧协议目录内的既有引用不变。
@@ -24,7 +24,7 @@ export {
  * 组合成一个生命周期事务。
  */
 export async function deactivateSessionRecord(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
 ): Promise<void> {
   const record = context.sessions.get(sessionId);
@@ -41,7 +41,7 @@ export async function deactivateSessionRecord(
 }
 
 export function createSessionResidentPoolHost(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
 ): SessionResidentPoolHost {
   return {
     deactivate: (sessionId) => deactivateSessionRecord(context, sessionId),

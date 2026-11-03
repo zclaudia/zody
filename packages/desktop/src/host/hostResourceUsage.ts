@@ -1,4 +1,4 @@
-import type { IZCodeAgentService } from "@zody/services";
+import type { IZodyAgentService } from "@zody/services";
 import {
   attributeHostProcessTree,
   createProcessResourceSampler,
@@ -12,7 +12,7 @@ import {
 } from "@zody/shared";
 
 export interface CreateHostResourceUsageResponderOptions {
-  getAgentService: () => Pick<IZCodeAgentService, "collectLocalRuntimeChildProcesses"> | undefined;
+  getAgentService: () => Pick<IZodyAgentService, "collectLocalRuntimeChildProcesses"> | undefined;
   postMessage: (message: HostResourceUsageSnapshotResultResponse) => void;
   hostPid?: number;
   sampler?: ProcessResourceSampler;

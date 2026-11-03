@@ -15,9 +15,9 @@ import {
   TID_WORKFLOW_ARTIFACT_CHIP,
   TID_WORKFLOW_RUN_ROW,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
-  type ZCodeWorkflowsGetResult,
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
+  type ZodyWorkflowsGetResult,
 } from "@zody/shared";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
 
@@ -40,7 +40,7 @@ const { SavedWorkflowDetailView } =
   await import("@/settings/saved-workflows/SavedWorkflowDetailView.js");
 
 const SCRIPT = 'export default async ({ agent }) => {\n  await agent("检查发布");\n};\n';
-const ENTRY: ZCodeSavedWorkflowEntry = {
+const ENTRY: ZodySavedWorkflowEntry = {
   name: "release-check",
   description: "发布前检查",
   whenToUse: "发版前",
@@ -48,7 +48,7 @@ const ENTRY: ZCodeSavedWorkflowEntry = {
   path: "/repo/.zcode/workflows/release-check.dwf.ts",
   args: { branch: { type: "string", required: true } },
 };
-const detailResult: { current: ZCodeWorkflowsGetResult } = {
+const detailResult: { current: ZodyWorkflowsGetResult } = {
   current: {
     ok: true,
     name: "release-check",
@@ -68,7 +68,7 @@ const agentService = {
 };
 
 const NOW = 1_700_000_000_000;
-const RUNS: ZCodeSavedWorkflowRun[] = [
+const RUNS: ZodySavedWorkflowRun[] = [
   {
     runId: "r-open",
     name: "release-check",
@@ -267,7 +267,7 @@ describe("SavedWorkflowDetailView", () => {
   });
 
   it("resolveRunProject 在每行渲染项目列，并按行 canOpen 控制「查看实例」", async () => {
-    const resolveRunProject = vi.fn((run: ZCodeSavedWorkflowRun) =>
+    const resolveRunProject = vi.fn((run: ZodySavedWorkflowRun) =>
       run.runId === "r-open"
         ? { label: "Alpha", title: "/repo/alpha", canOpen: true }
         : { label: "Beta", title: "/repo/beta", canOpen: false },
@@ -306,7 +306,7 @@ describe("SavedWorkflowDetailView", () => {
 
   // ── 产物（docs/dynamic-workflow/authoring.md「How the user sees them」）──
   // ⚠ 术语：这里的「产物」是脚本经 `artifact.*` 交付给用户的产出，不是脚本的顶层返回值。
-  const ARTIFACT_RUNS: ZCodeSavedWorkflowRun[] = [
+  const ARTIFACT_RUNS: ZodySavedWorkflowRun[] = [
     {
       runId: "r-latest",
       name: "release-check",

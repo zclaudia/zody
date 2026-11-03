@@ -15,7 +15,7 @@ import type {
   IntegratedTerminalShellOption,
   IntegratedTerminalShellSelection,
   Locale,
-  ZCodeInteractionBehavior,
+  ZodyInteractionBehavior,
 } from "@zody/shared";
 import {
   TID_SETTINGS_BACK_BUTTON,
@@ -556,7 +556,7 @@ export function SettingsPage({
   const [toolGroupingTerminalEnabled, setToolGroupingTerminalEnabled] = useState(true);
   const [toolGroupingChangesEnabled, setToolGroupingChangesEnabled] = useState(false);
   const [zcodeInteractionBehavior, setZCodeInteractionBehavior] =
-    useState<ZCodeInteractionBehavior>("queue");
+    useState<ZodyInteractionBehavior>("queue");
   const [defaultHomeDir, setDefaultHomeDir] = useState("");
   const [hostPlatform, setHostPlatform] = useState("");
 
@@ -1070,7 +1070,7 @@ export function SettingsPage({
     [updateSharedSettings],
   );
   const handleZCodeInteractionBehaviorChange = useCallback(
-    async (behavior: ZCodeInteractionBehavior) => {
+    async (behavior: ZodyInteractionBehavior) => {
       await runSettingsActionAsync({
         featureId: "settings.conversation",
         action: "change_interaction_behavior",

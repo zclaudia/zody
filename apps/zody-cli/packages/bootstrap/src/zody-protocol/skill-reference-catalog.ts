@@ -2,21 +2,21 @@
 // 与 Skills Settings 管理接口分离：这里的 sessionId 决定 authority，不提供启停/删除能力。
 import {
   zcodeSkillsReferenceCatalogParamsSchema,
-  type ZCodeSkillReferenceCatalogEntry,
-  type ZCodeSkillsReferenceCatalogResult,
+  type ZodySkillReferenceCatalogEntry,
+  type ZodySkillsReferenceCatalogResult,
 } from "@zody/shared";
 import type { SkillLoadOutcome, SkillMetadata } from "@zody/contracts";
 import { listZCodeSkills } from "../skills.js";
 import {
   parseParams,
   requireSession,
-  type ZCodeProtocolAgentServerContext,
+  type ZodyProtocolAgentServerContext,
 } from "./server-types.js";
 
 export async function getSkillReferenceCatalog(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodeSkillsReferenceCatalogResult> {
+): Promise<ZodySkillsReferenceCatalogResult> {
   const params = parseParams(zcodeSkillsReferenceCatalogParamsSchema, rawParams);
   if (params.sessionId) {
     const record = requireSession(context, params.sessionId);
@@ -37,9 +37,9 @@ export async function getSkillReferenceCatalog(
 }
 
 function toResult(
-  authority: ZCodeSkillsReferenceCatalogResult["authority"],
+  authority: ZodySkillsReferenceCatalogResult["authority"],
   outcome: SkillLoadOutcome,
-): ZCodeSkillsReferenceCatalogResult {
+): ZodySkillsReferenceCatalogResult {
   return {
     authority,
     // 内置技能包（bundled-skills.ts）不进引用面板：它由内置命令（`/workflow`）加载，不是用户
@@ -50,7 +50,7 @@ function toResult(
   };
 }
 
-function toReferenceCatalogEntry(skill: SkillMetadata): ZCodeSkillReferenceCatalogEntry {
+function toReferenceCatalogEntry(skill: SkillMetadata): ZodySkillReferenceCatalogEntry {
   const scope =
     skill.source === "plugin" ? "plugin" : skill.scope === "project" ? "workspace" : "user";
   return {

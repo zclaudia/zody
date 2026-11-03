@@ -1,5 +1,5 @@
 import type { DynamicWorkflowMode, RemoteTarget } from "@zody/shared";
-import type { IZCodeAgentService } from "@zody/services";
+import type { IZodyAgentService } from "@zody/services";
 
 /**
  * 把动态工作流的用户选择推给远程 Host（docs/dynamic-workflow/launch.md「The user's choice」）。
@@ -12,7 +12,7 @@ import type { IZCodeAgentService } from "@zody/services";
 export async function pushDynamicWorkflowUserModeToRemoteHosts(
   connections: ReadonlyArray<{
     target: RemoteTarget;
-    zcodeAgentService: Pick<IZCodeAgentService, "syncDynamicWorkflowUserMode">;
+    zcodeAgentService: Pick<IZodyAgentService, "syncDynamicWorkflowUserMode">;
   }>,
   mode: DynamicWorkflowMode | undefined,
   onError: (error: unknown) => void,

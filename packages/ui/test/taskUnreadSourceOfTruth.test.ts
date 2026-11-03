@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { countWorkspaceUnreadTasks } from "@/lib/unreadTaskCount.js";
 import { getTaskMeta, getTaskUnreadIndicator } from "@/store/zodySessionStore.js";
 import { getDefaultWorkspaceState } from "@/store/zodySessionStoreTypes.js";
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: "task-unread",
     traceId: "trace-unread",

@@ -26,8 +26,8 @@ import {
 import type {
   GitChangeSourceId,
   GitRepositorySummary,
-  ZCodeProvider,
-  ZCodeTaskChangeSummary,
+  ZodyProvider,
+  ZodyTaskChangeSummary,
 } from "@zody/shared";
 import type {
   AttachmentRef,
@@ -266,7 +266,7 @@ export interface SessionPaneProps {
   /** Prompt 模板埋点当前仅覆盖 Desktop；Web / 手机远控保留 UI 行为但不触发该事件。 */
   isDesktop?: boolean;
   compactForRemoteControl?: boolean;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   onSessionCreated?: (sessionId: string) => void;
   /** deleteSession：删除当前会话后回到 draft（shell 起新草稿）。 */
   onSessionDeleted?: () => void;
@@ -304,7 +304,7 @@ export interface SessionPaneProps {
   gitDirtyFileCount?: number;
   gitWorktreeReviewSourceId?: GitChangeSourceId | null;
   gitWorktreeChangeSummary?: { added: number; removed: number } | null;
-  activeTaskChangeSummary?: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary?: ZodyTaskChangeSummary | null;
   summaryPanelVariantOverride?: ChatViewSummaryPanelVariant | null;
   onSummaryPanelVariantOverrideChange?: (
     variant: ChatViewSummaryPanelVariant | null,

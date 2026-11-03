@@ -9,15 +9,15 @@ import {
   zcodeMcpUiRegisterAppToolsParamsSchema,
   zcodeMcpUiResolveAppToolCallParamsSchema,
   zcodeMcpUiUnregisterAppToolsParamsSchema,
-  type ZCodeMcpUiAppToolAcceptedResult,
-  type ZCodeMcpUiRegisterAppToolsResult,
-  type ZCodeMcpUiUnregisterAppToolsResult,
+  type ZodyMcpUiAppToolAcceptedResult,
+  type ZodyMcpUiRegisterAppToolsResult,
+  type ZodyMcpUiUnregisterAppToolsResult,
 } from "@zody/shared";
 import {
   ProtocolRequestError,
   parseParams,
   requireSession,
-  type ZCodeProtocolAgentServerContext,
+  type ZodyProtocolAgentServerContext,
 } from "../server-types.js";
 import { McpUiAppToolRegistry } from "./appTools.js";
 import { McpUiServerScopeError } from "./contract.js";
@@ -29,10 +29,10 @@ import { createMcpUiSessionAccess } from "./sessionAccess.js";
  * App-Provided Tools 的四个协议方法。登记表按 agent 进程（context）唯一；信箱投递用 v4Gateway.ingest 的
  * live-only 事件（seq 0），与资源通知同一条路。
  */
-const registries = new WeakMap<ZCodeProtocolAgentServerContext, McpUiAppToolRegistry>();
+const registries = new WeakMap<ZodyProtocolAgentServerContext, McpUiAppToolRegistry>();
 
 export function getMcpUiAppToolRegistry(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
 ): McpUiAppToolRegistry {
   let registry = registries.get(context);
   if (!registry) {
@@ -93,9 +93,9 @@ async function withScopeError<T>(run: () => Promise<T>): Promise<T> {
 }
 
 export async function registerMcpUiAppTools(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodeMcpUiRegisterAppToolsResult> {
+): Promise<ZodyMcpUiRegisterAppToolsResult> {
   const params = parseParams(zcodeMcpUiRegisterAppToolsParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     operation: "mcp/uiRegisterAppTools",
@@ -112,9 +112,9 @@ export async function registerMcpUiAppTools(
 }
 
 export async function unregisterMcpUiAppTools(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodeMcpUiUnregisterAppToolsResult> {
+): Promise<ZodyMcpUiUnregisterAppToolsResult> {
   const params = parseParams(zcodeMcpUiUnregisterAppToolsParamsSchema, rawParams);
   if (params.scopeId !== params.instance.token || params.generation !== params.instance.generation)
     throw new Error("Invalid MCP App binding");
@@ -124,9 +124,9 @@ export async function unregisterMcpUiAppTools(
 }
 
 export async function claimMcpUiAppToolCall(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodeMcpUiAppToolAcceptedResult> {
+): Promise<ZodyMcpUiAppToolAcceptedResult> {
   const params = parseParams(zcodeMcpUiClaimAppToolCallParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, { operation: "mcp/uiClaimAppToolCall" });
   mcpUiInstances.validate(
@@ -140,9 +140,9 @@ export async function claimMcpUiAppToolCall(
 }
 
 export async function resolveMcpUiAppToolCall(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
-): Promise<ZCodeMcpUiAppToolAcceptedResult> {
+): Promise<ZodyMcpUiAppToolAcceptedResult> {
   const params = parseParams(zcodeMcpUiResolveAppToolCallParamsSchema, rawParams);
   const record = requireSession(context, params.sessionId, {
     operation: "mcp/uiResolveAppToolCall",
@@ -158,7 +158,7 @@ export async function resolveMcpUiAppToolCall(
 }
 
 export function clearMcpUiAppToolsForSession(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
 ): void {
   mcpUiInstances.closeSession(sessionId);

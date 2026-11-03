@@ -18,7 +18,7 @@ import { createSqliteSessionStore } from "@zody/adapters/storage";
 import {
   zcodeProtocolMethods,
   zcodeSessionStateSnapshotSchema,
-  type ZCodeProtocolMessage,
+  type ZodyProtocolMessage,
 } from "@zody/shared";
 import {
   V4_METHODS,
@@ -878,7 +878,7 @@ const remoteWorkspace = {
 };
 type TestSessionStore = ReturnType<typeof createSqliteSessionStore>;
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZCodeProtocolMessage) {
+async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -1897,7 +1897,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
     const preferenceRequested = new Promise<void>((resolve) => {
       markPreferenceRequested = resolve;
     });
-    const preferenceRequests: ZCodeProtocolMessage[] = [];
+    const preferenceRequests: ZodyProtocolMessage[] = [];
     server.setNotificationSink((message) => {
       if (
         "id" in message &&
@@ -3450,7 +3450,7 @@ describe("v4 冷恢复（集成：真 sqlite + server + binder）", () => {
           connectionId: "conn-desktop",
           clientMode: "desktop-continuous",
         },
-      } as ZCodeProtocolMessage);
+      } as ZodyProtocolMessage);
       if (!response || !("error" in response)) {
         throw new Error(`Expected protocol error response: ${JSON.stringify(response)}`);
       }

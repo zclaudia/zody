@@ -1,4 +1,4 @@
-import { ZCODE_AGENT_PROVIDER, type ZCodeProvider } from "@zody/shared";
+import { ZCODE_AGENT_PROVIDER, type ZodyProvider } from "@zody/shared";
 import { buildPromptTelemetryExtraDetail } from "@/lib/messageTelemetry.js";
 import { encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 import {
@@ -35,7 +35,7 @@ export function resolveLegacyRuntimeModelValue(params: {
 
 /** V4 config.provider 是实际模型 provider id；agentProvider 表示 ZCode 运行时。 */
 export function buildV4ConversationPromptTelemetryExtraDetail(params: {
-  agentProvider?: ZCodeProvider;
+  agentProvider?: ZodyProvider;
   configProvider?: string | null;
   modelName?: string | null;
   askMode?: string | null;

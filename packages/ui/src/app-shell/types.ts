@@ -1,9 +1,9 @@
 import type { RefObject } from "react";
 import type {
-  ZCodeProvider,
+  ZodyProvider,
   SessionCreateSource,
-  ZCodeTaskRuntimeStatus,
-  ZCodeTaskMeta,
+  ZodyTaskRuntimeStatus,
+  ZodyTaskMeta,
   GitChangeSourceId,
   DesktopWindowChromeState,
   IPlatformService,
@@ -56,14 +56,14 @@ export interface WorkspaceShellZCodeState {
   selectedProvider: WorkspaceZCodeUIState["selectedProvider"];
   optimisticTaskListByTaskId: WorkspaceZCodeUIState["optimisticTaskListByTaskId"];
   workspaceInit: WorkspaceZCodeUIState["workspaceInit"];
-  taskStatus: ZCodeTaskRuntimeStatus;
+  taskStatus: ZodyTaskRuntimeStatus;
   taskError: string | null;
 }
 
 export interface CreateTaskOptions {
   /** 异步预填只能提交到解析 Skill 时的同一新任务目标。 */
   expectedWorkspaceKey?: string;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   groupedDraftPlacement?: GroupedDraftTaskPlacement;
   createSource?: SessionCreateSource;
   /** 新草稿输入框预填文本；只写草稿，不自动发送。 */
@@ -74,7 +74,7 @@ export interface CreateTaskOptions {
   targetWorkspace?: { workspacePath: string; workspaceIdentity?: string };
 }
 
-export type CreateTaskRequest = ZCodeProvider | CreateTaskOptions;
+export type CreateTaskRequest = ZodyProvider | CreateTaskOptions;
 
 export interface AppProps {
   services: IServiceAccessor;
@@ -191,8 +191,8 @@ export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackS
   sidePaneOwnerId: string | null;
   activeTraceId: string | null;
   activeSessionId: string | null;
-  activeTaskProvider: ZCodeProvider | null;
-  resolvedActiveTaskMeta?: ZCodeTaskMeta | null;
+  activeTaskProvider: ZodyProvider | null;
+  resolvedActiveTaskMeta?: ZodyTaskMeta | null;
   activeTaskTitle: string;
   activeTaskChangeSummary: ReturnType<
     typeof import("@/lib/taskChangeSummary.js").getTaskChangeSummary
@@ -229,7 +229,7 @@ export interface WorkspaceShellLayoutProps extends Omit<AppProps, "baseFeedbackS
   reloadSessionPending: boolean;
   handleReloadSession: (options?: {
     resumeTaskId?: string | null;
-    provider?: ZCodeProvider | null;
+    provider?: ZodyProvider | null;
   }) => Promise<void>;
   handleSelectTask: (
     targetWorkspacePath: string,

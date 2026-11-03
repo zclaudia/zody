@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   zcodeProtocolMethods,
   zcodeProtocolNotifications,
-  type ZCodePluginOperationProgressNotification,
+  type ZodyPluginOperationProgressNotification,
 } from "@zody/shared";
 
 describe("zcodeAgentService Plugin operation progress", () => {
@@ -57,7 +57,7 @@ describe("zcodeAgentService Plugin operation progress", () => {
     }));
     const { createZCodeAgentService } = await import("../src/zody-agent/zodyAgentService.js");
     const service = createZCodeAgentService();
-    const received: ZCodePluginOperationProgressNotification[] = [];
+    const received: ZodyPluginOperationProgressNotification[] = [];
     const subscription = service.onDynamicPluginOperationProgress("suggested-progress")((event) =>
       received.push(event),
     );

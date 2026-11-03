@@ -3,7 +3,7 @@ import {
   buildCustomSupplierKey,
   buildGhostSupplierKey,
   buildNativeSupplierKey,
-  type ZCodeConfigOption,
+  type ZodyConfigOption,
 } from "@zody/shared";
 import {
   isCustomSupplierKeyForProvider,
@@ -13,7 +13,7 @@ import {
   type ModelConfigSyncWorkspaceSnapshot,
 } from "../src/lib/modelConfigSync.js";
 
-function createModelOption(currentValue: string): ZCodeConfigOption {
+function createModelOption(currentValue: string): ZodyConfigOption {
   return {
     id: "model",
     name: "Model",

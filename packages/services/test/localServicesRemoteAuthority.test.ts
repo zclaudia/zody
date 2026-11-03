@@ -179,7 +179,7 @@ describe("createLocalServices remote authority", () => {
     process.env.HOME = home;
     const zcodeBuiltinProviderConfigFilePath = writeZCodeBuiltinProviderConfig(home);
     const commandResolver = vi.fn(() => null);
-    const [{ createLocalServices, disposeServiceResources }, { IZCodeAgentService }] =
+    const [{ createLocalServices, disposeServiceResources }, { IZodyAgentService }] =
       await Promise.all([import("../src/node.js"), import("../src/index.js")]);
     const services = createLocalServices({
       zcodeBuiltinProviderConfigFilePath,
@@ -189,7 +189,7 @@ describe("createLocalServices remote authority", () => {
 
     try {
       await expect(
-        services.get(IZCodeAgentService).initialize({ workspacePath: "/remote/workspace" }),
+        services.get(IZodyAgentService).initialize({ workspacePath: "/remote/workspace" }),
       ).resolves.toMatchObject({ available: false });
       expect(commandResolver).not.toHaveBeenCalled();
     } finally {

@@ -36,7 +36,7 @@ function setup() {
     modelKey = Symbol();
   const selection = { providerId: "test", modelId: "test" };
   const dispatch = createDispatch({
-    IZCodeTaskService: taskKey,
+    IZodyTaskService: taskKey,
     IModelSelectionService: modelKey,
     // fork（bot channels 移除，specs/bot-channels-removal.md）：IBotsService 依赖随
     // cron 回推订阅（watchCronRunBotDelivery）删除。

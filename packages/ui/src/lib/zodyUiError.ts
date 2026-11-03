@@ -1,8 +1,8 @@
-import type { ZCodeError, ZCodeTaskMeta, TraceId } from "@zody/shared";
+import type { ZodyError, ZodyTaskMeta, TraceId } from "@zody/shared";
 import { errorAttributionSchema, type ErrorAttribution } from "@zody/shared/zody-protocol-v4";
 import { resolveRequestVerificationBusinessCode } from "@/lib/providerBusinessError.js";
 
-export interface ZCodeUiError extends ZCodeError {
+export interface ZCodeUiError extends ZodyError {
   attribution?: ErrorAttribution;
   detail?: string;
   underlyingErrorMessage?: string;
@@ -272,7 +272,7 @@ export function normalizeZCodeUiError(
   };
 }
 
-export function normalizeRestoredTaskFailureError(meta: ZCodeTaskMeta): ZCodeUiError | null {
+export function normalizeRestoredTaskFailureError(meta: ZodyTaskMeta): ZCodeUiError | null {
   if (!meta.lastError) {
     return null;
   }

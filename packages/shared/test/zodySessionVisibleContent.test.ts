@@ -7,15 +7,15 @@ import {
   getConversationModelOnlyTurnTriggerSource,
   isZCodeModelOnlySyntheticUserMessage,
   resolveZCodeVisibleSessionTitle,
-  type ZCodeMessagePart,
-  type ZCodeMessageWithParts,
+  type ZodyMessagePart,
+  type ZodyMessageWithParts,
 } from "../src/index.js";
 
 const model = {
   providerId: "glm",
   modelId: "glm-4.6",
 };
-type ZCodeUserMessageInfo = Extract<ZCodeMessageWithParts["info"], { role: "user" }>;
+type ZCodeUserMessageInfo = Extract<ZodyMessageWithParts["info"], { role: "user" }>;
 type ZCodeUserMessageInfoPatch = Partial<
   Pick<
     ZCodeUserMessageInfo,
@@ -26,11 +26,11 @@ type ZCodeUserMessageInfoPatch = Partial<
 function userMessage(
   messageId: string,
   text: string,
-  partPatch: Partial<Extract<ZCodeMessagePart, { type: "text" }>> = {},
+  partPatch: Partial<Extract<ZodyMessagePart, { type: "text" }>> = {},
   createdAt = 1,
   infoPatch: ZCodeUserMessageInfoPatch = {},
-): ZCodeMessageWithParts {
-  const part: Extract<ZCodeMessagePart, { type: "text" }> = {
+): ZodyMessageWithParts {
+  const part: Extract<ZodyMessagePart, { type: "text" }> = {
     partId: `part_${messageId}`,
     sessionId: "sess_1",
     messageId,
@@ -56,7 +56,7 @@ function assistantMessage(
   messageId: string,
   text: string,
   createdAt: number,
-): ZCodeMessageWithParts {
+): ZodyMessageWithParts {
   return {
     info: {
       messageId,
@@ -155,7 +155,7 @@ describe("ZCode session visible content", () => {
   });
 
   it("filters compact summary user messages from user-visible messages", () => {
-    const summary: ZCodeMessageWithParts = {
+    const summary: ZodyMessageWithParts = {
       info: {
         messageId: "msg_summary",
         sessionId: "sess_1",
@@ -736,7 +736,7 @@ describe("ZCode session visible content", () => {
 
   it("classifies a persisted visible assistant response as visible assistant content", () => {
     const base = assistantMessage("msg_visible_assistant", "已完成首轮回复", 2);
-    const message: ZCodeMessageWithParts = {
+    const message: ZodyMessageWithParts = {
       ...base,
       info: {
         ...base.info,

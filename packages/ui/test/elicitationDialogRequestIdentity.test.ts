@@ -1,4 +1,4 @@
-import type { ZCodeElicitationRequest } from "@zody/shared";
+import type { ZodyElicitationRequest } from "@zody/shared";
 import { act, createElement, forwardRef, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -64,7 +64,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
   }),
 }));
 
-function createRequest(requestId: string): ZCodeElicitationRequest {
+function createRequest(requestId: string): ZodyElicitationRequest {
   return {
     type: "elicitation_request",
     taskId: "task-1",
@@ -93,7 +93,7 @@ function createRequest(requestId: string): ZCodeElicitationRequest {
   };
 }
 
-function createSingleQuestionRequest(requestId: string): ZCodeElicitationRequest {
+function createSingleQuestionRequest(requestId: string): ZodyElicitationRequest {
   return {
     type: "elicitation_request",
     taskId: "task-1",
@@ -111,7 +111,7 @@ function createSingleQuestionRequest(requestId: string): ZCodeElicitationRequest
   };
 }
 
-function createPlanApprovalRequest(requestId: string): ZCodeElicitationRequest {
+function createPlanApprovalRequest(requestId: string): ZodyElicitationRequest {
   return {
     type: "elicitation_request",
     taskId: "task-1",

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { BackgroundBashOutputResult } from "@zody/shared";
 import { readBackgroundBashOutputFromOwner as readOutput } from "../src/zody-protocol/background-work-owner.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 const output: BackgroundBashOutputResult = {
   kind: "output",
@@ -28,7 +28,7 @@ function setup(childResult?: BackgroundBashOutputResult) {
   const context = {
     sessions,
     deps: { sessionStore: { getSession } },
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
   return { context, rootRead, childRead, getSession };
 }
 

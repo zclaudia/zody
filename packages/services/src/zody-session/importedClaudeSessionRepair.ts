@@ -1,19 +1,19 @@
-import type { ZCodeSessionStateSnapshot } from "@zody/shared";
+import type { ZodySessionStateSnapshot } from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { repairImportedClaudeSessionSnapshot } from "#src/session/claude-native/importedClaudeHistoryRepair.js";
-import type { IZCodeAgentService } from "#src/zody-agent/zodyAgent.js";
+import type { IZodyAgentService } from "#src/zody-agent/zodyAgent.js";
 import type {
-  ZCodeSessionReadParams,
-  ZCodeSessionResumeParams,
+  ZodySessionReadParams,
+  ZodySessionResumeParams,
 } from "#src/zody-session/zodySession.js";
 
 const logger = createServiceLogger("zcode-session-service");
 
 export async function repairEmptyImportedClaudeSessionSnapshot(params: {
-  agentService: IZCodeAgentService;
-  snapshot: ZCodeSessionStateSnapshot;
-  target: ZCodeSessionResumeParams | ZCodeSessionReadParams;
-}): Promise<ZCodeSessionStateSnapshot> {
+  agentService: IZodyAgentService;
+  snapshot: ZodySessionStateSnapshot;
+  target: ZodySessionResumeParams | ZodySessionReadParams;
+}): Promise<ZodySessionStateSnapshot> {
   const repaired = await repairImportedClaudeSessionSnapshot({
     snapshot: params.snapshot,
     target: {

@@ -11,9 +11,9 @@ import {
   IOnboardingRecordService,
   ICredentialService,
   IBroadcastService,
-  IZCodeTaskService,
-  IZCodeAgentService,
-  IZCodeSessionService,
+  IZodyTaskService,
+  IZodyAgentService,
+  IZodySessionService,
   IFileWatcherService,
   IModelSelectionService,
   IProviderSettingsService,
@@ -52,7 +52,7 @@ import {
   createMemoryService,
   createOutputStyleService,
 } from "@zody/services/node";
-import type { ZCodeSessionRuntimePreferencesResult } from "@zody/shared";
+import type { ZodySessionRuntimePreferencesResult } from "@zody/shared";
 import { assertLegacyRemoteWorkspaceRpcContract } from "./legacyRemoteWorkspaceRpcContract.js";
 import {
   createRemoteProviderProvisioningExecutorFromWorkspace,
@@ -155,7 +155,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
           );
         };
         let resolution:
-          | { status: "resolved"; preferences: ZCodeSessionRuntimePreferencesResult }
+          | { status: "resolved"; preferences: ZodySessionRuntimePreferencesResult }
           | { status: "failed"; message: string };
         try {
           // 与本地 Host 同源：预算取 services 本地模块的固定值（fork F2.6b 所有者），
@@ -223,9 +223,9 @@ export function createRemoteWorkspaceServiceCollection(params: {
     .register(IOnboardingRecordService, params.localOnboardingRecordService)
     .register(ICredentialService, localCredentialService)
     .register(IBroadcastService, localBroadcastService)
-    .register(IZCodeTaskService, remoteZCodeTaskService)
-    .register(IZCodeAgentService, params.connectionServices.zcodeAgentService)
-    .register(IZCodeSessionService, remoteZCodeSessionService)
+    .register(IZodyTaskService, remoteZCodeTaskService)
+    .register(IZodyAgentService, params.connectionServices.zcodeAgentService)
+    .register(IZodySessionService, remoteZCodeSessionService)
     // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
     // fork（bot channels 移除，specs/bot-channels-removal.md）：IBotsService 注册随
     // 第三方 IM bot 功能删除；其余 ~30 个注册（手机 replayable 直连 remote host 依赖）保留。
@@ -290,9 +290,9 @@ export function createServerRemoteWorkspaceServiceCollection(params: {
     .register(ISettingService, params.connectionServices.settingService)
     .register(ICredentialService, params.connectionServices.credentialService)
     .register(IBroadcastService, params.connectionServices.broadcastService)
-    .register(IZCodeTaskService, params.connectionServices.zcodeTaskService)
-    .register(IZCodeAgentService, params.connectionServices.zcodeAgentService)
-    .register(IZCodeSessionService, params.connectionServices.zcodeSessionService)
+    .register(IZodyTaskService, params.connectionServices.zcodeTaskService)
+    .register(IZodyAgentService, params.connectionServices.zcodeAgentService)
+    .register(IZodySessionService, params.connectionServices.zcodeSessionService)
     // fork（F4.8）：IConversationShareService 兜底注册随会话分享功能删除。
     // fork（bot channels 移除，specs/bot-channels-removal.md）：server 透传的
     // IBotsService 注册随第三方 IM bot 功能删除。

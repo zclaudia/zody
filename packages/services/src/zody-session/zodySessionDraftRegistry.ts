@@ -1,14 +1,14 @@
-import type { ZCodeSessionStateSnapshot } from "@zody/shared";
+import type { ZodySessionStateSnapshot } from "@zody/shared";
 import type {
-  ZCodeSessionWorkspaceTarget,
-  ZCodeTaskTarget,
+  ZodySessionWorkspaceTarget,
+  ZodyTaskTarget,
 } from "#src/zody-session/zodySession.js";
 
-function getWorkspaceKey(target: ZCodeSessionWorkspaceTarget): string {
+function getWorkspaceKey(target: ZodySessionWorkspaceTarget): string {
   return target.workspaceIdentity?.trim() || target.workspacePath;
 }
 
-function getSessionScopedKey(target: ZCodeTaskTarget): string {
+function getSessionScopedKey(target: ZodyTaskTarget): string {
   return `${getWorkspaceKey(target)}\0${target.sessionId}`;
 }
 
@@ -16,7 +16,7 @@ export function createZCodeDeferredDraftRegistry() {
   const sessionKeys = new Set<string>();
 
   return {
-    remember(params: ZCodeSessionWorkspaceTarget, snapshot: ZCodeSessionStateSnapshot): void {
+    remember(params: ZodySessionWorkspaceTarget, snapshot: ZodySessionStateSnapshot): void {
       sessionKeys.add(
         getSessionScopedKey({
           workspacePath: snapshot.session.workspace.workspacePath,
@@ -27,11 +27,11 @@ export function createZCodeDeferredDraftRegistry() {
       );
     },
 
-    has(target: ZCodeTaskTarget): boolean {
+    has(target: ZodyTaskTarget): boolean {
       return sessionKeys.has(getSessionScopedKey(target));
     },
 
-    forget(target: ZCodeTaskTarget): void {
+    forget(target: ZodyTaskTarget): void {
       sessionKeys.delete(getSessionScopedKey(target));
     },
   };

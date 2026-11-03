@@ -1,4 +1,4 @@
-import type { ZCodeElicitationRequest } from "@zody/shared";
+import type { ZodyElicitationRequest } from "@zody/shared";
 import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -23,7 +23,7 @@ const SUBAGENT_ORIGIN = {
   parentToolCallId: "tool-parent-agent",
 };
 
-function createMultiQuestionRequest(): ZCodeElicitationRequest {
+function createMultiQuestionRequest(): ZodyElicitationRequest {
   return {
     type: "elicitation_request",
     taskId: "task-1",
@@ -52,7 +52,7 @@ function createMultiQuestionRequest(): ZCodeElicitationRequest {
   };
 }
 
-function createPlanApprovalRequest(): ZCodeElicitationRequest {
+function createPlanApprovalRequest(): ZodyElicitationRequest {
   return {
     type: "elicitation_request",
     taskId: "task-1",

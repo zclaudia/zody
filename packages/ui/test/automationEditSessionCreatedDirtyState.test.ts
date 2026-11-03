@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import {
   TID_AUTOMATION_SCHEDULE_ADD,
   TID_AUTOMATION_SCHEDULE_PREVIEW,
-  type ZCodeAutomation,
+  type ZodyAutomation,
   type ModelSelection,
 } from "@zody/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -272,7 +272,7 @@ const modelSelectionView = {
   ],
 };
 
-const sessionCreatedAutomation: ZCodeAutomation = {
+const sessionCreatedAutomation: ZodyAutomation = {
   automationId: "automation-session-created",
   title: "每 10 分钟提醒",
   cronExpr: "*/10 * * * *",
@@ -309,13 +309,13 @@ const sessionCreatedAutomation: ZCodeAutomation = {
   updatedAt: 1,
 };
 
-const uiCreatedAutomation: ZCodeAutomation = {
+const uiCreatedAutomation: ZodyAutomation = {
   ...sessionCreatedAutomation,
   automationId: "automation-ui-created",
 };
 delete uiCreatedAutomation.targetTaskId;
 
-const sessionCreatedUiResetAutomation: ZCodeAutomation = {
+const sessionCreatedUiResetAutomation: ZodyAutomation = {
   ...sessionCreatedAutomation,
   automationId: "automation-session-created-ui-reset",
   cronExpr: "0 9 * * *",
@@ -488,7 +488,7 @@ describe("AutomationEditView session-created dirty state", () => {
       label: "default",
       workspacePurpose: "conversation",
     });
-    const conversationAutomation: ZCodeAutomation = {
+    const conversationAutomation: ZodyAutomation = {
       ...uiCreatedAutomation,
       workspaceKey: conversationWorkspacePath,
       workspacePath: conversationWorkspacePath,

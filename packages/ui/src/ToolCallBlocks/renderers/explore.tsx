@@ -13,7 +13,7 @@ import { ToolLayout } from "../ToolLayout.js";
 import type { ToolCallBlockRenderContext } from "../shared.js";
 import { useCallback, type ReactNode } from "react";
 import type { TaskChatToolCallTreeNode } from "@/lib/toolCallTree.js";
-import type { ZCodePlanStep } from "@zody/shared";
+import type { ZodyPlanStep } from "@zody/shared";
 
 const EXPLORE_TOOL_ICON = <SearchIcon className="size-4 shrink-0 text-foreground-subtle" />;
 
@@ -229,7 +229,7 @@ function renderChildActionKindPrefix(actionKindLabel: string | null, content: Re
 
 function readTodoPlanFromToolCall(
   childToolCall: ToolCallBlockRenderContext["toolCallNode"]["toolCall"],
-): ZCodePlanStep[] | null {
+): ZodyPlanStep[] | null {
   return (
     extractPlanStepsFromToolOutput({
       title: childToolCall.title,

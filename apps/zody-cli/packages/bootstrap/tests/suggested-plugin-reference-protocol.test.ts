@@ -27,7 +27,7 @@ import {
 } from "@zody/shared";
 import type { PluginReferenceCatalogEntry } from "@zody/contracts";
 import { resolveSuggestedPluginReference } from "../src/zody-protocol/plugin-reference-catalog.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 const STABLE_ID = "document-skills@zcode-plugins-official";
 const WORKSPACE = { workspacePath: "/workspace", workspaceKey: "ssh://host/workspace" };
@@ -38,8 +38,8 @@ const DESKTOP_BOUNDARY = {
 };
 const notify = vi.fn();
 
-function protocolContext(): ZCodeProtocolAgentServerContext {
-  return { notify } as unknown as ZCodeProtocolAgentServerContext;
+function protocolContext(): ZodyProtocolAgentServerContext {
+  return { notify } as unknown as ZodyProtocolAgentServerContext;
 }
 
 function catalogEntry(

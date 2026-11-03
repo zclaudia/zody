@@ -7,21 +7,21 @@
 import {
   buildNativeSupplierKey,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeApiRetryStatus,
+  type ZodyApiRetryStatus,
   type ModelSelectionGhostReason,
   type ModelSelectionResolution,
-  type ZCodeWorkspaceInitStatus,
-  type ZCodeTaskRuntimeStatus,
-  type ZCodeProvider,
-  type ZCodeTaskMeta,
-  type ZCodeContextCacheUsage,
-  type ZCodeConfigOption,
-  type ZCodeSlashCommand,
-  type ZCodePermissionRequest,
-  type ZCodeElicitationRequest,
+  type ZodyWorkspaceInitStatus,
+  type ZodyTaskRuntimeStatus,
+  type ZodyProvider,
+  type ZodyTaskMeta,
+  type ZodyContextCacheUsage,
+  type ZodyConfigOption,
+  type ZodySlashCommand,
+  type ZodyPermissionRequest,
+  type ZodyElicitationRequest,
   type ZodyBackgroundTaskControlItem,
-  type ZCodeSessionActiveTurnKind,
-  type ZCodeContextUsageBreakdownItem,
+  type ZodySessionActiveTurnKind,
+  type ZodyContextUsageBreakdownItem,
   type InputId,
   type SessionCreateSource,
 } from "@zody/shared";
@@ -38,7 +38,7 @@ import type { MentionCategory, MentionItemData } from "@/mentions/mentionTypes.j
 // ────────────────────────────────────────────
 
 export interface WorkspaceInitState {
-  status: ZCodeWorkspaceInitStatus;
+  status: ZodyWorkspaceInitStatus;
   error: string | null;
   attempts: number;
 }
@@ -54,24 +54,24 @@ export interface GroupedDraftTaskState {
 }
 
 export interface TaskRuntimeState {
-  status: ZCodeTaskRuntimeStatus;
+  status: ZodyTaskRuntimeStatus;
   error: string | null;
   /** 该 task 当前运行态绑定的 ZCode Agent 进程 provider，用于 workspace 级进程重建 busy lock。 */
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   /** 当前模型上下文窗口容量；模型状态事件只更新这里，不覆盖真实 usage.used。 */
   contextWindow: number | null;
   usage: TaskUsageState | null;
-  apiRetry: ZCodeApiRetryStatus | null;
+  apiRetry: ZodyApiRetryStatus | null;
   /** Agent 明确上报的后台任务控制项；host 运行期状态，不落盘持久化。 */
   backgroundTaskControls: ZodyBackgroundTaskControlItem[];
   /** 当前 session active turn 的类型；用于区分普通生成和 compact 维护态。 */
-  activeTurnKind?: ZCodeSessionActiveTurnKind;
+  activeTurnKind?: ZodySessionActiveTurnKind;
   activeInputId?: InputId;
   activeInputOwnerClientId?: string;
 }
 
 export interface DraftRuntimeState {
-  status: ZCodeTaskRuntimeStatus;
+  status: ZodyTaskRuntimeStatus;
   error: string | null;
 }
 
@@ -83,9 +83,9 @@ export interface TaskUsageState {
   /** Agent 上报的累计费用 */
   cost?: { amount: number; currency: string } | null;
   /** Agent/app 协议返回的当前主轮缓存命中信息。 */
-  cache?: ZCodeContextCacheUsage;
+  cache?: ZodyContextCacheUsage;
   /** Agent 按来源估算的上下文字符量，只用于 context usage 弹窗比例展示。 */
-  breakdown?: ZCodeContextUsageBreakdownItem[];
+  breakdown?: ZodyContextUsageBreakdownItem[];
 }
 
 export interface ElicitationAnswerDraft {
@@ -104,10 +104,10 @@ export interface ElicitationFormDraft {
  * 展示态的写入方已随旧协议链路删除，读侧由 v4 conversation 投影承接。
  */
 export interface TaskUiState {
-  permissionRequest: ZCodePermissionRequest | null;
-  pendingPermissionRequests: ZCodePermissionRequest[];
-  elicitationRequest: ZCodeElicitationRequest | null;
-  pendingElicitationRequests: ZCodeElicitationRequest[];
+  permissionRequest: ZodyPermissionRequest | null;
+  pendingPermissionRequests: ZodyPermissionRequest[];
+  elicitationRequest: ZodyElicitationRequest | null;
+  pendingElicitationRequests: ZodyElicitationRequest[];
   elicitationFormDraftsByRequestId: Record<string, ElicitationFormDraft>;
   error: ZCodeUiError | null;
 }
@@ -181,12 +181,12 @@ export interface WorkspaceZCodeUIState {
   taskRuntimeByTaskId: Record<string, TaskRuntimeState>;
   /** 每个 task 自己的临时 UI 态，避免切换任务后丢失计划面板和权限弹窗 */
   taskUiByTaskId: Record<string, TaskUiState>;
-  taskConfigOptionsByTaskId: Record<string, ZCodeConfigOption[]>;
+  taskConfigOptionsByTaskId: Record<string, ZodyConfigOption[]>;
   taskConfigOptionsStatusByTaskId: Record<string, ConfigOptionsStatus>;
   /** task 未读状态的兼容缓存；真实未读状态以 task meta.unreadAt 为准 */
   taskUnreadByTaskId: Record<string, boolean>;
   /** 任务列表的乐观元数据，解决新 task 落盘前左侧列表显示慢半拍的问题 */
-  optimisticTaskListByTaskId: Record<string, ZCodeTaskMeta>;
+  optimisticTaskListByTaskId: Record<string, ZodyTaskMeta>;
   /** grouped mode 下点击 New task 后的 UI-only 草稿锚点，不进入真实 task index。 */
   groupedDraftTask: GroupedDraftTaskState | null;
   /** 用户发起当前草稿的入口；预热不改变来源。 */
@@ -194,7 +194,7 @@ export interface WorkspaceZCodeUIState {
   /** 首发创建后、grouped sqlite order 落地前，真实 task 继承草稿锚点的本地定位。 */
   promotedGroupedDraftTaskByTaskId: Record<string, GroupedDraftTaskState>;
   /** 当前 workspace 选中的 ZCode Agent provider */
-  selectedProvider: ZCodeProvider;
+  selectedProvider: ZodyProvider;
   /** 当前模型供应商选中键（native/custom/ghost） */
   selectedSupplierKey: string;
   /** 当前供应商是否为 ghost 态 */
@@ -202,15 +202,15 @@ export interface WorkspaceZCodeUIState {
   /** 当前 ghost 态来源 */
   supplierMismatchReason: ModelSelectionGhostReason | null;
   /** ZCode Agent configOptions（模型、模式、思考级别等） */
-  configOptions: ZCodeConfigOption[] | null;
+  configOptions: ZodyConfigOption[] | null;
   /** configOptions 加载状态 */
   configOptionsStatus: ConfigOptionsStatus;
   /** 可用的 slash commands */
-  slashCommands: ZCodeSlashCommand[];
+  slashCommands: ZodySlashCommand[];
   /** 任务列表版本号，每次创建/删除任务时自增，驱动 TaskList 刷新 */
   taskListVersion: number;
   /** 缓存已拉取的任务列表，避免组件 remount 时闪烁 */
-  taskListCache: ZCodeTaskMeta[] | null;
+  taskListCache: ZodyTaskMeta[] | null;
   /** 新建草稿时递增，驱动输入框在切到草稿态后主动聚焦 */
   draftFocusVersion: number;
 }
@@ -262,7 +262,7 @@ export interface ZCodeSessionStoreState {
   ) => void;
   startDraft: (
     workspacePath: string,
-    provider?: ZCodeProvider,
+    provider?: ZodyProvider,
     workspaceIdentity?: string,
     options?: {
       groupedDraftPlacement?: GroupedDraftTaskPlacement;
@@ -272,7 +272,7 @@ export interface ZCodeSessionStoreState {
   clearGroupedDraftTask: (workspacePath: string, workspaceIdentity?: string) => void;
   bindRuntimeProvider: (
     workspacePath: string,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     workspaceIdentity?: string,
   ) => void;
   setModelSelectionResolution: (
@@ -285,7 +285,7 @@ export interface ZCodeSessionStoreState {
   ) => void;
   setWorkspaceInitState: (
     workspacePath: string,
-    status: ZCodeWorkspaceInitStatus,
+    status: ZodyWorkspaceInitStatus,
     error?: string | null,
     workspaceIdentity?: string,
   ) => void;
@@ -296,17 +296,17 @@ export interface ZCodeSessionStoreState {
   ) => void;
   setTaskState: (
     workspacePath: string,
-    status: ZCodeTaskRuntimeStatus,
+    status: ZodyTaskRuntimeStatus,
     error?: string | null,
     workspaceIdentity?: string,
   ) => void;
   setTaskRuntimeState: (
     workspacePath: string,
     taskId: string,
-    status: ZCodeTaskRuntimeStatus,
+    status: ZodyTaskRuntimeStatus,
     error?: string | null,
     workspaceIdentity?: string,
-    provider?: ZCodeProvider,
+    provider?: ZodyProvider,
   ) => void;
   setTaskUsage: (
     workspacePath: string,
@@ -323,13 +323,13 @@ export interface ZCodeSessionStoreState {
   setTaskApiRetryStatus: (
     workspacePath: string,
     taskId: string,
-    apiRetry: ZCodeApiRetryStatus | null,
+    apiRetry: ZodyApiRetryStatus | null,
     workspaceIdentity?: string,
   ) => void;
   setTaskPermissionRequest: (
     workspacePath: string,
     taskId: string,
-    request: ZCodePermissionRequest | null,
+    request: ZodyPermissionRequest | null,
     workspaceIdentity?: string,
   ) => void;
   removeTaskPermissionRequest: (
@@ -341,7 +341,7 @@ export interface ZCodeSessionStoreState {
   setTaskElicitationRequest: (
     workspacePath: string,
     taskId: string,
-    request: ZCodeElicitationRequest | null,
+    request: ZodyElicitationRequest | null,
     workspaceIdentity?: string,
   ) => void;
   removeTaskElicitationRequest: (
@@ -391,22 +391,22 @@ export interface ZCodeSessionStoreState {
   setTaskConfigOptions: (
     workspacePath: string,
     taskId: string,
-    options: ZCodeConfigOption[],
+    options: ZodyConfigOption[],
     workspaceIdentity?: string,
     status?: ConfigOptionsStatus,
   ) => void;
   initializeBackgroundTaskRuntime: (
     workspacePath: string,
     params: {
-      task: ZCodeTaskMeta;
-      provider: ZCodeProvider;
+      task: ZodyTaskMeta;
+      provider: ZodyProvider;
       activeInputId: InputId;
       workspaceIdentity?: string;
     },
   ) => void;
   upsertOptimisticTaskListItem: (
     workspacePath: string,
-    task: ZCodeTaskMeta,
+    task: ZodyTaskMeta,
     workspaceIdentity?: string,
   ) => void;
   removeOptimisticTaskListItem: (
@@ -419,7 +419,7 @@ export interface ZCodeSessionStoreState {
 
   setConfigOptions: (
     workspacePath: string,
-    options: ZCodeConfigOption[],
+    options: ZodyConfigOption[],
     workspaceIdentity?: string,
   ) => void;
   setConfigOptionsStatus: (
@@ -429,7 +429,7 @@ export interface ZCodeSessionStoreState {
   ) => void;
   setSlashCommands: (
     workspacePath: string,
-    commands: ZCodeSlashCommand[],
+    commands: ZodySlashCommand[],
     workspaceIdentity?: string,
   ) => void;
   setCurrentModeId: (
@@ -442,7 +442,7 @@ export interface ZCodeSessionStoreState {
   /** 更新已拉取的任务列表缓存 */
   setTaskListCache: (
     workspacePath: string,
-    tasks: ZCodeTaskMeta[],
+    tasks: ZodyTaskMeta[],
     workspaceIdentity?: string,
   ) => void;
   /** 更新 task 的未读提示，控制左侧蓝点显示 */
@@ -482,7 +482,7 @@ export const DEFAULT_WORKSPACE_INIT_STATE: WorkspaceInitState = {
   attempts: 0,
 };
 
-export const FALLBACK_PROVIDER: ZCodeProvider = ZCODE_AGENT_PROVIDER;
+export const FALLBACK_PROVIDER: ZodyProvider = ZCODE_AGENT_PROVIDER;
 
 export const DEFAULT_TASK_UI_STATE: TaskUiState = {
   permissionRequest: null,
@@ -511,7 +511,7 @@ export const DEFAULT_TASK_RUNTIME_STATE: TaskRuntimeState = {
 // ────────────────────────────────────────────
 
 export function createDefaultWorkspaceState(
-  selectedProvider: ZCodeProvider,
+  selectedProvider: ZodyProvider,
 ): WorkspaceZCodeUIState {
   return {
     activeTaskId: null,

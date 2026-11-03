@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import type { ZCodeSavedWorkflowRun } from "@zody/shared";
+import type { ZodySavedWorkflowRun } from "@zody/shared";
 import type {
   SavedWorkflowsOpenArtifactParams,
   SavedWorkflowsOpenRunParams,
@@ -31,17 +31,17 @@ export interface SavedWorkflowRunOpenTarget {
  */
 export function useSavedWorkflowRunOpeners(options: {
   /** 该行归属的项目；返回 null 即两个入口都关闭（全局档里 cwd 对应的项目没打开）。 */
-  resolveTarget: (run: ZCodeSavedWorkflowRun) => SavedWorkflowRunOpenTarget | null;
+  resolveTarget: (run: ZodySavedWorkflowRun) => SavedWorkflowRunOpenTarget | null;
   onOpenWorkflowRun?: (params: SavedWorkflowsOpenRunParams) => void;
   onOpenWorkflowArtifact?: (params: SavedWorkflowsOpenArtifactParams) => void;
 }): {
-  handleOpenRun: (run: ZCodeSavedWorkflowRun, workflowName: string) => void;
-  handleOpenArtifact: (run: ZCodeSavedWorkflowRun, artifactId: string) => void;
+  handleOpenRun: (run: ZodySavedWorkflowRun, workflowName: string) => void;
+  handleOpenArtifact: (run: ZodySavedWorkflowRun, artifactId: string) => void;
 } {
   const { onOpenWorkflowArtifact, onOpenWorkflowRun, resolveTarget } = options;
 
   const handleOpenRun = useCallback(
-    (run: ZCodeSavedWorkflowRun, workflowName: string) => {
+    (run: ZodySavedWorkflowRun, workflowName: string) => {
       if (!run.parentSessionId || !run.toolCallId) return;
       const target = resolveTarget(run);
       if (!target) return;
@@ -58,7 +58,7 @@ export function useSavedWorkflowRunOpeners(options: {
   );
 
   const handleOpenArtifact = useCallback(
-    (run: ZCodeSavedWorkflowRun, artifactId: string) => {
+    (run: ZodySavedWorkflowRun, artifactId: string) => {
       if (!run.parentSessionId) return;
       const target = resolveTarget(run);
       if (!target) return;

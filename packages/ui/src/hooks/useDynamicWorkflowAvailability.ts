@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import type { IClientConfigService, IZCodeAgentService } from "@zody/services";
+import type { IClientConfigService, IZodyAgentService } from "@zody/services";
 import type { DynamicWorkflowMode } from "@zody/shared";
 import { logger } from "@/logger.js";
 import {
@@ -43,7 +43,7 @@ export function useDynamicWorkflowAvailabilityLoader(service: IClientConfigServi
 export function useDynamicWorkflowUserModeSync(params: {
   settingsLoaded: boolean;
   userMode: DynamicWorkflowMode | undefined;
-  zcodeAgentService: Pick<IZCodeAgentService, "syncDynamicWorkflowUserMode">;
+  zcodeAgentService: Pick<IZodyAgentService, "syncDynamicWorkflowUserMode">;
   clientConfigService: IClientConfigService;
 }): void {
   const { settingsLoaded, userMode, zcodeAgentService, clientConfigService } = params;

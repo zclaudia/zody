@@ -2,7 +2,7 @@
 import {
   zcodeMcpResourceSamplesSchema,
   ZCODE_MCP_RESOURCE_SAMPLE_INTERVAL_MS,
-  type ZCodeMcpResourceSample,
+  type ZodyMcpResourceSample,
   type ProcessResourceRuntimeSurface,
 } from "@zody/shared";
 import { logger } from "./logger.js";
@@ -19,7 +19,7 @@ import {
 const MAX_MCP_GROUPS_PER_WINDOW = 32;
 const MAX_MCP_INSTANCE_SAMPLES = 256;
 interface StoredSample {
-  sample: ZCodeMcpResourceSample;
+  sample: ZodyMcpResourceSample;
   runtimeSurface: ProcessResourceRuntimeSurface;
   environmentKey?: string;
   receivedAt: number;

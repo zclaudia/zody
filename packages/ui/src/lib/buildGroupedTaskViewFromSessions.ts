@@ -4,13 +4,13 @@
 // 改为只读的内存补序：缺 sort_order 的成员/顶层节点按同样规则（added_at / createdAt 降序，
 // max+STEP 递增）派生展示序，不落库；用户拖拽保存时 applyGroupedTaskViewOrder 会全量持久化。
 import type {
-  ZCodeGroupedTaskView,
-  ZCodeGroupedTaskViewNode,
-  ZCodeGroupedTaskViewStructure,
-  ZCodeGroupedTaskViewStructureMember,
-  ZCodeTaskListItem,
+  ZodyGroupedTaskView,
+  ZodyGroupedTaskViewNode,
+  ZodyGroupedTaskViewStructure,
+  ZodyGroupedTaskViewStructureMember,
+  ZodyTaskListItem,
 } from "@zody/services";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
 import { mergeTaskIndexRowsWithSessions } from "@/v4/buildTaskListResultFromSessions.js";
 
@@ -21,7 +21,7 @@ function memberTaskKey(params: { workspaceKey: string; taskId: string }): string
   return `${params.workspaceKey}\u0000${params.taskId}`;
 }
 
-function taskKeyOf(task: ZCodeTaskMeta): string {
+function taskKeyOf(task: ZodyTaskMeta): string {
   return memberTaskKey({
     workspaceKey: buildTaskWorkspaceKey(task.workspacePath, task.workspaceIdentity),
     taskId: task.taskId,
@@ -29,20 +29,20 @@ function taskKeyOf(task: ZCodeTaskMeta): string {
 }
 
 /** 与 taskIndexRepo.taskOrderNodeKey 对齐（node_key = JSON.stringify([workspaceKey, taskId]）。 */
-function taskOrderMapKey(task: ZCodeTaskMeta): string {
+function taskOrderMapKey(task: ZodyTaskMeta): string {
   return `task:${JSON.stringify([
     buildTaskWorkspaceKey(task.workspacePath, task.workspaceIdentity),
     task.taskId,
   ])}`;
 }
 
-function nodeMapKey(node: ZCodeGroupedTaskViewNode): string {
+function nodeMapKey(node: ZodyGroupedTaskViewNode): string {
   return node.type === "group" ? `group:${node.group.id}` : taskOrderMapKey(node.task);
 }
 
 function compareGroupedNodes(
-  left: ZCodeGroupedTaskViewNode,
-  right: ZCodeGroupedTaskViewNode,
+  left: ZodyGroupedTaskViewNode,
+  right: ZodyGroupedTaskViewNode,
 ): number {
   const leftOrder = left.sortOrder ?? 0;
   const rightOrder = right.sortOrder ?? 0;
@@ -54,12 +54,12 @@ function compareGroupedNodes(
 
 /** 组内成员排序：已有 sort_order 用之；缺失的按 added_at 降序在 max 后补内存序。 */
 function sortGroupTasks(
-  tasks: ZCodeTaskListItem[],
-  membersByTaskKey: Map<string, ZCodeGroupedTaskViewStructureMember>,
-): ZCodeTaskListItem[] {
+  tasks: ZodyTaskListItem[],
+  membersByTaskKey: Map<string, ZodyGroupedTaskViewStructureMember>,
+): ZodyTaskListItem[] {
   const resolvedOrderByTaskKey = new Map<string, number>();
   let maxOrder = 0;
-  const missing: Array<{ task: ZCodeTaskListItem; addedAt: number; key: string }> = [];
+  const missing: Array<{ task: ZodyTaskListItem; addedAt: number; key: string }> = [];
   for (const task of tasks) {
     const key = taskKeyOf(task);
     const member = membersByTaskKey.get(key);
@@ -92,11 +92,11 @@ function sortGroupTasks(
 }
 
 export interface BuildGroupedTaskViewParams {
-  structure: ZCodeGroupedTaskViewStructure;
+  structure: ZodyGroupedTaskViewStructure;
   /** tasks-index active/pinned/archived 三个持久分区的 task 行并集。 */
-  taskIndexItems: ZCodeTaskMeta[];
+  taskIndexItems: ZodyTaskMeta[];
   /** sessions-index 派生的会话 activity/detail，只 enrich 命中的持久行。 */
-  sessions: ZCodeTaskMeta[];
+  sessions: ZodyTaskMeta[];
   /** 服务端权威 pin/archive id 集（grouped 视图口径 = 非 pinned 非 archived）。 */
   pinnedIds: ReadonlySet<string>;
   archivedIds: ReadonlySet<string>;
@@ -107,9 +107,9 @@ export interface BuildGroupedTaskViewParams {
 /** 客户端 join：分组结构 + task rows + session details → 与旧 listGroupedTaskView 同形的视图。 */
 export function buildGroupedTaskViewFromSessions(
   params: BuildGroupedTaskViewParams,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const { structure } = params;
-  const activeTaskByKey = new Map<string, ZCodeTaskListItem>();
+  const activeTaskByKey = new Map<string, ZodyTaskListItem>();
   const taskRows = mergeTaskIndexRowsWithSessions({
     taskIndexItems: params.taskIndexItems,
     sessions: params.sessions,
@@ -129,7 +129,7 @@ export function buildGroupedTaskViewFromSessions(
   const membersByTaskKey = new Map(
     structure.members.map((member) => [memberTaskKey(member), member]),
   );
-  const membersByGroupId = new Map<string, ZCodeGroupedTaskViewStructureMember[]>();
+  const membersByGroupId = new Map<string, ZodyGroupedTaskViewStructureMember[]>();
   for (const member of structure.members) {
     const groupMembers = membersByGroupId.get(member.groupId) ?? [];
     groupMembers.push(member);
@@ -144,10 +144,10 @@ export function buildGroupedTaskViewFromSessions(
     topOrderByMapKey.set(mapKey, order.sortOrder);
   }
 
-  const nodes: ZCodeGroupedTaskViewNode[] = structure.groups.map((group) => {
+  const nodes: ZodyGroupedTaskViewNode[] = structure.groups.map((group) => {
     const groupTasks = (membersByGroupId.get(group.id) ?? [])
       .map((member) => activeTaskByKey.get(memberTaskKey(member)))
-      .filter((task): task is ZCodeTaskListItem => Boolean(task));
+      .filter((task): task is ZodyTaskListItem => Boolean(task));
     const order = topOrderByMapKey.get(`group:${group.id}`);
     return {
       type: "group",

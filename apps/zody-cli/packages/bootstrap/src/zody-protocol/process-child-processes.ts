@@ -1,5 +1,5 @@
 import type { McpTrackedProcess } from "@zody/adapters";
-import type { ZCodeProcessChildProcessesResult } from "@zody/shared";
+import type { ZodyProcessChildProcessesResult } from "@zody/shared";
 import { resolveOfficialPluginNameByHostMcpServerName } from "../app/official-plugin-definitions.js";
 
 /**
@@ -8,7 +8,7 @@ import { resolveOfficialPluginNameByHostMcpServerName } from "../app/official-pl
  */
 export function listChildProcesses(
   tracked: readonly McpTrackedProcess[],
-): ZCodeProcessChildProcessesResult {
+): ZodyProcessChildProcessesResult {
   return {
     processes: tracked.map((process) => {
       const pluginName =

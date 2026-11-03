@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronDown, Search } from "lucide-react";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
   Command,
@@ -32,7 +32,7 @@ import type { WorkspaceTabState } from "@/store/tabStore.js";
 const TASK_SEARCH_RESULT_LIMIT = 9;
 const TASK_SEARCH_GROUP_COLLAPSED_SNIPPET_LIMIT = 3;
 
-type TaskSearchResultItem = ZCodeTaskMeta & {
+type TaskSearchResultItem = ZodyTaskMeta & {
   searchSnippet?: string;
   searchSnippets?: string[];
 };
@@ -46,7 +46,7 @@ type TaskSearchResultRow = {
   showTaskHeader: boolean;
 };
 
-function getTaskTitle(task: ZCodeTaskMeta, untitledLabel: string): string {
+function getTaskTitle(task: ZodyTaskMeta, untitledLabel: string): string {
   return task.title.trim() || untitledLabel;
 }
 

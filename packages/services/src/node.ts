@@ -125,14 +125,14 @@ export {
   projectZCodeAgentNativeRuntimeProviderSnapshot,
 } from "./zody-agent/nativeRuntimeStartupProfile.js";
 export { ZCodeProtocolClient } from "./zody-agent/zodyProtocolClient.js";
-export type { ZCodeProtocolTransport } from "./zody-agent/zodyProtocolTransport.js";
+export type { ZodyProtocolTransport } from "./zody-agent/zodyProtocolTransport.js";
 export { ZCodeStdioTransport } from "./zody-agent/zodyStdioTransport.js";
 export {
   getZCodeStdioTapDevLogDir,
   readZCodeStdioTapDevState,
   setZCodeStdioTapDevEnabled,
 } from "./zody-agent/zodyStdioTapDevConfig.js";
-export type { ZCodeStdioTapDevState } from "@zody/shared";
+export type { ZodyStdioTapDevState } from "@zody/shared";
 export {
   createCuaHelperInstaller,
   requestHelperAccessibilityPermissionViaLaunchServices,
@@ -279,10 +279,10 @@ import { ISettingService } from "./setting/setting.js";
 import { IOnboardingRecordService } from "./onboarding/onboardingRecord.js";
 import { ICredentialService } from "./credential/credential.js";
 import { IBroadcastService } from "./broadcast/broadcast.js";
-import { IZCodeTaskService } from "./session/zodyTaskService.js";
-import { IZCodeAgentService } from "./zody-agent/zodyAgent.js";
+import { IZodyTaskService } from "./session/zodyTaskService.js";
+import { IZodyAgentService } from "./zody-agent/zodyAgent.js";
 import type { CuaOperationStateReporter } from "./zody-agent/cuaOperationTurnTracker.js";
-import { IZCodeSessionService } from "./zody-session/zodySession.js";
+import { IZodySessionService } from "./zody-session/zodySession.js";
 // fork（bots 移除）：IBotsService 随 bot channels 功能整体删除（specs/bot-channels-removal.md）。
 import { IFileWatcherService } from "./fileWatcher/fileWatcher.js";
 import { IUsageStatsService } from "./usage-stats/usageStats.js";
@@ -461,8 +461,8 @@ import {
   isZCodeCuaMcpPackageArg,
   isZodyCuaInternalFeatureEnabled,
   ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  type ZCodeAutomation,
-  type ZCodeAutomationRun,
+  type ZodyAutomation,
+  type ZodyAutomationRun,
   getCapturedZodyAgentTelemetryEnv,
   ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   ZCODE_VERSION,
@@ -1013,8 +1013,8 @@ export function createLocalServices(options: {
   ) => Promise<void> | void;
   /** desktop local host 在 manual run 落库后直接派发，不经过 scheduler 正常路径。 */
   onAutomationManualRunRequested?: (params: {
-    automation: ZCodeAutomation;
-    run: ZCodeAutomationRun;
+    automation: ZodyAutomation;
+    run: ZodyAutomationRun;
   }) => Promise<void>;
   // fork（F4.3）：onOffPeakSchedulerWakeRequested（闲时 scheduler 唤醒回调）随闲时任务全链路删除。
   // 注入点：默认 resolver 已能覆盖 dev/桌面/SSH 远端三类形态；
@@ -1235,7 +1235,7 @@ export function createLocalServices(options: {
     // Provisioning 触发；普通 Provider/BYOK 设置仍由 personal-config 触发同步。
   ];
   let providerConnectivityAgentService:
-    | Pick<IZCodeAgentService, "testModelConnectivity">
+    | Pick<IZodyAgentService, "testModelConnectivity">
     | undefined;
   const providerRuntime = createProviderRuntimeFromConfigRuntime({
     configRuntime: providerConfigRuntime,
@@ -1972,9 +1972,9 @@ export function createLocalServices(options: {
     .register(IOnboardingRecordService, onboardingRecordService)
     .register(ICredentialService, credentialService)
     .register(IBroadcastService, broadcastService)
-    .register(IZCodeTaskService, zcodeTaskService)
-    .register(IZCodeAgentService, zcodeAgentService)
-    .register(IZCodeSessionService, zcodeSessionService)
+    .register(IZodyTaskService, zcodeTaskService)
+    .register(IZodyAgentService, zcodeAgentService)
+    .register(IZodySessionService, zcodeSessionService)
     .register(ICuaPermissionService, cuaPermissionService)
     .register(ICuaPipSessionService, cuaPipSessionService)
     // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
@@ -2108,9 +2108,9 @@ export function disposeServiceResources(services: ServiceCollection): void {
   // 这里集中调用各服务的本地 disposeAll 钩子，把“退出 app = 回收所有托管资源”落成机械动作。
   const disposableServices = [
     services.getOptional(ITerminalService),
-    services.getOptional(IZCodeTaskService),
-    services.getOptional(IZCodeAgentService),
-    services.getOptional(IZCodeSessionService),
+    services.getOptional(IZodyTaskService),
+    services.getOptional(IZodyAgentService),
+    services.getOptional(IZodySessionService),
     // fork（bots 移除）：IBotsService dispose 项随 bot channels 功能整体删除
     // （specs/bot-channels-removal.md）。
     services.getOptional(IFileWatcherService),
@@ -2146,9 +2146,9 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
   // 旧的同步 dispose 会在 host 退出时丢掉强杀 timer，导致 zcode-cli/app-server 变成孤儿进程。
   const disposableServices = [
     services.getOptional(ITerminalService),
-    services.getOptional(IZCodeTaskService),
-    services.getOptional(IZCodeAgentService),
-    services.getOptional(IZCodeSessionService),
+    services.getOptional(IZodyTaskService),
+    services.getOptional(IZodyAgentService),
+    services.getOptional(IZodySessionService),
     // fork（bots 移除）：IBotsService dispose 项随 bot channels 功能整体删除
     // （specs/bot-channels-removal.md）。
     services.getOptional(IFileWatcherService),

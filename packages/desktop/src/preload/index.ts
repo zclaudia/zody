@@ -66,7 +66,7 @@ import type {
   RemoteSessionClosedEvent,
   UpdateCheckResultPayload,
   UpdateStatePayload,
-  ZCodeStdioTapDevState,
+  ZodyStdioTapDevState,
   LoadCliMcpFromUserDirectoryRequest,
   SaveCliMcpToUserDirectoryRequest,
   SaveFileRequest,
@@ -808,7 +808,7 @@ contextBridge.exposeInMainWorld("zcode", {
   ): Promise<import("@zody/shared").BrowserExtensionActionResult> =>
     ipcRenderer.invoke(PlatformChannels.SetBrowserExtensionBridgePort, port),
   /** 读取开发态 stdio tap proxy 开关状态 */
-  getZCodeStdioTapDevState: (): Promise<ZCodeStdioTapDevState> =>
+  getZCodeStdioTapDevState: (): Promise<ZodyStdioTapDevState> =>
     ipcRenderer.invoke(PlatformChannels.GetZCodeStdioTapDevState),
   /** 注册 main 进程修改 settings 后的通知，返回 disposer */
   onSettingsChanged: (callback: () => void): (() => void) => {

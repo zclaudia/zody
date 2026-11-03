@@ -15,9 +15,9 @@ import {
   TID_WORKFLOW_DETAIL,
   TID_WORKFLOW_GLOBAL_GROUP,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
-  type ZCodeWorkflowsListResult,
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
+  type ZodyWorkflowsListResult,
 } from "@zody/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
@@ -31,10 +31,10 @@ const fileWatcherService = {
   unwatch: vi.fn(async () => {}),
 };
 
-const listResult: { current: ZCodeWorkflowsListResult | (() => never) } = {
+const listResult: { current: ZodyWorkflowsListResult | (() => never) } = {
   current: { workflows: [], invalid: [], dir: "/home/.zcoder/workflows" },
 };
-const runsResult: { current: ZCodeSavedWorkflowRun[] } = { current: [] };
+const runsResult: { current: ZodySavedWorkflowRun[] } = { current: [] };
 const agent = {
   listSavedWorkflows: vi.fn(async () => {
     const value = listResult.current;
@@ -73,12 +73,12 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowCard.js", () => ({
     onMove,
     onDelete,
   }: {
-    entry: ZCodeSavedWorkflowEntry;
-    onOpen: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRun: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRevise: (entry: ZCodeSavedWorkflowEntry) => void;
-    onMove?: (entry: ZCodeSavedWorkflowEntry) => void;
-    onDelete: (entry: ZCodeSavedWorkflowEntry) => void;
+    entry: ZodySavedWorkflowEntry;
+    onOpen: (entry: ZodySavedWorkflowEntry) => void;
+    onRun: (entry: ZodySavedWorkflowEntry) => void;
+    onRevise: (entry: ZodySavedWorkflowEntry) => void;
+    onMove?: (entry: ZodySavedWorkflowEntry) => void;
+    onDelete: (entry: ZodySavedWorkflowEntry) => void;
   }) =>
     createElement(
       "div",
@@ -150,11 +150,11 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowLaunchDialog.js", () => ({
     defaultTargetKey,
     onSubmit,
   }: {
-    entry: ZCodeSavedWorkflowEntry | null;
+    entry: ZodySavedWorkflowEntry | null;
     targets?: readonly AutomationWorkspaceOption[];
     defaultTargetKey?: string | null;
     onSubmit: (
-      entry: ZCodeSavedWorkflowEntry,
+      entry: ZodySavedWorkflowEntry,
       args: Record<string, unknown>,
       target?: AutomationWorkspaceOption,
     ) => void;
@@ -217,8 +217,8 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowDetailView.js", () => ({
   }: {
     name: string;
     projectLabel: string;
-    runs: readonly ZCodeSavedWorkflowRun[];
-    resolveRunProject?: (run: ZCodeSavedWorkflowRun) => { label: string; canOpen: boolean } | null;
+    runs: readonly ZodySavedWorkflowRun[];
+    resolveRunProject?: (run: ZodySavedWorkflowRun) => { label: string; canOpen: boolean } | null;
     onMove?: () => void;
   }) =>
     createElement(
@@ -246,8 +246,8 @@ const { SavedWorkflowGlobalGroup } =
 
 function entry(
   name: string,
-  overrides: Partial<ZCodeSavedWorkflowEntry> = {},
-): ZCodeSavedWorkflowEntry {
+  overrides: Partial<ZodySavedWorkflowEntry> = {},
+): ZodySavedWorkflowEntry {
   return {
     name,
     description: `${name} 的说明`,

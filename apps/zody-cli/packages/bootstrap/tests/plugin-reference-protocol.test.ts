@@ -27,8 +27,8 @@ import {
 import type { PluginReferenceCatalog } from "@zody/contracts";
 import { getPluginReferenceCatalog } from "../src/zody-protocol/plugin-reference-catalog.js";
 import type {
-  ZCodeProtocolAgentServerContext,
-  ZCodeProtocolSessionRecord,
+  ZodyProtocolAgentServerContext,
+  ZodyProtocolSessionRecord,
 } from "../src/zody-protocol/server-types.js";
 
 afterAll(async () => {
@@ -54,15 +54,15 @@ const SESSION_CATALOG: PluginReferenceCatalog = {
   ],
 };
 
-function contextWithSession(sessionId: string): ZCodeProtocolAgentServerContext {
+function contextWithSession(sessionId: string): ZodyProtocolAgentServerContext {
   const record = {
     app: {
       getPluginReferenceCatalog: () => SESSION_CATALOG,
     },
-  } as unknown as ZCodeProtocolSessionRecord;
+  } as unknown as ZodyProtocolSessionRecord;
   return {
     sessions: new Map([[sessionId, record]]),
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
 }
 
 describe("plugins/referenceCatalog protocol", () => {
@@ -146,7 +146,7 @@ describe("plugins/referenceCatalog protocol", () => {
     const previousStorageDir = process.env.ZCODE_STORAGE_DIR;
     process.env.ZCODE_STORAGE_DIR = join(root, "cli");
     try {
-      const result = await getPluginReferenceCatalog({} as ZCodeProtocolAgentServerContext, {
+      const result = await getPluginReferenceCatalog({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
       });
       expect(result.authority).toBe("workspace");
@@ -165,7 +165,7 @@ describe("plugins/referenceCatalog protocol", () => {
       // 供 Picker 中文搜索/展示（插件 @ 引用中文搜索）。
       expect(zcodeGuide?.category).toBeUndefined();
       const enriched = await getPluginReferenceCatalog(
-        {} as ZCodeProtocolAgentServerContext,
+        {} as ZodyProtocolAgentServerContext,
         {
           workspace: { workspacePath: root, workspaceKey: root },
         },

@@ -14,13 +14,13 @@ import type {
   PluginSyncImportResult,
   PluginSyncRemoteStatus,
   RemoteTarget,
-  ZCodePluginOptionValue,
-  ZCodePluginInfo,
-  ZCodePluginMarketplaceSummary,
-  ZCodePluginUserConfigOption,
-  ZCodePluginsOverviewResult,
+  ZodyPluginOptionValue,
+  ZodyPluginInfo,
+  ZodyPluginMarketplaceSummary,
+  ZodyPluginUserConfigOption,
+  ZodyPluginsOverviewResult,
 } from "@zody/shared";
-import type { IPluginSyncService, IZCodeAgentService } from "@zody/services";
+import type { IPluginSyncService, IZodyAgentService } from "@zody/services";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
@@ -53,12 +53,12 @@ type Step = RemotePluginSyncDialogStep;
 type RemotePluginSyncKind = "inline" | "marketplace";
 
 interface RemotePluginSyncPluginOptions {
-  configuredOptions: Record<string, ZCodePluginOptionValue>;
-  userConfig: Record<string, ZCodePluginUserConfigOption>;
+  configuredOptions: Record<string, ZodyPluginOptionValue>;
+  userConfig: Record<string, ZodyPluginUserConfigOption>;
 }
 
 type RemotePluginSyncAgentService = Pick<
-  IZCodeAgentService,
+  IZodyAgentService,
   | "addPluginMarketplace"
   | "cancelPluginOperation"
   | "configurePlugin"
@@ -270,8 +270,8 @@ export function shouldAllowRemotePluginSyncDialogOpenChange(
 }
 
 export function buildMarketplaceRemotePluginSyncCandidates(
-  overview: ZCodePluginsOverviewResult,
-  plugins: readonly ZCodePluginInfo[],
+  overview: ZodyPluginsOverviewResult,
+  plugins: readonly ZodyPluginInfo[],
 ): RemotePluginSyncCandidate[] {
   const pluginInfoById = new Map(plugins.map((plugin) => [plugin.id, plugin]));
   const marketplaceSourceById = new Map(
@@ -311,7 +311,7 @@ export function buildMarketplaceRemotePluginSyncCandidates(
 
 export function buildMarketplaceRemotePluginStatuses(
   candidates: readonly RemotePluginSyncCandidate[],
-  remoteOverview: ZCodePluginsOverviewResult,
+  remoteOverview: ZodyPluginsOverviewResult,
 ): RemotePluginSyncCandidateStatus[] {
   const installedById = new Map(
     remoteOverview.installedPlugins.map((plugin) => [plugin.id, plugin]),
@@ -331,12 +331,12 @@ export function buildMarketplaceRemotePluginStatuses(
   });
 }
 
-function componentTypesFromPluginInfo(plugin: ZCodePluginInfo | undefined): string[] {
+function componentTypesFromPluginInfo(plugin: ZodyPluginInfo | undefined): string[] {
   return plugin?.components?.map((component) => component.kind) ?? [];
 }
 
 function buildRemotePluginSyncPluginOptions(
-  plugin: ZCodePluginInfo | undefined,
+  plugin: ZodyPluginInfo | undefined,
 ): RemotePluginSyncPluginOptions | undefined {
   const configuredOptions = plugin?.configuredOptions ?? {};
   if (Object.keys(configuredOptions).length === 0) {
@@ -350,7 +350,7 @@ function buildRemotePluginSyncPluginOptions(
 
 function applyPluginInfoToRemoteSyncCandidate(
   candidate: RemotePluginSyncCandidate,
-  plugin: ZCodePluginInfo | undefined,
+  plugin: ZodyPluginInfo | undefined,
 ): RemotePluginSyncCandidate {
   const pluginOptions = buildRemotePluginSyncPluginOptions(plugin);
   return pluginOptions ? { ...candidate, pluginOptions } : candidate;
@@ -358,7 +358,7 @@ function applyPluginInfoToRemoteSyncCandidate(
 
 function enrichRemotePluginSyncCandidatesWithPluginInfo(
   candidates: readonly RemotePluginSyncCandidate[],
-  plugins: readonly ZCodePluginInfo[],
+  plugins: readonly ZodyPluginInfo[],
 ): RemotePluginSyncCandidate[] {
   const pluginInfoById = new Map(plugins.map((plugin) => [plugin.id, plugin]));
   return candidates.map((candidate) =>
@@ -386,7 +386,7 @@ function summarizeLocalPluginOptionsForDisplay(
 }
 
 function serializeMarketplaceSourceInput(
-  marketplace: ZCodePluginMarketplaceSummary,
+  marketplace: ZodyPluginMarketplaceSummary,
 ): string | undefined {
   const source = marketplace.source;
   const sourceKind = typeof source.source === "string" ? source.source : "";
@@ -407,7 +407,7 @@ function serializeMarketplaceSourceInput(
 }
 
 function buildMarketplaceSourceSyncInfo(
-  marketplace: ZCodePluginMarketplaceSummary,
+  marketplace: ZodyPluginMarketplaceSummary,
 ): Pick<
   NonNullable<RemotePluginSyncCandidate["marketplacePlugin"]>,
   "marketplaceSourceArchive" | "marketplaceSourceInput"
@@ -622,14 +622,14 @@ async function awaitRemotePluginSyncStep<T>(
   }
 }
 
-function isPathPluginOption(option: ZCodePluginUserConfigOption | undefined): boolean {
+function isPathPluginOption(option: ZodyPluginUserConfigOption | undefined): boolean {
   return option?.type === "file" || option?.type === "directory";
 }
 
 function isPortablePluginOptionValue(
-  value: ZCodePluginOptionValue,
-  localOption: ZCodePluginUserConfigOption | undefined,
-  remoteOption: ZCodePluginUserConfigOption | undefined,
+  value: ZodyPluginOptionValue,
+  localOption: ZodyPluginUserConfigOption | undefined,
+  remoteOption: ZodyPluginUserConfigOption | undefined,
 ): boolean {
   if (!localOption || !remoteOption) {
     return false;
@@ -649,9 +649,9 @@ function isPortablePluginOptionValue(
 
 function buildPortablePluginOptionsSyncPlan(
   localOptions: RemotePluginSyncPluginOptions,
-  remotePlugin: ZCodePluginInfo,
-): { options: Record<string, ZCodePluginOptionValue>; skippedCount: number } {
-  const options: Record<string, ZCodePluginOptionValue> = {};
+  remotePlugin: ZodyPluginInfo,
+): { options: Record<string, ZodyPluginOptionValue>; skippedCount: number } {
+  const options: Record<string, ZodyPluginOptionValue> = {};
   let skippedCount = 0;
   for (const [key, value] of Object.entries(localOptions.configuredOptions)) {
     if (
@@ -670,8 +670,8 @@ function buildPortablePluginOptionsSyncPlan(
 }
 
 function arePluginOptionsEqual(
-  left: Record<string, ZCodePluginOptionValue>,
-  right: Record<string, ZCodePluginOptionValue>,
+  left: Record<string, ZodyPluginOptionValue>,
+  right: Record<string, ZodyPluginOptionValue>,
 ): boolean {
   const leftEntries = Object.entries(left);
   if (leftEntries.length !== Object.keys(right).length) {

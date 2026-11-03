@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { generateTraceId } from "@zody/shared";
 import { deriveSessionTitle } from "#src/session/sessionTitle.js";
 import type { ClaudeNativeImportedSessionSource } from "#src/session/claude-native/claudeNativeImportedSessionTypes.js";
@@ -47,7 +47,7 @@ export function buildImportedClaudeTaskFile(
   const createdAt = Number.isFinite(source.createdAt) ? source.createdAt : source.updatedAt;
   const updatedAt = Number.isFinite(source.updatedAt) ? source.updatedAt : createdAt;
 
-  const meta: ZCodeTaskMeta = {
+  const meta: ZodyTaskMeta = {
     taskId,
     traceId,
     title: deriveImportedTaskTitle(source.title, source.messages),

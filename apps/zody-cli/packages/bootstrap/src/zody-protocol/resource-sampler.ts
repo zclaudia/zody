@@ -4,7 +4,7 @@ import {
   memoryUsageToSampleFields,
   zcodeProtocolNotifications,
   type MemorySample,
-  type ZCodeProtocolNotification,
+  type ZodyProtocolNotification,
 } from "@zody/shared";
 import {
   createZCodeProcessResourceSampler,
@@ -14,7 +14,7 @@ import type { ZCodeProtocolAgentServer } from "./server.js";
 
 export function startProtocolResourceSampler(
   server: ZCodeProtocolAgentServer,
-  send: (message: ZCodeProtocolNotification) => void,
+  send: (message: ZodyProtocolNotification) => void,
   logger: Logger,
 ): ZCodeProcessResourceSampler | undefined {
   try {

@@ -10,7 +10,7 @@ import {
   zcodeTaskNetworkDebugStatusFromPayload,
   type SessionDebugSnapshot,
 } from "@zody/shared";
-import { requireSession, type ZCodeProtocolAgentServerContext } from "./server-types.js";
+import { requireSession, type ZodyProtocolAgentServerContext } from "./server-types.js";
 
 type SessionRecord = { app: { sessionId: string } };
 interface Observation {
@@ -152,7 +152,7 @@ export function readSessionDebug(record: SessionRecord): SessionDebugSnapshot {
 }
 
 export function querySessionDebug(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): SessionDebugSnapshot {
   const params = sessionDebugParamsSchema.parse(rawParams);

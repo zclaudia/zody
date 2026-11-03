@@ -1,4 +1,4 @@
-import { ZCODE_DATA_ROOT_DIR_NAME, type ZCodeProvider } from "@zody/shared";
+import { ZCODE_DATA_ROOT_DIR_NAME, type ZodyProvider } from "@zody/shared";
 
 type SkillSourceType = "glm" | "unknown";
 
@@ -32,7 +32,7 @@ function isZcodeSkill(skill: { id?: string; path: string; scope?: string }): boo
 
 export function filterSkillsForProvider<T extends { path: string; id?: string; scope?: string }>(
   skills: T[],
-  _legacyProvider: ZCodeProvider,
+  _legacyProvider: ZodyProvider,
 ): T[] {
   return skills.filter(isZcodeSkill);
 }

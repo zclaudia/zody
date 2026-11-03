@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   appendAssistantMessagePart,
   buildZCodeAssistantPresentation,
-  type ZCodeAssistantMessagePart,
+  type ZodyAssistantMessagePart,
 } from "../src/index.js";
 
 describe("assistant presentation", () => {
   it("uses the final content block as latestPart", () => {
-    const parts: ZCodeAssistantMessagePart[] = [
+    const parts: ZodyAssistantMessagePart[] = [
       { type: "content", content: "历史正文" },
       { type: "tool-call", toolId: "tool-1" },
       { type: "content", content: "最终正文" },

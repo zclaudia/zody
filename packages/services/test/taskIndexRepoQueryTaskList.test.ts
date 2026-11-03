@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { setDataBaseDir } from "#src/paths.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 
@@ -30,7 +30,7 @@ function meta(params: {
   title?: string;
   createdAt?: number;
   updatedAt?: number;
-}): ZCodeTaskMeta {
+}): ZodyTaskMeta {
   return {
     taskId: params.taskId,
     traceId: `trace-${params.taskId}`,

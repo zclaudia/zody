@@ -3,13 +3,13 @@ import type { SessionCreateSource } from "@zody/shared";
 import {
   buildNativeSupplierKey,
   normalizeAgentProviderToZCodeAgent,
-  type ZCodeConfigOption,
+  type ZodyConfigOption,
   type ModelSelectionResolution,
-  type ZCodeProvider,
-  type ZCodeSlashCommand,
-  type ZCodeTaskMeta,
-  type ZCodeTaskRuntimeStatus,
-  type ZCodeWorkspaceInitStatus,
+  type ZodyProvider,
+  type ZodySlashCommand,
+  type ZodyTaskMeta,
+  type ZodyTaskRuntimeStatus,
+  type ZodyWorkspaceInitStatus,
 } from "@zody/shared";
 import { persistLastSelectedAgentProvider } from "@/lib/zodyProviderPreference.js";
 import { areConfigOptionsEquivalent } from "@/lib/configOptionsEquality.js";
@@ -46,7 +46,7 @@ function createGroupedDraftId(createdAt: number): string {
   return `grouped-draft-${createdAt}-${groupedDraftSequence}`;
 }
 
-function normalizeThoughtLevelConfigOption(option: ZCodeConfigOption): ZCodeConfigOption {
+function normalizeThoughtLevelConfigOption(option: ZodyConfigOption): ZodyConfigOption {
   if (
     option.type !== "select" ||
     (option.id !== "thought_level" && option.category !== "thought_level")
@@ -65,11 +65,11 @@ function normalizeThoughtLevelConfigOption(option: ZCodeConfigOption): ZCodeConf
   return { ...option, currentValue: fallbackValue };
 }
 
-function normalizeConfigOptions(options: ZCodeConfigOption[]): ZCodeConfigOption[] {
+function normalizeConfigOptions(options: ZodyConfigOption[]): ZodyConfigOption[] {
   return options.map(normalizeThoughtLevelConfigOption);
 }
 
-function cloneConfigOptions(options: readonly ZCodeConfigOption[]): ZCodeConfigOption[] {
+function cloneConfigOptions(options: readonly ZodyConfigOption[]): ZodyConfigOption[] {
   return options.map((option) => ({
     ...option,
     options: option.options?.map((entry) => ({ ...entry })),
@@ -89,14 +89,14 @@ function isSameGroupedDraftPlacement(
   return right.type === "group" && left.groupId === right.groupId;
 }
 
-function isModeConfigOption(option: ZCodeConfigOption): boolean {
+function isModeConfigOption(option: ZodyConfigOption): boolean {
   return option.category === "mode" && option.type === "select";
 }
 
 function createFallbackModeOption(params: {
   currentModeId: string;
-  options?: NonNullable<ZCodeConfigOption["options"]>;
-}): ZCodeConfigOption {
+  options?: NonNullable<ZodyConfigOption["options"]>;
+}): ZodyConfigOption {
   const options = params.options?.length
     ? params.options
     : [{ value: params.currentModeId, name: params.currentModeId }];
@@ -111,9 +111,9 @@ function createFallbackModeOption(params: {
 }
 
 function replaceModeConfigOption(
-  currentOptions: ZCodeConfigOption[] | null,
-  nextModeOption: ZCodeConfigOption | null,
-): ZCodeConfigOption[] | null {
+  currentOptions: ZodyConfigOption[] | null,
+  nextModeOption: ZodyConfigOption | null,
+): ZodyConfigOption[] | null {
   const options = currentOptions ?? [];
   const modeIndex = options.findIndex(isModeConfigOption);
   if (modeIndex === -1) {
@@ -138,9 +138,9 @@ function replaceModeConfigOption(
 }
 
 function updateCurrentModeConfigOption(
-  currentOptions: ZCodeConfigOption[] | null,
+  currentOptions: ZodyConfigOption[] | null,
   modeId: string | null,
-): ZCodeConfigOption[] | null {
+): ZodyConfigOption[] | null {
   const options = currentOptions ?? [];
   const existingModeOption = options.find(isModeConfigOption);
   if (!modeId) {
@@ -171,7 +171,7 @@ function updateCurrentModeConfigOption(
 
 function updateActiveTaskConfigOptions(
   current: WorkspaceZCodeUIState,
-  updater: (options: ZCodeConfigOption[] | null) => ZCodeConfigOption[] | null,
+  updater: (options: ZodyConfigOption[] | null) => ZodyConfigOption[] | null,
 ): Pick<WorkspaceZCodeUIState, "taskConfigOptionsByTaskId"> | null {
   const activeTaskId = current.activeTaskId;
   if (!activeTaskId) {
@@ -199,7 +199,7 @@ function updateActiveTaskConfigOptions(
 function resolveActiveTaskConfigOptionsOnSwitch(
   current: WorkspaceZCodeUIState,
   taskId: string,
-): { configOptions: ZCodeConfigOption[]; status: ConfigOptionsStatus } | null {
+): { configOptions: ZodyConfigOption[]; status: ConfigOptionsStatus } | null {
   const cachedTaskConfigOptions = current.taskConfigOptionsByTaskId[taskId];
   if (cachedTaskConfigOptions) {
     return {
@@ -312,9 +312,9 @@ export function createWorkspaceSlice(set: SetFn) {
           state,
           workspacePath,
           (current) => {
-            const optimisticTask: ZCodeTaskMeta = {
+            const optimisticTask: ZodyTaskMeta = {
               taskId,
-              traceId: `session-${taskId}` as ZCodeTaskMeta["traceId"],
+              traceId: `session-${taskId}` as ZodyTaskMeta["traceId"],
               title: "",
               workspacePath,
               ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -510,7 +510,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     startDraft: (
       workspacePath: string,
-      provider?: ZCodeProvider,
+      provider?: ZodyProvider,
       workspaceIdentity?: string,
       options?: {
         groupedDraftPlacement?: GroupedDraftTaskPlacement;
@@ -657,7 +657,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     bindRuntimeProvider: (
       workspacePath: string,
-      provider: ZCodeProvider,
+      provider: ZodyProvider,
       workspaceIdentity?: string,
     ) =>
       set((state) =>
@@ -697,7 +697,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     setWorkspaceInitState: (
       workspacePath: string,
-      status: ZCodeWorkspaceInitStatus,
+      status: ZodyWorkspaceInitStatus,
       error?: string | null,
       workspaceIdentity?: string,
     ) => {
@@ -741,7 +741,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     setTaskState: (
       workspacePath: string,
-      status: ZCodeTaskRuntimeStatus,
+      status: ZodyTaskRuntimeStatus,
       error?: string | null,
       workspaceIdentity?: string,
     ) => {
@@ -855,7 +855,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     setConfigOptions: (
       workspacePath: string,
-      options: ZCodeConfigOption[],
+      options: ZodyConfigOption[],
       workspaceIdentity?: string,
     ) => {
       set((state) => {
@@ -902,7 +902,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     setSlashCommands: (
       workspacePath: string,
-      commands: ZCodeSlashCommand[],
+      commands: ZodySlashCommand[],
       workspaceIdentity?: string,
     ) => {
       set((state) =>
@@ -965,7 +965,7 @@ export function createWorkspaceSlice(set: SetFn) {
 
     setTaskListCache: (
       workspacePath: string,
-      tasks: ZCodeTaskMeta[],
+      tasks: ZodyTaskMeta[],
       workspaceIdentity?: string,
     ) => {
       set((state) =>

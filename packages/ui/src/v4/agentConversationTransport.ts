@@ -5,7 +5,7 @@ import { calibrateLocalTtftClock, localTtftNow } from "@zody/shared";
 // ConversationTransport 的 desktop/host 实现：桥到 IZCodeAgentService 的 v4 转发面
 // （依赖注入原则——数据层不感知 host 细节，
 // web 直连 ws relay 时换一个实现即可）。
-import type { IZCodeAgentService } from "@zody/services";
+import type { IZodyAgentService } from "@zody/services";
 import {
   conversationTopicFrameSchema,
   PROTOCOL_V4_LIMITS,
@@ -52,7 +52,7 @@ export interface AgentConversationTransportTarget {
 }
 
 type ConversationV4AgentService = Pick<
-  IZCodeAgentService,
+  IZodyAgentService,
   | "subscribeConversationV4"
   | "resyncConversationV4"
   | "helloConversationV4"
@@ -81,7 +81,7 @@ type ConversationV4AgentService = Pick<
   | "onDynamicLocalTtftFacts"
   | "onAgentRuntimeRestarted"
 > &
-  Partial<Pick<IZCodeAgentService, "onAgentRuntimeLifecycle">>;
+  Partial<Pick<IZodyAgentService, "onAgentRuntimeLifecycle">>;
 
 /**
  * 一条 host 连接（= 一个 workspace）上的 v4 conversation 传输面。

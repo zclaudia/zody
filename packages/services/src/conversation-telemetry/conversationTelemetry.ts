@@ -1,6 +1,6 @@
 import type { Event } from "@zody/rpc";
 import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
-import type { IZCodeAgentService } from "#src/zody-agent/zodyAgent.js";
+import type { IZodyAgentService } from "#src/zody-agent/zodyAgent.js";
 
 export interface ConversationTelemetryWorkspaceTarget {
   workspacePath: string;
@@ -16,7 +16,7 @@ export interface IConversationTelemetryService {
 }
 
 export function createConversationTelemetryService(
-  zcodeAgentService: Pick<IZCodeAgentService, "onDynamicConversationTelemetryFact">,
+  zcodeAgentService: Pick<IZodyAgentService, "onDynamicConversationTelemetryFact">,
 ): IConversationTelemetryService {
   return {
     onFact: (target) =>

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { encodeCustomModelValue, type ZCodeAutomation } from "@zody/shared";
+import { encodeCustomModelValue, type ZodyAutomation } from "@zody/shared";
 import {
   buildV4ConversationPromptTelemetryExtraDetail,
   resolveLegacyRuntimeModelValue,
@@ -48,7 +48,7 @@ describe("Provider 埋点旧口径", () => {
       await reportAutomationActionClick(platform, {
         action: "run_now",
         source: "list",
-        automation: { automationId: "automation", modelSelection } as ZCodeAutomation,
+        automation: { automationId: "automation", modelSelection } as ZodyAutomation,
         providerSettingsView: null,
       });
       expect(platform.reportTelemetryEvent).toHaveBeenCalledTimes(3);

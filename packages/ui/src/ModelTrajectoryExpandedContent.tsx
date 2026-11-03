@@ -1,4 +1,4 @@
-import type { ZCodeModelTrajectoryMessage } from "@zody/services";
+import type { ZodyModelTrajectoryMessage } from "@zody/services";
 import { Maximize2Icon, Minimize2Icon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge.js";
@@ -22,7 +22,7 @@ export function TrajectoryExpandedContent({
   searchRevealed,
   intl,
 }: {
-  message: ZCodeModelTrajectoryMessage;
+  message: ZodyModelTrajectoryMessage;
   role: "system" | "user" | "assistant" | "tool";
   open: boolean;
   searchRevealed: boolean;

@@ -7,7 +7,7 @@ import type {
   IWindowControllerService,
   WindowHostControllerFrame,
 } from "@zody/services";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { useGlobalTaskList } from "@/hooks/useGlobalTaskList.js";
@@ -28,7 +28,7 @@ function remoteTab(remoteSessionId?: string): WorkspaceTabState {
   } as WorkspaceTabState;
 }
 
-function remoteTask(): ZCodeTaskMeta {
+function remoteTask(): ZodyTaskMeta {
   return {
     taskId: "task-before-connect",
     traceId: "trace-task-before-connect",

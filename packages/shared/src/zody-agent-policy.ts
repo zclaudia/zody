@@ -1,8 +1,8 @@
 import { z } from "zod";
 import type { CommandAgentSource } from "./command-types.js";
-import type { ZCodeProvider } from "./zody-task-types-core.js";
+import type { ZodyProvider } from "./zody-task-types-core.js";
 
-export const ZCODE_AGENT_PROVIDER = "glm" satisfies ZCodeProvider;
+export const ZCODE_AGENT_PROVIDER = "glm" satisfies ZodyProvider;
 export const ZCODE_AGENT_PROVIDER_LABEL = "Zody Agent";
 export const ZCODE_COMMAND_AGENT_SOURCE = "zcodeAgent" satisfies CommandAgentSource;
 
@@ -17,21 +17,21 @@ export const legacyZCodeProviderSchema = z
 
 export const ZCODE_ENABLED_AGENT_PROVIDERS = [
   ZCODE_AGENT_PROVIDER,
-] as const satisfies readonly ZCodeProvider[];
+] as const satisfies readonly ZodyProvider[];
 
 export const ZCODE_COMMAND_AGENT_SOURCES = [
   ZCODE_COMMAND_AGENT_SOURCE,
 ] as const satisfies readonly CommandAgentSource[];
 
 export function normalizeAgentProviderToZCodeAgent(
-  _provider?: ZCodeProvider | null,
-): ZCodeProvider {
+  _provider?: ZodyProvider | null,
+): ZodyProvider {
   return ZCODE_AGENT_PROVIDER;
 }
 
 export function normalizeAgentProvidersToZCodeAgent(
-  _providers?: ReadonlyArray<ZCodeProvider> | null,
-): ZCodeProvider[] {
+  _providers?: ReadonlyArray<ZodyProvider> | null,
+): ZodyProvider[] {
   return [...ZCODE_ENABLED_AGENT_PROVIDERS];
 }
 
@@ -42,7 +42,7 @@ export function normalizeCommandAgentSourceToZCodeAgent(
 }
 
 export function isZCodeAgentProvider(
-  provider: ZCodeProvider | null | undefined,
+  provider: ZodyProvider | null | undefined,
 ): provider is typeof ZCODE_AGENT_PROVIDER {
   return provider === ZCODE_AGENT_PROVIDER;
 }

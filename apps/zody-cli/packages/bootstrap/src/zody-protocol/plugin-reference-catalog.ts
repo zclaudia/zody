@@ -6,10 +6,10 @@ import {
   zcodeProtocolNotifications,
   zcodePluginsReferenceCatalogParamsSchema,
   zcodePluginsResolveSuggestedReferenceParamsSchema,
-  type ZCodePluginReferenceCatalogEntry,
-  type ZCodePluginDiagnostic as SharedPluginDiagnostic,
-  type ZCodePluginsReferenceCatalogResult,
-  type ZCodePluginsResolveSuggestedReferenceResult,
+  type ZodyPluginReferenceCatalogEntry,
+  type ZodyPluginDiagnostic as SharedPluginDiagnostic,
+  type ZodyPluginsReferenceCatalogResult,
+  type ZodyPluginsResolveSuggestedReferenceResult,
 } from "@zody/shared";
 import type { PluginReferenceCatalogEntry } from "@zody/contracts";
 import { buildPluginReferenceCatalog } from "@zody/core";
@@ -21,17 +21,17 @@ import {
 import {
   parseParams,
   requireSession,
-  type ZCodeProtocolAgentServerContext,
+  type ZodyProtocolAgentServerContext,
 } from "./server-types.js";
 
 // Picker 权威：带 sessionId → 该 Session 创建时冻结的 identity catalog（session-owned）；
 // 不带 → workspace 当前 catalog（新建草稿）。session 不存在时按协议错误 fail closed，
 // 禁止静默回退 workspace authority——否则草稿/会话两种权威会被混淆。
 export async function getPluginReferenceCatalog(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   includeCategory = false,
-): Promise<ZCodePluginsReferenceCatalogResult> {
+): Promise<ZodyPluginsReferenceCatalogResult> {
   const params = parseParams(zcodePluginsReferenceCatalogParamsSchema, rawParams);
   if (params.sessionId) {
     const record = requireSession(context, params.sessionId);
@@ -64,10 +64,10 @@ const SUGGESTED_PLUGIN_MARKETPLACE_REFRESH_TIMEOUT_MS = 10_000;
 
 /** 推荐 Prompt 的安装前可信解析；missing 必须先刷新官方目录，失败时禁止旧快照安装。 */
 export async function resolveSuggestedPluginReference(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
   signal?: AbortSignal,
-): Promise<ZCodePluginsResolveSuggestedReferenceResult> {
+): Promise<ZodyPluginsResolveSuggestedReferenceResult> {
   const params = parseParams(zcodePluginsResolveSuggestedReferenceParamsSchema, rawParams);
   const stableId = params.stableId.trim();
   const at = stableId.lastIndexOf("@");
@@ -272,7 +272,7 @@ function toReferenceCatalogEntry(
   entry: PluginReferenceCatalogEntry,
   displayByPluginId: ReadonlyMap<string, PluginReferenceListingDisplay>,
   includeCategory = false,
-): ZCodePluginReferenceCatalogEntry {
+): ZodyPluginReferenceCatalogEntry {
   const display = displayByPluginId.get(entry.pluginId);
   return {
     ...(includeCategory ? { category: display?.category ?? "other" } : {}),

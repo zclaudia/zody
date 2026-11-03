@@ -42,8 +42,8 @@ import {
 import type {
   GitChangeSourceId,
   GitRepositorySummary,
-  ZCodeSessionRunningSubagent,
-  ZCodeTaskChangeSummary,
+  ZodySessionRunningSubagent,
+  ZodyTaskChangeSummary,
 } from "@zody/shared";
 import type {
   BackgroundWorkSummary,
@@ -109,12 +109,12 @@ export interface ConversationStatusPanelProps {
   gitDirtyFileCount?: number;
   gitWorktreeReviewSourceId?: GitChangeSourceId | null;
   gitWorktreeChangeSummary?: { added: number; removed: number } | null;
-  activeTaskChangeSummary?: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary?: ZodyTaskChangeSummary | null;
   goal?: GoalState | null;
   sessionPlans?: readonly ToolCallRow[];
   plan?: PlanState | null;
   backgroundWorks?: readonly BackgroundWorkSummary[];
-  runningSubagents?: readonly ZCodeSessionRunningSubagent[];
+  runningSubagents?: readonly ZodySessionRunningSubagent[];
   /** 本会话 `snapshot.workflowRuns.runs`；与 backgroundWorks 在模型层按 workId ≡ runId 联接。 */
   workflowRuns?: readonly WorkflowRunState[];
   /**
@@ -155,7 +155,7 @@ export interface ConversationStatusPanelProps {
 
 // memo 组件默认 props 不内联创建数组，避免每次渲染生成新引用触发稳定引用边界测试。
 const EMPTY_BACKGROUND_WORKS: readonly BackgroundWorkSummary[] = [];
-const EMPTY_RUNNING_SUBAGENTS: readonly ZCodeSessionRunningSubagent[] = [];
+const EMPTY_RUNNING_SUBAGENTS: readonly ZodySessionRunningSubagent[] = [];
 const EMPTY_WORKFLOW_RUNS: readonly WorkflowRunState[] = [];
 
 /** 胶囊形态的宽度上限：20rem，且不超过 conversation 容器两侧留 1rem（桌面与宽屏 Web 现状）。 */
@@ -382,7 +382,7 @@ function GitStatusSection({
   workspacePath,
   useVerticalFloatingPanels,
 }: {
-  activeTaskChangeSummary?: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary?: ZodyTaskChangeSummary | null;
   gitSummary: GitRepositorySummary | null | undefined;
   gitWorktreeReviewSourceId?: GitChangeSourceId | null;
   model: ConversationStatusPanelModel;
@@ -970,7 +970,7 @@ export function buildRunningSubagentOpenRequest({
 }: {
   parentSessionId?: string;
   rootSessionId?: string;
-  subagent: ZCodeSessionRunningSubagent;
+  subagent: ZodySessionRunningSubagent;
 }): OpenSubagentSideTabRequest | null {
   if (!parentSessionId) return null;
   return {

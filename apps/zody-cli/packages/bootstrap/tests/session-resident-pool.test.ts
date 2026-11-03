@@ -23,7 +23,7 @@ import type {
   ProjectId,
   SessionId,
 } from "@zody/contracts";
-import { zcodeProtocolMethods, type ZCodeProtocolMessage } from "@zody/shared";
+import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
 import {
   V4_METHODS,
   conversationTopic,
@@ -51,9 +51,9 @@ import {
   runWithSessionResidencyFinalization,
 } from "../src/zody-protocol/session-residency.js";
 import type {
-  ZCodeProtocolAgentDependencies,
-  ZCodeProtocolAgentServerContext,
-  ZCodeProtocolSessionRecord,
+  ZodyProtocolAgentDependencies,
+  ZodyProtocolAgentServerContext,
+  ZodyProtocolSessionRecord,
 } from "../src/zody-protocol/server-types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
@@ -347,7 +347,7 @@ describe("SessionResidentPool", () => {
   });
 
   it("protocol finalization lease 支持嵌套且 release 幂等", () => {
-    const record: Pick<ZCodeProtocolSessionRecord, "residencyFinalizationCount"> = {};
+    const record: Pick<ZodyProtocolSessionRecord, "residencyFinalizationCount"> = {};
     const releaseFirst = acquireSessionResidencyFinalization(record);
     const releaseSecond = acquireSessionResidencyFinalization(record);
 
@@ -360,7 +360,7 @@ describe("SessionResidentPool", () => {
   });
 
   it("protocol finalization runner 在同步抛错与异步 reject 后都释放 lease", async () => {
-    const record: Pick<ZCodeProtocolSessionRecord, "residencyFinalizationCount"> = {};
+    const record: Pick<ZodyProtocolSessionRecord, "residencyFinalizationCount"> = {};
 
     await expect(
       runWithSessionResidencyFinalization(record, () => {
@@ -523,8 +523,8 @@ describe("SessionResidentPool", () => {
 // ── 执行面单元（stub context）───────────────────────────────────────────────
 
 interface ExecutorHarness {
-  context: ZCodeProtocolAgentServerContext;
-  record: ZCodeProtocolSessionRecord;
+  context: ZodyProtocolAgentServerContext;
+  record: ZodyProtocolSessionRecord;
   calls: string[];
   releaseClose(): void;
 }
@@ -554,7 +554,7 @@ function makeExecutorHarness(sessionId: string): ExecutorHarness {
       calls.push("unsubscribe");
     },
     updatedAt: 0,
-  } as unknown as ZCodeProtocolSessionRecord;
+  } as unknown as ZodyProtocolSessionRecord;
   const context = {
     sessions: new Map([[sessionId, record]]),
     v4Gateway: {
@@ -563,7 +563,7 @@ function makeExecutorHarness(sessionId: string): ExecutorHarness {
         calls.push(`gateway.deactivateSession:${id}`);
       },
     },
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
   return { context, record, calls, releaseClose: () => releaseClose() };
 }
 
@@ -648,7 +648,7 @@ const WORKSPACE_PATH = "/workspace/idle-deactivation";
 const SESSION_ID = "sess_idle_deactivate" as SessionId;
 type TestSessionStore = ReturnType<typeof createSqliteSessionStore>;
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZCodeProtocolMessage) {
+async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -731,7 +731,7 @@ interface IntegrationHarness {
   server: ZCodeProtocolAgentServer;
   store: TestSessionStore;
   createdApps: ZCodeApp[];
-  sessions: Map<string, ZCodeProtocolSessionRecord>;
+  sessions: Map<string, ZodyProtocolSessionRecord>;
 }
 
 function bootServer(
@@ -757,7 +757,7 @@ function bootServer(
     },
     sessionStore: store,
   });
-  const sessions = (server as unknown as { context: ZCodeProtocolAgentServerContext }).context
+  const sessions = (server as unknown as { context: ZodyProtocolAgentServerContext }).context
     .sessions;
   return { server, store, createdApps, sessions };
 }
@@ -977,7 +977,7 @@ describe("session resident pool（集成：真 sqlite + server + binder）", () 
 // ── server 装配层配置回退 ──────────────────────────────────────────────────
 
 describe("SessionResidentPool 配置回退", () => {
-  function makeServer(deps: Partial<ZCodeProtocolAgentDependencies>) {
+  function makeServer(deps: Partial<ZodyProtocolAgentDependencies>) {
     return new ZCodeProtocolAgentServer({
       createZCodeApp: (appOptions) => createFakeApp(appOptions, {}),
       cwd: WORKSPACE_PATH,
@@ -986,10 +986,10 @@ describe("SessionResidentPool 配置回退", () => {
   }
 
   function contextOf(server: ZCodeProtocolAgentServer) {
-    return (server as unknown as { context: ZCodeProtocolAgentServerContext }).context;
+    return (server as unknown as { context: ZodyProtocolAgentServerContext }).context;
   }
 
-  function addIdleResident(context: ZCodeProtocolAgentServerContext, sessionId: string) {
+  function addIdleResident(context: ZodyProtocolAgentServerContext, sessionId: string) {
     context.sessions.set(sessionId, {
       app: {
         close: async () => {},
@@ -998,7 +998,7 @@ describe("SessionResidentPool 配置回退", () => {
       legacyStreamSubscribed: false,
       persistence: "immediate",
       updatedAt: 0,
-    } as unknown as ZCodeProtocolSessionRecord);
+    } as unknown as ZodyProtocolSessionRecord);
   }
 
   it("legacy sessionResidentTargetCount 只表达 low-water，不塌掉迟滞窗口", () => {

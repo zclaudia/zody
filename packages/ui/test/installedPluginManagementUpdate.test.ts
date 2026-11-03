@@ -2,7 +2,7 @@ import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePluginInfo, ZCodePluginUserConfigOption } from "@zody/shared";
+import type { ZodyPluginInfo, ZodyPluginUserConfigOption } from "@zody/shared";
 
 // 复用 taskListItemHoverActions.test.ts 的「mock Button 捕获 onClick」套路：
 // renderToStaticMarkup 不会派发真实点击事件，故把 Button 替换成记录 props 的桩，
@@ -18,7 +18,7 @@ vi.mock("@/components/ui/button.js", () => ({
   },
 }));
 
-function basePlugin(overrides: Partial<ZCodePluginInfo> = {}): ZCodePluginInfo {
+function basePlugin(overrides: Partial<ZodyPluginInfo> = {}): ZodyPluginInfo {
   return {
     id: "skill-creator@zcode-plugins-official",
     name: "skill-creator",
@@ -40,13 +40,13 @@ function basePlugin(overrides: Partial<ZCodePluginInfo> = {}): ZCodePluginInfo {
 
 const sharedPanelProps = {
   getPluginOptionValue: (
-    _plugin: ZCodePluginInfo,
+    _plugin: ZodyPluginInfo,
     _key: string,
-    option: ZCodePluginUserConfigOption,
+    option: ZodyPluginUserConfigOption,
   ) => option.default ?? "",
   onSavePluginOptions: () => {},
   setPluginOptionDraft: () => {},
-  renderPluginSource: (target: ZCodePluginInfo) => target.marketplace,
+  renderPluginSource: (target: ZodyPluginInfo) => target.marketplace,
 } as const;
 
 function createMinimalElement(ownerDocument: Document, tagName = "div") {

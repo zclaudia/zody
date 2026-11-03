@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { IServiceAccessor } from "@zody/services";
-import type { IPlatformService, ZCodeConfigOption } from "@zody/shared";
+import type { IPlatformService, ZodyConfigOption } from "@zody/shared";
 import { ThoughtLevelCycleControl } from "@/chat-input-toolbar/ThoughtLevelCycleControl.js";
 import { getNextThoughtLevelValue } from "@/chat-input-toolbar/thoughtLevelOptions.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
@@ -42,7 +42,7 @@ function Fixture() {
   const [committed, setCommitted] = useState("");
   const selectRef = useRef<HTMLSpanElement>(null);
   const cycleRef = useRef<HTMLSpanElement>(null);
-  const option: ZCodeConfigOption = {
+  const option: ZodyConfigOption = {
     id: "thought_level",
     category: "thought_level",
     type: "select",

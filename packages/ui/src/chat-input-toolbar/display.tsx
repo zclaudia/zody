@@ -12,10 +12,10 @@ import {
   TID_CHAT_THOUGHT_LEVEL_SELECT_ITEM,
   TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER,
   testId,
-  type ZCodeApiRetryStatus,
-  type ZCodeConfigOption,
-  type ZCodeConfigSelectValue,
-  type ZCodeProvider,
+  type ZodyApiRetryStatus,
+  type ZodyConfigOption,
+  type ZodyConfigSelectValue,
+  type ZodyProvider,
 } from "@zody/shared";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import {
@@ -61,7 +61,7 @@ type ConfigSelectTriggerVariant = ComponentProps<
  * 系统事件误当成用户选择（如 Automations 编辑页仅打开详情就被标记未保存修改）。
  * 用户只能点到已渲染的 option，值域外的选择回调一律丢弃。 */
 export function isConfigSelectValueInOptions(
-  option: ZCodeConfigOption,
+  option: ZodyConfigOption,
   value: string,
 ): boolean {
   return option.options?.some((entry) => String(entry.value) === value) ?? false;
@@ -77,7 +77,7 @@ const HIGH_PERMISSION_MODE_VALUES = new Set([
 ]);
 
 function getConfigSelectTriggerTestId(
-  option: ZCodeConfigOption,
+  option: ZodyConfigOption,
 ): string | undefined {
   if (option.category === "thought_level") {
     return TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER;
@@ -91,8 +91,8 @@ function getConfigSelectTriggerTestId(
 }
 
 function getConfigSelectItemTestId(
-  option: ZCodeConfigOption,
-  entry: ZCodeConfigSelectValue,
+  option: ZodyConfigOption,
+  entry: ZodyConfigSelectValue,
 ): string | undefined {
   if (option.category === "thought_level") {
     return testId(TID_CHAT_THOUGHT_LEVEL_SELECT_ITEM, entry.value);
@@ -135,7 +135,7 @@ export function ChatApiRetryStatus({
   intl,
   locale,
 }: {
-  apiRetry: ZCodeApiRetryStatus | null;
+  apiRetry: ZodyApiRetryStatus | null;
   intl: ReturnType<typeof useZCodeIntl>["intl"];
   locale: string;
 }) {
@@ -182,8 +182,8 @@ export function ChatApiRetryStatus({
 
 export function getModeOptionDisplayLabel(
   intl: ReturnType<typeof useZCodeIntl>["intl"],
-  provider: ZCodeProvider | undefined,
-  entry: Pick<ZCodeConfigSelectValue, "name" | "value">,
+  provider: ZodyProvider | undefined,
+  entry: Pick<ZodyConfigSelectValue, "name" | "value">,
 ): string {
   const labelMessageId = getModeOptionLabelMessageId(provider, entry);
   if (!labelMessageId) {
@@ -194,8 +194,8 @@ export function getModeOptionDisplayLabel(
 }
 
 export function getModeOptionLabelMessageId(
-  provider: ZCodeProvider | undefined,
-  entry: Pick<ZCodeConfigSelectValue, "value">,
+  provider: ZodyProvider | undefined,
+  entry: Pick<ZodyConfigSelectValue, "value">,
 ): string | null {
   if (!provider) {
     return null;
@@ -205,8 +205,8 @@ export function getModeOptionLabelMessageId(
 }
 
 export function getModeOptionDescriptionMessageId(
-  provider: ZCodeProvider | undefined,
-  entry: Pick<ZCodeConfigSelectValue, "value">,
+  provider: ZodyProvider | undefined,
+  entry: Pick<ZodyConfigSelectValue, "value">,
 ): string | null {
   if (!provider) {
     return null;
@@ -217,9 +217,9 @@ export function getModeOptionDescriptionMessageId(
 
 export function getConfigOptionEntryLabel(
   intl: ReturnType<typeof useZCodeIntl>["intl"],
-  provider: ZCodeProvider | undefined,
-  option: ZCodeConfigOption,
-  entry: ZCodeConfigSelectValue,
+  provider: ZodyProvider | undefined,
+  option: ZodyConfigOption,
+  entry: ZodyConfigSelectValue,
 ): string {
   if (option.category === "mode") {
     return getModeOptionDisplayLabel(intl, provider, entry);
@@ -230,9 +230,9 @@ export function getConfigOptionEntryLabel(
 
 export function getConfigOptionEntryDescription(
   intl: ReturnType<typeof useZCodeIntl>["intl"],
-  provider: ZCodeProvider | undefined,
-  option: ZCodeConfigOption,
-  entry: ZCodeConfigSelectValue,
+  provider: ZodyProvider | undefined,
+  option: ZodyConfigOption,
+  entry: ZodyConfigSelectValue,
 ): string | undefined {
   if (option.category !== "mode") {
     return entry.description;
@@ -292,7 +292,7 @@ export function ConfigSelect({
   provider,
   restoreFocusSelector = '[data-testid="chat-input"]',
 }: {
-  option: ZCodeConfigOption;
+  option: ZodyConfigOption;
   onValueChange: (value: string) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -306,7 +306,7 @@ export function ConfigSelect({
   triggerSize?: ConfigSelectTriggerSize;
   leadingIcon?: LucideIcon;
   labelVisibilityClassName?: string;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   restoreFocusSelector?: string | null;
 }) {
   const { intl } = useZCodeIntl();

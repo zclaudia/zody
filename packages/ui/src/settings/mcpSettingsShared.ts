@@ -1,4 +1,4 @@
-import type { McpServerConfig, ZCodeMcpServer } from "@zody/shared";
+import type { McpServerConfig, ZodyMcpServer } from "@zody/shared";
 
 export const MCP_SECTIONS = ["zcodeagentmcp"] as const;
 
@@ -51,7 +51,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-export function serverToForm(server: ZCodeMcpServer): FormState {
+export function serverToForm(server: ZodyMcpServer): FormState {
   const cfg = server.config;
   let type: FormState["type"];
   if (cfg.type === "sse") {

@@ -50,12 +50,12 @@ import {
   ISettingService,
   IOnboardingRecordService,
   IWindowControllerService,
-  IZCodeAgentService,
-  IZCodeTaskService,
-  IZCodeSessionService,
+  IZodyAgentService,
+  IZodyTaskService,
+  IZodySessionService,
   ICuaPipSessionService,
   createZCodeAgentConnectionScope,
-  type ZCodeAgentV4ClientMode,
+  type ZodyAgentV4ClientMode,
   collectServiceMemoryDiagnostics,
 } from "@zody/services";
 import { createMobileNotificationService } from "@zody/services/mobile-notifications/node";
@@ -88,17 +88,17 @@ import {
   isRemoteWorkspaceIdentity,
   resolveWorkspaceKey,
   formatModelPickerValue,
-  type ZCodePromptAttachment,
-  type ZCodeStreamEvent,
-  type ZCodeTaskMeta,
+  type ZodyPromptAttachment,
+  type ZodyStreamEvent,
+  type ZodyTaskMeta,
   type TaskStreamMirrorableEvent,
   type TraceId,
-  type ZCodeTaskMode,
+  type ZodyTaskMode,
   type WindowHostAttachmentScope,
   type MobileNotificationPrincipal,
-  type ZCodeAutomation,
-  type ZCodeAutomationRun,
-  type ZCodeAutomationRunOutcome,
+  type ZodyAutomation,
+  type ZodyAutomationRun,
+  type ZodyAutomationRunOutcome,
   type ModelSelection,
 } from "@zody/shared";
 import {
@@ -439,7 +439,7 @@ interface CronRunDispatchRequest {
   prompt: string;
   targetTaskId?: string;
   modelSelection?: ModelSelection;
-  mode?: ZCodeTaskMode;
+  mode?: ZodyTaskMode;
   workspacePath: string;
   workspaceIdentity?: string;
 }
@@ -488,7 +488,7 @@ function markCronRunOutcome(params: {
   workspaceKey: string;
   scheduledAt: number | null;
   trigger: "schedule" | "manual";
-  outcome: ZCodeAutomationRunOutcome;
+  outcome: ZodyAutomationRunOutcome;
   error?: string;
 }): void {
   void recordCronRunOutcomeBestEffort({
@@ -506,7 +506,7 @@ function disposeCronRunSubscription(key: string): void {
 }
 
 async function applyCronRunConfigToExistingTask(params: {
-  zcodeTaskService: IZCodeTaskService;
+  zcodeTaskService: IZodyTaskService;
   taskId: string;
   traceId: TraceId;
   modelSelection?: ModelSelection;
@@ -520,7 +520,7 @@ async function applyCronRunConfigToExistingTask(params: {
       traceId: params.traceId,
       modelSelection: params.modelSelection,
       thoughtLevel: params.modelSelection.options?.reasoningLevel,
-      mode: params.mode?.trim() as ZCodeTaskMode | undefined,
+      mode: params.mode?.trim() as ZodyTaskMode | undefined,
     });
     thoughtAppliedWithModel = true;
     modeAppliedWithModel = true;
@@ -544,7 +544,7 @@ async function applyCronRunConfigToExistingTask(params: {
 }
 
 function trackCronRunOutcome(params: {
-  zcodeTaskService: IZCodeTaskService;
+  zcodeTaskService: IZodyTaskService;
   taskId: string;
   traceId: TraceId;
   workspacePath: string;
@@ -603,7 +603,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
   sessionId: string;
 }> {
   const targetServices = resolveAutomationTargetServices(request);
-  const zcodeTaskService = targetServices.getOptional(IZCodeTaskService);
+  const zcodeTaskService = targetServices.getOptional(IZodyTaskService);
   if (!zcodeTaskService) {
     throw new Error("Zody task service is not initialized.");
   }
@@ -717,8 +717,8 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
 }
 
 async function dispatchManualAutomationRun(params: {
-  automation: ZCodeAutomation;
-  run: ZCodeAutomationRun;
+  automation: ZodyAutomation;
+  run: ZodyAutomationRun;
 }): Promise<void> {
   logger.info(
     `direct manual automation dispatch started automation=${params.automation.automationId} runId=${params.run.runId}`,
@@ -874,7 +874,7 @@ const workspaceTaskTracker = createHostWorkspaceTaskTracker((event) => {
   reportHostRunningTaskCount();
 });
 
-function isZCodeTaskMeta(value: unknown): value is ZCodeTaskMeta {
+function isZCodeTaskMeta(value: unknown): value is ZodyTaskMeta {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -888,7 +888,7 @@ function isZCodeTaskMeta(value: unknown): value is ZCodeTaskMeta {
 }
 
 function isRemoteMirrorableStreamEvent(
-  event: ZCodeStreamEvent,
+  event: ZodyStreamEvent,
 ): event is TaskStreamMirrorableEvent {
   return event.type !== "task_stream_mirror_batch" && event.type !== "task_snapshot_updated";
 }
@@ -902,8 +902,8 @@ function createReportingRemoteZCodeTaskService<T extends object>(
       taskId: string;
       traceId: TraceId;
       content: string;
-      attachments?: ZCodePromptAttachment[];
-    }) => Promise<{ content: string; attachments?: ZCodePromptAttachment[] }>;
+      attachments?: ZodyPromptAttachment[];
+    }) => Promise<{ content: string; attachments?: ZodyPromptAttachment[] }>;
   },
 ): T {
   const workspaceProxyState = createHostRemoteWorkspaceProxyState();
@@ -915,7 +915,7 @@ function createReportingRemoteZCodeTaskService<T extends object>(
     });
   }
 
-  function subscribeSessionMessageRequests(target: T, meta: ZCodeTaskMeta): void {
+  function subscribeSessionMessageRequests(target: T, meta: ZodyTaskMeta): void {
     const onDynamicWorkspaceEvent = Reflect.get(target, "onDynamicWorkspaceEvent");
     if (typeof onDynamicWorkspaceEvent !== "function") {
       return;
@@ -981,12 +981,12 @@ function createReportingRemoteZCodeTaskService<T extends object>(
     taskId: string;
     traceId: TraceId;
     content: string;
-    attachments?: ZCodePromptAttachment[];
+    attachments?: ZodyPromptAttachment[];
   }): Promise<{
     taskId: string;
     traceId: TraceId;
     content: string;
-    attachments?: ZCodePromptAttachment[];
+    attachments?: ZodyPromptAttachment[];
   }> {
     if (!options?.materializePromptAttachments) {
       return params;
@@ -1004,7 +1004,7 @@ function createReportingRemoteZCodeTaskService<T extends object>(
       taskId: string;
       traceId: TraceId;
       content: string;
-      attachments?: ZCodePromptAttachment[];
+      attachments?: ZodyPromptAttachment[];
     },
   ): Promise<unknown> {
     const taskRealtimePort = options?.taskRealtimePort;
@@ -1055,7 +1055,7 @@ function createReportingRemoteZCodeTaskService<T extends object>(
         ? dynamicStreamEvent.call(
             target,
             params.taskId,
-          )((event: ZCodeStreamEvent) => {
+          )((event: ZodyStreamEvent) => {
             if (isRemoteMirrorableStreamEvent(event)) {
               taskRealtimePort.publishStreamOp(mirrorTarget, {
                 kind: "stream_event",
@@ -1075,12 +1075,12 @@ function createReportingRemoteZCodeTaskService<T extends object>(
     }
   }
 
-  function finishWorkspaceTask(taskId: string, meta: ZCodeTaskMeta): void {
+  function finishWorkspaceTask(taskId: string, meta: ZodyTaskMeta): void {
     workspaceProxyState.disposeTaskReadySubscription(taskId);
     workspaceTaskTracker.finish(taskId, meta);
   }
 
-  function beginWorkspaceTask(target: T, taskId: string, meta: ZCodeTaskMeta): boolean {
+  function beginWorkspaceTask(target: T, taskId: string, meta: ZodyTaskMeta): boolean {
     const started = workspaceTaskTracker.begin(taskId, meta);
     if (!started) {
       return false;
@@ -1162,7 +1162,7 @@ function createReportingRemoteZCodeTaskService<T extends object>(
       }
 
       return async (...args: unknown[]) => {
-        let trackedTask: { taskId: string; meta: ZCodeTaskMeta; started: boolean } | undefined;
+        let trackedTask: { taskId: string; meta: ZodyTaskMeta; started: boolean } | undefined;
         let tracksOnlyRpcLifetime = false;
         try {
           const params = args[0];
@@ -1177,10 +1177,10 @@ function createReportingRemoteZCodeTaskService<T extends object>(
               taskId: string;
               traceId: TraceId;
               content: string;
-              attachments?: ZCodePromptAttachment[];
+              attachments?: ZodyPromptAttachment[];
             };
             const taskMeta = workspaceProxyState.getTaskMeta(promptParams.taskId) as
-              | ZCodeTaskMeta
+              | ZodyTaskMeta
               | undefined;
             if (taskMeta) {
               trackedTask = {
@@ -1336,7 +1336,7 @@ function warmUpZCodeAgent(
   }
   const workspacePath = context.workspacePath;
   const workspaceIdentity = context.workspaceIdentity;
-  const zcodeSessionService = services.getOptional(IZCodeSessionService);
+  const zcodeSessionService = services.getOptional(IZodySessionService);
   if (!zcodeSessionService) {
     return;
   }
@@ -1435,7 +1435,7 @@ let activeHostApiNetworkTransport: HostApiNetworkTransport | null = null;
 let activeLocalResourceTelemetry: IDisposable | null = null;
 // 资源管理器采样只在 main 请求时执行一次，Host 不维护任何周期定时器。
 const hostResourceUsageResponder = createHostResourceUsageResponder({
-  getAgentService: () => activeServices?.getOptional(IZCodeAgentService),
+  getAgentService: () => activeServices?.getOptional(IZodyAgentService),
   postMessage: (message) => parentPort?.postMessage(message),
 });
 let activeSessionRealtimePort: ReturnType<typeof createTaskRealtimeBridgeForHostInit> = null;
@@ -1537,7 +1537,7 @@ async function createWindowRemoteConnectionHandle(params: {
             taskId: string;
             traceId: TraceId | string;
             content: string;
-            attachments?: ZCodePromptAttachment[];
+            attachments?: ZodyPromptAttachment[];
           }) => {
             const result = await materializeRemotePromptAttachments(request, {
               backend: backendConnection.backend,
@@ -1585,7 +1585,7 @@ async function createWindowRemoteConnectionHandle(params: {
       .then((settings) => settings.dynamicWorkflowMode)
       .catch(() => undefined);
     await pushDynamicWorkflowUserModeToRemoteHosts(
-      [{ target: params.target, zcodeAgentService: services.get(IZCodeAgentService) }],
+      [{ target: params.target, zcodeAgentService: services.get(IZodyAgentService) }],
       dynamicWorkflowUserMode,
       (error) => logger.warn("remote dynamic workflow user mode push failed", error),
     );
@@ -1658,7 +1658,7 @@ const windowRemoteConnectionRegistry = createWindowRemoteConnectionRegistry<
   connect: (request) => createWindowRemoteConnectionHandle(request),
   createId: randomUUID,
   releaseWorkspace: async (services, context) => {
-    await services.get(IZCodeTaskService).releaseWorkspacePreparation({
+    await services.get(IZodyTaskService).releaseWorkspacePreparation({
       workspacePath: context.workspacePath,
       ...(context.workspaceIdentity ? { workspaceIdentity: context.workspaceIdentity } : {}),
       provider: "glm",
@@ -1753,8 +1753,8 @@ const windowHostControllerRuntime = createWindowHostControllerRuntime({
       const services = windowRemoteConnectionRegistry.resolveScopedServices(controllerScope);
       return {
         scope: controllerScope,
-        taskService: services.get(IZCodeTaskService),
-        agentService: services.getOptional(IZCodeAgentService),
+        taskService: services.get(IZodyTaskService),
+        agentService: services.getOptional(IZodyAgentService),
         sourceAvailability: "online" as const,
       };
     }
@@ -1762,7 +1762,7 @@ const windowHostControllerRuntime = createWindowHostControllerRuntime({
     if (scope.workspaceIdentity && isRemoteWorkspaceIdentity(scope.workspaceIdentity)) {
       return null;
     }
-    const taskService = activeServices?.getOptional(IZCodeTaskService);
+    const taskService = activeServices?.getOptional(IZodyTaskService);
     if (!taskService) {
       return null;
     }
@@ -1773,7 +1773,7 @@ const windowHostControllerRuntime = createWindowHostControllerRuntime({
         ...(scope.workspaceIdentity ? { workspaceIdentity: scope.workspaceIdentity } : {}),
       },
       taskService,
-      agentService: activeServices?.getOptional(IZCodeAgentService),
+      agentService: activeServices?.getOptional(IZodyAgentService),
       sourceAvailability: "online" as const,
     };
   },
@@ -1805,9 +1805,9 @@ type ExposedServicePortHandle = {
 };
 
 function createControllerRoutedTaskService(
-  base: IZCodeTaskService,
+  base: IZodyTaskService,
   attachmentScope: WindowHostAttachmentScope,
-): IZCodeTaskService {
+): IZodyTaskService {
   const route = async (
     params: {
       taskId: string;
@@ -1834,7 +1834,7 @@ function createControllerRoutedTaskService(
   return new Proxy(base, {
     get(target, property, receiver) {
       if (property === "setTaskPinned") {
-        return async (params: Parameters<IZCodeTaskService["setTaskPinned"]>[0]) => {
+        return async (params: Parameters<IZodyTaskService["setTaskPinned"]>[0]) => {
           const meta = await route(params, { kind: "pin", pinned: params.pinned });
           if (!meta) throw new Error("pin mutation 后 task 投影缺失");
           return meta;
@@ -1843,8 +1843,8 @@ function createControllerRoutedTaskService(
       if (property === "archiveTask" || property === "unarchiveTask") {
         return async (
           params:
-            | Parameters<IZCodeTaskService["archiveTask"]>[0]
-            | Parameters<IZCodeTaskService["unarchiveTask"]>[0],
+            | Parameters<IZodyTaskService["archiveTask"]>[0]
+            | Parameters<IZodyTaskService["unarchiveTask"]>[0],
         ) => {
           const meta = await route(params, {
             kind: "archive",
@@ -1855,12 +1855,12 @@ function createControllerRoutedTaskService(
         };
       }
       if (property === "deleteTask") {
-        return async (params: Parameters<IZCodeTaskService["deleteTask"]>[0]) => {
+        return async (params: Parameters<IZodyTaskService["deleteTask"]>[0]) => {
           await route(params, { kind: "delete" });
         };
       }
       if (property === "deleteArchivedTasks") {
-        return async (params: Parameters<IZCodeTaskService["deleteArchivedTasks"]>[0]) => {
+        return async (params: Parameters<IZodyTaskService["deleteArchivedTasks"]>[0]) => {
           if (params.taskIds.length === 0) {
             return { deletedTaskIds: [], skippedTaskIds: [], failedTaskIds: [] };
           }
@@ -1877,7 +1877,7 @@ function createControllerRoutedTaskService(
         };
       }
       if (property === "deleteArchivedTask") {
-        return async (params: Parameters<IZCodeTaskService["deleteArchivedTask"]>[0]) =>
+        return async (params: Parameters<IZodyTaskService["deleteArchivedTask"]>[0]) =>
           windowHostControllerRuntime.service.deleteArchivedTask({
             address: await windowHostControllerRuntime.resolveTaskAddress({
               ...params,
@@ -1887,7 +1887,7 @@ function createControllerRoutedTaskService(
           });
       }
       if (property === "setTaskUnread") {
-        return async (params: Parameters<IZCodeTaskService["setTaskUnread"]>[0]) => {
+        return async (params: Parameters<IZodyTaskService["setTaskUnread"]>[0]) => {
           const meta = await route(
             params,
             params.unread
@@ -1916,7 +1916,7 @@ function exposeServicesOnMessagePort(
   port: Electron.MessagePortMain,
   services: ServiceCollection,
   deferInit: boolean,
-  clientMode: ZCodeAgentV4ClientMode = "desktop-continuous",
+  clientMode: ZodyAgentV4ClientMode = "desktop-continuous",
   attachmentScope: WindowHostAttachmentScope = { kind: "local" },
   capabilities?: HostRemoteConnectionCapabilities,
   mobileNotificationPrincipal?: MobileNotificationPrincipal,
@@ -1930,7 +1930,7 @@ function exposeServicesOnMessagePort(
   const rawServer = new ChannelServer(protocol, "host", 1000, deferInit);
   const loggedServer = new LoggingChannelServer(rawServer, logRpc);
   const server = new NetworkTelemetryChannelServer(loggedServer);
-  const agentService = services.getOptional(IZCodeAgentService);
+  const agentService = services.getOptional(IZodyAgentService);
   const connectionScope = agentService
     ? createZCodeAgentConnectionScope(agentService, {
         connectionId: `host-rpc-${randomUUID()}`,
@@ -1950,15 +1950,15 @@ function exposeServicesOnMessagePort(
   if (remoteMediaPreviewProxy) {
     overrides.set(IMediaPreviewService.channelName, remoteMediaPreviewProxy.service);
   }
-  const taskService = services.getOptional(IZCodeTaskService);
+  const taskService = services.getOptional(IZodyTaskService);
   if (taskService) {
     overrides.set(
-      IZCodeTaskService.channelName,
+      IZodyTaskService.channelName,
       createControllerRoutedTaskService(taskService, attachmentScope),
     );
   }
   if (connectionScope) {
-    overrides.set(IZCodeAgentService.channelName, connectionScope.service);
+    overrides.set(IZodyAgentService.channelName, connectionScope.service);
   }
   // fork（F4.8）：会话分享服务的 attachment connection scope 覆盖随分享功能删除。
   services.exposeOnChannelServer(server, overrides);
@@ -2335,7 +2335,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
       try {
         const dispatchResult = await dispatchCronRun({
           ...msg,
-          mode: msg.mode as ZCodeTaskMode | undefined,
+          mode: msg.mode as ZodyTaskMode | undefined,
         });
         parentPort.postMessage({
           type: HostResponseTypes.CronRunResult,
@@ -2400,7 +2400,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
   }
 
   if (msg.type === HostMessageTypes.SessionMessageDeliver) {
-    const zcodeTaskService = activeServices?.getOptional(IZCodeTaskService);
+    const zcodeTaskService = activeServices?.getOptional(IZodyTaskService);
     if (!zcodeTaskService) {
       parentPort.postMessage({
         type: HostResponseTypes.SessionMessageDeliverResult,
@@ -2439,7 +2439,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
   }
 
   if (msg.type === HostMessageTypes.SessionMessageDeliveryResult) {
-    const zcodeTaskService = activeServices?.getOptional(IZCodeTaskService);
+    const zcodeTaskService = activeServices?.getOptional(IZodyTaskService);
     if (!zcodeTaskService) {
       logger.warn("session message delivery result received before ZCode task service initialized");
       return;
@@ -2555,7 +2555,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
               const services = windowRemoteConnectionRegistry.resolveScopedServices(nextScope);
               await windowHostControllerRuntime.replaceDisconnectedSource(previousScope, {
                 scope: nextScope,
-                taskService: services.get(IZCodeTaskService),
+                taskService: services.get(IZodyTaskService),
                 sourceAvailability: "online",
               });
             } catch (error) {
@@ -2829,7 +2829,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
                     .listReadyConnections()
                     .map(({ target, services: remoteServices }) => ({
                       target,
-                      zcodeAgentService: remoteServices.get(IZCodeAgentService),
+                      zcodeAgentService: remoteServices.get(IZodyAgentService),
                     })),
                   mode,
                   (error) => logger.warn("remote dynamic workflow user mode forward failed", error),
@@ -2906,7 +2906,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
             return initializedServices;
           },
         });
-        const zcodeTaskService = services.getOptional(IZCodeTaskService);
+        const zcodeTaskService = services.getOptional(IZodyTaskService);
         if (zcodeTaskService) {
           const reportingZCodeTaskService = createReportingRemoteZCodeTaskService(
             zcodeTaskService,
@@ -2914,7 +2914,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
               reportRunningPromptCount: false,
             },
           );
-          services.register(IZCodeTaskService, reportingZCodeTaskService);
+          services.register(IZodyTaskService, reportingZCodeTaskService);
         }
         wireLocalResourceTelemetry(services);
         hasDisposedHostResources = false;

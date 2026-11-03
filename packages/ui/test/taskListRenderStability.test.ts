@@ -2,7 +2,7 @@ import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 
 const {
   memoTaskItemCalls,
@@ -73,7 +73,7 @@ vi.mock("@/TaskListLoadingHint.js", () => ({
 vi.mock("@/TaskListItem.js", () => ({
   MemoTaskItem: (props: Record<string, unknown>) => {
     memoTaskItemCalls.push(props);
-    return createElement("li", null, (props.task as ZCodeTaskMeta).title);
+    return createElement("li", null, (props.task as ZodyTaskMeta).title);
   },
   TaskListItemContextMenuContent: (props: Record<string, unknown>) => {
     taskListItemContextMenuContentCalls.push(props);
@@ -81,7 +81,7 @@ vi.mock("@/TaskListItem.js", () => ({
   },
 }));
 
-function createTask(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTask(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -333,7 +333,7 @@ describe("TaskList render stability", () => {
     });
 
     const untouchedRowInitialProps = memoTaskItemCalls.find(
-      (props) => (props.task as ZCodeTaskMeta).taskId === "task-2",
+      (props) => (props.task as ZodyTaskMeta).taskId === "task-2",
     );
     expect(untouchedRowInitialProps).toBeDefined();
 
@@ -345,7 +345,7 @@ describe("TaskList render stability", () => {
 
     const untouchedRowUpdatedProps = memoTaskItemCalls
       .slice(2)
-      .find((props) => (props.task as ZCodeTaskMeta).taskId === "task-2");
+      .find((props) => (props.task as ZodyTaskMeta).taskId === "task-2");
     expect(untouchedRowUpdatedProps).toBeDefined();
     expect(untouchedRowUpdatedProps?.onSelectTask).toBe(untouchedRowInitialProps?.onSelectTask);
     expect(untouchedRowUpdatedProps?.onArchiveTaskInline).toBe(

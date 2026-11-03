@@ -1,13 +1,13 @@
 /* oxlint-disable eslint(max-lines) -- 当前文件承接 task 级状态切片，先保持最小改动修复草稿逻辑，后续再统一拆分 */
 import {
   normalizeAgentProviderToZCodeAgent,
-  type ZCodeApiRetryStatus,
-  type ZCodeConfigOption,
-  type ZCodePermissionRequest,
-  type ZCodeElicitationRequest,
-  type ZCodeProvider,
-  type ZCodeTaskRuntimeStatus,
-  type ZCodeTaskMeta,
+  type ZodyApiRetryStatus,
+  type ZodyConfigOption,
+  type ZodyPermissionRequest,
+  type ZodyElicitationRequest,
+  type ZodyProvider,
+  type ZodyTaskRuntimeStatus,
+  type ZodyTaskMeta,
 } from "@zody/shared";
 import type { ZCodeUiError } from "@/lib/zodyUiError.js";
 import { removeTaskFromHistory } from "@/lib/taskNavigationHistory.js";
@@ -36,7 +36,7 @@ type SetFn = (
     | ((state: ZCodeSessionStoreState) => ZCodeSessionStoreState | Partial<ZCodeSessionStoreState>),
 ) => void;
 
-function sortTasksByUpdatedAt(tasks: readonly ZCodeTaskMeta[]): ZCodeTaskMeta[] {
+function sortTasksByUpdatedAt(tasks: readonly ZodyTaskMeta[]): ZodyTaskMeta[] {
   return [...tasks].sort((left, right) => {
     if (right.updatedAt !== left.updatedAt) {
       return right.updatedAt - left.updatedAt;
@@ -49,8 +49,8 @@ function sortTasksByUpdatedAt(tasks: readonly ZCodeTaskMeta[]): ZCodeTaskMeta[] 
 }
 
 function arePermissionOptionsEqual(
-  left: ZCodePermissionRequest["options"],
-  right: ZCodePermissionRequest["options"],
+  left: ZodyPermissionRequest["options"],
+  right: ZodyPermissionRequest["options"],
 ): boolean {
   if (left.length !== right.length) {
     return false;
@@ -71,8 +71,8 @@ function arePermissionOptionsEqual(
 }
 
 function arePermissionRequestsEquivalent(
-  left: ZCodePermissionRequest,
-  right: ZCodePermissionRequest,
+  left: ZodyPermissionRequest,
+  right: ZodyPermissionRequest,
 ): boolean {
   if (left === right) {
     return true;
@@ -200,10 +200,10 @@ export function createTaskSlice(set: SetFn) {
     setTaskRuntimeState: (
       workspacePath: string,
       taskId: string,
-      status: ZCodeTaskRuntimeStatus,
+      status: ZodyTaskRuntimeStatus,
       error?: string | null,
       workspaceIdentity?: string,
-      provider?: ZCodeProvider,
+      provider?: ZodyProvider,
     ) => {
       set((state) =>
         updateWorkspaceState(
@@ -309,7 +309,7 @@ export function createTaskSlice(set: SetFn) {
     setTaskApiRetryStatus: (
       workspacePath: string,
       taskId: string,
-      apiRetry: ZCodeApiRetryStatus | null,
+      apiRetry: ZodyApiRetryStatus | null,
       workspaceIdentity?: string,
     ) => {
       set((state) =>
@@ -334,7 +334,7 @@ export function createTaskSlice(set: SetFn) {
     setTaskConfigOptions: (
       workspacePath: string,
       taskId: string,
-      options: ZCodeConfigOption[],
+      options: ZodyConfigOption[],
       workspaceIdentity?: string,
       status: ConfigOptionsStatus = "ready",
     ) => {
@@ -376,7 +376,7 @@ export function createTaskSlice(set: SetFn) {
     setTaskPermissionRequest: (
       workspacePath: string,
       taskId: string,
-      request: ZCodePermissionRequest | null,
+      request: ZodyPermissionRequest | null,
       workspaceIdentity?: string,
     ) => {
       set((state) =>
@@ -523,7 +523,7 @@ export function createTaskSlice(set: SetFn) {
     setTaskElicitationRequest: (
       workspacePath: string,
       taskId: string,
-      request: ZCodeElicitationRequest | null,
+      request: ZodyElicitationRequest | null,
       workspaceIdentity?: string,
     ) => {
       set((state) =>
@@ -737,8 +737,8 @@ export function createTaskSlice(set: SetFn) {
     initializeBackgroundTaskRuntime: (
       workspacePath: string,
       params: {
-        task: ZCodeTaskMeta;
-        provider: ZCodeProvider;
+        task: ZodyTaskMeta;
+        provider: ZodyProvider;
         activeInputId: string;
         workspaceIdentity?: string;
       },
@@ -791,7 +791,7 @@ export function createTaskSlice(set: SetFn) {
 
     upsertOptimisticTaskListItem: (
       workspacePath: string,
-      task: ZCodeTaskMeta,
+      task: ZodyTaskMeta,
       workspaceIdentity?: string,
     ) => {
       set((state) =>

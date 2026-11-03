@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildCustomSupplierKey,
-  type ZCodeError,
-  type ZCodeConfigOption,
-  type ZCodePermissionRequest,
-  type ZCodeTaskMeta,
+  type ZodyError,
+  type ZodyConfigOption,
+  type ZodyPermissionRequest,
+  type ZodyTaskMeta,
 } from "@zody/shared";
 import {
   DEFAULT_TASK_UI_STATE,
@@ -35,7 +35,7 @@ function createStorageMock(initial: Record<string, string> = {}) {
   };
 }
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: "task-1",
     traceId: "trace-1",
@@ -50,8 +50,8 @@ function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
 }
 
 function createPermissionRequest(
-  overrides: Partial<ZCodePermissionRequest> = {},
-): ZCodePermissionRequest {
+  overrides: Partial<ZodyPermissionRequest> = {},
+): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId: "task-1",
@@ -71,7 +71,7 @@ function createPermissionRequest(
   };
 }
 
-function createZCodeError(overrides: Partial<ZCodeError> = {}): ZCodeError {
+function createZCodeError(overrides: Partial<ZodyError> = {}): ZodyError {
   return {
     code: "SEND_FAILED",
     message: "命令执行失败",
@@ -92,7 +92,7 @@ function createComposerDraft(
   };
 }
 
-function createModelConfigOption(currentValue: string): ZCodeConfigOption {
+function createModelConfigOption(currentValue: string): ZodyConfigOption {
   return {
     id: "model",
     name: "Model",
@@ -103,7 +103,7 @@ function createModelConfigOption(currentValue: string): ZCodeConfigOption {
   };
 }
 
-function createModeConfigOption(currentValue: string): ZCodeConfigOption {
+function createModeConfigOption(currentValue: string): ZodyConfigOption {
   return {
     id: "mode",
     name: "Mode",
@@ -118,7 +118,7 @@ function createModeConfigOption(currentValue: string): ZCodeConfigOption {
   };
 }
 
-function createThoughtConfigOption(currentValue: string): ZCodeConfigOption {
+function createThoughtConfigOption(currentValue: string): ZodyConfigOption {
   return {
     id: "thought_level",
     name: "Thought Level",
@@ -134,7 +134,7 @@ function createThoughtConfigOption(currentValue: string): ZCodeConfigOption {
 }
 
 function readModelConfigValue(
-  options: readonly ZCodeConfigOption[] | null | undefined,
+  options: readonly ZodyConfigOption[] | null | undefined,
 ): string | null {
   const modelOption = options?.find(
     (option) => option.category === "model" && option.type === "select",
@@ -142,7 +142,7 @@ function readModelConfigValue(
   return typeof modelOption?.currentValue === "string" ? modelOption.currentValue : null;
 }
 
-function readModeConfigOption(options: readonly ZCodeConfigOption[] | null | undefined) {
+function readModeConfigOption(options: readonly ZodyConfigOption[] | null | undefined) {
   return options?.find((option) => option.category === "mode" && option.type === "select") ?? null;
 }
 

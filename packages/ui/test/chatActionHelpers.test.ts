@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 import { readCurrentZCodeMode } from "../src/hooks/chatActionHelpers.js";
 
-function createModeOption(currentValue: string | boolean): ZCodeConfigOption {
+function createModeOption(currentValue: string | boolean): ZodyConfigOption {
   return {
     id: "mode",
     name: "Mode",
@@ -27,7 +27,7 @@ describe("chatActionHelpers", () => {
 
   it("does not normalize retired provider-native agent mode ids", () => {
     const readMode = readCurrentZCodeMode as (
-      options: readonly ZCodeConfigOption[],
+      options: readonly ZodyConfigOption[],
       provider?: string,
     ) => unknown;
     expect(readCurrentZCodeMode([createModeOption("agent")])).toBeUndefined();

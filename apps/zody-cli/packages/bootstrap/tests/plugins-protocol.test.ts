@@ -51,7 +51,7 @@ import {
   validatePlugin,
 } from "../src/zody-protocol/plugins.js";
 import { withPluginStorageLock } from "../src/lib/plugin-storage-lock.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 afterAll(async () => {
   await rm(FAKE_HOME, { force: true, recursive: true });
@@ -81,7 +81,7 @@ describe("plugins protocol contracts", () => {
 
     try {
       await lockEntered;
-      const mutation = addPluginMarketplace({} as ZCodeProtocolAgentServerContext, {
+      const mutation = addPluginMarketplace({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
         source: "unsupported-marketplace-source",
       }).then(
@@ -201,7 +201,7 @@ describe("plugins protocol contracts", () => {
         JSON.stringify({ name: "workspace-demo" }),
       );
 
-      const result = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+      const result = await listPlugins({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
       });
 
@@ -232,11 +232,11 @@ describe("plugins protocol contracts", () => {
         }),
       );
 
-      const userResult = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+      const userResult = await listPlugins({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
         configScope: "user",
       });
-      const workspaceResult = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+      const workspaceResult = await listPlugins({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
         configScope: "workspace",
       });
@@ -280,7 +280,7 @@ describe("plugins protocol contracts", () => {
         }),
       );
 
-      const result = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+      const result = await listPlugins({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
         configScope: "workspace",
       });
@@ -306,7 +306,7 @@ describe("plugins protocol contracts", () => {
         }),
       );
 
-      const result = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+      const result = await listPlugins({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
         configScope: "workspace",
       });
@@ -329,7 +329,7 @@ describe("plugins protocol contracts", () => {
     process.env.ZCODE_STORAGE_DIR = join(root, "cli");
 
     try {
-      const result = await listPlugins({} as ZCodeProtocolAgentServerContext, {
+      const result = await listPlugins({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
       });
       expect(
@@ -461,7 +461,7 @@ async function writeKnownMarketplaces(
 // 因此用 ZCODE_STORAGE_DIR 把存储根锚定到临时目录（storage.dir 以 "cli" 结尾时
 // getCliStorageRoot 原样返回，故 pluginStorageRoot = <storageDir>/plugins）。
 describe("updatePlugin handler diagnostics", () => {
-  const noopContext = {} as unknown as ZCodeProtocolAgentServerContext;
+  const noopContext = {} as unknown as ZodyProtocolAgentServerContext;
   let previousStorageDir: string | undefined;
 
   beforeEach(() => {
@@ -543,7 +543,7 @@ describe("updatePlugin handler diagnostics", () => {
 // <storageDir>/plugins）；suppressedBuiltins 必须写到 handler 实际解析的 user config，即
 // ~/.zody/cli/config.json（文件头部已把 homedir 重定向到 FAKE_HOME，故落在隔离目录）。
 describe("restoreBuiltinPlugin handler", () => {
-  const noopContext = {} as unknown as ZCodeProtocolAgentServerContext;
+  const noopContext = {} as unknown as ZodyProtocolAgentServerContext;
   const builtinId = "skill-creator@zcode-plugins-official";
   const userConfigPath = join(FAKE_HOME, ".zody", "cli", "config.json");
   let previousStorageDir: string | undefined;
@@ -635,7 +635,7 @@ describe("restoreBuiltinPlugin handler", () => {
 
 // I06：读投影绕过长写队列；缺 manifest 的并发初始化不丢写。
 describe("plugin storage read scheduling", () => {
-  const noopContext = {} as unknown as ZCodeProtocolAgentServerContext;
+  const noopContext = {} as unknown as ZodyProtocolAgentServerContext;
   let previousStorageDir: string | undefined;
 
   beforeEach(() => {

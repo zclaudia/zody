@@ -1,10 +1,10 @@
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { getTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 
-export function WorkspaceLastActivity({ task }: { task: ZCodeTaskMeta | null }) {
+export function WorkspaceLastActivity({ task }: { task: ZodyTaskMeta | null }) {
   const { intl } = useZCodeIntl();
   const [now, setNow] = useState(Date.now);
   useEffect(() => {

@@ -12,8 +12,8 @@ import { readBackgroundBashOutputFromOwner } from "./background-work-owner.js";
 import {
   isConversationRealUserTurnStarter,
   parseRemoteWorkspaceIdentity,
-  type ZCodeSessionContextUsage,
-  type ZCodeWorkspaceRef,
+  type ZodySessionContextUsage,
+  type ZodyWorkspaceRef,
 } from "@zody/shared";
 import { createExternalTurnFaultError } from "@zody/core";
 import {
@@ -102,8 +102,8 @@ import {
   readSessionContextUsage,
 } from "./server-operations.js";
 import type {
-  ZCodeProtocolAgentServerContext,
-  ZCodeProtocolSessionRecord,
+  ZodyProtocolAgentServerContext,
+  ZodyProtocolSessionRecord,
 } from "./server-types.js";
 import { createProtocolLogger } from "./server-types.js";
 
@@ -116,7 +116,7 @@ function normalizeStoredTitleSource(
 }
 
 function sessionUsageSeedFromRuntimeContextUsage(
-  contextUsage: ZCodeSessionContextUsage | undefined,
+  contextUsage: ZodySessionContextUsage | undefined,
   contextWindowOverride?: number,
 ): SessionUsageSeed | null {
   if (!contextUsage || contextUsage.used <= 0) {
@@ -149,7 +149,7 @@ function stableForkMode(value: string, fallback: CollaborationMode): Collaborati
 }
 
 async function readConversationFileChanges(
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
   sessionId: string,
   messageIds: readonly string[],
   targetTurnId?: TurnId | null,
@@ -176,9 +176,9 @@ async function readConversationFileChanges(
  * 事件 id / traceId 照 transcript hydration 的合成事件；sequenceNumber 由 cold merge 统一重排。
  */
 async function replayDynamicWorkflowRunEvents(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
   memoryEvents: readonly SessionEvent[],
 ): Promise<SessionEvent[]> {
   if (context.sessions.get(sessionId) !== record) return [];
@@ -214,9 +214,9 @@ async function replayDynamicWorkflowRunEvents(
 }
 
 async function resolveConversationBackingRecord(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
-): Promise<ZCodeProtocolSessionRecord | undefined> {
+): Promise<ZodyProtocolSessionRecord | undefined> {
   const direct = context.sessions.get(sessionId);
   if (direct) return direct;
 
@@ -230,7 +230,7 @@ async function resolveConversationBackingRecord(
 }
 
 async function previewConversationFileRewind(
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
   messageIds: readonly string[],
   targetTurnId?: TurnId | null,
 ): Promise<V4ConversationFileRewindPreviewResult> {
@@ -454,7 +454,7 @@ function buildForkInitialInput(
 }
 
 async function recordForkStartFailureBestEffort(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
   command: Pick<CommandEnvelope, "commandId">,
   error: unknown,
@@ -539,8 +539,8 @@ async function recordForkStartFailureBestEffort(
  * 该阶段失败必须留下可重试事实与 warning，但不能把 durable accepted child 反转成 failed。
  */
 export async function registerCommittedForkBestEffort(
-  context: ZCodeProtocolAgentServerContext,
-  record: ZCodeProtocolSessionRecord,
+  context: ZodyProtocolAgentServerContext,
+  record: ZodyProtocolSessionRecord,
   fork: Parameters<typeof registerForkedSession>[2],
   options: Parameters<typeof registerForkedSession>[3] & { commandId: string },
   register: typeof registerForkedSession = registerForkedSession,
@@ -573,7 +573,7 @@ export async function registerCommittedForkBestEffort(
 // transcript metadata.highspeed）随加速卡全链路删除；存量 metadata.highspeed 不再读取。
 
 export function createConversationV4Gateway(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
 ): ConversationV4Gateway {
   const log = createProtocolLogger(context.deps)?.child({
     module: "bootstrap.zcode_protocol_v4_gateway",
@@ -601,7 +601,7 @@ export function createConversationV4Gateway(
   let nativeExecutor: V4CommandExecutor;
   const autoDrainRetryTimers = new Map<string, ReturnType<typeof setTimeout>>();
   // fork（F4.2）：queuedTurnExecutions（加速执行材料的 CLI 内存暂存）随加速卡全链路删除。
-  const autoDrainV4QueueIfReady = async (record: ZCodeProtocolSessionRecord): Promise<void> => {
+  const autoDrainV4QueueIfReady = async (record: ZodyProtocolSessionRecord): Promise<void> => {
     const head = context.v4Gateway?.getQueueHead(record.app.sessionId);
     if (!head) {
       // 外层恢复 FIFO 已消费到空；guide 仍只由 core tool-batch 边界行内消费。
@@ -675,7 +675,7 @@ export function createConversationV4Gateway(
       });
     }
   };
-  const scheduleAutoDrainRetry = (record: ZCodeProtocolSessionRecord): void => {
+  const scheduleAutoDrainRetry = (record: ZodyProtocolSessionRecord): void => {
     const sessionId = record.app.sessionId;
     if (autoDrainRetryTimers.has(sessionId)) return;
     const timer = setTimeout(() => {
@@ -1075,7 +1075,7 @@ export function createConversationV4Gateway(
     // fork（F4.2）：setHighspeedMetrics 宿主实现随加速卡全链路删除。
     // ── 过渡钩子（死期 = M5 波次 2）──────────────────────────────
     ensureModelReady: (record) =>
-      ensureSessionModelAvailableForNextTurn(context, record as ZCodeProtocolSessionRecord),
+      ensureSessionModelAvailableForNextTurn(context, record as ZodyProtocolSessionRecord),
     // 切模型前确认目标 Provider 已存在于当前 Environment Registry。普通模型命令只提交
     // Selection；Provider 事实始终由 Worker 自己的 Registry 解释。
     ensureProviderAvailable: async (sessionId, providerId) => {
@@ -1087,8 +1087,8 @@ export function createConversationV4Gateway(
       return { available: true };
     },
     afterLegacyStateMutation: async (record, reason) => {
-      await afterStateMutation(context, record as ZCodeProtocolSessionRecord, reason);
-      await autoDrainV4QueueIfReady(record as ZCodeProtocolSessionRecord);
+      await afterStateMutation(context, record as ZodyProtocolSessionRecord, reason);
+      await autoDrainV4QueueIfReady(record as ZodyProtocolSessionRecord);
     },
     // deleteSession 的执行面：内联旧 closeSession op 的 4 步（不 import 旧 op——
     // 语义与 server-operations.ts closeSession 对齐，随会话注册表归 v4 后收编）。
@@ -1479,7 +1479,7 @@ export function createConversationV4Gateway(
     resumePersistedSession: async (
       sessionId,
       resumeThoughtLevel,
-      workspace?: ZCodeWorkspaceRef,
+      workspace?: ZodyWorkspaceRef,
     ) => {
       const persisted = await context.deps.sessionStore?.getSession(sessionId as SessionId);
       if (!persisted) {

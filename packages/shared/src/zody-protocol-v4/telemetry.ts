@@ -302,7 +302,7 @@ type TurnStartedConversationTelemetryFact = Extract<
   ConversationTelemetryFactBase,
   { kind: "turn.started" }
 > &
-  import("../zody-task-types-core.js").ZCodeBackgroundTurnAttribution;
+  import("../zody-task-types-core.js").ZodyBackgroundTurnAttribution;
 
 export type ConversationTelemetryFact =
   | Exclude<ConversationTelemetryFactBase, { kind: "turn.started" }>

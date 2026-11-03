@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   ZCODE_PROTOCOL_NAME,
   ZCODE_PROTOCOL_VERSION,
-  type ZCodeMessageWithParts,
-  type ZCodeSessionStateSnapshot,
-  type ZCodeTaskSnapshot,
+  type ZodyMessageWithParts,
+  type ZodySessionStateSnapshot,
+  type ZodyTaskSnapshot,
 } from "@zody/shared";
 import {
   readDesktopContinuousSessionRestoreSnapshot,
@@ -21,8 +21,8 @@ const model = { providerId: "glm", modelId: "glm-4.6" };
 
 function createSnapshot(params: {
   title?: string;
-  messages?: ZCodeMessageWithParts[];
-} = {}): ZCodeSessionStateSnapshot {
+  messages?: ZodyMessageWithParts[];
+} = {}): ZodySessionStateSnapshot {
   return {
     protocol: {
       name: ZCODE_PROTOCOL_NAME,
@@ -74,7 +74,7 @@ function createSnapshot(params: {
   };
 }
 
-function createLegacyTaskSnapshot(): ZCodeTaskSnapshot {
+function createLegacyTaskSnapshot(): ZodyTaskSnapshot {
   return {
     meta: {
       taskId: "sess_1",

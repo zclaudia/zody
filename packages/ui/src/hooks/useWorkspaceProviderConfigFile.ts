@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ZCodeProvider } from "@zody/shared";
+import type { ZodyProvider } from "@zody/shared";
 import { logger } from "@/logger.js";
 import { shouldEnableWorkspaceRpc } from "@/lib/workspaceRpcAvailability.js";
 import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { useResolvedRemoteWorkspaceSessionId } from "@/hooks/useResolvedRemoteWorkspaceSessionId.js";
-import type { IZCodeTaskService } from "@zody/services";
+import type { IZodyTaskService } from "@zody/services";
 
 interface WorkspaceProviderConfigFileState {
   path: string | null;
@@ -40,10 +40,10 @@ type WorkspaceProviderConfigServiceScope = "workspace" | "base";
 
 export function resolveWorkspaceProviderConfigZCodeService(params: {
   configuredServiceScope: WorkspaceProviderConfigServiceScope;
-  workspaceZCodeService: IZCodeTaskService;
-  baseZCodeService: IZCodeTaskService | null;
+  workspaceZCodeService: IZodyTaskService;
+  baseZCodeService: IZodyTaskService | null;
   remoteSessionId: string | null;
-}): IZCodeTaskService | null {
+}): IZodyTaskService | null {
   if (params.configuredServiceScope === "workspace") {
     return params.workspaceZCodeService;
   }
@@ -69,7 +69,7 @@ export function resolveWorkspaceProviderConfigZCodeService(params: {
  */
 export function useWorkspaceProviderConfigFile(
   workspacePath: string,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   preferredRemoteSessionId?: string | null,
   workspaceIdentity?: string,
   options?: {

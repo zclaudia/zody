@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySessionStore.js";
 
 /**
@@ -12,7 +12,7 @@ import { selectWorkspaceZCodeState, useZCodeSessionStore } from "@/store/zodySes
  * providerId（团队套餐的它是一个 UUID）。
  */
 function workflowSubagentProviderNameLookup(
-  configOptions: readonly ZCodeConfigOption[] | null | undefined,
+  configOptions: readonly ZodyConfigOption[] | null | undefined,
 ): ((providerId: string) => string | undefined) | undefined {
   const entries = configOptions?.find((option) => option.category === "model")?.options;
   if (entries === undefined) {

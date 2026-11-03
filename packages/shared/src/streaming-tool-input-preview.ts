@@ -1,17 +1,17 @@
-export interface ZCodeStreamingToolInputState {
+export interface ZodyStreamingToolInputState {
   deltaCount?: number;
   lastPreviewAt?: number;
   lastPreviewRawInputLength?: number;
   rawInput: string;
 }
 
-export interface ZCodeStreamingToolInputPreview {
+export interface ZodyStreamingToolInputPreview {
   complete: boolean;
   input: unknown;
   rawInput: string;
 }
 
-export type ZCodeStreamingToolInputPreviewMode = "active-live" | "background-summary";
+export type ZodyStreamingToolInputPreviewMode = "active-live" | "background-summary";
 
 export const ZCODE_ACTIVE_STREAMING_TOOL_INPUT_EAGER_DELTA_COUNT = 1;
 export const ZCODE_ACTIVE_STREAMING_TOOL_INPUT_PREVIEW_MIN_INTERVAL_MS = 750;
@@ -52,9 +52,9 @@ const PARTIAL_JSON_STRING_FIELD_KEYS = [
 ] as const;
 
 export function appendZCodeStreamingToolInputDelta(
-  state: ZCodeStreamingToolInputState | undefined,
+  state: ZodyStreamingToolInputState | undefined,
   delta: string,
-): ZCodeStreamingToolInputState {
+): ZodyStreamingToolInputState {
   return {
     ...state,
     deltaCount: (state?.deltaCount ?? 0) + 1,
@@ -65,7 +65,7 @@ export function appendZCodeStreamingToolInputDelta(
 export function buildZCodeStreamingToolInputPreview(
   rawInput: string,
   completeInput?: unknown,
-): ZCodeStreamingToolInputPreview {
+): ZodyStreamingToolInputPreview {
   if (completeInput !== undefined) {
     return {
       complete: true,
@@ -91,9 +91,9 @@ export function buildZCodeStreamingToolInputPreview(
 }
 
 export function shouldMaterializeZCodeStreamingToolInputPreview(
-  state: ZCodeStreamingToolInputState,
+  state: ZodyStreamingToolInputState,
   options: {
-    mode?: ZCodeStreamingToolInputPreviewMode;
+    mode?: ZodyStreamingToolInputPreviewMode;
     now?: number;
     toolName?: string;
   } = {},
@@ -136,7 +136,7 @@ export function isZCodeFileStreamingToolInputPreviewTool(toolName?: string): boo
 }
 
 export function markZCodeStreamingToolInputPreviewMaterialized(
-  state: ZCodeStreamingToolInputState,
+  state: ZodyStreamingToolInputState,
   now = Date.now(),
 ): void {
   state.lastPreviewAt = now;

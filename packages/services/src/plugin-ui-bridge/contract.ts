@@ -1,4 +1,4 @@
-import type { ZCodePluginUiSurface } from "@zody/shared";
+import type { ZodyPluginUiSurface } from "@zody/shared";
 import { ServiceChannels } from "@zody/shared";
 import type { McpToolUiCsp, PluginSandboxHandle } from "@zody/shared/mcp-apps";
 import { createServiceDescriptor } from "../descriptors.js";
@@ -95,7 +95,7 @@ export interface PluginUiResourceSubscriptionParams extends PluginUiPluginScope 
 }
 
 /** 工作区级面板入口（清单 `ui.surfaces[]`），来自 agent `plugins/listUiSurfaces`。 */
-export type PluginUiSurfaceEntry = ZCodePluginUiSurface;
+export type PluginUiSurfaceEntry = ZodyPluginUiSurface;
 
 /**
  * 插件 UI 桥。UI 只依赖这个描述符，不直接调用 zcodeAgentService（M5 ③-3 平台能力面收敛）。

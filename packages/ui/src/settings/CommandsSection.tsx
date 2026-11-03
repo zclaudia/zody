@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
-import type { CommandConfig, UserCommand, ZCodeCommand } from "@zody/shared";
+import type { CommandConfig, UserCommand, ZodyCommand } from "@zody/shared";
 import { isPluginCommand, isUserCommand, ZCODE_COMMAND_AGENT_SOURCE } from "@zody/shared";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { toast } from "@/components/ui/toast.js";
@@ -218,7 +218,7 @@ export function CommandsSection({
   );
 
   const handleDelete = useCallback(
-    async (command: ZCodeCommand) => {
+    async (command: ZodyCommand) => {
       if (!isEditableUserCommand(command)) {
         return;
       }
@@ -250,7 +250,7 @@ export function CommandsSection({
   );
 
   const handleToggle = useCallback(
-    async (command: ZCodeCommand, enabled: boolean) => {
+    async (command: ZodyCommand, enabled: boolean) => {
       if (!isUserCommand(command)) {
         return;
       }
@@ -270,7 +270,7 @@ export function CommandsSection({
   );
 
   const handleEdit = useCallback(
-    (command: ZCodeCommand) => {
+    (command: ZodyCommand) => {
       if (!isEditableUserCommand(command)) {
         return;
       }
@@ -341,7 +341,7 @@ export function CommandsSection({
   const directInstalledCommandCount = scopedCommands.filter(isUserCommand).length;
   const hideInstalledGroup = Boolean(searchQuery.trim()) && groupedCommands.local.length === 0;
 
-  const renderCommandList = (items: ZCodeCommand[]) => (
+  const renderCommandList = (items: ZodyCommand[]) => (
     <SettingsResourceList
       items={items}
       getKey={(command) => command.id}

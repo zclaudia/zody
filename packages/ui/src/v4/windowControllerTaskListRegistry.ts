@@ -2,7 +2,7 @@ import type {
   IWindowControllerService,
   WindowHostControllerFrame,
   WindowHostControllerTaskListResult,
-  ZCodeTaskListQuery,
+  ZodyTaskListQuery,
 } from "@zody/services";
 import {
   CONTROLLER_TASKS_INDEX_TOPIC,
@@ -21,7 +21,7 @@ export interface WindowControllerTaskListRegistry {
   list(
     queryKey: string,
     version: WindowControllerTaskListVersion,
-    query: ZCodeTaskListQuery,
+    query: ZodyTaskListQuery,
   ): Promise<WindowHostControllerTaskListResult>;
 }
 
@@ -44,7 +44,7 @@ function taskAddressKey(address: WindowHostControllerTaskRow["address"]): string
 }
 
 function queryContainsWorkspace(
-  query: ZCodeTaskListQuery,
+  query: ZodyTaskListQuery,
   address: WindowHostControllerTaskRow["address"],
 ): boolean {
   const workspaceKey = address.workspaceIdentity?.trim() || address.workspacePath;
@@ -80,7 +80,7 @@ export function getWindowControllerTaskListRegistry(
     {
       versionKey: string;
       promise: Promise<WindowHostControllerTaskListResult>;
-      query: ZCodeTaskListQuery;
+      query: ZodyTaskListQuery;
     }
   >();
   const taskRows = new Map<string, WindowHostControllerTaskRow>();

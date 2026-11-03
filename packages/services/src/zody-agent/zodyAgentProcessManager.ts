@@ -1,6 +1,6 @@
 import { localRuntimeNetworkCapture } from "#src/zody-agent/localRuntimeNetworkCapture.js";
 import { resolveZCodeAgentSpawnCwd } from "#src/zody-agent/zodyAgentSpawnCwd.js";
-import type { ZCodeAgentStorageStartupSnapshot } from "#src/zody-agent/zodyAgent.js";
+import type { ZodyAgentStorageStartupSnapshot } from "#src/zody-agent/zodyAgent.js";
 /* eslint-disable max-lines -- zcodeAgentProcessManager 集中维护 agent 子进程启动、复用、超时回收和 runtime identity，拆分会扩大进程生命周期状态同步面 */
 import { spawn, type ChildProcess, type StdioOptions } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -35,10 +35,10 @@ import {
 import { isEffectiveDevelopmentNodeEnv } from "#src/runtime-tools/nodeEnv.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { ZCodeProtocolClient } from "./zodyProtocolClient.js";
-import { ZCodeStdioTransport, type ZCodeStdioChildLike } from "./zodyStdioTransport.js";
+import { ZCodeStdioTransport, type ZodyStdioChildLike } from "./zodyStdioTransport.js";
 import { readZCodeStdioTapDevState } from "./zodyStdioTapDevConfig.js";
 import { parseCuaNativeAuditLine } from "./cuaNativeAuditLog.js";
-import type { ZCodeAgentPresentationSurface } from "./zodyAgentPresentationSurface.js";
+import type { ZodyAgentPresentationSurface } from "./zodyAgentPresentationSurface.js";
 import { shouldSpawnInDetachedProcessGroup } from "../process/processTreeTerminator.js";
 import type { RuntimeProcessLifecycleReporter } from "../process/runtimeProcessLifecycle.js";
 import { buildAgentWorkspaceIdentityEnv } from "../runtime-tools/agentProxyEnv.js";
@@ -78,7 +78,7 @@ export interface ZodyAgentNativeRuntimeConfig {
 }
 
 export interface ZodyAgentCommandResolverContext {
-  presentationSurface?: ZCodeAgentPresentationSurface;
+  presentationSurface?: ZodyAgentPresentationSurface;
   workspacePath: string;
   workspaceIdentity?: string;
   workspaceKey: string;
@@ -128,7 +128,7 @@ export interface ZodyAgentProcessManagerOptions {
    * the original resolver; otherwise the existing command resolution is preserved.
    */
   nativeRuntimeResolver?: ZodyAgentNativeRuntimeResolver;
-  presentationSurface?: ZCodeAgentPresentationSurface;
+  presentationSurface?: ZodyAgentPresentationSurface;
   requestTimeoutMs?: number;
   processLifecycleReporter?: RuntimeProcessLifecycleReporter;
   /**
@@ -764,7 +764,7 @@ export function createZodyAgentCommandResolver(
 function createZodyStdioChildView(
   child: ChildProcess,
   command: ZodyAgentCommand,
-): ZCodeStdioChildLike {
+): ZodyStdioChildLike {
   const indexes = command.stdioIndexes;
   const stdin = indexes ? child.stdio[indexes.stdin] : child.stdin;
   const stdout = indexes ? child.stdio[indexes.stdout] : child.stdout;
@@ -811,14 +811,14 @@ export class ZodyAgentProcessManager {
   >();
   private readonly storageStartupEmitter = new Emitter<{
     workspaceKey: string;
-    snapshot: ZCodeAgentStorageStartupSnapshot;
+    snapshot: ZodyAgentStorageStartupSnapshot;
   }>();
   readonly onStorageStartupChanged = this.storageStartupEmitter.event;
 
   getStorageStartupState(params: {
     workspacePath: string;
     workspaceIdentity?: string;
-  }): ZCodeAgentStorageStartupSnapshot | null {
+  }): ZodyAgentStorageStartupSnapshot | null {
     const managed = this.processesByWorkspaceKey.get(resolveWorkspaceKey(params));
     return managed
       ? {
@@ -1410,7 +1410,7 @@ export class ZodyAgentProcessManager {
     });
     const startedAt = Date.now();
     const stderrTail = createAgentStderrTail();
-    let transportChild: ZCodeStdioChildLike;
+    let transportChild: ZodyStdioChildLike;
     try {
       transportChild = createZodyStdioChildView(child, effectiveCommand);
     } catch (error) {

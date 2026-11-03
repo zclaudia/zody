@@ -4,7 +4,7 @@
 // 与弹层壳分文件只为守住 400 行的门；这里不持有任何状态，全部由 WorkflowSavePopover 传进来。
 import type { RefObject } from "react";
 import { FolderIcon, GlobeIcon } from "lucide-react";
-import type { ZCodeSavedWorkflowScope } from "@zody/shared";
+import type { ZodySavedWorkflowScope } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {
@@ -112,7 +112,7 @@ export function WorkflowSaveFields({
         </span>
         <Select
           disabled={scopeLocked || saving}
-          onValueChange={(value) => update({ scope: value as ZCodeSavedWorkflowScope })}
+          onValueChange={(value) => update({ scope: value as ZodySavedWorkflowScope })}
           value={draft.scope}
         >
           <SelectTrigger className="w-full" data-testid="workflow-save-scope">
@@ -189,7 +189,7 @@ function WorkflowSaveConsequence({
 }: {
   failure: WorkflowSaveFailure | undefined;
   pathPreview: string;
-  scope: ZCodeSavedWorkflowScope;
+  scope: ZodySavedWorkflowScope;
   shadowing: boolean;
   taken: boolean;
 }) {

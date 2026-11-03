@@ -24,7 +24,7 @@ export type {
   UserPromptInput,
   ZCodeApp,
   ZCodeAppOptions,
-  ZCodeModelOption,
+  ZodyModelOption,
 } from "./app/types.js";
 export {
   inspectZCodeCustomCommand,

@@ -4,8 +4,8 @@
  * 拆出原因：useWorkspacePrepare.ts 只保留可单测的轻量判定入口；
  * 这里只读取 workspace presentation（mode/slash commands）；模型选择事实由目标 Host View 提供。
  */
-import type { IZCodeSessionService } from "@zody/services";
-import { type ZCodeProvider, type ZCodeWorkspacePrepareResult } from "@zody/shared";
+import type { IZodySessionService } from "@zody/services";
+import { type ZodyProvider, type ZodyWorkspacePrepareResult } from "@zody/shared";
 import { getChatErrorMessage } from "@/lib/chatPrepareError.js";
 import { logger } from "@/logger.js";
 import { zcodeWorkspacePresentationToConfigOptions } from "@/lib/zodySessionProjection.js";
@@ -13,9 +13,9 @@ import { zcodeWorkspacePresentationToConfigOptions } from "@/lib/zodySessionProj
 export async function prepareWorkspaceWithZCodeSessionService(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-  provider: ZCodeProvider;
-  zcodeSessionService: Pick<IZCodeSessionService, "readWorkspacePresentation">;
-}): Promise<ZCodeWorkspacePrepareResult> {
+  provider: ZodyProvider;
+  zcodeSessionService: Pick<IZodySessionService, "readWorkspacePresentation">;
+}): Promise<ZodyWorkspacePrepareResult> {
   const startedAt = Date.now();
   logger.info("[zcode-workspace-presentation] workspace prepare start", {
     workspacePath: params.workspacePath,
@@ -23,7 +23,7 @@ export async function prepareWorkspaceWithZCodeSessionService(params: {
     provider: params.provider,
   });
 
-  let presentation: Awaited<ReturnType<IZCodeSessionService["readWorkspacePresentation"]>>;
+  let presentation: Awaited<ReturnType<IZodySessionService["readWorkspacePresentation"]>>;
   try {
     presentation = await params.zcodeSessionService.readWorkspacePresentation({
       workspacePath: params.workspacePath,

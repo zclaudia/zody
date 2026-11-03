@@ -7,7 +7,7 @@ import { SessionEventType, type SessionEvent } from "@zody/contracts";
 import { createProtocolInteractionBroker } from "../src/zody-protocol/interaction-broker.js";
 import { buildProtocolPermissionOptions } from "../src/permission-options.js";
 import { V4InteractionRegistry } from "../src/zody-protocol-v4/interaction-registry.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 const TARGET = {
   pid: 40077,
@@ -69,7 +69,7 @@ function makeBrokerContext(options?: {
     requestClient,
     v4Interactions: registry,
     v4Gateway: { ingest },
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
   return {
     broker: createProtocolInteractionBroker(context),
     registry,
@@ -236,7 +236,7 @@ describe("cua_screenshot_confirm v4 pending interaction", () => {
       ]),
       v4Interactions: registry,
       v4Gateway: { ingest, waitForPermissionGrantCommit },
-    } as unknown as ZCodeProtocolAgentServerContext;
+    } as unknown as ZodyProtocolAgentServerContext;
     const broker = createProtocolInteractionBroker(context);
 
     const pending = broker.requestPermission(cuaConfirmRequest(), {
@@ -286,7 +286,7 @@ describe("cua_screenshot_confirm v4 pending interaction", () => {
           throw new Error("gateway unavailable");
         },
       },
-    } as unknown as ZCodeProtocolAgentServerContext;
+    } as unknown as ZodyProtocolAgentServerContext;
     const broker = createProtocolInteractionBroker(context);
 
     await expect(broker.requestPermission(cuaConfirmRequest())).resolves.toMatchObject({

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type {
   GitRepositorySummary,
-  ZCodeTaskChangeSummary,
+  ZodyTaskChangeSummary,
 } from "@zody/shared";
 import type { GitBranchCommitPreviewFile } from "@/git-branch-switcher/display.js";
 import {
@@ -39,7 +39,7 @@ function createChange(
   };
 }
 
-function createSummary(path: string): ZCodeTaskChangeSummary {
+function createSummary(path: string): ZodyTaskChangeSummary {
   return {
     fileCount: 1,
     added: 1,

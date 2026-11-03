@@ -9,10 +9,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ZCODE_AGENT_PROVIDER, resolveExecutionState } from "@zody/shared";
 import { applyComposerPlanTransition } from "@/v4/composer/composerPlanTransition.js";
 import type {
-  ZCodeConfigOption,
+  ZodyConfigOption,
   ModelSelection,
-  ZCodeProvider,
-  ZCodeSlashCommand,
+  ZodyProvider,
+  ZodySlashCommand,
 } from "@zody/shared";
 import type { SessionConfigState } from "@zody/shared/zody-protocol-v4";
 import type { IModelSelectionService } from "@zody/services";
@@ -62,9 +62,9 @@ export function applyDraftModelSelection(
 }
 
 export function shouldHydrateWorkspaceCatalog(params: {
-  configOptions: readonly ZCodeConfigOption[];
+  configOptions: readonly ZodyConfigOption[];
   sessionId: string | null;
-  slashCommands: readonly ZCodeSlashCommand[];
+  slashCommands: readonly ZodySlashCommand[];
 }): boolean {
   const hasModePresentation = params.configOptions.some(
     (option) => option.category === "mode" && option.type === "select",
@@ -102,7 +102,7 @@ export interface DraftConfigControl {
 export function useDraftConfigControl(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   /** 会话切换读取对应 scope；已有空选择也必须保留。 */
   sessionId: string | null;
   /** 仅匹配当前 Session 的首份投影可用作初始化；null 表示还没恢复完成。 */

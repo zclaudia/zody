@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { groupTaskTimelineItems, resolveTaskTimelineGroupKey } from "@/lib/taskTimelineGroups.js";
 
 function localTimestamp(
@@ -14,7 +14,7 @@ function localTimestamp(
   return new Date(year, month - 1, day, hour, minute).getTime();
 }
 
-function createTask(taskId: string, createdAt: number, updatedAt = createdAt): ZCodeTaskMeta {
+function createTask(taskId: string, createdAt: number, updatedAt = createdAt): ZodyTaskMeta {
   return {
     taskId,
     traceId: `trace-${taskId}`,

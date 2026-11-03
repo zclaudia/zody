@@ -4,7 +4,7 @@ import {
   resolveDynamicWorkflowClientConfig,
   type DynamicWorkflowClientConfig,
   type RequestVerificationConfig,
-  type ZCodeModelContextBudgetStrategy,
+  type ZodyModelContextBudgetStrategy,
 } from "@zody/shared";
 
 /**
@@ -43,5 +43,5 @@ export function resolveLocalRequestVerificationConfig(): RequestVerificationConf
 }
 
 /** 上下文预算策略：3.12.2 起统一 preflight-v1，不再为建会话等待远端配置。 */
-export const LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY: ZCodeModelContextBudgetStrategy =
+export const LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY: ZodyModelContextBudgetStrategy =
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY;

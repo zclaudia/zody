@@ -24,7 +24,7 @@ import {
   type PluginSubagentModelSelectionOverrides,
   type SubAgentConfig,
   type SubagentsListMode,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import { normalizeSubagentModelSelection } from "./subagentModelSelection.js";
 import { serializeSubagentMarkdown, parseSubagentMarkdown } from "./subagentMarkdown.js";
@@ -625,7 +625,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
     async list(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
       mode?: SubagentsListMode;
     }): Promise<AgentsListResult> {
       const capability = resolveCapabilities(options);
@@ -745,7 +745,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
       await mutate(runUpdate);
     },
 
-    async getPrimaryUserAgentsDirectory(_params: { provider: ZCodeProvider }): Promise<{
+    async getPrimaryUserAgentsDirectory(_params: { provider: ZodyProvider }): Promise<{
       path: string;
     }> {
       const path = await resolveUserSubagentRoot(storageOptions);

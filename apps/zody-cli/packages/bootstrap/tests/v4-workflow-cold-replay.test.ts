@@ -25,8 +25,8 @@ import type {
 import { SessionEventType } from "@zody/contracts";
 import { createConversationV4Gateway } from "../src/zody-protocol/v4-bridge.js";
 import type {
-  ZCodeProtocolAgentServerContext,
-  ZCodeProtocolSessionRecord,
+  ZodyProtocolAgentServerContext,
+  ZodyProtocolSessionRecord,
 } from "../src/zody-protocol/server-types.js";
 
 type TestSessionStore = ReturnType<typeof createSqliteSessionStore>;
@@ -93,7 +93,7 @@ function makeRecord(
   replay?: (input: {
     excludeRunIds: ReadonlySet<string>;
   }) => Promise<DynamicWorkflowRunProgressPayload[]>,
-): ZCodeProtocolSessionRecord {
+): ZodyProtocolSessionRecord {
   return {
     app: {
       readToolResultArtifact: async () => ({ content: "" }),
@@ -112,14 +112,14 @@ function makeRecord(
     stateRevision: 1,
     updatedAt: 0,
     workspace: { workspaceKey: `local:${WORKSPACE_PATH}`, workspacePath: WORKSPACE_PATH },
-  } as unknown as ZCodeProtocolSessionRecord;
+  } as unknown as ZodyProtocolSessionRecord;
 }
 
 function makeContext(input: {
-  sessions: Map<string, ZCodeProtocolSessionRecord>;
+  sessions: Map<string, ZodyProtocolSessionRecord>;
   store: TestSessionStore;
   warnings: string[];
-}): ZCodeProtocolAgentServerContext {
+}): ZodyProtocolAgentServerContext {
   return {
     appRuntimePreferences: {
       askUserQuestionAutoResolutionEnabled: false,
@@ -141,7 +141,7 @@ function makeContext(input: {
     sessions: input.sessions,
     v4Interactions: { resolve: () => false },
     workspaceModelCatalogs: new Map(),
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
 }
 
 async function subscribeWorkflowRuns(
@@ -203,7 +203,7 @@ describe("v4 冷物化 · dwf run 的冷回放", () => {
       excludeSeen.push([...excludeRunIds]);
       return [...replayedRun("dwfrun-old", "stopped"), ...replayedRun("dwfrun-done", "completed")];
     });
-    const sessions = new Map<string, ZCodeProtocolSessionRecord>([[PARENT_SESSION_ID, record]]);
+    const sessions = new Map<string, ZodyProtocolSessionRecord>([[PARENT_SESSION_ID, record]]);
     const context = makeContext({ sessions, store, warnings });
     const gateway = createConversationV4Gateway(context);
     context.v4Gateway = gateway;
@@ -239,7 +239,7 @@ describe("v4 冷物化 · dwf run 的冷回放", () => {
       replayCalls += 1;
       return replayedRun("dwfrun-old", "completed");
     });
-    const sessions = new Map<string, ZCodeProtocolSessionRecord>([[PARENT_SESSION_ID, record]]);
+    const sessions = new Map<string, ZodyProtocolSessionRecord>([[PARENT_SESSION_ID, record]]);
     const context = makeContext({ sessions, store, warnings });
     const gateway = createConversationV4Gateway(context);
     context.v4Gateway = gateway;
@@ -278,7 +278,7 @@ describe("v4 冷物化 · dwf run 的冷回放", () => {
     const record = makeRecord(eventStore, async () => {
       throw new Error("journal exploded");
     });
-    const sessions = new Map<string, ZCodeProtocolSessionRecord>([[PARENT_SESSION_ID, record]]);
+    const sessions = new Map<string, ZodyProtocolSessionRecord>([[PARENT_SESSION_ID, record]]);
     const context = makeContext({ sessions, store, warnings });
     const gateway = createConversationV4Gateway(context);
     context.v4Gateway = gateway;

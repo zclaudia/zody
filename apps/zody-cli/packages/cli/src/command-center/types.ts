@@ -7,7 +7,7 @@ import type {
   TuiSubmitPromptResult,
 } from "@zody/tui";
 import type { SupportedLocale, UiLocale } from "@zody/i18n";
-import type { ModelSelection, ZCodeModelOption } from "@zody/shared";
+import type { ModelSelection, ZodyModelOption } from "@zody/shared";
 import type { DynamicWorkflowMode } from "@zody/shared";
 import type {
   BackgroundTaskCancelResult,
@@ -32,7 +32,7 @@ export type SwitchableCommandCenterMode = Extract<
   "plan" | "build" | "edit" | "yolo" | "guarded"
 >;
 
-export type CommandCenterModelOption = ZCodeModelOption;
+export type CommandCenterModelOption = ZodyModelOption;
 
 export type CommandCenterLocaleResult = {
   configPath?: string;

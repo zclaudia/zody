@@ -8,10 +8,10 @@
 import type { ZodyBackgroundTaskControlItem } from "./background-task-controls.js";
 import type { ToolCallDisplay } from "./zody-protocol-v4/toolDisplay.js";
 import type {
-  ZCodeContextUsageBreakdownItem,
-  ZCodeInteractionRequestOrigin,
-  ZCodePermissionResponse,
-  ZCodeSessionActiveTurnKind,
+  ZodyContextUsageBreakdownItem,
+  ZodyInteractionRequestOrigin,
+  ZodyPermissionResponse,
+  ZodySessionActiveTurnKind,
 } from "./zody-protocol-legacy-types.js";
 import type { ErrorAttribution } from "./zody-protocol-v4/snapshot.js";
 
@@ -32,35 +32,35 @@ export type QueryId = string;
 // ---- ZCode Provider ----
 
 /** 支持的 ZCode agent 提供方；当前仅保留 glm。 */
-export type ZCodeProvider = "glm";
-export type ZCodeGlmAgentModelStateUpdateReason =
+export type ZodyProvider = "glm";
+export type ZodyGlmAgentModelStateUpdateReason =
   | "session_initialized"
   | "model_changed"
   | "thought_level_changed";
-export interface ZCodeGlmAgentModelStateOption {
+export interface ZodyGlmAgentModelStateOption {
   value: string;
   name: string;
 }
-export interface ZCodeGlmAgentModelStateUpdatePayload {
+export interface ZodyGlmAgentModelStateUpdatePayload {
   version: 1;
   sessionId: string;
-  reason: ZCodeGlmAgentModelStateUpdateReason;
+  reason: ZodyGlmAgentModelStateUpdateReason;
   model: {
     currentValue: string;
   };
   thoughtLevel: {
     enabled: boolean;
     currentValue?: string;
-    options: ZCodeGlmAgentModelStateOption[];
+    options: ZodyGlmAgentModelStateOption[];
   };
   contextWindow: {
     tokens: number;
   };
 }
 /** 外部历史迁移来源。当前只落 Claude Code，后续其它来源继续在这里扩展。 */
-export type ZCodeTaskMigrationSource = "claudeCode";
-export type ZCodeTaskGoalStatus = "active" | "paused" | "budget_limited" | "complete";
-export type ZCodeTaskTargetChangedAction =
+export type ZodyTaskMigrationSource = "claudeCode";
+export type ZodyTaskGoalStatus = "active" | "paused" | "budget_limited" | "complete";
+export type ZodyTaskTargetChangedAction =
   | "set"
   | "status_updated"
   | "cleared"
@@ -68,13 +68,13 @@ export type ZCodeTaskTargetChangedAction =
   | "run_started"
   | "run_finished"
   | "summary_updated";
-export type ZCodeTaskTargetChangedSource = "command" | "tool" | "runtime";
-export interface ZCodeTaskGoal {
+export type ZodyTaskTargetChangedSource = "command" | "tool" | "runtime";
+export interface ZodyTaskGoal {
   sessionID: string;
   targetID: string;
   objective: string;
   summaryTitle: string | null;
-  status: ZCodeTaskGoalStatus;
+  status: ZodyTaskGoalStatus;
   tokenBudget: number | null;
   tokensUsed: number;
   timeUsedSeconds: number;
@@ -86,7 +86,7 @@ export interface ZCodeTaskGoal {
     updated: number;
   };
 }
-export interface ZCodeTaskGoalStats {
+export interface ZodyTaskGoalStats {
   /** goal 运行累计秒数；来自 agent 的 session_target 或历史 turn 投影。 */
   timeUsedSeconds: number;
   /** goal 累计 token；优先使用 goal 记账，必要时由 agent 按历史 turn 兜底。 */
@@ -102,25 +102,25 @@ export interface ZCodeTaskGoalStats {
   /** 已触发的 goal verifier 生命周期轮次，不等同于普通 runtime turn 或用户继续次数。 */
   iterationCount: number;
 }
-export interface ZCodeGoalVerification {
+export interface ZodyGoalVerification {
   nextAction?: string | null;
   passed: boolean;
   reason: string;
 }
-export type ZCodeGoalVerificationTimelineStatus =
+export type ZodyGoalVerificationTimelineStatus =
   | "started"
   | "completed"
   | "failed_closed"
   | "cancelled";
-export interface ZCodeGoalVerificationTimelineMeta {
+export interface ZodyGoalVerificationTimelineMeta {
   version: 1;
   kind: "synthetic";
   type: "goal_verification";
   display: "separator";
   targetId: string;
   verificationId: string;
-  status: ZCodeGoalVerificationTimelineStatus;
-  verification?: ZCodeGoalVerification;
+  status: ZodyGoalVerificationTimelineStatus;
+  verification?: ZodyGoalVerification;
   goalIteration?: number;
   /** verifier divider 应锚定到完成本轮输出的 assistant message，而不是按时间漂移。 */
   anchorAssistantMessageId?: string;
@@ -129,24 +129,24 @@ export interface ZCodeGoalVerificationTimelineMeta {
   startedAt?: number;
   updatedAt: number;
 }
-export interface ZCodeTodoGroup {
+export interface ZodyTodoGroup {
   id: string;
   source: "goal_iteration" | "session";
   goalIteration?: number;
   targetId?: string;
   startedAt?: number;
   updatedAt?: number;
-  todos: ZCodePlanStep[];
+  todos: ZodyPlanStep[];
 }
-export interface ZCodeTaskGoalChangedPatch {
-  action: ZCodeTaskTargetChangedAction;
-  source: ZCodeTaskTargetChangedSource;
-  target: ZCodeTaskGoal | null;
-  previousTarget?: ZCodeTaskGoal | null;
+export interface ZodyTaskGoalChangedPatch {
+  action: ZodyTaskTargetChangedAction;
+  source: ZodyTaskTargetChangedSource;
+  target: ZodyTaskGoal | null;
+  previousTarget?: ZodyTaskGoal | null;
 }
 // ---- ZCode task 模式 ----
 
-export type ZCodeTaskMode =
+export type ZodyTaskMode =
   | "default"
   | "yolo"
   | "guarded"
@@ -161,11 +161,11 @@ export type ZCodeTaskMode =
 
 /** 单个自动输入轮的来源归因。
  * fork（F4.3）：offPeakTaskId/offPeakRunType 归因分支随闲时任务全链路删除。 */
-export type ZCodeBackgroundTurnAttribution =
+export type ZodyBackgroundTurnAttribution =
   | { automationId: string; offPeakTaskId?: never; offPeakRunType?: never }
   | { automationId?: undefined; offPeakTaskId?: undefined; offPeakRunType?: never };
 /** 当前 workspace 下任务的运行时状态 */
-export type ZCodeTaskRuntimeStatus =
+export type ZodyTaskRuntimeStatus =
   | "idle"
   | "creating"
   | "notReady"
@@ -175,8 +175,8 @@ export type ZCodeTaskRuntimeStatus =
   | "completed"
   | "failed";
 /** 持久化的任务状态，记录最后一次 prompt 的结果 */
-export type ZCodeTaskPersistStatus = "running" | "completed" | "error";
-export interface ZCodeTaskLastError {
+export type ZodyTaskPersistStatus = "running" | "completed" | "error";
+export interface ZodyTaskLastError {
   attribution?: ErrorAttribution;
   code?: string;
   message: string;
@@ -187,7 +187,7 @@ export interface ZCodeTaskLastError {
  * 当前 prompt 支持的附件类型。
  * 图片小文件走 agent image block；本地文件/大图片优先走 localPath，让 agent 按自己的阈值读取。
  */
-export interface ZCodePromptImageAttachment {
+export interface ZodyPromptImageAttachment {
   kind: "image";
   filename: string;
   mimeType: string;
@@ -197,7 +197,7 @@ export interface ZCodePromptImageAttachment {
   /** 桌面端真实本地路径；大图片不再塞进协议正文，由 agent 侧按路径处理。 */
   localPath?: string;
 }
-export interface ZCodePromptFileAttachment {
+export interface ZodyPromptFileAttachment {
   kind: "file";
   filename: string;
   mimeType: string;
@@ -212,7 +212,7 @@ export interface ZCodePromptFileAttachment {
   textContent?: string;
   localPath?: string;
 }
-export interface ZCodePromptAudioAttachment {
+export interface ZodyPromptAudioAttachment {
   kind: "audio";
   filename: string;
   mimeType: string;
@@ -221,7 +221,7 @@ export interface ZCodePromptAudioAttachment {
   localPath?: string;
 }
 /** 视频附件：Web 小视频走 dataBase64，桌面端优先 localPath 零拷贝。 */
-export interface ZCodePromptVideoAttachment {
+export interface ZodyPromptVideoAttachment {
   kind: "video";
   filename: string;
   mimeType: string;
@@ -231,7 +231,7 @@ export interface ZCodePromptVideoAttachment {
   /** 桌面端真实本地路径；agent 侧按路径读取并做大小校验。 */
   localPath?: string;
 }
-export interface ZCodePromptPdfAttachment {
+export interface ZodyPromptPdfAttachment {
   kind: "pdf";
   filename: string;
   mimeType: string;
@@ -239,15 +239,15 @@ export interface ZCodePromptPdfAttachment {
   dataBase64?: string;
   localPath?: string;
 }
-export type ZCodePromptAttachment =
-  | ZCodePromptImageAttachment
-  | ZCodePromptAudioAttachment
-  | ZCodePromptVideoAttachment
-  | ZCodePromptPdfAttachment
-  | ZCodePromptFileAttachment;
+export type ZodyPromptAttachment =
+  | ZodyPromptImageAttachment
+  | ZodyPromptAudioAttachment
+  | ZodyPromptVideoAttachment
+  | ZodyPromptPdfAttachment
+  | ZodyPromptFileAttachment;
 // ---- Task 元数据 ----
 
-export type ZCodeTaskInteractionAutoResolution =
+export type ZodyTaskInteractionAutoResolution =
   | {
       state: "hiddenGrace" | "visibleCountdown";
       startedAt: number;
@@ -260,15 +260,15 @@ export type ZCodeTaskInteractionAutoResolution =
       snoozedAt: number;
     };
 
-export interface ZCodeTaskPendingInteraction {
+export interface ZodyTaskPendingInteraction {
   interactionId: string;
   kind: "permission" | "userInput";
   /** sessions-index 下发的轻量工具身份；旧摘要缺失时保持兼容。 */
   toolName?: string;
-  autoResolution?: ZCodeTaskInteractionAutoResolution;
+  autoResolution?: ZodyTaskInteractionAutoResolution;
 }
 
-export interface ZCodeTaskMeta {
+export interface ZodyTaskMeta {
   /** UI taskId 与 ZCode agent sessionId 保持一致，用于列表选择、日志关联和恢复会话。 */
   taskId: string;
   /** session/任务级观测 traceId，不用于区分单次用户输入 */
@@ -295,7 +295,7 @@ export interface ZCodeTaskMeta {
   workspacePurpose?: import("./workspacePurpose.js").WorkspacePurpose;
   createdAt: number;
   updatedAt: number;
-  mode: ZCodeTaskMode;
+  mode: ZodyTaskMode;
   model?: string;
   /**
    * task 级推理强度。
@@ -314,9 +314,9 @@ export interface ZCodeTaskMeta {
    */
   runtimeEpoch?: number;
   /** 创建此 task 时使用的 agent provider，缺省视为 "glm"（旧数据兼容） */
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   /** 迁移来源；普通新建任务为空，用于识别 Claude Code 原生历史导入。 */
-  migrationSource?: ZCodeTaskMigrationSource;
+  migrationSource?: ZodyTaskMigrationSource;
   /**
    * cron 身份标记：该 session 属于哪条 automation。
    *
@@ -334,30 +334,30 @@ export interface ZCodeTaskMeta {
   /** 未读任务记录最近一次标记/产生未读的时间，用于跨重启保留蓝点状态。 */
   unreadAt?: number;
   /** 持久化的任务状态，记录最后一次 prompt 的结果 */
-  status?: ZCodeTaskPersistStatus;
+  status?: ZodyTaskPersistStatus;
   /** sessions-index 提供的队首阻塞交互摘要，供未打开的后台 task 渲染侧栏状态。 */
-  pendingInteraction?: ZCodeTaskPendingInteraction;
+  pendingInteraction?: ZodyTaskPendingInteraction;
   /**
    * 最后一次失败的可展示原因。
    *
    * 手机远控断连时实时 task_error 可能无法送达；恢复只能看到 meta.status=error，
    * 但拿不到错误正文，用户会以为发送没有触发。这里把失败原因随 task meta 一起持久化。
    */
-  lastError?: ZCodeTaskLastError;
+  lastError?: ZodyTaskLastError;
   /** task 级历史修复状态，用于避免读 snapshot 时重复执行一次性迁移逻辑。 */
-  repairState?: ZCodeTaskRepairState;
+  repairState?: ZodyTaskRepairState;
   /** 任务级文件改动摘要，仅用于列表/标题展示，真实回滚仍以 fileChanges 为准 */
-  changeSummary?: ZCodeTaskChangeSummary;
+  changeSummary?: ZodyTaskChangeSummary;
   /** zcode-cli /goal 会话目标；null 表示已显式清空。 */
-  target?: ZCodeTaskGoal | null;
+  target?: ZodyTaskGoal | null;
 }
-export interface ZCodeTaskRepairState {
+export interface ZodyTaskRepairState {
   /** Claude 原生日志补齐历史 snapshot assistant 正文的修复版本。 */
   claudeNativeSnapshotAssistantContentVersion?: number;
   /** Codex 原生日志补齐历史 snapshot 子 agent 工具块的修复版本。 */
   codexNativeSnapshotSubagentToolsVersion?: number;
 }
-export interface ZCodeTaskChangeSummary {
+export interface ZodyTaskChangeSummary {
   /** 整个任务里涉及过的唯一文件数 */
   fileCount: number;
   /** 按最终文件结果聚合后的新增行数 */
@@ -365,9 +365,9 @@ export interface ZCodeTaskChangeSummary {
   /** 按最终文件结果聚合后的删除行数 */
   removed: number;
   /** 任务涉及的文件摘要 */
-  files: ZCodeTaskChangedFileSummary[];
+  files: ZodyTaskChangedFileSummary[];
 }
-export interface ZCodeTaskChangedFileSummary {
+export interface ZodyTaskChangedFileSummary {
   path: string;
   added: number;
   removed: number;
@@ -379,7 +379,7 @@ export interface ZCodeTaskChangedFileSummary {
 // ---- ZCode 配置与命令类型 ----
 
 /** ZCode configOptions 的 UI 投影（从 session/new 响应中提取） */
-export interface ZCodeConfigOption {
+export interface ZodyConfigOption {
   id: string;
   name: string;
   description?: string;
@@ -388,9 +388,9 @@ export interface ZCodeConfigOption {
   type: "select" | "boolean";
   currentValue: string | boolean;
   /** type === "select" 时的选项列表 */
-  options?: ZCodeConfigSelectValue[];
+  options?: ZodyConfigSelectValue[];
 }
-export interface ZCodeConfigSelectValue {
+export interface ZodyConfigSelectValue {
   value: string;
   name: string;
   description?: string;
@@ -405,14 +405,14 @@ export interface ZCodeConfigSelectValue {
   /** 模型目录声明的默认 reasoning 档位，不代表用户显式选择 */
   modelDefaultThoughtLevel?: string;
 }
-export interface ZCodeSlashCommand {
+export interface ZodySlashCommand {
   name: string;
   description: string;
   inputHint?: string;
   /** 命令来源；旧协议可能为空，客户端应按 builtin 兼容处理。 */
   source?: "builtin" | "custom";
 }
-export interface ZCodeTaskModeInfo {
+export interface ZodyTaskModeInfo {
   id: string;
   name: string;
   description?: string;
@@ -420,41 +420,41 @@ export interface ZCodeTaskModeInfo {
 // ---- ZCode 流式事件（Host → Renderer） ----
 
 export type TaskStreamMirrorableEvent = (
-  | ZCodeAgentMessageChunk
-  | ZCodeAgentThoughtChunk
-  | ZCodeToolCall
-  | ZCodeToolCallUpdate
-  | ZCodePlan
-  | ZCodePermissionRequest
-  | ZCodeTaskPermissionResponse
-  | ZCodeElicitationRequest
-  | ZCodeElicitationResponse
-  | ZCodeTaskComplete
-  | ZCodeTaskRunStarted
-  | ZCodeTaskWarning
-  | ZCodeTaskError
-  | ZCodeConfigOptionUpdate
-  | ZCodeAvailableCommandsUpdate
-  | ZCodeModeUpdate
-  | ZCodeSessionInfoUpdate
-  | ZCodeGoalVerificationUpdate
-  | ZCodeTaskTokenUsageDelta
-  | ZCodeTaskNetworkDebugStatus
-  | ZCodeUsageUpdate
-  | ZCodeBackgroundTaskControlItemsUpdate
+  | ZodyAgentMessageChunk
+  | ZodyAgentThoughtChunk
+  | ZodyToolCall
+  | ZodyToolCallUpdate
+  | ZodyPlan
+  | ZodyPermissionRequest
+  | ZodyTaskPermissionResponse
+  | ZodyElicitationRequest
+  | ZodyElicitationResponse
+  | ZodyTaskComplete
+  | ZodyTaskRunStarted
+  | ZodyTaskWarning
+  | ZodyTaskError
+  | ZodyConfigOptionUpdate
+  | ZodyAvailableCommandsUpdate
+  | ZodyModeUpdate
+  | ZodySessionInfoUpdate
+  | ZodyGoalVerificationUpdate
+  | ZodyTaskTokenUsageDelta
+  | ZodyTaskNetworkDebugStatus
+  | ZodyUsageUpdate
+  | ZodyBackgroundTaskControlItemsUpdate
 ) & { inputId?: InputId };
-export type ZCodeStreamEvent = (
+export type ZodyStreamEvent = (
   | TaskStreamMirrorableEvent
-  | ZCodeGlmAgentModelStateUpdate
-  | ZCodeGoalIterationStarted
-  | ZCodeTurnSteerQueued
-  | ZCodeTurnSteerStatus
+  | ZodyGlmAgentModelStateUpdate
+  | ZodyGoalIterationStarted
+  | ZodyTurnSteerQueued
+  | ZodyTurnSteerStatus
   | TaskStreamMirrorBatch
-  | ZCodeTaskSnapshotUpdated
+  | ZodyTaskSnapshotUpdated
 ) & { inputId?: InputId };
-export type ZCodeTurnSteerSource = "plan_approval_feedback" | "workflow_refine_feedback";
-export type ZCodeTurnSteerCommandKind = "sendText" | "sendGoalCommand" | "compact";
-export interface ZCodeTurnSteerQueued {
+export type ZodyTurnSteerSource = "plan_approval_feedback" | "workflow_refine_feedback";
+export type ZodyTurnSteerCommandKind = "sendText" | "sendGoalCommand" | "compact";
+export interface ZodyTurnSteerQueued {
   type: "turn_steer_queued";
   taskId: string;
   traceId: TraceId;
@@ -462,13 +462,13 @@ export interface ZCodeTurnSteerQueued {
   queryId?: QueryId;
   pendingInputId: string;
   messageId?: string;
-  commandKind?: ZCodeTurnSteerCommandKind;
-  source?: ZCodeTurnSteerSource;
+  commandKind?: ZodyTurnSteerCommandKind;
+  source?: ZodyTurnSteerSource;
   targetTurnId?: string;
   content: string;
   raw?: unknown;
 }
-export interface ZCodeTurnSteerStatus {
+export interface ZodyTurnSteerStatus {
   type: "turn_steer_status";
   taskId: string;
   traceId: TraceId;
@@ -481,7 +481,7 @@ export interface ZCodeTurnSteerStatus {
   reason?: string;
   raw?: unknown;
 }
-export interface ZCodeAgentMessageChunk {
+export interface ZodyAgentMessageChunk {
   type: "agent_message_chunk";
   taskId: string;
   traceId: TraceId;
@@ -491,9 +491,9 @@ export interface ZCodeAgentMessageChunk {
   /** agent messageId；ZCode synthetic timeline 消息用它做 upsert。 */
   messageId?: string;
   content: string;
-  zcodeTimeline?: ZCodeTimelineMeta;
+  zcodeTimeline?: ZodyTimelineMeta;
 }
-export interface ZCodeAgentThoughtChunk {
+export interface ZodyAgentThoughtChunk {
   type: "agent_thought_chunk";
   taskId: string;
   traceId: TraceId;
@@ -502,30 +502,30 @@ export interface ZCodeAgentThoughtChunk {
   parentToolUseId?: string | null;
   content: string;
 }
-export type ZCodeTimelineStatus =
+export type ZodyTimelineStatus =
   | "started"
   | "retrying"
   | "skipped"
   | "completed"
   | "failed"
   | "interrupted";
-export type ZCodeTimelineTrigger = "manual" | "auto" | "reactive" | "partial" | "session_memory";
-export type ZCodeContextCompactionTimelinePhase =
+export type ZodyTimelineTrigger = "manual" | "auto" | "reactive" | "partial" | "session_memory";
+export type ZodyContextCompactionTimelinePhase =
   | "standalone_turn"
   | "pre_request"
   | "mid_turn"
   | "reactive";
-export type ZCodeTimelineMeta =
-  | ZCodeContextCompactionTimelineMeta
-  | ZCodeGoalVerificationTimelineMeta
-  | ZCodeSessionForkTimelineMeta;
-export interface ZCodeContextCompactionTimelineMeta {
+export type ZodyTimelineMeta =
+  | ZodyContextCompactionTimelineMeta
+  | ZodyGoalVerificationTimelineMeta
+  | ZodySessionForkTimelineMeta;
+export interface ZodyContextCompactionTimelineMeta {
   version: 1;
   kind: "synthetic";
   type: "context_compaction";
   operationId: string;
-  status: ZCodeTimelineStatus;
-  trigger: ZCodeTimelineTrigger;
+  status: ZodyTimelineStatus;
+  trigger: ZodyTimelineTrigger;
   display: "separator";
   /**
    * `/compact` 本地会先渲染 optimistic 横条，agent lifecycle 事件稍后才到。
@@ -544,11 +544,11 @@ export interface ZCodeContextCompactionTimelineMeta {
   attempt?: number;
   maxAttempts?: number;
   /** compact 阶段用于区分 mid_turn / pre_request 等真实压缩边界，避免 UI 和 e2e 只能按文案猜。 */
-  phase?: ZCodeContextCompactionTimelinePhase;
+  phase?: ZodyContextCompactionTimelinePhase;
   startedAt?: number;
   endedAt?: number;
 }
-export interface ZCodeSessionForkTimelineMeta {
+export interface ZodySessionForkTimelineMeta {
   version: 1;
   kind: "synthetic";
   type: "session_fork";
@@ -559,7 +559,7 @@ export interface ZCodeSessionForkTimelineMeta {
   targetCheckpointId?: string;
   restoredFileCount?: number;
 }
-export interface ZCodeToolCall {
+export interface ZodyToolCall {
   type: "tool_call";
   taskId: string;
   traceId: TraceId;
@@ -583,7 +583,7 @@ export interface ZCodeToolCall {
     source?: "agents" | "zcode" | "bundled" | "plugin" | "remote";
   };
 }
-export interface ZCodeToolCallUpdate {
+export interface ZodyToolCallUpdate {
   type: "tool_call_update";
   taskId: string;
   traceId: TraceId;
@@ -612,19 +612,19 @@ export interface ZCodeToolCallUpdate {
     source?: "agents" | "zcode" | "bundled" | "plugin" | "remote";
   };
 }
-export interface ZCodePlan {
+export interface ZodyPlan {
   type: "plan";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
-  steps: ZCodePlanStep[];
+  steps: ZodyPlanStep[];
 }
-export interface ZCodePlanStep {
+export interface ZodyPlanStep {
   id: string;
   title: string;
   status: "pending" | "in_progress" | "completed";
 }
-export interface ZCodePermissionRequest {
+export interface ZodyPermissionRequest {
   type: "permission_request";
   taskId: string;
   traceId: TraceId;
@@ -633,10 +633,10 @@ export interface ZCodePermissionRequest {
   description: string;
   kind: string;
   title?: string;
-  options: ZCodePermissionOption[];
+  options: ZodyPermissionOption[];
   /** V4 permission 是否允许在 Deny 时附带用户反馈。 */
   freeText?: boolean;
-  origin?: ZCodeInteractionRequestOrigin;
+  origin?: ZodyInteractionRequestOrigin;
   /**
    * 工具自报的确认预览，复用 tool call row 的 display 投影（同一有界形状）。
    * 缺省 = 纯文本 ask（legacy v3 链路会显式剥离该字段）。
@@ -645,24 +645,24 @@ export interface ZCodePermissionRequest {
   /** agent RequestPermissionRequest.toolCall 原始 payload */
   raw: unknown;
 }
-export interface ZCodeTaskPermissionResponse {
+export interface ZodyTaskPermissionResponse {
   type: "permission_response";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
   requestId: string;
   optionId: string;
-  response: ZCodePermissionResponse;
+  response: ZodyPermissionResponse;
 }
-export interface ZCodePermissionOption {
+export interface ZodyPermissionOption {
   optionId: string;
   kind: string;
   name: string;
   description?: string;
-  response: ZCodePermissionResponse;
+  response: ZodyPermissionResponse;
 }
 /** ZCode Elicitation 请求事件，用于 AskUserQuestion 等需要用户交互的工具 */
-export interface ZCodeElicitationRequest {
+export interface ZodyElicitationRequest {
   type: "elicitation_request";
   taskId: string;
   traceId: TraceId;
@@ -670,33 +670,33 @@ export interface ZCodeElicitationRequest {
   requestId: string;
   message: string;
   header?: string;
-  options: ZCodeElicitationOption[];
+  options: ZodyElicitationOption[];
   multiSelect?: boolean;
   /** AskUserQuestion 的多题结构；存在时 UI 以 tab 形式一次性收集全部答案。 */
-  questions?: ZCodeElicitationQuestion[];
+  questions?: ZodyElicitationQuestion[];
   /** remote 控制链路同步的当前题号，用于跨端保持 AskUserQuestion 进度。 */
   currentQuestionIndex?: number;
   /** remote 控制链路同步的草稿答案，key 为 answer_0 / answer_1。 */
   answerDrafts?: Record<string, string[]>;
-  origin?: ZCodeInteractionRequestOrigin;
+  origin?: ZodyInteractionRequestOrigin;
   /** ElicitationSchema 原始 payload */
   schema?: unknown;
 }
 /** ZCode Elicitation 单个问题 */
-export interface ZCodeElicitationQuestion {
+export interface ZodyElicitationQuestion {
   question: string;
   header: string;
-  options: ZCodeElicitationOption[];
+  options: ZodyElicitationOption[];
   multiSelect?: boolean;
 }
 /** ZCode Elicitation 选项 */
-export interface ZCodeElicitationOption {
+export interface ZodyElicitationOption {
   value: string;
   label: string;
   description?: string;
 }
 /** ZCode Elicitation 响应事件 */
-export interface ZCodeElicitationResponse {
+export interface ZodyElicitationResponse {
   type: "elicitation_response";
   taskId: string;
   traceId: TraceId;
@@ -705,15 +705,15 @@ export interface ZCodeElicitationResponse {
   action: "accept" | "decline" | "cancel";
   content?: Record<string, unknown>;
 }
-export interface ZCodeTaskComplete {
+export interface ZodyTaskComplete {
   type: "task_complete";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
   stopReason: string;
-  usage?: ZCodeUsage;
+  usage?: ZodyUsage;
 }
-export interface ZCodeTaskRunStarted {
+export interface ZodyTaskRunStarted {
   inputOrigin?: "desktop" | "mobile";
   type: "task_run_started";
   taskId: string;
@@ -722,7 +722,7 @@ export interface ZCodeTaskRunStarted {
   turnId?: string;
   startedAt: number;
 }
-export interface ZCodeGoalIterationStarted {
+export interface ZodyGoalIterationStarted {
   type: "goal_iteration_started";
   taskId: string;
   traceId: TraceId;
@@ -731,7 +731,7 @@ export interface ZCodeGoalIterationStarted {
   targetId?: string;
   startedAt: number;
 }
-export interface ZCodeTaskError {
+export interface ZodyTaskError {
   type: "task_error";
   taskId: string;
   traceId: TraceId;
@@ -741,7 +741,7 @@ export interface ZCodeTaskError {
   detail?: string;
   attribution?: ErrorAttribution;
 }
-export interface ZCodeTaskWarning {
+export interface ZodyTaskWarning {
   type: "task_warning";
   taskId: string;
   traceId: TraceId;
@@ -750,7 +750,7 @@ export interface ZCodeTaskWarning {
   code?: string;
   detail?: string;
 }
-export interface ZCodeUsage {
+export interface ZodyUsage {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
@@ -761,7 +761,7 @@ export interface ZCodeUsage {
   /** 写入缓存的 input token 数 */
   cachedWriteInputTokens?: number;
 }
-export interface ZCodeContextCacheUsage {
+export interface ZodyContextCacheUsage {
   /** Provider 上报的最近一次主轮输入 token 数。 */
   inputTokens: number;
   /** Provider 上报的最近一次主轮缓存命中 token 数。 */
@@ -782,7 +782,7 @@ export interface ZCodeContextCacheUsage {
   hitRate: number | null;
 }
 /** Agent 每次模型请求完成后推送的 task 累计 token 增量。 */
-export interface ZCodeTaskTokenUsageDelta {
+export interface ZodyTaskTokenUsageDelta {
   type: "task_token_usage_delta";
   taskId: string;
   traceId: TraceId;
@@ -792,16 +792,16 @@ export interface ZCodeTaskTokenUsageDelta {
   eventKey: string;
   eventId?: string;
   querySource?: string;
-  usage: ZCodeUsage;
+  usage: ZodyUsage;
 }
-export type ZCodeTaskNetworkDebugStatusType =
+export type ZodyTaskNetworkDebugStatusType =
   | "model_request_started"
   | "model_request_completed"
   | "model_request_failed"
   | "model_retry_scheduled"
   | "model_stream_stalled";
 /** Agent 模型网络状态调试事件；只携带元信息和脱敏 header，不携带 response body/data。 */
-export interface ZCodeTaskNetworkDebugStatus {
+export interface ZodyTaskNetworkDebugStatus {
   type: "task_network_debug_status";
   taskId: string;
   traceId: TraceId;
@@ -809,7 +809,7 @@ export interface ZCodeTaskNetworkDebugStatus {
   queryId?: QueryId;
   eventKey: string;
   eventId?: string;
-  statusType: ZCodeTaskNetworkDebugStatusType;
+  statusType: ZodyTaskNetworkDebugStatusType;
   requestId?: string;
   providerId?: string;
   modelId?: string;
@@ -837,41 +837,41 @@ export interface ZCodeTaskNetworkDebugStatus {
 // ---- 新增流式事件类型 ----
 
 /** Agent 主动推送配置变更（如 rate limit 降级模型、模式联动变化） */
-export interface ZCodeConfigOptionUpdate {
+export interface ZodyConfigOptionUpdate {
   type: "config_option_update";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
-  configOptions: ZCodeConfigOption[];
+  configOptions: ZodyConfigOption[];
 }
 /** zcode-cli/GLM agent 专属：模型变化后同步思考等级选项和上下文窗口。 */
-export interface ZCodeGlmAgentModelStateUpdate extends ZCodeGlmAgentModelStateUpdatePayload {
+export interface ZodyGlmAgentModelStateUpdate extends ZodyGlmAgentModelStateUpdatePayload {
   type: "glm_agent_model_state_update";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
 }
 /** Agent 推送可用的 slash commands 列表 */
-export interface ZCodeAvailableCommandsUpdate {
+export interface ZodyAvailableCommandsUpdate {
   type: "available_commands_update";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
-  commands: ZCodeSlashCommand[];
+  commands: ZodySlashCommand[];
 }
 /** Agent 推送模式变更（如从 architect 自动切到 code） */
-export interface ZCodeModeUpdate {
+export interface ZodyModeUpdate {
   type: "mode_update";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
   currentModeId: string;
-  availableModes: ZCodeTaskModeInfo[];
+  availableModes: ZodyTaskModeInfo[];
 }
 /** Agent API 遇到可重试错误时的临时状态；只用于内存 UI，不写入任务持久化。
  * attempt 表示当前正在进行的“第几次重试”，从 1 开始，不是总尝试次数。
  */
-export interface ZCodeApiRetryStatus {
+export interface ZodyApiRetryStatus {
   kind: "api_retry";
   attempt: number;
   maxRetries: number;
@@ -880,7 +880,7 @@ export interface ZCodeApiRetryStatus {
   error: string;
 }
 /** Agent 推送会话标题等元信息更新 */
-export interface ZCodeSessionInfoUpdate {
+export interface ZodySessionInfoUpdate {
   type: "session_info_update";
   taskId: string;
   traceId: TraceId;
@@ -893,22 +893,22 @@ export interface ZCodeSessionInfoUpdate {
    * `null` 表示显式清空重试状态；
    * 对象表示进入/更新重试中。
    */
-  apiRetry?: ZCodeApiRetryStatus | null;
+  apiRetry?: ZodyApiRetryStatus | null;
   /**
    * zcode-cli 通过兼容 session_info_update._meta.zcode.target 投影的 /goal 状态补丁。
    * `undefined` 表示本次没有 target 变化；`target: null` 表示清空。
    */
-  target?: ZCodeTaskGoalChangedPatch;
+  target?: ZodyTaskGoalChangedPatch;
 }
-export interface ZCodeGoalVerificationUpdate {
+export interface ZodyGoalVerificationUpdate {
   type: "goal_verification_update";
   taskId: string;
   traceId: TraceId;
   inputId?: InputId;
-  verification: ZCodeGoalVerification;
+  verification: ZodyGoalVerification;
 }
 /** Agent 推送实时上下文窗口使用情况 */
-export interface ZCodeUsageUpdate {
+export interface ZodyUsageUpdate {
   type: "usage_update";
   taskId: string;
   traceId: TraceId;
@@ -920,12 +920,12 @@ export interface ZCodeUsageUpdate {
   /** 累计费用 */
   cost?: { amount: number; currency: string } | null;
   /** 当前主轮 provider usage 暴露的缓存命中信息。 */
-  cache?: ZCodeContextCacheUsage;
+  cache?: ZodyContextCacheUsage;
   /** Agent 按来源估算的上下文字符量，用于 UI 展示比例，不作为 token 账本。 */
-  breakdown?: ZCodeContextUsageBreakdownItem[];
+  breakdown?: ZodyContextUsageBreakdownItem[];
 }
 /** Agent runtime 上报的后台任务控制项；只表示当前 host 内存态，不写入 session 文件。 */
-export interface ZCodeBackgroundTaskControlItemsUpdate {
+export interface ZodyBackgroundTaskControlItemsUpdate {
   type: "background_bash_jobs_update";
   taskId: string;
   traceId: TraceId;
@@ -933,7 +933,7 @@ export interface ZCodeBackgroundTaskControlItemsUpdate {
   jobs: ZodyBackgroundTaskControlItem[];
 }
 /** 残余数据 flush 后通知 UI 重新拉取快照，确保迟到的流式数据能被渲染 */
-export interface ZCodeTaskSnapshotUpdated {
+export interface ZodyTaskSnapshotUpdated {
   type: "task_snapshot_updated";
   workspacePath: string;
   workspaceIdentity?: string;
@@ -945,9 +945,9 @@ export interface ZCodeTaskSnapshotUpdated {
   runId?: string;
   streamWatermark?: TaskStreamWatermark;
 }
-export type ZCodeTaskClientMode = "desktop-continuous" | "web-remote-replayable";
-export type ZCodeTaskRuntimeCommandStatus = "accepted" | "running" | "failed";
-export interface ZCodeTaskRuntimeCommandBase {
+export type ZodyTaskClientMode = "desktop-continuous" | "web-remote-replayable";
+export type ZodyTaskRuntimeCommandStatus = "accepted" | "running" | "failed";
+export interface ZodyTaskRuntimeCommandBase {
   commandId: string;
   taskId: string;
   traceId: TraceId;
@@ -955,21 +955,21 @@ export interface ZCodeTaskRuntimeCommandBase {
   workspacePath: string;
   workspaceIdentity?: string;
   workspaceKey: string;
-  status: ZCodeTaskRuntimeCommandStatus;
+  status: ZodyTaskRuntimeCommandStatus;
   createdAt: number;
   updatedAt: number;
   clientId?: string;
   clientLabel?: string;
   error?: string;
 }
-export interface ZCodeTaskSendPromptCommand extends ZCodeTaskRuntimeCommandBase {
+export interface ZodyTaskSendPromptCommand extends ZodyTaskRuntimeCommandBase {
   type: "send_prompt";
   content: string;
-  attachments?: ZCodePromptAttachment[];
+  attachments?: ZodyPromptAttachment[];
   /** 定时任务派发的 host command 必须保留 automation 上下文，避免队列 drain 后重新暴露 CronCreate。 */
   automationId?: string;
 }
-export type ZCodeTaskRuntimeCommand = ZCodeTaskSendPromptCommand;
+export type ZodyTaskRuntimeCommand = ZodyTaskSendPromptCommand;
 export interface TaskStreamMirrorBatch {
   type: "task_stream_mirror_batch";
   workspacePath: string;
@@ -988,75 +988,75 @@ export interface TaskStreamMirrorBatch {
 }
 // ---- 持久化格式 ----
 
-export interface ZCodeSessionFile {
-  meta: ZCodeTaskMeta;
-  messages: ZCodePersistedMessage[];
+export interface ZodySessionFile {
+  meta: ZodyTaskMeta;
+  messages: ZodyPersistedMessage[];
   /** 文件变更记录，按轮次存储 */
-  fileChanges?: ZCodePersistedFileChange[];
+  fileChanges?: ZodyPersistedFileChange[];
   /** Git checkpoint 元信息，按轮次存储，仅用于撤销编排 */
-  turnCheckpoints?: ZCodePersistedTurnCheckpoint[];
+  turnCheckpoints?: ZodyPersistedTurnCheckpoint[];
 }
-export interface ZCodeSessionRuntimeSnapshot {
-  pendingPermissions?: ZCodePermissionRequest[];
-  pendingElicitations?: ZCodeElicitationRequest[];
+export interface ZodySessionRuntimeSnapshot {
+  pendingPermissions?: ZodyPermissionRequest[];
+  pendingElicitations?: ZodyElicitationRequest[];
   /** 当前 session 的 active turn 类型；用于 UI 区分普通 streaming 与 compact 维护态。 */
-  activeTurnKind?: ZCodeSessionActiveTurnKind;
+  activeTurnKind?: ZodySessionActiveTurnKind;
   /** Agent API 网络重试是运行态提示，只随 snapshot 恢复，不写入 session JSON。 */
-  apiRetry?: ZCodeApiRetryStatus | null;
+  apiRetry?: ZodyApiRetryStatus | null;
   /** ZCode Protocol projection 中的上下文窗口用量，用于恢复旧 task UI 的右下角 context meter。 */
   contextUsage?: {
     used: number;
     size: number;
     cost?: { amount: number; currency: string } | null;
-    cache?: ZCodeContextCacheUsage;
-    breakdown?: ZCodeContextUsageBreakdownItem[];
+    cache?: ZodyContextCacheUsage;
+    breakdown?: ZodyContextUsageBreakdownItem[];
   };
   streamWatermark?: TaskStreamWatermark;
-  pendingCommands?: ZCodeTaskRuntimeCommand[];
+  pendingCommands?: ZodyTaskRuntimeCommand[];
   /**
    * 从 agent session store 的持久 todo 映射出的恢复态。
    * UI 只消费它恢复 todo 面板，不把该字段写回旧 session JSON。
    */
-  plan?: ZCodePlanStep[] | null;
+  plan?: ZodyPlanStep[] | null;
   /**
    * 目标摘要的运行态投影；从 agent DB / message tool parts 临时计算，不写入 task-index。
    */
-  goalStats?: ZCodeTaskGoalStats | null;
-  goalVerifications?: ZCodeGoalVerification[] | null;
-  goalVerificationTimeline?: ZCodeGoalVerificationTimelineMeta[] | null;
+  goalStats?: ZodyTaskGoalStats | null;
+  goalVerifications?: ZodyGoalVerification[] | null;
+  goalVerificationTimeline?: ZodyGoalVerificationTimelineMeta[] | null;
   /**
    * session 历史 TodoWrite 投影出的分组 todo；用于恢复展示，不作为 todo 权威存储。
    */
-  todoGroups?: ZCodeTodoGroup[] | null;
+  todoGroups?: ZodyTodoGroup[] | null;
   /** 兼容字段：承载 host/runtime 运行态后台任务 control，可随 snapshot 恢复，但不持久化到 session JSON。 */
   backgroundBashJobs?: ZodyBackgroundTaskControlItem[];
 }
-export interface ZCodeTaskSnapshotHistory {
+export interface ZodyTaskSnapshotHistory {
   /** 响应态历史窗口是否裁掉了更早消息；只由 getTaskSnapshot 返回，不写入 session JSON。 */
   truncatedBefore: boolean;
   /** 裁剪前可见消息总数，用于 UI 判断是否还能补拉更早历史。 */
   totalMessages: number;
 }
-export type ZCodeTaskSnapshot = ZCodeSessionFile & {
+export type ZodyTaskSnapshot = ZodySessionFile & {
   /** 非持久化运行态，只由 getTaskSnapshot 组装返回，禁止写入 session JSON。 */
-  runtime?: ZCodeSessionRuntimeSnapshot;
+  runtime?: ZodySessionRuntimeSnapshot;
   /** 非持久化历史窗口元数据，只描述本次 snapshot 响应是否为尾部窗口。 */
-  history?: ZCodeTaskSnapshotHistory;
+  history?: ZodyTaskSnapshotHistory;
   /** Agent/app 通信返回的可见命令列表；用于恢复 `/` 面板，不写入 session JSON。 */
-  slashCommands?: ZCodeSlashCommand[];
+  slashCommands?: ZodySlashCommand[];
   /** 从 session settings 投影出的 UI 配置；只随 snapshot 返回，不写入 session JSON。 */
-  configOptions?: ZCodeConfigOption[];
+  configOptions?: ZodyConfigOption[];
 };
-export type ZCodeTurnFileState = "applied" | "reverted";
+export type ZodyTurnFileState = "applied" | "reverted";
 /** 持久化的轮次文件变更 */
-export interface ZCodePersistedFileChange {
+export interface ZodyPersistedFileChange {
   turnIndex: number;
-  snapshots: ZCodePersistedFileSnapshot[];
+  snapshots: ZodyPersistedFileSnapshot[];
   /** 当前这轮文件变更是否仍应用在 workspace 上 */
-  fileState?: ZCodeTurnFileState;
+  fileState?: ZodyTurnFileState;
 }
 /** 持久化的轮次文件 checkpoint 元信息 */
-export interface ZCodePersistedTurnCheckpoint {
+export interface ZodyPersistedTurnCheckpoint {
   turnIndex: number;
   /** 该轮开始前的文件状态 checkpoint */
   baseFileCheckpointId: string;
@@ -1064,24 +1064,24 @@ export interface ZCodePersistedTurnCheckpoint {
   resultFileCheckpointId?: string;
 }
 /** 持久化的文件快照 */
-export interface ZCodePersistedFileSnapshot {
+export interface ZodyPersistedFileSnapshot {
   path: string;
   beforeContent: string | null;
   afterContent: string;
   writeCount: number;
   /** 仅用于响应态快照：表示文件快照正文已被首屏预算裁剪，可按 ref 拉取完整内容。 */
-  contentRefs?: ZCodeTaskSnapshotFileContentRef[];
+  contentRefs?: ZodyTaskSnapshotFileContentRef[];
 }
 /** 持久化消息的 parts 元素，记录 content / thought / tool-call 的交错顺序。
  *  恢复历史时用它还原 UI 侧的 parts 数组，避免所有文字堆到上面、工具调用排到下面。 */
-export type ZCodePersistedMessagePart =
+export type ZodyPersistedMessagePart =
   | { type: "content"; content: string }
   | { type: "thought"; content: string }
   | { type: "tool-call"; toolIndex: number };
-export type ZCodeAssistantMessageFeedback = "like" | "dislike";
-export type ZCodeAssistantCheckpointState = "partial";
-export type ZCodeAssistantCheckpointReason = "tool_completed" | "part_boundary" | "periodic";
-export interface ZCodePersistedMessage {
+export type ZodyAssistantMessageFeedback = "like" | "dislike";
+export type ZodyAssistantCheckpointState = "partial";
+export type ZodyAssistantCheckpointReason = "tool_completed" | "part_boundary" | "periodic";
+export interface ZodyPersistedMessage {
   /** 协议侧原始 messageId；用于让实时消息和 snapshot 恢复后的 timeline divider 保持同一身份。 */
   id?: string;
   /** 投影合并 assistant 后保留的原始 messageId 集合，用于 timeline anchor 仍能命中被合并的子消息。 */
@@ -1100,56 +1100,56 @@ export interface ZCodePersistedMessage {
   /** assistant 是否以用户主动停止或异常中断结束；用于抑制 latest 回复区的提升。 */
   interrupted?: boolean;
   /** 用户对 assistant 回复的本地反馈；仅用于 ZCode 展示/统计，不注入 Agent 上下文。 */
-  feedback?: ZCodeAssistantMessageFeedback;
-  attachments?: ZCodePromptAttachment[];
-  tools?: ZCodePersistedToolCall[];
+  feedback?: ZodyAssistantMessageFeedback;
+  attachments?: ZodyPromptAttachment[];
+  tools?: ZodyPersistedToolCall[];
   thought?: string;
   /** 消息各部分的交错顺序，用于历史恢复时保持 content 和 tool-call 的原始排列 */
-  parts?: ZCodePersistedMessagePart[];
+  parts?: ZodyPersistedMessagePart[];
   /** assistant 运行中快照；用于崩溃/重启后恢复到最近一次 parts 边界，不代表本轮自然完成。 */
-  checkpointState?: ZCodeAssistantCheckpointState;
-  checkpointReason?: ZCodeAssistantCheckpointReason;
+  checkpointState?: ZodyAssistantCheckpointState;
+  checkpointReason?: ZodyAssistantCheckpointReason;
   checkpointUpdatedAt?: number;
   /** 该消息所属的对话轮次，用于关联 per-turn 文件变更摘要和回滚 */
   turnIndex?: number;
   /** 仅用于响应态快照：表示大字段已被首屏预算裁剪，可按 ref 拉取完整正文。 */
-  bodyRefs?: ZCodeTaskSnapshotBodyRef[];
+  bodyRefs?: ZodyTaskSnapshotBodyRef[];
   /** 仅用于响应态快照：tools 被按条数裁剪时的切片信息，可用于补拉更多工具调用。 */
-  toolSlice?: ZCodeTaskSnapshotToolSlice;
+  toolSlice?: ZodyTaskSnapshotToolSlice;
   /** synthetic divider 元数据（context_compaction / session_fork），随 snapshot 恢复用于 UI 渲染分隔条。 */
-  syntheticTimeline?: ZCodeTimelineMeta;
+  syntheticTimeline?: ZodyTimelineMeta;
 }
-export type ZCodeTaskSnapshotBodyField = "content" | "thought";
-export interface ZCodeTaskSnapshotBodyRef {
-  field: ZCodeTaskSnapshotBodyField;
+export type ZodyTaskSnapshotBodyField = "content" | "thought";
+export interface ZodyTaskSnapshotBodyRef {
+  field: ZodyTaskSnapshotBodyField;
   refId: string;
   hash: string;
   fullBytes: number;
   previewBytes: number;
 }
-export type ZCodeTaskSnapshotToolField = "input" | "output" | "raw";
-export type ZCodeTaskSnapshotFileContentField = "beforeContent" | "afterContent";
-export interface ZCodeTaskSnapshotToolFieldRef {
-  field: ZCodeTaskSnapshotToolField;
+export type ZodyTaskSnapshotToolField = "input" | "output" | "raw";
+export type ZodyTaskSnapshotFileContentField = "beforeContent" | "afterContent";
+export interface ZodyTaskSnapshotToolFieldRef {
+  field: ZodyTaskSnapshotToolField;
   refId: string;
   hash: string;
   fullBytes: number;
   previewBytes: number;
 }
-export interface ZCodeTaskSnapshotFileContentRef {
-  field: ZCodeTaskSnapshotFileContentField;
+export interface ZodyTaskSnapshotFileContentRef {
+  field: ZodyTaskSnapshotFileContentField;
   refId: string;
   hash: string;
   fullBytes: number;
   previewBytes: number;
 }
-export interface ZCodeTaskSnapshotToolSlice {
+export interface ZodyTaskSnapshotToolSlice {
   persistedMessageIndex: number;
   totalTools: number;
   startToolIndex: number;
   endToolIndexExclusive: number;
 }
-export interface ZCodePersistedToolCall {
+export interface ZodyPersistedToolCall {
   /** ZCode 固定工具名；旧快照里可能曾把 title 落在这里，读取侧需兼容。 */
   toolName?: string;
   title?: string;
@@ -1160,7 +1160,7 @@ export interface ZCodePersistedToolCall {
   error?: string;
   raw?: unknown;
   /** 仅用于响应态快照：表示工具大字段已被首屏预算裁剪，可按 ref 拉取完整内容。 */
-  snapshotRefs?: ZCodeTaskSnapshotToolFieldRef[];
+  snapshotRefs?: ZodyTaskSnapshotToolFieldRef[];
 }
 export type TaskRealtimeReason =
   | "task_created"
@@ -1186,7 +1186,7 @@ export interface TaskStreamMirrorUserMessageOp {
   kind: "user_message";
   messageId: string;
   content: string;
-  attachments?: ZCodePromptAttachment[];
+  attachments?: ZodyPromptAttachment[];
   timestamp: number;
 }
 export interface TaskStreamMirrorStreamEventOp {

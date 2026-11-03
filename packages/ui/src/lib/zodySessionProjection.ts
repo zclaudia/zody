@@ -39,50 +39,50 @@ import {
   zcodeApiRetryFromModelNetworkStatusPayload,
   zcodeApiRetryFromStreamRecoveryPayload,
   zcodeTaskNetworkDebugStatusFromPayload,
-  type ZCodeApiRetryStatus,
+  type ZodyApiRetryStatus,
   type ZodyBackgroundTaskNotificationInfo,
   type ZodyBackgroundTaskControlItem,
-  type ZCodeConfigOption,
-  type ZCodePersistedMessage,
-  type ZCodePersistedMessagePart,
-  type ZCodePersistedToolCall,
-  type ZCodeTaskGoal,
-  type ZCodeTaskGoalStats,
-  type ZCodeTaskTargetChangedAction,
-  type ZCodeTaskMode,
-  type ZCodeTaskModeInfo,
-  type ZCodeStreamEvent,
-  type ZCodeTaskMeta,
-  type ZCodeTaskSnapshot,
-  type ZCodeTodoGroup,
-  type ZCodeTurnSteerCommandKind,
-  type ZCodeTurnSteerSource,
-  type ZCodePlanStep,
-  type ZCodePromptAttachment,
-  type ZCodeUsage,
+  type ZodyConfigOption,
+  type ZodyPersistedMessage,
+  type ZodyPersistedMessagePart,
+  type ZodyPersistedToolCall,
+  type ZodyTaskGoal,
+  type ZodyTaskGoalStats,
+  type ZodyTaskTargetChangedAction,
+  type ZodyTaskMode,
+  type ZodyTaskModeInfo,
+  type ZodyStreamEvent,
+  type ZodyTaskMeta,
+  type ZodyTaskSnapshot,
+  type ZodyTodoGroup,
+  type ZodyTurnSteerCommandKind,
+  type ZodyTurnSteerSource,
+  type ZodyPlanStep,
+  type ZodyPromptAttachment,
+  type ZodyUsage,
   type InputId,
   type TraceId,
-  type ZCodeMessagePart,
-  type ZCodeMessageWithParts,
+  type ZodyMessagePart,
+  type ZodyMessageWithParts,
   type ModelSelection,
-  type ZCodePermissionOption,
-  type ZCodePermissionRequest,
-  type ZCodePermissionRequestParams,
-  type ZCodeSessionEvent,
-  type ZCodeSessionMode,
-  type ZCodeSessionSettingsState,
-  type ZCodeSessionStateSnapshot,
-  type ZCodeStateUpdatedNotification,
-  type ZCodeContextCompactionTimelinePhase,
-  type ZCodeContextCompactionTimelineMeta,
-  type ZCodeGoalVerification,
-  type ZCodeGoalVerificationTimelineMeta,
-  type ZCodeTimelineMeta,
-  type ZCodeTimelineStatus,
-  type ZCodeTimelineTrigger,
-  type ZCodeToolProjectionMemory,
-  type ZCodeUserInputRequestParams,
-  type ZCodeUserInputResponse,
+  type ZodyPermissionOption,
+  type ZodyPermissionRequest,
+  type ZodyPermissionRequestParams,
+  type ZodySessionEvent,
+  type ZodySessionMode,
+  type ZodySessionSettingsState,
+  type ZodySessionStateSnapshot,
+  type ZodyStateUpdatedNotification,
+  type ZodyContextCompactionTimelinePhase,
+  type ZodyContextCompactionTimelineMeta,
+  type ZodyGoalVerification,
+  type ZodyGoalVerificationTimelineMeta,
+  type ZodyTimelineMeta,
+  type ZodyTimelineStatus,
+  type ZodyTimelineTrigger,
+  type ZodyToolProjectionMemory,
+  type ZodyUserInputRequestParams,
+  type ZodyUserInputResponse,
   zcodeContextUsageBreakdownSchema,
 } from "@zody/shared";
 import { errorAttributionSchema } from "@zody/shared/zody-protocol-v4";
@@ -101,7 +101,7 @@ const COMPACTION_PROJECTION_DIAG_LIMIT = 200;
 const compactionProjectionDiagSignatures = new Set<string>();
 const ZCODE_AGENT_MODE_OPTIONS = getSharedAgentAvailableModes();
 
-export interface ZCodeSessionEventProjectionState extends ZCodeToolProjectionMemory {
+export interface ZCodeSessionEventProjectionState extends ZodyToolProjectionMemory {
   activePromptInputIdBySession?: Map<string, InputId>;
   rewindControlTurnKeys?: Set<string>;
   activeApiRetrySessionIds?: Set<string>;
@@ -125,7 +125,7 @@ export function formatModelPickerValue(ref: ModelSelection | undefined): string 
 }
 
 function resolveLatestMessageModelSelection(
-  messages: readonly ZCodeMessageWithParts[],
+  messages: readonly ZodyMessageWithParts[],
 ): ModelSelection | undefined {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const model = messages[index]?.info.model;
@@ -137,7 +137,7 @@ function resolveLatestMessageModelSelection(
 }
 
 function resolveTaskMetaModelSelectionFromSnapshot(
-  snapshot: ZCodeSessionStateSnapshot,
+  snapshot: ZodySessionStateSnapshot,
 ): ModelSelection | undefined {
   // 历史 resume 被错误 runtimeModel 覆盖时，settings.current 会变成 app 当前默认模型，
   // 但消息 info.model 仍记录真实使用的模型。task meta 会作为下次冷恢复 hint，
@@ -159,7 +159,7 @@ export function parseModelPickerValue(value: string): ModelSelection {
   return parseSharedModelSelection(value);
 }
 
-export function toZCodeTaskMode(mode: ZCodeTaskMode | undefined): ZCodeSessionMode | undefined {
+export function toZCodeTaskMode(mode: ZodyTaskMode | undefined): ZodySessionMode | undefined {
   switch (mode) {
     case "plan":
       return "plan";
@@ -184,9 +184,9 @@ export function toZCodeTaskMode(mode: ZCodeTaskMode | undefined): ZCodeSessionMo
 }
 
 export function zcodeSessionSettingsToConfigOptions(
-  settings: ZCodeSessionSettingsState,
-): ZCodeConfigOption[] {
-  const configOptions: ZCodeConfigOption[] = [
+  settings: ZodySessionSettingsState,
+): ZodyConfigOption[] {
+  const configOptions: ZodyConfigOption[] = [
     {
       id: MODEL_CONFIG_ID,
       name: "Model",
@@ -238,8 +238,8 @@ export function zcodeSessionSettingsToConfigOptions(
 }
 
 export function zcodeWorkspacePresentationToConfigOptions(
-  mode: ZCodeSessionMode,
-): ZCodeConfigOption[] {
+  mode: ZodySessionMode,
+): ZodyConfigOption[] {
   return [
     {
       id: MODE_CONFIG_ID,
@@ -253,7 +253,7 @@ export function zcodeWorkspacePresentationToConfigOptions(
 }
 
 function resolveSettingsThoughtLevelCurrentValue(
-  thoughtLevel: ZCodeSessionSettingsState["thoughtLevel"],
+  thoughtLevel: ZodySessionSettingsState["thoughtLevel"],
 ): string | undefined {
   const thoughtLevelValues = new Set(thoughtLevel.available.map((level) => level.value));
   const currentThoughtLevel =
@@ -270,8 +270,8 @@ function resolveSettingsThoughtLevelCurrentValue(
 }
 
 export function zcodeSessionSnapshotToZCodeTaskSnapshot(
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodeTaskSnapshot {
+  snapshot: ZodySessionStateSnapshot,
+): ZodyTaskSnapshot {
   const meta = zcodeSessionSnapshotToTaskMeta(snapshot);
   const activeGoalIterationCount = getSnapshotGoalActiveIterationCount(snapshot);
   const goalIterationByAssistantMessageId = getZCodeGoalIterationByAssistantMessageId(
@@ -336,7 +336,7 @@ export function zcodeSessionSnapshotToZCodeTaskSnapshot(
     ),
   );
   logCompactionProjectionDiagnostic(snapshot, visibleMessages, messages);
-  const pendingPermissions: ZCodePermissionRequest[] = snapshot.projection.pendingPermissions
+  const pendingPermissions: ZodyPermissionRequest[] = snapshot.projection.pendingPermissions
     .filter((permission) => !isUserInputBackedPermissionToolName(permission.toolName))
     .map((permission) => pendingPermissionToStreamEvent(snapshot.session.sessionId, permission));
   return {
@@ -365,7 +365,7 @@ export function zcodeSessionSnapshotToZCodeTaskSnapshot(
           ),
         )
         .filter(
-          (event): event is Extract<ZCodeStreamEvent, { type: "elicitation_request" }> =>
+          (event): event is Extract<ZodyStreamEvent, { type: "elicitation_request" }> =>
             event !== null,
         ),
       // Bugfix: agent 恢复历史 session 时会从 DB 读取 todo；UI 的 todo 面板不能再只依赖
@@ -379,11 +379,11 @@ export function zcodeSessionSnapshotToZCodeTaskSnapshot(
   };
 }
 
-function hasProtocolCompactionPart(message: ZCodeMessageWithParts): boolean {
+function hasProtocolCompactionPart(message: ZodyMessageWithParts): boolean {
   return message.parts.some((part) => part.type === "compaction");
 }
 
-function protocolMessageTimelineStatus(message: ZCodeMessageWithParts) {
+function protocolMessageTimelineStatus(message: ZodyMessageWithParts) {
   for (const part of message.parts) {
     if (part.type !== "compaction") {
       continue;
@@ -400,7 +400,7 @@ function protocolMessageTimelineStatus(message: ZCodeMessageWithParts) {
   return null;
 }
 
-function summarizeProtocolMessageForTimelineDiag(message: ZCodeMessageWithParts, index: number) {
+function summarizeProtocolMessageForTimelineDiag(message: ZodyMessageWithParts, index: number) {
   return {
     index,
     id: message.info.messageId,
@@ -413,7 +413,7 @@ function summarizeProtocolMessageForTimelineDiag(message: ZCodeMessageWithParts,
   };
 }
 
-function summarizePersistedMessageForTimelineDiag(message: ZCodePersistedMessage, index: number) {
+function summarizePersistedMessageForTimelineDiag(message: ZodyPersistedMessage, index: number) {
   const timeline = message.syntheticTimeline;
   return {
     index,
@@ -461,9 +461,9 @@ function rememberCompactionProjectionDiagSignature(signature: string): boolean {
 }
 
 function logCompactionProjectionDiagnostic(
-  snapshot: ZCodeSessionStateSnapshot,
-  visibleMessages: readonly ZCodeMessageWithParts[],
-  projectedMessages: readonly ZCodePersistedMessage[],
+  snapshot: ZodySessionStateSnapshot,
+  visibleMessages: readonly ZodyMessageWithParts[],
+  projectedMessages: readonly ZodyPersistedMessage[],
 ) {
   const hasCompaction =
     snapshot.messages.some(hasProtocolCompactionPart) ||
@@ -514,9 +514,9 @@ function logCompactionProjectionDiagnostic(
 }
 
 function restoreGoalCommandUserMessages(
-  messages: ZCodePersistedMessage[],
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  snapshot: ZodySessionStateSnapshot,
+): ZodyPersistedMessage[] {
   const target = snapshot.projection.target;
   const objective = target?.objective.trim();
   if (!target || !objective) {
@@ -545,7 +545,7 @@ function restoreGoalCommandUserMessages(
   return changed ? restored : messages;
 }
 
-function getSnapshotGoalActiveIterationCount(snapshot: ZCodeSessionStateSnapshot): number {
+function getSnapshotGoalActiveIterationCount(snapshot: ZodySessionStateSnapshot): number {
   const targetId = snapshot.projection.target?.targetId;
   const timeline =
     snapshot.runtime.goalVerificationTimeline?.filter(
@@ -558,9 +558,9 @@ function getSnapshotGoalActiveIterationCount(snapshot: ZCodeSessionStateSnapshot
 }
 
 function addGoalObjectiveSnapshotFallback(
-  messages: ZCodePersistedMessage[],
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  snapshot: ZodySessionStateSnapshot,
+): ZodyPersistedMessage[] {
   const objective = snapshot.projection.target?.objective.trim();
   if (
     !objective ||
@@ -589,9 +589,9 @@ function addGoalObjectiveSnapshotFallback(
 }
 
 function addSessionForkSnapshotFallback(
-  messages: ZCodePersistedMessage[],
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  snapshot: ZodySessionStateSnapshot,
+): ZodyPersistedMessage[] {
   const parentSessionId = snapshot.session.parentSessionId;
   if (
     !parentSessionId ||
@@ -622,9 +622,9 @@ function addSessionForkSnapshotFallback(
 }
 
 function addGoalVerificationTimelineSnapshotFallback(
-  messages: ZCodePersistedMessage[],
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  snapshot: ZodySessionStateSnapshot,
+): ZodyPersistedMessage[] {
   const timeline = snapshot.runtime.goalVerificationTimeline ?? [];
   if (timeline.length === 0) {
     return messages;
@@ -641,7 +641,7 @@ function addGoalVerificationTimelineSnapshotFallback(
   );
   const timelineMessages = timeline
     .filter((item) => !existingIds.has(goalVerificationTimelineIdentityKey(item)))
-    .map<ZCodePersistedMessage>((item) => ({
+    .map<ZodyPersistedMessage>((item) => ({
       id: goalVerificationTimelineMessageId(item),
       role: "assistant",
       content: "",
@@ -657,7 +657,7 @@ function addGoalVerificationTimelineSnapshotFallback(
 }
 
 function goalVerificationTimelineIdentityKey(
-  item: Extract<ZCodeGoalVerificationTimelineMeta, { type: "goal_verification" }>,
+  item: Extract<ZodyGoalVerificationTimelineMeta, { type: "goal_verification" }>,
 ): string {
   if (typeof item.goalIteration === "number") {
     return `${item.targetId}:${item.goalIteration}`;
@@ -666,7 +666,7 @@ function goalVerificationTimelineIdentityKey(
 }
 
 function goalVerificationTimelineMessageId(
-  item: Extract<ZCodeGoalVerificationTimelineMeta, { type: "goal_verification" }>,
+  item: Extract<ZodyGoalVerificationTimelineMeta, { type: "goal_verification" }>,
 ): string {
   if (typeof item.goalIteration === "number") {
     return `zcode-goal-verification-${item.targetId}-${item.goalIteration}`;
@@ -675,9 +675,9 @@ function goalVerificationTimelineMessageId(
 }
 
 function insertGoalVerificationTimelineMessages(
-  messages: ZCodePersistedMessage[],
-  timelineMessages: ZCodePersistedMessage[],
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  timelineMessages: ZodyPersistedMessage[],
+): ZodyPersistedMessage[] {
   const result = [...messages];
   for (const message of [...timelineMessages].sort(
     (left, right) => left.timestamp - right.timestamp,
@@ -697,8 +697,8 @@ function insertGoalVerificationTimelineMessages(
 }
 
 function normalizeGoalVerificationTimelineMessageOrder(
-  messages: ZCodePersistedMessage[],
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+): ZodyPersistedMessage[] {
   const timelineMessages = messages.filter(
     (message) => message.syntheticTimeline?.type === "goal_verification",
   );
@@ -714,7 +714,7 @@ function normalizeGoalVerificationTimelineMessageOrder(
 }
 
 function goalVerificationAnchorInsertIndex(
-  messages: readonly ZCodePersistedMessage[],
+  messages: readonly ZodyPersistedMessage[],
   anchorIndex: number,
 ): number {
   let index = anchorIndex + 1;
@@ -728,7 +728,7 @@ function goalVerificationAnchorInsertIndex(
 }
 
 function timestampInsertIndex(
-  messages: readonly ZCodePersistedMessage[],
+  messages: readonly ZodyPersistedMessage[],
   timestamp: number,
 ): number {
   const index = messages.findIndex((message) => message.timestamp > timestamp);
@@ -736,7 +736,7 @@ function timestampInsertIndex(
 }
 
 function findPersistedMessageIndexById(
-  messages: readonly ZCodePersistedMessage[],
+  messages: readonly ZodyPersistedMessage[],
   messageId: string,
 ): number {
   return messages.findIndex(
@@ -745,8 +745,8 @@ function findPersistedMessageIndexById(
 }
 
 function sessionTodosToPlanSteps(
-  todos: ZCodeSessionStateSnapshot["todos"],
-): ZCodePlanStep[] | null {
+  todos: ZodySessionStateSnapshot["todos"],
+): ZodyPlanStep[] | null {
   if (!todos || todos.length === 0) {
     return null;
   }
@@ -758,14 +758,14 @@ function sessionTodosToPlanSteps(
 }
 
 function sessionGoalStatsToRuntime(
-  stats: ZCodeSessionStateSnapshot["goalStats"],
-): ZCodeTaskGoalStats | null {
+  stats: ZodySessionStateSnapshot["goalStats"],
+): ZodyTaskGoalStats | null {
   return stats ? { ...stats } : null;
 }
 
 function sessionTodoGroupsToRuntime(
-  groups: ZCodeSessionStateSnapshot["todoGroups"],
-): ZCodeTodoGroup[] | null {
+  groups: ZodySessionStateSnapshot["todoGroups"],
+): ZodyTodoGroup[] | null {
   if (!groups || groups.length === 0) {
     return null;
   }
@@ -784,7 +784,7 @@ function sessionTodoGroupsToRuntime(
   }));
 }
 
-export function zcodeSessionSnapshotToTaskMeta(snapshot: ZCodeSessionStateSnapshot): ZCodeTaskMeta {
+export function zcodeSessionSnapshotToTaskMeta(snapshot: ZodySessionStateSnapshot): ZodyTaskMeta {
   return {
     taskId: snapshot.session.sessionId,
     traceId: generateTraceId(snapshot.session.sessionId),
@@ -817,11 +817,11 @@ export function zcodeSessionSnapshotToTaskMeta(snapshot: ZCodeSessionStateSnapsh
 }
 
 export function zcodeSessionEventToZCodeStreamEvents(params: {
-  event: ZCodeSessionEvent;
+  event: ZodySessionEvent;
   projectionMode?: ZCodeSessionProjectionMode;
   state?: ZCodeSessionEventProjectionState;
   taskId: string;
-}): ZCodeStreamEvent[] {
+}): ZodyStreamEvent[] {
   const { event, state, taskId, projectionMode = "active-live" } = params;
   const protocolTraceId = event.traceId ?? generateTraceId(taskId);
   const payload = asRecord(event.payload);
@@ -842,7 +842,7 @@ export function zcodeSessionEventToZCodeStreamEvents(params: {
     if (inputId) {
       setActivePromptInputId(state, event.sessionId, inputId);
     }
-    const runStartedEvent: ZCodeStreamEvent = {
+    const runStartedEvent: ZodyStreamEvent = {
       type: "task_run_started",
       taskId,
       traceId,
@@ -995,7 +995,7 @@ export function zcodeSessionEventToZCodeStreamEvents(params: {
       ];
     }
     case "turn.completed": {
-      const events: ZCodeStreamEvent[] = [];
+      const events: ZodyStreamEvent[] = [];
       const response = stringValue(payload.response);
       const isRewindControlTurn = state?.rewindControlTurnKeys?.has(turnKey) ?? false;
       if (response && !isRewindControlTurn && !state?.streamedTurnKeys?.has(turnKey)) {
@@ -1094,7 +1094,7 @@ export function zcodeSessionEventToZCodeStreamEvents(params: {
 
 function ensureProjectionToolMemory(
   state: ZCodeSessionEventProjectionState | undefined,
-): ZCodeToolProjectionMemory | undefined {
+): ZodyToolProjectionMemory | undefined {
   if (!state) {
     return undefined;
   }
@@ -1116,8 +1116,8 @@ function ensureProjectionApiRetrySessionIds(
 function trackProjectionApiRetryEvents(
   state: ZCodeSessionEventProjectionState | undefined,
   sessionId: string,
-  events: ZCodeStreamEvent[],
-): ZCodeStreamEvent[] {
+  events: ZodyStreamEvent[],
+): ZodyStreamEvent[] {
   const apiRetrySessionIds = ensureProjectionApiRetrySessionIds(state);
   if (!apiRetrySessionIds) {
     return events;
@@ -1148,7 +1148,7 @@ function takeProjectionApiRetryClearOnModelProgress(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "session_info_update" }> | null {
+): Extract<ZodyStreamEvent, { type: "session_info_update" }> | null {
   if (
     !state?.activeApiRetrySessionIds?.has(sessionId) ||
     !isZCodeModelRetryRecoveryProgressPayload(payload)
@@ -1168,10 +1168,10 @@ function takeProjectionApiRetryClearOnModelProgress(
 }
 
 export function zcodeStateUpdatedToZCodeStreamEvents(params: {
-  notification: ZCodeStateUpdatedNotification;
-  settings: ZCodeSessionSettingsState;
+  notification: ZodyStateUpdatedNotification;
+  settings: ZodySessionSettingsState;
   taskId: string;
-}): ZCodeStreamEvent[] {
+}): ZodyStreamEvent[] {
   const traceId = generateTraceId(params.taskId);
   return [
     {
@@ -1218,8 +1218,8 @@ export function zcodeStateUpdatedToZCodeStreamEvents(params: {
 
 export function zcodePermissionRequestToZCodeStreamEvent(
   taskId: string,
-  request: ZCodePermissionRequestParams,
-): ZCodeStreamEvent {
+  request: ZodyPermissionRequestParams,
+): ZodyStreamEvent {
   return {
     type: "permission_request",
     taskId,
@@ -1236,8 +1236,8 @@ export function zcodePermissionRequestToZCodeStreamEvent(
 
 export function zcodeUserInputRequestToZCodeStreamEvent(
   taskId: string,
-  request: ZCodeUserInputRequestParams,
-): Extract<ZCodeStreamEvent, { type: "elicitation_request" }> {
+  request: ZodyUserInputRequestParams,
+): Extract<ZodyStreamEvent, { type: "elicitation_request" }> {
   const questions =
     request.questions?.map((question) => ({
       question: question.question,
@@ -1269,10 +1269,10 @@ export function zcodeUserInputResponseToZCodeStreamEvent(
   taskId: string,
   response: {
     requestId: string;
-    action: ZCodeUserInputResponse["action"];
+    action: ZodyUserInputResponse["action"];
     content?: Record<string, unknown>;
   },
-): Extract<ZCodeStreamEvent, { type: "elicitation_response" }> {
+): Extract<ZodyStreamEvent, { type: "elicitation_response" }> {
   return {
     type: "elicitation_response",
     taskId,
@@ -1288,7 +1288,7 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
   inputId: InputId | undefined;
   taskId: string;
   traceId: TraceId;
-}): Extract<ZCodeStreamEvent, { type: "tool_call_update" }> | null {
+}): Extract<ZodyStreamEvent, { type: "tool_call_update" }> | null {
   const parsed = parseZCodeBackgroundTaskNotificationText(params.input);
   if (!parsed) {
     return null;
@@ -1315,18 +1315,18 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
 }
 
 function zcodeMessageToZCodePersistedMessage(
-  message: ZCodeMessageWithParts,
+  message: ZodyMessageWithParts,
   goalIteration?: number,
   backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
-): ZCodePersistedMessage {
-  const tools: ZCodePersistedToolCall[] = [];
-  const parts: ZCodePersistedMessagePart[] = [];
+): ZodyPersistedMessage {
+  const tools: ZodyPersistedToolCall[] = [];
+  const parts: ZodyPersistedMessagePart[] = [];
   const attachments = mapPromptAttachmentsFromParts(message.parts);
   const projectionPolicy =
     message.info.role === "user"
       ? getConversationMessageProjectionPolicy(message)
       : "realUserInput";
-  let syntheticTimeline: ZCodeTimelineMeta | undefined;
+  let syntheticTimeline: ZodyTimelineMeta | undefined;
   for (const part of message.parts) {
     if (part.type === "text") {
       if (!syntheticTimeline) {
@@ -1378,18 +1378,18 @@ function zcodeMessageToZCodePersistedMessage(
 }
 
 function mapPromptAttachmentsFromParts(
-  parts: readonly ZCodeMessagePart[],
-): ZCodePromptAttachment[] | undefined {
+  parts: readonly ZodyMessagePart[],
+): ZodyPromptAttachment[] | undefined {
   const attachments = parts
-    .filter((part): part is Extract<ZCodeMessagePart, { type: "file" }> => part.type === "file")
+    .filter((part): part is Extract<ZodyMessagePart, { type: "file" }> => part.type === "file")
     .map(mapPromptAttachmentFromFilePart)
-    .filter((attachment): attachment is ZCodePromptAttachment => attachment !== undefined);
+    .filter((attachment): attachment is ZodyPromptAttachment => attachment !== undefined);
   return attachments.length > 0 ? attachments : undefined;
 }
 
 function mapPromptAttachmentFromFilePart(
-  part: Extract<ZCodeMessagePart, { type: "file" }>,
-): ZCodePromptAttachment | undefined {
+  part: Extract<ZodyMessagePart, { type: "file" }>,
+): ZodyPromptAttachment | undefined {
   const mimeType = part.mime || "application/octet-stream";
   const metadata = asRecord(part.metadata);
   const filename = part.filename?.trim() || filenameFromPathLike(part.url) || "attachment";
@@ -1491,8 +1491,8 @@ function filenameFromPathLike(value: string): string | undefined {
 }
 
 function extractSyntheticTimelineFromTextPart(
-  part: Extract<ZCodeMessagePart, { type: "text" }>,
-): ZCodeTimelineMeta | undefined {
+  part: Extract<ZodyMessagePart, { type: "text" }>,
+): ZodyTimelineMeta | undefined {
   const metadata = part.metadata;
   if (!metadata || typeof metadata !== "object") return undefined;
   const forkContext = (metadata as Record<string, unknown>)["forkContext"];
@@ -1519,8 +1519,8 @@ function extractSyntheticTimelineFromTextPart(
 }
 
 function synthesizeTimelineFromTimelinePart(
-  part: Extract<ZCodeMessagePart, { type: "timeline" }>,
-): ZCodeTimelineMeta | undefined {
+  part: Extract<ZodyMessagePart, { type: "timeline" }>,
+): ZodyTimelineMeta | undefined {
   if (part.timelineType !== "session_fork") {
     return undefined;
   }
@@ -1544,8 +1544,8 @@ function synthesizeTimelineFromTimelinePart(
 }
 
 function synthesizeCompactionTimeline(
-  part: Extract<ZCodeMessagePart, { type: "compaction" }>,
-): ZCodeTimelineMeta | undefined {
+  part: Extract<ZodyMessagePart, { type: "compaction" }>,
+): ZodyTimelineMeta | undefined {
   const metadata = asRecord(part.metadata);
   const operationId = stringValue(metadata.operationId) ?? part.partId;
   const status = timelineStatusValue(metadata.timelineStatus);
@@ -1595,7 +1595,7 @@ function mapCompactTimelinePayload(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }> | null {
+): Extract<ZodyStreamEvent, { type: "agent_message_chunk" }> | null {
   const timeline = compactTimelineMetaFromPayload(payload, inputId);
   if (!timeline) {
     return null;
@@ -1619,13 +1619,13 @@ function mapSyntheticTimelinePartPayload(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }> | null {
+): Extract<ZodyStreamEvent, { type: "agent_message_chunk" }> | null {
   const part = asRecord(payload.part);
   if (part.type !== "text") {
     return null;
   }
   const timeline = extractSyntheticTimelineFromTextPart(
-    part as Extract<ZCodeMessagePart, { type: "text" }>,
+    part as Extract<ZodyMessagePart, { type: "text" }>,
   );
   if (!timeline) {
     return null;
@@ -1650,7 +1650,7 @@ function mapGoalVerificationTimelinePayload(
   inputId: InputId | undefined,
   timestamp: number,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }> | null {
+): Extract<ZodyStreamEvent, { type: "agent_message_chunk" }> | null {
   const targetId = stringValue(payload.targetId);
   const verificationId = stringValue(payload.verificationId);
   const status = goalVerificationTimelineStatusValue(payload.status);
@@ -1663,7 +1663,7 @@ function mapGoalVerificationTimelinePayload(
   const anchorTurnId = stringValue(payload.anchorTurnId);
   const startedAt =
     numberValue(payload.startedAt) ?? (status === "started" ? timestamp : undefined);
-  const timeline: ZCodeGoalVerificationTimelineMeta = {
+  const timeline: ZodyGoalVerificationTimelineMeta = {
     version: 1,
     kind: "synthetic",
     type: "goal_verification",
@@ -1692,7 +1692,7 @@ function mapGoalVerificationTimelinePayload(
 function compactTimelineMetaFromPayload(
   payload: Record<string, unknown>,
   inputId: InputId | undefined,
-): ZCodeContextCompactionTimelineMeta | null {
+): ZodyContextCompactionTimelineMeta | null {
   const operationId = stringValue(payload.operationId);
   const status = timelineStatusValue(payload.status ?? payload.timelineStatus);
   if (!operationId || !status) {
@@ -1711,7 +1711,7 @@ function compactTimelineMetaFromPayload(
   const phase = compactionPhaseValue(payload.phase);
   const startedAt = numberValue(payload.startedAt);
   const endedAt = numberValue(payload.endedAt);
-  const timeline: ZCodeContextCompactionTimelineMeta = {
+  const timeline: ZodyContextCompactionTimelineMeta = {
     version: 1,
     kind: "synthetic",
     type: "context_compaction",
@@ -1741,7 +1741,7 @@ function compactFailureToTimelineEvent(
   traceId: TraceId,
   inputId: InputId | undefined,
   reason: string,
-): Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }> {
+): Extract<ZodyStreamEvent, { type: "agent_message_chunk" }> {
   const operationId = `compact-failed-${inputId ?? traceId}`;
   return {
     type: "agent_message_chunk",
@@ -1765,9 +1765,9 @@ function compactFailureToTimelineEvent(
 }
 
 function mapToolPart(
-  part: Extract<ZCodeMessagePart, { type: "tool" }>,
+  part: Extract<ZodyMessagePart, { type: "tool" }>,
   backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
-): ZCodePersistedToolCall {
+): ZodyPersistedToolCall {
   const state = part.state;
   const taskNotification = backgroundTaskNotifications?.get(part.callId);
   // 修复原因：ZCode Protocol 的 part.callId 是实时流和终态 snapshot 共同的工具身份。
@@ -1832,9 +1832,9 @@ function mapModelStreaming(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-  toolProjectionMemory?: ZCodeToolProjectionMemory,
+  toolProjectionMemory?: ZodyToolProjectionMemory,
   projectionMode: ZCodeSessionProjectionMode = "active-live",
-): ZCodeStreamEvent | null {
+): ZodyStreamEvent | null {
   const kind = stringValue(payload.kind);
   const delta = stringValue(payload.delta);
   const parentToolUseId = parentToolUseIdFromToolPayload(payload);
@@ -1880,9 +1880,9 @@ function mapToolInputStreaming(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-  toolProjectionMemory?: ZCodeToolProjectionMemory,
+  toolProjectionMemory?: ZodyToolProjectionMemory,
   projectionMode: ZCodeSessionProjectionMode = "active-live",
-): ZCodeStreamEvent | null {
+): ZodyStreamEvent | null {
   const streamingToolInputById = toolProjectionMemory?.streamingToolInputById;
   const toolNameById = toolProjectionMemory?.toolNameById;
   const kind = stringValue(payload.kind);
@@ -2243,8 +2243,8 @@ function mapToolUpdated(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-  toolProjectionMemory?: ZCodeToolProjectionMemory,
-): ZCodeStreamEvent[] {
+  toolProjectionMemory?: ZodyToolProjectionMemory,
+): ZodyStreamEvent[] {
   const toolId = stringValue(payload.toolCallId);
   if (!toolId) {
     return [];
@@ -2276,7 +2276,7 @@ function mapToolUpdated(
       ];
     }
     finalizeZCodeToolProjectionInput(toolId, payload.input, memory);
-    const toolEvent: ZCodeStreamEvent = {
+    const toolEvent: ZodyStreamEvent = {
       type: "tool_call",
       taskId,
       traceId,
@@ -2314,7 +2314,7 @@ function mapToolUpdated(
     const toolName = rememberedToolName;
     const content = normalizeToolResultContent(toolName, result);
     const status = toolResultStatus(toolName, result);
-    const toolEvent: ZCodeStreamEvent = {
+    const toolEvent: ZodyStreamEvent = {
       type: "tool_call_update",
       taskId,
       traceId,
@@ -2396,7 +2396,7 @@ function mapToolUpdated(
 function toolResultStatus(
   toolName: string | undefined,
   result: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "tool_call_update" }>["status"] {
+): Extract<ZodyStreamEvent, { type: "tool_call_update" }>["status"] {
   if (result.success === false) {
     return "failed";
   }
@@ -2476,7 +2476,7 @@ function isSubagentDispatchToolName(toolName: string | undefined): boolean {
 
 function toolStatusFromPayload(
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "tool_call_update" }>["status"] {
+): Extract<ZodyStreamEvent, { type: "tool_call_update" }>["status"] {
   switch (stringValue(payload.status)) {
     case "tool_started":
       return "in_progress";
@@ -2582,7 +2582,7 @@ function permissionPayloadToStreamEvent(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): ZCodeStreamEvent {
+): ZodyStreamEvent {
   return {
     type: "permission_request",
     taskId,
@@ -2594,7 +2594,7 @@ function permissionPayloadToStreamEvent(
     kind: stringValue(payload.toolName) ?? "tool",
     title: stringValue(payload.toolName),
     options: permissionOptionsFromPayload(payload),
-    ...(payload.origin ? { origin: payload.origin as ZCodePermissionRequest["origin"] } : {}),
+    ...(payload.origin ? { origin: payload.origin as ZodyPermissionRequest["origin"] } : {}),
     raw: payload,
   };
 }
@@ -2605,7 +2605,7 @@ function permissionResolvedPayloadToStreamEvents(
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
   toolNameById?: Map<string, string>,
-): ZCodeStreamEvent[] {
+): ZodyStreamEvent[] {
   const toolCallId = stringValue(payload.toolCallId);
   const toolName =
     stringValue(payload.toolName) ?? (toolCallId ? toolNameById?.get(toolCallId) : undefined);
@@ -2635,7 +2635,7 @@ function permissionResolvedPayloadToStreamEvents(
     response: {
       decision: decision === "deny" ? "deny" : "allow",
     },
-  } as Extract<ZCodeStreamEvent, { type: "permission_response" }>;
+  } as Extract<ZodyStreamEvent, { type: "permission_response" }>;
 
   if (decision !== "deny" || !toolCallId) {
     return [permissionResponse];
@@ -2664,8 +2664,8 @@ function permissionResolvedPayloadToStreamEvents(
 
 function pendingPermissionToStreamEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): ZCodePermissionRequest {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId,
@@ -2680,8 +2680,8 @@ function pendingPermissionToStreamEvent(
   };
 }
 
-function permissionOptionsFromPayload(payload: Record<string, unknown>): ZCodePermissionOption[] {
-  return Array.isArray(payload.options) ? (payload.options as ZCodePermissionOption[]) : [];
+function permissionOptionsFromPayload(payload: Record<string, unknown>): ZodyPermissionOption[] {
+  return Array.isArray(payload.options) ? (payload.options as ZodyPermissionOption[]) : [];
 }
 
 type PendingElicitationQuestion = {
@@ -2693,8 +2693,8 @@ type PendingElicitationQuestion = {
 
 function pendingUserInputBackedPermissionToElicitationEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): Extract<ZCodeStreamEvent, { type: "elicitation_request" }> | null {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): Extract<ZodyStreamEvent, { type: "elicitation_request" }> | null {
   if (isAskUserQuestionToolName(permission.toolName)) {
     return pendingAskUserQuestionToElicitationEvent(taskId, permission);
   }
@@ -2706,8 +2706,8 @@ function pendingUserInputBackedPermissionToElicitationEvent(
 
 function pendingAskUserQuestionToElicitationEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): Extract<ZCodeStreamEvent, { type: "elicitation_request" }> | null {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): Extract<ZodyStreamEvent, { type: "elicitation_request" }> | null {
   const questions = askUserQuestionInputToElicitationQuestions(permission.input);
   if (questions.length === 0) {
     return null;
@@ -2730,8 +2730,8 @@ function pendingAskUserQuestionToElicitationEvent(
 
 function pendingExitPlanModeToElicitationEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): Extract<ZCodeStreamEvent, { type: "elicitation_request" }> {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): Extract<ZodyStreamEvent, { type: "elicitation_request" }> {
   const questions = createExitPlanModeApprovalQuestions();
   const firstQuestion = questions[0];
   return {
@@ -2776,7 +2776,7 @@ export function syncZCodeSessionBackgroundTaskProjection(
 
 export function syncZCodeSessionBackgroundTaskProjectionFromSnapshot(
   state: ZCodeSessionEventProjectionState | undefined,
-  snapshot: ZCodeSessionStateSnapshot,
+  snapshot: ZodySessionStateSnapshot,
 ) {
   // Bugfix: 单 task completion 是增量 payload，必须以同一订阅收到的完整 snapshot
   // 作为 merge 基线；否则切走/切回后新 projection state 会把 peer running task 清掉。
@@ -2870,8 +2870,8 @@ function mapSessionInfoLikePayload(
   eventId: string | undefined,
   payload: Record<string, unknown>,
   state: ZCodeSessionEventProjectionState | undefined,
-): ZCodeStreamEvent[] {
-  const events: ZCodeStreamEvent[] = [];
+): ZodyStreamEvent[] {
+  const events: ZodyStreamEvent[] = [];
   const goalVerification = goalVerificationFromPayload(payload);
   if (goalVerification) {
     events.push({
@@ -2945,7 +2945,7 @@ function mapSessionInfoLikePayload(
       ...(inputId ? { inputId } : {}),
       // Bugfix: EnterPlanMode 写入的 SessionModeChanged 会经 bootstrap 投影成 session.updated；
       // 这里把 mode payload 转成 UI 现有事件，避免菜单仍显示进入 plan 前的模式。
-      currentModeId: normalizeAvailableZCodeMode(mode as ZCodeSessionMode),
+      currentModeId: normalizeAvailableZCodeMode(mode as ZodySessionMode),
       availableModes: getZCodeAgentAvailableModes(),
     });
   }
@@ -2995,7 +2995,7 @@ function mapSessionInfoLikePayload(
   return events;
 }
 
-function normalizeTargetChangedAction(action: string | undefined): ZCodeTaskTargetChangedAction {
+function normalizeTargetChangedAction(action: string | undefined): ZodyTaskTargetChangedAction {
   switch (action) {
     case "status_updated":
     case "cleared":
@@ -3012,7 +3012,7 @@ function normalizeTargetChangedAction(action: string | undefined): ZCodeTaskTarg
 
 function goalVerificationFromPayload(
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "goal_verification_update" }>["verification"] | null {
+): Extract<ZodyStreamEvent, { type: "goal_verification_update" }>["verification"] | null {
   if (stringValue(payload.querySource) !== "target_completion_verification") {
     return null;
   }
@@ -3067,7 +3067,7 @@ function taskTokenUsageDeltaFromPayload(
   inputId: InputId | undefined,
   eventId: string | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "task_token_usage_delta" }> | null {
+): Extract<ZodyStreamEvent, { type: "task_token_usage_delta" }> | null {
   if (!isModelCompleteUsagePayload(payload)) {
     return null;
   }
@@ -3109,7 +3109,7 @@ function isModelCompleteUsagePayload(payload: Record<string, unknown>): boolean 
 
 function apiRetryFromSessionInfoPayload(
   payload: Record<string, unknown>,
-): ZCodeApiRetryStatus | null | undefined {
+): ZodyApiRetryStatus | null | undefined {
   if ("apiRetry" in payload) {
     return normalizeZCodeApiRetryStatus(payload.apiRetry);
   }
@@ -3131,12 +3131,12 @@ function apiRetryFromSessionInfoPayload(
 }
 
 type ContextUsageUpdate = Pick<
-  Extract<ZCodeStreamEvent, { type: "usage_update" }>,
+  Extract<ZodyStreamEvent, { type: "usage_update" }>,
   "used" | "size" | "cost" | "cache" | "breakdown"
 >;
 
 function contextUsageFromProjection(
-  projection: ZCodeSessionStateSnapshot["projection"],
+  projection: ZodySessionStateSnapshot["projection"],
 ): ContextUsageUpdate | null {
   if (projection.contextWindow <= 0 || projection.contextUsed <= 0) {
     return null;
@@ -3149,7 +3149,7 @@ function contextUsageFromProjection(
 }
 
 function contextUsageFromRuntime(
-  runtimeUsage: ZCodeSessionStateSnapshot["runtime"]["contextUsage"] | undefined,
+  runtimeUsage: ZodySessionStateSnapshot["runtime"]["contextUsage"] | undefined,
 ): ContextUsageUpdate | null {
   if (!runtimeUsage || runtimeUsage.size <= 0 || runtimeUsage.used <= 0) {
     return null;
@@ -3300,21 +3300,21 @@ function contextCacheUsageFromPayload(
   };
 }
 
-function textFromParts(parts: readonly ZCodeMessagePart[]): string {
+function textFromParts(parts: readonly ZodyMessagePart[]): string {
   return textFromZCodeMessageParts(parts);
 }
 
-function reasoningFromParts(parts: readonly ZCodeMessagePart[]): string | undefined {
+function reasoningFromParts(parts: readonly ZodyMessagePart[]): string | undefined {
   const text = parts
     .filter(
-      (part): part is Extract<ZCodeMessagePart, { type: "reasoning" }> => part.type === "reasoning",
+      (part): part is Extract<ZodyMessagePart, { type: "reasoning" }> => part.type === "reasoning",
     )
     .map((part) => part.text)
     .join("");
   return text || undefined;
 }
 
-function deriveTitleFromSnapshot(snapshot: ZCodeSessionStateSnapshot): string {
+function deriveTitleFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
   return resolveZCodeVisibleSessionTitle({
     title: snapshot.session.title,
     messages: snapshot.messages,
@@ -3322,11 +3322,11 @@ function deriveTitleFromSnapshot(snapshot: ZCodeSessionStateSnapshot): string {
   });
 }
 
-function fromZCodeMode(mode: ZCodeSessionMode): ZCodeTaskMode {
+function fromZCodeMode(mode: ZodySessionMode): ZodyTaskMode {
   return mode === "build" ? "build" : mode;
 }
 
-function getZCodeAgentModeSelectOptions(): NonNullable<ZCodeConfigOption["options"]> {
+function getZCodeAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"]> {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({
     value: mode.id,
     name: mode.name,
@@ -3334,11 +3334,11 @@ function getZCodeAgentModeSelectOptions(): NonNullable<ZCodeConfigOption["option
   }));
 }
 
-function getZCodeAgentAvailableModes(): ZCodeTaskModeInfo[] {
+function getZCodeAgentAvailableModes(): ZodyTaskModeInfo[] {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({ ...mode }));
 }
 
-function fromZCodeGoal(goal: unknown): ZCodeTaskGoal {
+function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
   const record = asRecord(goal);
   const time = asRecord(record.time);
   const status = stringValue(record.status);
@@ -3361,7 +3361,7 @@ function fromZCodeGoal(goal: unknown): ZCodeTaskGoal {
   };
 }
 
-function isZCodeTaskGoalStatus(status: string | undefined): status is ZCodeTaskGoal["status"] {
+function isZCodeTaskGoalStatus(status: string | undefined): status is ZodyTaskGoal["status"] {
   return (
     status === "active" ||
     status === "paused" ||
@@ -3370,7 +3370,7 @@ function isZCodeTaskGoalStatus(status: string | undefined): status is ZCodeTaskG
   );
 }
 
-function usageFromPayload(value: unknown): ZCodeUsage | undefined {
+function usageFromPayload(value: unknown): ZodyUsage | undefined {
   const usage = asRecord(value);
   if (Object.keys(usage).length === 0) {
     return undefined;
@@ -3466,7 +3466,7 @@ function stringValue(value: unknown): string | undefined {
 
 function goalVerificationTimelineStatusValue(
   value: unknown,
-): ZCodeGoalVerificationTimelineMeta["status"] | undefined {
+): ZodyGoalVerificationTimelineMeta["status"] | undefined {
   return value === "started" ||
     value === "completed" ||
     value === "failed_closed" ||
@@ -3475,7 +3475,7 @@ function goalVerificationTimelineStatusValue(
     : undefined;
 }
 
-function goalVerificationFromRecord(record: Record<string, unknown>): ZCodeGoalVerification | null {
+function goalVerificationFromRecord(record: Record<string, unknown>): ZodyGoalVerification | null {
   const reason = stringValue(record.reason)?.trim();
   if (!reason) {
     return null;
@@ -3516,7 +3516,7 @@ function booleanValue(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
 }
 
-function timelineStatusValue(value: unknown): ZCodeTimelineStatus | undefined {
+function timelineStatusValue(value: unknown): ZodyTimelineStatus | undefined {
   return value === "started" ||
     value === "retrying" ||
     value === "skipped" ||
@@ -3527,7 +3527,7 @@ function timelineStatusValue(value: unknown): ZCodeTimelineStatus | undefined {
     : undefined;
 }
 
-function timelineTriggerValue(value: unknown): ZCodeTimelineTrigger | undefined {
+function timelineTriggerValue(value: unknown): ZodyTimelineTrigger | undefined {
   return value === "manual" ||
     value === "auto" ||
     value === "reactive" ||
@@ -3537,7 +3537,7 @@ function timelineTriggerValue(value: unknown): ZCodeTimelineTrigger | undefined 
     : undefined;
 }
 
-function compactionPhaseValue(value: unknown): ZCodeContextCompactionTimelinePhase | undefined {
+function compactionPhaseValue(value: unknown): ZodyContextCompactionTimelinePhase | undefined {
   return value === "standalone_turn" ||
     value === "pre_request" ||
     value === "mid_turn" ||
@@ -3552,13 +3552,13 @@ function stringArray(value: unknown): string[] {
     : [];
 }
 
-function turnSteerSourceValue(value: unknown): ZCodeTurnSteerSource | undefined {
+function turnSteerSourceValue(value: unknown): ZodyTurnSteerSource | undefined {
   return value === "plan_approval_feedback" || value === "workflow_refine_feedback"
     ? value
     : undefined;
 }
 
-function turnSteerCommandKindValue(value: unknown): ZCodeTurnSteerCommandKind | undefined {
+function turnSteerCommandKindValue(value: unknown): ZodyTurnSteerCommandKind | undefined {
   return value === "sendGoalCommand" || value === "sendText" || value === "compact"
     ? value
     : undefined;

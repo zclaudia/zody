@@ -1,6 +1,6 @@
-import type { ZCodeMcpResourceSample } from "@zody/shared";
+import type { ZodyMcpResourceSample } from "@zody/shared";
 import { Emitter } from "@zody/rpc";
-import type { ZCodeMcpTelemetryEvent, ZCodeProcessResourceSample } from "@zody/shared";
+import type { ZodyMcpTelemetryEvent, ZodyProcessResourceSample } from "@zody/shared";
 import type {
   ConversationTopicFrame,
   ConversationTopicWireFrame,
@@ -15,9 +15,9 @@ import type {
 import { sessionsIndexTopic, workspaceConfigTopic } from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it, vi } from "vitest";
 import type {
-  IZCodeAgentService,
+  IZodyAgentService,
   ZodyAgentRuntimeLifecycleEvent,
-  ZCodeAgentCuaPermissionObservation,
+  ZodyAgentCuaPermissionObservation,
 } from "../src/zody-agent/zodyAgent.js";
 import {
   createZCodeAgentConnectionScope,
@@ -55,10 +55,10 @@ function completeWire<F extends { topic: string; subscriptionId: string }>(
 function setupBase() {
   const conversationFrames = new Emitter<ConversationTopicWireFrame>();
   const telemetryFacts = new Emitter<ConversationTelemetryFact>();
-  const cuaPermissionObservations = new Emitter<ZCodeAgentCuaPermissionObservation>();
-  const processResourceSamples = new Emitter<ZCodeProcessResourceSample>();
-  const mcpResourceSamples = new Emitter<ZCodeMcpResourceSample[]>();
-  const mcpTelemetryEvents = new Emitter<ZCodeMcpTelemetryEvent>();
+  const cuaPermissionObservations = new Emitter<ZodyAgentCuaPermissionObservation>();
+  const processResourceSamples = new Emitter<ZodyProcessResourceSample>();
+  const mcpResourceSamples = new Emitter<ZodyMcpResourceSample[]>();
+  const mcpTelemetryEvents = new Emitter<ZodyMcpTelemetryEvent>();
   const sessionsIndexFrames = new Emitter<SessionsIndexTopicWireFrame>();
   const workspaceConfigFrames = new Emitter<WorkspaceConfigTopicWireFrame>();
   const runtimeRestarts = new Emitter<{ workspaceKey: string }>();
@@ -150,7 +150,7 @@ function setupBase() {
       nextOffset: null,
     })),
     setConnectionFlowStateV4: vi.fn(async () => {}),
-  } as unknown as IZCodeAgentService;
+  } as unknown as IZodyAgentService;
   return {
     base,
     conversationFrames,
@@ -166,7 +166,7 @@ function setupBase() {
 }
 
 function attachRuntimeLifecycle(
-  base: IZCodeAgentService,
+  base: IZodyAgentService,
 ): Emitter<ZodyAgentRuntimeLifecycleEvent> {
   const runtimeLifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
   Object.assign(base, {
@@ -362,14 +362,14 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
-    const relaySeen: ZCodeProcessResourceSample[] = [];
-    const desktopSeen: ZCodeProcessResourceSample[] = [];
-    const mobileSeen: ZCodeProcessResourceSample[] = [];
+    const relaySeen: ZodyProcessResourceSample[] = [];
+    const desktopSeen: ZodyProcessResourceSample[] = [];
+    const mobileSeen: ZodyProcessResourceSample[] = [];
 
     relay.service.onDynamicProcessResourceSample()((sample) => relaySeen.push(sample));
     desktop.service.onDynamicProcessResourceSample()((sample) => desktopSeen.push(sample));
     mobile.service.onDynamicProcessResourceSample()((sample) => mobileSeen.push(sample));
-    const sample: ZCodeProcessResourceSample = {
+    const sample: ZodyProcessResourceSample = {
       arch: "x64",
       cpuCores: 1,
       cpuPercent: 12.5,
@@ -401,7 +401,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
-    const sample: ZCodeMcpTelemetryEvent = {
+    const sample: ZodyMcpTelemetryEvent = {
       arch: "x64",
       kind: "process_start",
       mcpId: "builtin:node_repl",
@@ -411,9 +411,9 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       occurredAt: 1,
       platform: "linux",
     };
-    const relaySeen: ZCodeMcpTelemetryEvent[] = [];
-    const desktopSeen: ZCodeMcpTelemetryEvent[] = [];
-    const mobileSeen: ZCodeMcpTelemetryEvent[] = [];
+    const relaySeen: ZodyMcpTelemetryEvent[] = [];
+    const desktopSeen: ZodyMcpTelemetryEvent[] = [];
+    const mobileSeen: ZodyMcpTelemetryEvent[] = [];
 
     relay.service.onDynamicMcpTelemetry()((event) => relaySeen.push(event));
     desktop.service.onDynamicMcpTelemetry()((event) => desktopSeen.push(event));
@@ -441,7 +441,7 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       connectionId: "mobile-downstream",
       clientMode: "web-remote-replayable",
     });
-    const sample: ZCodeMcpResourceSample[] = [
+    const sample: ZodyMcpResourceSample[] = [
       {
         mcpId: "builtin:node_repl",
         instanceToken: "cli-instance-01",
@@ -458,9 +458,9 @@ describe("ZCodeAgent connection-scoped service facade", () => {
         totalMemoryGb: 32,
       },
     ];
-    const relaySeen: ZCodeMcpResourceSample[][] = [];
-    const desktopSeen: ZCodeMcpResourceSample[][] = [];
-    const mobileSeen: ZCodeMcpResourceSample[][] = [];
+    const relaySeen: ZodyMcpResourceSample[][] = [];
+    const desktopSeen: ZodyMcpResourceSample[][] = [];
+    const mobileSeen: ZodyMcpResourceSample[][] = [];
 
     relay.service.onDynamicMcpResourceSamples()((event) => relaySeen.push(event));
     desktop.service.onDynamicMcpResourceSamples()((event) => desktopSeen.push(event));
@@ -580,8 +580,8 @@ describe("ZCodeAgent connection-scoped service facade", () => {
       connectionId: "mobile-cua-permission",
       clientMode: "web-remote-replayable",
     });
-    const desktopSeen: ZCodeAgentCuaPermissionObservation[] = [];
-    const mobileSeen: ZCodeAgentCuaPermissionObservation[] = [];
+    const desktopSeen: ZodyAgentCuaPermissionObservation[] = [];
+    const mobileSeen: ZodyAgentCuaPermissionObservation[] = [];
 
     desktop.service.onDynamicCuaPermissionObservation()((event) => desktopSeen.push(event));
     mobile.service.onDynamicCuaPermissionObservation()((event) => mobileSeen.push(event));

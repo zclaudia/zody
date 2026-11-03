@@ -4,7 +4,7 @@ import {
   ZCODE_PROCESS_DIAGNOSTIC_NAME_MAX_CHARS,
   ZCODE_PROCESS_DIAGNOSTIC_MESSAGE_MAX_CHARS,
   ZCODE_PROCESS_DIAGNOSTIC_STACK_MAX_CHARS,
-  type ZCodeProcessDiagnostic,
+  type ZodyProcessDiagnostic,
 } from "@zody/shared/process-diagnostic";
 
 export interface CliProcessErrorBoundaryTarget {
@@ -89,7 +89,7 @@ function writeProcessErrorDiagnostic(
 ): void {
   try {
     const detail = formatProcessError(reason).slice(0, ZCODE_PROCESS_DIAGNOSTIC_STACK_MAX_CHARS);
-    const diagnostic: ZCodeProcessDiagnostic = {
+    const diagnostic: ZodyProcessDiagnostic = {
       version: 1,
       errorId: randomUUID(),
       kind,

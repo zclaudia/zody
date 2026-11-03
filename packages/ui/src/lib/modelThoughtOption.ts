@@ -1,4 +1,4 @@
-import type { ZCodeConfigOption } from "@zody/shared";
+import type { ZodyConfigOption } from "@zody/shared";
 import type { ModelSelectionView } from "@zody/services";
 
 /** 从 Registry 的 ModelConfig Option Specs 读取思考档位。 */
@@ -8,7 +8,7 @@ export function resolveModelThoughtOption(params: {
   modelId: string;
   currentValue?: string;
   formatLevelName?: (level: string) => string;
-}): ZCodeConfigOption | null {
+}): ZodyConfigOption | null {
   const provider = params.modelSelectionView.providers.find(
     (candidate) => candidate.providerId === params.providerId,
   );

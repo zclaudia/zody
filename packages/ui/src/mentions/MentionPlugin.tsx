@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import type { ZCodeProvider } from "@zody/shared";
+import type { ZodyProvider } from "@zody/shared";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { createPortal } from "react-dom";
 import { PaletteIcon, WandSparkles } from "lucide-react";
@@ -156,7 +156,7 @@ export function MentionPlugin({
   container,
   disabled = false,
   onWhiteboardMentionSelected,
-}: MentionPluginProps & { provider: ZCodeProvider }) {
+}: MentionPluginProps & { provider: ZodyProvider }) {
   const [editor] = useLexicalComposerContext();
   const { intl } = useZCodeIntl();
   const [activeTrigger, setActiveTrigger] = useState<ActivePromptInputTrigger | null>(null);

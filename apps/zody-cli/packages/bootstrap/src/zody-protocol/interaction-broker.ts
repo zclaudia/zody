@@ -31,10 +31,10 @@ import {
   zcodePermissionResponseSchema,
   zcodeProtocolMethods,
   zcodeUserInputResponseSchema,
-  type ZCodePermissionOption,
-  type ZCodePermissionResponse,
-  type ZCodeUserInputQuestion,
-  type ZCodeUserInputResponse,
+  type ZodyPermissionOption,
+  type ZodyPermissionResponse,
+  type ZodyUserInputQuestion,
+  type ZodyUserInputResponse,
 } from "@zody/shared";
 import type {
   V4InteractionAnswer,
@@ -43,7 +43,7 @@ import type {
 import {
   PROTOCOL_CLIENT_REQUEST_ERROR_CODES,
   ProtocolRequestError,
-  type ZCodeProtocolAgentServerContext,
+  type ZodyProtocolAgentServerContext,
 } from "./server-types.js";
 import {
   buildProtocolPermissionOptions,
@@ -66,7 +66,7 @@ interface RegisteredRequestOptions extends PermissionBrokerRequestOptions {
 }
 
 export function createProtocolInteractionBroker(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
 ): PermissionBrokerPort {
   return {
     requestPermission(request, options) {
@@ -107,7 +107,7 @@ export function createProtocolInteractionBroker(
 }
 
 async function requestPermission(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   request: PermissionBrokerRequest,
   options?: RegisteredRequestOptions,
 ): Promise<PermissionBrokerResult> {
@@ -196,7 +196,7 @@ async function requestPermission(
  * 失败不得阻塞用户确认主链路。
  */
 async function requestCuaScreenshotConfirm(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   request: PermissionBrokerRequest,
   options?: RegisteredRequestOptions,
 ): Promise<PermissionBrokerResult> {
@@ -255,7 +255,7 @@ async function requestCuaScreenshotConfirm(
  * 若沿用持久化高水位 +1，第二条合成事件会因 seq 不高于游标被当作重放丢弃，pending 永远清不掉。
  */
 async function ingestSyntheticPermissionEvent(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   scope: { sessionId: string; turnId?: string; traceId: string },
   type: typeof SessionEventType.PermissionRequested | typeof SessionEventType.PermissionResolved,
   payload: Record<string, unknown>,
@@ -288,9 +288,9 @@ async function ingestSyntheticPermissionEvent(
  */
 function v4AnswerToPermissionResponse(
   answer: V4InteractionAnswer,
-  permissionOptions: ZCodePermissionOption[],
+  permissionOptions: ZodyPermissionOption[],
   toolName: string,
-): ZCodePermissionResponse & {
+): ZodyPermissionResponse & {
   reasonSource?: PermissionBrokerResult["reasonSource"];
   sessionPermissionUpdates?: PermissionBrokerResult["sessionPermissionUpdates"];
 } {
@@ -340,7 +340,7 @@ function v4AnswerToPermissionResponse(
  * 后者靠合成（不持久化）的 PermissionRequested / PermissionResolved 事件推进投影。
  */
 export async function requestMcpElicitation(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   request: McpElicitationRequest,
   options?: { signal?: AbortSignal },
 ): Promise<McpElicitationResult> {
@@ -387,7 +387,7 @@ export async function requestMcpElicitation(
     reason: request.message,
     input,
   });
-  let response: ZCodeUserInputResponse;
+  let response: ZodyUserInputResponse;
   try {
     response = await raceClientRequestWithV4Interaction(
       context,
@@ -432,7 +432,7 @@ export async function requestMcpElicitation(
 }
 
 async function requestUserInput(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   request: PermissionBrokerRequest,
   options?: RegisteredRequestOptions,
 ): Promise<PermissionBrokerResult> {
@@ -487,7 +487,7 @@ async function requestUserInput(
   return userInputResponseToBrokerResult(request, response);
 }
 
-function v4AnswerToUserInputResponse(answer: V4InteractionAnswer): ZCodeUserInputResponse {
+function v4AnswerToUserInputResponse(answer: V4InteractionAnswer): ZodyUserInputResponse {
   // answer.action 存在（host adapter respondElicitation 收敛路径）
   // 时按旧 respondUserInput 语义精确直传——content 携带多题 answers/annotations，
   // normalizeAskUserQuestionResponseContent 继续负责 schema 收敛。
@@ -507,7 +507,7 @@ function v4AnswerToUserInputResponse(answer: V4InteractionAnswer): ZCodeUserInpu
 }
 
 async function requestExitPlanModeApproval(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   request: PermissionBrokerRequest,
   options?: RegisteredRequestOptions,
 ): Promise<PermissionBrokerResult> {
@@ -543,7 +543,7 @@ async function requestExitPlanModeApproval(
   return planApprovalResponseToBrokerResult(response);
 }
 
-function v4AnswerToPlanApprovalResponse(answer: V4InteractionAnswer): ZCodeUserInputResponse {
+function v4AnswerToPlanApprovalResponse(answer: V4InteractionAnswer): ZodyUserInputResponse {
   // 同 v4AnswerToUserInputResponse——host adapter 收敛路径直传
   // action/content，planApprovalResponseToBrokerResult 继续做 approve/feedback 归一。
   if (answer.action) {
@@ -564,7 +564,7 @@ function v4AnswerToPlanApprovalResponse(answer: V4InteractionAnswer): ZCodeUserI
   return { action: "decline" };
 }
 
-function createExitPlanModeApprovalQuestion(): ZCodeUserInputQuestion {
+function createExitPlanModeApprovalQuestion(): ZodyUserInputQuestion {
   return {
     header: "Plan",
     options: [
@@ -594,7 +594,7 @@ function withInteractionRequestRecovery(
   };
 }
 
-function mapAskUserQuestion(question: AskUserQuestion): ZCodeUserInputQuestion {
+function mapAskUserQuestion(question: AskUserQuestion): ZodyUserInputQuestion {
   return {
     header: question.header,
     multiSelect: question.multiSelect,
@@ -610,7 +610,7 @@ function mapAskUserQuestion(question: AskUserQuestion): ZCodeUserInputQuestion {
 
 function userInputResponseToBrokerResult(
   request: PermissionBrokerRequest,
-  response: ZCodeUserInputResponse,
+  response: ZodyUserInputResponse,
 ): PermissionBrokerResult {
   if (response.action !== "accept") {
     return {
@@ -638,7 +638,7 @@ function userInputResponseToBrokerResult(
 }
 
 function planApprovalResponseToBrokerResult(
-  response: ZCodeUserInputResponse,
+  response: ZodyUserInputResponse,
 ): PermissionBrokerResult {
   if (response.action !== "accept") {
     return {
@@ -744,7 +744,7 @@ function normalizeAskUserQuestionAnswers(
 function createInteractionRegistrationOptions(
   request: PermissionBrokerRequest,
   kind: V4InteractionRegistrationOptions["kind"],
-  context?: ZCodeProtocolAgentServerContext,
+  context?: ZodyProtocolAgentServerContext,
   initialAutoResolution?: V4InteractionRegistrationOptions["initialAutoResolution"],
 ): V4InteractionRegistrationOptions {
   return {
@@ -784,7 +784,7 @@ function createInteractionRegistrationOptions(
 }
 
 async function readPersistedAutoResolution(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   request: PermissionBrokerRequest,
 ): Promise<V4InteractionRegistrationOptions["initialAutoResolution"]> {
   const sessionStore = context.deps?.sessionStore;

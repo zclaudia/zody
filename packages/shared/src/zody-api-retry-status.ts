@@ -1,8 +1,8 @@
-import type { ZCodeApiRetryStatus } from "./zody-task-types-core.js";
+import type { ZodyApiRetryStatus } from "./zody-task-types-core.js";
 
 export function normalizeZCodeApiRetryStatus(
   value: unknown,
-): ZCodeApiRetryStatus | null | undefined {
+): ZodyApiRetryStatus | null | undefined {
   if (value === null) {
     return null;
   }
@@ -38,7 +38,7 @@ export function normalizeZCodeApiRetryStatus(
 
 export function zcodeApiRetryFromModelNetworkStatusPayload(
   payload: Record<string, unknown>,
-): ZCodeApiRetryStatus | null | undefined {
+): ZodyApiRetryStatus | null | undefined {
   const type = stringValue(payload.type);
   if (type === "model_retry_scheduled") {
     return normalizeZCodeApiRetryStatus(payload);
@@ -85,7 +85,7 @@ export function isZCodeModelRetryRecoveryProgressPayload(
 
 export function zcodeApiRetryFromStreamRecoveryPayload(
   value: unknown,
-): ZCodeApiRetryStatus | undefined {
+): ZodyApiRetryStatus | undefined {
   const record = asRecord(value);
   const attempt = positiveIntegerValue(record.retryNumber);
   if (attempt === undefined) {

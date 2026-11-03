@@ -15,18 +15,18 @@ import type { WorkspaceHookPolicyProvider } from "@zody/core";
 import type { AccountProviderConfigSnapshot } from "@zody/provider";
 import {
   zcodeProtocolErrorCodes,
-  type ZCodeDeliveryKind,
+  type ZodyDeliveryKind,
   type ModelSelection,
-  type ZCodeModelContextBudgetStrategy,
-  type ZCodeProtocolMessage,
-  type ZCodeProtocolMethod,
-  type ZCodeProtocolNotification,
-  type ZCodeProtocolRequest,
-  type ZCodeProtocolRequestId,
-  type ZCodeProtocolTrace,
-  type ZCodeSessionMode,
-  type ZCodeSessionPersistence,
-  type ZCodeWorkspaceRef,
+  type ZodyModelContextBudgetStrategy,
+  type ZodyProtocolMessage,
+  type ZodyProtocolMethod,
+  type ZodyProtocolNotification,
+  type ZodyProtocolRequest,
+  type ZodyProtocolRequestId,
+  type ZodyProtocolTrace,
+  type ZodySessionMode,
+  type ZodySessionPersistence,
+  type ZodyWorkspaceRef,
 } from "@zody/shared";
 import type { ZCodeApp, ZCodeAppOptions } from "../app/types.js";
 import type { V4InteractionRegistry } from "../zody-protocol-v4/interaction-registry.js";
@@ -38,7 +38,7 @@ export interface ParamsSchema<T> {
   parse(input: unknown): T;
 }
 
-export interface ZCodeProtocolAgentDependencies {
+export interface ZodyProtocolAgentDependencies {
   createZCodeApp(options?: Omit<ZCodeAppOptions, "providerRegistry">): ZCodeApp | Promise<ZCodeApp>;
   /**
    * 每个 session record 的内存 event store 工厂。
@@ -66,28 +66,28 @@ export interface ZCodeProtocolAgentDependencies {
   refreshProviderRegistry?: (reason: string) => Promise<void>;
 }
 
-export type ZCodeProtocolAgentResolvedDependencies = ZCodeProtocolAgentDependencies & {
+export type ZodyProtocolAgentResolvedDependencies = ZodyProtocolAgentDependencies & {
   createSessionEventStore(sessionId: string): SessionEventStorePort;
   workspaceHookPolicyProvider: WorkspaceHookPolicyProvider;
 };
 
-export interface ZCodeProtocolEventSequenceState {
+export interface ZodyProtocolEventSequenceState {
   lastSeq: number;
   seqBySourceEventKey: Map<string, number>;
 }
 
-export interface ZCodeProtocolToolInputTransmissionState {
+export interface ZodyProtocolToolInputTransmissionState {
   streamedToolCallIdsWithInput: Set<string>;
 }
 
-export interface ZCodeProtocolSessionRecord {
+export interface ZodyProtocolSessionRecord {
   app: ZCodeApp;
   subagentRuntimeConfigEnabled?: boolean;
   memoryEnabled: boolean;
   nativeSearchEnhancementsEnabled: boolean;
-  modelContextBudgetStrategy: ZCodeModelContextBudgetStrategy;
+  modelContextBudgetStrategy: ZodyModelContextBudgetStrategy;
   createdAt: number;
-  deliveryKind?: ZCodeDeliveryKind;
+  deliveryKind?: ZodyDeliveryKind;
   /**
    * 旧 session/subscribe 没有 unsubscribe RPC；只在真正 subscribe 时置位，不能用
    * 会被 session/read 写入的 deliveryKind 代替。连接结束会销毁整个 CLI 进程。
@@ -95,15 +95,15 @@ export interface ZCodeProtocolSessionRecord {
   legacyStreamSubscribed?: boolean;
   eventStore: SessionEventStorePort;
   parentSessionId?: SessionId;
-  persistence: ZCodeSessionPersistence;
-  protocolEventSequences: Map<string, ZCodeProtocolEventSequenceState>;
-  protocolToolInputTransmissions: Map<string, ZCodeProtocolToolInputTransmissionState>;
+  persistence: ZodySessionPersistence;
+  protocolEventSequences: Map<string, ZodyProtocolEventSequenceState>;
+  protocolToolInputTransmissions: Map<string, ZodyProtocolToolInputTransmissionState>;
   stateRevision: number;
   taskType?: SessionTaskType;
   traceContext: TraceContext;
   unsubscribe?: () => void;
   updatedAt: number;
-  workspace: ZCodeWorkspaceRef;
+  workspace: ZodyWorkspaceRef;
   activeAbortController?: AbortController;
   /** background runner 释放 ready lock 后，持久化/snapshot/broadcast 尚未完成的引用计数。 */
   residencyFinalizationCount?: number;
@@ -117,19 +117,19 @@ export interface ZCodeProtocolSessionRecord {
   restoredModelSelection?: ModelSelection;
 }
 
-export interface ZCodeProtocolClientRequestOptions {
+export interface ZodyProtocolClientRequestOptions {
   signal?: AbortSignal;
   timeoutMs?: number;
-  trace?: ZCodeProtocolTrace;
+  trace?: ZodyProtocolTrace;
   reannounceIntervalMs?: number;
 }
 
-export interface ZCodeProtocolAgentServerContext {
+export interface ZodyProtocolAgentServerContext {
   /** 进程退出期间，迟到的异步物化不能重新登记 session。 */
   assertServing?: () => void;
-  deps: ZCodeProtocolAgentResolvedDependencies;
+  deps: ZodyProtocolAgentResolvedDependencies;
   /** 私有 stdio startup 帧固定的 Host/runtime 身份；缺席即 CUA 无 candidate。 */
-  cuaLaunchIdentity?: import("@zody/shared").ZCodeCuaLaunchIdentity;
+  cuaLaunchIdentity?: import("@zody/shared").ZodyCuaLaunchIdentity;
   logger?: Logger;
   appRuntimePreferences: {
     askUserQuestionAutoResolutionEnabled: boolean;
@@ -156,13 +156,13 @@ export interface ZCodeProtocolAgentServerContext {
   // 单 CLI resident session 池。冷恢复入口经 waitForDeactivation 等待旧 app.close 收尾，
   // 协议请求则持有 operation lease，禁止异步 handler 与容量回收交错。
   sessionResidentPool?: SessionResidentPool;
-  sessions: Map<string, ZCodeProtocolSessionRecord>;
-  notify(notification: ZCodeProtocolNotification): void;
+  sessions: Map<string, ZodyProtocolSessionRecord>;
+  notify(notification: ZodyProtocolNotification): void;
   requestClient<T>(
-    method: ZCodeProtocolMethod,
+    method: ZodyProtocolMethod,
     params: unknown,
     resultSchema: ParamsSchema<T>,
-    options?: ZCodeProtocolClientRequestOptions,
+    options?: ZodyProtocolClientRequestOptions,
   ): Promise<T>;
 }
 
@@ -187,24 +187,24 @@ export class ProtocolRequestError extends Error {
   }
 }
 
-export function isRequest(message: ZCodeProtocolMessage): message is ZCodeProtocolRequest {
+export function isRequest(message: ZodyProtocolMessage): message is ZodyProtocolRequest {
   return "method" in message && "id" in message;
 }
 
 export function isNotification(
-  message: ZCodeProtocolMessage,
-): message is ZCodeProtocolNotification {
+  message: ZodyProtocolMessage,
+): message is ZodyProtocolNotification {
   return "method" in message && !("id" in message);
 }
 
 export function isResponse(
-  message: ZCodeProtocolMessage,
-): message is { id: ZCodeProtocolRequestId; result: unknown } {
+  message: ZodyProtocolMessage,
+): message is { id: ZodyProtocolRequestId; result: unknown } {
   return "id" in message && "result" in message;
 }
 
-export function isErrorResponse(message: ZCodeProtocolMessage): message is {
-  id: ZCodeProtocolRequestId;
+export function isErrorResponse(message: ZodyProtocolMessage): message is {
+  id: ZodyProtocolRequestId;
   error: { code: number; message: string; data?: unknown };
 } {
   return "id" in message && "error" in message;
@@ -244,7 +244,7 @@ export function parseParams<T>(schema: ParamsSchema<T>, params: unknown): T {
 }
 
 export function assertExpectedRevision(
-  record: ZCodeProtocolSessionRecord,
+  record: ZodyProtocolSessionRecord,
   expectedRevision: number | undefined,
 ): void {
   if (expectedRevision !== undefined && expectedRevision !== record.stateRevision) {
@@ -292,7 +292,7 @@ export function createProtocolTraceId(_sessionId: SessionId): TraceContext["trac
 
 export function createProtocolRootTraceContext(
   sessionId: SessionId,
-  trace?: ZCodeProtocolTrace,
+  trace?: ZodyProtocolTrace,
 ): TraceContext {
   const context = createRootTraceContext({
     sessionId,
@@ -308,7 +308,7 @@ export function createProtocolRootTraceContext(
   return context;
 }
 
-export function protocolTraceFromTraceContext(context: TraceContext): ZCodeProtocolTrace {
+export function protocolTraceFromTraceContext(context: TraceContext): ZodyProtocolTrace {
   return {
     traceId: context.traceId,
     ...(context.spanId ? { spanId: context.spanId } : {}),
@@ -319,10 +319,10 @@ export function protocolTraceFromTraceContext(context: TraceContext): ZCodeProto
 }
 
 export function requireSession(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   sessionId: string,
-  options: { deliveryKind?: ZCodeDeliveryKind; operation?: string } = {},
-): ZCodeProtocolSessionRecord {
+  options: { deliveryKind?: ZodyDeliveryKind; operation?: string } = {},
+): ZodyProtocolSessionRecord {
   const record = context.sessions.get(sessionId);
   if (!record) {
     // 诊断：readSession 只读取活跃 runtime；记录缺失时要区分“冷会话尚未恢复”和“ID 已失效”，
@@ -344,7 +344,7 @@ export function requireSession(
   return record;
 }
 
-export function createProtocolLogger(deps: ZCodeProtocolAgentDependencies): Logger | undefined {
+export function createProtocolLogger(deps: ZodyProtocolAgentDependencies): Logger | undefined {
   return deps.loggerFactory?.createLogger("zcode").child({
     module: "bootstrap.zcode_protocol",
   });

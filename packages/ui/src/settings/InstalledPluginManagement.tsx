@@ -2,10 +2,10 @@
 import type { ReactNode } from "react";
 import { AlertTriangle, Cable, ChevronRight, Trash2 } from "lucide-react";
 import type {
-  ZCodePluginDiagnostic,
-  ZCodePluginInfo,
-  ZCodePluginScope,
-  ZCodePluginUserConfigOption,
+  ZodyPluginDiagnostic,
+  ZodyPluginInfo,
+  ZodyPluginScope,
+  ZodyPluginUserConfigOption,
 } from "@zody/shared";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
@@ -17,9 +17,9 @@ import { buildInstalledPluginDisplayGroups } from "@/settings/pluginManagedResou
 import { isPluginUpdatePending } from "@/settings/pluginStoreListing.js";
 
 export type PluginOptionValueGetter = (
-  plugin: ZCodePluginInfo,
+  plugin: ZodyPluginInfo,
   key: string,
-  option: ZCodePluginUserConfigOption,
+  option: ZodyPluginUserConfigOption,
 ) => string | number | boolean;
 
 export function InstalledPluginDetailDialog({
@@ -41,19 +41,19 @@ export function InstalledPluginDetailDialog({
   updateStatus,
 }: {
   /** 插件管理 store 聚合的 list/overview 诊断；透传给面板展示当前插件自身的 warning。 */
-  diagnostics?: ZCodePluginDiagnostic[];
+  diagnostics?: ZodyPluginDiagnostic[];
   getPluginOptionValue: PluginOptionValueGetter;
-  configScope: ZCodePluginScope;
+  configScope: ZodyPluginScope;
   installedAt?: string;
   latestVersion?: string;
   onOpenChange: (open: boolean) => void;
   onRequestUninstall?: (pluginId: string) => void;
   onRequestUpdate?: (pluginId: string) => void;
-  onSavePluginOptions: (plugin: ZCodePluginInfo) => void;
+  onSavePluginOptions: (plugin: ZodyPluginInfo) => void;
   open: boolean;
   operationId: string | null;
-  plugin: ZCodePluginInfo | null;
-  renderPluginSource: (plugin: ZCodePluginInfo) => string;
+  plugin: ZodyPluginInfo | null;
+  renderPluginSource: (plugin: ZodyPluginInfo) => string;
   setPluginOptionDraft: (pluginId: string, key: string, value: string | number | boolean) => void;
   uninstallable?: boolean;
   updateStatus?: "none" | "update-available" | "version-changed";
@@ -105,17 +105,17 @@ export function InstalledPluginDetailPanel({
   updateStatus,
 }: {
   /** 插件管理 store 聚合的 list/overview 诊断；面板只展示当前插件自身的 warning。 */
-  diagnostics?: ZCodePluginDiagnostic[];
+  diagnostics?: ZodyPluginDiagnostic[];
   getPluginOptionValue: PluginOptionValueGetter;
-  configScope: ZCodePluginScope;
+  configScope: ZodyPluginScope;
   installedAt?: string;
   latestVersion?: string;
   onRequestUninstall?: (pluginId: string) => void;
   onRequestUpdate?: (pluginId: string) => void;
-  onSavePluginOptions: (plugin: ZCodePluginInfo) => void;
+  onSavePluginOptions: (plugin: ZodyPluginInfo) => void;
   operationId: string | null;
-  plugin: ZCodePluginInfo | null;
-  renderPluginSource: (plugin: ZCodePluginInfo) => string;
+  plugin: ZodyPluginInfo | null;
+  renderPluginSource: (plugin: ZodyPluginInfo) => string;
   setPluginOptionDraft: (pluginId: string, key: string, value: string | number | boolean) => void;
   uninstallable?: boolean;
   updateStatus?: "none" | "update-available" | "version-changed";
@@ -309,7 +309,7 @@ function DetailSection({ title, children }: { title: string; children: ReactNode
  * 只写 diagnostics 的话 UI 无渲染位置，用户无从排查。message 由 CLI 下发并包含
  * 具体路径（协议 wire 不携带 path 字段），因此正文直出 message 即可。
  */
-export function PluginWarningList({ warnings }: { warnings: ZCodePluginDiagnostic[] }) {
+export function PluginWarningList({ warnings }: { warnings: ZodyPluginDiagnostic[] }) {
   return (
     <ul className="space-y-2">
       {warnings.map((diagnostic, index) => (
@@ -330,7 +330,7 @@ export function PluginWarningList({ warnings }: { warnings: ZCodePluginDiagnosti
 export function PluginHookDetails({
   hooks,
 }: {
-  hooks: NonNullable<ZCodePluginInfo["hookDetails"]>;
+  hooks: NonNullable<ZodyPluginInfo["hookDetails"]>;
 }) {
   const { intl } = useZCodeIntl();
   return (
@@ -440,7 +440,7 @@ function PluginDetailInlineValue({ label, value }: { label: string; value: strin
   );
 }
 
-function formatHookCommand(hook: NonNullable<ZCodePluginInfo["hookDetails"]>[number]): string {
+function formatHookCommand(hook: NonNullable<ZodyPluginInfo["hookDetails"]>[number]): string {
   if (!hook.args || hook.args.length === 0) return hook.command;
   return `${hook.command} ${hook.args.join(" ")}`;
 }

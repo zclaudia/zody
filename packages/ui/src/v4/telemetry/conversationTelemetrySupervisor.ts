@@ -6,9 +6,9 @@ import {
 import type {
   IPlatformService,
   RemoteWorkspaceIdentityKind,
-  ZCodeContextCompactionTimelineMeta,
-  ZCodeStreamEvent,
-  ZCodeUsage,
+  ZodyContextCompactionTimelineMeta,
+  ZodyStreamEvent,
+  ZodyUsage,
 } from "@zody/shared";
 import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
 import { reportAppTelemetryEvent } from "@/lib/appTelemetry.js";
@@ -236,7 +236,7 @@ interface ForegroundSubagentUsage {
   modelName: string;
   modelProvider: string;
   providerName: string;
-  usage: ZCodeUsage | null;
+  usage: ZodyUsage | null;
   stopped: boolean;
   pendingFinalizedSteps: PendingFinalizedStep[];
 }
@@ -265,7 +265,7 @@ interface BackgroundSubagentTelemetry {
   startedAt: number;
   requestIds: string[];
   requestCount: number;
-  usage: ZCodeUsage | null;
+  usage: ZodyUsage | null;
   modelName: string;
   modelProvider: string;
   providerName: string;
@@ -314,7 +314,7 @@ class BoundedKeySet {
 
 function toLegacyNetworkEvent(
   fact: Extract<ConversationTelemetryFact, { kind: "model.request.status" }>,
-): Extract<ZCodeStreamEvent, { type: "task_network_debug_status" }> {
+): Extract<ZodyStreamEvent, { type: "task_network_debug_status" }> {
   return {
     type: "task_network_debug_status",
     taskId: fact.sessionId,
@@ -346,7 +346,7 @@ function toLegacyNetworkEvent(
     responseHeaders: {},
     requestHeaderCount: 0,
     responseHeaderCount: 0,
-  } as Extract<ZCodeStreamEvent, { type: "task_network_debug_status" }>;
+  } as Extract<ZodyStreamEvent, { type: "task_network_debug_status" }>;
 }
 
 function scopedSubagentToolCallId(agentId: string, childToolCallId: string): string {
@@ -413,7 +413,7 @@ function toToolLifecycleEvent(input: {
   toolId: string;
   inputId?: string;
   hasStarted: boolean;
-}): ZCodeStreamEvent {
+}): ZodyStreamEvent {
   const { fact } = input;
   const skillMetadata =
     fact.skillQualifiedName || fact.skillPluginId || fact.skillSource
@@ -437,7 +437,7 @@ function toToolLifecycleEvent(input: {
       title: "",
       raw: {},
       ...(skillMetadata ? { skillMetadata } : {}),
-    } as Extract<ZCodeStreamEvent, { type: "tool_call" }>;
+    } as Extract<ZodyStreamEvent, { type: "tool_call" }>;
   }
   return {
     type: "tool_call_update",
@@ -453,10 +453,10 @@ function toToolLifecycleEvent(input: {
     error: fact.errorMessage,
     raw: {},
     ...(skillMetadata ? { skillMetadata } : {}),
-  } as Extract<ZCodeStreamEvent, { type: "tool_call_update" }>;
+  } as Extract<ZodyStreamEvent, { type: "tool_call_update" }>;
 }
 
-function toUsage(fact: Extract<ConversationTelemetryFact, { kind: "usage.delta" }>): ZCodeUsage {
+function toUsage(fact: Extract<ConversationTelemetryFact, { kind: "usage.delta" }>): ZodyUsage {
   return {
     inputTokens: fact.inputTokens,
     outputTokens: fact.outputTokens,
@@ -475,7 +475,7 @@ function runtimeTelemetryModelName(providerId: string | undefined, modelId: stri
   return model.includes("/") ? model : `${provider}/${model}`;
 }
 
-function mergeUsage(left: ZCodeUsage | null, right: ZCodeUsage): ZCodeUsage {
+function mergeUsage(left: ZodyUsage | null, right: ZodyUsage): ZodyUsage {
   if (!left) return { ...right };
   return {
     inputTokens: left.inputTokens + right.inputTokens,
@@ -1528,7 +1528,7 @@ export class ConversationTelemetrySupervisor {
             ? { messageId: fact.assistantMessageId }
             : {}),
           ...(fact.parentToolCallId ? { parentToolUseId: fact.parentToolCallId } : {}),
-        } as Extract<ZCodeStreamEvent, { type: "agent_thought_chunk" | "agent_message_chunk" }>;
+        } as Extract<ZodyStreamEvent, { type: "agent_thought_chunk" | "agent_message_chunk" }>;
         this.reportFinalizedSteps(
           lifecycle,
           recordAgentStepTelemetryEvent({
@@ -1770,7 +1770,7 @@ export class ConversationTelemetrySupervisor {
               error: fact.errorMessage ?? lifecycle.lastErrorMessage ?? fact.errorCode ?? "",
               code: fact.errorCode,
             }
-      ) as Extract<ZCodeStreamEvent, { type: "task_complete" | "task_error" }>;
+      ) as Extract<ZodyStreamEvent, { type: "task_complete" | "task_error" }>;
     this.reportFinalizedSteps(
       lifecycle,
       recordAgentStepTelemetryEvent({
@@ -1907,7 +1907,7 @@ export class ConversationTelemetrySupervisor {
     if (!this.compactionKeys.remember(dedupeKey)) return;
     // compaction 只按 terminal 到达瞬间是否前台决定；后台到达后切回不能补报。
     if (!foregroundAtReceipt) return;
-    const timeline: ZCodeContextCompactionTimelineMeta = {
+    const timeline: ZodyContextCompactionTimelineMeta = {
       version: 1,
       kind: "synthetic",
       type: "context_compaction",

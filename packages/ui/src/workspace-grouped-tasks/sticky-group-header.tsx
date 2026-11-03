@@ -1,4 +1,4 @@
-import type { ZCodeGroupedTaskViewNode, ZCodeTaskGroupColor } from "@zody/services";
+import type { ZodyGroupedTaskViewNode, ZodyTaskGroupColor } from "@zody/services";
 import { ChevronDownIcon, ChevronRightIcon, MessageCirclePlus } from "lucide-react";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
@@ -30,7 +30,7 @@ import {
   TaskGroupColorMark,
 } from "@/workspace-grouped-tasks/shared.js";
 
-type StickyGroupNode = Extract<ZCodeGroupedTaskViewNode, { type: "group" }>;
+type StickyGroupNode = Extract<ZodyGroupedTaskViewNode, { type: "group" }>;
 
 export function StickyGroupHeader({
   node,
@@ -46,7 +46,7 @@ export function StickyGroupHeader({
   tooltipsDisabled?: boolean;
   onCreateTask: () => void;
   onToggleCollapsed: (groupId: string) => void;
-  onUpdateGroupColor: (groupId: string, color: ZCodeTaskGroupColor) => void;
+  onUpdateGroupColor: (groupId: string, color: ZodyTaskGroupColor) => void;
   onUngroupGroup: (groupId: string) => void;
 }) {
   const { intl } = useZCodeIntl();
@@ -61,7 +61,7 @@ export function StickyGroupHeader({
   const isSystemGroup = node.group.id === CRON_DEFAULT_GROUP_ID;
   const handleToggle = () => onToggleCollapsed(node.group.id);
   const handleGroupColorChange = (color: string) => {
-    onUpdateGroupColor(node.group.id, color as ZCodeTaskGroupColor);
+    onUpdateGroupColor(node.group.id, color as ZodyTaskGroupColor);
   };
   const newTaskButton = (
     <Button

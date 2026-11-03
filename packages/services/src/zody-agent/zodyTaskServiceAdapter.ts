@@ -45,82 +45,82 @@ import {
   zcodeApiRetryFromStreamRecoveryPayload,
   zcodeTaskNetworkDebugStatusFromPayload,
   shouldMaterializeZCodeStreamingToolInputPreview,
-  type ZCodeApiRetryStatus,
-  type ZCodeAssistantMessageFeedback,
+  type ZodyApiRetryStatus,
+  type ZodyAssistantMessageFeedback,
   type ZodyBackgroundTaskNotificationInfo,
   type ZodyBackgroundTaskControlItem,
-  type ZCodeBackgroundTurnAttribution,
-  type ZCodeCancelTaskCommandResult,
-  type ZCodeCodexConnectivityCheckResult,
-  type ZCodeConfigOption,
-  type ZCodeEnqueueTaskCommandResult,
-  type ZCodeError,
-  type ZCodeGoalVerificationTimelineMeta,
-  type ZCodeImportSessionsResult,
-  type ZCodeImportableSessionCandidate,
-  type ZCodeUsage,
-  type ZCodePersistedMessage,
-  type ZCodePersistedMessagePart,
-  type ZCodePersistedToolCall,
-  type ZCodePromptAttachment,
-  type ZCodeProvider,
-  type ZCodeSessionFile,
-  type ZCodeTaskGoal,
-  type ZCodeTaskGoalStats,
-  type ZCodeTaskMode,
-  type ZCodePlanStep,
-  type ZCodeSlashCommand,
-  type ZCodeStreamEvent,
-  type ZCodeSwitchAgentResult,
-  type ZCodeSyncTaskSessionBindingResult,
-  type ZCodeTaskCreateResult,
-  type ZCodeTaskMeta,
-  type ZCodeTaskClientMode,
-  type ZCodeTaskRuntimeCommand,
-  type ZCodeTaskSnapshot,
-  type ZCodeTaskSnapshotBody,
-  type ZCodeTaskSnapshotRefContent,
-  type ZCodeTaskSnapshotToolCallsSlice,
-  type ZCodeTaskTokenUsageResult,
-  type ZCodeTodoGroup,
-  type ZCodeTurnSteerCommandKind,
-  type ZCodeTurnSteerSource,
-  type ZCodeWorkspaceEvent,
-  type ZCodeWorkspaceTaskListChanged,
+  type ZodyBackgroundTurnAttribution,
+  type ZodyCancelTaskCommandResult,
+  type ZodyCodexConnectivityCheckResult,
+  type ZodyConfigOption,
+  type ZodyEnqueueTaskCommandResult,
+  type ZodyError,
+  type ZodyGoalVerificationTimelineMeta,
+  type ZodyImportSessionsResult,
+  type ZodyImportableSessionCandidate,
+  type ZodyUsage,
+  type ZodyPersistedMessage,
+  type ZodyPersistedMessagePart,
+  type ZodyPersistedToolCall,
+  type ZodyPromptAttachment,
+  type ZodyProvider,
+  type ZodySessionFile,
+  type ZodyTaskGoal,
+  type ZodyTaskGoalStats,
+  type ZodyTaskMode,
+  type ZodyPlanStep,
+  type ZodySlashCommand,
+  type ZodyStreamEvent,
+  type ZodySwitchAgentResult,
+  type ZodySyncTaskSessionBindingResult,
+  type ZodyTaskCreateResult,
+  type ZodyTaskMeta,
+  type ZodyTaskClientMode,
+  type ZodyTaskRuntimeCommand,
+  type ZodyTaskSnapshot,
+  type ZodyTaskSnapshotBody,
+  type ZodyTaskSnapshotRefContent,
+  type ZodyTaskSnapshotToolCallsSlice,
+  type ZodyTaskTokenUsageResult,
+  type ZodyTodoGroup,
+  type ZodyTurnSteerCommandKind,
+  type ZodyTurnSteerSource,
+  type ZodyWorkspaceEvent,
+  type ZodyWorkspaceTaskListChanged,
   type InputId,
   type TraceId,
   zcodeContextUsageBreakdownSchema,
   zcodeSessionSettingsStateSchema,
-  type ZCodeDeliveryKind,
-  type ZCodeMessagePart,
-  type ZCodeMessageWithParts,
+  type ZodyDeliveryKind,
+  type ZodyMessagePart,
+  type ZodyMessageWithParts,
   type ModelSelection,
-  type ZCodePermissionOption,
-  type ZCodePermissionRequestParams,
-  type ZCodePermissionRequest,
-  type ZCodeSessionEvent,
-  type ZCodeSessionMode,
-  type ZCodeSessionSettingsState,
-  type ZCodeSessionStateSnapshot,
-  type ZCodeStateUpdatedNotification,
-  type ZCodeContextCompactionTimelineMeta,
-  type ZCodeTimelineMeta,
-  type ZCodeTimelineStatus,
-  type ZCodeTimelineTrigger,
-  type ZCodeToolProjectionMemory,
-  type ZCodeUserInputRequestParams,
-  type ZCodeUserInputResponse,
-  type ZCodeAgentMcpServer,
+  type ZodyPermissionOption,
+  type ZodyPermissionRequestParams,
+  type ZodyPermissionRequest,
+  type ZodySessionEvent,
+  type ZodySessionMode,
+  type ZodySessionSettingsState,
+  type ZodySessionStateSnapshot,
+  type ZodyStateUpdatedNotification,
+  type ZodyContextCompactionTimelineMeta,
+  type ZodyTimelineMeta,
+  type ZodyTimelineStatus,
+  type ZodyTimelineTrigger,
+  type ZodyToolProjectionMemory,
+  type ZodyUserInputRequestParams,
+  type ZodyUserInputResponse,
+  type ZodyAgentMcpServer,
   ZCODE_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 import type {
-  ZCodeTaskListQuery,
-  ZCodeTaskListResult,
-  ZCodeWorkspaceEventSubscriptionParams,
-  IZCodeTaskService,
-  ZCodeArchivedTaskDeletionResult,
-  ZCodeTaskReadyOutcome,
-  ZCodeTaskTerminalOutcome,
+  ZodyTaskListQuery,
+  ZodyTaskListResult,
+  ZodyWorkspaceEventSubscriptionParams,
+  IZodyTaskService,
+  ZodyArchivedTaskDeletionResult,
+  ZodyTaskReadyOutcome,
+  ZodyTaskTerminalOutcome,
 } from "../session/zodyTaskService.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
@@ -134,14 +134,14 @@ import type {
 } from "#src/session/sessionMailbox.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 import type {
-  IZCodeAgentService,
-  ZCodeAgentServiceEvent,
-  ZCodeAgentWorkspaceTarget,
+  IZodyAgentService,
+  ZodyAgentServiceEvent,
+  ZodyAgentWorkspaceTarget,
 } from "./zodyAgent.js";
 import type {
-  ZCodeTaskIndexReadyEvent,
-  ZCodeTaskIndexSyncer,
-  ZCodeTaskIndexTerminalEvent,
+  ZodyTaskIndexReadyEvent,
+  ZodyTaskIndexSyncer,
+  ZodyTaskIndexTerminalEvent,
 } from "./zodyTaskIndexSyncer.js";
 import { readModelTrajectory } from "./modelTrajectory.js";
 import { errorAttributionSchema, type CommandPayloadMap } from "@zody/shared/zody-protocol-v4";
@@ -180,12 +180,12 @@ interface TaskOverlay {
   unreadAt?: number;
 }
 
-interface CreateZCodeTaskServiceAdapterOptions {
-  zcodeAgentService: IZCodeAgentService;
+interface CreateZodyTaskServiceAdapterOptions {
+  zcodeAgentService: IZodyAgentService;
   taskIndexRepo?: TaskIndexRepo;
   // syncer 现在持有 workspace emitter 和 broadcast 入口，adapter 必须共用同一实例，
   // 否则 desktop-continuous 路径和 task adapter 路径的事件订阅会分裂成两份，UI 收不全。
-  taskIndexSyncer: ZCodeTaskIndexSyncer;
+  taskIndexSyncer: ZodyTaskIndexSyncer;
   settingService?: Pick<ISettingService, "get">;
   cuaProductMcpServerResolver?: CuaProductMcpServerResolver;
 }
@@ -201,18 +201,18 @@ interface TaskTarget {
 interface TaskTargetWithMcpServers extends TaskTarget {
   model?: string;
   thoughtLevel?: string;
-  mcpServers?: ZCodeAgentMcpServer[];
+  mcpServers?: ZodyAgentMcpServer[];
   toolDenylist?: string[];
 }
 
-type WorkspaceEventInput = string | ZCodeWorkspaceEventSubscriptionParams;
-type ZCodeSendPromptRuntimeCommand = Extract<ZCodeTaskRuntimeCommand, { type: "send_prompt" }>;
-type ZCodeTerminalStreamEvent =
-  | Extract<ZCodeStreamEvent, { type: "task_complete" }>
-  | Extract<ZCodeStreamEvent, { type: "task_error" }>;
+type WorkspaceEventInput = string | ZodyWorkspaceEventSubscriptionParams;
+type ZodySendPromptRuntimeCommand = Extract<ZodyTaskRuntimeCommand, { type: "send_prompt" }>;
+type ZodyTerminalStreamEvent =
+  | Extract<ZodyStreamEvent, { type: "task_complete" }>
+  | Extract<ZodyStreamEvent, { type: "task_error" }>;
 
-const GLM_PROVIDER: ZCodeProvider = ZCODE_AGENT_PROVIDER;
-const EMPTY_SLASH_COMMANDS: ZCodeSlashCommand[] = [];
+const GLM_PROVIDER: ZodyProvider = ZCODE_AGENT_PROVIDER;
+const EMPTY_SLASH_COMMANDS: ZodySlashCommand[] = [];
 const logger = createServiceLogger("zcode-task-service");
 const ASK_USER_QUESTION_TOOL_NAME = "AskUserQuestion";
 const EXIT_PLAN_MODE_TOOL_NAME = "ExitPlanMode";
@@ -235,7 +235,7 @@ const MAX_LIVE_TOOL_PROJECTION_TOOLS_PER_TASK = 2000;
 interface LiveToolProjection {
   order: number;
   parentToolUseId: string | null;
-  tool: ZCodePersistedToolCall;
+  tool: ZodyPersistedToolCall;
   toolId: string;
 }
 
@@ -255,22 +255,22 @@ function resolveZCodeAgentCurrentLogFilePath(now = new Date()): string {
 }
 
 export function createZCodeTaskServiceAdapter(
-  options: CreateZCodeTaskServiceAdapterOptions,
-): IZCodeTaskService {
+  options: CreateZodyTaskServiceAdapterOptions,
+): IZodyTaskService {
   // fork（bot channels 移除，specs/bot-channels-removal.md）：bot 专用连接 scope
   // （botConnectionScopes/botAgent）随第三方 IM bot 接入整体删除。
-  const errorEmitter = new Emitter<ZCodeError>();
-  const taskEmitters = new Map<string, Emitter<ZCodeStreamEvent>>();
-  const globalTaskEmitters = new Map<string, Emitter<ZCodeStreamEvent>>();
+  const errorEmitter = new Emitter<ZodyError>();
+  const taskEmitters = new Map<string, Emitter<ZodyStreamEvent>>();
+  const globalTaskEmitters = new Map<string, Emitter<ZodyStreamEvent>>();
   const overlays = new Map<string, TaskOverlay>();
   const taskTargets = new Map<string, TaskTarget>();
-  const runtimeCommands = new Map<string, ZCodeTaskRuntimeCommand[]>();
+  const runtimeCommands = new Map<string, ZodyTaskRuntimeCommand[]>();
   const runtimeCommandDrains = new Map<string, Promise<void>>();
-  const apiRetryByTaskKey = new Map<string, ZCodeApiRetryStatus | null>();
+  const apiRetryByTaskKey = new Map<string, ZodyApiRetryStatus | null>();
   const backgroundTaskControlsByTaskKey = new Map<string, ZodyBackgroundTaskControlItem[]>();
   const streamedTurnText = new Map<string, { messageId?: string; text: string }>();
   const activePromptInputIds = new Map<string, InputId>();
-  const toolProjectionMemoryByTaskKey = new Map<string, ZCodeToolProjectionMemory>();
+  const toolProjectionMemoryByTaskKey = new Map<string, ZodyToolProjectionMemory>();
   const liveToolProjectionsByTaskKey = new Map<string, Map<string, LiveToolProjection>>();
   let liveToolProjectionOrder = 0;
   const legacySnapshotTaskKeys = new Set<string>();
@@ -322,16 +322,16 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function turnAttributionOf(
-    params: ZCodeBackgroundTurnAttribution,
-  ): ZCodeBackgroundTurnAttribution {
+    params: ZodyBackgroundTurnAttribution,
+  ): ZodyBackgroundTurnAttribution {
     if (params.automationId) return { automationId: params.automationId };
     // fork（F4.3）：offPeakTaskId/offPeakRunType 归因分支随闲时任务全链路删除。
     return {};
   }
 
   async function resolveProductMcpServers(
-    servers: ZCodeAgentMcpServer[] | undefined,
-  ): Promise<ZCodeAgentMcpServer[] | undefined> {
+    servers: ZodyAgentMcpServer[] | undefined,
+  ): Promise<ZodyAgentMcpServer[] | undefined> {
     const configuredServers = (servers?.length ?? 0) > 0 ? servers : undefined;
     if (!configuredServers || !options.cuaProductMcpServerResolver) {
       return configuredServers;
@@ -379,14 +379,14 @@ export function createZCodeTaskServiceAdapter(
       queryId?: string;
       messageId?: string;
       content: string;
-      attachments?: ZCodePromptAttachment[];
+      attachments?: ZodyPromptAttachment[];
       toolDenylist?: string[];
       clientId?: string;
-      clientMode?: ZCodeTaskClientMode;
+      clientMode?: ZodyTaskClientMode;
       logReason?: string;
       modelSelection?: CommandPayloadMap["sendText"]["modelSelection"];
       modelExecution?: CommandPayloadMap["sendText"]["modelExecution"];
-    } & ZCodeBackgroundTurnAttribution,
+    } & ZodyBackgroundTurnAttribution,
   ): Promise<void> {
     const startedAt = Date.now();
     notifySyncerSession(target);
@@ -486,7 +486,7 @@ export function createZCodeTaskServiceAdapter(
     }
   }
 
-  function setRuntimeCommands(params: TaskTarget, commands: ZCodeTaskRuntimeCommand[]): void {
+  function setRuntimeCommands(params: TaskTarget, commands: ZodyTaskRuntimeCommand[]): void {
     const key = taskKey(params);
     if (commands.length === 0) {
       runtimeCommands.delete(key);
@@ -497,10 +497,10 @@ export function createZCodeTaskServiceAdapter(
 
   function markRuntimeCommandRunning(
     params: TaskTarget,
-    command: ZCodeSendPromptRuntimeCommand,
-  ): ZCodeSendPromptRuntimeCommand {
+    command: ZodySendPromptRuntimeCommand,
+  ): ZodySendPromptRuntimeCommand {
     const key = taskKey(params);
-    const runningCommand: ZCodeSendPromptRuntimeCommand = {
+    const runningCommand: ZodySendPromptRuntimeCommand = {
       ...command,
       status: "running",
       updatedAt: Date.now(),
@@ -516,11 +516,11 @@ export function createZCodeTaskServiceAdapter(
 
   function markRuntimeCommandFailed(
     params: TaskTarget,
-    command: ZCodeSendPromptRuntimeCommand,
+    command: ZodySendPromptRuntimeCommand,
     error: unknown,
   ): void {
     const key = taskKey(params);
-    const failedCommand: ZCodeSendPromptRuntimeCommand = {
+    const failedCommand: ZodySendPromptRuntimeCommand = {
       ...command,
       status: "failed",
       updatedAt: Date.now(),
@@ -587,7 +587,7 @@ export function createZCodeTaskServiceAdapter(
 
   function completeRuntimeCommandForTerminalEvent(
     params: TaskTarget,
-    event: ZCodeTerminalStreamEvent,
+    event: ZodyTerminalStreamEvent,
   ): void {
     completeRuntimeCommandByInputId(params, event.inputId ?? event.traceId, event.type);
   }
@@ -602,7 +602,7 @@ export function createZCodeTaskServiceAdapter(
       return;
     }
     const command = commands.find(
-      (candidate): candidate is ZCodeSendPromptRuntimeCommand =>
+      (candidate): candidate is ZodySendPromptRuntimeCommand =>
         candidate.type === "send_prompt" && candidate.status === "accepted",
     );
     if (!command) {
@@ -749,8 +749,8 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function persistedStatusFromToolUpdate(
-    status: Extract<ZCodeStreamEvent, { type: "tool_call_update" }>["status"],
-  ): ZCodePersistedToolCall["status"] | undefined {
+    status: Extract<ZodyStreamEvent, { type: "tool_call_update" }>["status"],
+  ): ZodyPersistedToolCall["status"] | undefined {
     return status === "completed" ||
       status === "failed" ||
       status === "denied" ||
@@ -759,7 +759,7 @@ export function createZCodeTaskServiceAdapter(
       : undefined;
   }
 
-  function rememberLiveToolProjection(params: TaskTarget, event: ZCodeStreamEvent): void {
+  function rememberLiveToolProjection(params: TaskTarget, event: ZodyStreamEvent): void {
     if (event.type !== "tool_call" && event.type !== "tool_call_update") {
       return;
     }
@@ -768,7 +768,7 @@ export function createZCodeTaskServiceAdapter(
     const existing = projection.get(event.toolId);
     const parentToolUseId = event.parentToolUseId ?? existing?.parentToolUseId ?? null;
     const raw = normalizeLiveToolRaw(event.raw, event.toolId, parentToolUseId);
-    const nextTool: ZCodePersistedToolCall =
+    const nextTool: ZodyPersistedToolCall =
       event.type === "tool_call"
         ? {
             ...existing?.tool,
@@ -798,7 +798,7 @@ export function createZCodeTaskServiceAdapter(
     trimLiveToolProjectionMap(projection);
   }
 
-  function persistedToolId(tool: ZCodePersistedToolCall): string | undefined {
+  function persistedToolId(tool: ZodyPersistedToolCall): string | undefined {
     return stringValue(asRecord(tool.raw).toolCallId);
   }
 
@@ -821,9 +821,9 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function mergePersistedToolCall(
-    snapshotTool: ZCodePersistedToolCall | undefined,
-    liveTool: ZCodePersistedToolCall,
-  ): ZCodePersistedToolCall {
+    snapshotTool: ZodyPersistedToolCall | undefined,
+    liveTool: ZodyPersistedToolCall,
+  ): ZodyPersistedToolCall {
     if (!snapshotTool) {
       return liveTool;
     }
@@ -843,7 +843,7 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function findToolLocation(
-    messages: readonly ZCodePersistedMessage[],
+    messages: readonly ZodyPersistedMessage[],
     toolId: string,
   ): { messageIndex: number; toolIndex: number } | null {
     for (let messageIndex = 0; messageIndex < messages.length; messageIndex += 1) {
@@ -857,7 +857,7 @@ export function createZCodeTaskServiceAdapter(
     return null;
   }
 
-  function latestAssistantMessageIndex(messages: readonly ZCodePersistedMessage[]): number {
+  function latestAssistantMessageIndex(messages: readonly ZodyPersistedMessage[]): number {
     for (let index = messages.length - 1; index >= 0; index -= 1) {
       if (messages[index]?.role === "assistant") {
         return index;
@@ -867,9 +867,9 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function upsertPersistedToolPart(
-    parts: readonly ZCodePersistedMessagePart[] | undefined,
+    parts: readonly ZodyPersistedMessagePart[] | undefined,
     toolIndex: number,
-  ): ZCodePersistedMessagePart[] {
+  ): ZodyPersistedMessagePart[] {
     if (parts?.some((part) => part.type === "tool-call" && part.toolIndex === toolIndex)) {
       return [...parts];
     }
@@ -877,10 +877,10 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function updateSnapshotMessageTool(
-    message: ZCodePersistedMessage,
+    message: ZodyPersistedMessage,
     toolIndex: number,
-    tool: ZCodePersistedToolCall,
-  ): ZCodePersistedMessage {
+    tool: ZodyPersistedToolCall,
+  ): ZodyPersistedMessage {
     const tools = [...(message.tools ?? [])];
     tools[toolIndex] = mergePersistedToolCall(tools[toolIndex], tool);
     return {
@@ -894,9 +894,9 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function appendSnapshotMessageTool(
-    message: ZCodePersistedMessage,
-    tool: ZCodePersistedToolCall,
-  ): ZCodePersistedMessage {
+    message: ZodyPersistedMessage,
+    tool: ZodyPersistedToolCall,
+  ): ZodyPersistedMessage {
     const tools = [...(message.tools ?? []), tool];
     const toolIndex = tools.length - 1;
     return {
@@ -910,9 +910,9 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function mergeLiveToolProjectionIntoSnapshotMessages(
-    meta: ZCodeTaskMeta,
-    messages: ZCodePersistedMessage[],
-  ): ZCodePersistedMessage[] {
+    meta: ZodyTaskMeta,
+    messages: ZodyPersistedMessage[],
+  ): ZodyPersistedMessage[] {
     const projection = liveToolProjectionsByTaskKey.get(taskKey(meta));
     if (!projection || projection.size === 0 || messages.length === 0) {
       return messages;
@@ -993,7 +993,7 @@ export function createZCodeTaskServiceAdapter(
     return overlays.get(taskKey(params)) ?? {};
   }
 
-  function getToolProjectionMemory(params: TaskTarget): ZCodeToolProjectionMemory {
+  function getToolProjectionMemory(params: TaskTarget): ZodyToolProjectionMemory {
     const key = taskKey(params);
     let memory = toolProjectionMemoryByTaskKey.get(key);
     if (!memory) {
@@ -1021,30 +1021,30 @@ export function createZCodeTaskServiceAdapter(
 
   // workspace emitter 已上提到 syncer，adapter 通过 syncer 获取共享 emitter，
   // 保证 task adapter 路径和 desktop-continuous 路径走同一份订阅，UI 不会漏事件。
-  function getWorkspaceEmitter(workspace: WorkspaceEventInput): Emitter<ZCodeWorkspaceEvent> {
+  function getWorkspaceEmitter(workspace: WorkspaceEventInput): Emitter<ZodyWorkspaceEvent> {
     return taskIndexSyncer.getWorkspaceEmitter(workspace);
   }
 
-  function getTaskEmitter(params: TaskTarget): Emitter<ZCodeStreamEvent> {
+  function getTaskEmitter(params: TaskTarget): Emitter<ZodyStreamEvent> {
     const key = taskKey(params);
     let emitter = taskEmitters.get(key);
     if (!emitter) {
-      emitter = new Emitter<ZCodeStreamEvent>();
+      emitter = new Emitter<ZodyStreamEvent>();
       taskEmitters.set(key, emitter);
     }
     return emitter;
   }
 
-  function getGlobalTaskEmitter(taskId: string): Emitter<ZCodeStreamEvent> {
+  function getGlobalTaskEmitter(taskId: string): Emitter<ZodyStreamEvent> {
     let emitter = globalTaskEmitters.get(taskId);
     if (!emitter) {
-      emitter = new Emitter<ZCodeStreamEvent>();
+      emitter = new Emitter<ZodyStreamEvent>();
       globalTaskEmitters.set(taskId, emitter);
     }
     return emitter;
   }
 
-  function emitTaskEvent(params: TaskTarget, event: ZCodeStreamEvent): void {
+  function emitTaskEvent(params: TaskTarget, event: ZodyStreamEvent): void {
     getTaskEmitter(params).fire(event);
     getGlobalTaskEmitter(params.taskId).fire(event);
   }
@@ -1058,15 +1058,15 @@ export function createZCodeTaskServiceAdapter(
       workspaceIdentity?: string;
       taskId?: string;
     },
-    taskMeta: ZCodeTaskMeta | undefined,
-    reason: ZCodeWorkspaceTaskListChanged["reason"],
+    taskMeta: ZodyTaskMeta | undefined,
+    reason: ZodyWorkspaceTaskListChanged["reason"],
   ) {
     taskIndexSyncer.emitWorkspaceTaskListChanged(params, taskMeta, reason);
   }
 
   function emitWorkspaceConfig(
-    params: ZCodeAgentWorkspaceTarget,
-    settings: ZCodeSessionSettingsState,
+    params: ZodyAgentWorkspaceTarget,
+    settings: ZodySessionSettingsState,
   ) {
     getWorkspaceEmitter(params).fire({
       type: "workspace_config_options_update",
@@ -1139,7 +1139,7 @@ export function createZCodeTaskServiceAdapter(
 
   async function resumeSnapshot(
     params: TaskTargetWithMcpServers,
-  ): Promise<ZCodeSessionStateSnapshot> {
+  ): Promise<ZodySessionStateSnapshot> {
     rememberTaskTarget(params);
     const thoughtLevel = params.thoughtLevel?.trim();
     const mcpServers = await resolveProductMcpServers(params.mcpServers);
@@ -1190,7 +1190,7 @@ export function createZCodeTaskServiceAdapter(
    */
   async function switchCollaborationModeViaProtocol(
     target: TaskTarget,
-    mode: ZCodeSessionMode,
+    mode: ZodySessionMode,
   ): Promise<void> {
     if (mode === "auto") {
       await options.zcodeAgentService.setMode({
@@ -1211,8 +1211,8 @@ export function createZCodeTaskServiceAdapter(
 
   async function repairEmptyImportedClaudeSnapshot(
     params: TaskTargetWithMcpServers,
-    snapshot: ZCodeSessionStateSnapshot,
-  ): Promise<ZCodeSessionStateSnapshot> {
+    snapshot: ZodySessionStateSnapshot,
+  ): Promise<ZodySessionStateSnapshot> {
     const repaired = await repairImportedClaudeSessionSnapshot({
       snapshot,
       target: params,
@@ -1237,7 +1237,7 @@ export function createZCodeTaskServiceAdapter(
     return /\bSession (not found|is not active):/i.test(message);
   }
 
-  async function readLegacyTaskSnapshot(params: TaskTarget): Promise<ZCodeTaskSnapshot | null> {
+  async function readLegacyTaskSnapshot(params: TaskTarget): Promise<ZodyTaskSnapshot | null> {
     const paths = [
       getLegacyTaskSessionSnapshotPath(
         params.workspacePath,
@@ -1269,7 +1269,7 @@ export function createZCodeTaskServiceAdapter(
 
       const legacyFile = parsed.data;
       const indexedMeta = await taskIndexRepo.getTaskMeta(params).catch(() => null);
-      const legacyMeta: ZCodeTaskMeta = {
+      const legacyMeta: ZodyTaskMeta = {
         ...legacyFile.meta,
         // Bugfix: 旧 ACP task 只落在 ~/.zcode/v2/sessions/*.json，没有写入
         // zcode-cli 的 sqlite session 表。新协议 resume 会把 taskId 当 sessionId
@@ -1285,7 +1285,7 @@ export function createZCodeTaskServiceAdapter(
         status: legacyFile.meta.status ?? indexedMeta?.status ?? "completed",
         lastError: legacyFile.meta.lastError ?? indexedMeta?.lastError,
       };
-      const snapshot: ZCodeTaskSnapshot = {
+      const snapshot: ZodyTaskSnapshot = {
         ...legacyFile,
         meta: applyOverlayToMeta(legacyMeta, getOverlay(params)),
         runtime: {
@@ -1305,8 +1305,8 @@ export function createZCodeTaskServiceAdapter(
   async function resumeSnapshotOrLegacy(
     params: TaskTargetWithMcpServers,
   ): Promise<
-    | { kind: "session"; snapshot: ZCodeSessionStateSnapshot }
-    | { kind: "legacy"; snapshot: ZCodeTaskSnapshot }
+    | { kind: "session"; snapshot: ZodySessionStateSnapshot }
+    | { kind: "legacy"; snapshot: ZodyTaskSnapshot }
   > {
     try {
       const snapshot = await resumeSnapshot(params);
@@ -1370,7 +1370,7 @@ export function createZCodeTaskServiceAdapter(
     }
   }
 
-  function snapshotToMeta(snapshot: ZCodeSessionStateSnapshot): ZCodeTaskMeta {
+  function snapshotToMeta(snapshot: ZodySessionStateSnapshot): ZodyTaskMeta {
     const target = {
       taskId: snapshot.session.sessionId,
       workspacePath: snapshot.session.workspace.workspacePath,
@@ -1413,7 +1413,7 @@ export function createZCodeTaskServiceAdapter(
     );
   }
 
-  function rememberIndexedTaskMeta(meta: ZCodeTaskMeta): ZCodeTaskMeta {
+  function rememberIndexedTaskMeta(meta: ZodyTaskMeta): ZodyTaskMeta {
     const existing = taskTargets.get(meta.taskId);
     // 权威归属刷新：index meta 是唯一可以设置/清除 cronAutomationId 的来源，直接以 meta 为准
     // 写入（绕过 rememberTaskTarget 的 merge-preserve），以便解绑/删除 automation 后能真正清空。
@@ -1461,14 +1461,14 @@ export function createZCodeTaskServiceAdapter(
     };
   }
 
-  async function syncTaskIndexMeta(meta: ZCodeTaskMeta): Promise<ZCodeTaskMeta> {
+  async function syncTaskIndexMeta(meta: ZodyTaskMeta): Promise<ZodyTaskMeta> {
     const indexedMeta = await taskIndexRepo.syncTaskMeta({ meta });
     return rememberIndexedTaskMeta(indexedMeta);
   }
 
   async function syncTaskIndexSnapshot(
-    snapshot: ZCodeSessionStateSnapshot,
-  ): Promise<ZCodeTaskMeta> {
+    snapshot: ZodySessionStateSnapshot,
+  ): Promise<ZodyTaskMeta> {
     const meta = snapshotToMeta(snapshot);
     // 旧污染标签页的显式恢复不能把只读 child 再次写进主任务索引。
     if (snapshot.session.sessionKind === "subagent_child") return meta;
@@ -1486,7 +1486,7 @@ export function createZCodeTaskServiceAdapter(
       updatedAt?: number;
       unreadAt?: number;
     },
-  ): Promise<ZCodeTaskMeta> {
+  ): Promise<ZodyTaskMeta> {
     try {
       return await taskIndexRepo.updateTaskState({
         workspacePath: params.workspacePath,
@@ -1509,7 +1509,7 @@ export function createZCodeTaskServiceAdapter(
     }
   }
 
-  function updateTaskIndexFromStreamEvent(params: TaskTarget, event: ZCodeStreamEvent): void {
+  function updateTaskIndexFromStreamEvent(params: TaskTarget, event: ZodyStreamEvent): void {
     if (event.type === "session_info_update") {
       const patch: Parameters<typeof taskIndexRepo.applyAgentPatch>[0]["patch"] = {
         title: typeof event.title === "string" ? event.title : undefined,
@@ -1576,7 +1576,7 @@ export function createZCodeTaskServiceAdapter(
     }
   }
 
-  function updateTaskApiRetryFromStreamEvent(params: TaskTarget, event: ZCodeStreamEvent): void {
+  function updateTaskApiRetryFromStreamEvent(params: TaskTarget, event: ZodyStreamEvent): void {
     const key = taskKey(params);
     if (event.type === "session_info_update" && event.apiRetry !== undefined) {
       apiRetryByTaskKey.set(key, event.apiRetry ?? null);
@@ -1592,9 +1592,9 @@ export function createZCodeTaskServiceAdapter(
   }
 
   function snapshotToZCode(
-    snapshot: ZCodeSessionStateSnapshot,
+    snapshot: ZodySessionStateSnapshot,
     options?: { includeEmptyPendingElicitations?: boolean },
-  ): ZCodeTaskSnapshot {
+  ): ZodyTaskSnapshot {
     const meta = snapshotToMeta(snapshot);
     const activeGoalIterationCount = getSnapshotGoalActiveIterationCount(snapshot);
     const goalIterationByAssistantMessageId = getZCodeGoalIterationByAssistantMessageId(
@@ -1631,7 +1631,7 @@ export function createZCodeTaskServiceAdapter(
         ),
       ),
     );
-    const pendingPermissions: ZCodePermissionRequest[] = snapshot.projection.pendingPermissions
+    const pendingPermissions: ZodyPermissionRequest[] = snapshot.projection.pendingPermissions
       .filter((permission) => !isUserInputBackedPermissionToolName(permission.toolName))
       .map((permission) => pendingPermissionToStreamEvent(snapshot.session.sessionId, permission));
     const pendingElicitations = snapshot.projection.pendingPermissions
@@ -1640,7 +1640,7 @@ export function createZCodeTaskServiceAdapter(
         pendingUserInputBackedPermissionToElicitationEvent(snapshot.session.sessionId, permission),
       )
       .filter(
-        (event): event is Extract<ZCodeStreamEvent, { type: "elicitation_request" }> =>
+        (event): event is Extract<ZodyStreamEvent, { type: "elicitation_request" }> =>
           event !== null,
       );
     const backgroundTaskControls = parseZCodeBackgroundTaskControlItems(
@@ -1685,12 +1685,12 @@ export function createZCodeTaskServiceAdapter(
     };
   }
 
-  function mapServiceEvent(params: TaskTarget, event: ZCodeAgentServiceEvent): void {
+  function mapServiceEvent(params: TaskTarget, event: ZodyAgentServiceEvent): void {
     if (event.type === "snapshot") {
       void syncTaskIndexSnapshot(event.snapshot).catch((error) => {
         logger.warn(undefined, "同步 ZCode snapshot 到 task index 失败", error);
       });
-      const snapshotEvent: ZCodeStreamEvent = {
+      const snapshotEvent: ZodyStreamEvent = {
         type: "task_snapshot_updated",
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
@@ -1771,7 +1771,7 @@ export function createZCodeTaskServiceAdapter(
 
   let disposed = false;
 
-  function handleTaskIndexTerminalEvent(event: ZCodeTaskIndexTerminalEvent): void {
+  function handleTaskIndexTerminalEvent(event: ZodyTaskIndexTerminalEvent): void {
     const params: TaskTarget = {
       taskId: event.target.sessionId,
       workspacePath: event.target.workspacePath,
@@ -1798,7 +1798,7 @@ export function createZCodeTaskServiceAdapter(
     });
   });
 
-  function handleTaskIndexReadyEvent(event: ZCodeTaskIndexReadyEvent): void {
+  function handleTaskIndexReadyEvent(event: ZodyTaskIndexReadyEvent): void {
     const params: TaskTarget = {
       taskId: event.target.sessionId,
       workspacePath: event.target.workspacePath,
@@ -1839,7 +1839,7 @@ export function createZCodeTaskServiceAdapter(
   }
 
   async function disposeZCodeAgentServiceAndWait(): Promise<void> {
-    const agentService = options.zcodeAgentService as IZCodeAgentService & {
+    const agentService = options.zcodeAgentService as IZodyAgentService & {
       disposeAllAndWait?: () => Promise<void>;
     };
     if (agentService.disposeAllAndWait) {
@@ -1849,7 +1849,7 @@ export function createZCodeTaskServiceAdapter(
     agentService.disposeAll();
   }
 
-  const service: IZCodeTaskService & {
+  const service: IZodyTaskService & {
     disposeAll(): void;
     disposeAllAndWait(): Promise<void>;
   } = {
@@ -1869,11 +1869,11 @@ export function createZCodeTaskServiceAdapter(
       await options.zcodeAgentService.disposeWorkspace(normalizeWorkspaceParams(params));
     },
 
-    async checkCodexConnectivity(): Promise<ZCodeCodexConnectivityCheckResult> {
+    async checkCodexConnectivity(): Promise<ZodyCodexConnectivityCheckResult> {
       return { target: "zcode-agent", reachable: true };
     },
 
-    async createTask(params): Promise<ZCodeTaskCreateResult> {
+    async createTask(params): Promise<ZodyTaskCreateResult> {
       const target = normalizeWorkspaceParams(params);
       const requestedSelection =
         params.modelSelection ??
@@ -1885,7 +1885,7 @@ export function createZCodeTaskServiceAdapter(
           : undefined);
       const draftSessionId = params.draftSessionId?.trim();
       const mcpServers = await resolveProductMcpServers(params.mcpServers);
-      let snapshot: ZCodeSessionStateSnapshot | null = null;
+      let snapshot: ZodySessionStateSnapshot | null = null;
       if (draftSessionId && !mcpServers) {
         try {
           snapshot = await options.zcodeAgentService.readSession({
@@ -2054,10 +2054,10 @@ export function createZCodeTaskServiceAdapter(
       unsupported("sendSessionMessageDeliveryResult");
     },
 
-    async enqueueTaskCommand(params): Promise<ZCodeEnqueueTaskCommandResult> {
+    async enqueueTaskCommand(params): Promise<ZodyEnqueueTaskCommandResult> {
       assertCurrentOwnerRun(params, params.ownerRunId);
       const workspaceKeyValue = workspaceKey(params);
-      const command: ZCodeTaskRuntimeCommand = {
+      const command: ZodyTaskRuntimeCommand = {
         commandId: params.commandId,
         taskId: params.taskId,
         traceId: params.traceId,
@@ -2085,7 +2085,7 @@ export function createZCodeTaskServiceAdapter(
       return { accepted: true, command };
     },
 
-    async promoteTaskCommand(params): Promise<ZCodeEnqueueTaskCommandResult> {
+    async promoteTaskCommand(params): Promise<ZodyEnqueueTaskCommandResult> {
       assertCurrentOwnerRun(params, params.ownerRunId);
       const key = taskKey(params);
       const commands = runtimeCommands.get(key) ?? [];
@@ -2108,7 +2108,7 @@ export function createZCodeTaskServiceAdapter(
       return { accepted: true, command: nextCommand };
     },
 
-    async cancelTaskCommand(params): Promise<ZCodeCancelTaskCommandResult> {
+    async cancelTaskCommand(params): Promise<ZodyCancelTaskCommandResult> {
       assertCurrentOwnerRun(params, params.ownerRunId);
       const key = taskKey(params);
       const commands = runtimeCommands.get(key) ?? [];
@@ -2399,7 +2399,7 @@ export function createZCodeTaskServiceAdapter(
       emitWorkspaceTaskListChanged(target, undefined, "task_meta_changed");
     },
 
-    async resumeTask(params): Promise<ZCodeTaskMeta> {
+    async resumeTask(params): Promise<ZodyTaskMeta> {
       // v4 侧 resume 已走 subscribe 冷恢复钩子
       // （CLI cold-resume），但 replayable resumeTask 还承担 model/thoughtLevel 回填与
       // snapshot→task index 正文索引回源，旧 resumeSession op 保留到 v4 生命周期收口。
@@ -2446,7 +2446,7 @@ export function createZCodeTaskServiceAdapter(
       return meta;
     },
 
-    async listTasks(params): Promise<ZCodeTaskMeta[]> {
+    async listTasks(params): Promise<ZodyTaskMeta[]> {
       const tasks = await taskIndexRepo.listTaskMetas({
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
@@ -2466,7 +2466,7 @@ export function createZCodeTaskServiceAdapter(
       return tasks.map((task) => task.taskId);
     },
 
-    async listPinnedTasks(params): Promise<ZCodeTaskMeta[]> {
+    async listPinnedTasks(params): Promise<ZodyTaskMeta[]> {
       const tasks = await taskIndexRepo.listTaskMetas({
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
@@ -2488,7 +2488,7 @@ export function createZCodeTaskServiceAdapter(
     // listTaskList 的消费面是全文搜索（searchable_text/snippets）与
     // remoteTimelineTaskStore 补充链路；侧栏 5 视图 + remote shard 的无搜索行集合
     // 走上方三个分区读取。workspace 行在客户端用各 endpoint 的 task 行 + session detail 构建。
-    async listTaskList(params: ZCodeTaskListQuery): Promise<ZCodeTaskListResult> {
+    async listTaskList(params: ZodyTaskListQuery): Promise<ZodyTaskListResult> {
       const result = await taskIndexRepo.queryTaskList({
         ...params,
         provider: GLM_PROVIDER,
@@ -2560,7 +2560,7 @@ export function createZCodeTaskServiceAdapter(
       };
     },
 
-    async listArchivedTasks(params): Promise<ZCodeTaskMeta[]> {
+    async listArchivedTasks(params): Promise<ZodyTaskMeta[]> {
       const tasks = await taskIndexRepo.listTaskMetas({
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
@@ -2570,7 +2570,7 @@ export function createZCodeTaskServiceAdapter(
       return tasks.map(rememberIndexedTaskMeta);
     },
 
-    async archiveStaleTasks(params): Promise<ZCodeTaskMeta[]> {
+    async archiveStaleTasks(params): Promise<ZodyTaskMeta[]> {
       // stale archive API 和设置页自动归档保持一致，清理全部历史 provider。
       const archivedTasks = await taskIndexRepo.archiveStaleTasks({
         ...params,
@@ -2584,7 +2584,7 @@ export function createZCodeTaskServiceAdapter(
       return archivedTasks;
     },
 
-    async archiveWorkspaceTasks(params): Promise<ZCodeTaskMeta[]> {
+    async archiveWorkspaceTasks(params): Promise<ZodyTaskMeta[]> {
       const tasks = await taskIndexRepo.listTaskMetas({
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
@@ -2610,7 +2610,7 @@ export function createZCodeTaskServiceAdapter(
       });
     },
 
-    async getTaskSnapshot(params): Promise<ZCodeTaskSnapshot | null> {
+    async getTaskSnapshot(params): Promise<ZodyTaskSnapshot | null> {
       const startedAt = Date.now();
       const resumeStartedAt = Date.now();
       const explicitModel = params.model?.trim();
@@ -2731,24 +2731,24 @@ export function createZCodeTaskServiceAdapter(
       return { snapshot, etag };
     },
 
-    async getTaskSnapshotBody(): Promise<ZCodeTaskSnapshotBody | null> {
+    async getTaskSnapshotBody(): Promise<ZodyTaskSnapshotBody | null> {
       return null;
     },
 
-    async getTaskSnapshotRef(): Promise<ZCodeTaskSnapshotRefContent | null> {
+    async getTaskSnapshotRef(): Promise<ZodyTaskSnapshotRefContent | null> {
       return null;
     },
 
-    async getTaskSnapshotToolCallsSlice(): Promise<ZCodeTaskSnapshotToolCallsSlice | null> {
+    async getTaskSnapshotToolCallsSlice(): Promise<ZodyTaskSnapshotToolCallsSlice | null> {
       return null;
     },
 
-    async getTaskMeta(params): Promise<ZCodeTaskMeta | null> {
+    async getTaskMeta(params): Promise<ZodyTaskMeta | null> {
       const meta = await taskIndexRepo.getTaskMeta(params);
       return meta ? rememberIndexedTaskMeta(meta) : null;
     },
 
-    async getTaskConfigOptions(params): Promise<ZCodeConfigOption[]> {
+    async getTaskConfigOptions(params): Promise<ZodyConfigOption[]> {
       const snapshot = await resumeSnapshot(getTaskTarget(params.taskId));
       return settingsToConfigOptions(snapshot.settings);
     },
@@ -2763,7 +2763,7 @@ export function createZCodeTaskServiceAdapter(
       return snapshot.settings.model.current ?? null;
     },
 
-    async setAssistantMessageFeedback(params): Promise<ZCodeSessionFile> {
+    async setAssistantMessageFeedback(params): Promise<ZodySessionFile> {
       const snapshot = await service.getTaskSnapshot(params);
       if (!snapshot) {
         unsupported("setAssistantMessageFeedback");
@@ -2771,16 +2771,16 @@ export function createZCodeTaskServiceAdapter(
       const assistantMessages = snapshot.messages.filter((message) => message.role === "assistant");
       const targetMessage = assistantMessages[params.turnIndex];
       if (targetMessage) {
-        targetMessage.feedback = params.feedback as ZCodeAssistantMessageFeedback | undefined;
+        targetMessage.feedback = params.feedback as ZodyAssistantMessageFeedback | undefined;
       }
       return snapshot;
     },
 
-    async syncTaskSessionBinding(): Promise<ZCodeSyncTaskSessionBindingResult> {
+    async syncTaskSessionBinding(): Promise<ZodySyncTaskSessionBindingResult> {
       unsupported("syncTaskSessionBinding");
     },
 
-    async switchAgent(): Promise<ZCodeSwitchAgentResult> {
+    async switchAgent(): Promise<ZodySwitchAgentResult> {
       unsupported("switchAgent");
     },
 
@@ -2789,7 +2789,7 @@ export function createZCodeTaskServiceAdapter(
       workspaceIdentity?: string;
       modifiedSince?: number;
       limit?: number;
-    }): Promise<ZCodeImportableSessionCandidate[]> {
+    }): Promise<ZodyImportableSessionCandidate[]> {
       // legacy ACP 下线后 scanImportableClaudeSessions 被留成空桩，迁移向导扫不到 ~/.claude/projects。
       // workspaceIdentity 仅影响导入落盘目录，扫描仍按 jsonl 内 cwd 与可选 workspacePath 过滤。
       void params.workspaceIdentity;
@@ -2804,7 +2804,7 @@ export function createZCodeTaskServiceAdapter(
       workspacePath?: string;
       workspaceIdentity?: string;
       sessionIds: string[];
-    }): Promise<ZCodeImportSessionsResult> {
+    }): Promise<ZodyImportSessionsResult> {
       return importClaudeNativeSessions({
         taskIndexRepo,
         workspacePath: params.workspacePath,
@@ -2863,7 +2863,7 @@ export function createZCodeTaskServiceAdapter(
       await syncTaskIndexSnapshot(snapshot);
     },
 
-    async setConfigOption(params): Promise<ZCodeConfigOption[]> {
+    async setConfigOption(params): Promise<ZodyConfigOption[]> {
       const target = getTaskTarget(params.taskId);
       if (params.configId === MODEL_CONFIG_ID) {
         return service.setModel({
@@ -2898,7 +2898,7 @@ export function createZCodeTaskServiceAdapter(
       } else if (params.configId === MODE_CONFIG_ID) {
         await switchCollaborationModeViaProtocol(
           target,
-          toZCodeMode(params.value as ZCodeTaskMode) ?? "build",
+          toZCodeMode(params.value as ZodyTaskMode) ?? "build",
         );
       }
       const snapshot = await resumeSnapshot(target);
@@ -2906,7 +2906,7 @@ export function createZCodeTaskServiceAdapter(
       return settingsToConfigOptions(snapshot.settings);
     },
 
-    async setModel(params): Promise<ZCodeConfigOption[]> {
+    async setModel(params): Promise<ZodyConfigOption[]> {
       // replayable facade 仍依赖 legacy op 返回的 Session
       // Snapshot；模型执行事实已经收敛到目标 Worker Registry，Host 只发送 Selection。
       // 过渡归宿 = task facade 原生消费 V4 config 投影与 revision。
@@ -2924,7 +2924,7 @@ export function createZCodeTaskServiceAdapter(
       return settingsToConfigOptions(snapshot.settings);
     },
 
-    async setAutomationSessionConfig(params): Promise<ZCodeConfigOption[]> {
+    async setAutomationSessionConfig(params): Promise<ZodyConfigOption[]> {
       const target = getTaskTarget(params.taskId);
       const model = params.modelSelection;
       const thoughtLevel = params.thoughtLevel?.trim() ?? "";
@@ -2988,7 +2988,7 @@ export function createZCodeTaskServiceAdapter(
       return trajectory;
     },
 
-    async getTaskTokenUsage(params): Promise<ZCodeTaskTokenUsageResult> {
+    async getTaskTokenUsage(params): Promise<ZodyTaskTokenUsageResult> {
       // 摘要面板需要展示 task 的累计模型消耗，不能复用 usage_update 的 context window。
       // 这里通过 ZCode Protocol 读 agent SQLite 的 model_usage 聚合，保持桌面和远控同一事实源。
       return options.zcodeAgentService.getTaskTokenUsage({
@@ -3028,8 +3028,8 @@ export function createZCodeTaskServiceAdapter(
       return true;
     },
 
-    async deleteArchivedTasks(params): Promise<ZCodeArchivedTaskDeletionResult> {
-      const result: ZCodeArchivedTaskDeletionResult = {
+    async deleteArchivedTasks(params): Promise<ZodyArchivedTaskDeletionResult> {
+      const result: ZodyArchivedTaskDeletionResult = {
         deletedTaskIds: [],
         skippedTaskIds: [],
         failedTaskIds: [],
@@ -3073,7 +3073,7 @@ export function createZCodeTaskServiceAdapter(
       return result;
     },
 
-    async renameTask(params): Promise<ZCodeTaskMeta> {
+    async renameTask(params): Promise<ZodyTaskMeta> {
       const renamedAt = Date.now();
       logger.info(undefined, "[ZCodeTaskService] renameTask start", {
         taskId: params.taskId,
@@ -3146,7 +3146,7 @@ export function createZCodeTaskServiceAdapter(
       }
     },
 
-    async setTaskPinned(params): Promise<ZCodeTaskMeta> {
+    async setTaskPinned(params): Promise<ZodyTaskMeta> {
       setOverlay(params, { pinned: params.pinned });
       const meta = await updateIndexedTaskState(params, {
         pinned: params.pinned,
@@ -3155,7 +3155,7 @@ export function createZCodeTaskServiceAdapter(
       return meta;
     },
 
-    async setTaskUnread(params): Promise<ZCodeTaskMeta> {
+    async setTaskUnread(params): Promise<ZodyTaskMeta> {
       if (!params.unread && typeof params.expectedUnreadAt === "number") {
         const result = await taskIndexRepo.clearTaskUnreadIfMatches({
           taskId: params.taskId,
@@ -3183,29 +3183,29 @@ export function createZCodeTaskServiceAdapter(
       return meta;
     },
 
-    async archiveTask(params): Promise<ZCodeTaskMeta> {
+    async archiveTask(params): Promise<ZodyTaskMeta> {
       setOverlay(params, { archived: true });
       const meta = await updateIndexedTaskState(params, { archived: true });
       emitWorkspaceTaskListChanged(params, meta, "task_archived");
       return meta;
     },
 
-    async unarchiveTask(params): Promise<ZCodeTaskMeta> {
+    async unarchiveTask(params): Promise<ZodyTaskMeta> {
       setOverlay(params, { archived: false });
       const meta = await updateIndexedTaskState(params, { archived: false });
       emitWorkspaceTaskListChanged(params, meta, "task_unarchived");
       return meta;
     },
 
-    async branchTaskFromPrompt(): Promise<ZCodeTaskCreateResult> {
+    async branchTaskFromPrompt(): Promise<ZodyTaskCreateResult> {
       unsupported("branchTaskFromPrompt");
     },
 
-    onDynamicStreamEvent(taskId: string): Event<ZCodeStreamEvent> {
+    onDynamicStreamEvent(taskId: string): Event<ZodyStreamEvent> {
       return getGlobalTaskEmitter(taskId).event;
     },
 
-    onDynamicTaskTerminalOutcome(taskId: string): Event<ZCodeTaskTerminalOutcome> {
+    onDynamicTaskTerminalOutcome(taskId: string): Event<ZodyTaskTerminalOutcome> {
       // 合并迁移：V4 syncer 只暴露归一化后的终态 kind，不再携带旧协议 event payload。
       // automation 只需要稳定收口运行结果，因此 completed/failed 在此映射为公开 outcome。
       return (listener) =>
@@ -3227,7 +3227,7 @@ export function createZCodeTaskServiceAdapter(
         });
     },
 
-    onDynamicTaskReady(taskId: string): Event<ZCodeTaskReadyOutcome> {
+    onDynamicTaskReady(taskId: string): Event<ZodyTaskReadyOutcome> {
       return (listener) =>
         taskIndexSyncer.onSessionReadyEvent((ready) => {
           if (ready.target.sessionId !== taskId) {
@@ -3237,7 +3237,7 @@ export function createZCodeTaskServiceAdapter(
         });
     },
 
-    onDynamicTaskEvent(params): Event<ZCodeStreamEvent> {
+    onDynamicTaskEvent(params): Event<ZodyStreamEvent> {
       const target = {
         taskId: params.taskId,
         workspacePath: params.workspacePath,
@@ -3275,7 +3275,7 @@ export function createZCodeTaskServiceAdapter(
       };
     },
 
-    onDynamicWorkspaceEvent(workspace): Event<ZCodeWorkspaceEvent> {
+    onDynamicWorkspaceEvent(workspace): Event<ZodyWorkspaceEvent> {
       return taskIndexSyncer.onDynamicWorkspaceEvent(workspace);
     },
 
@@ -3314,14 +3314,14 @@ export function createZCodeTaskServiceAdapter(
 function normalizeWorkspaceParams(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-}): ZCodeAgentWorkspaceTarget {
+}): ZodyAgentWorkspaceTarget {
   return {
     workspacePath: params.workspacePath,
     workspaceIdentity: params.workspaceIdentity,
   };
 }
 
-function applyOverlayToMeta(meta: ZCodeTaskMeta, overlay: TaskOverlay): ZCodeTaskMeta {
+function applyOverlayToMeta(meta: ZodyTaskMeta, overlay: TaskOverlay): ZodyTaskMeta {
   return {
     ...meta,
     title: overlay.title ?? meta.title,
@@ -3329,7 +3329,7 @@ function applyOverlayToMeta(meta: ZCodeTaskMeta, overlay: TaskOverlay): ZCodeTas
   };
 }
 
-function deriveTitleFromSnapshot(snapshot: ZCodeSessionStateSnapshot): string {
+function deriveTitleFromSnapshot(snapshot: ZodySessionStateSnapshot): string {
   return resolveZCodeVisibleSessionTitle({
     title: snapshot.session.title,
     messages: snapshot.messages,
@@ -3347,14 +3347,14 @@ function normalizeSnapshotMessageLimit(messageLimit: number | undefined): number
 function buildSnapshotHistory(
   totalMessages: number,
   messageLimit: number,
-): NonNullable<ZCodeTaskSnapshot["history"]> {
+): NonNullable<ZodyTaskSnapshot["history"]> {
   return {
     truncatedBefore: totalMessages > messageLimit,
     totalMessages,
   };
 }
 
-function getTaskSnapshotMessageDiagnostics(snapshot: ZCodeTaskSnapshot) {
+function getTaskSnapshotMessageDiagnostics(snapshot: ZodyTaskSnapshot) {
   let assistantMessages = 0;
   let userMessages = 0;
   let toolCalls = 0;
@@ -3395,9 +3395,9 @@ function getTaskSnapshotMessageDiagnostics(snapshot: ZCodeTaskSnapshot) {
 }
 
 function limitTaskSnapshotMessages(
-  snapshot: ZCodeTaskSnapshot,
+  snapshot: ZodyTaskSnapshot,
   messageLimit: number | undefined,
-): ZCodeTaskSnapshot {
+): ZodyTaskSnapshot {
   const limit = normalizeSnapshotMessageLimit(messageLimit);
   if (!limit) {
     return snapshot;
@@ -3426,7 +3426,7 @@ function parseModelPickerValue(value: string): ModelSelection {
   return parseSharedModelSelection(value);
 }
 
-function toZCodeMode(mode: ZCodeTaskMode | undefined): ZCodeSessionMode | undefined {
+function toZCodeMode(mode: ZodyTaskMode | undefined): ZodySessionMode | undefined {
   switch (mode) {
     case "plan":
       return "plan";
@@ -3452,14 +3452,14 @@ function toZCodeMode(mode: ZCodeTaskMode | undefined): ZCodeSessionMode | undefi
   }
 }
 
-function fromZCodeMode(mode: ZCodeSessionMode): ZCodeTaskMode {
+function fromZCodeMode(mode: ZodySessionMode): ZodyTaskMode {
   return mode === "build" ? "build" : mode;
 }
 
 function addSessionForkSnapshotFallback(
-  messages: ZCodePersistedMessage[],
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  snapshot: ZodySessionStateSnapshot,
+): ZodyPersistedMessage[] {
   const parentSessionId = snapshot.session.parentSessionId;
   if (
     !parentSessionId ||
@@ -3490,9 +3490,9 @@ function addSessionForkSnapshotFallback(
 }
 
 function addGoalVerificationTimelineSnapshotFallback(
-  messages: ZCodePersistedMessage[],
-  snapshot: ZCodeSessionStateSnapshot,
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  snapshot: ZodySessionStateSnapshot,
+): ZodyPersistedMessage[] {
   const timeline = snapshot.runtime.goalVerificationTimeline ?? [];
   if (timeline.length === 0) {
     return messages;
@@ -3508,7 +3508,7 @@ function addGoalVerificationTimelineSnapshotFallback(
   );
   const timelineMessages = timeline
     .filter((item) => !existingIds.has(goalVerificationTimelineIdentityKey(item)))
-    .map<ZCodePersistedMessage>((item) => ({
+    .map<ZodyPersistedMessage>((item) => ({
       id: goalVerificationTimelineMessageId(item),
       role: "assistant",
       content: "",
@@ -3524,7 +3524,7 @@ function addGoalVerificationTimelineSnapshotFallback(
 }
 
 function goalVerificationTimelineIdentityKey(
-  item: Extract<ZCodeGoalVerificationTimelineMeta, { type: "goal_verification" }>,
+  item: Extract<ZodyGoalVerificationTimelineMeta, { type: "goal_verification" }>,
 ): string {
   if (typeof item.goalIteration === "number") {
     return `${item.targetId}:${item.goalIteration}`;
@@ -3533,7 +3533,7 @@ function goalVerificationTimelineIdentityKey(
 }
 
 function goalVerificationTimelineMessageId(
-  item: Extract<ZCodeGoalVerificationTimelineMeta, { type: "goal_verification" }>,
+  item: Extract<ZodyGoalVerificationTimelineMeta, { type: "goal_verification" }>,
 ): string {
   if (typeof item.goalIteration === "number") {
     return `zcode-goal-verification-${item.targetId}-${item.goalIteration}`;
@@ -3542,9 +3542,9 @@ function goalVerificationTimelineMessageId(
 }
 
 function insertGoalVerificationTimelineMessages(
-  messages: ZCodePersistedMessage[],
-  timelineMessages: ZCodePersistedMessage[],
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+  timelineMessages: ZodyPersistedMessage[],
+): ZodyPersistedMessage[] {
   const result = [...messages];
   for (const message of [...timelineMessages].sort(
     (left, right) => left.timestamp - right.timestamp,
@@ -3564,8 +3564,8 @@ function insertGoalVerificationTimelineMessages(
 }
 
 function normalizeGoalVerificationTimelineMessageOrder(
-  messages: ZCodePersistedMessage[],
-): ZCodePersistedMessage[] {
+  messages: ZodyPersistedMessage[],
+): ZodyPersistedMessage[] {
   const timelineMessages = messages.filter(
     (message) => message.syntheticTimeline?.type === "goal_verification",
   );
@@ -3581,7 +3581,7 @@ function normalizeGoalVerificationTimelineMessageOrder(
 }
 
 function goalVerificationAnchorInsertIndex(
-  messages: readonly ZCodePersistedMessage[],
+  messages: readonly ZodyPersistedMessage[],
   anchorIndex: number,
 ): number {
   let index = anchorIndex + 1;
@@ -3595,7 +3595,7 @@ function goalVerificationAnchorInsertIndex(
 }
 
 function timestampInsertIndex(
-  messages: readonly ZCodePersistedMessage[],
+  messages: readonly ZodyPersistedMessage[],
   timestamp: number,
 ): number {
   const index = messages.findIndex((message) => message.timestamp > timestamp);
@@ -3603,7 +3603,7 @@ function timestampInsertIndex(
 }
 
 function findPersistedMessageIndexById(
-  messages: readonly ZCodePersistedMessage[],
+  messages: readonly ZodyPersistedMessage[],
   messageId: string,
 ): number {
   return messages.findIndex(
@@ -3611,7 +3611,7 @@ function findPersistedMessageIndexById(
   );
 }
 
-function getSnapshotGoalActiveIterationCount(snapshot: ZCodeSessionStateSnapshot): number {
+function getSnapshotGoalActiveIterationCount(snapshot: ZodySessionStateSnapshot): number {
   const targetId = snapshot.projection.target?.targetId;
   const timeline =
     snapshot.runtime.goalVerificationTimeline?.filter(
@@ -3628,7 +3628,7 @@ function getSnapshotGoalActiveIterationCount(snapshot: ZCodeSessionStateSnapshot
 // 恢复链路语义，保留不动。
 function toZCodeDeliveryKind(
   deliveryKind: "continuous" | "replayable" | "mixed" | undefined,
-): ZCodeDeliveryKind {
+): ZodyDeliveryKind {
   return deliveryKind === "replayable" ? "web-remote-replayable" : "desktop-continuous";
 }
 
@@ -3637,7 +3637,7 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
   inputId: InputId | undefined;
   taskId: string;
   traceId: TraceId;
-}): Extract<ZCodeStreamEvent, { type: "tool_call_update" }> | null {
+}): Extract<ZodyStreamEvent, { type: "tool_call_update" }> | null {
   const parsed = parseZCodeBackgroundTaskNotificationText(params.input);
   if (!parsed) {
     return null;
@@ -3664,15 +3664,15 @@ function backgroundTaskNotificationToolUpdateFromInput(params: {
 }
 
 function mapMessage(
-  message: ZCodeMessageWithParts,
+  message: ZodyMessageWithParts,
   goalIteration?: number,
   backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
-): ZCodePersistedMessage {
-  const tools: ZCodePersistedToolCall[] = [];
-  const parts: ZCodePersistedMessagePart[] = [];
+): ZodyPersistedMessage {
+  const tools: ZodyPersistedToolCall[] = [];
+  const parts: ZodyPersistedMessagePart[] = [];
   const attachments =
     message.info.role === "user" ? mapPromptAttachmentsFromParts(message.parts) : undefined;
-  let syntheticTimeline: ZCodeTimelineMeta | undefined;
+  let syntheticTimeline: ZodyTimelineMeta | undefined;
   for (const part of message.parts) {
     if (part.type === "text") {
       // fork notice 等结构化 synthetic 消息把 timeline meta 写在 part.metadata 上；
@@ -3724,18 +3724,18 @@ function mapMessage(
 }
 
 function mapPromptAttachmentsFromParts(
-  parts: readonly ZCodeMessagePart[],
-): ZCodePromptAttachment[] | undefined {
+  parts: readonly ZodyMessagePart[],
+): ZodyPromptAttachment[] | undefined {
   const attachments = parts
-    .filter((part): part is Extract<ZCodeMessagePart, { type: "file" }> => part.type === "file")
+    .filter((part): part is Extract<ZodyMessagePart, { type: "file" }> => part.type === "file")
     .map(mapPromptAttachmentFromFilePart)
-    .filter((attachment): attachment is ZCodePromptAttachment => attachment !== undefined);
+    .filter((attachment): attachment is ZodyPromptAttachment => attachment !== undefined);
   return attachments.length > 0 ? attachments : undefined;
 }
 
 function mapPromptAttachmentFromFilePart(
-  part: Extract<ZCodeMessagePart, { type: "file" }>,
-): ZCodePromptAttachment | undefined {
+  part: Extract<ZodyMessagePart, { type: "file" }>,
+): ZodyPromptAttachment | undefined {
   const mimeType = part.mime || "application/octet-stream";
   const metadata = asRecord(part.metadata);
   const filename = part.filename?.trim() || filenameFromPathLike(part.url) || "attachment";
@@ -3821,8 +3821,8 @@ function filenameFromPathLike(value: string): string | undefined {
 }
 
 function extractSyntheticTimelineFromTextPart(
-  part: Extract<ZCodeMessagePart, { type: "text" }>,
-): ZCodeTimelineMeta | undefined {
+  part: Extract<ZodyMessagePart, { type: "text" }>,
+): ZodyTimelineMeta | undefined {
   const metadata = part.metadata;
   if (!metadata || typeof metadata !== "object") return undefined;
   const forkContext = (metadata as Record<string, unknown>)["forkContext"];
@@ -3849,8 +3849,8 @@ function extractSyntheticTimelineFromTextPart(
 }
 
 function synthesizeCompactionTimeline(
-  part: Extract<ZCodeMessagePart, { type: "compaction" }>,
-): ZCodeTimelineMeta | undefined {
+  part: Extract<ZodyMessagePart, { type: "compaction" }>,
+): ZodyTimelineMeta | undefined {
   const metadata = asRecord(part.metadata);
   const operationId = stringValue(metadata.operationId) ?? part.partId;
   const status = timelineStatusValue(metadata.timelineStatus);
@@ -3894,9 +3894,9 @@ function synthesizeCompactionTimeline(
 }
 
 function mapToolPart(
-  part: Extract<ZCodeMessagePart, { type: "tool" }>,
+  part: Extract<ZodyMessagePart, { type: "tool" }>,
   backgroundTaskNotifications?: ReadonlyMap<string, ZodyBackgroundTaskNotificationInfo>,
-): ZCodePersistedToolCall {
+): ZodyPersistedToolCall {
   const state = part.state;
   const taskNotification = backgroundTaskNotifications?.get(part.callId);
   // ZCode Protocol 的 part.callId 是实时流和终态 snapshot 共同的工具身份。
@@ -3956,21 +3956,21 @@ function attachToolCallIdToRaw(raw: unknown, toolCallId: string): unknown {
   };
 }
 
-function textFromParts(parts: readonly ZCodeMessagePart[]): string {
+function textFromParts(parts: readonly ZodyMessagePart[]): string {
   return textFromZCodeMessageParts(parts);
 }
 
-function reasoningFromParts(parts: readonly ZCodeMessagePart[]): string | undefined {
+function reasoningFromParts(parts: readonly ZodyMessagePart[]): string | undefined {
   const text = parts
     .filter(
-      (part): part is Extract<ZCodeMessagePart, { type: "reasoning" }> => part.type === "reasoning",
+      (part): part is Extract<ZodyMessagePart, { type: "reasoning" }> => part.type === "reasoning",
     )
     .map((part) => part.text)
     .join("");
   return text || undefined;
 }
 
-function fromZCodeGoal(goal: unknown): ZCodeTaskGoal {
+function fromZCodeGoal(goal: unknown): ZodyTaskGoal {
   const record = asRecord(goal);
   const time = asRecord(record.time);
   const status = stringValue(record.status);
@@ -3990,7 +3990,7 @@ function fromZCodeGoal(goal: unknown): ZCodeTaskGoal {
   };
 }
 
-function isZCodeTaskGoalStatus(status: string | undefined): status is ZCodeTaskGoal["status"] {
+function isZCodeTaskGoalStatus(status: string | undefined): status is ZodyTaskGoal["status"] {
   return (
     status === "active" ||
     status === "paused" ||
@@ -4000,8 +4000,8 @@ function isZCodeTaskGoalStatus(status: string | undefined): status is ZCodeTaskG
 }
 
 function sessionTodosToPlanSteps(
-  todos: ZCodeSessionStateSnapshot["todos"],
-): ZCodePlanStep[] | null {
+  todos: ZodySessionStateSnapshot["todos"],
+): ZodyPlanStep[] | null {
   if (!todos || todos.length === 0) {
     return null;
   }
@@ -4013,14 +4013,14 @@ function sessionTodosToPlanSteps(
 }
 
 function sessionGoalStatsToRuntime(
-  stats: ZCodeSessionStateSnapshot["goalStats"],
-): ZCodeTaskGoalStats | null {
+  stats: ZodySessionStateSnapshot["goalStats"],
+): ZodyTaskGoalStats | null {
   return stats ? { ...stats } : null;
 }
 
 function sessionTodoGroupsToRuntime(
-  groups: ZCodeSessionStateSnapshot["todoGroups"],
-): ZCodeTodoGroup[] | null {
+  groups: ZodySessionStateSnapshot["todoGroups"],
+): ZodyTodoGroup[] | null {
   if (!groups || groups.length === 0) {
     return null;
   }
@@ -4041,8 +4041,8 @@ function sessionTodoGroupsToRuntime(
 
 function mapStateUpdated(
   params: TaskTarget,
-  notification: ZCodeStateUpdatedNotification,
-): ZCodeStreamEvent[] {
+  notification: ZodyStateUpdatedNotification,
+): ZodyStreamEvent[] {
   const parsedSettings = zcodeSessionSettingsStateSchema.safeParse(notification.patch);
   if (!parsedSettings.success) {
     return [];
@@ -4093,13 +4093,13 @@ function mapStateUpdated(
 
 function mapSessionEvent(
   params: TaskTarget,
-  event: ZCodeSessionEvent,
+  event: ZodySessionEvent,
   streamedTurnText: Map<string, { messageId?: string; text: string }>,
   activePromptInputId?: InputId,
-  toolProjectionMemory?: ZCodeToolProjectionMemory,
+  toolProjectionMemory?: ZodyToolProjectionMemory,
   backgroundTaskControlsByTaskKey?: Map<string, ZodyBackgroundTaskControlItem[]>,
   hasActiveApiRetry = false,
-): ZCodeStreamEvent[] {
+): ZodyStreamEvent[] {
   const protocolTraceId = event.traceId ?? generateTraceId(params.taskId);
   const payload = asRecord(event.payload);
   const inputId = stringValue(payload.inputId);
@@ -4119,7 +4119,7 @@ function mapSessionEvent(
   if (event.type === "turn.started") {
     streamedTurnText.delete(turnKey);
     const inputOrigin = asRecord(payload.intent).inputOrigin;
-    const runStartedEvent: ZCodeStreamEvent = {
+    const runStartedEvent: ZodyStreamEvent = {
       ...(inputOrigin === "desktop" || inputOrigin === "mobile" ? { inputOrigin } : {}),
       type: "task_run_started",
       taskId: params.taskId,
@@ -4276,7 +4276,7 @@ function mapSessionEvent(
   }
 
   if (event.type === "turn.completed") {
-    const events: ZCodeStreamEvent[] = [];
+    const events: ZodyStreamEvent[] = [];
     const response = stringValue(payload.response);
     // Bugfix: 只记录“本轮收到过文字”会让工具前言屏蔽最终回答兜底。
     // 在终态之前补齐当前模型消息缺少的后缀；完整正文已到达时不重复投递。
@@ -4354,7 +4354,7 @@ function maybeBuildApiRetryClearOnModelProgress(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "session_info_update" }> | null {
+): Extract<ZodyStreamEvent, { type: "session_info_update" }> | null {
   if (!hasActiveApiRetry || !isZCodeModelRetryRecoveryProgressPayload(payload)) {
     return null;
   }
@@ -4374,8 +4374,8 @@ function mapModelStreaming(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-  toolProjectionMemory?: ZCodeToolProjectionMemory,
-): ZCodeStreamEvent | null {
+  toolProjectionMemory?: ZodyToolProjectionMemory,
+): ZodyStreamEvent | null {
   const kind = stringValue(payload.kind);
   const delta = stringValue(payload.delta);
   const parentToolUseId = parentToolUseIdFromToolPayload(payload);
@@ -4414,8 +4414,8 @@ function mapToolInputStreaming(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-  toolProjectionMemory?: ZCodeToolProjectionMemory,
-): ZCodeStreamEvent | null {
+  toolProjectionMemory?: ZodyToolProjectionMemory,
+): ZodyStreamEvent | null {
   const streamingToolInputById = toolProjectionMemory?.streamingToolInputById;
   const toolNameById = toolProjectionMemory?.toolNameById;
   const kind = stringValue(payload.kind);
@@ -4660,7 +4660,7 @@ function mapCompactTimelinePayload(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }> | null {
+): Extract<ZodyStreamEvent, { type: "agent_message_chunk" }> | null {
   const timeline = compactTimelineMetaFromPayload(payload, inputId);
   if (!timeline) {
     return null;
@@ -4684,13 +4684,13 @@ function mapSyntheticTimelinePartPayload(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }> | null {
+): Extract<ZodyStreamEvent, { type: "agent_message_chunk" }> | null {
   const part = asRecord(payload.part);
   if (part.type !== "text") {
     return null;
   }
   const timeline = extractSyntheticTimelineFromTextPart(
-    part as Extract<ZCodeMessagePart, { type: "text" }>,
+    part as Extract<ZodyMessagePart, { type: "text" }>,
   );
   if (!timeline) {
     return null;
@@ -4712,7 +4712,7 @@ function mapSyntheticTimelinePartPayload(
 function compactTimelineMetaFromPayload(
   payload: Record<string, unknown>,
   inputId: InputId | undefined,
-): ZCodeContextCompactionTimelineMeta | null {
+): ZodyContextCompactionTimelineMeta | null {
   const operationId = stringValue(payload.operationId);
   const status = timelineStatusValue(payload.status ?? payload.timelineStatus);
   if (!operationId || !status) {
@@ -4758,7 +4758,7 @@ function compactFailureToTimelineEvent(
   traceId: TraceId,
   inputId: InputId | undefined,
   reason: string,
-): Extract<ZCodeStreamEvent, { type: "agent_message_chunk" }> {
+): Extract<ZodyStreamEvent, { type: "agent_message_chunk" }> {
   return {
     type: "agent_message_chunk",
     taskId,
@@ -4785,8 +4785,8 @@ function mapToolUpdated(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-  toolProjectionMemory?: ZCodeToolProjectionMemory,
-): ZCodeStreamEvent[] {
+  toolProjectionMemory?: ZodyToolProjectionMemory,
+): ZodyStreamEvent[] {
   const toolId = stringValue(payload.toolCallId);
   if (!toolId) {
     return [];
@@ -4801,7 +4801,7 @@ function mapToolUpdated(
     const toolName = rememberedToolName ?? "tool";
     toolNameById?.set(toolId, toolName);
     finalizeZCodeToolProjectionInput(toolId, payload.input, memory);
-    const toolEvent: ZCodeStreamEvent = {
+    const toolEvent: ZodyStreamEvent = {
       type: "tool_call",
       taskId,
       traceId,
@@ -4843,7 +4843,7 @@ function mapToolUpdated(
     const toolName = rememberedToolName;
     const content = normalizeToolResultContent(toolName, result);
     const status = toolResultStatus(toolName, result);
-    const toolEvent: ZCodeStreamEvent = {
+    const toolEvent: ZodyStreamEvent = {
       type: "tool_call_update",
       taskId,
       traceId,
@@ -4926,7 +4926,7 @@ function mapToolUpdated(
 function toolResultStatus(
   toolName: string | undefined,
   result: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "tool_call_update" }>["status"] {
+): Extract<ZodyStreamEvent, { type: "tool_call_update" }>["status"] {
   if (result.success === false) {
     return "failed";
   }
@@ -5086,8 +5086,8 @@ function agentTextFromContentField(value: unknown): string | undefined {
 
 function permissionRequestToStreamEvent(
   taskId: string,
-  request: ZCodePermissionRequestParams,
-): ZCodePermissionRequest {
+  request: ZodyPermissionRequestParams,
+): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId,
@@ -5104,8 +5104,8 @@ function permissionRequestToStreamEvent(
 
 function pendingPermissionToStreamEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): ZCodePermissionRequest {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId,
@@ -5122,8 +5122,8 @@ function pendingPermissionToStreamEvent(
 
 function userInputRequestToElicitationStreamEvent(
   taskId: string,
-  request: ZCodeUserInputRequestParams,
-): ZCodeStreamEvent {
+  request: ZodyUserInputRequestParams,
+): ZodyStreamEvent {
   const questions =
     request.questions?.map((question) => ({
       question: question.question,
@@ -5165,8 +5165,8 @@ function userInputRequestToElicitationStreamEvent(
 function userInputResponseToElicitationStreamEvent(
   taskId: string,
   requestId: string,
-  response: ZCodeUserInputResponse,
-): Extract<ZCodeStreamEvent, { type: "elicitation_response" }> {
+  response: ZodyUserInputResponse,
+): Extract<ZodyStreamEvent, { type: "elicitation_response" }> {
   return {
     type: "elicitation_response",
     taskId,
@@ -5186,8 +5186,8 @@ type PendingElicitationQuestion = {
 
 function pendingUserInputBackedPermissionToElicitationEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): Extract<ZCodeStreamEvent, { type: "elicitation_request" }> | null {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): Extract<ZodyStreamEvent, { type: "elicitation_request" }> | null {
   if (isAskUserQuestionToolName(permission.toolName)) {
     return pendingAskUserQuestionToElicitationEvent(taskId, permission);
   }
@@ -5199,8 +5199,8 @@ function pendingUserInputBackedPermissionToElicitationEvent(
 
 function pendingAskUserQuestionToElicitationEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): Extract<ZCodeStreamEvent, { type: "elicitation_request" }> | null {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): Extract<ZodyStreamEvent, { type: "elicitation_request" }> | null {
   const questions = askUserQuestionInputToElicitationQuestions(permission.input);
   if (questions.length === 0) {
     return null;
@@ -5223,8 +5223,8 @@ function pendingAskUserQuestionToElicitationEvent(
 
 function pendingExitPlanModeToElicitationEvent(
   taskId: string,
-  permission: ZCodeSessionStateSnapshot["projection"]["pendingPermissions"][number],
-): Extract<ZCodeStreamEvent, { type: "elicitation_request" }> {
+  permission: ZodySessionStateSnapshot["projection"]["pendingPermissions"][number],
+): Extract<ZodyStreamEvent, { type: "elicitation_request" }> {
   const questions = createExitPlanModeApprovalQuestions();
   const firstQuestion = questions[0];
   const input = asRecord(permission.input);
@@ -5337,7 +5337,7 @@ function permissionPayloadToStreamEvent(
   traceId: TraceId,
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
-): ZCodeStreamEvent {
+): ZodyStreamEvent {
   return {
     type: "permission_request",
     taskId,
@@ -5353,8 +5353,8 @@ function permissionPayloadToStreamEvent(
   };
 }
 
-function permissionOptionsFromPayload(payload: Record<string, unknown>): ZCodePermissionOption[] {
-  return Array.isArray(payload.options) ? (payload.options as ZCodePermissionOption[]) : [];
+function permissionOptionsFromPayload(payload: Record<string, unknown>): ZodyPermissionOption[] {
+  return Array.isArray(payload.options) ? (payload.options as ZodyPermissionOption[]) : [];
 }
 
 function permissionResolvedPayloadToStreamEvents(
@@ -5363,7 +5363,7 @@ function permissionResolvedPayloadToStreamEvents(
   inputId: InputId | undefined,
   payload: Record<string, unknown>,
   toolNameById?: Map<string, string>,
-): ZCodeStreamEvent[] {
+): ZodyStreamEvent[] {
   const toolCallId = stringValue(payload.toolCallId);
   const toolName =
     stringValue(payload.toolName) ?? (toolCallId ? toolNameById?.get(toolCallId) : undefined);
@@ -5393,7 +5393,7 @@ function permissionResolvedPayloadToStreamEvents(
     response: {
       decision: decision === "deny" ? "deny" : "allow",
     },
-  } as Extract<ZCodeStreamEvent, { type: "permission_response" }>;
+  } as Extract<ZodyStreamEvent, { type: "permission_response" }>;
 
   if (decision !== "deny" || !toolCallId) {
     return [permissionResponse];
@@ -5428,8 +5428,8 @@ function mapSessionInfoLikePayload(
   payload: Record<string, unknown>,
   backgroundTaskControlsByTaskKey?: Map<string, ZodyBackgroundTaskControlItem[]>,
   cacheKey = taskId,
-): ZCodeStreamEvent[] {
-  const events: ZCodeStreamEvent[] = [];
+): ZodyStreamEvent[] {
+  const events: ZodyStreamEvent[] = [];
   // event.taskId 是对外 session id；内部 cache 必须沿用 workspace-aware taskKey，
   // 否则 replayable snapshot seed 和后续 live update 会分裂成两份 background job 状态。
   const backgroundTaskControlCacheKey = cacheKey;
@@ -5542,7 +5542,7 @@ function taskTokenUsageDeltaFromPayload(
   inputId: InputId | undefined,
   eventId: string | undefined,
   payload: Record<string, unknown>,
-): Extract<ZCodeStreamEvent, { type: "task_token_usage_delta" }> | null {
+): Extract<ZodyStreamEvent, { type: "task_token_usage_delta" }> | null {
   if (!isModelCompleteUsagePayload(payload)) {
     return null;
   }
@@ -5584,7 +5584,7 @@ function isModelCompleteUsagePayload(payload: Record<string, unknown>): boolean 
 
 function apiRetryFromSessionInfoPayload(
   payload: Record<string, unknown>,
-): ZCodeApiRetryStatus | null | undefined {
+): ZodyApiRetryStatus | null | undefined {
   if ("apiRetry" in payload) {
     return normalizeZCodeApiRetryStatus(payload.apiRetry);
   }
@@ -5605,7 +5605,7 @@ function apiRetryFromSessionInfoPayload(
   );
 }
 
-function recordAgentModelNetworkTelemetry(event: ZCodeSessionEvent): void {
+function recordAgentModelNetworkTelemetry(event: ZodySessionEvent): void {
   const observation = agentModelNetworkObservationFromEvent(event);
   if (!observation) {
     return;
@@ -5619,7 +5619,7 @@ function recordAgentModelNetworkTelemetry(event: ZCodeSessionEvent): void {
 }
 
 function agentModelNetworkObservationFromEvent(
-  event: ZCodeSessionEvent,
+  event: ZodySessionEvent,
 ): NetworkObservation | null {
   const payload = asRecord(event.payload);
   const type = stringValue(payload.type);
@@ -5704,12 +5704,12 @@ function classifyAgentModelNetworkError(
 }
 
 type ContextUsageUpdate = Pick<
-  Extract<ZCodeStreamEvent, { type: "usage_update" }>,
+  Extract<ZodyStreamEvent, { type: "usage_update" }>,
   "used" | "size" | "cost" | "cache" | "breakdown"
 >;
 
 function contextUsageFromProjection(
-  projection: ZCodeSessionStateSnapshot["projection"],
+  projection: ZodySessionStateSnapshot["projection"],
 ): ContextUsageUpdate | null {
   if (projection.contextWindow <= 0 || projection.contextUsed <= 0) {
     return null;
@@ -5722,7 +5722,7 @@ function contextUsageFromProjection(
 }
 
 function contextUsageFromRuntime(
-  runtimeUsage: ZCodeSessionStateSnapshot["runtime"]["contextUsage"] | undefined,
+  runtimeUsage: ZodySessionStateSnapshot["runtime"]["contextUsage"] | undefined,
 ): ContextUsageUpdate | null {
   if (!runtimeUsage || runtimeUsage.size <= 0 || runtimeUsage.used <= 0) {
     return null;
@@ -5873,7 +5873,7 @@ function contextCacheUsageFromPayload(
   };
 }
 
-function usageFromPayload(value: unknown): ZCodeUsage | undefined {
+function usageFromPayload(value: unknown): ZodyUsage | undefined {
   const usage = asRecord(value);
   if (Object.keys(usage).length === 0) {
     return undefined;
@@ -5933,7 +5933,7 @@ function booleanValue(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
 }
 
-function timelineStatusValue(value: unknown): ZCodeTimelineStatus | undefined {
+function timelineStatusValue(value: unknown): ZodyTimelineStatus | undefined {
   return value === "started" ||
     value === "retrying" ||
     value === "skipped" ||
@@ -5944,7 +5944,7 @@ function timelineStatusValue(value: unknown): ZCodeTimelineStatus | undefined {
     : undefined;
 }
 
-function timelineTriggerValue(value: unknown): ZCodeTimelineTrigger | undefined {
+function timelineTriggerValue(value: unknown): ZodyTimelineTrigger | undefined {
   return value === "manual" ||
     value === "auto" ||
     value === "reactive" ||
@@ -5960,13 +5960,13 @@ function stringArray(value: unknown): string[] {
     : [];
 }
 
-function turnSteerSourceValue(value: unknown): ZCodeTurnSteerSource | undefined {
+function turnSteerSourceValue(value: unknown): ZodyTurnSteerSource | undefined {
   return value === "plan_approval_feedback" || value === "workflow_refine_feedback"
     ? value
     : undefined;
 }
 
-function turnSteerCommandKindValue(value: unknown): ZCodeTurnSteerCommandKind | undefined {
+function turnSteerCommandKindValue(value: unknown): ZodyTurnSteerCommandKind | undefined {
   return value === "sendGoalCommand" || value === "sendText" || value === "compact"
     ? value
     : undefined;

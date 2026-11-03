@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed candidate: `7c4ff9113680a38e273032b09bee32ee6ba399af` (root-only installation), under fixed-SHA DeepSeek review. Manual data paths at83680ddc require the manifest destination test correction before acceptance. The remaining98 basename candidate `f28dfddcbd4e646d7fa93d2e593b91a62063b2b6` received scoped DeepSeek PASS. Full rename remains incomplete; R22 and later stage gates have not passed.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed candidate: `7c4ff9113680a38e273032b09bee32ee6ba399af` (root-only installation), under fixed-SHA DeepSeek review. Manual data paths at83680ddc and correction3cb3a005 now have scoped DeepSeek PASS. The remaining98 basename candidate `f28dfddcbd4e646d7fa93d2e593b91a62063b2b6` received scoped DeepSeek PASS. Full rename remains incomplete; R22 and later stage gates have not passed.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -221,3 +221,10 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 
 - Terra corrected six active directory consumers and the manual tool manifest destination assertion; exact8-file source scope independently verified. Controller reran26 CLI +7 services +2 Node tests, typecheck and lint successfully (303 warnings). Mutation that restores only the old manifest directory fails at the new assertion. Shadow replay empty synthetic SQLite initialization works via tsx; plain Node export-resolution limitation and lack of actual session replay remain explicit.
 - Root installation clean-worktree validation uses frozen7c independently; initial Turbo build had shared-worktree cache hits and is not claimed as a cache-free rebuild. Terra will perform serial forced build after CLI tests.
+
+- DeepSeek C returned scoped PASS for fixed7c→3cb directory consumers and closed the manifest destination test finding. Manual-data-path candidate836 is accepted with correction3cb; raw review stored in R20-directory-residual-deepseek-review.md. Full symbols still in progress, root-only install independently under B review.
+
+## Complete B/C type batch04
+
+- Applied592 records from600-record inventory (8 already migrated),695 product files;3 merged DI pairs and their dynamic consumers preserve channel values. Controller verified695 base/final hashes; two devdocs source fragments explicitly corrected after Terra peer review. Controller CLI45/Node176/docs18 and root types/lint pass. Root168/1914 first passed assertions but exited1 on teardown RPC; isolated9/9 and full168/1914 rerun exit0 without code changes, original failure retained. Main85 full normalized diagnostic text and architecture404-line violation match preexisting content; neither gate is marked passing.
+- Independent root-only install clean verification at7c succeeded, but compact/browser Docker builds exposed concrete toolchain/permission problems; exact3-file correction is prepared separately and is excluded from the type candidate. Root-owner review B remains fixed7c; type candidate goes to reviewer A after freeze.

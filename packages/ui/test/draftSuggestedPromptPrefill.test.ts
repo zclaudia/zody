@@ -1,4 +1,4 @@
-import type { ZCodePluginReferenceCatalogEntry } from "@zody/shared";
+import type { ZodyPluginReferenceCatalogEntry } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import { buildDraftSuggestedPromptPrefill } from "@/v4/draftSuggestedPromptPrefill.js";
 
@@ -8,8 +8,8 @@ const DOCUMENT_SKILLS_PLUGIN = {
 };
 
 function catalogEntry(
-  overrides: Partial<ZCodePluginReferenceCatalogEntry> = {},
-): ZCodePluginReferenceCatalogEntry {
+  overrides: Partial<ZodyPluginReferenceCatalogEntry> = {},
+): ZodyPluginReferenceCatalogEntry {
   return {
     pluginId: DOCUMENT_SKILLS_PLUGIN.stableId,
     name: "document-skills",

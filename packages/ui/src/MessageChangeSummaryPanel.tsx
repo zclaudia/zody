@@ -1,8 +1,8 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import type {
-  ZCodePersistedFileChange,
-  ZCodeTaskChangeSummary,
-  ZCodeTurnFileState,
+  ZodyPersistedFileChange,
+  ZodyTaskChangeSummary,
+  ZodyTurnFileState,
 } from "@zody/shared";
 import { TID_CHAT_CHANGE_SUMMARY_TOGGLE_FILES_BUTTON, testId } from "@zody/shared";
 import { ChevronRightIcon, Undo2 } from "lucide-react";
@@ -30,13 +30,13 @@ export {
 } from "@/messageChangeSummaryPreview.js";
 
 interface MessageChangeSummaryPanelProps {
-  summary: ZCodeTaskChangeSummary;
+  summary: ZodyTaskChangeSummary;
   workspacePath: string;
   workspaceIdentity?: string;
   workspaceRemoteSessionId?: string;
-  changeDetails?: ZCodePersistedFileChange | null;
+  changeDetails?: ZodyPersistedFileChange | null;
   readonlyDiffPatchesByPath?: ReadonlyMap<string, string>;
-  fileState?: ZCodeTurnFileState;
+  fileState?: ZodyTurnFileState;
   messageId?: string;
   compactForRemoteControl?: boolean;
   animationDelayMs?: number;

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { useZCodeSessionService } from "@/hooks/useZodySessionService.js";
 import { zcodeSessionSnapshotToTaskMeta } from "@/lib/zodySessionProjection.js";
 
 export function resolveImmediateActiveTaskSnapshotMeta(
-  previousSnapshotMeta: ZCodeTaskMeta | null,
+  previousSnapshotMeta: ZodyTaskMeta | null,
   taskId: string | null,
-  taskMetaFromLists?: ZCodeTaskMeta | null,
+  taskMetaFromLists?: ZodyTaskMeta | null,
 ) {
   if (!taskId || taskMetaFromLists) {
     return null;
@@ -32,14 +32,14 @@ export function useActiveTaskSnapshotMeta(
   taskId: string | null,
   preferredRemoteSessionId?: string | null,
   workspaceIdentity?: string,
-  taskMetaFromLists?: ZCodeTaskMeta | null,
+  taskMetaFromLists?: ZodyTaskMeta | null,
 ) {
   const zcodeSessionService = useZCodeSessionService(
     workspacePath,
     preferredRemoteSessionId,
     workspaceIdentity,
   );
-  const [snapshotMeta, setSnapshotMeta] = useState<ZCodeTaskMeta | null>(null);
+  const [snapshotMeta, setSnapshotMeta] = useState<ZodyTaskMeta | null>(null);
 
   useEffect(() => {
     let cancelled = false;

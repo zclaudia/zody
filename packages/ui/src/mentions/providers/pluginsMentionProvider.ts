@@ -5,7 +5,7 @@ import {
   type PluginStoreModeOrder,
   resolvePluginDisplayName,
   resolveLocalizedText,
-  type ZCodePluginReferenceCatalogEntry,
+  type ZodyPluginReferenceCatalogEntry,
 } from "@zody/shared";
 import type { MentionCategoryResult, MentionItem } from "@/mentions/mentionTypes.js";
 import { filterMentionItemsWithOptions } from "@/mentions/mentionSearch.js";
@@ -28,7 +28,7 @@ export interface PluginMentionLabels {
 // - keywords 并入 listing 的全部语言显示名（无论当前 locale）：英文界面下打中文
 //   也能搜到官方插件（插件 @ 引用中文搜索）。
 export function mapPluginCatalogToMentionItemsForTest(
-  entries: ZCodePluginReferenceCatalogEntry[],
+  entries: ZodyPluginReferenceCatalogEntry[],
   labels: PluginMentionLabels,
   locale: string,
   order?: PluginStoreModeOrder,

@@ -9,7 +9,7 @@ import {
   SessionEventType,
   type SessionEvent,
 } from "@zody/contracts";
-import type { ZCodeSessionSubagentsResult } from "@zody/shared";
+import type { ZodySessionSubagentsResult } from "@zody/shared";
 import { getZCodeCopy } from "@zody/i18n";
 import { runTuiWithRenderer } from "../../tui/src/tui.js";
 import {
@@ -38,7 +38,7 @@ const stream = (delta: string, sequenceNumber: number, sessionId = child) =>
     { kind: "text_delta", assistantMessageId: "answer", delta },
     sequenceNumber,
   );
-const directory: ZCodeSessionSubagentsResult = {
+const directory: ZodySessionSubagentsResult = {
   revision: 1,
   childSessionIds: [child, child2],
   running: [child, child2].map((id, index) => ({

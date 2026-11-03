@@ -1,14 +1,14 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { useWorkspaceActiveTaskState } from "@/hooks/useWorkspaceActiveTaskState.js";
 
 const { activeWorkspaceState } = vi.hoisted(() => ({
   activeWorkspaceState: {
     current: {
-      optimisticTaskListByTaskId: {} as Record<string, ZCodeTaskMeta>,
-      taskListCache: [] as ZCodeTaskMeta[],
+      optimisticTaskListByTaskId: {} as Record<string, ZodyTaskMeta>,
+      taskListCache: [] as ZodyTaskMeta[],
       taskMessagesByTaskId: {} as Record<string, unknown[]>,
     },
   },
@@ -21,8 +21,8 @@ vi.mock("@/store/zodySessionStore.js", () => ({
   ) => workspaceState.taskMessagesByTaskId?.[taskId] ?? [],
   getTaskMeta: (
     workspaceState: {
-      optimisticTaskListByTaskId?: Record<string, ZCodeTaskMeta>;
-      taskListCache?: ZCodeTaskMeta[];
+      optimisticTaskListByTaskId?: Record<string, ZodyTaskMeta>;
+      taskListCache?: ZodyTaskMeta[];
     },
     taskId: string,
   ) =>
@@ -60,7 +60,7 @@ vi.mock("@/hooks/useTaskSessionFilePath.js", () => ({
   }),
 }));
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -154,7 +154,7 @@ describe("useWorkspaceActiveTaskState", () => {
   });
 
   it("reuses resolvedActiveTaskMeta reference when stream updates keep meta fields equal", () => {
-    const observedMetas: Array<ZCodeTaskMeta | null | undefined> = [];
+    const observedMetas: Array<ZodyTaskMeta | null | undefined> = [];
     const root: Root = createRoot(installMinimalDom());
 
     function Probe({ renderId }: { renderId: number }) {

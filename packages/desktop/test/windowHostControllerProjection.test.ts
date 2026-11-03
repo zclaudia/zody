@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import {
   CONTROLLER_TASKS_INDEX_TOPIC,
   CONTROLLER_WORKSPACES_TOPIC,
@@ -12,7 +12,7 @@ function taskMeta(params: {
   workspaceIdentity?: string;
   title?: string;
   updatedAt?: number;
-}): ZCodeTaskMeta {
+}): ZodyTaskMeta {
   return {
     taskId: params.taskId,
     traceId: `trace-${params.taskId}`,

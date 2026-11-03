@@ -5,14 +5,14 @@
 // 这里只剥离这些派生都不读取的大载荷字段，保持 message / part 数量、顺序、id、type、metadata 不变，
 // 以保证可见性与投影策略判定和 full snapshot 完全一致（spec：docs/task/task-sqlite-index.md「Index read profile」）。
 // 不能改用 messageLimit：searchableText 取前 200K 字符、标题回退首条真实用户输入，都依赖历史开头。
-import type { ZCodeSessionStateSnapshot } from "./zody-protocol/index.js";
-import type { ZCodeMessagePart, ZCodeMessageWithParts } from "./zody-protocol-legacy-types.js";
+import type { ZodySessionStateSnapshot } from "./zody-protocol/index.js";
+import type { ZodyMessagePart, ZodyMessageWithParts } from "./zody-protocol-legacy-types.js";
 
-export type ZCodeSessionContentProfile = "full" | "index";
+export type ZodySessionContentProfile = "full" | "index";
 
 const ELIDED_DATA_URL = "data:,";
 
-function elidePartForIndex(part: ZCodeMessagePart): ZCodeMessagePart {
+function elidePartForIndex(part: ZodyMessagePart): ZodyMessagePart {
   switch (part.type) {
     case "reasoning":
       return part.text ? { ...part, text: "" } : part;
@@ -46,7 +46,7 @@ function elidePartForIndex(part: ZCodeMessagePart): ZCodeMessagePart {
   }
 }
 
-function elideMessageForIndex(message: ZCodeMessageWithParts): ZCodeMessageWithParts {
+function elideMessageForIndex(message: ZodyMessageWithParts): ZodyMessageWithParts {
   let changed = false;
   const parts = message.parts.map((part) => {
     const next = elidePartForIndex(part);
@@ -57,6 +57,6 @@ function elideMessageForIndex(message: ZCodeMessageWithParts): ZCodeMessageWithP
 }
 
 /** 生成 task index 专用的轻量 snapshot；不修改入参（CLI 侧 messages 可能来自共享缓存）。 */
-export function elideSessionSnapshotForIndex<T extends ZCodeSessionStateSnapshot>(snapshot: T): T {
+export function elideSessionSnapshotForIndex<T extends ZodySessionStateSnapshot>(snapshot: T): T {
   return { ...snapshot, messages: snapshot.messages.map(elideMessageForIndex) };
 }

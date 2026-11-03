@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { deriveTaskLeadingIndicator } from "@/lib/taskListItemPresentation.js";
 import { buildTaskListResult, type TaskListKind } from "@/v4/buildTaskListResultFromSessions.js";
 import {
@@ -8,7 +8,7 @@ import {
   isTaskListRowRunning,
 } from "@/v4/taskListRowActivity.js";
 
-function task(id: string, overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function task(id: string, overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: id,
     title: id,
@@ -17,7 +17,7 @@ function task(id: string, overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta
     updatedAt: Number(id.replace(/\D/g, "")) || 0,
     mode: "default",
     ...overrides,
-  } as ZCodeTaskMeta;
+  } as ZodyTaskMeta;
 }
 
 const taskIndexItems = [

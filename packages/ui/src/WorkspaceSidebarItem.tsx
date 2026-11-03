@@ -63,7 +63,7 @@ import {
   TID_WORKSPACE_ITEM,
   testId,
 } from "@zody/shared";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { useBaseWorkspaceServices, useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import {
   applyTaskQueryCacheMutation,
@@ -94,7 +94,7 @@ export type SortableBindings = Pick<ReturnType<typeof useSortable>, "attributes"
 
 // workspace 行在流式工具事件期间会因父级刷新而重渲染；
 // TaskList 如果每次收到新的空数组，会把等价数据误判成变化并连带刷新任务行。
-const EMPTY_PINNED_TASKS: ZCodeTaskMeta[] = [];
+const EMPTY_PINNED_TASKS: ZodyTaskMeta[] = [];
 
 function isHomeWorkspacePath(path: string): boolean {
   const normalizedPath = path.replace(/\\/g, "/").replace(/\/+$/, "");
@@ -166,7 +166,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
     targetWorkspaceIdentity?: string,
   ) => void;
   onStartDraftInWorkspace: (targetWorkspacePath: string, targetWorkspaceIdentity?: string) => void;
-  taskItems: ZCodeTaskMeta[];
+  taskItems: ZodyTaskMeta[];
   taskListLoading: boolean;
   taskListHasMore: boolean;
   taskListHasUnread?: boolean;
@@ -493,7 +493,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
         previousTitleLength: previousTask?.title.length,
         nextTitleLength: title.length,
       });
-      let meta: ZCodeTaskMeta;
+      let meta: ZodyTaskMeta;
       try {
         meta = await zcodeTaskService.renameTask({
           taskId,

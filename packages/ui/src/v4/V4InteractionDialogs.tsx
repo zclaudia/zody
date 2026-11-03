@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ZCodeElicitationRequest, ZCodePermissionOption, ZCodeProvider } from "@zody/shared";
+import type { ZodyElicitationRequest, ZodyPermissionOption, ZodyProvider } from "@zody/shared";
 import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { ElicitationDialog } from "@/ElicitationDialog.js";
 import { PermissionDialog } from "@/PermissionDialog.js";
@@ -33,7 +33,7 @@ export interface V4InteractionDialogsProps {
   workspaceIdentity?: string;
   remoteSessionId?: string;
   isWebRemoteControl?: boolean;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   snapshot: ConversationSnapshot | null;
   onCommandSettled?: (commandId: string) => void;
   onPlanInteractionAccepted?: (interactionId: string) => void;
@@ -47,9 +47,9 @@ export function getCurrentSessionInteractionSnapshot(
 }
 
 export function resolveV4ElicitationRequest(
-  projected: ZCodeElicitationRequest | null,
-  botProgress: ZCodeElicitationRequest | null,
-): ZCodeElicitationRequest | null {
+  projected: ZodyElicitationRequest | null,
+  botProgress: ZodyElicitationRequest | null,
+): ZodyElicitationRequest | null {
   // Bugfix：V4 snapshot 只保留原始阻塞请求，Bot 代答后的逐题进度必须覆盖同一 request 的投影。
   if (projected && botProgress?.requestId === projected.requestId) {
     return botProgress;
@@ -57,7 +57,7 @@ export function resolveV4ElicitationRequest(
   return projected;
 }
 
-export function buildV4ElicitationProgressKey(request: ZCodeElicitationRequest): string {
+export function buildV4ElicitationProgressKey(request: ZodyElicitationRequest): string {
   return `${request.requestId}:${request.currentQuestionIndex ?? 0}:${JSON.stringify(request.answerDrafts ?? {})}`;
 }
 
@@ -348,7 +348,7 @@ export function V4InteractionDialogs({
             ? intl.formatMessage({ id: "chat.permission.responseFailed" })
             : undefined
         }
-        onRespond={(_requestId, option: ZCodePermissionOption, feedback, content) => {
+        onRespond={(_requestId, option: ZodyPermissionOption, feedback, content) => {
           if (permissionResponseFlight.current === pending.interactionId) return;
           const interactionId = pending.interactionId;
           permissionResponseFlight.current = interactionId;

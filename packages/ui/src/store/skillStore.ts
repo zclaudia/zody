@@ -2,7 +2,7 @@ import { create } from "zustand";
 import {
   normalizeAgentProviderToZCodeAgent,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeProvider,
+  type ZodyProvider,
   type SkillSummary,
   type SkillsCapability,
 } from "@zody/shared";
@@ -15,22 +15,22 @@ interface SkillStoreState {
   workspaceIdentity: string | null;
   loadedWorkspacePath: string | null;
   loadedWorkspaceIdentity: string | null;
-  provider: ZCodeProvider;
-  loadedProvider: ZCodeProvider | null;
+  provider: ZodyProvider;
+  loadedProvider: ZodyProvider | null;
   skills: SkillSummary[];
   capability: SkillsCapability | null;
   loading: boolean;
   error: string | null;
   initialize: (
     workspacePath: string,
-    providerOrSkillsService: ZCodeProvider | ISkillsService,
+    providerOrSkillsService: ZodyProvider | ISkillsService,
     maybeSkillsService?: ISkillsService,
     workspaceIdentity?: string,
   ) => Promise<void>;
   refresh: (skillsService: ISkillsService, workspaceIdentity?: string) => Promise<void>;
   setEnabled: (
     skillId: string,
-    providerOrEnabled: ZCodeProvider | boolean,
+    providerOrEnabled: ZodyProvider | boolean,
     scopeOrSkillsService: SkillSummary["scope"] | ISkillsService,
     enabledOrSkillsService?: boolean | ISkillsService,
     maybeSkillsService?: ISkillsService,
@@ -42,7 +42,7 @@ const inFlightSkillLoads = new Map<string, ReturnType<ISkillsService["list"]>>()
 
 function getSkillLoadKey(
   workspacePath: string,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   workspaceIdentity?: string,
 ): string {
   return `${workspaceIdentity?.trim() || workspacePath}::${provider}`;
@@ -50,7 +50,7 @@ function getSkillLoadKey(
 
 function loadSkillsOnce(
   workspacePath: string,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   skillsService: ISkillsService,
   workspaceIdentity?: string,
   options: { bypassCache?: boolean } = {},
@@ -87,7 +87,7 @@ export const useSkillStore = create<SkillStoreState>((set, get) => ({
   error: null,
   async initialize(
     workspacePath: string,
-    providerOrSkillsService: ZCodeProvider | ISkillsService,
+    providerOrSkillsService: ZodyProvider | ISkillsService,
     maybeSkillsService?: ISkillsService,
     workspaceIdentity?: string,
   ) {
@@ -211,7 +211,7 @@ export const useSkillStore = create<SkillStoreState>((set, get) => ({
   },
   async setEnabled(
     skillId: string,
-    providerOrEnabled: ZCodeProvider | boolean,
+    providerOrEnabled: ZodyProvider | boolean,
     scopeOrSkillsService: SkillSummary["scope"] | ISkillsService,
     enabledOrSkillsService?: boolean | ISkillsService,
     maybeSkillsService?: ISkillsService,

@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { Emitter } from "@zody/rpc";
-import type { ZCodeProtocolMessage } from "@zody/shared";
+import type { ZodyProtocolMessage } from "@zody/shared";
 import { zcodeSessionStateSnapshotSchema } from "@zody/shared";
 import {
   DEFAULT_ZCODE_PROTOCOL_REQUEST_TIMEOUT_MS,
   ZCodeProtocolClient,
 } from "../src/zody-agent/zodyProtocolClient.js";
 import type {
-  ZCodeProtocolTransport,
-  ZCodeProtocolTransportClosedEvent,
+  ZodyProtocolTransport,
+  ZodyProtocolTransportClosedEvent,
 } from "../src/zody-agent/zodyProtocolTransport.js";
 
 const protocolModelProperties = {
@@ -22,21 +22,21 @@ const protocolModelProperties = {
   outputFormat: { supportsText: true },
 };
 
-class FakeZCodeTransport implements ZCodeProtocolTransport {
+class FakeZCodeTransport implements ZodyProtocolTransport {
   readonly kind = "memory" as const;
-  readonly sent: ZCodeProtocolMessage[] = [];
+  readonly sent: ZodyProtocolMessage[] = [];
 
-  private readonly messageEmitter = new Emitter<ZCodeProtocolMessage>();
-  private readonly closeEmitter = new Emitter<ZCodeProtocolTransportClosedEvent>();
+  private readonly messageEmitter = new Emitter<ZodyProtocolMessage>();
+  private readonly closeEmitter = new Emitter<ZodyProtocolTransportClosedEvent>();
 
   readonly onMessage = this.messageEmitter.event;
   readonly onClose = this.closeEmitter.event;
 
-  async send(message: ZCodeProtocolMessage): Promise<void> {
+  async send(message: ZodyProtocolMessage): Promise<void> {
     this.sent.push(message);
   }
 
-  receive(message: ZCodeProtocolMessage): void {
+  receive(message: ZodyProtocolMessage): void {
     this.messageEmitter.fire(message);
   }
 

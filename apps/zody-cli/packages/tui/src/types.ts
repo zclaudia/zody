@@ -1,5 +1,5 @@
 import type { WorkflowRunProgressEnvelope } from "@zody/shared/zody-protocol-v4";
-import type { ModelSelection, ZCodeModelOption } from "@zody/shared";
+import type { ModelSelection, ZodyModelOption } from "@zody/shared";
 import type {
   CollaborationMode,
   InputDelivery,
@@ -219,7 +219,7 @@ export type TuiCancelBackgroundTask = (taskId: string) => Promise<unknown>;
 export type TuiReadSubagents = (input?: {
   endedCursor?: string;
   endedLimit?: number;
-}) => Promise<import("@zody/shared").ZCodeSessionSubagentsResult>;
+}) => Promise<import("@zody/shared").ZodySessionSubagentsResult>;
 export type TuiSubagentTranscriptSnapshot = {
   sessionId: string;
   sequenceNumber: number;
@@ -284,7 +284,7 @@ export type TuiSlashCommandSuggestion = {
   usage: string;
 };
 
-export type TuiModelOption = ZCodeModelOption;
+export type TuiModelOption = ZodyModelOption;
 
 export type TuiEffortOption = {
   description?: string;

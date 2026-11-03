@@ -1,7 +1,7 @@
 import { act, createElement, type ReactElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 
 type TestEvent = {
   bubbles?: boolean;
@@ -162,7 +162,7 @@ vi.mock("@/store/zodySessionStore.js", async () => {
   };
 });
 
-function createTask(): ZCodeTaskMeta {
+function createTask(): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -528,7 +528,7 @@ describe("TaskListItem hover action rendering", () => {
           task: {
             ...task,
             automationId: "automation-1",
-          } as ZCodeTaskMeta & { automationId: string },
+          } as ZodyTaskMeta & { automationId: string },
         }),
       );
     });

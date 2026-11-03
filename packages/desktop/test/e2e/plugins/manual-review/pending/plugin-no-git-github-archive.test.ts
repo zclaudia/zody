@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { ZCodePluginInfo } from "@zody/shared";
+import type { ZodyPluginInfo } from "@zody/shared";
 import { clearAppData, getE2EAppDataPaths } from "../../../helpers/desktop-app.js";
 import {
   addMarketplaceSourceThroughAgent,
@@ -128,7 +128,7 @@ function readInstalledRecord(pluginStorageRoot: string): {
   };
 }
 
-function componentNames(plugin: ZCodePluginInfo | undefined, kind: "mcp"): string[] {
+function componentNames(plugin: ZodyPluginInfo | undefined, kind: "mcp"): string[] {
   return (
     plugin?.components?.find((group) => group.kind === kind)?.items.map((item) => item.name) ?? []
   );

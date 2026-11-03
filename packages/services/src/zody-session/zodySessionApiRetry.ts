@@ -2,26 +2,26 @@ import {
   normalizeZCodeApiRetryStatus,
   isZCodeModelRetryRecoveryProgressPayload,
   resolveWorkspaceKey,
-  type ZCodeSessionApiRetryStatus,
-  type ZCodeSessionStateSnapshot,
+  type ZodySessionApiRetryStatus,
+  type ZodySessionStateSnapshot,
   zcodeApiRetryFromModelNetworkStatusPayload,
   zcodeApiRetryFromStreamRecoveryPayload,
 } from "@zody/shared";
-import type { ZCodeSessionServiceEvent, ZCodeTaskTarget } from "#src/zody-session/zodySession.js";
+import type { ZodySessionServiceEvent, ZodyTaskTarget } from "#src/zody-session/zodySession.js";
 
 export function createZCodeSessionApiRetryRuntimeTracker(): {
   trackApiRetryFromSessionEvent: (
-    params: ZCodeTaskTarget,
-    event: ZCodeSessionServiceEvent,
-  ) => ZCodeSessionServiceEvent;
-  withApiRetryRuntime: (snapshot: ZCodeSessionStateSnapshot) => ZCodeSessionStateSnapshot;
+    params: ZodyTaskTarget,
+    event: ZodySessionServiceEvent,
+  ) => ZodySessionServiceEvent;
+  withApiRetryRuntime: (snapshot: ZodySessionStateSnapshot) => ZodySessionStateSnapshot;
 } {
-  const apiRetryBySessionKey = new Map<string, ZCodeSessionApiRetryStatus | null>();
+  const apiRetryBySessionKey = new Map<string, ZodySessionApiRetryStatus | null>();
 
   function trackApiRetryFromSessionEvent(
-    params: ZCodeTaskTarget,
-    event: ZCodeSessionServiceEvent,
-  ): ZCodeSessionServiceEvent {
+    params: ZodyTaskTarget,
+    event: ZodySessionServiceEvent,
+  ): ZodySessionServiceEvent {
     if (
       event.type === "session.event" &&
       (event.event.type === "session.updated" || event.event.type === "streamRecovery.updated")
@@ -55,7 +55,7 @@ export function createZCodeSessionApiRetryRuntimeTracker(): {
     return event;
   }
 
-  function withApiRetryRuntime(snapshot: ZCodeSessionStateSnapshot): ZCodeSessionStateSnapshot {
+  function withApiRetryRuntime(snapshot: ZodySessionStateSnapshot): ZodySessionStateSnapshot {
     const sessionId = snapshot.session?.sessionId;
     const workspacePath = snapshot.session?.workspace?.workspacePath;
     if (!sessionId || !workspacePath) {
@@ -94,7 +94,7 @@ export function createZCodeSessionApiRetryRuntimeTracker(): {
     };
   }
 
-  function sessionKey(params: ZCodeTaskTarget): string {
+  function sessionKey(params: ZodyTaskTarget): string {
     return `${resolveWorkspaceKey(params)}\u0000${params.sessionId}`;
   }
 
@@ -106,7 +106,7 @@ export function createZCodeSessionApiRetryRuntimeTracker(): {
 
 function apiRetryFromSessionPayload(
   payload: Record<string, unknown>,
-): ZCodeSessionApiRetryStatus | null | undefined {
+): ZodySessionApiRetryStatus | null | undefined {
   if ("apiRetry" in payload) {
     return normalizeZCodeApiRetryStatus(payload.apiRetry);
   }

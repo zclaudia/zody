@@ -8,7 +8,7 @@
  * 3. 支持 Esc 关闭、上下键切换、Enter / Tab 选中，以及跟随输入做模糊搜索
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ZCodeProvider } from "@zody/shared";
+import type { ZodyProvider } from "@zody/shared";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { createPortal } from "react-dom";
 import {
@@ -69,7 +69,7 @@ export function SlashCommandPlugin({
   disabled = false,
   excludedCommandNames,
   appCommands,
-}: SlashCommandPluginProps & { provider: ZCodeProvider }) {
+}: SlashCommandPluginProps & { provider: ZodyProvider }) {
   const [editor] = useLexicalComposerContext();
   const { intl, locale } = useZCodeIntl();
   const [activeTrigger, setActiveTrigger] = useState<ActivePromptInputTrigger | null>(null);

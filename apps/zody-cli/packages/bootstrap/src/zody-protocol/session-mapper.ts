@@ -5,24 +5,24 @@ import {
   zcodeApiRetryFromModelNetworkStatusPayload,
   zcodeApiRetryFromStreamRecoveryPayload,
   zcodeContextUsageBreakdownSchema,
-  type ZCodeActiveToolCall,
-  type ZCodeContextUsageBreakdownItem,
-  type ZCodeDeliveryKind,
-  type ZCodePendingPermission,
-  type ZCodeSessionContextUsage,
-  type ZCodeSessionEvent,
-  type ZCodeSessionGoal,
-  type ZCodeSessionGoalVerification,
-  type ZCodeSessionGoalVerificationTimeline,
-  type ZCodeSessionGoalStats,
-  type ZCodeSessionInfo,
-  type ZCodeSessionKind,
-  type ZCodeSessionProjection,
-  type ZCodeSessionRuntimeState,
-  type ZCodeSessionSettingsState,
-  type ZCodeSessionStateSnapshot,
-  type ZCodeSessionTodoGroup,
-  type ZCodeWorkspaceRef,
+  type ZodyActiveToolCall,
+  type ZodyContextUsageBreakdownItem,
+  type ZodyDeliveryKind,
+  type ZodyPendingPermission,
+  type ZodySessionContextUsage,
+  type ZodySessionEvent,
+  type ZodySessionGoal,
+  type ZodySessionGoalVerification,
+  type ZodySessionGoalVerificationTimeline,
+  type ZodySessionGoalStats,
+  type ZodySessionInfo,
+  type ZodySessionKind,
+  type ZodySessionProjection,
+  type ZodySessionRuntimeState,
+  type ZodySessionSettingsState,
+  type ZodySessionStateSnapshot,
+  type ZodySessionTodoGroup,
+  type ZodyWorkspaceRef,
   isMainAgentToolProjectionSource,
 } from "@zody/shared";
 import {
@@ -58,7 +58,7 @@ const SNAPSHOT_INLINE_IMAGE_DATA_URL_MAX_BYTES = 20 * 1024 * 1024;
 
 export async function buildSessionSnapshot(input: {
   app: ZCodeApp;
-  deliveryKind?: ZCodeDeliveryKind;
+  deliveryKind?: ZodyDeliveryKind;
   eventSeq: number;
   fallbackCreatedAt?: number;
   fallbackUpdatedAt?: number;
@@ -72,8 +72,8 @@ export async function buildSessionSnapshot(input: {
   slashCommandOptions?: ListProtocolSlashCommandsOptions;
   target?: SessionGoal | null;
   todos?: TodoItem[];
-  workspace: ZCodeWorkspaceRef;
-}): Promise<ZCodeSessionStateSnapshot> {
+  workspace: ZodyWorkspaceRef;
+}): Promise<ZodySessionStateSnapshot> {
   const runtimeProjection = await input.app.runtime.getProjection();
   const activeTurn = input.app.runtime.getActiveTurnInfo();
   const persistedGoalProjection = mergePersistedGoalVerificationEvents(
@@ -218,7 +218,7 @@ export async function mapSessionSettings(
     currentModelContextWindow?: number;
     modelAvailability?: "all" | "current";
   } = {},
-): Promise<ZCodeSessionSettingsState> {
+): Promise<ZodySessionSettingsState> {
   const thoughtLevels = app.listThoughtLevels();
   const rawCurrentThoughtLevel = app.getThoughtLevel();
   // setModel 后 runtime 可能短暂保留上一个模型的 thoughtLevel。
@@ -284,8 +284,8 @@ export function mapSessionInfo(input: {
   session?: SessionInfo | null;
   taskType?: SessionInfo["taskType"];
   parentSessionId?: string;
-  workspace: ZCodeWorkspaceRef;
-}): ZCodeSessionInfo {
+  workspace: ZodyWorkspaceRef;
+}): ZodySessionInfo {
   const sessionId = String(input.session?.id ?? input.app?.sessionId ?? "unknown");
   // 刚创建的 protocol session 可能还没有持久化 session 行。
   // 此时 runtime projection 的时间可能继承 workspace 预热 draft，不能作为正式 session 时间。
@@ -307,7 +307,7 @@ export function mapSessionInfo(input: {
     parentSessionId: input.session?.parentID ?? input.parentSessionId,
     traceId: input.session?.traceID ?? input.app?.traceId,
     sessionId,
-    sessionKind: (input.session?.taskType ?? input.taskType ?? "interactive") as ZCodeSessionKind,
+    sessionKind: (input.session?.taskType ?? input.taskType ?? "interactive") as ZodySessionKind,
     status: input.projection?.status ?? "idle",
     target: mapSessionGoal(input.projection?.target),
     title: input.session?.title ?? "",
@@ -319,9 +319,9 @@ export function mapSessionInfo(input: {
 
 export function mapSessionEvent(
   event: SessionEvent,
-  deliveryKind?: ZCodeDeliveryKind,
+  deliveryKind?: ZodyDeliveryKind,
   options: { seq?: number } = {},
-): ZCodeSessionEvent {
+): ZodySessionEvent {
   return {
     deliveryKind,
     eventId: String(event.id),
@@ -337,9 +337,9 @@ export function mapSessionEvent(
 
 export function mapSessionEventForProtocol(
   event: SessionEvent,
-  deliveryKind?: ZCodeDeliveryKind,
+  deliveryKind?: ZodyDeliveryKind,
   options: { seq?: number } = {},
-): ZCodeSessionEvent | null {
+): ZodySessionEvent | null {
   if (!shouldExposeSessionEventToProtocol(event)) {
     return null;
   }
@@ -348,11 +348,11 @@ export function mapSessionEventForProtocol(
 
 export function mapSessionEvents(
   events: readonly SessionEvent[],
-  deliveryKind?: ZCodeDeliveryKind,
-): ZCodeSessionEvent[] {
+  deliveryKind?: ZodyDeliveryKind,
+): ZodySessionEvent[] {
   return events
     .map((event) => mapSessionEventForProtocol(event, deliveryKind))
-    .filter((event): event is ZCodeSessionEvent => event !== null);
+    .filter((event): event is ZodySessionEvent => event !== null);
 }
 
 export function shouldExposeSessionEventToProtocol(event: SessionEvent): boolean {
@@ -539,7 +539,7 @@ function mapStreamRecoveryPayload(payload: unknown): Record<string, unknown> {
   };
 }
 
-export function mapSessionProjection(projection: SessionProjection): ZCodeSessionProjection {
+export function mapSessionProjection(projection: SessionProjection): ZodySessionProjection {
   return {
     activeToolCalls: projection.activeToolCalls.map(mapActiveToolCall),
     backgroundJobs: projection.backgroundTasks.map(mapBackgroundTask),
@@ -559,13 +559,13 @@ export function mapSessionProjection(projection: SessionProjection): ZCodeSessio
 
 function mapRuntimeState(input: {
   activeTurn?: ReturnType<ZCodeApp["runtime"]["getActiveTurnInfo"]>;
-  deliveryKind?: ZCodeDeliveryKind;
+  deliveryKind?: ZodyDeliveryKind;
   eventSeq: number;
   messages: MessageWithParts[];
   persistedContextUsageBreakdownEvents?: readonly SessionEvent[];
   projection: SessionProjection;
   stateRevision: number;
-}): ZCodeSessionRuntimeState {
+}): ZodySessionRuntimeState {
   // projection.currentTurnId 是投影最后处理过的 turn，不代表当前仍在运行。
   // session 恢复/subscribe 快照如果把它回填成 runtime.activeTurnId，会让已 idle/complete 的任务误显示为 thinking。
   const activeTurnId = input.activeTurn?.turnId;
@@ -594,7 +594,7 @@ function mapRuntimeState(input: {
 }
 
 interface ContextUsageBreakdownCandidate {
-  breakdown: ZCodeContextUsageBreakdownItem[];
+  breakdown: ZodyContextUsageBreakdownItem[];
   contextWindow?: number;
   used: number;
 }
@@ -609,7 +609,7 @@ export function resolveSessionContextUsage(input: {
   messages: readonly MessageWithParts[];
   persistedContextUsageBreakdownEvents?: readonly SessionEvent[];
   projection: SessionProjection;
-}): ZCodeSessionContextUsage | undefined {
+}): ZodySessionContextUsage | undefined {
   const persistedContextUsage = contextUsageFromPersistedMessages(
     input.messages,
     input.projection.contextWindow,
@@ -626,9 +626,9 @@ export function resolveSessionContextUsage(input: {
 }
 
 function applyContextUsageBreakdown(
-  contextUsage: ZCodeSessionContextUsage | undefined,
+  contextUsage: ZodySessionContextUsage | undefined,
   candidate: ContextUsageBreakdownCandidate | undefined,
-): ZCodeSessionContextUsage | undefined {
+): ZodySessionContextUsage | undefined {
   if (!contextUsage || !candidate || candidate.breakdown.length === 0) {
     return contextUsage;
   }
@@ -679,7 +679,7 @@ function latestContextUsageBreakdownFromEvents(
 
 function mapGoalVerifications(
   verifications: SessionProjection["targetCompletionVerifications"] | undefined,
-): ZCodeSessionGoalVerification[] {
+): ZodySessionGoalVerification[] {
   return (verifications ?? []).map((verification) => ({
     nextAction: verification.nextAction ?? null,
     passed: verification.passed,
@@ -689,7 +689,7 @@ function mapGoalVerifications(
 
 function mapGoalVerificationTimeline(
   timeline: SessionProjection["targetCompletionVerificationTimeline"] | undefined,
-): ZCodeSessionGoalVerificationTimeline[] {
+): ZodySessionGoalVerificationTimeline[] {
   return (timeline ?? []).map((item) => ({
     version: 1,
     kind: "synthetic",
@@ -719,8 +719,8 @@ function mapGoalVerificationTimeline(
 
 function contextUsageFromProjection(
   projection: SessionProjection,
-  cache: ZCodeSessionContextUsage["cache"] | undefined,
-): ZCodeSessionContextUsage | undefined {
+  cache: ZodySessionContextUsage["cache"] | undefined,
+): ZodySessionContextUsage | undefined {
   if (projection.contextUsed <= 0 || projection.contextWindow <= 0) {
     return undefined;
   }
@@ -735,7 +735,7 @@ function contextUsageFromProjection(
 function contextUsageFromPersistedMessages(
   messages: readonly MessageWithParts[],
   contextWindow: number,
-): ZCodeSessionContextUsage | undefined {
+): ZodySessionContextUsage | undefined {
   if (contextWindow <= 0) {
     return undefined;
   }
@@ -813,7 +813,7 @@ function contextUsedFromTokens(
 
 function contextCacheUsageFromMessages(
   messages: readonly MessageWithParts[],
-): ZCodeSessionContextUsage["cache"] | undefined {
+): ZodySessionContextUsage["cache"] | undefined {
   let inputTokens = 0;
   let cacheReadTokens = 0;
   let cacheWriteTokens = 0;
@@ -859,7 +859,7 @@ function contextCacheUsageFromMessages(
 
 function mapPendingPermission(
   permission: PendingPermission,
-): ZCodePendingPermission {
+): ZodyPendingPermission {
   // display / optionsPolicy 刻意不进 legacy v3 输出。
   // 根因不是"扩 schema 只能单向兼容"，而是 strict schema 随 packages/shared 打进每个桌面端
   // 的产物：今天把 zcodePendingPermissionSchema（shared/src/zcode-protocol/index.ts:1139）和
@@ -907,7 +907,7 @@ function mapPermissionRequestedPayload(
   };
 }
 
-function mapActiveToolCall(toolCall: ActiveToolCall): ZCodeActiveToolCall {
+function mapActiveToolCall(toolCall: ActiveToolCall): ZodyActiveToolCall {
   return {
     startedAt: toolCall.startedAt?.getTime(),
     status: toolCall.status,
@@ -1052,7 +1052,7 @@ function normalizeText(value: string): string {
   return value.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-function mapSessionGoal(goal: SessionGoal | null | undefined): ZCodeSessionGoal | null | undefined {
+function mapSessionGoal(goal: SessionGoal | null | undefined): ZodySessionGoal | null | undefined {
   if (goal === undefined) return undefined;
   if (goal === null) return null;
   return {
@@ -1095,7 +1095,7 @@ interface GoalIterationBucket {
 function buildGoalStats(
   projection: SessionProjection,
   messages: readonly MessageWithParts[],
-): ZCodeSessionGoalStats | undefined {
+): ZodySessionGoalStats | undefined {
   const target = projection.target;
   if (!target) {
     return undefined;
@@ -1137,10 +1137,10 @@ function buildTodoGroups(
   messages: readonly MessageWithParts[],
   currentTodos: readonly TodoItem[],
   projection: SessionProjection,
-): ZCodeSessionTodoGroup[] {
+): ZodySessionTodoGroup[] {
   const target = projection.target;
   const timeline = getTargetGoalVerificationTimeline(projection, target);
-  const groups = new Map<string, ZCodeSessionTodoGroup>();
+  const groups = new Map<string, ZodySessionTodoGroup>();
   const todoOwners = new Map<string, { fingerprint: string; groupId: string }>();
   const sortedMessages = [...messages].sort(compareMessagesByCreatedTime);
 
@@ -1214,7 +1214,7 @@ function buildTodoGroups(
 }
 
 function ensureTodoGroup(
-  groups: Map<string, ZCodeSessionTodoGroup>,
+  groups: Map<string, ZodySessionTodoGroup>,
   input: {
     goalIteration: number | undefined;
     groupId: string;
@@ -1222,13 +1222,13 @@ function ensureTodoGroup(
     targetId?: string;
     updatedAt: number;
   },
-): ZCodeSessionTodoGroup {
+): ZodySessionTodoGroup {
   const existing = groups.get(input.groupId);
   if (existing) {
     existing.updatedAt = Math.max(existing.updatedAt ?? 0, input.updatedAt);
     return existing;
   }
-  const group: ZCodeSessionTodoGroup = {
+  const group: ZodySessionTodoGroup = {
     id: input.groupId,
     source: input.goalIteration ? "goal_iteration" : "session",
     ...(input.goalIteration ? { goalIteration: input.goalIteration } : {}),
@@ -1242,7 +1242,7 @@ function ensureTodoGroup(
 }
 
 function addOrUpdateTodoInGroup(
-  group: ZCodeSessionTodoGroup,
+  group: ZodySessionTodoGroup,
   fingerprint: string,
   todo: TodoItem,
 ): void {
@@ -1487,7 +1487,7 @@ function compareMessagesByCreatedTime(left: MessageWithParts, right: MessageWith
   return String(left.info.id).localeCompare(String(right.info.id));
 }
 
-function mapSessionEventType(type: SessionEvent["type"]): ZCodeSessionEvent["type"] {
+function mapSessionEventType(type: SessionEvent["type"]): ZodySessionEvent["type"] {
   switch (type) {
     case SessionEventType.SessionCreated:
       return "session.created";

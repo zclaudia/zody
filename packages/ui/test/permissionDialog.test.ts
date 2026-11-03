@@ -1,7 +1,7 @@
 import {
   OFFICIAL_CUA_PERMISSION_RULE_TOOL_NAME,
-  type ZCodePermissionRequest,
-  type ZCodeProvider,
+  type ZodyPermissionRequest,
+  type ZodyProvider,
 } from "@zody/shared";
 import { createElement } from "react";
 import type { ComponentType } from "react";
@@ -21,8 +21,8 @@ const SUBAGENT_ORIGIN = {
 };
 
 function renderPermissionDialog(
-  request: ZCodePermissionRequest,
-  provider?: ZCodeProvider,
+  request: ZodyPermissionRequest,
+  provider?: ZodyProvider,
   extraProps: Record<string, unknown> = {},
 ) {
   const Dialog = PermissionDialog as ComponentType<Record<string, unknown>>;
@@ -266,7 +266,7 @@ describe("PermissionDialog", () => {
   });
 
   it("shows a subagent source tag for delegated permission requests only", () => {
-    const baseRequest: ZCodePermissionRequest = {
+    const baseRequest: ZodyPermissionRequest = {
       type: "permission_request",
       taskId: "task-1",
       traceId: "trace-1",

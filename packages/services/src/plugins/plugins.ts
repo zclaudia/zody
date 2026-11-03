@@ -1,7 +1,7 @@
 import type {
   PluginScope,
   PluginsOverviewResult,
-  ZCodePluginsMarketplaceMutationResult,
+  ZodyPluginsMarketplaceMutationResult,
 } from "@zody/shared";
 import { ServiceChannels } from "@zody/shared";
 import { createServiceDescriptor } from "../descriptors.js";
@@ -25,7 +25,7 @@ export interface IPluginsService {
     workspacePath: string;
     workspaceIdentity?: string;
     marketplace?: string;
-  }): Promise<ZCodePluginsMarketplaceMutationResult | void>;
+  }): Promise<ZodyPluginsMarketplaceMutationResult | void>;
   installPlugin(params: {
     workspacePath: string;
     workspaceIdentity?: string;

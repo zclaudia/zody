@@ -29,7 +29,7 @@ export type {
   Locale,
   LocalePreference,
   UserInfo,
-  ZCodeInteractionBehavior,
+  ZodyInteractionBehavior,
   TabId,
   TabState,
   ResourceUsageCategory,
@@ -256,7 +256,7 @@ export type {
   UpdateCheckResultPayload,
   UpdateStatePayload,
   WSLDistro,
-  ZCodeStdioTapDevState,
+  ZodyStdioTapDevState,
 } from "./platform.js";
 export type {
   CuaAccessibilitySettingsResult,
@@ -264,7 +264,7 @@ export type {
   OpenCuaPermissionOnboardingOptions,
   PrepareCuaHelperPermissionDragResult,
 } from "./cuaAccessibilitySettings.js";
-export type { ZCodeTaskCreateResult } from "./zody-task-types.js";
+export type { ZodyTaskCreateResult } from "./zody-task-types.js";
 export * from "./zody-task-types.js";
 export * from "./automation-types.js";
 // fork（F4.3）：off-peak-types（闲时任务领域类型）随闲时任务全链路删除。

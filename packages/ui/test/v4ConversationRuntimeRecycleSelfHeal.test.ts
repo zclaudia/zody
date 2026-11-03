@@ -23,7 +23,7 @@ import type { ConversationTopicWireFrame } from "@zody/shared/zody-protocol-v4";
 import {
   createZCodeAgentConnectionScope,
   readTrustedZCodeAgentV4Connection,
-  type IZCodeAgentService,
+  type IZodyAgentService,
 } from "@zody/services";
 import { describe, expect, it, vi } from "vitest";
 import { createAgentConversationTransport } from "@/v4/agentConversationTransport.js";
@@ -115,7 +115,7 @@ function setupBase(options: { withLifecycle?: boolean } = {}) {
       : {}),
   };
   return {
-    base: mocks as unknown as IZCodeAgentService,
+    base: mocks as unknown as IZodyAgentService,
     mocks,
     runtimeLifecycle,
     runtimeRestarts,
@@ -124,7 +124,7 @@ function setupBase(options: { withLifecycle?: boolean } = {}) {
 }
 
 function createStore(
-  base: IZCodeAgentService,
+  base: IZodyAgentService,
   connectionId: string,
   clientMode: "desktop-continuous" | "web-remote-replayable" = "desktop-continuous",
 ) {

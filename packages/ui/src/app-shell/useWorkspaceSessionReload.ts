@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import type { IServiceAccessor } from "@zody/services";
-import type { ZCodeProvider } from "@zody/shared";
+import type { ZodyProvider } from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
 import {
   buildWorkspaceSessionReloadDraftError,
@@ -40,7 +40,7 @@ export function useWorkspaceSessionReload({
   const lastReloadSessionTriggeredAtRef = useRef<number | null>(null);
 
   const handleReloadSession = useCallback(
-    async (options?: { resumeTaskId?: string | null; provider?: ZCodeProvider | null }) => {
+    async (options?: { resumeTaskId?: string | null; provider?: ZodyProvider | null }) => {
       if (reloadSessionDisabled || reloadSessionPending) {
         return;
       }
@@ -61,7 +61,7 @@ export function useWorkspaceSessionReload({
         workspaceIdentity,
       );
       const actionScope = resolveWorkspaceModelConfigSyncScope(latestWorkspaceState);
-      const provider: ZCodeProvider = options?.provider ?? actionScope.provider;
+      const provider: ZodyProvider = options?.provider ?? actionScope.provider;
       const resumeTaskId =
         options?.resumeTaskId?.trim() || latestWorkspaceState.activeTaskId || undefined;
       const shouldPrepareWorkspace = !resumeTaskId;

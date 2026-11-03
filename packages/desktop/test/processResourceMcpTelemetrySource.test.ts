@@ -8,11 +8,11 @@ import {
   resetExternalAppResourceSamples,
 } from "@desktop/main/processResourceExternalAppSamples";
 import type { ProcessRoleSample } from "@desktop/main/processResourceWindowAggregator";
-import type { ZCodeMcpResourceSample } from "@zody/shared";
+import type { ZodyMcpResourceSample } from "@zody/shared";
 
 const debug = vi.hoisted(() => vi.fn());
 vi.mock("@desktop/main/logger", () => ({ logger: { debug } }));
-function sample(overrides: Partial<ZCodeMcpResourceSample> = {}): ZCodeMcpResourceSample {
+function sample(overrides: Partial<ZodyMcpResourceSample> = {}): ZodyMcpResourceSample {
   return {
     mcpId: "builtin:node_repl",
     instanceToken: "cli-instance-01",

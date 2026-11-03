@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import type { ZCodeSessionEndedSubagent } from "@zody/shared";
+import type { ZodySessionEndedSubagent } from "@zody/shared";
 import type { RunningSubagentSummary } from "@zody/shared/zody-protocol-v4";
 import {
   BanIcon,
@@ -25,7 +25,7 @@ import {
 } from "@/v4/V4ConversationContext.js";
 import { useConversationProjection } from "@/v4/useConversationProjection.js";
 
-type DirectoryItem = RunningSubagentSummary | ZCodeSessionEndedSubagent;
+type DirectoryItem = RunningSubagentSummary | ZodySessionEndedSubagent;
 
 const EMPTY_RUNNING: readonly RunningSubagentSummary[] = [];
 

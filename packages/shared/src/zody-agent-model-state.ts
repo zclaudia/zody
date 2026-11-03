@@ -9,8 +9,8 @@
 // getZCodeAgentAvailableModes / getZCodeAgentModeSelectOptions / normalizeAvailableZCodeMode）。
 // 波次3 删除这些导出前必须先把模式目录迁到非 legacy 位置，不能连带删掉目录本身。
 import { formatModelPickerValue } from "./model-selection.js";
-import type { ZCodeSessionMode, ZCodeSessionSettingsState } from "./zody-protocol/index.js";
-import type { ZCodeConfigOption, ZCodeTaskModeInfo } from "./zody-task-types-core.js";
+import type { ZodySessionMode, ZodySessionSettingsState } from "./zody-protocol/index.js";
+import type { ZodyConfigOption, ZodyTaskModeInfo } from "./zody-task-types-core.js";
 const MODEL_CONFIG_ID = "model";
 const MODEL_CONFIG_CATEGORY = "model";
 const MODE_CONFIG_ID = "mode";
@@ -38,7 +38,7 @@ const ZCODE_AGENT_MODE_OPTIONS = [
     name: "Full access",
     description: "Edit and run commands with fewer confirmations.",
   },
-] as const satisfies readonly ZCodeTaskModeInfo[];
+] as const satisfies readonly ZodyTaskModeInfo[];
 // 菜单隐藏 Edit 不等于删除历史值；恢复/投影不能因候选变化把旧 edit 降为 build。
 const ZCODE_AGENT_MODE_ID_SET = new Set<string>([
   ...ZCODE_AGENT_MODE_OPTIONS.map((mode) => mode.id),
@@ -47,11 +47,11 @@ const ZCODE_AGENT_MODE_ID_SET = new Set<string>([
 
 // OpenRouter 会把 `:free` 作为模型 ID 的一部分。UI/configOptions 的展示态
 // 不能再用冒号分隔 thought level，否则草稿选择会静默截断真实 modelId。
-export function normalizeAvailableZCodeMode(mode: ZCodeSessionMode): string {
+export function normalizeAvailableZCodeMode(mode: ZodySessionMode): string {
   return ZCODE_AGENT_MODE_ID_SET.has(mode) ? mode : "build";
 }
 
-export function getZCodeAgentModeSelectOptions(): NonNullable<ZCodeConfigOption["options"]> {
+export function getZCodeAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"]> {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({
     value: mode.id,
     name: mode.name,
@@ -59,14 +59,14 @@ export function getZCodeAgentModeSelectOptions(): NonNullable<ZCodeConfigOption[
   }));
 }
 
-export function getZCodeAgentAvailableModes(): ZCodeTaskModeInfo[] {
+export function getZCodeAgentAvailableModes(): ZodyTaskModeInfo[] {
   return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({ ...mode }));
 }
 
 export function zcodeSessionSettingsToZCodeConfigOptions(
-  settings: ZCodeSessionSettingsState,
-): ZCodeConfigOption[] {
-  const configOptions: ZCodeConfigOption[] = [
+  settings: ZodySessionSettingsState,
+): ZodyConfigOption[] {
+  const configOptions: ZodyConfigOption[] = [
     {
       id: MODEL_CONFIG_ID,
       name: "Model",

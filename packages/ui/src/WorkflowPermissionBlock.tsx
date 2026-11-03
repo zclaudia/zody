@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import type { ZCodePermissionRequest } from "@zody/shared";
+import type { ZodyPermissionRequest } from "@zody/shared";
 import { CodeBlock } from "@/components/ai-elements/code-block.js";
 import {
   Collapsible,
@@ -133,7 +133,7 @@ export function WorkflowPermissionBlock({
   /** 用户在窗里改了设置：只含改过的字段；全改回去即 undefined。 */
   onSettingsChange?: (content: WorkflowAskSettingsContent | undefined) => void;
   remoteSessionId?: string;
-  request: ZCodePermissionRequest;
+  request: ZodyPermissionRequest;
   /** 会话当前模型：「会话模型」那一项的名字。 */
   sessionModel?: { providerId: string; modelId: string };
   /** 应答在途：控件与选项一起禁用。 */

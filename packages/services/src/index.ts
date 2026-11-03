@@ -67,35 +67,35 @@ export type {
 } from "./broadcast/broadcast.js";
 
 // ZCode task wrapper service — task 列表/置顶/归档等 app 侧包装状态入口。
-export { IZCodeTaskService } from "./session/zodyTaskService.js";
+export { IZodyTaskService } from "./session/zodyTaskService.js";
 export type {
-  ZCodeArchivedTaskDeletionResult,
-  ZCodeModelTrajectory,
-  ZCodeModelTrajectoryCallSource,
-  ZCodeModelTrajectoryCallSourceKind,
-  ZCodeModelTrajectoryContentPart,
-  ZCodeModelTrajectoryMessage,
-  ZCodeModelTrajectoryRecord,
-  ZCodeModelTrajectoryUsage,
-  ZCodeTaskListKind,
-  ZCodeTaskListQuery,
-  ZCodeTaskListResult,
-  ZCodeTaskListSortBy,
-  ZCodeTaskListWorkspaceScope,
-  ZCodeTaskReadyOutcome,
-  ZCodeGroupedTaskRef,
-  ZCodeGroupedTaskView,
-  ZCodeGroupedTaskViewNode,
-  ZCodeGroupedTaskViewOrderInput,
-  ZCodeGroupedTaskViewQuery,
-  ZCodeGroupedTaskViewStructure,
-  ZCodeGroupedTaskViewStructureMember,
-  ZCodeGroupedTaskViewStructureTopOrder,
-  ZCodeGroupedTaskViewTopLevelNodeRef,
-  ZCodeTaskGroup,
-  ZCodeTaskGroupColor,
+  ZodyArchivedTaskDeletionResult,
+  ZodyModelTrajectory,
+  ZodyModelTrajectoryCallSource,
+  ZodyModelTrajectoryCallSourceKind,
+  ZodyModelTrajectoryContentPart,
+  ZodyModelTrajectoryMessage,
+  ZodyModelTrajectoryRecord,
+  ZodyModelTrajectoryUsage,
+  ZodyTaskListKind,
+  ZodyTaskListQuery,
+  ZodyTaskListResult,
+  ZodyTaskListSortBy,
+  ZodyTaskListWorkspaceScope,
+  ZodyTaskReadyOutcome,
+  ZodyGroupedTaskRef,
+  ZodyGroupedTaskView,
+  ZodyGroupedTaskViewNode,
+  ZodyGroupedTaskViewOrderInput,
+  ZodyGroupedTaskViewQuery,
+  ZodyGroupedTaskViewStructure,
+  ZodyGroupedTaskViewStructureMember,
+  ZodyGroupedTaskViewStructureTopOrder,
+  ZodyGroupedTaskViewTopLevelNodeRef,
+  ZodyTaskGroup,
+  ZodyTaskGroupColor,
 } from "./session/zodyTaskService.js";
-export type { ZCodeTaskListItem } from "./session/zodyTaskListTypes.js";
+export type { ZodyTaskListItem } from "./session/zodyTaskListTypes.js";
 
 export { IWindowControllerService } from "./window-controller/windowController.js";
 export { IMobileNotificationReader } from "./mobile-notifications/contract.js";
@@ -123,8 +123,8 @@ export type {
 
 // ZCode agent service — IZCodeAgentService is both a type (interface) and value (descriptor)
 export {
-  IZCodeAgentService,
-  type ZCodeAgentLocalRuntimeChildProcesses,
+  IZodyAgentService,
+  type ZodyAgentLocalRuntimeChildProcesses,
   ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE,
 } from "./zody-agent/zodyAgent.js";
 export {
@@ -137,52 +137,53 @@ export {
   readTrustedZCodeAgentV4Connection,
 } from "./zody-agent/zodyAgentConnectionScope.js";
 export type {
-  ZCodeAgentConnectionScope,
-  ZCodeAgentV4ClientMode,
-  ZCodeAgentV4ConnectionContext,
+  ZodyAgentConnectionScope,
+  ZodyAgentV4ClientMode,
+  ZodyAgentV4ConnectionContext,
 } from "./zody-agent/zodyAgentConnectionScope.js";
 export type {
-  ZCodeAgentAttachmentBeginParams,
-  ZCodeAgentAttachmentChunkParams,
-  ZCodeAgentAttachmentTerminalParams,
-  ZCodeAgentCreateSessionParams,
-  ZCodeAgentCuaPermissionObservation,
-  ZCodeAgentInitializeResult,
-  ZCodeAgentStorageStartupSnapshot,
+  ZodyAgentAttachmentBeginParams,
+  ZodyAgentAttachmentChunkParams,
+  ZodyAgentAttachmentTerminalParams,
+  ZodyAgentCreateSessionParams,
+  ZodyAgentCuaPermissionObservation,
+  ZodyAgentInitializeResult,
+  ZodyAgentStorageStartupSnapshot,
   ZodyAgentRuntimeLifecycleEvent,
-  ZCodeAgentRuntimePolicy,
-  ZCodeAgentReadSessionParams,
-  ZCodeAgentRespondProviderRuntimeHeadersParams,
-  ZCodeAgentResumeSessionParams,
-  ZCodeAgentRunAutomationNowResult,
-  ZCodeAgentSavedWorkflowTarget,
-  ZCodeAgentSendPromptParams,
-  ZCodeAgentServiceEvent,
-  ZCodeAgentSessionSubscribeParams,
-  ZCodeAgentSessionTarget,
-  ZCodeAgentSetModeParams,
-  ZCodeAgentSetModelParams,
-  ZCodeAgentSetThoughtLevelParams,
-  ZCodeAgentWorkspaceTarget,
+  ZodyAgentRuntimePolicy,
+  ZodyAgentReadSessionParams,
+  ZodyAgentRespondProviderRuntimeHeadersParams,
+  ZodyAgentResumeSessionParams,
+  ZodyAgentRunAutomationNowResult,
+  ZodyAgentSavedWorkflowTarget,
+  ZodyAgentSendPromptParams,
+  ZodyAgentServiceEvent,
+  ZodyAgentSessionRuntimePreferencesRequest,
+  ZodyAgentSessionSubscribeParams,
+  ZodyAgentSessionTarget,
+  ZodyAgentSetModeParams,
+  ZodyAgentSetModelParams,
+  ZodyAgentSetThoughtLevelParams,
+  ZodyAgentWorkspaceTarget,
 } from "./zody-agent/zodyAgent.js";
 
 // ZCode session service — app-facing session facade without ZCode Agent naming.
-export { IZCodeSessionService } from "./zody-session/zodySession.js";
+export { IZodySessionService } from "./zody-session/zodySession.js";
 export type {
-  ZCodeSessionCreateParams,
-  ZCodeSessionEventsParams,
-  ZCodeSessionInitializeResult,
-  ZCodeSessionListParams,
-  ZCodeSessionMessagesParams,
-  ZCodeSessionReadParams,
-  ZCodeSessionResumeParams,
-  ZCodeSessionServiceEvent,
-  ZCodeSessionSetModeParams,
-  ZCodeSessionSetModelParams,
-  ZCodeSessionSetThoughtLevelParams,
-  ZCodeSessionSubscribeParams,
-  ZCodeTaskTarget,
-  ZCodeSessionWorkspaceTarget,
+  ZodySessionCreateParams,
+  ZodySessionEventsParams,
+  ZodySessionInitializeResult,
+  ZodySessionListParams,
+  ZodySessionMessagesParams,
+  ZodySessionReadParams,
+  ZodySessionResumeParams,
+  ZodySessionServiceEvent,
+  ZodySessionSetModeParams,
+  ZodySessionSetModelParams,
+  ZodySessionSetThoughtLevelParams,
+  ZodySessionSubscribeParams,
+  ZodyTaskTarget,
+  ZodySessionWorkspaceTarget,
 } from "./zody-session/zodySession.js";
 
 // fork（bots 移除）：IBotsService 及 Bot* 类型导出随 bot channels 功能整体删除

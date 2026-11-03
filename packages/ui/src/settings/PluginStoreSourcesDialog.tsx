@@ -1,5 +1,5 @@
 import { AlertTriangle, Loader2, RefreshCw, Trash2 } from "lucide-react";
-import type { ZCodePluginMarketplaceSummary } from "@zody/shared";
+import type { ZodyPluginMarketplaceSummary } from "@zody/shared";
 import { CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE_ID } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.js";
@@ -12,7 +12,7 @@ import {
 import { DEFAULT_MARKETPLACE_ID } from "@/settings/recommendedPlugins.js";
 
 // 官方市场不可移除：移除后启动时会被重新补种，只会造成「删了又回来」的困惑。
-function isRemovableMarketplace(marketplace: ZCodePluginMarketplaceSummary): boolean {
+function isRemovableMarketplace(marketplace: ZodyPluginMarketplaceSummary): boolean {
   if (isPublicStoreMarketplaceId(marketplace.id)) return false;
   if (marketplace.id === DEFAULT_MARKETPLACE_ID) return false;
   return true;
@@ -21,7 +21,7 @@ function isRemovableMarketplace(marketplace: ZCodePluginMarketplaceSummary): boo
 export function PluginStoreSourceRefreshFailure({
   failure,
 }: {
-  failure: NonNullable<ZCodePluginMarketplaceSummary["refreshFailure"]>;
+  failure: NonNullable<ZodyPluginMarketplaceSummary["refreshFailure"]>;
 }) {
   const { intl } = useZCodeIntl();
   return (
@@ -52,7 +52,7 @@ export function PluginStoreSourcesDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  marketplaces: ZCodePluginMarketplaceSummary[];
+  marketplaces: ZodyPluginMarketplaceSummary[];
   onUpdateMarketplace: (marketplace: string) => void;
   onRemoveMarketplace: (marketplace: string) => void;
   operationId: string | null;

@@ -7,7 +7,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import type { ZCodeElicitationQuestion, ZCodeElicitationRequest } from "@zody/shared";
+import type { ZodyElicitationQuestion, ZodyElicitationRequest } from "@zody/shared";
 import type { InteractionAutoResolution } from "@zody/shared/zody-protocol-v4";
 import { CheckIcon, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge.js";
@@ -20,7 +20,7 @@ import type { ElicitationFormDraft } from "@/store/zodySessionStoreTypes.js";
 import { useZCodeIntl } from "./i18n/IntlProvider.js";
 
 interface ElicitationDialogProps {
-  request: ZCodeElicitationRequest;
+  request: ZodyElicitationRequest;
   autoResolution?: InteractionAutoResolution;
   onRespond: (
     requestId: string,
@@ -102,7 +102,7 @@ function useElicitationCountdownSeconds(autoResolution: InteractionAutoResolutio
   return getElicitationCountdownSeconds(autoResolution, clockNow);
 }
 
-export interface NormalizedElicitationQuestion extends ZCodeElicitationQuestion {
+export interface NormalizedElicitationQuestion extends ZodyElicitationQuestion {
   key: string;
 }
 
@@ -162,7 +162,7 @@ export function resolveElicitationCustomInputKeyAction(event: {
 }
 
 export function normalizeElicitationQuestions(
-  request: ZCodeElicitationRequest,
+  request: ZodyElicitationRequest,
 ): NormalizedElicitationQuestion[] {
   const sourceQuestions =
     request.questions && request.questions.length > 0
@@ -193,7 +193,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isPlanApprovalElicitationRequest(request: ZCodeElicitationRequest): boolean {
+function isPlanApprovalElicitationRequest(request: ZodyElicitationRequest): boolean {
   const schema = request.schema;
   return (
     isRecord(schema) && schema.interaction === "plan_approval" && schema.toolName === "ExitPlanMode"
@@ -202,7 +202,7 @@ function isPlanApprovalElicitationRequest(request: ZCodeElicitationRequest): boo
 
 export function createInitialElicitationDrafts(
   questions: readonly NormalizedElicitationQuestion[],
-  request: ZCodeElicitationRequest,
+  request: ZodyElicitationRequest,
 ): DraftState {
   return Object.fromEntries(
     questions.map((question, index) => {
@@ -217,7 +217,7 @@ export function createInitialElicitationDrafts(
 }
 
 function normalizeInitialQuestionIndex(
-  request: ZCodeElicitationRequest,
+  request: ZodyElicitationRequest,
   questions: readonly NormalizedElicitationQuestion[],
 ) {
   if (questions.length === 0) {

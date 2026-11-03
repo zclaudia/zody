@@ -51,7 +51,7 @@ import {
   zcodePluginsMarketplaceMutationResultSchema,
   zcodePluginsOverviewResultSchema,
   zcodeProcessChildProcessesResultSchema,
-  type ZCodeProcessChildProcess,
+  type ZodyProcessChildProcess,
   zcodeSkillsReferenceCatalogResultSchema,
   zcodeMcpReadResourceResultSchema,
   zcodeMcpUiCallToolResultSchema,
@@ -120,9 +120,9 @@ import {
   zcodeWorkspaceUpdateInteractionPreferencesResultSchema,
   zcodeWorkspaceUpdateModelIoPreferencesResultSchema,
   zcodeProviderUpdateAccountConfigResultSchema,
-  type ZCodeSessionStateSnapshot,
-  type ZCodeAutomation,
-  type ZCodeAutomationRun,
+  type ZodySessionStateSnapshot,
+  type ZodyAutomation,
+  type ZodyAutomationRun,
   // fork（F4.3）：zcodeWorkspaceUpdateOffPeakToolPolicyResultSchema 随闲时任务全链路删除。
   zcodeWorkspaceUpdateDynamicWorkflowPolicyResultSchema,
   type DynamicWorkflowClientConfig,
@@ -132,11 +132,11 @@ import {
   normalizeDynamicWorkflowMode,
   type AgentLaneResourceSample,
   type ProcessResourceCliLane,
-  type ZCodeMcpTelemetryEvent,
-  type ZCodeMcpResourceSample,
-  type ZCodeToolExecResource,
-  type ZCodePluginOperationProgressNotification,
-  type ZCodeTaskMode,
+  type ZodyMcpTelemetryEvent,
+  type ZodyMcpResourceSample,
+  type ZodyToolExecResource,
+  type ZodyPluginOperationProgressNotification,
+  type ZodyTaskMode,
   ZCODE_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
@@ -148,119 +148,119 @@ import {
 } from "#src/zody-agent/automationToolPolicy.js";
 import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zodyAgent.js";
 import type {
-  ZCodeProtocolRequestId,
+  ZodyProtocolRequestId,
   ModelSelection,
-  ZCodeProviderRuntimeHeadersRequestParams,
-  ZCodeProviderRuntimeHeadersCancelled,
-  ZCodeSessionEvent,
-  ZCodeSessionRuntimePreferencesScope,
-  ZCodeSavedWorkflowScope,
-  ZCodeStateUpdatedNotification,
-  ZCodeWorkspacePresentation,
-  ZCodeWorkspaceRef,
-  ZCodeSessionRuntimePreferencesResult,
+  ZodyProviderRuntimeHeadersRequestParams,
+  ZodyProviderRuntimeHeadersCancelled,
+  ZodySessionEvent,
+  ZodySessionRuntimePreferencesScope,
+  ZodySavedWorkflowScope,
+  ZodyStateUpdatedNotification,
+  ZodyWorkspacePresentation,
+  ZodyWorkspaceRef,
+  ZodySessionRuntimePreferencesResult,
 } from "@zody/shared";
 import type {
-  IZCodeAgentService,
-  ZCodeAgentBackgroundBashOutputParams,
-  ZCodeAgentAppRuntimePreferences,
+  IZodyAgentService,
+  ZodyAgentBackgroundBashOutputParams,
+  ZodyAgentAppRuntimePreferences,
   ZodyAgentRuntimeLifecycleEvent,
-  ZCodeAgentAddPluginMarketplaceParams,
-  ZCodeAgentAppUsageParams,
-  ZCodeAgentCancelPluginOperationParams,
-  ZCodeAgentCompactParams,
-  ZCodeAgentConfigurePluginParams,
-  ZCodeAgentResetPluginConfigParams,
-  ZCodeAgentCreateSessionParams,
-  ZCodeAgentInstallPluginParams,
-  ZCodeAgentGenerateWorkspaceTextParams,
-  ZCodeAgentTestModelConnectivityParams,
-  ZCodeAgentGoalParams,
-  ZCodeAgentGrantWorkspaceHookTrustParams,
-  ZCodeAgentInitializeResult,
-  ZCodeAgentListSessionsParams,
-  ZCodeAgentListSessionSubagentsParams,
-  ZCodeAgentReadWorkspacePresentationParams,
-  ZCodeAgentReadSessionEventsParams,
-  ZCodeAgentReadSessionMessagesParams,
-  ZCodeAgentReadSessionParams,
-  ZCodeAgentRemovePluginMarketplaceParams,
-  ZCodeAgentRespondProviderRuntimeHeadersParams,
-  ZCodeAgentRespondSessionRuntimePreferencesParams,
-  ZCodeAgentResumeSessionParams,
-  ZCodeAgentSendPromptParams,
-  ZCodeAgentServiceEvent,
-  ZCodeAgentSessionSubscribeParams,
-  ZCodeAgentSessionTarget,
-  ZCodeAgentSessionRuntimePreferencesRequest,
-  ZCodeAgentTaskTokenUsageParams,
-  ZCodeAgentSetModeParams,
-  ZCodeAgentSetModelParams,
-  ZCodeAgentSetPluginEnabledParams,
-  ZCodeAgentSetThoughtLevelParams,
-  ZCodeAgentPluginReferenceCatalogParams,
-  ZCodeAgentSkillReferenceCatalogParams,
-  ZCodeAgentReadMcpResourceParams,
-  ZCodeAgentCallMcpToolForUiParams,
-  ZCodeAgentCancelMcpToolCallForUiParams,
-  ZCodeAgentReadMcpResourceForUiParams,
-  ZCodeAgentListMcpResourcesForUiParams,
-  ZCodeAgentAppToolCallForUiParams,
-  ZCodeAgentAppToolInstanceForUiParams,
-  ZCodeAgentRegisterAppToolsForUiParams,
-  ZCodeAgentResolveAppToolCallForUiParams,
-  ZCodeAgentMcpResourceSubscriptionForUiParams,
-  ZCodeAgentDeleteSavedWorkflowParams,
-  ZCodeAgentFindSavedWorkflowForRunParams,
-  ZCodeAgentGetSavedWorkflowParams,
-  ZCodeAgentListSavedWorkflowRunsParams,
-  ZCodeAgentListSavedWorkflowsParams,
-  ZCodeAgentMoveSavedWorkflowParams,
-  ZCodeAgentSaveSavedWorkflowFromRunParams,
-  ZCodeAgentSavedWorkflowTarget,
-  ZCodeAgentUpdateSavedWorkflowMetaParams,
-  ZCodeAgentResolveSuggestedPluginReferenceParams,
-  ZCodeAgentPluginViewParams,
-  ZCodeAgentUninstallPluginParams,
-  ZCodeAgentUpdatePluginParams,
-  ZCodeAgentRestoreBuiltinPluginParams,
-  ZCodeAgentUpdatePluginMarketplaceParams,
-  ZCodeAgentValidatePluginParams,
-  ZCodeAgentDescribePluginParams,
-  ZCodeAgentListMcpServerStatusesParams,
-  ZCodeAgentWorkspaceTarget,
-  ZCodeAgentCuaPermissionObservation,
-  ZCodeAgentCreateAutomationParams,
-  ZCodeAgentUpdateAutomationParams,
-  ZCodeAgentAutomationIdParams,
-  ZCodeAgentSetAutomationEnabledParams,
-  ZCodeAgentDeleteAutomationRunParams,
-  ZCodeAgentAttachmentBeginParams,
-  ZCodeAgentAttachmentChunkParams,
-  ZCodeAgentAttachmentReadParams,
-  ZCodeAgentConversationAttachmentReadParams,
-  ZCodeAgentConversationAttachmentStatParams,
-  ZCodeAgentAttachmentPreviewSourceParams,
-  ZCodeAgentAttachmentTerminalParams,
-  ZCodeAgentConversationCommandParams,
-  ZCodeAgentCommandsQueryParams,
-  ZCodeAgentConversationFileChangesParams,
-  ZCodeAgentConversationFileRewindPreviewParams,
-  ZCodeAgentConversationRowsRangeParams,
-  ZCodeAgentConversationPlansParams,
-  ZCodeAgentConversationWorkflowRunEventsParams,
-  ZCodeAgentConversationWorkflowRunArtifactDataParams,
-  ZCodeAgentConversationWorkflowRunArtifactReadParams,
-  ZCodeAgentConversationWorkflowRunArtifactsParams,
-  ZCodeAgentConversationWorkflowRunNodeResultParams,
-  ZCodeAgentConversationWorkflowRunWorkspaceParams,
-  ZCodeAgentConversationWorkflowRunsParams,
-  ZCodeAgentConversationResyncParams,
-  ZCodeAgentConversationSubscribeParams,
-  ZCodeAgentConversationUnsubscribeParams,
-  ZCodeAgentConnectionFlowParams,
-  ZCodeAgentSessionsIndexSubscribeParams,
-  ZCodeAgentWorkspaceConfigSubscribeParams,
+  ZodyAgentAddPluginMarketplaceParams,
+  ZodyAgentAppUsageParams,
+  ZodyAgentCancelPluginOperationParams,
+  ZodyAgentCompactParams,
+  ZodyAgentConfigurePluginParams,
+  ZodyAgentResetPluginConfigParams,
+  ZodyAgentCreateSessionParams,
+  ZodyAgentInstallPluginParams,
+  ZodyAgentGenerateWorkspaceTextParams,
+  ZodyAgentTestModelConnectivityParams,
+  ZodyAgentGoalParams,
+  ZodyAgentGrantWorkspaceHookTrustParams,
+  ZodyAgentInitializeResult,
+  ZodyAgentListSessionsParams,
+  ZodyAgentListSessionSubagentsParams,
+  ZodyAgentReadWorkspacePresentationParams,
+  ZodyAgentReadSessionEventsParams,
+  ZodyAgentReadSessionMessagesParams,
+  ZodyAgentReadSessionParams,
+  ZodyAgentRemovePluginMarketplaceParams,
+  ZodyAgentRespondProviderRuntimeHeadersParams,
+  ZodyAgentRespondSessionRuntimePreferencesParams,
+  ZodyAgentResumeSessionParams,
+  ZodyAgentSendPromptParams,
+  ZodyAgentServiceEvent,
+  ZodyAgentSessionSubscribeParams,
+  ZodyAgentSessionTarget,
+  ZodyAgentSessionRuntimePreferencesRequest,
+  ZodyAgentTaskTokenUsageParams,
+  ZodyAgentSetModeParams,
+  ZodyAgentSetModelParams,
+  ZodyAgentSetPluginEnabledParams,
+  ZodyAgentSetThoughtLevelParams,
+  ZodyAgentPluginReferenceCatalogParams,
+  ZodyAgentSkillReferenceCatalogParams,
+  ZodyAgentReadMcpResourceParams,
+  ZodyAgentCallMcpToolForUiParams,
+  ZodyAgentCancelMcpToolCallForUiParams,
+  ZodyAgentReadMcpResourceForUiParams,
+  ZodyAgentListMcpResourcesForUiParams,
+  ZodyAgentAppToolCallForUiParams,
+  ZodyAgentAppToolInstanceForUiParams,
+  ZodyAgentRegisterAppToolsForUiParams,
+  ZodyAgentResolveAppToolCallForUiParams,
+  ZodyAgentMcpResourceSubscriptionForUiParams,
+  ZodyAgentDeleteSavedWorkflowParams,
+  ZodyAgentFindSavedWorkflowForRunParams,
+  ZodyAgentGetSavedWorkflowParams,
+  ZodyAgentListSavedWorkflowRunsParams,
+  ZodyAgentListSavedWorkflowsParams,
+  ZodyAgentMoveSavedWorkflowParams,
+  ZodyAgentSaveSavedWorkflowFromRunParams,
+  ZodyAgentSavedWorkflowTarget,
+  ZodyAgentUpdateSavedWorkflowMetaParams,
+  ZodyAgentResolveSuggestedPluginReferenceParams,
+  ZodyAgentPluginViewParams,
+  ZodyAgentUninstallPluginParams,
+  ZodyAgentUpdatePluginParams,
+  ZodyAgentRestoreBuiltinPluginParams,
+  ZodyAgentUpdatePluginMarketplaceParams,
+  ZodyAgentValidatePluginParams,
+  ZodyAgentDescribePluginParams,
+  ZodyAgentListMcpServerStatusesParams,
+  ZodyAgentWorkspaceTarget,
+  ZodyAgentCuaPermissionObservation,
+  ZodyAgentCreateAutomationParams,
+  ZodyAgentUpdateAutomationParams,
+  ZodyAgentAutomationIdParams,
+  ZodyAgentSetAutomationEnabledParams,
+  ZodyAgentDeleteAutomationRunParams,
+  ZodyAgentAttachmentBeginParams,
+  ZodyAgentAttachmentChunkParams,
+  ZodyAgentAttachmentReadParams,
+  ZodyAgentConversationAttachmentReadParams,
+  ZodyAgentConversationAttachmentStatParams,
+  ZodyAgentAttachmentPreviewSourceParams,
+  ZodyAgentAttachmentTerminalParams,
+  ZodyAgentConversationCommandParams,
+  ZodyAgentCommandsQueryParams,
+  ZodyAgentConversationFileChangesParams,
+  ZodyAgentConversationFileRewindPreviewParams,
+  ZodyAgentConversationRowsRangeParams,
+  ZodyAgentConversationPlansParams,
+  ZodyAgentConversationWorkflowRunEventsParams,
+  ZodyAgentConversationWorkflowRunArtifactDataParams,
+  ZodyAgentConversationWorkflowRunArtifactReadParams,
+  ZodyAgentConversationWorkflowRunArtifactsParams,
+  ZodyAgentConversationWorkflowRunNodeResultParams,
+  ZodyAgentConversationWorkflowRunWorkspaceParams,
+  ZodyAgentConversationWorkflowRunsParams,
+  ZodyAgentConversationResyncParams,
+  ZodyAgentConversationSubscribeParams,
+  ZodyAgentConversationUnsubscribeParams,
+  ZodyAgentConnectionFlowParams,
+  ZodyAgentSessionsIndexSubscribeParams,
+  ZodyAgentWorkspaceConfigSubscribeParams,
 } from "./zodyAgent.js";
 import {
   backgroundBashOutputResultSchema,
@@ -326,7 +326,7 @@ import {
 import {
   readTrustedZCodeAgentV4Connection,
   readTrustedZCodeAgentV4UnsubscribeRoute,
-  type ZCodeAgentV4ConnectionContext,
+  type ZodyAgentV4ConnectionContext,
 } from "./zodyAgentConnectionScope.js";
 import { createBackgroundSessionEventCoalescer } from "#src/zody-agent/zodySessionEventCoalescer.js";
 import { AutomationService } from "#src/session/automationService.js";
@@ -373,16 +373,16 @@ const SESSION_COMPACT_REQUEST_TIMEOUT_MS = 5 * 60_000;
 
 interface PendingPermissionRequest {
   client: ZCodeProtocolClient;
-  protocolRequestId: ZCodeProtocolRequestId;
+  protocolRequestId: ZodyProtocolRequestId;
 }
 
 interface PendingProviderRuntimeHeadersRequest extends PendingPermissionRequest {
-  request: ZCodeProviderRuntimeHeadersRequestParams;
+  request: ZodyProviderRuntimeHeadersRequestParams;
   responding?: boolean;
 }
 
 interface PendingSessionRuntimePreferencesRequest extends PendingPermissionRequest {
-  request: ZCodeAgentSessionRuntimePreferencesRequest;
+  request: ZodyAgentSessionRuntimePreferencesRequest;
   timeout: ReturnType<typeof setTimeout>;
   workspaceKey: string;
 }
@@ -472,7 +472,7 @@ function isProtocolMethodNotFoundError(error: unknown): boolean {
   );
 }
 
-function buildWorkspaceRef(params: ZCodeAgentWorkspaceTarget): ZCodeWorkspaceRef {
+function buildWorkspaceRef(params: ZodyAgentWorkspaceTarget): ZodyWorkspaceRef {
   return {
     workspacePath: params.workspacePath,
     workspaceIdentity: params.workspaceIdentity,
@@ -485,14 +485,14 @@ function buildWorkspaceRef(params: ZCodeAgentWorkspaceTarget): ZCodeWorkspaceRef
 // GUI 项目组里明说 `scope:"global"` 的动作都带 workspacePath；只给 `{ scope: "global" }` 的
 // 全局组动作不带，交给 services 自选载体。
 function savedWorkflowTargetHasWorkspace(
-  params: ZCodeAgentSavedWorkflowTarget,
-): params is ZCodeAgentWorkspaceTarget & { scope?: ZCodeSavedWorkflowScope } {
-  return typeof (params as Partial<ZCodeAgentWorkspaceTarget>).workspacePath === "string";
+  params: ZodyAgentSavedWorkflowTarget,
+): params is ZodyAgentWorkspaceTarget & { scope?: ZodySavedWorkflowScope } {
+  return typeof (params as Partial<ZodyAgentWorkspaceTarget>).workspacePath === "string";
 }
 
 // 只在 `scope` 有定义时下推到 RPC params：不给 scope 的项目档保持与今天逐字一致的线上形状。
-function savedWorkflowScopeParam(params: ZCodeAgentSavedWorkflowTarget): {
-  scope?: ZCodeSavedWorkflowScope;
+function savedWorkflowScopeParam(params: ZodyAgentSavedWorkflowTarget): {
+  scope?: ZodySavedWorkflowScope;
 } {
   return params.scope === undefined ? {} : { scope: params.scope };
 }
@@ -648,7 +648,7 @@ function assertV4AttachmentNdjsonEnvelope(method: string, params: unknown): void
 }
 
 function buildSessionCreateParams(
-  params: ZCodeAgentCreateSessionParams & {
+  params: ZodyAgentCreateSessionParams & {
     dynamicWorkflowEnabled?: boolean;
     dynamicWorkflowMode?: DynamicWorkflowMode;
   },
@@ -714,7 +714,7 @@ function buildDynamicWorkflowModeField(
 }
 
 function buildSessionResumeParams(
-  params: ZCodeAgentResumeSessionParams & {
+  params: ZodyAgentResumeSessionParams & {
     dynamicWorkflowEnabled?: boolean;
     dynamicWorkflowMode?: DynamicWorkflowMode;
   },
@@ -748,7 +748,7 @@ function buildSessionResumeParams(
 }
 
 function buildSessionSendParams(
-  params: ZCodeAgentSendPromptParams,
+  params: ZodyAgentSendPromptParams,
   omittedFields: ReadonlySet<SessionSendCompatField> = new Set(),
 ) {
   return {
@@ -776,7 +776,7 @@ function buildSessionSendParams(
   };
 }
 
-function buildSessionCompactParams(params: ZCodeAgentCompactParams) {
+function buildSessionCompactParams(params: ZodyAgentCompactParams) {
   return {
     sessionId: params.sessionId,
     inputId: params.inputId,
@@ -795,7 +795,7 @@ function formatModelSelectionForLog(ref: ModelSelection | undefined): string | n
   return reasoningLevel ? `${base}${ZCODE_MODEL_REASONING_SEPARATOR}${reasoningLevel}` : base;
 }
 
-function sessionEventKey(params: ZCodeAgentSessionTarget): string {
+function sessionEventKey(params: ZodyAgentSessionTarget): string {
   return `${resolveWorkspaceKey(params)}\u0000${params.sessionId}`;
 }
 
@@ -814,16 +814,16 @@ function rememberBoundedEventId(ids: Set<string>, order: string[], eventId: stri
   return true;
 }
 
-function permissionRequestKey(params: ZCodeAgentSessionTarget & { requestId: string }): string {
+function permissionRequestKey(params: ZodyAgentSessionTarget & { requestId: string }): string {
   return `${sessionEventKey(params)}\u0000${params.requestId}`;
 }
 
-function userInputRequestKey(params: ZCodeAgentSessionTarget & { requestId: string }): string {
+function userInputRequestKey(params: ZodyAgentSessionTarget & { requestId: string }): string {
   return `${sessionEventKey(params)}\u0000${params.requestId}`;
 }
 
 function providerRuntimeHeadersRequestKey(
-  params: ZCodeAgentSessionTarget & { requestId: string },
+  params: ZodyAgentSessionTarget & { requestId: string },
 ): string {
   return `${sessionEventKey(params)}\u0000${params.requestId}`;
 }
@@ -839,7 +839,7 @@ interface ModelSelectionReadinessSource {
   onDidChange?: (listener: (view: ModelSelectionView) => void) => IDisposable;
 }
 
-interface ZCodeAgentProviderReadinessSnapshot {
+interface ZodyAgentProviderReadinessSnapshot {
   readonly providerCount: number;
   readonly revision: string;
   readonly readiness: {
@@ -851,7 +851,7 @@ interface ZCodeAgentProviderReadinessSnapshot {
 
 function createProviderReadinessSnapshotFromSelectionView(
   view: ModelSelectionView,
-): ZCodeAgentProviderReadinessSnapshot {
+): ZodyAgentProviderReadinessSnapshot {
   for (const provider of view.providers) {
     const model = provider.models[0];
     if (!model) continue;
@@ -876,7 +876,7 @@ interface WaitingWorkspaceStartup {
   cancelled: boolean;
   lastLoggedRevision?: string;
   starting?: Promise<ZCodeProtocolClient>;
-  workspace: ZCodeAgentWorkspaceTarget;
+  workspace: ZodyAgentWorkspaceTarget;
 }
 
 interface ActiveWorkspaceClient {
@@ -887,7 +887,7 @@ interface ActiveWorkspaceClient {
    * 只读 topic 可以先启动 CLI，但不能因此让后续 create/command 绕过门禁。
    */
   modelExecutionEnabled: boolean;
-  workspace: ZCodeAgentWorkspaceTarget;
+  workspace: ZodyAgentWorkspaceTarget;
   /**
    * 该 CLI 进程当前持有的动态工作流策略（launch.md「The user's choice」）。CLI 启动时缺省关闭，
    * 只在 workspace/updateDynamicWorkflowPolicy 成功后更新；重同步据此跳过没有变化的请求。
@@ -895,7 +895,7 @@ interface ActiveWorkspaceClient {
   dynamicWorkflowPolicyMode: DynamicWorkflowMode;
 }
 
-function createRuntimeUnavailableError(params: ZCodeAgentWorkspaceTarget): Error & {
+function createRuntimeUnavailableError(params: ZodyAgentWorkspaceTarget): Error & {
   code: typeof ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE;
   workspaceKey: string;
 } {
@@ -908,7 +908,7 @@ function createRuntimeUnavailableError(params: ZCodeAgentWorkspaceTarget): Error
   return error;
 }
 
-interface CreateZCodeAgentServiceOptions extends Omit<
+interface CreateZodyAgentServiceOptions extends Omit<
   ZodyAgentProcessManagerOptions,
   "idleTimeoutMs"
 > {
@@ -924,12 +924,12 @@ interface CreateZCodeAgentServiceOptions extends Omit<
   }) => Promise<SubagentRuntimeConfig>;
   sessionRuntimePreferencesAuthority?: "local" | "external";
   resolveSessionRuntimePreferences?: (
-    scope: ZCodeSessionRuntimePreferencesScope,
-  ) => Promise<ZCodeSessionRuntimePreferencesResult>;
+    scope: ZodySessionRuntimePreferencesScope,
+  ) => Promise<ZodySessionRuntimePreferencesResult>;
   /** manual run 落库后由当前 host 直接派发；返回时 prompt 必须已被 session 接受。 */
   onAutomationManualRunRequested?: (params: {
-    automation: ZCodeAutomation;
-    run: ZCodeAutomationRun;
+    automation: ZodyAutomation;
+    run: ZodyAutomationRun;
   }) => Promise<void>;
   /**
    * 动态工作流灰度快照。Host 是唯一裁决者：
@@ -965,7 +965,7 @@ interface CreateZCodeAgentServiceOptions extends Omit<
   ) => void;
 }
 
-function toProtocolAutomation(automation: ZCodeAutomation) {
+function toProtocolAutomation(automation: ZodyAutomation) {
   return {
     automationId: automation.automationId,
     title: automation.title,
@@ -1024,8 +1024,8 @@ function applyTrustedCuaInputOrigin(
 // respondOffPeakInternalError / resolveOffPeak{AllowedModels,CreateModel,ToolSelection}
 // （offPeak/create、offPeak/list 协议 handler 的支撑函数）随闲时任务全链路删除。
 export function createZCodeAgentService(
-  options?: CreateZCodeAgentServiceOptions,
-): IZCodeAgentService & { disposeAllAndWait(): Promise<void> } {
+  options?: CreateZodyAgentServiceOptions,
+): IZodyAgentService & { disposeAllAndWait(): Promise<void> } {
   // Only the chat/main manager forwards the selective startup-profile resolver; the
   // plugin and mcp-status managers below intentionally omit it.
   const processManager = new ZodyAgentProcessManager({
@@ -1074,14 +1074,14 @@ export function createZCodeAgentService(
     lane: "mcp-status",
     idleTimeoutMs: options?.mcpStatusIdleTimeoutMs ?? MCP_STATUS_LANE_IDLE_TIMEOUT_MS,
   });
-  const sessionEmitters = new Map<string, Emitter<ZCodeAgentServiceEvent>>();
+  const sessionEmitters = new Map<string, Emitter<ZodyAgentServiceEvent>>();
   const providerRuntimeHeadersWorkspaceEmitters = new Map<
     string,
-    Emitter<ZCodeProviderRuntimeHeadersRequestParams>
+    Emitter<ZodyProviderRuntimeHeadersRequestParams>
   >();
   const providerRuntimeHeadersCancelledEmitters = new Map<
     string,
-    Emitter<ZCodeProviderRuntimeHeadersCancelled>
+    Emitter<ZodyProviderRuntimeHeadersCancelled>
   >();
   function cancelProviderRuntimeHeaders(
     key: string,
@@ -1100,20 +1100,20 @@ export function createZCodeAgentService(
     });
   }
   const sessionRuntimePreferencesRequestEmitter =
-    new Emitter<ZCodeAgentSessionRuntimePreferencesRequest>();
+    new Emitter<ZodyAgentSessionRuntimePreferencesRequest>();
   const processResourceSampleEmitter = new Emitter<AgentLaneResourceSample>();
-  const toolExecResourceEmitter = new Emitter<ZCodeToolExecResource>();
-  const mcpResourceSamplesEmitter = new Emitter<ZCodeMcpResourceSample[]>();
-  const mcpTelemetryEmitter = new Emitter<ZCodeMcpTelemetryEvent>();
+  const toolExecResourceEmitter = new Emitter<ZodyToolExecResource>();
+  const mcpResourceSamplesEmitter = new Emitter<ZodyMcpResourceSample[]>();
+  const mcpTelemetryEmitter = new Emitter<ZodyMcpTelemetryEvent>();
   const pluginOperationProgressEmitters = new Map<
     string,
-    Emitter<ZCodePluginOperationProgressNotification>
+    Emitter<ZodyPluginOperationProgressNotification>
   >();
   // v4 conversation 帧 fan-out：workspace 级 emitter，renderer 侧按 topic 自行路由。
   const conversationFrameEmitters = new Map<string, Emitter<ConversationTopicWireCandidate>>();
   const localTtftFactsEmitter = new Emitter<{ workspaceKey: string; facts: LocalTtftFacts }>();
   const conversationTelemetryFactEmitters = new Map<string, Emitter<ConversationTelemetryFact>>();
-  const cuaPermissionObservationEmitter = new Emitter<ZCodeAgentCuaPermissionObservation>();
+  const cuaPermissionObservationEmitter = new Emitter<ZodyAgentCuaPermissionObservation>();
   // sessions-index 帧 fan-out：与 conversation 同一 conversationFrame 通知，按 topic 前缀分流到此 emitter。
   const sessionsIndexFrameEmitters = new Map<string, Emitter<SessionsIndexTopicWireCandidate>>();
   // workspace-config 帧 fan-out：配置目录活性（task-index syncer 消费），同一通知按前缀分流。
@@ -1155,7 +1155,7 @@ export function createZCodeAgentService(
   >();
   const activeClientsByWorkspaceKey = new Map<string, ActiveWorkspaceClient>();
   const interactionPreferenceSyncByWorkspaceKey = new Map<string, Promise<void>>();
-  let latestAppRuntimePreferences: ZCodeAgentAppRuntimePreferences | undefined;
+  let latestAppRuntimePreferences: ZodyAgentAppRuntimePreferences | undefined;
   /** 服务端「提供」的进程内单次读取；见 resolveDynamicWorkflowGate 的注释。 */
   let dynamicWorkflowOffer: Promise<DynamicWorkflowClientConfig | undefined> | undefined;
   /** desktop 推来的用户选择；只在没有本机设置权威（未注入 resolveDynamicWorkflowUserMode）时使用。 */
@@ -1360,7 +1360,7 @@ export function createZCodeAgentService(
   async function ensureAccountProviderConfigSynced(params: {
     client: ZCodeProtocolClient;
     reason: string;
-    workspace: ZCodeAgentWorkspaceTarget;
+    workspace: ZodyAgentWorkspaceTarget;
   }): Promise<void> {
     await syncAccountProviderConfigToClient({
       client: params.client,
@@ -1381,8 +1381,8 @@ export function createZCodeAgentService(
 
   function enqueueInteractionPreferenceSync(params: {
     client: ZCodeProtocolClient;
-    preferences: ZCodeAgentAppRuntimePreferences;
-    workspace: ZCodeAgentWorkspaceTarget;
+    preferences: ZodyAgentAppRuntimePreferences;
+    workspace: ZodyAgentWorkspaceTarget;
   }): Promise<void> {
     const workspaceKey = resolveWorkspaceKey(params.workspace);
     const previous = interactionPreferenceSyncByWorkspaceKey.get(workspaceKey) ?? Promise.resolve();
@@ -1436,7 +1436,7 @@ export function createZCodeAgentService(
 
   async function handleProviderReadinessChanged(event: {
     reason: string;
-    snapshot: ZCodeAgentProviderReadinessSnapshot;
+    snapshot: ZodyAgentProviderReadinessSnapshot;
   }): Promise<void> {
     if (event.snapshot.readiness.ready) {
       await Promise.allSettled(
@@ -1473,13 +1473,13 @@ export function createZCodeAgentService(
     }
   }
 
-  function getSessionEmitter(params: ZCodeAgentSessionTarget) {
+  function getSessionEmitter(params: ZodyAgentSessionTarget) {
     const key = sessionEventKey(params);
     const existing = sessionEmitters.get(key);
     if (existing) {
       return existing;
     }
-    const created = new Emitter<ZCodeAgentServiceEvent>();
+    const created = new Emitter<ZodyAgentServiceEvent>();
     sessionEmitters.set(key, created);
     return created;
   }
@@ -1487,7 +1487,7 @@ export function createZCodeAgentService(
   function getPluginOperationProgressEmitter(operationId: string) {
     const existing = pluginOperationProgressEmitters.get(operationId);
     if (existing) return existing;
-    let created: Emitter<ZCodePluginOperationProgressNotification>;
+    let created: Emitter<ZodyPluginOperationProgressNotification>;
     created = new Emitter({
       onDidRemoveLastListener: () => {
         if (pluginOperationProgressEmitters.get(operationId) !== created) return;
@@ -1499,7 +1499,7 @@ export function createZCodeAgentService(
     return created;
   }
 
-  function getConversationFrameEmitter(workspace: ZCodeAgentWorkspaceTarget) {
+  function getConversationFrameEmitter(workspace: ZodyAgentWorkspaceTarget) {
     const key = resolveWorkspaceKey(workspace);
     const existing = conversationFrameEmitters.get(key);
     if (existing) {
@@ -1510,18 +1510,18 @@ export function createZCodeAgentService(
     return created;
   }
 
-  function getProviderRuntimeHeadersWorkspaceEmitter(workspace: ZCodeAgentWorkspaceTarget) {
+  function getProviderRuntimeHeadersWorkspaceEmitter(workspace: ZodyAgentWorkspaceTarget) {
     const key = resolveWorkspaceKey(workspace);
     const existing = providerRuntimeHeadersWorkspaceEmitters.get(key);
     if (existing) {
       return existing;
     }
-    const created = new Emitter<ZCodeProviderRuntimeHeadersRequestParams>();
+    const created = new Emitter<ZodyProviderRuntimeHeadersRequestParams>();
     providerRuntimeHeadersWorkspaceEmitters.set(key, created);
     return created;
   }
 
-  function getConversationTelemetryFactEmitter(workspace: ZCodeAgentWorkspaceTarget) {
+  function getConversationTelemetryFactEmitter(workspace: ZodyAgentWorkspaceTarget) {
     const key = resolveWorkspaceKey(workspace);
     const existing = conversationTelemetryFactEmitters.get(key);
     if (existing) return existing;
@@ -1530,7 +1530,7 @@ export function createZCodeAgentService(
     return created;
   }
 
-  function getSessionsIndexFrameEmitter(workspace: ZCodeAgentWorkspaceTarget) {
+  function getSessionsIndexFrameEmitter(workspace: ZodyAgentWorkspaceTarget) {
     const key = resolveWorkspaceKey(workspace);
     const existing = sessionsIndexFrameEmitters.get(key);
     if (existing) {
@@ -1541,7 +1541,7 @@ export function createZCodeAgentService(
     return created;
   }
 
-  function getWorkspaceConfigFrameEmitter(workspace: ZCodeAgentWorkspaceTarget) {
+  function getWorkspaceConfigFrameEmitter(workspace: ZodyAgentWorkspaceTarget) {
     const key = resolveWorkspaceKey(workspace);
     const existing = workspaceConfigFrameEmitters.get(key);
     if (existing) {
@@ -1560,7 +1560,7 @@ export function createZCodeAgentService(
   function resolveV4Connection(
     params: unknown,
     fallbackConnectionId: string = v4ConnectionId,
-  ): ZCodeAgentV4ConnectionContext {
+  ): ZodyAgentV4ConnectionContext {
     return (
       readTrustedZCodeAgentV4Connection(params) ?? {
         // 没有可信 carrier 就是宿主内部直调：按旧消费者订阅（整键 patch），不猜能力。
@@ -1579,7 +1579,7 @@ export function createZCodeAgentService(
   }
 
   function rememberV4SubscriptionRoute(
-    workspace: ZCodeAgentWorkspaceTarget,
+    workspace: ZodyAgentWorkspaceTarget,
     topic: string,
     subscriptionId: string,
     connectionId: string,
@@ -1621,7 +1621,7 @@ export function createZCodeAgentService(
   }
 
   function resolveV4UnsubscribeRoute(
-    params: ZCodeAgentConversationUnsubscribeParams | ZCodeAgentConversationResyncParams,
+    params: ZodyAgentConversationUnsubscribeParams | ZodyAgentConversationResyncParams,
     topicPrefix: string,
   ): V4SubscriptionRoute | null {
     const expectedWorkspaceKey = resolveWorkspaceKey(params);
@@ -1648,7 +1648,7 @@ export function createZCodeAgentService(
   }
 
   async function unsubscribeV4Route(
-    params: ZCodeAgentConversationUnsubscribeParams,
+    params: ZodyAgentConversationUnsubscribeParams,
     topicPrefix: string,
   ): Promise<void> {
     const route = resolveV4UnsubscribeRoute(params, topicPrefix);
@@ -1671,7 +1671,7 @@ export function createZCodeAgentService(
     if (isCurrentV4SubscriptionRoute(route)) forgetV4SubscriptionRoute(route);
   }
 
-  async function resyncV4Route(params: ZCodeAgentConversationResyncParams, topicPrefix: string) {
+  async function resyncV4Route(params: ZodyAgentConversationResyncParams, topicPrefix: string) {
     const route = resolveV4UnsubscribeRoute(params, topicPrefix);
     if (!route) throw new Error("fault.subscription.notOwned");
     const client = await getReadOnlyClient(params, params.runtimePolicy);
@@ -1698,16 +1698,16 @@ export function createZCodeAgentService(
   }
 
   function emitSessionEvent(
-    workspace: ZCodeAgentWorkspaceTarget,
+    workspace: ZodyAgentWorkspaceTarget,
     sessionId: string,
-    event: ZCodeAgentServiceEvent,
+    event: ZodyAgentServiceEvent,
   ): void {
     sessionEmitters.get(sessionEventKey({ ...workspace, sessionId }))?.fire(event);
   }
 
   function emitWorkspaceEvent(
-    workspace: ZCodeAgentWorkspaceTarget,
-    event: ZCodeAgentServiceEvent,
+    workspace: ZodyAgentWorkspaceTarget,
+    event: ZodyAgentServiceEvent,
   ): void {
     const workspaceKey = resolveWorkspaceKey(workspace);
     for (const [key, emitter] of sessionEmitters) {
@@ -1718,7 +1718,7 @@ export function createZCodeAgentService(
   }
 
   function getSessionEventSequenceState(
-    workspace: ZCodeAgentWorkspaceTarget,
+    workspace: ZodyAgentWorkspaceTarget,
     sessionId: string,
   ): SessionEventSequenceState {
     const key = sessionEventKey({ ...workspace, sessionId });
@@ -1738,9 +1738,9 @@ export function createZCodeAgentService(
   }
 
   function normalizeSessionEventSeq(
-    workspace: ZCodeAgentWorkspaceTarget,
-    event: ZCodeSessionEvent,
-  ): ZCodeSessionEvent {
+    workspace: ZodyAgentWorkspaceTarget,
+    event: ZodySessionEvent,
+  ): ZodySessionEvent {
     const state = getSessionEventSequenceState(workspace, event.sessionId);
     if (event.seq > 0) {
       state.lastAssignedSeq = Math.max(state.lastAssignedSeq, event.seq);
@@ -1768,16 +1768,16 @@ export function createZCodeAgentService(
   }
 
   function shouldDeliverLiveSessionEvent(
-    workspace: ZCodeAgentWorkspaceTarget,
-    event: ZCodeSessionEvent,
+    workspace: ZodyAgentWorkspaceTarget,
+    event: ZodySessionEvent,
   ): boolean {
     const state = getSessionEventSequenceState(workspace, event.sessionId);
     return rememberBoundedEventId(state.liveEventIds, state.liveEventIdOrder, event.eventId);
   }
 
   function handleSessionEvent(
-    workspace: ZCodeAgentWorkspaceTarget,
-    event: ZCodeSessionEvent,
+    workspace: ZodyAgentWorkspaceTarget,
+    event: ZodySessionEvent,
   ): void {
     const normalizedEvent = normalizeSessionEventSeq(workspace, event);
     if (!shouldDeliverLiveSessionEvent(workspace, normalizedEvent)) {
@@ -1790,8 +1790,8 @@ export function createZCodeAgentService(
   }
 
   function handleStateUpdated(
-    workspace: ZCodeAgentWorkspaceTarget,
-    notification: ZCodeStateUpdatedNotification,
+    workspace: ZodyAgentWorkspaceTarget,
+    notification: ZodyStateUpdatedNotification,
   ): void {
     if (notification.sessionId) {
       emitSessionEvent(workspace, notification.sessionId, {
@@ -1805,7 +1805,7 @@ export function createZCodeAgentService(
 
   function wireClient(
     client: ZCodeProtocolClient,
-    workspace: ZCodeAgentWorkspaceTarget,
+    workspace: ZodyAgentWorkspaceTarget,
     /**
      * 该 client 所属的进程泳道。CLI 进程不知道自己被哪个进程管理器拉起，
      * 因此资源样本的 lane 只能在这里按调用方补齐。
@@ -2113,7 +2113,7 @@ export function createZCodeAgentService(
           }
           if (sessionRuntimePreferencesAuthority === "local") {
             void (async () => {
-              let preferences: ZCodeSessionRuntimePreferencesResult;
+              let preferences: ZodySessionRuntimePreferencesResult;
               try {
                 preferences = zcodeSessionRuntimePreferencesResultSchema.parse(
                   // 同一 RPC 承载 runtime 创建与首次执行两个时机；必须继续传递
@@ -2145,7 +2145,7 @@ export function createZCodeAgentService(
           }
 
           const requestId = randomUUID();
-          const dynamicRequest: ZCodeAgentSessionRuntimePreferencesRequest = {
+          const dynamicRequest: ZodyAgentSessionRuntimePreferencesRequest = {
             ...parsed.data,
             requestId,
           };
@@ -2601,8 +2601,8 @@ export function createZCodeAgentService(
   }
 
   function rememberSessionTrace(
-    target: ZCodeAgentSessionTarget,
-    snapshot: ZCodeSessionStateSnapshot,
+    target: ZodyAgentSessionTarget,
+    snapshot: ZodySessionStateSnapshot,
   ): TraceId | undefined {
     const traceId = snapshot.session.traceId as TraceId | undefined;
     if (traceId) {
@@ -2611,13 +2611,13 @@ export function createZCodeAgentService(
     return traceId;
   }
 
-  function getSessionTraceId(target: ZCodeAgentSessionTarget): TraceId | undefined {
+  function getSessionTraceId(target: ZodyAgentSessionTarget): TraceId | undefined {
     return sessionTraceIdBySessionKey.get(sessionEventKey(target));
   }
 
   function createProviderNotReadyError(params: {
-    snapshot?: ZCodeAgentProviderReadinessSnapshot;
-    workspace: ZCodeAgentWorkspaceTarget;
+    snapshot?: ZodyAgentProviderReadinessSnapshot;
+    workspace: ZodyAgentWorkspaceTarget;
   }): Error & {
     code: typeof ZCODE_AGENT_PROVIDER_NOT_READY_CODE;
     data: {
@@ -2660,7 +2660,7 @@ export function createZCodeAgentService(
   }
 
   async function resolveStartupReadiness(): Promise<
-    ZCodeAgentProviderReadinessSnapshot | undefined
+    ZodyAgentProviderReadinessSnapshot | undefined
   > {
     if (modelSelectionReadinessSource) {
       return createProviderReadinessSnapshotFromSelectionView(
@@ -2677,7 +2677,7 @@ export function createZCodeAgentService(
    * 让调用方重新拉起进程（start-if-needed）或按“无运行时”处理（existing-only）。
    */
   function isReusableActiveClientEntry(
-    params: ZCodeAgentWorkspaceTarget,
+    params: ZodyAgentWorkspaceTarget,
     active: ActiveWorkspaceClient | undefined,
   ): boolean {
     if (!active) {
@@ -2697,7 +2697,7 @@ export function createZCodeAgentService(
   }
 
   async function getOrStartReadOnlyClient(
-    params: ZCodeAgentWorkspaceTarget,
+    params: ZodyAgentWorkspaceTarget,
   ): Promise<ActiveWorkspaceClient> {
     const workspaceKey = resolveWorkspaceKey(params);
     const active = activeClientsByWorkspaceKey.get(workspaceKey);
@@ -2727,7 +2727,7 @@ export function createZCodeAgentService(
     };
     activeClientsByWorkspaceKey.set(workspaceKey, entry);
     const interactionPreferencesReady = (async () => {
-      let appliedSnapshot: ZCodeAgentAppRuntimePreferences | undefined;
+      let appliedSnapshot: ZodyAgentAppRuntimePreferences | undefined;
       while (latestAppRuntimePreferences && latestAppRuntimePreferences !== appliedSnapshot) {
         const snapshot = latestAppRuntimePreferences;
         await enqueueInteractionPreferenceSync({
@@ -2767,7 +2767,7 @@ export function createZCodeAgentService(
     return entry;
   }
 
-  async function getClient(params: ZCodeAgentWorkspaceTarget) {
+  async function getClient(params: ZodyAgentWorkspaceTarget) {
     const workspaceKey = resolveWorkspaceKey(params);
     const active = activeClientsByWorkspaceKey.get(workspaceKey);
     if (active?.modelExecutionEnabled && isReusableActiveClientEntry(params, active)) {
@@ -2793,7 +2793,7 @@ export function createZCodeAgentService(
   }
 
   async function startModelExecutionClient(
-    params: ZCodeAgentWorkspaceTarget,
+    params: ZodyAgentWorkspaceTarget,
     waiting: WaitingWorkspaceStartup,
   ): Promise<ZCodeProtocolClient> {
     const workspaceKey = resolveWorkspaceKey(params);
@@ -2845,7 +2845,7 @@ export function createZCodeAgentService(
   }
 
   async function getReadOnlyClient(
-    params: ZCodeAgentWorkspaceTarget,
+    params: ZodyAgentWorkspaceTarget,
     runtimePolicy: "start-if-needed" | "existing-only" = "start-if-needed",
   ) {
     if (runtimePolicy === "existing-only") {
@@ -2893,7 +2893,7 @@ export function createZCodeAgentService(
   // 塞进 activeClientsByWorkspaceKey 并跑一遍交互偏好同步，污染会话 client map。两条路径都在本机，
   // homedir() 即用户家目录，全局根 `~/.zody/workflows/` 因此解析到真实目录。
   // 远程 runtime（SSH/WSL identity 或带 remoteSessionId）的 home 不是本机，绝不选它当载体。
-  function isLocalActiveWorkspaceClient(workspace: ZCodeAgentWorkspaceTarget): boolean {
+  function isLocalActiveWorkspaceClient(workspace: ZodyAgentWorkspaceTarget): boolean {
     return (
       !workspace.remoteSessionId &&
       !(workspace.workspaceIdentity && isRemoteWorkspaceIdentity(workspace.workspaceIdentity))
@@ -2902,7 +2902,7 @@ export function createZCodeAgentService(
 
   async function resolveGlobalSavedWorkflowCarrier(): Promise<{
     client: ZCodeProtocolClient;
-    workspace: ZCodeWorkspaceRef;
+    workspace: ZodyWorkspaceRef;
   }> {
     for (const active of activeClientsByWorkspaceKey.values()) {
       if (!isLocalActiveWorkspaceClient(active.workspace)) {
@@ -2923,8 +2923,8 @@ export function createZCodeAgentService(
   // 五个 workflows/* 方法的载体：带 workspace 就直通（项目档，或 GUI 项目组里明说 scope 的动作），
   // 只给 `scope:"global"` 时交给 services 自选本机载体。
   async function resolveSavedWorkflowCarrier(
-    params: ZCodeAgentSavedWorkflowTarget,
-  ): Promise<{ client: ZCodeProtocolClient; workspace: ZCodeWorkspaceRef }> {
+    params: ZodyAgentSavedWorkflowTarget,
+  ): Promise<{ client: ZCodeProtocolClient; workspace: ZodyWorkspaceRef }> {
     if (savedWorkflowTargetHasWorkspace(params)) {
       return { client: await getReadOnlyClient(params), workspace: buildWorkspaceRef(params) };
     }
@@ -3099,7 +3099,7 @@ export function createZCodeAgentService(
   }
 
   async function buildConversationCommandEnvelope(
-    params: ZCodeAgentConversationCommandParams,
+    params: ZodyAgentConversationCommandParams,
   ): Promise<CommandEnvelope> {
     const envelope = params.envelope;
     if (envelope.type === "createSession") {
@@ -3163,7 +3163,7 @@ export function createZCodeAgentService(
     hasActiveCuaOperationTurn(): boolean {
       return cuaOperationTurnTracker?.hasActiveTurn() ?? false;
     },
-    async initialize(params: ZCodeAgentWorkspaceTarget): Promise<ZCodeAgentInitializeResult> {
+    async initialize(params: ZodyAgentWorkspaceTarget): Promise<ZodyAgentInitializeResult> {
       const workspaceKey = resolveWorkspaceKey(params);
       const startedAt = Date.now();
       logger.info(undefined, "开始初始化 ZCode agent", {
@@ -3222,8 +3222,8 @@ export function createZCodeAgentService(
       );
     },
 
-    async syncAppRuntimePreferences(preferences: ZCodeAgentAppRuntimePreferences): Promise<void> {
-      const normalizedPreferences: ZCodeAgentAppRuntimePreferences = {
+    async syncAppRuntimePreferences(preferences: ZodyAgentAppRuntimePreferences): Promise<void> {
+      const normalizedPreferences: ZodyAgentAppRuntimePreferences = {
         ...preferences,
         modelIoFullRetentionEnabled: preferences.modelIoFullRetentionEnabled === true,
       };
@@ -3240,13 +3240,13 @@ export function createZCodeAgentService(
       );
     },
 
-    async getWorkspaceRuntimeIdentity(params: ZCodeAgentWorkspaceTarget) {
+    async getWorkspaceRuntimeIdentity(params: ZodyAgentWorkspaceTarget) {
       // 查询 runtime identity 只能观察现有进程，不能把 dormant workspace 变成活动进程。
       await getReadOnlyClient(params, "existing-only");
       return await processManager.getRuntimeIdentity(params);
     },
 
-    async createSession(params: ZCodeAgentCreateSessionParams) {
+    async createSession(params: ZodyAgentCreateSessionParams) {
       const startedAt = Date.now();
       const client = await getClient(params);
       await ensureAccountProviderConfigSynced({
@@ -3357,7 +3357,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async resumeSession(params: ZCodeAgentResumeSessionParams) {
+    async resumeSession(params: ZodyAgentResumeSessionParams) {
       const startedAt = Date.now();
       const client = await getClient(params);
       await ensureAccountProviderConfigSynced({
@@ -3431,7 +3431,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async listSessions(params: ZCodeAgentListSessionsParams) {
+    async listSessions(params: ZodyAgentListSessionsParams) {
       const client = await getReadOnlyClient(params, params.runtimePolicy);
       const result = await client.request(
         zcodeProtocolMethods.sessionList,
@@ -3454,7 +3454,7 @@ export function createZCodeAgentService(
       return result.sessions;
     },
 
-    async listSessionSubagents(params: ZCodeAgentListSessionSubagentsParams) {
+    async listSessionSubagents(params: ZodyAgentListSessionSubagentsParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.sessionSubagents,
@@ -3467,7 +3467,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async getAppUsageStats(params: ZCodeAgentAppUsageParams) {
+    async getAppUsageStats(params: ZodyAgentAppUsageParams) {
       // usage 表位于全局 session 库；复用任意已连接的 workspace client 即可拿到全应用范围数据。
       const active = activeClientsByWorkspaceKey.values().next().value;
       if (!active) {
@@ -3482,7 +3482,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async getTaskTokenUsage(params: ZCodeAgentTaskTokenUsageParams) {
+    async getTaskTokenUsage(params: ZodyAgentTaskTokenUsageParams) {
       const client = await getReadOnlyClient(params);
       // session/usage → v4/conversation/usage（同上；task 是 UI 投影概念，
       // v4 名字空间落位 conversation）。
@@ -3493,7 +3493,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async readSession(params: ZCodeAgentReadSessionParams) {
+    async readSession(params: ZodyAgentReadSessionParams) {
       const client = await getReadOnlyClient(params, params.runtimePolicy);
       // task-index 为补正文索引调用 readSession 时，默认策略会在 runtime
       // 已被回收后重新拉起 Agent；这条观察路径不应改变 session 生命周期。只有显式
@@ -3520,7 +3520,7 @@ export function createZCodeAgentService(
       return snapshot;
     },
 
-    async readSessionMessages(params: ZCodeAgentReadSessionMessagesParams) {
+    async readSessionMessages(params: ZodyAgentReadSessionMessagesParams) {
       const client = await getReadOnlyClient(params);
       const result = await client.request(
         zcodeProtocolMethods.sessionMessages,
@@ -3543,7 +3543,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async readSessionEvents(params: ZCodeAgentReadSessionEventsParams) {
+    async readSessionEvents(params: ZodyAgentReadSessionEventsParams) {
       const client = await getReadOnlyClient(params);
       const result = await client.request(
         zcodeProtocolMethods.sessionEvents,
@@ -3557,14 +3557,14 @@ export function createZCodeAgentService(
       return result.events;
     },
 
-    async readWorkspacePresentation(params: ZCodeAgentReadWorkspacePresentationParams) {
+    async readWorkspacePresentation(params: ZodyAgentReadWorkspacePresentationParams) {
       const startedAt = Date.now();
       logger.info(undefined, "开始请求 ZCode Protocol workspace/readPresentation", {
         workspaceKey: resolveWorkspaceKey(params),
         workspacePath: params.workspacePath,
       });
       try {
-        let presentation: ZCodeWorkspacePresentation | undefined;
+        let presentation: ZodyWorkspacePresentation | undefined;
         for (let attempt = 0; attempt < 2; attempt += 1) {
           const client = await getReadOnlyClient(params);
           try {
@@ -3623,7 +3623,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async grantWorkspaceHookTrust(params: ZCodeAgentGrantWorkspaceHookTrustParams) {
+    async grantWorkspaceHookTrust(params: ZodyAgentGrantWorkspaceHookTrustParams) {
       // 没有 task 时仍允许显式预信任，但只启动 read-only Agent 控制面；不能为了
       // Settings 操作伪造 session，也不能要求 provider/model 已就绪。
       const client = await getReadOnlyClient(params);
@@ -3638,7 +3638,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async listMcpServerStatuses(params: ZCodeAgentListMcpServerStatusesParams) {
+    async listMcpServerStatuses(params: ZodyAgentListMcpServerStatusesParams) {
       const requestMcpList = async (options?: { omitMcpServers?: boolean; omitMode?: boolean }) => {
         const client = await getMcpStatusClient();
         return client.request(
@@ -3695,7 +3695,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async listPlugins(params: ZCodeAgentPluginViewParams) {
+    async listPlugins(params: ZodyAgentPluginViewParams) {
       const requestPluginsList = async () => {
         const client = await getPluginManagementClient();
         // plugins/list 只读取本地 plugin metadata，与 mcp/list 一样走默认协议超时，
@@ -3727,7 +3727,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async getPluginReferenceCatalog(params: ZCodeAgentPluginReferenceCatalogParams) {
+    async getPluginReferenceCatalog(params: ZodyAgentPluginReferenceCatalogParams) {
       // Plugin 引用 catalog 必须打到持有 session 记录的 workspace agent client
       // （getReadOnlyClient 优先复用 active client），不能走独立 plugin management 进程——
       // 那个进程没有任何 session，session-owned catalog 会永远查不到。
@@ -3738,7 +3738,7 @@ export function createZCodeAgentService(
       });
     },
 
-    async getSkillReferenceCatalog(params: ZCodeAgentSkillReferenceCatalogParams) {
+    async getSkillReferenceCatalog(params: ZodyAgentSkillReferenceCatalogParams) {
       // 与 Plugin 引用一样，Session 快照只存在于 workspace agent 进程；独立管理进程
       // 没有 resident Session，不能作为对话 authority。
       const client = await getReadOnlyClient(params);
@@ -3813,7 +3813,7 @@ export function createZCodeAgentService(
         zcodeMcpUiCloseInstanceResultSchema,
       );
     },
-    async readMcpResource(params: ZCodeAgentReadMcpResourceParams) {
+    async readMcpResource(params: ZodyAgentReadMcpResourceParams) {
       // 与 Skill / Plugin 引用一样，session 冻结 catalog 只存在于 workspace agent 进程。
       const client = await getReadOnlyClient(params);
       return client.request(
@@ -3863,7 +3863,7 @@ export function createZCodeAgentService(
         zcodeMcpUiCancelCallResultSchema,
       );
     },
-    async callMcpToolForUi(params: ZCodeAgentCallMcpToolForUiParams) {
+    async callMcpToolForUi(params: ZodyAgentCallMcpToolForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiCallTool,
@@ -3881,7 +3881,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async cancelMcpToolCallForUi(params: ZCodeAgentCancelMcpToolCallForUiParams) {
+    async cancelMcpToolCallForUi(params: ZodyAgentCancelMcpToolCallForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiCancelCall,
@@ -3897,7 +3897,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async readMcpResourceForUi(params: ZCodeAgentReadMcpResourceForUiParams) {
+    async readMcpResourceForUi(params: ZodyAgentReadMcpResourceForUiParams) {
       // 与 callMcpToolForUi 同一进程：归属（pluginId ↔ serverName）、mimeType 白名单与 8 MiB 上限都在 agent 侧 fail closed。
       const client = await getReadOnlyClient(params);
       return client.request(
@@ -3914,7 +3914,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async listMcpResourcesForUi(params: ZCodeAgentListMcpResourcesForUiParams) {
+    async listMcpResourcesForUi(params: ZodyAgentListMcpResourcesForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiListResources,
@@ -3930,7 +3930,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async listMcpResourceTemplatesForUi(params: ZCodeAgentListMcpResourcesForUiParams) {
+    async listMcpResourceTemplatesForUi(params: ZodyAgentListMcpResourcesForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiListResourceTemplates,
@@ -3946,7 +3946,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async subscribeMcpResourceForUi(params: ZCodeAgentMcpResourceSubscriptionForUiParams) {
+    async subscribeMcpResourceForUi(params: ZodyAgentMcpResourceSubscriptionForUiParams) {
       // 订阅登记在 agent 侧（按 server / uri 引用计数并随重连重放）；host 只转发身份三元组。
       const client = await getReadOnlyClient(params);
       await client.request(
@@ -3965,7 +3965,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async unsubscribeMcpResourceForUi(params: ZCodeAgentMcpResourceSubscriptionForUiParams) {
+    async unsubscribeMcpResourceForUi(params: ZodyAgentMcpResourceSubscriptionForUiParams) {
       const client = await getReadOnlyClient(params);
       await client.request(
         zcodeProtocolMethods.mcpUiUnsubscribeResource,
@@ -3983,7 +3983,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async registerAppToolsForUi(params: ZCodeAgentRegisterAppToolsForUiParams) {
+    async registerAppToolsForUi(params: ZodyAgentRegisterAppToolsForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiRegisterAppTools,
@@ -4001,7 +4001,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async unregisterAppToolsForUi(params: ZCodeAgentAppToolInstanceForUiParams) {
+    async unregisterAppToolsForUi(params: ZodyAgentAppToolInstanceForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiUnregisterAppTools,
@@ -4018,7 +4018,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async claimAppToolCallForUi(params: ZCodeAgentAppToolCallForUiParams) {
+    async claimAppToolCallForUi(params: ZodyAgentAppToolCallForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiClaimAppToolCall,
@@ -4036,7 +4036,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async resolveAppToolCallForUi(params: ZCodeAgentResolveAppToolCallForUiParams) {
+    async resolveAppToolCallForUi(params: ZodyAgentResolveAppToolCallForUiParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.mcpUiResolveAppToolCall,
@@ -4056,7 +4056,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async listPluginUiSurfaces(params: ZCodeAgentWorkspaceTarget) {
+    async listPluginUiSurfaces(params: ZodyAgentWorkspaceTarget) {
       // 面板只在已有会话时可打开，此时 workspace agent 必然存在；走 read-only client 读它解析好的清单，
       // 不用独立插件管理进程（那边没有本 workspace 的启停状态上下文，与 mcp/readResource 同理）。
       const client = await getReadOnlyClient(params);
@@ -4071,7 +4071,7 @@ export function createZCodeAgentService(
     // workspace agent client 路径；文件在 workspace 里，远程 workspace 就在远端进程里扫。
     // 全局档：载体由 resolveSavedWorkflowCarrier 选，
     // `scope` 只在有定义时下推。
-    async listSavedWorkflows(params: ZCodeAgentListSavedWorkflowsParams) {
+    async listSavedWorkflows(params: ZodyAgentListSavedWorkflowsParams) {
       const { client, workspace } = await resolveSavedWorkflowCarrier(params);
       return client.request(
         zcodeProtocolMethods.workflowsList,
@@ -4080,7 +4080,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async getSavedWorkflow(params: ZCodeAgentGetSavedWorkflowParams) {
+    async getSavedWorkflow(params: ZodyAgentGetSavedWorkflowParams) {
       const { client, workspace } = await resolveSavedWorkflowCarrier(params);
       return client.request(
         zcodeProtocolMethods.workflowsGet,
@@ -4089,7 +4089,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async updateSavedWorkflowMeta(params: ZCodeAgentUpdateSavedWorkflowMetaParams) {
+    async updateSavedWorkflowMeta(params: ZodyAgentUpdateSavedWorkflowMetaParams) {
       const { client, workspace } = await resolveSavedWorkflowCarrier(params);
       return client.request(
         zcodeProtocolMethods.workflowsUpdateMeta,
@@ -4098,7 +4098,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async deleteSavedWorkflow(params: ZCodeAgentDeleteSavedWorkflowParams) {
+    async deleteSavedWorkflow(params: ZodyAgentDeleteSavedWorkflowParams) {
       const { client, workspace } = await resolveSavedWorkflowCarrier(params);
       return client.request(
         zcodeProtocolMethods.workflowsDelete,
@@ -4107,7 +4107,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async listSavedWorkflowRuns(params: ZCodeAgentListSavedWorkflowRunsParams) {
+    async listSavedWorkflowRuns(params: ZodyAgentListSavedWorkflowRunsParams) {
       const { client, workspace } = await resolveSavedWorkflowCarrier(params);
       return client.request(
         zcodeProtocolMethods.workflowsRuns,
@@ -4124,7 +4124,7 @@ export function createZCodeAgentService(
     // 把全局档搬回项目档（只此一向）：
     // `workspace` 必带，既是载体又是目标项目（协议处理器据它算项目根），因此走
     // getReadOnlyClient(params) 直通，不经全局载体选择。
-    async moveSavedWorkflow(params: ZCodeAgentMoveSavedWorkflowParams) {
+    async moveSavedWorkflow(params: ZodyAgentMoveSavedWorkflowParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.workflowsMove,
@@ -4136,7 +4136,7 @@ export function createZCodeAgentService(
     // 完成卡的「直接保存」（docs/dynamic-workflow/transcript-and-notifications.md）：必须打到
     // **这次 run 所属 workspace** 的 agent client——脚本从那个进程的 journal 里读，全局档也一样
     // （落点由 agent 按 scope 算，与载体无关）。因此走 getReadOnlyClient 直通，不经全局载体选择。
-    async saveSavedWorkflowFromRun(params: ZCodeAgentSaveSavedWorkflowFromRunParams) {
+    async saveSavedWorkflowFromRun(params: ZodyAgentSaveSavedWorkflowFromRunParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.workflowsSave,
@@ -4152,7 +4152,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async findSavedWorkflowForRun(params: ZCodeAgentFindSavedWorkflowForRunParams) {
+    async findSavedWorkflowForRun(params: ZodyAgentFindSavedWorkflowForRunParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         zcodeProtocolMethods.workflowsForRun,
@@ -4165,7 +4165,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async resolveSuggestedPluginReference(params: ZCodeAgentResolveSuggestedPluginReferenceParams) {
+    async resolveSuggestedPluginReference(params: ZodyAgentResolveSuggestedPluginReferenceParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsResolveSuggestedReference,
@@ -4193,7 +4193,7 @@ export function createZCodeAgentService(
         );
       return Promise.all(
         managed.map(async (runtime) => {
-          let children: ZCodeProcessChildProcess[] = [];
+          let children: ZodyProcessChildProcess[] = [];
           try {
             const result = await runtime.client.request(
               zcodeProtocolMethods.processChildProcesses,
@@ -4216,7 +4216,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async getPluginsOverview(params: ZCodeAgentPluginViewParams) {
+    async getPluginsOverview(params: ZodyAgentPluginViewParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsOverview,
@@ -4229,7 +4229,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async addPluginMarketplace(params: ZCodeAgentAddPluginMarketplaceParams) {
+    async addPluginMarketplace(params: ZodyAgentAddPluginMarketplaceParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsMarketplaceAdd,
@@ -4244,7 +4244,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async removePluginMarketplace(params: ZCodeAgentRemovePluginMarketplaceParams) {
+    async removePluginMarketplace(params: ZodyAgentRemovePluginMarketplaceParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsMarketplaceRemove,
@@ -4257,7 +4257,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async updatePluginMarketplace(params: ZCodeAgentUpdatePluginMarketplaceParams) {
+    async updatePluginMarketplace(params: ZodyAgentUpdatePluginMarketplaceParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsMarketplaceUpdate,
@@ -4271,7 +4271,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async installPlugin(params: ZCodeAgentInstallPluginParams) {
+    async installPlugin(params: ZodyAgentInstallPluginParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsInstall,
@@ -4288,7 +4288,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async cancelPluginOperation(params: ZCodeAgentCancelPluginOperationParams) {
+    async cancelPluginOperation(params: ZodyAgentCancelPluginOperationParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsCancelOperation,
@@ -4298,7 +4298,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async uninstallPlugin(params: ZCodeAgentUninstallPluginParams) {
+    async uninstallPlugin(params: ZodyAgentUninstallPluginParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsUninstall,
@@ -4314,7 +4314,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async updatePlugin(params: ZCodeAgentUpdatePluginParams) {
+    async updatePlugin(params: ZodyAgentUpdatePluginParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsUpdate,
@@ -4328,7 +4328,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async restoreBuiltinPlugin(params: ZCodeAgentRestoreBuiltinPluginParams) {
+    async restoreBuiltinPlugin(params: ZodyAgentRestoreBuiltinPluginParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsRestoreBuiltin,
@@ -4341,7 +4341,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async configurePlugin(params: ZCodeAgentConfigurePluginParams) {
+    async configurePlugin(params: ZodyAgentConfigurePluginParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsConfigure,
@@ -4358,7 +4358,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async resetPluginConfig(params: ZCodeAgentResetPluginConfigParams) {
+    async resetPluginConfig(params: ZodyAgentResetPluginConfigParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsResetConfig,
@@ -4372,7 +4372,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async validatePlugin(params: ZCodeAgentValidatePluginParams) {
+    async validatePlugin(params: ZodyAgentValidatePluginParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsValidate,
@@ -4387,7 +4387,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async describePlugin(params: ZCodeAgentDescribePluginParams) {
+    async describePlugin(params: ZodyAgentDescribePluginParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsDescribe,
@@ -4401,7 +4401,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async setPluginEnabled(params: ZCodeAgentSetPluginEnabledParams) {
+    async setPluginEnabled(params: ZodyAgentSetPluginEnabledParams) {
       const client = await getPluginManagementClient();
       return client.request(
         zcodeProtocolMethods.pluginsSetEnabled,
@@ -4417,7 +4417,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async listAutomations(params: ZCodeAgentWorkspaceTarget) {
+    async listAutomations(params: ZodyAgentWorkspaceTarget) {
       return automationService.list(params);
     },
 
@@ -4425,14 +4425,14 @@ export function createZCodeAgentService(
       return automationService.list();
     },
 
-    async createAutomation(params: ZCodeAgentCreateAutomationParams) {
+    async createAutomation(params: ZodyAgentCreateAutomationParams) {
       return automationService.create({
         title: params.title,
         cronExpr: params.cronExpr,
         relativeDelayMinutes: params.relativeDelayMinutes,
         prompt: params.prompt,
         modelSelection: params.modelSelection,
-        mode: params.mode as ZCodeTaskMode | undefined,
+        mode: params.mode as ZodyTaskMode | undefined,
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
         recurring: params.recurring ?? true,
@@ -4442,7 +4442,7 @@ export function createZCodeAgentService(
       });
     },
 
-    async updateAutomation(params: ZCodeAgentUpdateAutomationParams) {
+    async updateAutomation(params: ZodyAgentUpdateAutomationParams) {
       return automationService.update(
         params.automationId,
         {
@@ -4450,7 +4450,7 @@ export function createZCodeAgentService(
           cronExpr: params.cronExpr,
           prompt: params.prompt,
           modelSelection: params.modelSelection,
-          mode: params.mode === null ? null : (params.mode as ZCodeTaskMode | undefined),
+          mode: params.mode === null ? null : (params.mode as ZodyTaskMode | undefined),
           recurring: params.recurring,
           maxRuns: params.maxRuns,
           endAt: params.endAt,
@@ -4465,28 +4465,28 @@ export function createZCodeAgentService(
       );
     },
 
-    async deleteAutomation(params: ZCodeAgentAutomationIdParams) {
+    async deleteAutomation(params: ZodyAgentAutomationIdParams) {
       await automationService.delete(params.automationId, {
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
       });
     },
 
-    async setAutomationEnabled(params: ZCodeAgentSetAutomationEnabledParams) {
+    async setAutomationEnabled(params: ZodyAgentSetAutomationEnabledParams) {
       return automationService.setEnabled(params.automationId, params.enabled, {
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
       });
     },
 
-    async restartAutomation(params: ZCodeAgentAutomationIdParams) {
+    async restartAutomation(params: ZodyAgentAutomationIdParams) {
       return automationService.restart(params.automationId, {
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
       });
     },
 
-    async runAutomationNow(params: ZCodeAgentAutomationIdParams) {
+    async runAutomationNow(params: ZodyAgentAutomationIdParams) {
       const dispatch = options?.onAutomationManualRunRequested;
       if (!dispatch) {
         // runNow 会先写 manual run 并占用 single-flight claim；dispatcher
@@ -4506,21 +4506,21 @@ export function createZCodeAgentService(
       return { status: "queued" as const };
     },
 
-    async listAutomationRuns(params: ZCodeAgentAutomationIdParams) {
+    async listAutomationRuns(params: ZodyAgentAutomationIdParams) {
       return automationService.listRuns(params.automationId, {
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
       });
     },
 
-    async deleteAutomationRun(params: ZCodeAgentDeleteAutomationRunParams) {
+    async deleteAutomationRun(params: ZodyAgentDeleteAutomationRunParams) {
       return automationService.deleteRun(params.runId, {
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
       });
     },
 
-    async generateWorkspaceText(params: ZCodeAgentGenerateWorkspaceTextParams) {
+    async generateWorkspaceText(params: ZodyAgentGenerateWorkspaceTextParams) {
       const client = await getClient(params);
       // Worker 自己读取 ZCode Built-in / Personal Config；Host 只在执行前确保账号状态形成的
       // Account Config Overlay 已同步，避免新进程先按旧套餐状态创建 Model。
@@ -4577,7 +4577,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async testModelConnectivity(params: ZCodeAgentTestModelConnectivityParams) {
+    async testModelConnectivity(params: ZodyAgentTestModelConnectivityParams) {
       const client = await getClient(params);
       await ensureAccountProviderConfigSynced({
         client,
@@ -4595,7 +4595,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async sendPrompt(params: ZCodeAgentSendPromptParams) {
+    async sendPrompt(params: ZodyAgentSendPromptParams) {
       const startedAt = Date.now();
       const client = await getClient(params);
       const sessionTraceId = params.sessionTraceId?.trim() || getSessionTraceId(params);
@@ -4609,7 +4609,7 @@ export function createZCodeAgentService(
           ...(params.remoteSessionId ? { remoteSessionId: params.remoteSessionId } : {}),
           ...(params.clientMode ? { clientMode: params.clientMode } : {}),
         }));
-      const protocolParams: ZCodeAgentSendPromptParams = {
+      const protocolParams: ZodyAgentSendPromptParams = {
         ...params,
         ...(browserAmbientContext ? { browserAmbientContext } : {}),
       };
@@ -4671,7 +4671,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async compactSession(params: ZCodeAgentCompactParams) {
+    async compactSession(params: ZodyAgentCompactParams) {
       const startedAt = Date.now();
       const client = await getClient(params);
       const sessionTraceId = getSessionTraceId(params);
@@ -4713,7 +4713,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async goalSession(params: ZCodeAgentGoalParams) {
+    async goalSession(params: ZodyAgentGoalParams) {
       const startedAt = Date.now();
       const client = await getClient(params);
       logger.info(params.inputId, "开始请求 ZCode Protocol session/goal", {
@@ -4761,7 +4761,7 @@ export function createZCodeAgentService(
     },
 
     async closeSession(
-      params: ZCodeAgentSessionTarget & {
+      params: ZodyAgentSessionTarget & {
         expectedPersistence?: "deferred" | "immediate";
       },
     ): Promise<boolean> {
@@ -4780,7 +4780,7 @@ export function createZCodeAgentService(
       return result.closed ?? true;
     },
 
-    async setModel(params: ZCodeAgentSetModelParams) {
+    async setModel(params: ZodyAgentSetModelParams) {
       const startedAt = Date.now();
       const client = await getClient(params);
       logger.info(undefined, "开始请求 ZCode Protocol session/setModel", {
@@ -4824,7 +4824,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async setThoughtLevel(params: ZCodeAgentSetThoughtLevelParams) {
+    async setThoughtLevel(params: ZodyAgentSetThoughtLevelParams) {
       const client = await getClient(params);
       const snapshot = await client.request(
         zcodeProtocolMethods.sessionSetThoughtLevel,
@@ -4839,7 +4839,7 @@ export function createZCodeAgentService(
       return snapshot;
     },
 
-    async setMode(params: ZCodeAgentSetModeParams) {
+    async setMode(params: ZodyAgentSetModeParams) {
       const client = await getClient(params);
       return client.request(
         zcodeProtocolMethods.sessionSetMode,
@@ -4853,7 +4853,7 @@ export function createZCodeAgentService(
     },
 
     async respondSessionRuntimePreferences(
-      params: ZCodeAgentRespondSessionRuntimePreferencesParams,
+      params: ZodyAgentRespondSessionRuntimePreferencesParams,
     ): Promise<void> {
       const pending = takePendingSessionRuntimePreferences(params.requestId);
       if (!pending) {
@@ -4883,7 +4883,7 @@ export function createZCodeAgentService(
         });
         return;
       }
-      let preferences: ZCodeSessionRuntimePreferencesResult;
+      let preferences: ZodySessionRuntimePreferencesResult;
       try {
         preferences = zcodeSessionRuntimePreferencesResultSchema.parse(
           params.resolution.preferences,
@@ -4904,11 +4904,11 @@ export function createZCodeAgentService(
       logger.info(undefined, "运行时偏好响应已回传 Agent", responseContext);
     },
 
-    onDynamicWorkspaceProviderRuntimeHeadersCancelled(params: ZCodeAgentWorkspaceTarget) {
+    onDynamicWorkspaceProviderRuntimeHeadersCancelled(params: ZodyAgentWorkspaceTarget) {
       const key = resolveWorkspaceKey(params);
       let emitter = providerRuntimeHeadersCancelledEmitters.get(key);
       if (!emitter) {
-        emitter = new Emitter<ZCodeProviderRuntimeHeadersCancelled>();
+        emitter = new Emitter<ZodyProviderRuntimeHeadersCancelled>();
         providerRuntimeHeadersCancelledEmitters.set(key, emitter);
       }
       return emitter.event;
@@ -4925,7 +4925,7 @@ export function createZCodeAgentService(
     },
 
     async respondProviderRuntimeHeaders(
-      params: ZCodeAgentRespondProviderRuntimeHeadersParams,
+      params: ZodyAgentRespondProviderRuntimeHeadersParams,
     ): Promise<void> {
       const key = providerRuntimeHeadersRequestKey(params);
       const pending = pendingProviderRuntimeHeaders.get(key);
@@ -4977,7 +4977,7 @@ export function createZCodeAgentService(
       }
     },
 
-    onDynamicProviderRuntimeHeadersRequest(params: ZCodeAgentSessionTarget) {
+    onDynamicProviderRuntimeHeadersRequest(params: ZodyAgentSessionTarget) {
       const emitter = getSessionEmitter(params);
       return (listener) => {
         const disposable = emitter.event((event) => {
@@ -5000,7 +5000,7 @@ export function createZCodeAgentService(
       };
     },
 
-    onDynamicWorkspaceProviderRuntimeHeadersRequest(params: ZCodeAgentWorkspaceTarget) {
+    onDynamicWorkspaceProviderRuntimeHeadersRequest(params: ZodyAgentWorkspaceTarget) {
       const emitter = getProviderRuntimeHeadersWorkspaceEmitter(params);
       return (listener) => {
         const disposable = emitter.event((request) => {
@@ -5021,7 +5021,7 @@ export function createZCodeAgentService(
       };
     },
 
-    onDynamicSessionEvent(params: ZCodeAgentSessionSubscribeParams) {
+    onDynamicSessionEvent(params: ZodyAgentSessionSubscribeParams) {
       const emitter = getSessionEmitter(params);
       return (listener) => {
         // cancelled / retryTimer 的作用域是单个订阅者：调用方 dispose 时取消自己的重试，
@@ -5029,7 +5029,7 @@ export function createZCodeAgentService(
         let cancelled = false;
         let retryTimer: ReturnType<typeof setTimeout> | undefined;
         let subscriptionReady = false;
-        const pendingLiveEvents: ZCodeAgentServiceEvent[] = [];
+        const pendingLiveEvents: ZodyAgentServiceEvent[] = [];
         const deliveredEventIds = new Set<string>();
         const deliveredEventIdOrder: string[] = [];
         const eventCoalescer =
@@ -5040,7 +5040,7 @@ export function createZCodeAgentService(
               })
             : null;
 
-        const deliverToListener = (event: ZCodeAgentServiceEvent, recovered = false): void => {
+        const deliverToListener = (event: ZodyAgentServiceEvent, recovered = false): void => {
           if (cancelled) {
             return;
           }
@@ -5202,7 +5202,7 @@ export function createZCodeAgentService(
       clientHelloSchema.parse(rawClientHello);
     },
 
-    async setConnectionFlowStateV4(params: ZCodeAgentConnectionFlowParams) {
+    async setConnectionFlowStateV4(params: ZodyAgentConnectionFlowParams) {
       const trusted = readTrustedZCodeAgentV4Connection(params);
       if (!trusted) throw new Error("fault.connection.flowControlUntrusted");
       const client = await getReadOnlyClient(params);
@@ -5213,7 +5213,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async subscribeConversationV4(params: ZCodeAgentConversationSubscribeParams) {
+    async subscribeConversationV4(params: ZodyAgentConversationSubscribeParams) {
       const subscribeStartedAt = performance.now();
       const existingClient = processManager.getExistingClient(params);
       const cliProcessState: "reused" | "spawned" =
@@ -5310,15 +5310,15 @@ export function createZCodeAgentService(
       };
     },
 
-    async unsubscribeConversationV4(params: ZCodeAgentConversationUnsubscribeParams) {
+    async unsubscribeConversationV4(params: ZodyAgentConversationUnsubscribeParams) {
       await unsubscribeV4Route(params, "conversation/");
     },
 
-    async resyncConversationV4(params: ZCodeAgentConversationResyncParams) {
+    async resyncConversationV4(params: ZodyAgentConversationResyncParams) {
       return resyncV4Route(params, "conversation/");
     },
 
-    async sendConversationCommandV4(params: ZCodeAgentConversationCommandParams) {
+    async sendConversationCommandV4(params: ZodyAgentConversationCommandParams) {
       const client = await getClient(params);
       const planPayload = params.envelope.payload as {
         planEnabled?: boolean;
@@ -5399,7 +5399,7 @@ export function createZCodeAgentService(
       return ack;
     },
 
-    async queryConversationCommandsV4(params: ZCodeAgentCommandsQueryParams) {
+    async queryConversationCommandsV4(params: ZodyAgentCommandsQueryParams) {
       if (!readTrustedZCodeAgentV4Connection(params)) {
         throw new Error("fault.command.queryConnectionUntrusted");
       }
@@ -5411,7 +5411,7 @@ export function createZCodeAgentService(
       return client.request(V4_METHODS.commandsQuery, query, commandsQueryResultSchema);
     },
 
-    async attachmentBeginV4(params: ZCodeAgentAttachmentBeginParams) {
+    async attachmentBeginV4(params: ZodyAgentAttachmentBeginParams) {
       const trusted = readTrustedZCodeAgentV4Connection(params);
       if (!trusted) throw new Error("fault.attachment.connectionUntrusted");
       const client = await getClient(params);
@@ -5429,7 +5429,7 @@ export function createZCodeAgentService(
       return client.request(V4_METHODS.attachmentBegin, wireParams, v4AttachmentBeginResultSchema);
     },
 
-    async attachmentChunkV4(params: ZCodeAgentAttachmentChunkParams) {
+    async attachmentChunkV4(params: ZodyAgentAttachmentChunkParams) {
       const trusted = readTrustedZCodeAgentV4Connection(params);
       if (!trusted) throw new Error("fault.attachment.connectionUntrusted");
       const client = await getClient(params);
@@ -5444,7 +5444,7 @@ export function createZCodeAgentService(
       return client.request(V4_METHODS.attachmentChunk, wireParams, v4AttachmentChunkResultSchema);
     },
 
-    async attachmentCommitV4(params: ZCodeAgentAttachmentTerminalParams) {
+    async attachmentCommitV4(params: ZodyAgentAttachmentTerminalParams) {
       const trusted = readTrustedZCodeAgentV4Connection(params);
       if (!trusted) throw new Error("fault.attachment.connectionUntrusted");
       const client = await getClient(params);
@@ -5461,7 +5461,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async attachmentAbortV4(params: ZCodeAgentAttachmentTerminalParams) {
+    async attachmentAbortV4(params: ZodyAgentAttachmentTerminalParams) {
       const trusted = readTrustedZCodeAgentV4Connection(params);
       if (!trusted) throw new Error("fault.attachment.connectionUntrusted");
       const client = await getClient(params);
@@ -5474,7 +5474,7 @@ export function createZCodeAgentService(
       await client.request(V4_METHODS.attachmentAbort, wireParams, v4AttachmentAbortResultSchema);
     },
 
-    async attachmentReadV4(params: ZCodeAgentAttachmentReadParams) {
+    async attachmentReadV4(params: ZodyAgentAttachmentReadParams) {
       if (!readTrustedZCodeAgentV4Connection(params)) {
         throw new Error("fault.attachment.readConnectionUntrusted");
       }
@@ -5492,7 +5492,7 @@ export function createZCodeAgentService(
       return client.request(V4_METHODS.attachmentRead, wireParams, v4AttachmentReadResultSchema);
     },
 
-    async conversationAttachmentReadV4(params: ZCodeAgentConversationAttachmentReadParams) {
+    async conversationAttachmentReadV4(params: ZodyAgentConversationAttachmentReadParams) {
       if (!readTrustedZCodeAgentV4Connection(params)) {
         throw new ZCodeAttachmentFaultError(
           ZCODE_ATTACHMENT_FAULT_CODES.shareReadConnectionUntrusted,
@@ -5514,7 +5514,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async conversationAttachmentStatV4(params: ZCodeAgentConversationAttachmentStatParams) {
+    async conversationAttachmentStatV4(params: ZodyAgentConversationAttachmentStatParams) {
       if (!readTrustedZCodeAgentV4Connection(params)) {
         throw new ZCodeAttachmentFaultError(
           ZCODE_ATTACHMENT_FAULT_CODES.shareStatConnectionUntrusted,
@@ -5534,7 +5534,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async attachmentPreviewSourceV4(params: ZCodeAgentAttachmentPreviewSourceParams) {
+    async attachmentPreviewSourceV4(params: ZodyAgentAttachmentPreviewSourceParams) {
       const trusted = readTrustedZCodeAgentV4Connection(params);
       if (!trusted) throw new Error("fault.attachment.previewSourceConnectionUntrusted");
       if (trusted.clientMode !== "desktop-continuous" || params.remoteSessionId) {
@@ -5566,7 +5566,7 @@ export function createZCodeAgentService(
     },
 
     // 行分页：只读 query 透传（超时重发安全，无订阅状态）。
-    async conversationRowsRangeV4(params: ZCodeAgentConversationRowsRangeParams) {
+    async conversationRowsRangeV4(params: ZodyAgentConversationRowsRangeParams) {
       const trusted = readTrustedZCodeAgentV4Connection(params);
       if (!trusted) throw new Error("fault.conversation.rowsRangeConnectionUntrusted");
       const client = await getReadOnlyClient(params);
@@ -5583,7 +5583,7 @@ export function createZCodeAgentService(
     },
 
     // 只读计划目录沿现有 workspace attachment 透传，不建立新 runtime。
-    async conversationPlansV4(params: ZCodeAgentConversationPlansParams) {
+    async conversationPlansV4(params: ZodyAgentConversationPlansParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         V4_METHODS.conversationPlans,
@@ -5595,7 +5595,7 @@ export function createZCodeAgentService(
     // workflow run 事件日志：同样是只读 query，沿现有 workspace attachment 透传。
     // 分页发生在存储层（JournalStorePort.listEvents 带 afterSequence/limit），这里不切片；
     // 在 RPC 层切等于每翻一页把整条 journal 读进内存。
-    async conversationWorkflowRunEventsV4(params: ZCodeAgentConversationWorkflowRunEventsParams) {
+    async conversationWorkflowRunEventsV4(params: ZodyAgentConversationWorkflowRunEventsParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         V4_METHODS.conversationWorkflowRunEvents,
@@ -5610,7 +5610,7 @@ export function createZCodeAgentService(
     },
 
     // workflow run 枚举：journal-backed 的重启后发现面（workflowRuns 投影跨进程不存活）。
-    async conversationWorkflowRunsV4(params: ZCodeAgentConversationWorkflowRunsParams) {
+    async conversationWorkflowRunsV4(params: ZodyAgentConversationWorkflowRunsParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         V4_METHODS.conversationWorkflowRuns,
@@ -5626,7 +5626,7 @@ export function createZCodeAgentService(
     // ⚠ 术语：artifact = 脚本发布给用户看的产出，不是 run 的顶层返回值。
     // 三条与 plans / workflowRunEvents 同族：只读、无状态、超时重发安全，走只读客户端。
     async conversationWorkflowRunArtifactsV4(
-      params: ZCodeAgentConversationWorkflowRunArtifactsParams,
+      params: ZodyAgentConversationWorkflowRunArtifactsParams,
     ) {
       const client = await getReadOnlyClient(params);
       return client.request(
@@ -5639,7 +5639,7 @@ export function createZCodeAgentService(
     // 看板取数：limit 的缺省与钳制在 CLI 网关侧，这里只透传——两处各钳一次，
     // 同一个 limit 迟早会在两层上得到不同的页大小。
     async conversationWorkflowRunArtifactDataV4(
-      params: ZCodeAgentConversationWorkflowRunArtifactDataParams,
+      params: ZodyAgentConversationWorkflowRunArtifactDataParams,
     ) {
       const client = await getReadOnlyClient(params);
       return client.request(
@@ -5658,7 +5658,7 @@ export function createZCodeAgentService(
     // 字节：一次一块（≤ 512 KiB），拼接归 renderer 的 hook。授权全在 CLI 侧——
     // 这里传下去的 id 只用于在 journal 里查行，绝不成为路径。
     async conversationWorkflowRunArtifactReadV4(
-      params: ZCodeAgentConversationWorkflowRunArtifactReadParams,
+      params: ZodyAgentConversationWorkflowRunArtifactReadParams,
     ) {
       const client = await getReadOnlyClient(params);
       return client.request(
@@ -5678,7 +5678,7 @@ export function createZCodeAgentService(
     // dwf 工作区 transcript 的两条读面。同族：
     // 只读、无状态、超时重发安全，走只读客户端。maxBytes 的缺省与钳制在 CLI 网关侧。
     async conversationWorkflowRunWorkspaceV4(
-      params: ZCodeAgentConversationWorkflowRunWorkspaceParams,
+      params: ZodyAgentConversationWorkflowRunWorkspaceParams,
     ) {
       const client = await getReadOnlyClient(params);
       return client.request(
@@ -5689,7 +5689,7 @@ export function createZCodeAgentService(
     },
 
     async conversationWorkflowRunNodeResultV4(
-      params: ZCodeAgentConversationWorkflowRunNodeResultParams,
+      params: ZodyAgentConversationWorkflowRunNodeResultParams,
     ) {
       const client = await getReadOnlyClient(params);
       return client.request(
@@ -5705,7 +5705,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async backgroundBashOutputV4(params: ZCodeAgentBackgroundBashOutputParams) {
+    async backgroundBashOutputV4(params: ZodyAgentBackgroundBashOutputParams) {
       if (!readTrustedZCodeAgentV4Connection(params))
         throw new Error("fault.bashOutput.connectionUntrusted");
       const wireParams = v4BackgroundBashOutputParamsSchema.parse({
@@ -5733,7 +5733,7 @@ export function createZCodeAgentService(
       }
     },
 
-    async conversationFileChangesV4(params: ZCodeAgentConversationFileChangesParams) {
+    async conversationFileChangesV4(params: ZodyAgentConversationFileChangesParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         V4_METHODS.conversationFileChanges,
@@ -5747,7 +5747,7 @@ export function createZCodeAgentService(
       );
     },
 
-    async conversationFileRewindPreviewV4(params: ZCodeAgentConversationFileRewindPreviewParams) {
+    async conversationFileRewindPreviewV4(params: ZodyAgentConversationFileRewindPreviewParams) {
       const client = await getReadOnlyClient(params);
       return client.request(
         V4_METHODS.conversationFileRewindPreview,
@@ -5761,17 +5761,17 @@ export function createZCodeAgentService(
       );
     },
 
-    onDynamicConversationFrame(params: ZCodeAgentWorkspaceTarget) {
+    onDynamicConversationFrame(params: ZodyAgentWorkspaceTarget) {
       return getConversationFrameEmitter(params).event;
     },
 
-    onDynamicLocalTtftFacts(params: ZCodeAgentWorkspaceTarget) {
+    onDynamicLocalTtftFacts(params: ZodyAgentWorkspaceTarget) {
       return (listener: (facts: LocalTtftFacts) => void) =>
         localTtftFactsEmitter.event((event) => {
           if (event.workspaceKey === resolveWorkspaceKey(params)) listener(event.facts);
         });
     },
-    onDynamicConversationTelemetryFact(params: ZCodeAgentWorkspaceTarget) {
+    onDynamicConversationTelemetryFact(params: ZodyAgentWorkspaceTarget) {
       return getConversationTelemetryFactEmitter(params).event;
     },
 
@@ -5782,7 +5782,7 @@ export function createZCodeAgentService(
     // ── sessions-index 通道（列表活性）：复用 conversationSubscribe RPC，
     // 按 topic 前缀由 CLI server 分派 ──
 
-    async subscribeSessionsIndexV4(params: ZCodeAgentSessionsIndexSubscribeParams) {
+    async subscribeSessionsIndexV4(params: ZodyAgentSessionsIndexSubscribeParams) {
       // 侧栏会同时登记所有 restored workspace。被动订阅若使用启动型 client，
       // workspace 数量会直接放大成 CLI 数量；existing-only 缺 runtime 时只进入 dormant。
       const client = await getReadOnlyClient(params, params.runtimePolicy);
@@ -5835,22 +5835,22 @@ export function createZCodeAgentService(
       return result;
     },
 
-    async unsubscribeSessionsIndexV4(params: ZCodeAgentConversationUnsubscribeParams) {
+    async unsubscribeSessionsIndexV4(params: ZodyAgentConversationUnsubscribeParams) {
       await unsubscribeV4Route(params, "sessions-index/");
     },
 
-    async resyncSessionsIndexV4(params: ZCodeAgentConversationResyncParams) {
+    async resyncSessionsIndexV4(params: ZodyAgentConversationResyncParams) {
       return resyncV4Route(params, "sessions-index/");
     },
 
-    onDynamicSessionsIndexFrame(params: ZCodeAgentWorkspaceTarget) {
+    onDynamicSessionsIndexFrame(params: ZodyAgentWorkspaceTarget) {
       return getSessionsIndexFrameEmitter(params).event;
     },
 
     // ── workspace-config 通道（配置目录活性）：复用 conversationSubscribe RPC，
     // 按 topic 前缀由 CLI server 分派 ──
 
-    async subscribeWorkspaceConfigV4(params: ZCodeAgentWorkspaceConfigSubscribeParams) {
+    async subscribeWorkspaceConfigV4(params: ZodyAgentWorkspaceConfigSubscribeParams) {
       const client = await getReadOnlyClient(params, params.runtimePolicy);
       const connection = resolveV4Connection(params, v4ConnectionIdFor(params.subscriberScope));
       const topic = workspaceConfigTopic(resolveWorkspaceKey(params));
@@ -5874,15 +5874,15 @@ export function createZCodeAgentService(
       return result;
     },
 
-    async unsubscribeWorkspaceConfigV4(params: ZCodeAgentConversationUnsubscribeParams) {
+    async unsubscribeWorkspaceConfigV4(params: ZodyAgentConversationUnsubscribeParams) {
       await unsubscribeV4Route(params, "workspace-config/");
     },
 
-    async resyncWorkspaceConfigV4(params: ZCodeAgentConversationResyncParams) {
+    async resyncWorkspaceConfigV4(params: ZodyAgentConversationResyncParams) {
       return resyncV4Route(params, "workspace-config/");
     },
 
-    onDynamicWorkspaceConfigFrame(params: ZCodeAgentWorkspaceTarget) {
+    onDynamicWorkspaceConfigFrame(params: ZodyAgentWorkspaceTarget) {
       return getWorkspaceConfigFrameEmitter(params).event;
     },
 

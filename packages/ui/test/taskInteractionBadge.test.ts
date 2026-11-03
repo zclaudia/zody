@@ -1,14 +1,14 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskPendingInteraction } from "@zody/shared";
+import type { ZodyTaskPendingInteraction } from "@zody/shared";
 import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
   TaskInteractionBadge,
   getTaskInteractionBadgePresentation,
 } from "../src/TaskInteractionBadge.js";
 
-const countdown: ZCodeTaskPendingInteraction = {
+const countdown: ZodyTaskPendingInteraction = {
   interactionId: "ask-1",
   kind: "userInput",
   toolName: "AskUserQuestion",

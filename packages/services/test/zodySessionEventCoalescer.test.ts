@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeSessionEvent } from "@zody/shared";
-import type { ZCodeAgentServiceEvent } from "../src/zody-agent/zodyAgent.js";
+import type { ZodySessionEvent } from "@zody/shared";
+import type { ZodyAgentServiceEvent } from "../src/zody-agent/zodyAgent.js";
 import { createBackgroundSessionEventCoalescer } from "../src/zody-agent/zodySessionEventCoalescer.js";
 
 function sessionEvent(
-  type: ZCodeSessionEvent["type"],
+  type: ZodySessionEvent["type"],
   payload: Record<string, unknown>,
-  overrides: Partial<ZCodeSessionEvent> = {},
-): ZCodeAgentServiceEvent {
+  overrides: Partial<ZodySessionEvent> = {},
+): ZodyAgentServiceEvent {
   return {
     type: "session.event",
     event: {
@@ -19,11 +19,11 @@ function sessionEvent(
       traceId: "trace-1",
       payload,
       ...overrides,
-    } as ZCodeSessionEvent,
+    } as ZodySessionEvent,
   };
 }
 
-function textDelta(delta: string, overrides: Partial<ZCodeSessionEvent> = {}) {
+function textDelta(delta: string, overrides: Partial<ZodySessionEvent> = {}) {
   return sessionEvent(
     "model.streaming",
     {
@@ -62,7 +62,7 @@ afterEach(() => {
 
 describe("createBackgroundSessionEventCoalescer", () => {
   it("coalesces model streaming deltas for background subscribers", () => {
-    const emitted: ZCodeAgentServiceEvent[] = [];
+    const emitted: ZodyAgentServiceEvent[] = [];
     const coalescer = createBackgroundSessionEventCoalescer({
       emit: (event) => emitted.push(event),
       flushDelayMs: 100,
@@ -82,7 +82,7 @@ describe("createBackgroundSessionEventCoalescer", () => {
   });
 
   it("flushes pending deltas before structural session events", () => {
-    const emitted: ZCodeAgentServiceEvent[] = [];
+    const emitted: ZodyAgentServiceEvent[] = [];
     const coalescer = createBackgroundSessionEventCoalescer({
       emit: (event) => emitted.push(event),
       flushDelayMs: 100,
@@ -100,7 +100,7 @@ describe("createBackgroundSessionEventCoalescer", () => {
   });
 
   it("flushes pending deltas when a background subscriber is disposed", () => {
-    const emitted: ZCodeAgentServiceEvent[] = [];
+    const emitted: ZodyAgentServiceEvent[] = [];
     const coalescer = createBackgroundSessionEventCoalescer({
       emit: (event) => emitted.push(event),
       flushDelayMs: 100,
@@ -118,7 +118,7 @@ describe("createBackgroundSessionEventCoalescer", () => {
 
   it("keeps only the latest tool progress event in one background window", () => {
     vi.useFakeTimers();
-    const emitted: ZCodeAgentServiceEvent[] = [];
+    const emitted: ZodyAgentServiceEvent[] = [];
     const coalescer = createBackgroundSessionEventCoalescer({
       emit: (event) => emitted.push(event),
       flushDelayMs: 100,
@@ -138,7 +138,7 @@ describe("createBackgroundSessionEventCoalescer", () => {
   });
 
   it("flushes pending events before snapshots", () => {
-    const emitted: ZCodeAgentServiceEvent[] = [];
+    const emitted: ZodyAgentServiceEvent[] = [];
     const coalescer = createBackgroundSessionEventCoalescer({
       emit: (event) => emitted.push(event),
       flushDelayMs: 100,
@@ -157,7 +157,7 @@ describe("createBackgroundSessionEventCoalescer", () => {
         projection: {},
         messages: [],
       },
-    } as ZCodeAgentServiceEvent;
+    } as ZodyAgentServiceEvent;
 
     coalescer.accept(textDelta("a"));
     coalescer.accept(snapshot);

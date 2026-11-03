@@ -1,34 +1,34 @@
-import type { WorkspacePurpose, ZCodeTaskMeta } from "@zody/shared";
+import type { WorkspacePurpose, ZodyTaskMeta } from "@zody/shared";
 
-export type ZCodeTaskListKind = "pinned" | "archived" | "timeline" | "active";
-export type ZCodeTaskListSortBy = "created" | "updated";
+export type ZodyTaskListKind = "pinned" | "archived" | "timeline" | "active";
+export type ZodyTaskListSortBy = "created" | "updated";
 
-export interface ZCodeTaskListWorkspaceScope {
+export interface ZodyTaskListWorkspaceScope {
   workspacePath: string;
   workspaceIdentity?: string;
   workspacePurpose?: WorkspacePurpose;
 }
 
-export interface ZCodeTaskListQuery {
-  kind: ZCodeTaskListKind;
-  workspaceScopes: ZCodeTaskListWorkspaceScope[];
-  sortBy: ZCodeTaskListSortBy;
+export interface ZodyTaskListQuery {
+  kind: ZodyTaskListKind;
+  workspaceScopes: ZodyTaskListWorkspaceScope[];
+  sortBy: ZodyTaskListSortBy;
   search?: string;
   limit?: number;
 }
 
-export type ZCodeTaskListItem = ZCodeTaskMeta & {
+export type ZodyTaskListItem = ZodyTaskMeta & {
   searchSnippet?: string;
   searchSnippets?: string[];
 };
 
-export interface ZCodeTaskListResult {
-  items: ZCodeTaskListItem[];
+export interface ZodyTaskListResult {
+  items: ZodyTaskListItem[];
   total: number;
   hasMore: boolean;
 }
 
-export type ZCodeTaskGroupColor =
+export type ZodyTaskGroupColor =
   | "gray"
   | "red"
   | "orange"
@@ -37,43 +37,43 @@ export type ZCodeTaskGroupColor =
   | "blue"
   | "purple";
 
-export interface ZCodeTaskGroup {
+export interface ZodyTaskGroup {
   id: string;
   title: string;
-  color: ZCodeTaskGroupColor;
+  color: ZodyTaskGroupColor;
   createdAt: number;
   updatedAt: number;
 }
 
-export interface ZCodeGroupedTaskRef {
+export interface ZodyGroupedTaskRef {
   workspacePath: string;
   workspaceIdentity?: string;
   taskId: string;
 }
 
-export type ZCodeGroupedTaskViewTopLevelNodeRef =
+export type ZodyGroupedTaskViewTopLevelNodeRef =
   | { type: "group"; groupId: string }
-  | { type: "task"; task: ZCodeGroupedTaskRef };
+  | { type: "task"; task: ZodyGroupedTaskRef };
 
-export type ZCodeGroupedTaskViewNode =
+export type ZodyGroupedTaskViewNode =
   | {
       type: "group";
-      group: ZCodeTaskGroup;
-      tasks: ZCodeTaskListItem[];
+      group: ZodyTaskGroup;
+      tasks: ZodyTaskListItem[];
       sortOrder?: number;
     }
   | {
       type: "task";
-      task: ZCodeTaskListItem;
+      task: ZodyTaskListItem;
       sortOrder?: number;
     };
 
-export interface ZCodeGroupedTaskView {
-  nodes: ZCodeGroupedTaskViewNode[];
+export interface ZodyGroupedTaskView {
+  nodes: ZodyGroupedTaskViewNode[];
 }
 
-export interface ZCodeGroupedTaskViewQuery {
-  workspaceScopes: ZCodeTaskListWorkspaceScope[];
+export interface ZodyGroupedTaskViewQuery {
+  workspaceScopes: ZodyTaskListWorkspaceScope[];
   includeAllWorkspaces?: boolean;
 }
 
@@ -83,7 +83,7 @@ export interface ZCodeGroupedTaskViewQuery {
 // 由客户端与 sessions-index 会话做 join。
 
 /** 组成员引用（不含任务 meta；task 内容由 sessions-index 提供）。 */
-export interface ZCodeGroupedTaskViewStructureMember {
+export interface ZodyGroupedTaskViewStructureMember {
   groupId: string;
   /** 服务端口径 workspaceKey（resolveWorkspaceKey：identity ?? path），join 匹配键。 */
   workspaceKey: string;
@@ -96,28 +96,28 @@ export interface ZCodeGroupedTaskViewStructureMember {
 }
 
 /** 顶层节点排序（task_group_view_node_orders，node_key 已解析为结构化引用）。 */
-export type ZCodeGroupedTaskViewStructureTopOrder =
+export type ZodyGroupedTaskViewStructureTopOrder =
   | { type: "group"; groupId: string; sortOrder: number }
   | { type: "task"; workspaceKey: string; taskId: string; sortOrder: number };
 
-export interface ZCodeGroupedTaskViewStructure {
+export interface ZodyGroupedTaskViewStructure {
   /** 已按 workspaceScopes 可见性过滤的 group（bootstrap workspace group 只在其 workspace 可见）。 */
-  groups: ZCodeTaskGroup[];
+  groups: ZodyTaskGroup[];
   /** 全量组成员（含不可见 group 的成员——顶层排除规则需要全量判断）。 */
-  members: ZCodeGroupedTaskViewStructureMember[];
-  topLevelOrders: ZCodeGroupedTaskViewStructureTopOrder[];
+  members: ZodyGroupedTaskViewStructureMember[];
+  topLevelOrders: ZodyGroupedTaskViewStructureTopOrder[];
 }
 
-export interface ZCodeGroupedTaskViewOrderInput {
-  workspaceScopes: ZCodeTaskListWorkspaceScope[];
-  topLevelNodes: ZCodeGroupedTaskViewTopLevelNodeRef[];
+export interface ZodyGroupedTaskViewOrderInput {
+  workspaceScopes: ZodyTaskListWorkspaceScope[];
+  topLevelNodes: ZodyGroupedTaskViewTopLevelNodeRef[];
   groups: Array<{
     groupId: string;
-    taskRefs: ZCodeGroupedTaskRef[];
+    taskRefs: ZodyGroupedTaskRef[];
   }>;
 }
 
-export interface ZCodeWorkspaceEventSubscriptionParams {
+export interface ZodyWorkspaceEventSubscriptionParams {
   workspacePath: string;
   workspaceIdentity?: string;
 }

@@ -1,4 +1,4 @@
-import type { ZCodeSessionEvent } from "@zody/shared";
+import type { ZodySessionEvent } from "@zody/shared";
 
 const MAX_TRACKED_SESSION_EVENT_IDS = 10_000;
 
@@ -10,17 +10,17 @@ export interface ZCodeSessionEventGap {
 export interface ZCodeSessionEventOrderResult {
   duplicate?: boolean;
   gap?: ZCodeSessionEventGap;
-  readyEvents: ZCodeSessionEvent[];
+  readyEvents: ZodySessionEvent[];
 }
 
 export interface ZCodeSessionEventOrderGate {
   clearPendingAfterGap(): void;
   getGap(): ZCodeSessionEventGap | undefined;
-  markSnapshotSeq(seq: number, options?: { preservePendingEvents?: boolean }): ZCodeSessionEvent[];
-  push(event: ZCodeSessionEvent): ZCodeSessionEventOrderResult;
+  markSnapshotSeq(seq: number, options?: { preservePendingEvents?: boolean }): ZodySessionEvent[];
+  push(event: ZodySessionEvent): ZCodeSessionEventOrderResult;
   releasePendingAfterGap(options?: {
-    preserve?: (event: ZCodeSessionEvent) => boolean;
-  }): ZCodeSessionEvent[];
+    preserve?: (event: ZodySessionEvent) => boolean;
+  }): ZodySessionEvent[];
 }
 
 function rememberBoundedId(ids: Set<string>, order: string[], id: string): boolean {
@@ -41,14 +41,14 @@ function rememberBoundedId(ids: Set<string>, order: string[], id: string): boole
 export function createZCodeSessionEventOrderGate(): ZCodeSessionEventOrderGate {
   const deliveredEventIds = new Set<string>();
   const deliveredEventIdOrder: string[] = [];
-  const pendingEvents = new Map<number, ZCodeSessionEvent>();
+  const pendingEvents = new Map<number, ZodySessionEvent>();
   let nextSeq: number | null = null;
 
-  const drainReadyEvents = (): ZCodeSessionEvent[] => {
+  const drainReadyEvents = (): ZodySessionEvent[] => {
     if (nextSeq === null) {
       return [];
     }
-    const readyEvents: ZCodeSessionEvent[] = [];
+    const readyEvents: ZodySessionEvent[] = [];
     while (nextSeq !== null) {
       const event = pendingEvents.get(nextSeq);
       if (!event) {
@@ -111,7 +111,7 @@ export function createZCodeSessionEventOrderGate(): ZCodeSessionEventOrderGate {
       return drainReadyEvents();
     },
 
-    push(event: ZCodeSessionEvent) {
+    push(event: ZodySessionEvent) {
       if (event.seq <= 0) {
         return { readyEvents: [event] };
       }

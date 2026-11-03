@@ -1,6 +1,6 @@
 import { ChannelClient, ChannelServer, createQueuePair, ProxyChannel } from "@zody/rpc";
 import { describe, expect, it } from "vitest";
-import { IZCodeAgentService } from "#src/zody-agent/zodyAgent.js";
+import { IZodyAgentService } from "#src/zody-agent/zodyAgent.js";
 import {
   ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
   ZCodeAgentMcpStatusModeUnsupportedError,
@@ -12,15 +12,15 @@ describe("ZCode Agent RPC errors", () => {
     const server = new ChannelServer(serverProtocol, "test");
     const client = new ChannelClient(clientProtocol);
     server.registerChannel(
-      IZCodeAgentService.channelName,
+      IZodyAgentService.channelName,
       ProxyChannel.fromService({
         async listMcpServerStatuses() {
           throw new ZCodeAgentMcpStatusModeUnsupportedError();
         },
       }),
     );
-    const service = ProxyChannel.toService<IZCodeAgentService>(
-      client.getChannel(IZCodeAgentService.channelName),
+    const service = ProxyChannel.toService<IZodyAgentService>(
+      client.getChannel(IZodyAgentService.channelName),
     );
 
     try {

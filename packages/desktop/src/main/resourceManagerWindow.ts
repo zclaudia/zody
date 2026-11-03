@@ -13,7 +13,7 @@ import {
   type HostResourceUsageProcess,
   type ResourceUsageProcess,
   type ResourceUsageSnapshot,
-  type ZCodeProvider,
+  type ZodyProvider,
 } from "@zody/shared";
 import { logger } from "./logger.js";
 import { configureNetworkCaptureHost, observeNetworkWindow } from "./resourceManagerNetwork.js";
@@ -114,7 +114,7 @@ const hostProcesses = new Map<string, HostProcessHandle>();
 
 interface RegisteredAgentProcess {
   pid: number;
-  provider: ZCodeProvider;
+  provider: ZodyProvider;
   workspacePath: string;
   command: string;
   args: string[];

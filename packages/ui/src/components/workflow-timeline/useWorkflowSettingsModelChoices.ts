@@ -9,7 +9,7 @@
 
 import { useCallback, useMemo } from "react";
 import { completeNewModelSelection } from "@zody/provider";
-import { ZCODE_AGENT_PROVIDER, type ZCodeConfigOption } from "@zody/shared";
+import { ZCODE_AGENT_PROVIDER, type ZodyConfigOption } from "@zody/shared";
 import { useModelSelectionView } from "@/hooks/useModelSelectionView.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { buildRegistryModelSelectGroups } from "@/lib/modelSelectionGroups.js";
@@ -45,7 +45,7 @@ export interface WorkflowSettingsModelFace {
   /** 清单读好了却找不到它：被删或停用。 */
   unavailable: boolean;
   /** 它的思考档；没有档位（或不可用）即 null。 */
-  thoughtOption: ZCodeConfigOption | null;
+  thoughtOption: ZodyConfigOption | null;
 }
 
 export function useWorkflowSettingsModelChoices(scope: WorkflowSettingsModelScope) {

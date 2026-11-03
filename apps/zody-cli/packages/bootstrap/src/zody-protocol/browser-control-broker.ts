@@ -9,8 +9,8 @@ import {
 import {
   protocolTraceFromTraceContext,
   requireSession,
-  type ZCodeProtocolAgentServerContext,
-  type ZCodeProtocolClientRequestOptions,
+  type ZodyProtocolAgentServerContext,
+  type ZodyProtocolClientRequestOptions,
 } from "./server-types.js";
 
 /**
@@ -32,11 +32,11 @@ interface ProtocolBrowserBrokerState {
 }
 
 const brokerStateByContext = new WeakMap<
-  ZCodeProtocolAgentServerContext,
+  ZodyProtocolAgentServerContext,
   ProtocolBrowserBrokerState
 >();
 
-function brokerState(context: ZCodeProtocolAgentServerContext): ProtocolBrowserBrokerState {
+function brokerState(context: ZodyProtocolAgentServerContext): ProtocolBrowserBrokerState {
   let state = brokerStateByContext.get(context);
   if (!state) {
     state = {
@@ -57,7 +57,7 @@ function brokerState(context: ZCodeProtocolAgentServerContext): ProtocolBrowserB
  * 执行并返回结果。与 permission broker 并列注入（server-operations 的 createWorkspaceZCodeApp options）。
  */
 export function createProtocolBrowserControlBroker(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
 ): BrowserControlPort {
   const state = brokerState(context);
   const { connectionsBySession, childSessionParents } = state;
@@ -218,7 +218,7 @@ export function createProtocolBrowserControlBroker(
 }
 
 function buildBrowserRequestContext(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   state: ProtocolBrowserBrokerState,
   input: {
     sessionId: string;
@@ -260,7 +260,7 @@ function buildBrowserRequestContext(
 function buildRequestOptions(
   traceContext: TraceContext | undefined,
   signal: AbortSignal | undefined,
-): ZCodeProtocolClientRequestOptions {
+): ZodyProtocolClientRequestOptions {
   return {
     ...(signal ? { signal } : {}),
     ...(traceContext ? { trace: protocolTraceFromTraceContext(traceContext) } : {}),

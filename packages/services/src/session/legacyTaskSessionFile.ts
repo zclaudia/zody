@@ -1,8 +1,8 @@
-import type { ZCodeSessionFile, ZCodeTaskMeta } from "@zody/shared";
+import type { ZodySessionFile, ZodyTaskMeta } from "@zody/shared";
 import { zcodeSessionFileSchema, zcodeTaskMetaSchema, zcodeTaskModeSchema } from "@zody/shared";
 
-export type LegacyTaskSessionFile = Omit<ZCodeSessionFile, "meta"> & {
-  meta: Omit<ZCodeTaskMeta, "mode"> & { mode?: ZCodeTaskMeta["mode"] };
+export type LegacyTaskSessionFile = Omit<ZodySessionFile, "meta"> & {
+  meta: Omit<ZodyTaskMeta, "mode"> & { mode?: ZodyTaskMeta["mode"] };
 };
 
 const legacyTaskSessionFileSchema = zcodeSessionFileSchema.extend({

@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeInstalledPluginSummary } from "@zody/shared";
+import type { ZodyInstalledPluginSummary } from "@zody/shared";
 import type { StorePluginItem } from "../src/settings/pluginStoreListing.js";
 import type { PluginStoreActions } from "../src/settings/PluginStoreCard.js";
 
@@ -32,8 +32,8 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
 }));
 
 function installedMeta(
-  overrides: Partial<ZCodeInstalledPluginSummary> = {},
-): ZCodeInstalledPluginSummary {
+  overrides: Partial<ZodyInstalledPluginSummary> = {},
+): ZodyInstalledPluginSummary {
   return {
     id: "demo@personal",
     name: "demo",

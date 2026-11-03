@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { Worker } from "node:worker_threads";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { getTasksIndexDatabasePath, setDataBaseDir } from "#src/paths.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 
@@ -26,7 +26,7 @@ afterEach(async () => {
   await rm(tempDir, { recursive: true, force: true });
 });
 
-function createTask(unreadAt: number): ZCodeTaskMeta {
+function createTask(unreadAt: number): ZodyTaskMeta {
   return {
     taskId: "task-1",
     traceId: "trace-task-1",

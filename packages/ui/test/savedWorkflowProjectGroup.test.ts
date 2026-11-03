@@ -16,10 +16,10 @@ import {
   TID_WORKFLOW_DETAIL,
   TID_WORKFLOW_PROJECT_GROUP,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
-  type ZCodeWorkflowsDeleteResult,
-  type ZCodeWorkflowsListResult,
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
+  type ZodyWorkflowsDeleteResult,
+  type ZodyWorkflowsListResult,
 } from "@zody/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
 import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
@@ -39,17 +39,17 @@ const fileWatcherService = {
 };
 
 function makeAgent() {
-  const listResult: { current: ZCodeWorkflowsListResult } = {
+  const listResult: { current: ZodyWorkflowsListResult } = {
     current: { workflows: [], invalid: [], dir: "/beta/.zcode/workflows" },
   };
-  const runsResult: { current: ZCodeSavedWorkflowRun[] } = { current: [] };
+  const runsResult: { current: ZodySavedWorkflowRun[] } = { current: [] };
   const agent = {
     listResult,
     runsResult,
     listSavedWorkflows: vi.fn(async () => listResult.current),
     listSavedWorkflowRuns: vi.fn(async () => ({ runs: runsResult.current })),
     deleteSavedWorkflow: vi.fn(
-      async (): Promise<ZCodeWorkflowsDeleteResult> => ({
+      async (): Promise<ZodyWorkflowsDeleteResult> => ({
         ok: true as const,
         path: "/beta/.zcode/workflows/x.dwf.ts",
       }),
@@ -110,13 +110,13 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowCard.js", () => ({
     onMove,
     onDelete,
   }: {
-    entry: ZCodeSavedWorkflowEntry;
-    lastRun: ZCodeSavedWorkflowRun | undefined;
-    onOpen: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRun: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRevise: (entry: ZCodeSavedWorkflowEntry) => void;
-    onMove?: (entry: ZCodeSavedWorkflowEntry) => void;
-    onDelete: (entry: ZCodeSavedWorkflowEntry) => void;
+    entry: ZodySavedWorkflowEntry;
+    lastRun: ZodySavedWorkflowRun | undefined;
+    onOpen: (entry: ZodySavedWorkflowEntry) => void;
+    onRun: (entry: ZodySavedWorkflowEntry) => void;
+    onRevise: (entry: ZodySavedWorkflowEntry) => void;
+    onMove?: (entry: ZodySavedWorkflowEntry) => void;
+    onDelete: (entry: ZodySavedWorkflowEntry) => void;
   }) =>
     createElement(
       "div",
@@ -184,8 +184,8 @@ const { SavedWorkflowProjectGroup } =
 
 function entry(
   name: string,
-  overrides: Partial<ZCodeSavedWorkflowEntry> = {},
-): ZCodeSavedWorkflowEntry {
+  overrides: Partial<ZodySavedWorkflowEntry> = {},
+): ZodySavedWorkflowEntry {
   return {
     name,
     description: `${name} 的说明`,

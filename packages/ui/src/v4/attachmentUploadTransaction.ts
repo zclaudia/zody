@@ -8,9 +8,9 @@ import {
   type V4AttachmentPutResult,
 } from "@zody/shared/zody-protocol-v4";
 import type {
-  ZCodeAgentAttachmentBeginParams,
-  ZCodeAgentAttachmentChunkParams,
-  ZCodeAgentAttachmentTerminalParams,
+  ZodyAgentAttachmentBeginParams,
+  ZodyAgentAttachmentChunkParams,
+  ZodyAgentAttachmentTerminalParams,
 } from "@zody/services";
 import { logger } from "@/logger.js";
 
@@ -18,10 +18,10 @@ import { logger } from "@/logger.js";
 export const ATTACHMENT_UPLOAD_CHUNK_BYTES = 384 * 1024;
 
 export interface AttachmentUploadAgent {
-  attachmentBeginV4(params: ZCodeAgentAttachmentBeginParams): Promise<V4AttachmentBeginResult>;
-  attachmentChunkV4(params: ZCodeAgentAttachmentChunkParams): Promise<V4AttachmentChunkResult>;
-  attachmentCommitV4(params: ZCodeAgentAttachmentTerminalParams): Promise<V4AttachmentPutResult>;
-  attachmentAbortV4(params: ZCodeAgentAttachmentTerminalParams): Promise<void>;
+  attachmentBeginV4(params: ZodyAgentAttachmentBeginParams): Promise<V4AttachmentBeginResult>;
+  attachmentChunkV4(params: ZodyAgentAttachmentChunkParams): Promise<V4AttachmentChunkResult>;
+  attachmentCommitV4(params: ZodyAgentAttachmentTerminalParams): Promise<V4AttachmentPutResult>;
+  attachmentAbortV4(params: ZodyAgentAttachmentTerminalParams): Promise<void>;
 }
 
 export interface AttachmentUploadWorkspace {
@@ -135,7 +135,7 @@ export async function uploadAttachmentTransaction(
   const uploadId = createUploadId();
   const common = { ...workspace, sessionId: input.sessionId, uploadId };
   const totalChunks = Math.ceil(bytes.byteLength / ATTACHMENT_UPLOAD_CHUNK_BYTES);
-  const beginParams: ZCodeAgentAttachmentBeginParams = {
+  const beginParams: ZodyAgentAttachmentBeginParams = {
     ...common,
     fileName: input.fileName,
     mime: input.mime,
@@ -172,7 +172,7 @@ export async function uploadAttachmentTransaction(
     for (let chunkIndex = begin.nextChunkIndex; chunkIndex < totalChunks; chunkIndex += 1) {
       throwIfAborted(options.signal);
       const start = chunkIndex * ATTACHMENT_UPLOAD_CHUNK_BYTES;
-      const chunkParams: ZCodeAgentAttachmentChunkParams = {
+      const chunkParams: ZodyAgentAttachmentChunkParams = {
         ...common,
         chunkIndex,
         dataBase64: encodeBase64(
@@ -196,7 +196,7 @@ export async function uploadAttachmentTransaction(
       uploadedBytes: bytes.byteLength,
       totalBytes: bytes.byteLength,
     });
-    const terminal = common satisfies ZCodeAgentAttachmentTerminalParams;
+    const terminal = common satisfies ZodyAgentAttachmentTerminalParams;
     assertAttachmentChannelRequest("attachmentCommitV4", terminal);
     return await agent.attachmentCommitV4(terminal);
   } catch (error) {

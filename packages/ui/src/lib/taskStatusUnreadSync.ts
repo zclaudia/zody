@@ -1,5 +1,5 @@
-import type { IZCodeTaskService } from "@zody/services";
-import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zody/shared";
+import type { IZodyTaskService } from "@zody/services";
+import type { ZodyTaskMeta, ZodyWorkspaceTaskListChanged } from "@zody/shared";
 import { buildTaskEntityKey, buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
 import {
   markTaskQueryCacheScopesStale,
@@ -12,17 +12,17 @@ import { getTaskUnreadIndicator, useZCodeSessionStore } from "@/store/zodySessio
 import { bumpTaskListMembershipVersion } from "@/v4/taskListMembershipVersion.js";
 import { logger } from "@/logger.js";
 
-type TaskUnreadService = Pick<IZCodeTaskService, "setTaskUnread">;
+type TaskUnreadService = Pick<IZodyTaskService, "setTaskUnread">;
 
 const STATUS_UNREAD_DEDUPE_WINDOW_MS = 1_000;
 const STATUS_UNREAD_DEDUPE_MAX_KEYS = 256;
 const recentStatusUnreadAtByKey = new Map<string, number>();
 
-function isTerminalTaskStatus(status: ZCodeTaskMeta["status"]): boolean {
+function isTerminalTaskStatus(status: ZodyTaskMeta["status"]): boolean {
   return status === "completed" || status === "error";
 }
 
-function buildStatusUnreadKey(event: ZCodeWorkspaceTaskListChanged, taskId: string): string {
+function buildStatusUnreadKey(event: ZodyWorkspaceTaskListChanged, taskId: string): string {
   const workspaceKey = buildTaskWorkspaceKey(event.workspacePath, event.workspaceIdentity);
   return [workspaceKey, taskId, event.taskMeta?.status ?? "", event.taskMeta?.updatedAt ?? ""].join(
     "::",
@@ -52,7 +52,7 @@ function shouldSkipRecentStatusUnread(key: string): boolean {
 export function shouldMarkStatusEventTaskUnread(params: {
   activeTaskId: string | null;
   activeWorkspace: { workspacePath: string; workspaceIdentity?: string };
-  event: ZCodeWorkspaceTaskListChanged;
+  event: ZodyWorkspaceTaskListChanged;
 }): boolean {
   const taskId = params.event.taskId ?? params.event.taskMeta?.taskId;
   const isEventWorkspaceActive =
@@ -71,7 +71,7 @@ export function shouldMarkStatusEventTaskUnread(params: {
 
 export function syncTaskUnreadFromStatusWorkspaceEvent(params: {
   activeWorkspace: { workspacePath: string; workspaceIdentity?: string };
-  event: ZCodeWorkspaceTaskListChanged;
+  event: ZodyWorkspaceTaskListChanged;
   service: TaskUnreadService;
 }): void {
   const { event, service } = params;

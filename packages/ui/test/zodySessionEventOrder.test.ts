@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSessionEvent } from "@zody/shared";
+import type { ZodySessionEvent } from "@zody/shared";
 import { createZCodeSessionEventOrderGate } from "@/lib/zodySessionEventOrder.js";
 
-function event(seq: number, eventId = `evt-${seq}`): ZCodeSessionEvent {
+function event(seq: number, eventId = `evt-${seq}`): ZodySessionEvent {
   return {
     eventId,
     payload: {},
@@ -14,7 +14,7 @@ function event(seq: number, eventId = `evt-${seq}`): ZCodeSessionEvent {
   };
 }
 
-function streamingDeltaEvent(seq: number, eventId = `evt-${seq}`): ZCodeSessionEvent {
+function streamingDeltaEvent(seq: number, eventId = `evt-${seq}`): ZodySessionEvent {
   return {
     ...event(seq, eventId),
     payload: { kind: "text_delta" },

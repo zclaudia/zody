@@ -1,4 +1,4 @@
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -30,7 +30,7 @@ export function GroupedTaskContextMenuContent({
   onOpenTaskFeedback,
   disabledReason,
 }: {
-  task: ZCodeTaskMeta;
+  task: ZodyTaskMeta;
   currentGroupId?: string;
   groups: TaskGroupMenuItem[];
   intl: {
@@ -40,11 +40,11 @@ export function GroupedTaskContextMenuContent({
   taskSessionFile: { loading: boolean; path: string | null };
   taskNativeSessionLogFile: { loading: boolean; path: string | null };
   providerConfigFile: { loading: boolean; path: string | null };
-  onMoveTaskToGroup: (task: ZCodeTaskMeta, groupId: string | null) => void;
-  onMoveTaskToTop: (task: ZCodeTaskMeta) => void;
-  onStartRenameTask: (task: ZCodeTaskMeta) => void;
-  onArchiveTask: (task: ZCodeTaskMeta) => void;
-  onMarkTaskAsUnread: (task: ZCodeTaskMeta) => void;
+  onMoveTaskToGroup: (task: ZodyTaskMeta, groupId: string | null) => void;
+  onMoveTaskToTop: (task: ZodyTaskMeta) => void;
+  onStartRenameTask: (task: ZodyTaskMeta) => void;
+  onArchiveTask: (task: ZodyTaskMeta) => void;
+  onMarkTaskAsUnread: (task: ZodyTaskMeta) => void;
   onOpenTaskPathInFileManager: () => void;
   onCopyText: (label: string, text: string | null) => void;
   onOpenProviderConfig: () => void;

@@ -1,6 +1,6 @@
-import type { ZCodeMessageWithParts } from "./zody-protocol-legacy-types.js";
+import type { ZodyMessageWithParts } from "./zody-protocol-legacy-types.js";
 import { textFromZCodeMessageParts } from "./zody-protocol-legacy-types.js";
-import type { ZCodeStreamEvent } from "./zody-task-types-core.js";
+import type { ZodyStreamEvent } from "./zody-task-types-core.js";
 
 export interface ZodyBackgroundTaskNotificationInfo {
   error?: string;
@@ -36,7 +36,7 @@ export function parseZCodeBackgroundTaskNotificationText(
 }
 
 export function collectZCodeBackgroundTaskNotificationsByToolUseId(
-  messages: readonly ZCodeMessageWithParts[],
+  messages: readonly ZodyMessageWithParts[],
 ): Map<string, ZodyBackgroundTaskNotificationInfo> {
   const notifications = new Map<string, ZodyBackgroundTaskNotificationInfo>();
   for (const message of messages) {
@@ -57,7 +57,7 @@ export function collectZCodeBackgroundTaskNotificationsByToolUseId(
 export function zcodeBackgroundTaskNotificationToolUpdateStatus(
   status: string | undefined,
 ): Extract<
-  Extract<ZCodeStreamEvent, { type: "tool_call_update" }>["status"],
+  Extract<ZodyStreamEvent, { type: "tool_call_update" }>["status"],
   "completed" | "failed" | "stopped"
 > {
   if (status === "failed" || status === "lost") {

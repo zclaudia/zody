@@ -4,7 +4,7 @@
 // 外观与键盘见 docs/dynamic-workflow/presentation.md「The confirmation window」）：纯规则逐条穷举，
 // 真实 DOM 上钉两句话、改过的那一行、选项描述、Allow 应答带出去的 content、「不可用」的门与 Shift+Tab。
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER, type ZCodePermissionRequest } from "@zody/shared";
+import { TID_CHAT_THOUGHT_LEVEL_SELECT_TRIGGER, type ZodyPermissionRequest } from "@zody/shared";
 import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import { createElement, type ReactNode } from "react";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -122,8 +122,8 @@ afterEach(() => {
 
 function workflowRequest(
   raw: Record<string, unknown>,
-  overrides: Partial<ZCodePermissionRequest> = {},
-): ZCodePermissionRequest {
+  overrides: Partial<ZodyPermissionRequest> = {},
+): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId: "task-1",
@@ -145,11 +145,11 @@ function workflowRequest(
 const ADJUSTABLE = { adjustable_settings: { subagent_model: true, concurrency_ceiling: 13 } };
 
 function renderDialog(
-  request: ZCodePermissionRequest,
+  request: ZodyPermissionRequest,
   options: { locale?: "en-US" | "zh-CN"; responding?: boolean } = {},
 ) {
   const onRespond = vi.fn();
-  const element = (next: ZCodePermissionRequest) =>
+  const element = (next: ZodyPermissionRequest) =>
     createElement(
       ZCodeIntlProvider,
       { initialLocale: options.locale ?? "en-US" },
@@ -162,7 +162,7 @@ function renderDialog(
       }),
     );
   const view = render(element(request));
-  return { onRespond, rerender: (next: ZCodePermissionRequest) => view.rerender(element(next)) };
+  return { onRespond, rerender: (next: ZodyPermissionRequest) => view.rerender(element(next)) };
 }
 
 function modelLine(): HTMLElement {

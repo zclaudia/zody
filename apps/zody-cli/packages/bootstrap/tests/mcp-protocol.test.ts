@@ -12,7 +12,7 @@ import {
 import { listMcpServers } from "../src/zody-protocol/mcp.js";
 import { mcpUiInstances } from "../src/zody-protocol/mcp-ui/instances.js";
 import { openMcpUiInstance } from "../src/zody-protocol/mcp-ui/protocol.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 
 describe("mcp protocol contracts", () => {
   it("registers mcp/list", () => {
@@ -156,7 +156,7 @@ describe("mcp/list connection revalidation", () => {
     } as unknown as McpPort;
     const context = {
       deps: { env: process.env, mcpPort },
-    } as unknown as ZCodeProtocolAgentServerContext;
+    } as unknown as ZodyProtocolAgentServerContext;
     const params = {
       mcpServers: [],
       workspace: { workspaceKey: root, workspacePath: root },
@@ -216,7 +216,7 @@ function createOpenPage() {
     unsubscribeMcpResourcesForUi: vi.fn(async () => 0),
   };
   const sessions = new Map<string, { app: OpenInstanceAppMock }>([[params.sessionId, { app }]]);
-  const context = { deps: {}, sessions } as unknown as ZCodeProtocolAgentServerContext;
+  const context = { deps: {}, sessions } as unknown as ZodyProtocolAgentServerContext;
   return { app, context, params, sessions };
 }
 

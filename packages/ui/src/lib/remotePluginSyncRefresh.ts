@@ -2,8 +2,8 @@ import type {
   ICommandsService,
   IMcpSyncService,
   ISkillsService,
-  IZCodeAgentService,
-  IZCodeSessionService,
+  IZodyAgentService,
+  IZodySessionService,
 } from "@zody/services";
 import { logger } from "@/logger.js";
 import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zodyDraftSkillInvalidation.js";
@@ -90,8 +90,8 @@ export async function refreshWorkspacePluginCapabilitiesAfterRemoteSync(params: 
   skillsService: ISkillsService;
   workspaceIdentity?: string | null;
   workspacePath?: string | null;
-  zcodeAgentService: IZCodeAgentService;
-  zcodeSessionService: Pick<IZCodeSessionService, "closeSession">;
+  zcodeAgentService: IZodyAgentService;
+  zcodeSessionService: Pick<IZodySessionService, "closeSession">;
 }): Promise<void> {
   const workspacePath = params.workspacePath;
   if (!workspacePath) {

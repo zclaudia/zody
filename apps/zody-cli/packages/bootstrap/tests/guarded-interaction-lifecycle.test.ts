@@ -21,7 +21,7 @@ import { V4CommandExecutor } from "../src/zody-protocol-v4/commands/executor.js"
 import { createProtocolInteractionBroker } from "../src/zody-protocol/interaction-broker.js";
 import {
   ProtocolRequestError,
-  type ZCodeProtocolAgentServerContext,
+  type ZodyProtocolAgentServerContext,
 } from "../src/zody-protocol/server-types.js";
 
 const QUESTION = "Which color?";
@@ -85,7 +85,7 @@ function harness(
         else callOptions.signal?.addEventListener("abort", abort, { once: true });
       });
     },
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
   const executor = createToolExecutor({
     mode: "guarded",
     workingDirectory: process.cwd(),

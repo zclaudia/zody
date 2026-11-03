@@ -1,5 +1,5 @@
 import { Emitter } from "@zody/rpc";
-import type { IZCodeAgentService, ZodyAgentRuntimeLifecycleEvent } from "@zody/services";
+import type { IZodyAgentService, ZodyAgentRuntimeLifecycleEvent } from "@zody/services";
 import type {
   SessionsIndexTopicWireCandidate,
   SessionSummary,
@@ -45,7 +45,7 @@ describe("WindowHostSessionsIndexObserver", () => {
       subscribeSessionsIndexV4,
       resyncSessionsIndexV4: vi.fn(),
       unsubscribeSessionsIndexV4: vi.fn(async () => undefined),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const observer = createWindowHostSessionsIndexObserver({
       agentService,
       target: { workspacePath: "/work/demo" },
@@ -95,7 +95,7 @@ describe("WindowHostSessionsIndexObserver", () => {
       }),
       resyncSessionsIndexV4: vi.fn(),
       unsubscribeSessionsIndexV4,
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const observer = createWindowHostSessionsIndexObserver({
       agentService,
       target: { workspacePath: "/work/demo" },

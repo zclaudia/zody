@@ -1,8 +1,8 @@
 import { Emitter, type Event, type IDisposable } from "@zody/rpc";
 import type {
-  IZCodeAgentService,
+  IZodyAgentService,
   ZodyAgentRuntimeLifecycleEvent,
-  ZCodeAgentWorkspaceTarget,
+  ZodyAgentWorkspaceTarget,
 } from "@zody/services";
 import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
 
@@ -12,7 +12,7 @@ export interface TaskActivityTracker extends IDisposable {
 }
 
 type AgentActivitySource = Pick<
-  IZCodeAgentService,
+  IZodyAgentService,
   "onAgentRuntimeLifecycle" | "onDynamicConversationTelemetryFact"
 >;
 
@@ -22,7 +22,7 @@ interface WorkspaceActivity {
   telemetry: IDisposable;
 }
 
-function workspaceKey(target: ZCodeAgentWorkspaceTarget): string {
+function workspaceKey(target: ZodyAgentWorkspaceTarget): string {
   return target.workspaceIdentity?.trim() || target.workspacePath;
 }
 

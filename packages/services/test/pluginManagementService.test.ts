@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createPluginManagementService } from "../src/plugins/pluginManagementService.js";
-import type { IZCodeAgentService } from "../src/zody-agent/zodyAgent.js";
+import type { IZodyAgentService } from "../src/zody-agent/zodyAgent.js";
 
 describe("pluginManagementService suggested prompt operations", () => {
   it("forwards trusted resolution and cancellation to the selected Agent service", async () => {
@@ -23,7 +23,7 @@ describe("pluginManagementService suggested prompt operations", () => {
         resolveSuggestedPluginReference,
         cancelPluginOperation,
         onDynamicPluginOperationProgress,
-      } as unknown as IZCodeAgentService,
+      } as unknown as IZodyAgentService,
     });
 
     expect(service.onDynamicPluginOperationProgress("suggested-1")).toBe(progressEvent);

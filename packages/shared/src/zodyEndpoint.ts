@@ -23,7 +23,7 @@ export const TEST_ZCODE_ENDPOINT_ORIGIN = "https://example.invalid";
 // BYOK 的公开 API 地址（https://api.z.ai/api/anthropic、https://open.bigmodel.cn/api/anthropic
 // 及标准 API 模板地址）在 config/provider/zody-builtin.json 与 provider 配置中保留，不经过本文件。
 
-export interface RuntimeZCodeEndpointEnv {
+export interface RuntimeZodyEndpointEnv {
   [key: string]: string | undefined;
   ZCODE_ENV?: string;
   ZCODE_BASE_URL?: string;
@@ -75,7 +75,7 @@ export function resolveZCodeEndpointOrigin(options?: {
   return envBaseOrigin ? normalizeZCodeEndpointOrigin(envBaseOrigin) : TEST_ZCODE_ENDPOINT_ORIGIN;
 }
 
-export function resolveRuntimeZCodeEnv(env: RuntimeZCodeEndpointEnv = {}): ZodyEnv {
+export function resolveRuntimeZCodeEnv(env: RuntimeZodyEndpointEnv = {}): ZodyEnv {
   // 独立 CLI / 服务测试未注入 ZCODE_ENV 时默认生产环境；桌面测试包会显式下发 ZCODE_ENV=test。
   // fork（F3.1）：「生产环境」只决定读取 ZCODE_PRODUCTION_BASE_URL，不再意味着官方地址；
   // 端点未配置时 resolveRuntimeZCodeEndpointOrigin 返回空字符串。
@@ -83,7 +83,7 @@ export function resolveRuntimeZCodeEnv(env: RuntimeZCodeEndpointEnv = {}): ZodyE
 }
 
 export function resolveRuntimeZCodeEndpointOrigin(
-  env: RuntimeZCodeEndpointEnv = {},
+  env: RuntimeZodyEndpointEnv = {},
   options?: { overrideOrigin?: string | null },
 ): string {
   const zcodeEnv = resolveRuntimeZCodeEnv(env);
@@ -102,7 +102,7 @@ export function resolveRuntimeZCodeEndpointOrigin(
   });
 }
 
-export function buildRuntimeZCodeApiUrl(env: RuntimeZCodeEndpointEnv = {}, path: string): string {
+export function buildRuntimeZCodeApiUrl(env: RuntimeZodyEndpointEnv = {}, path: string): string {
   const endpointOrigin = resolveRuntimeZCodeEndpointOrigin(env);
   // fork（F3.1）：未配置端点时返回空字符串，消费方据此关闭远端能力；
   // 不能返回 `${""}${path}` 这类相对 URL（Node fetch 会直接抛 TypeError）。

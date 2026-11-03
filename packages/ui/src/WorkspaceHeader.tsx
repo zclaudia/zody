@@ -1,7 +1,7 @@
 import type {
-  ZCodeProvider,
-  ZCodeTaskMeta,
-  ZCodeTaskChangeSummary,
+  ZodyProvider,
+  ZodyTaskMeta,
+  ZodyTaskChangeSummary,
   EditorInfo,
   GitRepositorySummary,
   RemoteTarget,
@@ -77,16 +77,16 @@ export function WorkspaceHeader({
   localWorkspacePath?: string;
   projectName: string;
   activeTaskTitle: string;
-  activeTaskChangeSummary?: ZCodeTaskChangeSummary | null;
+  activeTaskChangeSummary?: ZodyTaskChangeSummary | null;
   hasUpdateReady: boolean;
   activeTaskId: string | null;
   user?: UserInfo | null;
   activeTraceId: string | null;
   activeSessionId: string | null;
-  activeTaskProvider: ZCodeProvider | null;
-  resolvedActiveTaskMeta?: ZCodeTaskMeta | null;
+  activeTaskProvider: ZodyProvider | null;
+  resolvedActiveTaskMeta?: ZodyTaskMeta | null;
   sessionLogPath: string | null;
-  nativeSessionLogProvider: ZCodeProvider | null;
+  nativeSessionLogProvider: ZodyProvider | null;
   nativeSessionLogPath: string | null;
   nativeSessionLogExists: boolean;
   nativeSessionLogLoading: boolean;
@@ -114,7 +114,7 @@ export function WorkspaceHeader({
   toggleSidePaneShortcutLabel?: string;
   onReloadSession: (options?: {
     resumeTaskId?: string | null;
-    provider?: ZCodeProvider | null;
+    provider?: ZodyProvider | null;
   }) => void | Promise<void>;
   reloadSessionDisabled?: boolean;
   reloadSessionPending?: boolean;

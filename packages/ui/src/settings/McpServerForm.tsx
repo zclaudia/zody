@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { McpSource, ZCodeMcpServer } from "@zody/shared";
+import type { McpSource, ZodyMcpServer } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {
@@ -70,7 +70,7 @@ export function McpServerForm({
   workspaceTabs,
   onScopeKeyChange,
 }: {
-  initial?: ZCodeMcpServer;
+  initial?: ZodyMcpServer;
   editingId?: string;
   editorMode: McpEditorMode;
   source?: McpSource;
@@ -78,9 +78,9 @@ export function McpServerForm({
   workspaceTabs: WorkspaceTabState[];
   onScopeKeyChange: (scopeKey: string) => void;
   onEditorModeChange: (mode: McpEditorMode) => void;
-  onSave: (form: FormState, prevServer?: ZCodeMcpServer) => void;
+  onSave: (form: FormState, prevServer?: ZodyMcpServer) => void;
   onCancel: () => void;
-  onDelete?: (server: ZCodeMcpServer) => void;
+  onDelete?: (server: ZodyMcpServer) => void;
 }) {
   const { intl } = useZCodeIntl();
   const initialForm: FormState = initial

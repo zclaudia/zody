@@ -46,7 +46,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import type { Locale, RemoteTarget, ZCodeTaskMeta } from "@zody/shared";
+import type { Locale, RemoteTarget, ZodyTaskMeta } from "@zody/shared";
 import {
   TID_CONVERSATION_NEW_TASK,
   TID_CONVERSATION_SECTION,
@@ -172,7 +172,7 @@ interface SidebarFileTreeTarget {
 
 // 流式 task 事件会让 sidebar 父级频繁刷新；缺任务分组时如果传新的 []
 // 会让 memo 的 workspace 行误判 taskItems 变化，穿透到 TaskList/TaskListItem 重渲染。
-const EMPTY_WORKSPACE_TASK_ITEMS: ZCodeTaskMeta[] = [];
+const EMPTY_WORKSPACE_TASK_ITEMS: ZodyTaskMeta[] = [];
 // WorkspaceSidebar 是 memo 组件，默认参数里的 {} 每次调用都会创建新引用；
 // 缺省远程重连日志时必须复用同一个对象，避免浅比较被默认值打穿。
 const EMPTY_RECONNECTING_REMOTE_WORKSPACE_LOGS_BY_WORKSPACE_KEY: Record<

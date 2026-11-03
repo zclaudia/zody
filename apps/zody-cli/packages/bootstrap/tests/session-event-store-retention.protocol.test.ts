@@ -9,7 +9,7 @@ import {
   zcodeProtocolMethods,
   zcodeSessionEventsResultSchema,
   zcodeSessionStateSnapshotSchema,
-  type ZCodeProtocolMessage,
+  type ZodyProtocolMessage,
 } from "@zody/shared";
 import type { ZCodeAppOptions } from "../src/app/types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
@@ -20,7 +20,7 @@ const workspace = {
   workspaceKey: "/workspace/retention",
 };
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZCodeProtocolMessage) {
+async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);

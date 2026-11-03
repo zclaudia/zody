@@ -1,5 +1,5 @@
 import { Plus, X } from "lucide-react";
-import type { ZCodeSavedWorkflowArgType } from "@zody/shared";
+import type { ZodySavedWorkflowArgType } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {
@@ -17,7 +17,7 @@ import type {
   SavedWorkflowArgRowError,
 } from "@/settings/saved-workflows/savedWorkflowArgsForm.js";
 
-const ARG_TYPES: readonly ZCodeSavedWorkflowArgType[] = ["string", "number", "boolean", "json"];
+const ARG_TYPES: readonly ZodySavedWorkflowArgType[] = ["string", "number", "boolean", "json"];
 
 /** 详情页「参数」声明表：可增删行，默认值按类型出控件。 */
 export function SavedWorkflowArgsTable({
@@ -71,7 +71,7 @@ export function SavedWorkflowArgsTable({
               <Select
                 value={row.type}
                 onValueChange={(value) =>
-                  onChange(row.key, { type: value as ZCodeSavedWorkflowArgType })
+                  onChange(row.key, { type: value as ZodySavedWorkflowArgType })
                 }
               >
                 <SelectTrigger size="sm" className="h-7 w-full font-mono">

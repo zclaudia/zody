@@ -1,5 +1,5 @@
 import type { IDisposable } from "@zody/rpc";
-import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE, type IZCodeAgentService } from "@zody/services";
+import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE, type IZodyAgentService } from "@zody/services";
 import {
   PROTOCOL_V4_LIMITS,
   sessionsIndexTopic,
@@ -15,14 +15,14 @@ const MAX_STAGED_WIRES = 1_024;
 const MAX_STAGED_BYTES = 32 * 1024 * 1024;
 
 type SessionsIndexAgentService = Pick<
-  IZCodeAgentService,
+  IZodyAgentService,
   | "subscribeSessionsIndexV4"
   | "resyncSessionsIndexV4"
   | "unsubscribeSessionsIndexV4"
   | "onDynamicSessionsIndexFrame"
   | "onAgentRuntimeRestarted"
 > &
-  Partial<Pick<IZCodeAgentService, "onAgentRuntimeLifecycle">>;
+  Partial<Pick<IZodyAgentService, "onAgentRuntimeLifecycle">>;
 
 export interface WindowHostSessionsIndexObserver {
   start(): Promise<void>;

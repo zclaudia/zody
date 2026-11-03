@@ -1,14 +1,14 @@
-import type { McpServerStatus, ZCodeMcpServer, ZCodeMcpServerStatusSnapshot } from "@zody/shared";
+import type { McpServerStatus, ZodyMcpServer, ZodyMcpServerStatusSnapshot } from "@zody/shared";
 
 type MappedMcpServerStatus = {
-  authorization?: ZCodeMcpServerStatusSnapshot["authorization"];
+  authorization?: ZodyMcpServerStatusSnapshot["authorization"];
   error?: string;
-  failureKind?: ZCodeMcpServerStatusSnapshot["failureKind"];
+  failureKind?: ZodyMcpServerStatusSnapshot["failureKind"];
   serverRequestId?: string;
   status: McpServerStatus;
 };
 
-function mapRuntimeStatusToUi(snapshot: ZCodeMcpServerStatusSnapshot): MappedMcpServerStatus {
+function mapRuntimeStatusToUi(snapshot: ZodyMcpServerStatusSnapshot): MappedMcpServerStatus {
   switch (snapshot.status) {
     case "connected":
     case "connecting":
@@ -44,10 +44,10 @@ function mapRuntimeStatusToUi(snapshot: ZCodeMcpServerStatusSnapshot): MappedMcp
 }
 
 export function mergeMcpServerStatusSnapshots(
-  servers: ZCodeMcpServer[],
-  statuses: Record<string, ZCodeMcpServerStatusSnapshot>,
+  servers: ZodyMcpServer[],
+  statuses: Record<string, ZodyMcpServerStatusSnapshot>,
   options: { markMissingConnectingAsError?: boolean } = {},
-): ZCodeMcpServer[] {
+): ZodyMcpServer[] {
   const markMissingConnectingAsError = options.markMissingConnectingAsError ?? true;
   return servers.map((server) => {
     if (server.source !== "zcodeagentmcp") {

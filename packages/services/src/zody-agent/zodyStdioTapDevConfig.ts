@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { ZCodeStdioTapDevState } from "@zody/shared";
+import type { ZodyStdioTapDevState } from "@zody/shared";
 import { getAppConfigDir } from "#src/paths.js";
 import { isEffectiveDevelopmentNodeEnv } from "#src/runtime-tools/nodeEnv.js";
 
-interface ZCodeStdioTapStateFile {
+interface ZodyStdioTapStateFile {
   enabled?: boolean;
 }
 
@@ -24,20 +24,20 @@ export function getZCodeStdioTapDevStatePath(): string {
   return join(getZCodeStdioTapDevDir(), "zody-stdio-tap.json");
 }
 
-function readStateFile(path: string): ZCodeStdioTapStateFile {
+function readStateFile(path: string): ZodyStdioTapStateFile {
   if (!existsSync(path)) {
     return {};
   }
 
   try {
     const parsed = JSON.parse(readFileSync(path, "utf-8")) as unknown;
-    return parsed && typeof parsed === "object" ? (parsed as ZCodeStdioTapStateFile) : {};
+    return parsed && typeof parsed === "object" ? (parsed as ZodyStdioTapStateFile) : {};
   } catch {
     return {};
   }
 }
 
-export function readZCodeStdioTapDevState(): ZCodeStdioTapDevState {
+export function readZCodeStdioTapDevState(): ZodyStdioTapDevState {
   const visible = isZCodeStdioTapDevVisible();
   const statePath = getZCodeStdioTapDevStatePath();
   const fileState = readStateFile(statePath);
@@ -49,7 +49,7 @@ export function readZCodeStdioTapDevState(): ZCodeStdioTapDevState {
   };
 }
 
-export function setZCodeStdioTapDevEnabled(enabled: boolean): ZCodeStdioTapDevState {
+export function setZCodeStdioTapDevEnabled(enabled: boolean): ZodyStdioTapDevState {
   const visible = isZCodeStdioTapDevVisible();
   const statePath = getZCodeStdioTapDevStatePath();
   mkdirSync(getZCodeStdioTapDevDir(), { recursive: true });

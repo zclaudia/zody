@@ -1,8 +1,8 @@
 import {
   getZCodeAgentModeSelectOptions,
   type ModelSelection,
-  type ZCodeConfigOption,
-  type ZCodeProvider,
+  type ZodyConfigOption,
+  type ZodyProvider,
 } from "@zody/shared";
 import type { ModelSelectionView } from "@zody/services";
 import type { ModelSelectGroup, ModelSelectGroupItem } from "@/ModelConfigSelect.js";
@@ -28,7 +28,7 @@ export function resolveAutomationPreferredModelValue(
 }
 
 export function buildAutomationModelSelectGroups(params: {
-  selectedProvider: ZCodeProvider;
+  selectedProvider: ZodyProvider;
   labels: ModelProviderGroupLabelOptions;
   registrySelectionView: ModelSelectionView;
 }): ModelSelectGroup[] {
@@ -39,7 +39,7 @@ export function buildAutomationModelSelectGroups(params: {
   );
 }
 
-export function buildAutomationModeOption(currentValue: string): ZCodeConfigOption {
+export function buildAutomationModeOption(currentValue: string): ZodyConfigOption {
   return {
     id: "mode",
     name: "Mode",
@@ -128,9 +128,9 @@ export function resolveAutomationModelTriggerLabel(params: {
 }
 
 export function buildAutomationThoughtLevelOption(
-  runtimeOption: ZCodeConfigOption | undefined,
+  runtimeOption: ZodyConfigOption | undefined,
   currentValue: string,
-): ZCodeConfigOption | null {
+): ZodyConfigOption | null {
   const options = runtimeOption?.options ?? [];
   if (options.length === 0) return null;
   const validCurrentValue = options.some((option) => option.value === currentValue);

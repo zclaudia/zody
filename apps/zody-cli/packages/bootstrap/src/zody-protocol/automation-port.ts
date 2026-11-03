@@ -13,12 +13,12 @@ import {
   zcodeAutomationListResultSchema,
   zcodeAutomationUpdateResultSchema,
   zcodeProtocolMethods,
-  type ZCodeAutomationProtocol,
+  type ZodyAutomationProtocol,
 } from "@zody/shared";
 import {
   ProtocolRequestError,
-  type ZCodeProtocolAgentServerContext,
-  type ZCodeProtocolSessionRecord,
+  type ZodyProtocolAgentServerContext,
+  type ZodyProtocolSessionRecord,
 } from "./server-types.js";
 
 export const AUTOMATION_CREATE_FROM_AUTOMATION_RUN_ERROR =
@@ -32,11 +32,11 @@ export const AUTOMATION_CREATE_BOUND_SESSION_CHECK_ERROR =
   "Cannot verify whether this session belongs to a scheduled task. Try again later.";
 
 export function createProtocolAutomationPort(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   // 归属会话解析器：automation-port 是按 session 构造的，直接绑定「自己所服务的 session
   // record」。避免依赖 context.sessions 查找——V4/desktop 会话未必登记在该 legacy map 里，
   // 之前会导致 activeSession 命中失败、权限/思考等级丢失（模型有 createContext 兜底才幸存）。
-  resolveOwnSession?: () => ZCodeProtocolSessionRecord | undefined,
+  resolveOwnSession?: () => ZodyProtocolSessionRecord | undefined,
 ): AutomationPort {
   return {
     async create(input, createContext) {
@@ -225,7 +225,7 @@ export function createProtocolAutomationPort(
 }
 
 function normalizeCronAutomationMode(
-  mode: ZCodeAutomationProtocol["mode"],
+  mode: ZodyAutomationProtocol["mode"],
 ): CronAutomation["mode"] {
   switch (mode) {
     case undefined:
@@ -251,7 +251,7 @@ function normalizeCronAutomationMode(
   }
 }
 
-function toCronAutomation(input: ZCodeAutomationProtocol): CronAutomation {
+function toCronAutomation(input: ZodyAutomationProtocol): CronAutomation {
   return {
     automationId: input.automationId,
     title: input.title,

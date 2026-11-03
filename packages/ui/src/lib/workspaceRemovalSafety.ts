@@ -1,4 +1,4 @@
-import type { FileEntry, ZCodeTaskMeta, ZCodeTaskRuntimeStatus } from "@zody/shared";
+import type { FileEntry, ZodyTaskMeta, ZodyTaskRuntimeStatus } from "@zody/shared";
 import type { IFileService } from "@zody/services";
 import type { WorkspaceZCodeUIState } from "@/store/zodySessionStoreTypes.js";
 import { isChatTaskRunning } from "@/lib/chatStatus.js";
@@ -40,7 +40,7 @@ for (let index = 1; index <= 9; index += 1) {
 
 export function hasRunningWorkspaceChat(params: {
   workspaceState: Pick<WorkspaceZCodeUIState, "draftRuntime" | "taskRuntimeByTaskId">;
-  taskItems: Pick<ZCodeTaskMeta, "taskId">[];
+  taskItems: Pick<ZodyTaskMeta, "taskId">[];
 }): boolean {
   if (isChatTaskRunning(params.workspaceState.draftRuntime.status)) {
     return true;
@@ -51,7 +51,7 @@ export function hasRunningWorkspaceChat(params: {
   );
 }
 
-export function isWorkspaceRemovalBlockingRuntimeStatus(status: ZCodeTaskRuntimeStatus): boolean {
+export function isWorkspaceRemovalBlockingRuntimeStatus(status: ZodyTaskRuntimeStatus): boolean {
   return isChatTaskRunning(status);
 }
 

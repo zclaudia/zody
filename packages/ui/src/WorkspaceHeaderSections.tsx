@@ -6,7 +6,7 @@ import {
   TID_WORKSPACE_PATH,
   TID_WORKSPACE_TITLE,
   type RemoteTarget,
-  type ZCodeTaskMeta,
+  type ZodyTaskMeta,
 } from "@zody/shared";
 import { useMemo, useRef, useState } from "react";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
@@ -294,9 +294,9 @@ export function WorkspaceHeaderTitleSection({
   };
 
   const buildHeaderTaskSnapshot = (
-    fallbackTask: ZCodeTaskMeta,
-    overrides?: Partial<ZCodeTaskMeta>,
-  ): ZCodeTaskMeta => {
+    fallbackTask: ZodyTaskMeta,
+    overrides?: Partial<ZodyTaskMeta>,
+  ): ZodyTaskMeta => {
     if (activeTaskMeta) {
       return {
         ...activeTaskMeta,

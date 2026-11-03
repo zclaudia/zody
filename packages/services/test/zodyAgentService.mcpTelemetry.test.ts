@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ZCodeMcpTelemetryEvent, ZCodeMcpResourceSample } from "@zody/shared";
+import type { ZodyMcpTelemetryEvent, ZodyMcpResourceSample } from "@zody/shared";
 import { afterEach, describe, expect, it } from "vitest";
 import { createZCodeAgentService } from "../src/zody-agent/zodyAgentService.js";
 
@@ -59,7 +59,7 @@ describe("ZCodeAgentService MCP telemetry", () => {
     const service = createZCodeAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
-    const events: ZCodeMcpTelemetryEvent[] = [];
+    const events: ZodyMcpTelemetryEvent[] = [];
     const subscription = service.onDynamicMcpTelemetry()((event) => events.push(event));
 
     try {
@@ -96,7 +96,7 @@ describe("ZCodeAgentService MCP telemetry", () => {
     const service = createZCodeAgentService({
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
-    const batches: ZCodeMcpResourceSample[][] = [];
+    const batches: ZodyMcpResourceSample[][] = [];
     const subscription = service.onDynamicMcpResourceSamples()((samples) => batches.push(samples));
     try {
       await service.listSessions({ workspacePath });

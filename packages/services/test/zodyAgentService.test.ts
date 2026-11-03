@@ -12,13 +12,13 @@ import { DatabaseSync } from "node:sqlite";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
-  type ZCodeSessionRuntimePreferencesScope,
+  type ZodySessionRuntimePreferencesScope,
 } from "@zody/shared";
 import { createZCodeAgentService } from "../src/zody-agent/zodyAgentService.js";
 import { ZodyAgentProcessManager } from "../src/zody-agent/zodyAgentProcessManager.js";
 import type { ZCodeProtocolClient } from "../src/zody-agent/zodyProtocolClient.js";
 import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zodyAgentErrors.js";
-import type { ZCodeAgentServiceEvent } from "../src/zody-agent/zodyAgent.js";
+import type { ZodyAgentServiceEvent } from "../src/zody-agent/zodyAgent.js";
 import { getTasksIndexDatabasePath, setDataBaseDir } from "../src/paths.js";
 
 const protocolModelProperties = {
@@ -1709,7 +1709,7 @@ describe("createZCodeAgentService", () => {
     const logPath = join(workspacePath, "protocol.log");
     writeFileSync(scriptPath, SHELL_SETTINGS_SNAPSHOT_FAKE_AGENT);
     const resolveSessionRuntimePreferences = vi.fn(
-      async (scope: ZCodeSessionRuntimePreferencesScope) => ({
+      async (scope: ZodySessionRuntimePreferencesScope) => ({
         askUserQuestionAutoResolutionEnabled: false,
         nativeSearchEnhancementsEnabled: false,
         memoryEnabled: false,
@@ -2320,7 +2320,7 @@ describe("createZCodeAgentService", () => {
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
 
-    const received: ZCodeAgentServiceEvent[] = [];
+    const received: ZodyAgentServiceEvent[] = [];
     const subscription = service.onDynamicSessionEvent({
       workspacePath,
       sessionId: "sess-1",
@@ -2349,7 +2349,7 @@ describe("createZCodeAgentService", () => {
       commandResolver: () => ({ command: process.execPath, args: [scriptPath] }),
     });
 
-    const firstReceived: ZCodeAgentServiceEvent[] = [];
+    const firstReceived: ZodyAgentServiceEvent[] = [];
     const firstSubscription = service.onDynamicSessionEvent({
       workspacePath,
       sessionId: "sess-1",
@@ -2364,7 +2364,7 @@ describe("createZCodeAgentService", () => {
       { timeout: 5000, interval: 50 },
     );
 
-    const secondReceived: ZCodeAgentServiceEvent[] = [];
+    const secondReceived: ZodyAgentServiceEvent[] = [];
     const secondSubscription = service.onDynamicSessionEvent({
       workspacePath,
       sessionId: "sess-1",
@@ -2410,7 +2410,7 @@ describe("createZCodeAgentService", () => {
       cuaOperationStateReporter: { onStateChanged },
     });
     expect(service.hasActiveCuaOperationTurn()).toBe(false);
-    const received: ZCodeAgentServiceEvent[] = [];
+    const received: ZodyAgentServiceEvent[] = [];
     const subscription = service.onDynamicSessionEvent({
       workspacePath,
       sessionId: "sess-cua-live",
@@ -2428,7 +2428,7 @@ describe("createZCodeAgentService", () => {
 
       const liveEvents = received
         .filter(
-          (event): event is Extract<ZCodeAgentServiceEvent, { type: "session.event" }> =>
+          (event): event is Extract<ZodyAgentServiceEvent, { type: "session.event" }> =>
             event.type === "session.event",
         )
         .map((event) => event.event);

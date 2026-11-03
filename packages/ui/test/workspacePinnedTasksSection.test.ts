@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 
 const { globalTaskListResult, remotePinnedState } = vi.hoisted(() => ({
   globalTaskListResult: {
-    items: [] as ZCodeTaskMeta[],
+    items: [] as ZodyTaskMeta[],
     loading: false,
   },
   remotePinnedState: {
-    itemsByWorkspaceKey: {} as Record<string, ZCodeTaskMeta[]>,
+    itemsByWorkspaceKey: {} as Record<string, ZodyTaskMeta[]>,
     loadingByWorkspaceKey: {} as Record<string, boolean>,
   },
 }));
@@ -56,7 +56,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
 }));
 
 vi.mock("@/TaskListItem.js", () => ({
-  MemoTaskItem: ({ task }: { task: ZCodeTaskMeta }) =>
+  MemoTaskItem: ({ task }: { task: ZodyTaskMeta }) =>
     createElement("li", { "data-testid": "pinned-task-item" }, task.title),
   TaskListItemContextMenuContent: () => null,
 }));
@@ -108,7 +108,7 @@ vi.mock("@/store/remoteWorkspaceSessionStore.js", () => ({
   ) => selector({ sessionIdByWorkspaceIdentity: {} }),
 }));
 
-function createTask(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTask(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",

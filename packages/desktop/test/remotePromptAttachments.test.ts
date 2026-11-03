@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { PassThrough } from "node:stream";
 import type { IDisposable, Event } from "@zody/rpc";
-import type { ZCodePromptAttachment } from "@zody/shared";
+import type { ZodyPromptAttachment } from "@zody/shared";
 import {
   REMOTE_PROMPT_ATTACHMENT_ROOT,
   buildRemotePromptAttachmentPath,
@@ -36,7 +36,7 @@ describe("remote prompt attachment materialization", () => {
       .mockResolvedValueOnce(createClosedStream())
       .mockResolvedValueOnce(createClosedStream());
     const hostPath = "C:\\Users\\tester\\.zody\\tmp\\paste-attachments\\pasted-text.txt";
-    const attachments: ZCodePromptAttachment[] = [
+    const attachments: ZodyPromptAttachment[] = [
       {
         kind: "file",
         filename: "pasted text.txt",
@@ -87,7 +87,7 @@ describe("remote prompt attachment materialization", () => {
     const upload = vi.fn(async (_localPath: string, _remotePath: string) => undefined);
     const exec = vi.fn(async (_command: string) => createClosedStream());
     const remotePath = `${REMOTE_PROMPT_ATTACHMENT_ROOT}/trace/01-image.png`;
-    const attachments: ZCodePromptAttachment[] = [
+    const attachments: ZodyPromptAttachment[] = [
       {
         kind: "image",
         filename: "image.png",
@@ -112,7 +112,7 @@ describe("remote prompt attachment materialization", () => {
     const upload = vi.fn(async (_localPath: string, _remotePath: string) => undefined);
     const exec = vi.fn(async (_command: string) => createClosedStream("/home/tester"));
     const remotePath = "/home/tester/.zody/tmp/prompt-attachments/trace/01-image.png";
-    const attachments: ZCodePromptAttachment[] = [
+    const attachments: ZodyPromptAttachment[] = [
       {
         kind: "image",
         filename: "image.png",
@@ -174,7 +174,7 @@ describe("remote prompt attachment materialization", () => {
   });
 
   it("materializes desktop-continuous session prompts before calling the remote session service", async () => {
-    const remoteAttachment: ZCodePromptAttachment = {
+    const remoteAttachment: ZodyPromptAttachment = {
       kind: "file",
       filename: "pasted.txt",
       localPath: "/home/tester/.zody/tmp/prompt-attachments/input/01-pasted.txt",
@@ -218,7 +218,7 @@ describe("remote prompt attachment materialization", () => {
   });
 
   it("materializes web-remote queued task commands before calling the remote task service", async () => {
-    const remoteAttachment: ZCodePromptAttachment = {
+    const remoteAttachment: ZodyPromptAttachment = {
       kind: "file",
       filename: "pasted.txt",
       localPath: "/home/tester/.zody/tmp/prompt-attachments/input/01-pasted.txt",

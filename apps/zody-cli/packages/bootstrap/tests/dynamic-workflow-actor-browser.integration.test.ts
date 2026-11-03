@@ -21,7 +21,7 @@ import { createSqliteSessionStore } from "@zody/adapters/storage";
 import { ESCALATE_TOOL_NAME, type ModelRequest, type ModelResult } from "@zody/contracts";
 import { saveSavedWorkflow } from "@zody/core";
 import { createProtocolBrowserControlBroker } from "../src/zody-protocol/browser-control-broker.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import { createRegistryBackedTestApp as createZCodeApp } from "./helpers/registry-backed-test-app.js";
 
 const WORKFLOW_NAME = "browse";
@@ -83,7 +83,7 @@ describe("dwf 子代理的 Browser Use（真 app 装配）", () => {
     const context = {
       requestClient,
       sessions,
-    } as unknown as ZCodeProtocolAgentServerContext;
+    } as unknown as ZodyProtocolAgentServerContext;
     // 同一 context 两个实例：app 的 runtime 端口（交给 createZCodeApp），与进程级 node_repl broker 的那个。
     const appPort = createProtocolBrowserControlBroker(context);
     const nodeReplPort = createProtocolBrowserControlBroker(context);

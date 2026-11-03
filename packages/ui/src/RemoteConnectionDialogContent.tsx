@@ -18,7 +18,7 @@ import type {
   IPluginSyncService,
   IServiceAccessor,
   ISkillSyncService,
-  IZCodeAgentService,
+  IZodyAgentService,
 } from "@zody/services";
 import {
   AlertTriangleIcon,
@@ -377,8 +377,8 @@ export function RemoteConnectionDirectoryStep({
   remoteMcpSyncService?: IMcpSyncService | null;
   localPluginSyncService?: IPluginSyncService;
   remotePluginSyncService?: IPluginSyncService | null;
-  localZCodeAgentService?: IZCodeAgentService;
-  remoteZCodeAgentService?: IZCodeAgentService | null;
+  localZCodeAgentService?: IZodyAgentService;
+  remoteZCodeAgentService?: IZodyAgentService | null;
   localWorkspacePath?: string;
   selecting?: boolean;
   onSelect: (path: string) => void;

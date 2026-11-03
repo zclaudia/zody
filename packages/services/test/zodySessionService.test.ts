@@ -2,10 +2,10 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IZCodeAgentService } from "@zody/services";
-import type { ZCodeAgentMcpServer, ZCodeSessionStateSnapshot } from "@zody/shared";
+import type { IZodyAgentService } from "@zody/services";
+import type { ZodyAgentMcpServer, ZodySessionStateSnapshot } from "@zody/shared";
 import { createZCodeSessionService } from "@zody/services/node";
-import type { ZCodeTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
+import type { ZodyTaskIndexSyncer } from "../src/zody-agent/zodyTaskIndexSyncer.js";
 import { getLegacyTaskSessionSnapshotPath, setDataBaseDir } from "../src/paths.js";
 
 const tempDirs: string[] = [];
@@ -40,14 +40,14 @@ describe("createZCodeSessionService", () => {
       runtime: { eventSeq: 1, stateRevision: 1, pendingRequestIds: [] },
       settings: {},
       messages: [],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       createSession: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     // services 只负责建会话前把 MCP 配置交给 producer 的 resolver；改写细节由 producer 自己的测试覆盖。
     // 这里用测试自己的 resolver，不依赖私有 producer 的注入实现（开源占位包不改写配置）。
     const resolver = {
-      resolveMcpServers: vi.fn(async (servers: ZCodeAgentMcpServer[] | undefined) =>
+      resolveMcpServers: vi.fn(async (servers: ZodyAgentMcpServer[] | undefined) =>
         servers?.map((server) =>
           "command" in server
             ? {
@@ -107,7 +107,7 @@ describe("createZCodeSessionService", () => {
     };
     const agentService = {
       createSession: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
@@ -146,15 +146,15 @@ describe("createZCodeSessionService", () => {
           workspaceIdentity: "remote:ssh:dev:/workspace/app",
         },
       },
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       createSession: vi.fn(async () => snapshot),
       setModel: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await service.createSession({
@@ -191,15 +191,15 @@ describe("createZCodeSessionService", () => {
           workspaceIdentity: "remote:ssh:dev:/workspace/app",
         },
       },
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       createSession: vi.fn(async () => snapshot),
       setModel: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await service.createSession({
@@ -247,9 +247,9 @@ describe("createZCodeSessionService", () => {
           workspaceIdentity: "remote:ssh:dev:/workspace/app",
         },
       },
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     let persistence: "deferred" | "immediate" = "deferred";
-    const closeSession: IZCodeAgentService["closeSession"] = vi.fn(async (params) => {
+    const closeSession: IZodyAgentService["closeSession"] = vi.fn(async (params) => {
       if (params.expectedPersistence && params.expectedPersistence !== persistence) {
         return false;
       }
@@ -258,11 +258,11 @@ describe("createZCodeSessionService", () => {
     const agentService = {
       closeSession,
       createSession: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
     const target = {
       workspacePath: "/workspace/app",
@@ -289,7 +289,7 @@ describe("createZCodeSessionService", () => {
 
   it("only closes a draft when the Agent confirms it is still deferred", async () => {
     const closeSession = vi.fn(async () => false);
-    const agentService = { closeSession } as unknown as IZCodeAgentService;
+    const agentService = { closeSession } as unknown as IZodyAgentService;
     const service = createZCodeSessionService({ agentService });
 
     await expect(
@@ -312,7 +312,7 @@ describe("createZCodeSessionService", () => {
     const closeSession = vi.fn(async () => {
       throw new Error("Invalid params: expectedPersistence");
     });
-    const agentService = { closeSession } as unknown as IZCodeAgentService;
+    const agentService = { closeSession } as unknown as IZodyAgentService;
     const service = createZCodeSessionService({ agentService });
 
     await expect(
@@ -335,7 +335,7 @@ describe("createZCodeSessionService", () => {
       })),
       readSessionMessages: vi.fn(async () => []),
       readSessionEvents: vi.fn(async () => []),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const service = createZCodeSessionService({ agentService });
 
     await expect(
@@ -427,22 +427,22 @@ describe("createZCodeSessionService", () => {
         pendingRequestIds: [],
       },
       messages: [],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const repairedSnapshot = {
       ...emptySnapshot,
       messages: [
         { info: { role: "user" }, parts: [{ type: "text", text: "旧问题" }] },
         { info: { role: "assistant" }, parts: [{ type: "text", text: "旧回答" }] },
       ],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       resumeSession: vi.fn(async () => emptySnapshot),
       createSession: vi.fn(async () => repairedSnapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await expect(service.resumeSession({ workspacePath, sessionId })).resolves.toBe(
@@ -527,7 +527,7 @@ describe("createZCodeSessionService", () => {
         { info: { messageId: "msg_import_1", role: "assistant" }, parts: [] },
         { info: { messageId: "msg_import_0", role: "user" }, parts: [] },
       ],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const repairedSnapshot = {
       ...corruptedSnapshot,
       messages: [
@@ -540,11 +540,11 @@ describe("createZCodeSessionService", () => {
           parts: [{ type: "text", text: "正确回答" }],
         },
       ],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       resumeSession: vi.fn(async () => corruptedSnapshot),
       createSession: vi.fn(async () => repairedSnapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const service = createZCodeSessionService({ agentService });
 
     await expect(service.resumeSession({ workspacePath, sessionId })).resolves.toBe(
@@ -614,11 +614,11 @@ describe("createZCodeSessionService", () => {
         pendingRequestIds: [],
       },
       messages: [{ info: { messageId: "msg_ordinary_0", role: "user" }, parts: [] }],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       resumeSession: vi.fn(async () => ordinarySnapshot),
       createSession: vi.fn(),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const service = createZCodeSessionService({ agentService });
 
     await expect(service.resumeSession({ workspacePath, sessionId })).resolves.toBe(
@@ -640,7 +640,7 @@ describe("createZCodeSessionService", () => {
     };
     const agentService = {
       createSession: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(async () => ({
@@ -653,7 +653,7 @@ describe("createZCodeSessionService", () => {
         mode: "build",
         status: "running",
       })),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await service.createSession({ workspacePath: "/workspace/app" });
@@ -697,14 +697,14 @@ describe("createZCodeSessionService", () => {
       runtime: { eventSeq: 1, stateRevision: 1, pendingRequestIds: [] },
       projection: {},
       messages: [],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       resumeSession: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await service.resumeSession({
@@ -750,17 +750,17 @@ describe("createZCodeSessionService", () => {
         },
         projection: { target: null, lastError: null, pendingPermissions: [] },
         messages: [],
-      }) as unknown as ZCodeSessionStateSnapshot;
+      }) as unknown as ZodySessionStateSnapshot;
     const pollutedSnapshot = makeSnapshot("high");
     const correctedSnapshot = makeSnapshot("max");
     const agentService = {
       resumeSession: vi.fn(async () => pollutedSnapshot),
       setThoughtLevel: vi.fn(async () => correctedSnapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await expect(
@@ -825,17 +825,17 @@ describe("createZCodeSessionService", () => {
       },
       projection: { target: null, lastError: null, pendingPermissions: [] },
       messages: [],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       resumeSession: vi.fn(async () => snapshot),
       setThoughtLevel: vi.fn(async () => {
         throw new Error("setThoughtLevel should not be called");
       }),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await expect(
@@ -879,15 +879,15 @@ describe("createZCodeSessionService", () => {
       runtime: { eventSeq: 1, stateRevision: 1, pendingRequestIds: [] },
       projection: {},
       messages: [],
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       resumeSession: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
       syncTaskModel: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await service.resumeSession({
@@ -917,14 +917,14 @@ describe("createZCodeSessionService", () => {
           workspaceKey: "/workspace/app",
         },
       },
-    } as unknown as ZCodeSessionStateSnapshot;
+    } as unknown as ZodySessionStateSnapshot;
     const agentService = {
       setModel: vi.fn(async () => snapshot),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const taskIndexSyncer = {
       ensureSessionSubscription: vi.fn(),
       syncSnapshotAndBroadcast: vi.fn(),
-    } as unknown as ZCodeTaskIndexSyncer;
+    } as unknown as ZodyTaskIndexSyncer;
     const service = createZCodeSessionService({ agentService, taskIndexSyncer });
 
     await expect(

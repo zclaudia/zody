@@ -8,11 +8,11 @@ import { describe, expect, it, vi } from "vitest";
 import type {
   IServiceAccessor,
   WindowHostControllerTaskListResult,
-  ZCodeGroupedTaskViewStructure,
-  ZCodeTaskListQuery,
+  ZodyGroupedTaskViewStructure,
+  ZodyTaskListQuery,
 } from "@zody/services";
-import type { ZCodeTaskMeta } from "@zody/shared";
-import type { ZCodeGroupedTaskView } from "@zody/services";
+import type { ZodyTaskMeta } from "@zody/shared";
+import type { ZodyGroupedTaskView } from "@zody/services";
 import {
   CONTROLLER_TASKS_INDEX_TOPIC,
   type WindowHostControllerFrame,
@@ -145,7 +145,7 @@ function cleanupHookTestGlobals(): void {
   delete (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown }).IS_REACT_ACT_ENVIRONMENT;
 }
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: TASK_ID,
     traceId: "trace-nanjing",
@@ -175,7 +175,7 @@ function createControllerRow(lastActivityAt: number): WindowHostControllerTaskRo
   };
 }
 
-function createStructure(): ZCodeGroupedTaskViewStructure {
+function createStructure(): ZodyGroupedTaskViewStructure {
   return {
     groups: [
       {
@@ -206,7 +206,7 @@ function createControllerHarness() {
   let seq = 0;
   let lastActivityAt = 2_000;
   const listTaskList = vi.fn(
-    async (_params: ZCodeTaskListQuery): Promise<WindowHostControllerTaskListResult> => ({
+    async (_params: ZodyTaskListQuery): Promise<WindowHostControllerTaskListResult> => ({
       items: [
         {
           ...createTaskMeta({ updatedAt: lastActivityAt }),
@@ -296,9 +296,9 @@ function createServices(windowControllerService: unknown): IServiceAccessor {
     zcodeTaskService: {
       listGroupedTaskViewStructure: vi.fn(async () => structure),
       listPinnedTaskIds: vi.fn(async (): Promise<string[]> => []),
-      listArchivedTasks: vi.fn(async (): Promise<ZCodeTaskMeta[]> => []),
-      listTasks: vi.fn(async (): Promise<ZCodeTaskMeta[]> => activeTasks),
-      listPinnedTasks: vi.fn(async (): Promise<ZCodeTaskMeta[]> => []),
+      listArchivedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
+      listTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => activeTasks),
+      listPinnedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
       listDeletedTaskIds: vi.fn(async (): Promise<string[]> => []),
       applyGroupedTaskViewOrder: vi.fn(async () => ({ nodes: [] })),
       onDynamicWorkspaceEvent: () => () => ({ dispose() {} }),
@@ -315,7 +315,7 @@ interface GateSample {
   taskRowCount: number;
 }
 
-function countTaskRows(view: { nodes: ZCodeGroupedTaskView["nodes"] }): number {
+function countTaskRows(view: { nodes: ZodyGroupedTaskView["nodes"] }): number {
   return view.nodes.reduce(
     (total, node) => total + (node.type === "group" ? node.tasks.length : 1),
     0,

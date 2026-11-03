@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Locale, SkillScope, ZCodeProvider } from "@zody/shared";
+import type { Locale, SkillScope, ZodyProvider } from "@zody/shared";
 import type { MentionCategoryResult, MentionItem } from "@/mentions/mentionTypes.js";
 import { filterMentionItemsWithOptions } from "@/mentions/mentionSearch.js";
 import { buildSkillMentionMarkdown } from "@/mentions/mentionMarkdown.js";
@@ -60,7 +60,7 @@ export function useSkillsMentionProvider(
   workspacePath: string,
   workspaceIdentity: string | undefined,
   sessionId: string | null,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   query: string,
   enabled: boolean,
   requireQuery: boolean,

@@ -1,5 +1,5 @@
 import type { SpawnOptions } from "node:child_process";
-import type { ZCodeToolExecResource } from "@zody/shared";
+import type { ZodyToolExecResource } from "@zody/shared";
 import type { NetworkEgressEnvPolicy } from "../network/subprocess-env.js";
 import type { ResolvedSpawnCommand } from "./execution-command.js";
 import type {
@@ -72,7 +72,7 @@ export interface ActiveExecutionRecord {
 }
 
 export interface NodeExecutionAdapterOptions {
-  onToolExecResource?: (sample: ZCodeToolExecResource) => void;
+  onToolExecResource?: (sample: ZodyToolExecResource) => void;
   outputRootDir?: string;
   maxPersistedOutputBytes?: number;
   network?: NetworkEgressEnvPolicy;

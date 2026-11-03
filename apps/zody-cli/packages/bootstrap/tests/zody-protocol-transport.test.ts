@@ -1,6 +1,6 @@
 import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods, type ZCodeProtocolMessage } from "@zody/shared";
+import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
 import { ZCodeProtocolNdjsonConnection } from "../src/zody-protocol/transport.js";
 
 describe("ZCodeProtocolNdjsonConnection", () => {
@@ -762,6 +762,6 @@ describe("ZCodeProtocolNdjsonConnection", () => {
   });
 });
 
-function frame(message: ZCodeProtocolMessage): string {
+function frame(message: ZodyProtocolMessage): string {
   return `${JSON.stringify(message)}\n`;
 }

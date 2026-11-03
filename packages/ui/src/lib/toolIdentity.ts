@@ -3,8 +3,8 @@ import {
   isTodoPlanToolName,
   isZCodeFileContentWriteToolName,
   normalizeZCodeToolName,
-  type ZCodeKnownToolName,
-  type ZCodeToolFamily,
+  type ZodyKnownToolName,
+  type ZodyToolFamily,
 } from "@zody/shared";
 import {
   normalizeAskUserQuestionInput,
@@ -12,7 +12,7 @@ import {
 } from "@/lib/askUserQuestion.js";
 
 export type ToolCallPresentationFamily =
-  | ZCodeToolFamily
+  | ZodyToolFamily
   | "plan-guidance"
   | "switch-mode"
   | "explore"
@@ -31,7 +31,7 @@ export type ToolCallIdentitySource =
   | "unknown";
 
 export interface ToolCallIdentity {
-  toolName: ZCodeKnownToolName | string | null;
+  toolName: ZodyKnownToolName | string | null;
   family: ToolCallPresentationFamily;
   source: ToolCallIdentitySource;
   isLegacy: boolean;

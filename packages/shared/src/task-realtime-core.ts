@@ -5,7 +5,7 @@
 // task-realtime.ts 保留旧协议兼容接口；本文件集中定义对应的运行时 schema。
 
 import { z } from "zod";
-import type { ZCodeTaskMigrationSource, ZCodeTaskMode } from "./zody-task-types-core.js";
+import type { ZodyTaskMigrationSource, ZodyTaskMode } from "./zody-task-types-core.js";
 import { legacyZCodeProviderSchema } from "./zody-agent-policy.js";
 import { zcodePermissionResponseSchema } from "./zody-protocol-legacy-types.js";
 // merge 冲突解决：两侧分别在相邻行新增独立 import（本分支 hook trust review
@@ -26,10 +26,10 @@ const zcodeTaskModeRealtimeValues = [
   "bypassPermissions",
   "autoEdit",
   "build",
-] as const satisfies readonly ZCodeTaskMode[];
+] as const satisfies readonly ZodyTaskMode[];
 const zcodeTaskMigrationSourceRealtimeValues = [
   "claudeCode",
-] as const satisfies readonly ZCodeTaskMigrationSource[];
+] as const satisfies readonly ZodyTaskMigrationSource[];
 const zcodeTaskChangeSummaryRealtimeSchema = z
   .object({
     fileCount: z.number().int().nonnegative(),

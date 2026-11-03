@@ -8,11 +8,11 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-  type ZCodePluginsInstallResult,
-  type ZCodePluginsListResult,
-  type ZCodePluginsMarketplaceMutationResult,
-  type ZCodePluginsOverviewResult,
-  type ZCodePluginsReferenceCatalogResult,
+  type ZodyPluginsInstallResult,
+  type ZodyPluginsListResult,
+  type ZodyPluginsMarketplaceMutationResult,
+  type ZodyPluginsOverviewResult,
+  type ZodyPluginsReferenceCatalogResult,
 } from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
@@ -767,7 +767,7 @@ export async function restartPluginLifecycleApp(): Promise<void> {
 export async function getPluginOverview(
   workspacePath = DEFAULT_WORKSPACE,
   configScope?: "user" | "workspace",
-): Promise<ZCodePluginsOverviewResult> {
+): Promise<ZodyPluginsOverviewResult> {
   return callPluginTestAction("getPluginsOverview", {
     workspacePath,
     ...(configScope ? { configScope } : {}),
@@ -777,7 +777,7 @@ export async function getPluginOverview(
 export async function addMarketplaceSourceThroughAgent(
   source: string,
   workspacePath = DEFAULT_WORKSPACE,
-): Promise<ZCodePluginsMarketplaceMutationResult> {
+): Promise<ZodyPluginsMarketplaceMutationResult> {
   return callPluginTestAction("addPluginMarketplace", {
     source,
     workspacePath,
@@ -787,7 +787,7 @@ export async function addMarketplaceSourceThroughAgent(
 export async function updateMarketplaceThroughAgent(
   marketplace: string,
   workspacePath = DEFAULT_WORKSPACE,
-): Promise<ZCodePluginsMarketplaceMutationResult> {
+): Promise<ZodyPluginsMarketplaceMutationResult> {
   return callPluginTestAction("updatePluginMarketplace", {
     marketplace,
     workspacePath,
@@ -798,7 +798,7 @@ export async function installMarketplacePluginThroughAgent(
   pluginName: string,
   marketplace: string,
   workspacePath = DEFAULT_WORKSPACE,
-): Promise<ZCodePluginsInstallResult> {
+): Promise<ZodyPluginsInstallResult> {
   return callPluginTestAction("installPlugin", {
     marketplace,
     pluginName,
@@ -811,7 +811,7 @@ export async function getPluginList(
   workspacePath = DEFAULT_WORKSPACE,
   workspaceIdentity?: string,
   configScope?: "user" | "workspace",
-): Promise<ZCodePluginsListResult> {
+): Promise<ZodyPluginsListResult> {
   return callPluginTestAction("listPlugins", {
     workspacePath,
     ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -825,7 +825,7 @@ export async function getPluginReferenceCatalog(
     workspaceIdentity?: string;
     workspacePath?: string;
   } = {},
-): Promise<ZCodePluginsReferenceCatalogResult> {
+): Promise<ZodyPluginsReferenceCatalogResult> {
   return callPluginTestAction("getPluginReferenceCatalog", {
     workspacePath: options.workspacePath ?? DEFAULT_WORKSPACE,
     ...(options.workspaceIdentity ? { workspaceIdentity: options.workspaceIdentity } : {}),
@@ -834,7 +834,7 @@ export async function getPluginReferenceCatalog(
 }
 
 export async function waitUntilPluginOverview(
-  predicate: (overview: ZCodePluginsOverviewResult) => boolean,
+  predicate: (overview: ZodyPluginsOverviewResult) => boolean,
   timeoutMsg: string,
   timeout = 30000,
 ): Promise<void> {
@@ -845,7 +845,7 @@ export async function waitUntilPluginOverview(
 }
 
 export async function waitUntilPluginList(
-  predicate: (list: ZCodePluginsListResult) => boolean,
+  predicate: (list: ZodyPluginsListResult) => boolean,
   timeoutMsg: string,
   timeout = 30000,
 ): Promise<void> {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ZCodeProvider } from "@zody/shared";
+import type { ZodyProvider } from "@zody/shared";
 import { logger } from "@/logger.js";
 import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
 
@@ -8,7 +8,7 @@ import { useZCodeTaskService } from "@/hooks/useZodyTaskService.js";
  * @lintignore
  */
 export interface TaskNativeSessionLogFileState {
-  provider: ZCodeProvider | null;
+  provider: ZodyProvider | null;
   path: string | null;
   exists: boolean;
   loading: boolean;
@@ -39,7 +39,7 @@ const INITIAL_STATE: TaskNativeSessionLogFileState = {
 };
 
 export function supportsTaskNativeSessionLogFile(
-  _provider: ZCodeProvider | null | undefined,
+  _provider: ZodyProvider | null | undefined,
 ): boolean {
   // 仅剩 glm provider，始终支持读取原生会话日志。
   return true;
@@ -53,7 +53,7 @@ export function supportsTaskNativeSessionLogFile(
 export function useTaskNativeSessionLogFile(
   workspacePath: string,
   taskId: string | null,
-  providerHint?: ZCodeProvider | null,
+  providerHint?: ZodyProvider | null,
   workspaceIdentity?: string,
   options: { enabled?: boolean } = {},
 ) {

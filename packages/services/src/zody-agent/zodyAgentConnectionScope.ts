@@ -16,18 +16,18 @@ import {
   type WorkspaceConfigTopicWireCandidate,
 } from "@zody/shared/zody-protocol-v4";
 import type {
-  IZCodeAgentService,
-  ZCodeAgentConversationResyncParams,
-  ZCodeAgentConversationUnsubscribeParams,
-  ZCodeAgentRuntimePolicy,
-  ZCodeAgentWorkspaceTarget,
+  IZodyAgentService,
+  ZodyAgentConversationResyncParams,
+  ZodyAgentConversationUnsubscribeParams,
+  ZodyAgentRuntimePolicy,
+  ZodyAgentWorkspaceTarget,
 } from "./zodyAgent.js";
 
-export type ZCodeAgentV4ClientMode = "desktop-continuous" | "web-remote-replayable";
+export type ZodyAgentV4ClientMode = "desktop-continuous" | "web-remote-replayable";
 
-export interface ZCodeAgentV4ConnectionContext {
+export interface ZodyAgentV4ConnectionContext {
   connectionId: string;
-  clientMode: ZCodeAgentV4ClientMode;
+  clientMode: ZodyAgentV4ClientMode;
   role?: "terminal-client" | "trusted-host-relay";
   /**
    * 这条连接的 clientHello 声明了认得 `workflowRun.*` 键级增量。与 `clientMode` 同族：
@@ -41,21 +41,21 @@ const TRUSTED_CONNECTION_FIELD = "__zcodeTrustedV4Connection";
 const TRUSTED_UNSUBSCRIBE_ROUTE_FIELD = "__zcodeTrustedV4UnsubscribeRoute";
 
 type TrustedConnectionCarrier = {
-  [TRUSTED_CONNECTION_FIELD]?: ZCodeAgentV4ConnectionContext;
+  [TRUSTED_CONNECTION_FIELD]?: ZodyAgentV4ConnectionContext;
 };
 
-export interface TrustedZCodeAgentV4UnsubscribeRoute {
+export interface TrustedZodyAgentV4UnsubscribeRoute {
   topic: string;
   connectionId: string;
 }
 
 type TrustedUnsubscribeRouteCarrier = {
-  [TRUSTED_UNSUBSCRIBE_ROUTE_FIELD]?: TrustedZCodeAgentV4UnsubscribeRoute;
+  [TRUSTED_UNSUBSCRIBE_ROUTE_FIELD]?: TrustedZodyAgentV4UnsubscribeRoute;
 };
 
 export function readTrustedZCodeAgentV4UnsubscribeRoute(
   value: unknown,
-): TrustedZCodeAgentV4UnsubscribeRoute | null {
+): TrustedZodyAgentV4UnsubscribeRoute | null {
   if (typeof value !== "object" || value === null) return null;
   const route = (value as TrustedUnsubscribeRouteCarrier)[TRUSTED_UNSUBSCRIBE_ROUTE_FIELD];
   if (!route || typeof route.topic !== "string" || typeof route.connectionId !== "string") {
@@ -70,7 +70,7 @@ export function readTrustedZCodeAgentV4UnsubscribeRoute(
  */
 export function readTrustedZCodeAgentV4Connection(
   value: unknown,
-): ZCodeAgentV4ConnectionContext | null {
+): ZodyAgentV4ConnectionContext | null {
   if (typeof value !== "object" || value === null) return null;
   const context = (value as TrustedConnectionCarrier)[TRUSTED_CONNECTION_FIELD];
   if (!context || typeof context.connectionId !== "string") return null;
@@ -90,7 +90,7 @@ export function readTrustedZCodeAgentV4Connection(
 
 function withTrustedConnection<T extends object>(
   value: T,
-  context: ZCodeAgentV4ConnectionContext,
+  context: ZodyAgentV4ConnectionContext,
 ): T {
   const forwarded: Record<string, unknown> = {
     ...(value as unknown as Record<string, unknown>),
@@ -110,7 +110,7 @@ function withTrustedConnection<T extends object>(
 
 function withTrustedUnsubscribeRoute<T extends object>(
   value: T,
-  route: TrustedZCodeAgentV4UnsubscribeRoute,
+  route: TrustedZodyAgentV4UnsubscribeRoute,
 ): T {
   const forwarded = {
     ...(value as unknown as Record<string, unknown>),
@@ -120,11 +120,11 @@ function withTrustedUnsubscribeRoute<T extends object>(
   return forwarded as T;
 }
 
-function workspaceKey(target: ZCodeAgentWorkspaceTarget): string {
+function workspaceKey(target: ZodyAgentWorkspaceTarget): string {
   return target.workspaceIdentity?.trim() || target.workspacePath;
 }
 
-function workspaceTarget(target: ZCodeAgentWorkspaceTarget): ZCodeAgentWorkspaceTarget {
+function workspaceTarget(target: ZodyAgentWorkspaceTarget): ZodyAgentWorkspaceTarget {
   return {
     workspacePath: target.workspacePath,
     ...(target.workspaceIdentity ? { workspaceIdentity: target.workspaceIdentity } : {}),
@@ -139,14 +139,14 @@ interface OwnedSubscription {
   subscriptionId: string;
   topic: string;
   connectionId: string;
-  clientMode: ZCodeAgentV4ClientMode;
-  target: ZCodeAgentWorkspaceTarget;
+  clientMode: ZodyAgentV4ClientMode;
+  target: ZodyAgentWorkspaceTarget;
 }
 
 interface ConnectionFlowRoute {
   key: string;
-  target: ZCodeAgentWorkspaceTarget;
-  connection: ZCodeAgentV4ConnectionContext;
+  target: ZodyAgentWorkspaceTarget;
+  connection: ZodyAgentV4ConnectionContext;
 }
 
 type RoutedTopicFrame =
@@ -156,7 +156,7 @@ type RoutedTopicFrame =
 
 interface PendingOwnership {
   kind: SubscriptionKind;
-  target: ZCodeAgentWorkspaceTarget;
+  target: ZodyAgentWorkspaceTarget;
   topic: string;
   frames: RoutedTopicFrame[];
   stagedBytes: number;
@@ -198,11 +198,11 @@ function frameBytes(frame: RoutedTopicFrame): number {
   return new TextEncoder().encode(JSON.stringify(frame)).byteLength;
 }
 
-function deliveryProfileFor(clientMode: ZCodeAgentV4ClientMode): HelloMessage["deliveryProfile"] {
+function deliveryProfileFor(clientMode: ZodyAgentV4ClientMode): HelloMessage["deliveryProfile"] {
   return clientMode === "desktop-continuous" ? "continuous" : "replayable";
 }
 
-function createHello(context: ZCodeAgentV4ConnectionContext): HelloMessage {
+function createHello(context: ZodyAgentV4ConnectionContext): HelloMessage {
   const continuous = context.clientMode === "desktop-continuous";
   return {
     kind: "hello",
@@ -226,8 +226,8 @@ function createHello(context: ZCodeAgentV4ConnectionContext): HelloMessage {
   };
 }
 
-export interface ZCodeAgentConnectionScope {
-  readonly service: IZCodeAgentService;
+export interface ZodyAgentConnectionScope {
+  readonly service: IZodyAgentService;
   /** MessagePort/transport sideband only；不是 UI-facing RPC。 */
   setTransportFlowState(state: V4ConnectionFlowState): Promise<void>;
   dispose(): Promise<void>;
@@ -235,9 +235,9 @@ export interface ZCodeAgentConnectionScope {
 
 /** 为单个 host/server RPC attachment 建立可信 V4 facade。 */
 export function createZCodeAgentConnectionScope(
-  base: IZCodeAgentService,
-  context: ZCodeAgentV4ConnectionContext,
-): ZCodeAgentConnectionScope {
+  base: IZodyAgentService,
+  context: ZodyAgentV4ConnectionContext,
+): ZodyAgentConnectionScope {
   assertConnectionId(context.connectionId);
   const role = context.role ?? "terminal-client";
   const owned = new Map<string, OwnedSubscription>();
@@ -261,7 +261,7 @@ export function createZCodeAgentConnectionScope(
   /** attachment 曾触及的 workspace route 留到 port dispose，保证无 subscription 也能 trusted closed。 */
   const attachmentFlowRoutes = new Map<string, ConnectionFlowRoute>();
 
-  const forwardedConnection = (params: unknown): ZCodeAgentV4ConnectionContext => {
+  const forwardedConnection = (params: unknown): ZodyAgentV4ConnectionContext => {
     const downstream = readTrustedZCodeAgentV4Connection(params);
     if (role === "trusted-host-relay" && downstream) {
       assertConnectionId(downstream.connectionId);
@@ -288,16 +288,16 @@ export function createZCodeAgentConnectionScope(
   };
   const routeKey = (
     kind: SubscriptionKind,
-    target: ZCodeAgentWorkspaceTarget,
+    target: ZodyAgentWorkspaceTarget,
     topic: string,
     subscriptionId: string,
     connectionId: string,
   ) => `${kind}\0${workspaceKey(target)}\0${topic}\0${subscriptionId}\0${connectionId}`;
-  const ownershipKey = (kind: SubscriptionKind, target: ZCodeAgentWorkspaceTarget, topic: string) =>
+  const ownershipKey = (kind: SubscriptionKind, target: ZodyAgentWorkspaceTarget, topic: string) =>
     `${kind}\0${workspaceKey(target)}\0${topic}`;
-  const routedEventKey = (kind: SubscriptionKind, target: ZCodeAgentWorkspaceTarget) =>
+  const routedEventKey = (kind: SubscriptionKind, target: ZodyAgentWorkspaceTarget) =>
     `${kind}\0${workspaceKey(target)}`;
-  const flowRouteKey = (target: ZCodeAgentWorkspaceTarget, connectionId: string) =>
+  const flowRouteKey = (target: ZodyAgentWorkspaceTarget, connectionId: string) =>
     `${workspaceKey(target)}\0${connectionId}`;
   const flowRouteForEntry = (entry: OwnedSubscription): ConnectionFlowRoute => ({
     key: flowRouteKey(entry.target, entry.connectionId),
@@ -305,7 +305,7 @@ export function createZCodeAgentConnectionScope(
     connection: {
       connectionId: entry.connectionId,
       clientMode: entry.clientMode,
-    } satisfies ZCodeAgentV4ConnectionContext,
+    } satisfies ZodyAgentV4ConnectionContext,
   });
   const currentFlowRoutes = () => {
     const routes = new Map<string, ConnectionFlowRoute>(attachmentFlowRoutes);
@@ -368,9 +368,9 @@ export function createZCodeAgentConnectionScope(
   };
   const findBySubscription = (
     kind: SubscriptionKind,
-    target: ZCodeAgentWorkspaceTarget,
+    target: ZodyAgentWorkspaceTarget,
     subscriptionId: string,
-    expectedRoute: TrustedZCodeAgentV4UnsubscribeRoute | null,
+    expectedRoute: TrustedZodyAgentV4UnsubscribeRoute | null,
   ): OwnedSubscription | null => {
     const expectedWorkspaceKey = workspaceKey(target);
     const matches = [...owned.values()].filter(
@@ -388,7 +388,7 @@ export function createZCodeAgentConnectionScope(
   };
   const ownsFrame = (
     kind: SubscriptionKind,
-    target: ZCodeAgentWorkspaceTarget,
+    target: ZodyAgentWorkspaceTarget,
     frame: { subscriptionId: string; topic: string },
   ) => {
     const expectedWorkspaceKey = workspaceKey(target);
@@ -402,7 +402,7 @@ export function createZCodeAgentConnectionScope(
   };
   const forwardedUnsubscribeRoute = (
     params: unknown,
-  ): TrustedZCodeAgentV4UnsubscribeRoute | null => {
+  ): TrustedZodyAgentV4UnsubscribeRoute | null => {
     if (role !== "trusted-host-relay") return null;
     const downstream = readTrustedZCodeAgentV4UnsubscribeRoute(params);
     if (!downstream) return null;
@@ -414,7 +414,7 @@ export function createZCodeAgentConnectionScope(
   };
   const beginPendingOwnership = (
     kind: SubscriptionKind,
-    target: ZCodeAgentWorkspaceTarget,
+    target: ZodyAgentWorkspaceTarget,
     topic: string,
   ): PendingOwnership => {
     const pending: PendingOwnership = {
@@ -464,7 +464,7 @@ export function createZCodeAgentConnectionScope(
   };
   const routeIncomingFrame = (
     kind: SubscriptionKind,
-    target: ZCodeAgentWorkspaceTarget,
+    target: ZodyAgentWorkspaceTarget,
     frame: RoutedTopicFrame,
     emitter: Emitter<RoutedTopicFrame>,
   ): void => {
@@ -478,7 +478,7 @@ export function createZCodeAgentConnectionScope(
   };
   const routedEvent = <T extends RoutedTopicFrame>(
     kind: SubscriptionKind,
-    target: ZCodeAgentWorkspaceTarget,
+    target: ZodyAgentWorkspaceTarget,
     source: Event<T>,
   ): Event<T> => {
     const key = routedEventKey(kind, target);
@@ -508,9 +508,9 @@ export function createZCodeAgentConnectionScope(
   };
   const unsubscribeBase = (
     entry: OwnedSubscription,
-    runtimePolicy?: ZCodeAgentRuntimePolicy,
+    runtimePolicy?: ZodyAgentRuntimePolicy,
   ): Promise<void> => {
-    const params: ZCodeAgentConversationUnsubscribeParams = {
+    const params: ZodyAgentConversationUnsubscribeParams = {
       ...entry.target,
       subscriptionId: entry.subscriptionId,
       ...(runtimePolicy ? { runtimePolicy } : {}),
@@ -530,7 +530,7 @@ export function createZCodeAgentConnectionScope(
   };
   const unsubscribeOwnedEntry = async (
     entry: OwnedSubscription,
-    runtimePolicy?: ZCodeAgentRuntimePolicy,
+    runtimePolicy?: ZodyAgentRuntimePolicy,
   ): Promise<void> => {
     forget(entry);
     try {
@@ -541,7 +541,7 @@ export function createZCodeAgentConnectionScope(
       await unsubscribeBase(entry, runtimePolicy);
     }
   };
-  const resyncBase = (entry: OwnedSubscription, params: ZCodeAgentConversationResyncParams) => {
+  const resyncBase = (entry: OwnedSubscription, params: ZodyAgentConversationResyncParams) => {
     const forwarded = withTrustedUnsubscribeRoute(params, {
       topic: entry.topic,
       connectionId: entry.connectionId,
@@ -555,7 +555,7 @@ export function createZCodeAgentConnectionScope(
         return base.resyncWorkspaceConfigV4(forwarded);
     }
   };
-  const resyncOwned = (kind: SubscriptionKind, params: ZCodeAgentConversationResyncParams) => {
+  const resyncOwned = (kind: SubscriptionKind, params: ZodyAgentConversationResyncParams) => {
     assertReady();
     const entry = findBySubscription(
       kind,
@@ -664,7 +664,7 @@ export function createZCodeAgentConnectionScope(
         invalidateWorkspaceRuntime(restarted, nextGeneration);
       });
 
-  const overrides: Partial<IZCodeAgentService> = {
+  const overrides: Partial<IZodyAgentService> = {
     async helloConversationV4() {
       assertOpen();
       helloIssued = true;

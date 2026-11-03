@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { updateDynamicWorkflowPolicy } from "../src/zody-protocol/dynamic-workflow-policy.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
 import { closeSession, createSessionRecordForV4 } from "../src/zody-protocol/server-operations.js";
 import { listProtocolSlashCommands } from "../src/zody-protocol/slash-commands.js";
@@ -16,7 +16,7 @@ function makeContext() {
       modelIoFullRetentionEnabled: false,
       dynamicWorkflowEnabled: false,
     },
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
 }
 
 describe("workspace/updateDynamicWorkflowPolicy（灰度门 workspace 级事实）", () => {
@@ -72,7 +72,7 @@ describe("session 创建：runtimeConfig.dynamicWorkflowEnabled", () => {
         return createFakeApp(options);
       },
     });
-    const context = (server as unknown as { context: ZCodeProtocolAgentServerContext }).context;
+    const context = (server as unknown as { context: ZodyProtocolAgentServerContext }).context;
     if (params.preference !== undefined) {
       await updateDynamicWorkflowPolicy(context, {
         workspace,

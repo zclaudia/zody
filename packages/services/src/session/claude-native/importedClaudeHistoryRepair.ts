@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import type {
-  ZCodeAgentMcpServer,
-  ZCodeSessionImportHistory,
-  ZCodeSessionImportMessage,
-  ZCodeSessionStateSnapshot,
+  ZodyAgentMcpServer,
+  ZodySessionImportHistory,
+  ZodySessionImportMessage,
+  ZodySessionStateSnapshot,
 } from "@zody/shared";
 import {
   getLegacyDeletedTaskSessionSnapshotPath,
@@ -24,29 +24,29 @@ export interface ImportedClaudeHistoryRepairResult {
   title?: string;
   createdAt?: number;
   updatedAt?: number;
-  messages: ZCodeSessionImportMessage[];
+  messages: ZodySessionImportMessage[];
   source: "legacySnapshot" | "nativeJsonl";
 }
 
 export interface ImportedClaudeSessionRepairTarget extends ImportedClaudeHistoryRepairTarget {
-  mcpServers?: ZCodeAgentMcpServer[];
+  mcpServers?: ZodyAgentMcpServer[];
 }
 
 export interface ImportedClaudeSessionRepairCreateParams {
   workspacePath: string;
   workspaceIdentity?: string;
   sessionId: string;
-  mode: ZCodeSessionStateSnapshot["session"]["mode"];
-  model: ZCodeSessionStateSnapshot["settings"]["model"]["current"];
+  mode: ZodySessionStateSnapshot["session"]["mode"];
+  model: ZodySessionStateSnapshot["settings"]["model"]["current"];
   thoughtLevel?: string;
   persistence: "immediate";
-  mcpServers?: ZCodeAgentMcpServer[];
-  importedHistory: ZCodeSessionImportHistory;
+  mcpServers?: ZodyAgentMcpServer[];
+  importedHistory: ZodySessionImportHistory;
 }
 
 function toImportMessages(
   messages: readonly { role: string; content: string; timestamp?: number }[],
-): ZCodeSessionImportMessage[] {
+): ZodySessionImportMessage[] {
   return messages
     .filter((message) => message.role === "user" || message.role === "assistant")
     .map((message) => ({
@@ -56,12 +56,12 @@ function toImportMessages(
     }));
 }
 
-function countAssistantMessages(messages: readonly ZCodeSessionImportMessage[]): number {
+function countAssistantMessages(messages: readonly ZodySessionImportMessage[]): number {
   return messages.filter((message) => message.role === "assistant").length;
 }
 
 export function shouldRepairImportedClaudeSnapshot(
-  snapshot: Pick<ZCodeSessionStateSnapshot, "messages" | "runtime" | "session">,
+  snapshot: Pick<ZodySessionStateSnapshot, "messages" | "runtime" | "session">,
 ): boolean {
   if (snapshot.session.status === "running" || snapshot.runtime.activeTurnId) {
     return false;
@@ -180,7 +180,7 @@ export async function resolveImportedClaudeHistoryForRepair(
 }
 
 export async function repairImportedClaudeSessionSnapshot<T>(params: {
-  snapshot: ZCodeSessionStateSnapshot;
+  snapshot: ZodySessionStateSnapshot;
   target: ImportedClaudeSessionRepairTarget;
   createSession(input: ImportedClaudeSessionRepairCreateParams): Promise<T>;
   onRepair?(history: ImportedClaudeHistoryRepairResult): void;

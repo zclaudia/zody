@@ -2,7 +2,7 @@ import { create } from "zustand";
 import {
   normalizeAgentProviderToZCodeAgent,
   ZCODE_AGENT_PROVIDER,
-  type ZCodeProvider,
+  type ZodyProvider,
   type AgentSummary,
   type AgentsCapability,
   type SubAgentConfig,
@@ -17,8 +17,8 @@ interface SubagentsStoreState {
   workspaceIdentity: string | null;
   loadedWorkspacePath: string | null;
   loadedWorkspaceIdentity: string | null;
-  provider: ZCodeProvider;
-  loadedProvider: ZCodeProvider | null;
+  provider: ZodyProvider;
+  loadedProvider: ZodyProvider | null;
   agents: AgentSummary[];
   capability: AgentsCapability | null;
   loading: boolean;
@@ -27,7 +27,7 @@ interface SubagentsStoreState {
   operatingAgentId: string | null;
   initialize: (
     workspacePath: string,
-    providerOrSubagentsService: ZCodeProvider | ISubagentsService,
+    providerOrSubagentsService: ZodyProvider | ISubagentsService,
     maybeSubagentsService?: ISubagentsService,
     workspaceIdentity?: string,
   ) => Promise<void>;
@@ -40,7 +40,7 @@ interface SubagentsStoreState {
   ) => Promise<void>;
   createAgent: (
     config: SubAgentConfig,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     subagentsService: ISubagentsService,
     workspaceIdentity?: string,
   ) => Promise<AgentSummary | null>;
@@ -48,7 +48,7 @@ interface SubagentsStoreState {
     agentId: string,
     config: SubAgentConfig,
     oldFilePath: string | undefined,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     subagentsService: ISubagentsService,
     workspaceIdentity?: string,
   ) => Promise<AgentSummary | null>;
@@ -65,7 +65,7 @@ let latestAgentLoadRequestId = 0;
 
 function getAgentLoadKey(
   workspacePath: string,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   workspaceIdentity?: string,
 ): string {
   return `${workspaceIdentity?.trim() || workspacePath}::${provider}`;
@@ -73,7 +73,7 @@ function getAgentLoadKey(
 
 function loadAgentsOnce(
   workspacePath: string,
-  provider: ZCodeProvider,
+  provider: ZodyProvider,
   subagentsService: ISubagentsService,
   workspaceIdentity?: string,
   options: { bypassCache?: boolean } = {},
@@ -121,7 +121,7 @@ export const useSubagentsStore = create<SubagentsStoreState>((set, get) => ({
   operatingAgentId: null,
   async initialize(
     workspacePath: string,
-    providerOrSubagentsService: ZCodeProvider | ISubagentsService,
+    providerOrSubagentsService: ZodyProvider | ISubagentsService,
     maybeSubagentsService?: ISubagentsService,
     workspaceIdentity?: string,
   ) {
@@ -273,7 +273,7 @@ export const useSubagentsStore = create<SubagentsStoreState>((set, get) => ({
   },
   async createAgent(
     config: SubAgentConfig,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     subagentsService: ISubagentsService,
     workspaceIdentity?: string,
   ) {
@@ -304,7 +304,7 @@ export const useSubagentsStore = create<SubagentsStoreState>((set, get) => ({
     agentId: string,
     config: SubAgentConfig,
     oldFilePath: string | undefined,
-    provider: ZCodeProvider,
+    provider: ZodyProvider,
     subagentsService: ISubagentsService,
     workspaceIdentity?: string,
   ) {

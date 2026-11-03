@@ -6,7 +6,7 @@ import {
   type SessionEvent,
   type SessionId,
 } from "@zody/contracts";
-import { zcodeProtocolMethods, type ZCodeProtocolMessage } from "@zody/shared";
+import { zcodeProtocolMethods, type ZodyProtocolMessage } from "@zody/shared";
 import {
   V4_METHODS,
   conversationTopic,
@@ -25,7 +25,7 @@ const workspace = {
 
 async function requestResult(
   server: ZCodeProtocolAgentServer,
-  message: ZCodeProtocolMessage,
+  message: ZodyProtocolMessage,
 ): Promise<unknown> {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {

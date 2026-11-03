@@ -3,7 +3,7 @@ import type {
   IntegratedTerminalShellOption,
   IntegratedTerminalShellSelection,
   LocalePreference,
-  ZCodeInteractionBehavior,
+  ZodyInteractionBehavior,
 } from "@zody/shared";
 import {
   TID_SETTINGS_ASK_USER_QUESTION_AUTO_RESOLUTION_SWITCH,
@@ -45,7 +45,7 @@ export { type SettingsSectionId };
 export { createSettingsPageConfig, resolveSettingsSectionForPlatform };
 
 const TASK_AUTO_ARCHIVE_DAY_OPTIONS = [3, 7, 14, 30] as const;
-const ZCODE_INTERACTION_BEHAVIOR_OPTIONS: readonly ZCodeInteractionBehavior[] = ["queue", "guide"];
+const ZCODE_INTERACTION_BEHAVIOR_OPTIONS: readonly ZodyInteractionBehavior[] = ["queue", "guide"];
 
 export function GeneralSectionContent({
   localePreference,
@@ -157,7 +157,7 @@ export function GeneralSectionContent({
   toolGroupingExploreEnabled: boolean;
   toolGroupingTerminalEnabled: boolean;
   toolGroupingChangesEnabled: boolean;
-  zcodeInteractionBehavior: ZCodeInteractionBehavior;
+  zcodeInteractionBehavior: ZodyInteractionBehavior;
   askUserQuestionAutoResolutionEnabled?: boolean;
   modelIoFullRetentionEnabled?: boolean;
   onDataBaseDirChange: (dir: string) => Promise<void>;
@@ -181,7 +181,7 @@ export function GeneralSectionContent({
   onToolGroupingExploreEnabledChange: (enabled: boolean) => Promise<void>;
   onToolGroupingTerminalEnabledChange: (enabled: boolean) => Promise<void>;
   onToolGroupingChangesEnabledChange: (enabled: boolean) => Promise<void>;
-  onZCodeInteractionBehaviorChange: (behavior: ZCodeInteractionBehavior) => Promise<void>;
+  onZCodeInteractionBehaviorChange: (behavior: ZodyInteractionBehavior) => Promise<void>;
   onAskUserQuestionAutoResolutionEnabledChange?: (enabled: boolean) => Promise<void>;
   onModelIoFullRetentionEnabledChange?: (enabled: boolean) => Promise<void>;
   onOpenOnboardingDialog: () => void;
@@ -707,7 +707,7 @@ export function GeneralSectionContent({
             <Select
               value={zcodeInteractionBehavior}
               onValueChange={(value) => {
-                void onZCodeInteractionBehaviorChange(value as ZCodeInteractionBehavior);
+                void onZCodeInteractionBehaviorChange(value as ZodyInteractionBehavior);
               }}
             >
               <SelectTrigger size="lg" className="w-[260px] min-w-0 justify-between">

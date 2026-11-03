@@ -1,5 +1,5 @@
 import { SessionEventType, type SessionEvent } from "@zody/contracts";
-import type { ZCodeComputerUseOperationEvent } from "@zody/shared";
+import type { ZodyComputerUseOperationEvent } from "@zody/shared";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -42,7 +42,7 @@ function baseEvent(event: SessionEvent) {
 
 export function mapComputerUseOperationEvent(
   event: SessionEvent,
-): ZCodeComputerUseOperationEvent | undefined {
+): ZodyComputerUseOperationEvent | undefined {
   const turnId = event.turnId ? String(event.turnId) : undefined;
   const payload = asRecord(event.payload);
   switch (event.type) {

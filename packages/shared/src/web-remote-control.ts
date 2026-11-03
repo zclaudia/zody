@@ -10,7 +10,7 @@ import type {
   LoadCliMcpFromUserDirectoryResult,
   SaveCliMcpToUserDirectoryRequest,
 } from "./mcp.js";
-import type { ZCodeProvider } from "./zody-task-types-core.js";
+import type { ZodyProvider } from "./zody-task-types-core.js";
 import type { SessionWorkflowActivity } from "./zody-protocol-v4/sessions-index-workflow-activity.js";
 import type { WebRemoteControlRpcTransportPayload } from "./web-remote-control-rpc-transport.js";
 import type { WorkspacePurpose } from "./workspacePurpose.js";
@@ -587,7 +587,7 @@ export interface WebRemoteControlTaskTarget {
   workspaceKind: "local" | "remote";
   createdAt: number;
   updatedAt: number;
-  provider?: ZCodeProvider;
+  provider?: ZodyProvider;
   unreadAt?: number;
   displayStatus?: WebRemoteControlTaskDisplayStatus;
   // 会话挂着后台工作（动态工作流 run / 后台 bash / 分离子代理）。只参与列表运行层排序，

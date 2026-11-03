@@ -1,6 +1,6 @@
 import { Eye, EyeOff, RotateCcw, Save, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { ZCodePluginInfo, ZCodePluginScope, ZCodePluginUserConfigOption } from "@zody/shared";
+import type { ZodyPluginInfo, ZodyPluginScope, ZodyPluginUserConfigOption } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Switch } from "@/components/ui/switch.js";
@@ -9,17 +9,17 @@ import { SettingsScopeBadge } from "@/settings/SettingsScopeBadge.js";
 
 interface PluginConfigControlsProps {
   getValue: (
-    plugin: ZCodePluginInfo,
+    plugin: ZodyPluginInfo,
     key: string,
-    option: ZCodePluginUserConfigOption,
+    option: ZodyPluginUserConfigOption,
   ) => string | number | boolean;
   isOptionClearPending?: (pluginId: string, key: string) => boolean;
   onClearOption?: (pluginId: string, key: string, clear: boolean) => void;
-  onSave: (plugin: ZCodePluginInfo) => void;
+  onSave: (plugin: ZodyPluginInfo) => void;
   onSetDraft: (pluginId: string, key: string, value: string | number | boolean) => void;
   operationId: string | null;
-  plugin: ZCodePluginInfo;
-  scope: ZCodePluginScope;
+  plugin: ZodyPluginInfo;
+  scope: ZodyPluginScope;
 }
 
 export function PluginConfigControls({

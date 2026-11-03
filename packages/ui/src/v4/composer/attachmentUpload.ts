@@ -7,7 +7,7 @@
 // - dataBase64（粘贴截图等内联图）→ 高层 put（内部 begin/chunk/commit）→ artifact ref；
 // - textContent（无路径文本，web 回退面）→ 编码后同走 put；
 // - 三者皆无（元信息-only）→ 丢弃并告警（无内容可发，不伪造引用）。
-import type { ZCodePromptAttachment } from "@zody/shared";
+import type { ZodyPromptAttachment } from "@zody/shared";
 import type {
   AttachmentRef,
   V4AttachmentPutParams,
@@ -40,7 +40,7 @@ function base64ByteLength(dataBase64: string): number {
 export async function uploadComposerAttachment(
   put: AttachmentPutFn,
   sessionId: string,
-  attachment: ZCodePromptAttachment,
+  attachment: ZodyPromptAttachment,
   options?: AttachmentUploadOptions,
 ): Promise<AttachmentRef | null> {
   const fileName = attachment.filename;
@@ -91,7 +91,7 @@ export async function uploadComposerAttachment(
 export async function uploadComposerAttachments(
   put: AttachmentPutFn,
   sessionId: string,
-  attachments: readonly ZCodePromptAttachment[],
+  attachments: readonly ZodyPromptAttachment[],
 ): Promise<AttachmentRef[]> {
   const refs: AttachmentRef[] = [];
   for (const attachment of attachments) {

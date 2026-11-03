@@ -1,16 +1,16 @@
 // v4 workspace-config 只承载 workspace presentation；模型候选与首选项由目标 Host
 // ModelSelectionView 提供，不能再从 live Session settings 反向建立第二份模型目录。
 import { getZCodeAgentModeSelectOptions, normalizeAvailableZCodeMode } from "@zody/shared";
-import type { ZCodeSessionSettingsState, ZCodeSlashCommand } from "@zody/shared";
+import type { ZodySessionSettingsState, ZodySlashCommand } from "@zody/shared";
 import type { WorkspaceConfigState } from "@zody/shared/zody-protocol-v4";
 import { mapSessionSettings } from "./mapper.js";
 import { listProtocolSlashCommands } from "./slash-commands.js";
-import type { ZCodeProtocolAgentServerContext } from "./server-types.js";
+import type { ZodyProtocolAgentServerContext } from "./server-types.js";
 
 /** Session settings 只投影非模型的 workspace mode 与 slash commands。 */
 export function toV4WorkspaceConfigState(
-  settings: ZCodeSessionSettingsState,
-  slashCommands: readonly ZCodeSlashCommand[],
+  settings: ZodySessionSettingsState,
+  slashCommands: readonly ZodySlashCommand[],
 ): WorkspaceConfigState {
   return {
     configOptions: [
@@ -40,7 +40,7 @@ export function toV4WorkspaceConfigState(
  * 提供，这条会话协议只在出现 live session 后发布任务级配置。
  */
 export async function buildLiveWorkspaceConfigStateV4(
-  context: ZCodeProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   workspaceId: string,
 ): Promise<WorkspaceConfigState | null> {
   const record = Array.from(context.sessions.values()).find(

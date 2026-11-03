@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSessionSettingsState } from "@zody/shared";
+import type { ZodySessionSettingsState } from "@zody/shared";
 import {
   getZCodeAgentAvailableModes,
   normalizeAvailableZCodeMode,
@@ -7,8 +7,8 @@ import {
 } from "../src/zody-agent/zodyConfigOptions.js";
 
 function settingsWithMode(
-  mode: ZCodeSessionSettingsState["mode"]["current"],
-): ZCodeSessionSettingsState {
+  mode: ZodySessionSettingsState["mode"]["current"],
+): ZodySessionSettingsState {
   return {
     model: {
       current: { providerId: "glm", modelId: "glm-5" },

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { MemoTaskItem as TaskItem } from "@/TaskListItem.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 
@@ -37,7 +37,7 @@ beforeEach(() => {
   workspaceStateByPath.clear();
 });
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: "mobile-active-task",
     traceId: "trace-mobile-active-task",
@@ -87,7 +87,7 @@ function renderTaskItem({
   isMobileActive = true,
   legacyUnread = Boolean(task.unreadAt),
 }: {
-  task?: ZCodeTaskMeta;
+  task?: ZodyTaskMeta;
   isPinned?: boolean;
   isMobileActive?: boolean;
   legacyUnread?: boolean;

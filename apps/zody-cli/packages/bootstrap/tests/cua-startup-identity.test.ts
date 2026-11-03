@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { zcodeProtocolMethods, type ZCodeWorkspaceRef } from "@zody/shared";
-import type { ZCodeProtocolMessage } from "@zody/shared";
+import { zcodeProtocolMethods, type ZodyWorkspaceRef } from "@zody/shared";
+import type { ZodyProtocolMessage } from "@zody/shared";
 import { ZCodeProtocolAgentServer } from "../src/zody-protocol/server.js";
-import type { ZCodeProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
+import type { ZodyProtocolAgentServerContext } from "../src/zody-protocol/server-types.js";
 import { createWorkspaceZCodeApp } from "../src/zody-protocol/workspace-model-runtime.js";
 import type { ZCodeAppOptions } from "../src/app/types.js";
 import { createFakeApp } from "./helpers/fake-zody-app.js";
@@ -10,13 +10,13 @@ import { createFakeApp } from "./helpers/fake-zody-app.js";
 const LOCAL_WORKSPACE = {
   workspacePath: "/workspace/app",
   workspaceKey: "/workspace/app",
-} satisfies ZCodeWorkspaceRef;
+} satisfies ZodyWorkspaceRef;
 const TRUSTED_IDENTITY = {
   hostInstanceId: "host-real",
   runtimeInstanceId: "agent-real",
 } as const;
 
-async function requestResult(server: ZCodeProtocolAgentServer, message: ZCodeProtocolMessage) {
+async function requestResult(server: ZCodeProtocolAgentServer, message: ZodyProtocolMessage) {
   const response = await server.handleMessage(message);
   if (!response || !("result" in response)) {
     throw new Error(`Expected protocol success response: ${JSON.stringify(response)}`);
@@ -25,7 +25,7 @@ async function requestResult(server: ZCodeProtocolAgentServer, message: ZCodePro
 }
 
 async function createWorkspaceAppWithServerIdentity(
-  workspace: ZCodeWorkspaceRef,
+  workspace: ZodyWorkspaceRef,
   options: Omit<ZCodeAppOptions, "providerRegistry">,
 ): Promise<ZCodeAppOptions | undefined> {
   const createdOptions: ZCodeAppOptions[] = [];
@@ -39,7 +39,7 @@ async function createWorkspaceAppWithServerIdentity(
     },
     notify: () => undefined,
     sessions: new Map(),
-  } as unknown as ZCodeProtocolAgentServerContext;
+  } as unknown as ZodyProtocolAgentServerContext;
   await createWorkspaceZCodeApp(context, workspace, options);
   return createdOptions[0];
 }

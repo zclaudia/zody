@@ -1,10 +1,10 @@
 // M5 ②：grouped 客户端 join（分组原始结构 + sessions-index 会话 → 旧 listGroupedTaskView 同形视图）。
 import { describe, expect, it } from "vitest";
-import type { ZCodeGroupedTaskViewStructure, ZCodeTaskGroup } from "@zody/services";
-import type { ZCodeTaskMeta } from "@zody/shared";
+import type { ZodyGroupedTaskViewStructure, ZodyTaskGroup } from "@zody/services";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { buildGroupedTaskViewFromSessions } from "@/lib/buildGroupedTaskViewFromSessions.js";
 
-function task(id: string, overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function task(id: string, overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: id,
     title: id,
@@ -14,16 +14,16 @@ function task(id: string, overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta
     mode: "default",
     traceId: `trace-${id}`,
     ...overrides,
-  } as ZCodeTaskMeta;
+  } as ZodyTaskMeta;
 }
 
-function group(id: string, createdAt = 0): ZCodeTaskGroup {
+function group(id: string, createdAt = 0): ZodyTaskGroup {
   return { id, title: id, color: "blue", createdAt, updatedAt: createdAt };
 }
 
 function structure(
-  overrides: Partial<ZCodeGroupedTaskViewStructure> = {},
-): ZCodeGroupedTaskViewStructure {
+  overrides: Partial<ZodyGroupedTaskViewStructure> = {},
+): ZodyGroupedTaskViewStructure {
   return { groups: [], members: [], topLevelOrders: [], ...overrides };
 }
 
