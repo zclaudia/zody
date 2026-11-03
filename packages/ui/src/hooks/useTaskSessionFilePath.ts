@@ -40,7 +40,7 @@ function getErrorMessage(error: unknown): string {
  *
  * UI 之前直接在浏览器里访问 crypto.subtle 计算 workspace hash，
  * 在 http 预览或远程访问这类非安全上下文里 subtle 可能不存在，副作用阶段会直接抛错。
- * 这里改成统一走 zcodeTaskService 解析最终路径，既不让 UI 猜目录规则，也能兼容 remote workspace 的远端 home 目录。
+ * 这里改成统一走 zodyTaskService 解析最终路径，既不让 UI 猜目录规则，也能兼容 remote workspace 的远端 home 目录。
  */
 export function useTaskSessionFilePath(
   workspacePath: string,

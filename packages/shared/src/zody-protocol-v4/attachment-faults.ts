@@ -62,7 +62,7 @@ export class ZodyAttachmentFaultError extends Error {
 
 /**
  * 从任意错误中读出附件 fault 码：
- * - 同进程抛出的 ZCodeAttachmentFaultError / 带 code 的 Error；
+ * - 同进程抛出的 ZodyAttachmentFaultError / 带 code 的 Error；
  * - 跨 JSON-RPC 回传的 `error.data.code`；
  * - 旧版本 CLI 只有消息文本时的兼容兜底（见下方注释）。
  */

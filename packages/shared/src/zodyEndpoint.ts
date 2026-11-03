@@ -78,7 +78,7 @@ export function resolveZodyEndpointOrigin(options?: {
 export function resolveRuntimeZodyEnv(env: RuntimeZodyEndpointEnv = {}): ZodyEnv {
   // 独立 CLI / 服务测试未注入 ZCODE_ENV 时默认生产环境；桌面测试包会显式下发 ZCODE_ENV=test。
   // fork（F3.1）：「生产环境」只决定读取 ZCODE_PRODUCTION_BASE_URL，不再意味着官方地址；
-  // 端点未配置时 resolveRuntimeZCodeEndpointOrigin 返回空字符串。
+  // 端点未配置时 resolveRuntimeZodyEndpointOrigin 返回空字符串。
   return env.ZCODE_ENV?.trim().toLowerCase() === "test" ? "test" : "production";
 }
 

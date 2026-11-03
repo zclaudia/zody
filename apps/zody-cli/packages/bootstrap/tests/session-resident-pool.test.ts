@@ -7,7 +7,7 @@
 //   fresh facts 二次校验、waitForDeactivation 闸门和失败隔离。
 // - 执行面单元（stub context）：内存摘除在同一同步片完成（unsubscribe → gateway 去激活 →
 //   sessions.delete），app.close 后置异步；重复调用幂等。
-// - 集成（真 sqlite + ZCodeProtocolAgentServer + binder）：subscribe → unsubscribe →
+// - 集成（真 sqlite + ZodyProtocolAgentServer + binder）：subscribe → unsubscribe →
 //   容量 rebalance 去激活 → sessions-index 订阅者收不到 session.removed → 再订阅冷恢复出完整
 //   snapshot；再激活闸门在 app.close 收尾完成前挂住并发 subscribe。
 import { mkdtemp, rm } from "node:fs/promises";

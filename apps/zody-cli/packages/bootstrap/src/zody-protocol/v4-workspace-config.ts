@@ -35,7 +35,7 @@ export function toV4WorkspaceConfigState(
 /**
  * 订阅时种子：只走 live session 快路径（mapSessionSettings 直接读在册 app）。
  * 刻意不建 temporary app——host 启动预热抢先读取 workspace presentation 会在无 active session 时
- * 创建临时 app 并被 MCP close 拖住协议通道（见 desktop warmUpZCodeAgent 的注释）。
+ * 创建临时 app 并被 MCP close 拖住协议通道（见 desktop warmUpZodyAgent 的注释）。
  * 无在册会话时返回 null（空目录种子）；模型选择目录由 Host 自己的进程 Registry View
  * 提供，这条会话协议只在出现 live session 后发布任务级配置。
  */

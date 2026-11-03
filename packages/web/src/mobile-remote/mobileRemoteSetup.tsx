@@ -20,7 +20,7 @@ import { webEntryRoot } from "../webEntryRoot.js";
 /**
  * 手机首次使用流程：设置页 → 选电脑页（T4.2）。
  *
- * 页面渲染在手机入口自己的 React 根上，和 Root 共用 `ZCodeIntlProvider`。
+ * 页面渲染在手机入口自己的 React 根上，和 Root 共用 `ZodyIntlProvider`。
  * 配置的唯一写入方是 `MobileRemoteConfigStore`（经 `IPlatformService.secureStore`）；
  * 本模块只负责在「没有配置」「没有选电脑」「用户主动重开设置」三种情况下把用户带回对应页面。
  */

@@ -815,7 +815,7 @@ function createRecordingMcpPort(
 
 function createStopModelExecutor() {
   return {
-    // 根因：createZCodeApp 初始化时会同步配置模型 I/O 保留策略；旧测试夹具缺少该方法会在用例逻辑前崩溃。
+    // 根因：createZodyApp 初始化时会同步配置模型 I/O 保留策略；旧测试夹具缺少该方法会在用例逻辑前崩溃。
     setModelIoFullRetentionEnabled() {},
     async generateText() {
       return {

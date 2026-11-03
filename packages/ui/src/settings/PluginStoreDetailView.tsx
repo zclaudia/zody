@@ -201,7 +201,7 @@ export function PluginStoreDetailView({
         />
       ) : null}
 
-      {/* 组件分区：已安装走权威枚举（ZCodePluginInfo.components），候选走 plugins/describe 按需拉取。 */}
+      {/* 组件分区：已安装走权威枚举（ZodyPluginInfo.components），候选走 plugins/describe 按需拉取。 */}
       {componentsLoading ? (
         <div
           className="flex items-center gap-2 py-2 text-ui-base text-foreground-subtle"

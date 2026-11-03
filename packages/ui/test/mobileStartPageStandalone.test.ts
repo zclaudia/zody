@@ -6,6 +6,7 @@ import {
   WebRemoteControlMobileStartPage,
   WebRemoteControlStandaloneStoreProvider,
   ZodyIntlProvider,
+  useZodyStore,
 } from "../src/index.js";
 
 /**
@@ -45,7 +46,17 @@ function renderStartPage(options?: {
 describe("mobile start page standalone store context", () => {
   afterEach(() => cleanup());
 
-  it("无 Root/StoreProvider 的渲染树中 StartPage 不再抛 useZCodeStore 错误", async () => {
+  it("缺少 StoreProvider 时使用当前 hook 名称诊断", () => {
+    function MissingProvider() {
+      useZodyStore((state) => state);
+      return null;
+    }
+    expect(() => render(createElement(MissingProvider))).toThrow(
+      "useZodyStore 必须在 StoreProvider 内使用",
+    );
+  });
+
+  it("无 Root/StoreProvider 的渲染树中 StartPage 不再抛 useZodyStore 错误", async () => {
     const errors: unknown[] = [];
     vi.spyOn(console, "error").mockImplementation((...args) => errors.push(args));
     try {
@@ -67,7 +78,7 @@ describe("mobile start page standalone store context", () => {
         expect(document.querySelector("[data-mobile-remote-open-other-project]")).toBeTruthy(),
       );
       const storeErrors = errors.filter((args) =>
-        String(args[0]).includes("useZCodeStore"),
+        String(args[0]).includes("useZodyStore"),
       );
       expect(storeErrors).toEqual([]);
     } finally {

@@ -1,5 +1,5 @@
 // Grouped 客户端投影：服务端回原始分组结构，tasks-index task rows 决定持久行，
-// sessions-index 只补实时 activity/detail，最终拼出旧 ZCodeGroupedTaskView 同形结果。
+// sessions-index 只补实时 activity/detail，最终拼出旧 ZodyGroupedTaskView 同形结果。
 // 排序语义对齐 taskIndexRepo.queryGroupedTaskView，但服务端的懒补序（normalize* 写回 sqlite）
 // 改为只读的内存补序：缺 sort_order 的成员/顶层节点按同样规则（added_at / createdAt 降序，
 // max+STEP 递增）派生展示序，不落库；用户拖拽保存时 applyGroupedTaskViewOrder 会全量持久化。

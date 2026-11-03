@@ -13,7 +13,7 @@ import type { BroadcastMessage, IBroadcastService } from "@zody/services";
  *
  * 这里的 IBroadcastService 是进程内 no-op 实现：独立页面没有可同步的对端窗口
  * （空态时桌面本来就没有打开的 workspace），send 丢弃、onMessage 永不触发、
- * claim 语义退化为页面内首次占用；不引 @zcode/services/node 的
+ * claim 语义退化为页面内首次占用；不引 @zody/services/node 的
  * createBroadcastService，避免把 node 依赖带进浏览器 bundle（mobile web 构建隔离）。
  */
 function createStandaloneBroadcastService(): IBroadcastService {

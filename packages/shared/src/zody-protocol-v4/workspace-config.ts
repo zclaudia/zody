@@ -8,7 +8,7 @@
 // 纪律：additive 演进——新增 topic / 新增可选字段合法，改已有字段形状不合法。
 import { z } from "zod";
 
-// 与 host 侧 ZodyConfigSelectValue（zcode-task-types-core）结构对齐：
+// 与 host 侧 ZodyConfigSelectValue（zody-task-types-core）结构对齐：
 // syncer 转发 workspace_config_options_update 时零映射直通，下游 useZCodeConfig 消费面不改。
 export const workspaceConfigSelectValueSchema = z.object({
   value: z.string(),

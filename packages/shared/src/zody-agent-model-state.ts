@@ -1,5 +1,5 @@
 // ── 旧协议兼容面（过渡期）──────────────────────────────
-// 剩余 5 个导出：旧 configOptions 投影函数（formatModelPickerValue/normalizeAvailableZCodeMode/
+// 剩余 5 个导出：旧 configOptions 投影函数（formatModelPickerValue/normalizeAvailableZodyMode/
 // getZodyAgentModeSelectOptions/getZodyAgentAvailableModes/
 // zodySessionSettingsToZodyConfigOptions；B 类，死期=波次3）。
 // 消费者：services zcodeConfigOptions、UI zcodeSessionProjection 等旧栈

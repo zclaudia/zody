@@ -143,7 +143,7 @@ describe("plugin storage read scheduling", () => {
     await gateEntered;
 
     try {
-      // listZCodePlugins 是同步投影，本身不会加入 async promise 链；读快路径是否
+      // listZodyPlugins 是同步投影，本身不会加入 async promise 链；读快路径是否
       // 真正绕过写闸门由 needsWrite=false 分支证明。
       await expect(
         withPluginStorageWriteGateWhenNeeded(pluginStorageRoot, () => false, async () => "read"),

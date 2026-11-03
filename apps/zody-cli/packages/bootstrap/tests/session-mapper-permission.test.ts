@@ -40,7 +40,7 @@ describe("legacy permission.requested 映射", () => {
   };
 
   it("剥离 ask 预览，映射结果仍能过 strict schema", () => {
-    // zcodePermissionRequestedEventPayloadSchema 是 .strict()，而 app 侧用 safeParse 解析
+    // zodyPermissionRequestedEventPayloadSchema 是 .strict()，而 app 侧用 safeParse 解析
     // 收到的事件：多一个未知字段就会让它丢掉整个事件，确认窗根本到不了旧版 app。
     const mapped = mapSessionEvent(
       permissionRequestedEvent({
@@ -193,7 +193,7 @@ describe("legacy permission.requested 映射", () => {
 
   // 这条是"下一个人往 spread 里加字段"的绊线：带 display 的 permission_requested 走完
   // reducer pick → PendingPermission → mapPendingPermission 之后，产物必须同时过
-  // zcodePermissionRequestedEventPayloadSchema 与 zcodePendingPermissionSchema 两个
+  // zodyPermissionRequestedEventPayloadSchema 与 zodyPendingPermissionSchema 两个
   // strict schema。任一处漏剥离，这里就会红。
   it("带 display 的请求经两个 legacy mapper 后同时通过两个 strict schema", () => {
     const sessionId = "legacy-session" as SessionId;
@@ -356,7 +356,7 @@ describe("legacy v3 剥离 dwf run 进度事件", () => {
     // 这条是"下一个人把剥离拆掉"的绊线：即便剥离没了，映射产物也不能让旧桌面丢弃整条事件。
     const mapped = mapSessionEvent(runProgressEvent());
     expect(zodySessionEventSchema.safeParse(mapped).success).toBe(true);
-    // v3 的 zcodeSessionProjectionSchema 是 .strict() 且根本没有 subagents 这类状态面，
+    // v3 的 zodySessionProjectionSchema 是 .strict() 且根本没有 subagents 这类状态面，
     // 所以不存在"要在 legacy 映射里剥掉 workflowRuns"的对应物。
     expect(
       zodySessionProjectionSchema.safeParse(

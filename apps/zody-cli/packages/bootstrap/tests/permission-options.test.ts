@@ -54,7 +54,7 @@ describe("buildProtocolPermissionOptions", () => {
       name: "Always allow in this session",
       response: { decision: "allow" },
     });
-    // wire 上 zcodePermissionUpdateSchema 是 strict：会话语义不能借 permissionUpdates 走私，
+    // wire 上 zodyPermissionUpdateSchema 是 strict：会话语义不能借 permissionUpdates 走私，
     // 会话授权由 broker 在应答侧合成（sessionPermissionUpdates）。
     expect(session?.response).not.toHaveProperty("permissionUpdates");
     expect(options.some((option) => option.optionId === "allow_project")).toBe(false);

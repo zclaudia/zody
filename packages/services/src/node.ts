@@ -564,7 +564,7 @@ export function shouldEnableDefaultCuaProductHelper(
     env?: NodeJS.ProcessEnv;
   } = {},
 ): boolean {
-  // CUA 已随正式版默认开启（isZCodeCuaInternalFeatureEnabled 默认 ON，仅显式 0/false/off 关闭；2026-08 注释更正——旧注释称默认关闭已过期）。显式开启后 macOS 使用既有产品 Helper，Windows 使用安装包内 runtime；
+  // CUA 已随正式版默认开启（isZodyCuaInternalFeatureEnabled 默认 ON，仅显式 0/false/off 关闭；2026-08 注释更正——旧注释称默认关闭已过期）。显式开启后 macOS 使用既有产品 Helper，Windows 使用安装包内 runtime；
   // 两端都保持按需启动。关闭时不创建 host、不探测资源、不产生子进程或权限提示。
   const env = options.env ?? process.env;
   if (!isZodyCuaInternalFeatureEnabled(env)) return false;
@@ -1990,7 +1990,7 @@ export function createLocalServices(options: {
       }),
     )
     // fork（F2.6b）：client-config 服务改纯本地实现，不再请求 /api/v1/client/configs；
-    // 动态工作流 offer 与 zcodeAgentService 同源（localClientConfig + 设置权威）。
+    // 动态工作流 offer 与 zodyAgentService 同源（localClientConfig + 设置权威）。
     .register(
       IClientConfigService,
       createClientConfigService({

@@ -332,7 +332,7 @@ describe("v4 conversation workflowRunEvents query", () => {
 // ── dwf run 枚举 query 的摘要形状（docs/dynamic-workflow/launch.md「`/dwf`」）──
 // 新增的 label / updatedAt 是 additive optional：老 CLI 不发这两个键，读侧回落 runId 与
 // 「不显示时间」。这里钉住的正是那个偏斜姿态——schema 两侧同一个模块（服务端
-// v4-gateway.parse 与桌面 zcodeAgentService.parse 共用），加可选键不破任何一侧。
+// v4-gateway.parse 与桌面 zodyAgentService.parse 共用），加可选键不破任何一侧。
 describe("v4 conversation workflowRuns query 的 run 摘要", () => {
   function summary(overrides: Record<string, unknown> = {}) {
     return {

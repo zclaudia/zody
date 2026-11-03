@@ -1,6 +1,6 @@
 // plugins/referenceCatalog 协议契约回归（docs/plugin-reference-mention.md §5）：
 // session authority（冻结 catalog 直读 session record 的 App）、workspace authority
-// （resolveZCodePlugins 实时投影）、session 不存在时 fail closed（不回退 workspace）。
+// （resolveZodyPlugins 实时投影）、session 不存在时 fail closed（不回退 workspace）。
 // catalog 构建与冲突语义的机制证据在 core（plugin-reference.test.ts）。
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";

@@ -84,3 +84,7 @@ shared、bootstrap、services 和其消费者的内部声明、导出、动态�
 验收覆盖本地及远端访问器创建、workspace identity 路由、Desktop 连续流与手机可恢复 attachment 的实际消费者、内部注入和 mock；不能因同名变量而重命名插件桥、持久化字段、环境变量、builtin 配置或其他外部键。
 
 现行注释、测试标题与开发说明中的内部符号和源码路径随已实施改名同步；独立 JS 测试工具的局部导出及消费者一起改名。协议名、日志与遥测字段、外部错误身份、兼容输入及历史来源仍由各自契约管理，文字修正不改变其值。
+
+## 内部 store hook 诊断
+
+`useZodyStore` 在缺少 `StoreProvider` 时的内部开发诊断使用 `useZodyStore 必须在 StoreProvider 内使用`。独立手机页面提供本地 store，正常渲染不得出现该诊断。此规则只覆盖内部 hook 文案，不改变外部 `Error.name`、协议字段或兼容键。

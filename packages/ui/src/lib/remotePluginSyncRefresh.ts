@@ -56,7 +56,7 @@ async function refreshSlashCommandsAfterRemotePluginSync(params: {
       workspaceIdentityParam,
     ).slashCommands;
     // 远程插件同步入口不一定打开过命令设置页，commandsStore 可能尚未初始化。
-    // 输入框 `/` 面板读取的是 zcodeSessionStore.slashCommands，所以同步后必须直接
+    // 输入框 `/` 面板读取的是 zodySessionStore.slashCommands，所以同步后必须直接
     // 向当前远端 workspace 拉取 commands 并写回 slashCommands，不能只刷新设置页 store。
     zodySessionStore.setSlashCommands(
       workspacePath,

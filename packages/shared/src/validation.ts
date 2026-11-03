@@ -1204,7 +1204,7 @@ export const nodeSelfResourceSampleSchema = z
   .object({
     /**
      * 整机归一化 CPU 百分比，100 表示所有逻辑核占满。
-     * 上限刻意放宽（与 CLI 的 `zcodeProcessResourceSampleSchema` 同口径）：读数异常时宁可让
+     * 上限刻意放宽（与 CLI 的 `zodyProcessResourceSampleSchema` 同口径）：读数异常时宁可让
      * 样本带着离谱数值上去、由平台侧数值异常规则暴露，也不在客户端静默丢样本。
      */
     cpuPercent: z.number().finite().nonnegative().max(100_000),

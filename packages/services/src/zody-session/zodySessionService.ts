@@ -1,4 +1,4 @@
-/* eslint-disable max-lines -- zcodeSessionService 聚合 desktop-continuous session 操作、draft lifecycle 和 task index 同步边界，拆分需要单独设计。 */
+/* eslint-disable max-lines -- zodySessionService 聚合 desktop-continuous session 操作、draft lifecycle 和 task index 同步边界，拆分需要单独设计。 */
 import type { IZodyAgentService } from "#src/zody-agent/zodyAgent.js";
 import type { ZodyTaskIndexSyncer } from "#src/zody-agent/zodyTaskIndexSyncer.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
@@ -125,7 +125,7 @@ export function createZodySessionService({
     return availableThoughtLevels === null || availableThoughtLevels.has(params.thoughtLevel);
   }
 
-  // zcodeSessionService 是 desktop-continuous 主路径，状态变更后必须
+  // zodySessionService 是 desktop-continuous 主路径，状态变更后必须
   // 广播 snapshot，否则 sqlite 永远停留在 createSession 时写的 "New session"，侧边栏也收不到
   // workspace_task_list_changed。旧写路径（send/steer/fork/compact/rewind pass-through）
   // 已删除，仅剩 createSession/resumeSession/setModel 等生命周期与配置 op 调用本方法。

@@ -463,7 +463,7 @@ async function isResolvableCustomCommand(deps: RunDependencies, name: string): P
   // 直接返回 undefined、不做展开，所以这里若把一个保留名判成"可解析"，它就会以字面文本
   // `/compress …` 被当成普通 prompt 提交给模型——静默走错路，没有任何报错。
   //
-  // 探测刻意用「保留名检查 + load」这一对，而不是直接调 resolveZCodeCustomCommandPrompt：
+  // 探测刻意用「保留名检查 + load」这一对，而不是直接调 resolveZodyCustomCommandPrompt：
   // 后者会执行 `!` shell expansion，拿它探测等于把用户的 shell 片段跑两遍。
   // 这一对是它的无副作用等价物（load 只读文件）。
   if (await isReservedSlashCommandName(deps, name)) return false;

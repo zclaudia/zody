@@ -1268,7 +1268,7 @@ describe("createZodyAgentService", () => {
   afterEach(() => {
     setDataBaseDir(null);
     for (const dir of createdDirs.splice(0).reverse()) {
-      // 根因同 zcodeAgentService.v4.test.ts：Windows 上仍有打开句柄的目录删不掉，
+      // 根因同 zodyAgentService.v4.test.ts：Windows 上仍有打开句柄的目录删不掉，
       // `force: true` 不重试，afterEach 会以 EPERM 把断言已通过的用例判成失败。
       try {
         rmSync(dir, {

@@ -44,7 +44,7 @@ export function StoreProvider({
 export function useZodyStore<T>(selector: (state: ZodyState) => T): T {
   const store = useContext(StoreContext);
   if (!store) {
-    throw new Error("useZCodeStore 必须在 StoreProvider 内使用");
+    throw new Error("useZodyStore 必须在 StoreProvider 内使用");
   }
   return useStore(store, selector);
 }

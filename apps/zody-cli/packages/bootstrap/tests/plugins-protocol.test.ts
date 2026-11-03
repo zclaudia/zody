@@ -58,7 +58,7 @@ afterAll(async () => {
 });
 
 // 协议契约层面的回归: 确保 plugins/list 与 plugins/setEnabled 已注册且 schema 可用。
-// 端到端发现逻辑由 bootstrap/tests/plugins.test.ts (resolveZCodePlugins) 覆盖。
+// 端到端发现逻辑由 bootstrap/tests/plugins.test.ts (resolveZodyPlugins) 覆盖。
 describe("plugins protocol contracts", () => {
   it("serializes marketplace mutations behind the workspace plugin storage lock", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-protocol-marketplace-lock-"));
@@ -518,7 +518,7 @@ describe("updatePlugin handler diagnostics", () => {
       // Make reinstall fail: drop the persisted marketplace manifest dir AND the
       // source directory. ensureMarketplaceManifestAvailable then falls back to the
       // known record and re-fetches from the (now missing) directory source, which
-      // throws -> installZCodeMarketplacePlugin returns an error diagnostic.
+      // throws -> installZodyMarketplacePlugin returns an error diagnostic.
       await rm(join(pluginStorageRoot, "marketplaces", "lazy-market"), {
         force: true,
         recursive: true,

@@ -1601,7 +1601,7 @@ function expandNestedExploreImage(toolIds: { parent: string; child: string }) {
 }
 
 // I08：卡片要求在该文件补齐内嵌图片失败/切源反例；ToolCallBody 与 Agent 测试共用
-// ServiceProvider + ZCodeIntlProvider 装配，直接渲染 body 覆盖异步终态。
+// ServiceProvider + ZodyIntlProvider 装配，直接渲染 body 覆盖异步终态。
 describe("ToolCallBody inline image preview", () => {
   afterEach(() => {
     cleanup();

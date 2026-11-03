@@ -56,7 +56,7 @@ export function buildProtocolPermissionOptions(
     },
     // 工具可以声明 no-always-allow：每次调用都是不同代码时，持久规则不是"记住这次决定"，
     // 而是把这道确认永久关掉。session-always-allow 则换成会话作用域的免确认：response 里
-    // **没有** permissionUpdates——wire 上 zcodePermissionUpdateSchema 是 strict，会话语义由
+    // **没有** permissionUpdates——wire 上 zodyPermissionUpdateSchema 是 strict，会话语义由
     // broker 在应答侧合成为 sessionPermissionUpdates（纯内存，绝不落项目规则）。
     ...(source.optionsPolicy === "no-always-allow"
       ? []

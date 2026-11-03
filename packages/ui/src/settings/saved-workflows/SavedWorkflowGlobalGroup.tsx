@@ -49,7 +49,7 @@ interface SavedWorkflowGlobalGroupProps {
 
 /**
  * 全局工作流组：顶部固定的「全局」组，空也显示。载体不用
- * `useWorkspaceServicesResolution`——直接用 `useServices().zcodeAgentService`，RPC 带 `{ scope: "global" }`，
+ * `useWorkspaceServicesResolution`——直接用 `useServices().zodyAgentService`，RPC 带 `{ scope: "global" }`，
  * services 层自选本机运行时。运行走带「运行于」的实参窗；卡片 / 详情可「移到项目…」搬回本地项目。
  * 状态与动作全在 `useSavedWorkflowGlobalGroup`，本文件只负责渲染。
  */

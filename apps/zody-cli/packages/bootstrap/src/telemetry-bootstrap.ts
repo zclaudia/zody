@@ -25,7 +25,7 @@ export async function prepareZodyTelemetryEnv(
 }
 
 /**
- * 与 prepareZCodeTelemetryEnv 对称地关闭当前进程持有的 Telemetry Owner。
+ * 与 prepareZodyTelemetryEnv 对称地关闭当前进程持有的 Telemetry Owner。
  * 单个 App/Session 只允许 flush；只有最外层可执行入口可以调用本函数。
  */
 export async function shutdownZodyTelemetry(): Promise<void> {

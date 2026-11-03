@@ -1185,7 +1185,7 @@ export function createZodyTaskServiceAdapter(
   /**
    * session/setMode → v4 switchCollaborationMode。
    * auto 例外保真：v4 命令值域刻意排除 auto（「auto 非用户可切，不进 UI 命令面」，
-   * command.ts 裁决），而旧协议 ZCodeSessionMode 含 auto 且旧 op 接受它——为 UI 行为
+   * command.ts 裁决），而旧协议 ZodySessionMode 含 auto 且旧 op 接受它——为 UI 行为
    * 零变化，auto 继续走旧 op，其余值一律 v4 原生。过渡归宿 = auto 语义在 v4 侧裁决后收口。
    */
   async function switchCollaborationModeViaProtocol(
@@ -2021,7 +2021,7 @@ export function createZodyTaskServiceAdapter(
     // fork（bot channels 移除，specs/bot-channels-removal.md）：bot 话题/群输入六方法
     // （readBotTopicSummaries/invalidateBotTopicInputs/readBotTopicExecution/
     // stopBotTopicExecution/getBotGroupTaskBlockReason/cancelBotGroupInput/submitBotGroupInput）
-    // 随第三方 IM bot 接入整体删除，接口同步收窄（session/zcodeTaskService.ts）。
+    // 随第三方 IM bot 接入整体删除，接口同步收窄（session/zodyTaskService.ts）。
 
     async sendPrompt(params): Promise<void> {
       const storedTarget = getTaskTarget(params.taskId);

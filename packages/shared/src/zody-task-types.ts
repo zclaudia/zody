@@ -3,7 +3,7 @@
 // 剩余 29 个导出：workspace 预热/workspace 事件、turn steer 结果、session binding/import、
 // trace/input/query id 工厂函数、ZodyError、ZodyTaskCreateResult 等。
 // 消费者：services 旧栈（zodyAgentService/zodyTaskServiceAdapter/zodyTaskService）、
-// UI 旧 store/投影。明星承重类型（ZCodeTaskMeta/ZCodeStreamEvent/ZCodeTaskSnapshot 等）
+// UI 旧 store/投影。明星承重类型（ZodyTaskMeta/ZodyStreamEvent/ZodyTaskSnapshot 等）
 // 已迁 zody-task-types-core.ts（幸存面）。本文件与旧 task service 组同生命周期。
 import { createUuid } from "./uuid.js";
 import type {
@@ -113,7 +113,7 @@ export interface ZodySwitchAgentResult {
   reusedBinding: boolean;
 }
 
-/** 外部原生 session 导入的来源 provider；与 agent runtime 的 ZCodeProvider 解耦，当前仅 Claude Code。 */
+/** 外部原生 session 导入的来源 provider；与 agent runtime 的 ZodyProvider 解耦，当前仅 Claude Code。 */
 export type ZodyImportSessionSourceProvider = "claude";
 
 /** 外部原生 session 的导入候选。 */

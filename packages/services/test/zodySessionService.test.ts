@@ -125,7 +125,7 @@ describe("createZodySessionService", () => {
       }),
     ).resolves.toBe(snapshot);
 
-    // Bugfix: zcodeSessionService 会为 createSession 补 sessionTraceId 贯穿日志链路。
+    // Bugfix: zodySessionService 会为 createSession 补 sessionTraceId 贯穿日志链路。
     // 这个 deferred draft 用例只验证草稿不进入 task index，因此需要显式接受并校验 trace 字段。
     expect(agentService.createSession).toHaveBeenCalledWith({
       workspacePath: "/workspace/app",

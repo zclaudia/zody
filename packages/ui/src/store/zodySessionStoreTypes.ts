@@ -1,8 +1,8 @@
 /* oxlint-disable eslint(max-lines) -- ZCode Agent store 类型和默认状态集中导出，避免切片间重复定义共享结构。 */
 /**
- * ZCode Session Store 类型定义、接口、常量与默认值工厂
+ * Zody Session Store 类型定义、接口、常量与默认值工厂
  *
- * 从 zcodeSessionStore.ts 拆分出来，供 store 本体和 selectors / navigation 等子模块共享。
+ * 从 zodySessionStore.ts 拆分出来，供 store 本体和 selectors / navigation 等子模块共享。
  */
 import {
   buildNativeSupplierKey,

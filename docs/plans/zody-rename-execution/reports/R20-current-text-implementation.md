@@ -9,3 +9,7 @@ compact 与 memory 各自的 `loadZCodeModules` 独立导出及消费者改为 `
 真实执行及 argv 见 `commands.json`：根目标测试 4 文件 82 项；dev-docs 7 文件 18 项；CLI 与 TUI 使用各包的 Node test runner，分别 7 和 4 项；隔离 HOME/USERPROFILE/TMPDIR 且去除 API key 的 compact fake 七场景和 memory bench 四场景通过。两个 E2E 使用本工作树已有构建产物，不能替代最终干净构建；无真实 provider 调用。lint 退出 0、303 warnings，changed architecture 0 violations；未安装、运行 Docker、新建 worktree、签名或发布。
 
 最终根 `pnpm typecheck` 实际退出 0（`typecheck-final.log`）。本批未提交，需由主控对完整冻结候选进行独立复验、干净安装和后续生成验收。
+
+## 主控集成记录
+
+作者上述“未提交”描述交付时点；主控后续冻结为 `70366cdc774b5cb96fc2f7f6c57e17046d4a19a8`。独立审查确认绑定和 payload 变更，但指出三个当前注释与内部 hook 诊断文案未闭合，返回 CHANGES_REQUIRED，原始收据见 R20-current-text-deepseek-review-1.md；对应修正另行交付，不能把原批记为文本验收通过。

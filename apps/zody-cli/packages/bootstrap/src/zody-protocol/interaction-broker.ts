@@ -312,7 +312,7 @@ function v4AnswerToPermissionResponse(
       return { decision: "deny", reason: buildPermissionDeniedContent(answer.freeText) };
     }
     // 会话免确认：会话语义在这里合成，而不是放进
-    // option.response——wire 上 zcodePermissionUpdateSchema 是 strict，旧桌面多一个字段就丢事件。
+    // option.response——wire 上 zodyPermissionUpdateSchema 是 strict，旧桌面多一个字段就丢事件。
     if (exact.kind === SESSION_ALLOW_PERMISSION_OPTION_KIND) {
       return {
         ...exact.response,

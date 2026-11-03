@@ -71,7 +71,7 @@ const SANITIZED_RUNTIME_ENV_KEYS = [
   // env 注入在 buildMcpStdioEnv 之后 spread，因此仍能拿到（见 adapters/mcp StdioClientTransport）。
   ZCODE_CUA_BROKER_SOCKET_ENV_KEY,
   // 遗留 bearer token：当前 broker 是 identity 模式（socket + authority，无口令，见
-  // captureZCodeCuaBrokerCredentials），本进程不再产生也不再消费它。仍然剔除，因为用户机上
+  // captureZodyCuaBrokerCredentials），本进程不再产生也不再消费它。仍然剔除，因为用户机上
   // 可能装着旧版 Helper —— 那些版本认 bearer token，一旦这个变量随 agent 全局 env 漏给别的
   // MCP server / Bash 子进程，同一个 confused-deputy 又成立。剔除一个已不用的键是零成本的。
   "ZCODE_CUA_PERMISSION_BROKER_TOKEN",

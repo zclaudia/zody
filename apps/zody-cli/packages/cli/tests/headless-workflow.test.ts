@@ -90,8 +90,8 @@ test("dwf progress events are recognised, other session events are not", () => {
 });
 
 test("the CLI-private stream type stays out of the v3 protocol enum", () => {
-  // 绊线：定型行的 type 刻意不是 zcodeSessionEventTypeSchema 的成员。那个 enum 是闭集
-  // 且喂给 zcodeSessionEventSchema 的 discriminated union，加值等于让 v3 app-server 在
+  // 绊线：定型行的 type 刻意不是 zodySessionEventTypeSchema 的成员。那个 enum 是闭集
+  // 且喂给 zodySessionEventSchema 的 discriminated union，加值等于让 v3 app-server 在
   // 类型面上宣告一个它永不发出的事件（协议路径在 mapSessionEventForProtocol 里就已经
   // 把这个事件剥掉了）。谁把映射搬进协议枚举，这条先红。
   assert.equal(

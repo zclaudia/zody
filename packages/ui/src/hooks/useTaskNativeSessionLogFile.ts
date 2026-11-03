@@ -48,7 +48,7 @@ export function supportsTaskNativeSessionLogFile(
 /**
  * 读取当前 task 对应的原生会话日志路径。
  *
- * 路径规则统一通过 zcodeTaskService 解析，避免 UI 层猜 provider 自己的目录结构。
+ * 路径规则统一通过 zodyTaskService 解析，避免 UI 层猜 provider 自己的目录结构。
  */
 export function useTaskNativeSessionLogFile(
   workspacePath: string,

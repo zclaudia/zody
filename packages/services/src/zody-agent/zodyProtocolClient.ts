@@ -12,7 +12,7 @@ import type { V4Method } from "@zody/shared/zody-protocol-v4";
 import type { z } from "zod";
 import type { ZodyProtocolTransport } from "./zodyProtocolTransport.js";
 
-/** 客户端可发的方法名：旧 zcodeProtocolMethods + v4/*（M3 起并存，M5 波次 2 收敛为 v4）。 */
+/** 客户端可发的方法名：旧 zodyProtocolMethods + v4/*（M3 起并存，M5 波次 2 收敛为 v4）。 */
 export type ZodyProtocolClientMethod = ZodyProtocolMethod | V4Method;
 
 interface ZodyProtocolClientOptions {

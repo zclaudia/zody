@@ -15,7 +15,7 @@
 //   2. connect() 的 catch 除 initialFrameStagingOverflow 外一律定格 status="error"，
 //      没有 sessionsIndexStore 那样的有界退避。
 //
-// 自愈成立的前提（zcodeAgentService.ts:5581）：subscribeConversationV4 走
+// 自愈成立的前提（zodyAgentService.ts#subscribeConversationV4）：subscribeConversationV4 走
 // getReadOnlyClient(params) 默认 start-if-needed，重订阅本身会把 agent 拉起来——这与侧栏
 // subscribeSessionsIndexV4 显式用 existing-only + dormant 的策略差异是故意设计的。
 import { Emitter } from "@zody/rpc";
@@ -54,7 +54,7 @@ function lifecycleEvent(state: "available" | "unavailable", generation: number):
   };
 }
 
-/** workspace-dispose 打断在途 subscribe 时，ZCodeProtocolClient.rejectAll 抛出的真实文案。 */
+/** workspace-dispose 打断在途 subscribe 时，ZodyProtocolClient.rejectAll 抛出的真实文案。 */
 const TRANSPORT_CLOSED = "ZCode agent transport closed";
 
 /** 与实现的 RUNTIME_RECYCLE_RETRY_DELAYS_MS 长度一致（250/1000/3000ms）。 */

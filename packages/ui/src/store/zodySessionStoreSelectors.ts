@@ -1,7 +1,7 @@
 /**
- * ZCode Session Store 选择器与内部辅助函数
+ * Zody Session Store 选择器与内部辅助函数
  *
- * 从 zcodeSessionStore.ts 拆分出来，包含 workspace 状态读取/更新辅助函数，
+ * 从 zodySessionStore.ts 拆分出来，包含 workspace 状态读取/更新辅助函数，
  * 以及所有按 task 粒度的只读访问器和独立选择器。
  */
 import type {
