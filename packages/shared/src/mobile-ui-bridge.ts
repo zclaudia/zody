@@ -47,6 +47,29 @@ export const MOBILE_UI_BRIDGE_V1_CAPABILITIES = [
   "lifecycle",
 ] as const;
 
+/**
+ * M3 加法能力：Remote 在 reload 前调用 `ZodyRemoteBridge.prepareReload` 请求原生 veto。
+ * 它是可选能力，不加入 v1 能力数组：旧 v1 桥没有该方法时页面按 `unsupported` 处理。
+ */
+export const MOBILE_UI_BRIDGE_PREPARE_RELOAD_CAPABILITY = "prepare-reload";
+
+/** `prepareReload` 的页面可分支结果；其余响应一律 fail closed 为 `unsupported`。 */
+export const MOBILE_REMOTE_PREPARE_RELOAD_RESULTS = [
+  "ready",
+  "stale-session",
+  "native-busy",
+  "unsupported",
+] as const;
+
+export type MobileRemotePrepareReloadResultKind =
+  (typeof MOBILE_REMOTE_PREPARE_RELOAD_RESULTS)[number];
+
+export type MobileRemotePrepareReloadResult =
+  | { kind: "ready" }
+  | { kind: "stale-session" }
+  | { kind: "native-busy" }
+  | { kind: "unsupported" };
+
 /** 稳定错误码；页面按 code 分支，message 仅用于诊断展示。 */
 export const MOBILE_BRIDGE_ERROR_CODES = [
   "native-bridge-unavailable",
@@ -61,6 +84,8 @@ export const MOBILE_BRIDGE_ERROR_CODES = [
   "open-remote-failed",
   "session-context-invalid",
   "stale-session",
+  /** M3：原生文件选择、拍照、权限或保存会话进行中，`prepareReload` veto。 */
+  "native-busy",
   "bridge-version-unsupported",
   "unsupported-capability",
 ] as const;
@@ -335,6 +360,51 @@ export function parseMobileBridgeJson<T>(json: string, schema: z.ZodType<T>): T 
 }
 
 /**
+ * 解析 M3 `prepareReload(sessionId, releaseId)` 的原生返回值。
+ *
+ * 契约（由 M3-T3 的 Android 实现遵守）：
+ * - 成功必须是 `{ schemaVersion: 1, ok: true, status: "ready" }`；
+ * - 失败 envelope 的 `error.code` 只接受 `stale-session`（generation/session 已变）与
+ *   `native-busy`（文件选择、拍照、权限请求或保存会话进行中）；
+ * - 方法缺失、损坏 JSON、未知状态或未知错误码一律归为 `unsupported`，页面不得自行放行。
+ *
+ * 页面只按 `kind` 分支；消息文本仅用于原生诊断，不进入刷新判断。
+ */
+export function parseMobileRemotePrepareReloadResult(
+  raw: unknown,
+): MobileRemotePrepareReloadResult {
+  if (typeof raw !== "string") {
+    return { kind: "unsupported" };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { kind: "unsupported" };
+  }
+  if (
+    !isRecord(parsed) ||
+    parsed.schemaVersion !== MOBILE_UI_BRIDGE_SCHEMA_VERSION ||
+    typeof parsed.ok !== "boolean"
+  ) {
+    return { kind: "unsupported" };
+  }
+  if (parsed.ok) {
+    // 成功也必须显式声明 ready；不能把任意成功 envelope 当成 reload 许可。
+    return parsed.status === "ready" ? { kind: "ready" } : { kind: "unsupported" };
+  }
+  const error = isRecord(parsed.error) ? parsed.error : undefined;
+  switch (error?.code) {
+    case "stale-session":
+      return { kind: "stale-session" };
+    case "native-busy":
+      return { kind: "native-busy" };
+    default:
+      return { kind: "unsupported" };
+  }
+}
+
+/**
  * Shell bridge 的 Android 注入面（`@JavascriptInterface` 平铺方法）。
  * 只负责配对配置，不含 Remote 文件、通知或业务能力。
  */
@@ -365,6 +435,14 @@ export interface MobileRemoteBridge {
    * 返回 `MobileBridgeOperationResult` JSON；旧壳缺少该方法时页面按不支持处理。
    */
   markRemoteReady?(sessionId: string): string;
+  /**
+   * M3：Web 在 `window.location.reload()` 前请求原生 veto。
+   *
+   * 原生先校验当前 generation/session，再检查进行中的文件选择、拍照、权限请求和保存会话；
+   * 返回 `MobileRemotePrepareReloadResult` JSON（用 `parseMobileRemotePrepareReloadResult`
+   * 解析）。旧壳缺少该方法；页面按 `unsupported` 处理，不刷新。
+   */
+  prepareReload?(sessionId: string, releaseId: string): string;
   /** 当前 sessionId 不符时原生拒绝，不执行返回 Shell。 */
   returnShell(reason: string, sessionId: string): void;
 }

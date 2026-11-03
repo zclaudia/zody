@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   MOBILE_BRIDGE_ERROR_CODES,
+  MOBILE_UI_BRIDGE_PREPARE_RELOAD_CAPABILITY,
   MOBILE_UI_BRIDGE_SCHEMA_VERSION,
   MOBILE_UI_BRIDGE_V1_CAPABILITIES,
   MOBILE_UI_BRIDGE_VERSION,
   MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY,
   MOBILE_UI_SHELL_BRIDGE_GLOBAL_KEY,
+  MOBILE_REMOTE_PREPARE_RELOAD_RESULTS,
   mobileBridgeFailureSchema,
   mobileBridgeCapabilitiesSchema,
   mobileSessionContextReadResultSchema,
@@ -17,6 +19,7 @@ import {
   mobileShellConfigWriteSchema,
   mobileShellOperationResultSchema,
   parseMobileBridgeJson,
+  parseMobileRemotePrepareReloadResult,
   parseMobileSessionContext,
   parseMobileShellConfig,
   parseMobileShellConfigWrite,
@@ -63,6 +66,11 @@ describe("mobile-ui-bridge 契约常量", () => {
     expect(MOBILE_UI_BRIDGE_VERSION).toBe(1);
     expect(MOBILE_UI_SHELL_BRIDGE_GLOBAL_KEY).toBe("ZodyShellBridge");
     expect(MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY).toBe("ZodyRemoteBridge");
+    expect(MOBILE_UI_BRIDGE_PREPARE_RELOAD_CAPABILITY).toBe("prepare-reload");
+    // prepareReload 是 M3 的加法能力：旧 v1 桥不含它，不能用 V1 能力数组假装支持。
+    expect(MOBILE_UI_BRIDGE_V1_CAPABILITIES).not.toContain(
+      MOBILE_UI_BRIDGE_PREPARE_RELOAD_CAPABILITY,
+    );
     expect(MOBILE_UI_BRIDGE_V1_CAPABILITIES).toEqual([
       "session-context",
       "file-save",
@@ -89,6 +97,7 @@ describe("mobile-ui-bridge 契约常量", () => {
       "open-remote-failed",
       "session-context-invalid",
       "stale-session",
+      "native-busy",
       "bridge-version-unsupported",
       "unsupported-capability",
     ]);
@@ -328,6 +337,68 @@ describe("bridge JSON 结果 envelope", () => {
   });
 });
 
+describe("Remote prepareReload 契约（M3-T1）", () => {
+  it("固定四种页面可分支的结果", () => {
+    expect(MOBILE_REMOTE_PREPARE_RELOAD_RESULTS).toEqual([
+      "ready",
+      "stale-session",
+      "native-busy",
+      "unsupported",
+    ]);
+  });
+
+  it("成功 envelope 必须显式声明 status=ready", () => {
+    expect(
+      parseMobileRemotePrepareReloadResult(
+        JSON.stringify({ schemaVersion: 1, ok: true, status: "ready" }),
+      ),
+    ).toEqual({ kind: "ready" });
+  });
+
+  it("原生 veto 映射为稳定结果，页面不解析 message", () => {
+    expect(
+      parseMobileRemotePrepareReloadResult(
+        JSON.stringify({
+          schemaVersion: 1,
+          ok: false,
+          error: { code: "stale-session", message: "session changed" },
+        }),
+      ),
+    ).toEqual({ kind: "stale-session" });
+    expect(
+      parseMobileRemotePrepareReloadResult(
+        JSON.stringify({ schemaVersion: 1, ok: false, error: { code: "native-busy" } }),
+      ),
+    ).toEqual({ kind: "native-busy" });
+    expect(
+      parseMobileRemotePrepareReloadResult(
+        JSON.stringify({ schemaVersion: 1, ok: false, error: { code: "unsupported-capability" } }),
+      ),
+    ).toEqual({ kind: "unsupported" });
+  });
+
+  it.each([
+    ["方法缺失/未返回", undefined],
+    ["非字符串", 42],
+    ["损坏 JSON", "{not-json"],
+    ["schemaVersion 不符", JSON.stringify({ schemaVersion: 2, ok: true, status: "ready" })],
+    ["缺少 ok", JSON.stringify({ schemaVersion: 1, status: "ready" })],
+    ["成功但缺少 ready 标记", JSON.stringify({ schemaVersion: 1, ok: true })],
+    ["未知成功状态", JSON.stringify({ schemaVersion: 1, ok: true, status: "later" })],
+    [
+      "旧 bridge 不可用",
+      JSON.stringify({
+        schemaVersion: 1,
+        ok: false,
+        error: { code: "native-bridge-unavailable" },
+      }),
+    ],
+    ["未知错误码", JSON.stringify({ schemaVersion: 1, ok: false, error: { code: "future-code" } })],
+  ])("%s fail closed 为 unsupported", (_label, raw) => {
+    expect(parseMobileRemotePrepareReloadResult(raw)).toEqual({ kind: "unsupported" });
+  });
+});
+
 describe("bridge 发现", () => {
   function createShellBridge(): MobileShellBridge {
     return {
@@ -368,6 +439,15 @@ describe("bridge 发现", () => {
     expect(
       resolveMobileRemoteBridge({ [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: remoteBridge }),
     ).toBe(remoteBridge);
+    // prepareReload 是可选加法能力，缺少它不能导致整个 Remote 桥不可用。
+    expect(
+      resolveMobileRemoteBridge({
+        [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: {
+          ...remoteBridge,
+          prepareReload: () => JSON.stringify({ schemaVersion: 1, ok: true, status: "ready" }),
+        },
+      }),
+    ).toBeDefined();
     expect(
       resolveMobileRemoteBridge({ [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: { returnShell: () => {} } }),
     ).toBeUndefined();
