@@ -46,7 +46,7 @@ export async function validateMobileNotificationTask(
   services: Services,
   target: { taskId: string; workspacePath: string; workspaceIdentity?: string },
 ) {
-  const meta = await services.zcodeTaskService.getTaskMeta(target);
+  const meta = await services.zodyTaskService.getTaskMeta(target);
   if (
     !meta ||
     meta.taskId !== target.taskId ||

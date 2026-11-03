@@ -54,7 +54,7 @@ function taskMeta(params: { workspacePath?: string; workspaceIdentity?: string }
 }
 
 function servicesWithSetTaskUnread(setTaskUnread: ReturnType<typeof vi.fn>): IServiceAccessor {
-  return { zcodeTaskService: { setTaskUnread } } as unknown as IServiceAccessor;
+  return { zodyTaskService: { setTaskUnread } } as unknown as IServiceAccessor;
 }
 
 function renderNavigation(params: {

@@ -702,8 +702,8 @@ export function SessionPane({
   const {
     modelSelectionService,
     usageStatsService: _usageStatsService,
-    zcodeSessionService,
-    zcodeTaskService,
+    zodySessionService,
+    zodyTaskService,
   } = useServices();
   const { intl } = useZodyIntl();
   const slashCommands = useSlashCommands(workspacePath, workspaceIdentity);
@@ -1853,7 +1853,7 @@ export function SessionPane({
         let replacesChildSessionId: string | undefined;
         if (targetChildSessionId) {
           try {
-            await zcodeSessionService.readSession({
+            await zodySessionService.readSession({
               workspacePath,
               ...(workspaceIdentity ? { workspaceIdentity } : {}),
               sessionId: targetChildSessionId,
@@ -1943,7 +1943,7 @@ export function SessionPane({
       workspaceIdentity,
       workspaceKey,
       workspacePath,
-      zcodeSessionService,
+      zodySessionService,
     ],
   );
 
@@ -3742,7 +3742,7 @@ export function SessionPane({
       );
 
       try {
-        await zcodeTaskService.restartWorkspaceProcess({
+        await zodyTaskService.restartWorkspaceProcess({
           workspacePath,
           workspaceIdentity,
           provider: displayProvider,
@@ -3753,7 +3753,7 @@ export function SessionPane({
           workspacePath,
           workspaceIdentity,
           provider: displayProvider,
-          zcodeSessionService,
+          zodySessionService,
         });
         handleDraftSelectModel(
           modelSelection.providerId,
@@ -3800,8 +3800,8 @@ export function SessionPane({
       showModelChangeNotice,
       workspaceIdentity,
       workspacePath,
-      zcodeSessionService,
-      zcodeTaskService,
+      zodySessionService,
+      zodyTaskService,
     ],
   );
 

@@ -84,7 +84,7 @@ export function useWorkspaceSessionReload({
       }
 
       try {
-        await services.zcodeTaskService.restartWorkspaceProcess({
+        await services.zodyTaskService.restartWorkspaceProcess({
           workspacePath: workspaceAbsPath,
           ...(workspaceIdentity ? { workspaceIdentity } : {}),
           provider,
@@ -96,7 +96,7 @@ export function useWorkspaceSessionReload({
             workspacePath: workspaceAbsPath,
             workspaceIdentity,
             provider,
-            zcodeSessionService: services.zcodeSessionService,
+            zodySessionService: services.zodySessionService,
           });
 
           const latestAfterPrepare = zodySessionStore.getWorkspaceState(
@@ -170,8 +170,8 @@ export function useWorkspaceSessionReload({
       intl,
       reloadSessionDisabled,
       reloadSessionPending,
-      services.zcodeTaskService,
-      services.zcodeSessionService,
+      services.zodyTaskService,
+      services.zodySessionService,
       workspaceAbsPath,
       workspaceIdentity,
     ],

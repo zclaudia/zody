@@ -436,7 +436,7 @@ function createService(options?: {
   });
 
   const service = createZodyTaskServiceAdapter({
-    zcodeAgentService: agent,
+    zodyAgentService: agent,
     taskIndexRepo,
     taskIndexSyncer,
     ...(settingService ? { settingService } : {}),

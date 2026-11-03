@@ -99,7 +99,7 @@ export function useWorkspaceSessionsIndexItems(
   scopes: WorkspaceSessionsIndexScope[],
 ): WorkspaceSessionsIndexItemsResult {
   const baseServices = useBaseWorkspaceServices();
-  const baseAgentService = baseServices.zcodeAgentService;
+  const baseAgentService = baseServices.zodyAgentService;
 
   // scope 签名稳定化，避免每渲染重算协调；effect/memo 通过 ref 读取内容等价的最新 scopes。
   // endpointKey、workspacePath 或 agentService generation 变化都会换签名。

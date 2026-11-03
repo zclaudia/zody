@@ -124,7 +124,7 @@ export function createPage(
       // 页面独立持有已有 workspace 连接租约；卡片或 pane 退出不会让后台页面失联。
       const connection = acquireWorkspaceConnection(
         latest.current.scope,
-        services.zcodeAgentService,
+        services.zodyAgentService,
         platform.createLocalMediaPreviewUrl,
       );
       releaseLease = () => connection.release();
@@ -273,7 +273,7 @@ export function createPage(
     controller.start();
   }
   const task = buildPluginUiSessionKey(input.scope);
-  const workspaceEvents = services.zcodeTaskService.onDynamicWorkspaceEvent({
+  const workspaceEvents = services.zodyTaskService.onDynamicWorkspaceEvent({
     workspacePath: input.scope.workspacePath,
     workspaceIdentity: input.scope.workspaceIdentity,
   })((event) => {

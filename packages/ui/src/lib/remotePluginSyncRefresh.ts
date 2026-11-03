@@ -90,8 +90,8 @@ export async function refreshWorkspacePluginCapabilitiesAfterRemoteSync(params: 
   skillsService: ISkillsService;
   workspaceIdentity?: string | null;
   workspacePath?: string | null;
-  zcodeAgentService: IZodyAgentService;
-  zcodeSessionService: Pick<IZodySessionService, "closeSession">;
+  zodyAgentService: IZodyAgentService;
+  zodySessionService: Pick<IZodySessionService, "closeSession">;
 }): Promise<void> {
   const workspacePath = params.workspacePath;
   if (!workspacePath) {
@@ -105,11 +105,11 @@ export async function refreshWorkspacePluginCapabilitiesAfterRemoteSync(params: 
     pluginStore.workspacePath === workspacePath &&
     pluginStore.workspaceIdentity === workspaceIdentity
   ) {
-    await pluginStore.refresh(params.zcodeAgentService);
+    await pluginStore.refresh(params.zodyAgentService);
   }
 
   await invalidateDeferredDraftSessionForSkillChange({
-    zcodeSessionService: params.zcodeSessionService,
+    zodySessionService: params.zodySessionService,
     workspacePath,
     workspaceIdentity: workspaceIdentityParam,
     reason: params.reason,

@@ -309,7 +309,7 @@ export function useZodyTaskService(
   const services = workspacePath
     ? useWorkspaceServices(workspacePath, preferredRemoteSessionId, workspaceIdentity)
     : useServices();
-  const rawService = services.zcodeTaskService;
+  const rawService = services.zodyTaskService;
   if (!rawService || typeof rawService !== "object") {
     return rawService;
   }

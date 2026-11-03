@@ -753,11 +753,11 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
       ].join("::");
       const remoteData = await remoteDataLoader.load(remoteDataKey, async () => {
         const [structureResult, membershipResult] = await Promise.all([
-          services.zcodeTaskService.listGroupedTaskViewStructure({
+          services.zodyTaskService.listGroupedTaskViewStructure({
             workspaceScopes: scopes,
           }),
           fetchTaskListMembershipSets({
-            service: services.zcodeTaskService,
+            service: services.zodyTaskService,
             scopes: sessionsIndexScopes,
           }),
         ]);
@@ -805,7 +805,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
     remoteDataLoader,
     scopes,
     sessionsIndexScopes,
-    services.zcodeTaskService,
+    services.zodyTaskService,
     taskListVersionSignature,
   ]);
   const refreshRef = useRef(refresh);
@@ -853,7 +853,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
     // group 内 New task 过去只在 optimistic view 继承草稿位置，SQLite 仍按 root
     // 新任务置顶，刷新后任务会掉出 group。task 已进入 optimistic index 后，将同一份展示
     // view 作为完整排序事务落库，使 membership 和组内第一位顺序一起收敛。
-    void services.zcodeTaskService
+    void services.zodyTaskService
       .applyGroupedTaskViewOrder(viewToOrderInput({ view: displayedView }))
       .then(() => {
         invalidateRemoteData();
@@ -872,13 +872,13 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
     displayedView,
     invalidateRemoteData,
     optimisticTaskOverlayByWorkspaceKey,
-    services.zcodeTaskService,
+    services.zodyTaskService,
     view,
   ]);
 
   useEffect(() => {
     const disposables = scopes.map((scope) =>
-      services.zcodeTaskService.onDynamicWorkspaceEvent(scope)((event) => {
+      services.zodyTaskService.onDynamicWorkspaceEvent(scope)((event) => {
         if (event.type !== "workspace_task_list_changed" || event.reason !== "task_created") {
           return;
         }
@@ -890,7 +890,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
       }),
     );
     return () => disposables.forEach((disposable) => disposable.dispose());
-  }, [invalidateRemoteData, scopes, services.zcodeTaskService]);
+  }, [invalidateRemoteData, scopes, services.zodyTaskService]);
 
   // 唯一的自动刷新入口。refresh 身份已经包含 membership/structure/scope 版本，
   // sessions-index 内容变化再触发内存 join；避免 mount effect 与 index effect 首帧重复发起请求。
@@ -901,7 +901,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
   const createGroup = useCallback(async (): Promise<ZodyTaskGroup> => {
     setSaving(true);
     try {
-      const group = await services.zcodeTaskService.createTaskGroup();
+      const group = await services.zodyTaskService.createTaskGroup();
       // 新 group 的 SQLite 顺序已经置顶，但等待异步 refresh 才展示会短暂沿用旧树并
       // 落到缺序节点末尾；先按同一 sort_order 语义乐观插顶，refresh 再以 SQLite 收敛。
       setView((current) => prependTaskGroupToView(current, group));
@@ -915,7 +915,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
     } finally {
       setSaving(false);
     }
-  }, [invalidateRemoteData, refresh, services.zcodeTaskService]);
+  }, [invalidateRemoteData, refresh, services.zodyTaskService]);
 
   const renameGroup = useCallback(
     async (groupId: string, title: string) => {
@@ -945,7 +945,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
       setView(optimisticView);
       setSaving(true);
       try {
-        const renamedGroup = await services.zcodeTaskService.renameTaskGroup({
+        const renamedGroup = await services.zodyTaskService.renameTaskGroup({
           groupId,
           title: nextTitle,
           workspaceScopes: collectViewWorkspaceScopes(optimisticView),
@@ -966,7 +966,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
         setSaving(false);
       }
     },
-    [invalidateRemoteData, scopes, services.zcodeTaskService, view],
+    [invalidateRemoteData, scopes, services.zodyTaskService, view],
   );
 
   const updateGroupColor = useCallback(
@@ -996,7 +996,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
       setView(optimisticView);
       setSaving(true);
       try {
-        const updatedGroup = await services.zcodeTaskService.updateTaskGroupColor({
+        const updatedGroup = await services.zodyTaskService.updateTaskGroupColor({
           groupId,
           color,
           workspaceScopes: collectViewWorkspaceScopes(optimisticView),
@@ -1017,7 +1017,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
         setSaving(false);
       }
     },
-    [invalidateRemoteData, scopes, services.zcodeTaskService, view],
+    [invalidateRemoteData, scopes, services.zodyTaskService, view],
   );
 
   const applyOrder = useCallback(
@@ -1028,7 +1028,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
       try {
         // apply 回包的视图仍由 tasks 表 join（旧数据源），不再采信；
         // 持久化成功后以「结构 + sessions-index」重建收敛（refresh）。
-        await services.zcodeTaskService.applyGroupedTaskViewOrder(
+        await services.zodyTaskService.applyGroupedTaskViewOrder(
           viewToOrderInput({
             view: nextView,
           }),
@@ -1045,7 +1045,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
         setSaving(false);
       }
     },
-    [invalidateRemoteData, refresh, services.zcodeTaskService, view],
+    [invalidateRemoteData, refresh, services.zodyTaskService, view],
   );
 
   const ungroupGroup = useCallback(
@@ -1067,7 +1067,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
       setSaving(true);
       try {
         await applyOrder(nextView);
-        await services.zcodeTaskService.deleteTaskGroup({
+        await services.zodyTaskService.deleteTaskGroup({
           groupId,
           workspaceScopes: collectViewWorkspaceScopes(nextView),
         });
@@ -1080,7 +1080,7 @@ export function useGroupedTaskView(params: { workspaceTabs: WorkspaceTabState[] 
         setSaving(false);
       }
     },
-    [applyOrder, invalidateRemoteData, refresh, scopes, services.zcodeTaskService, view],
+    [applyOrder, invalidateRemoteData, refresh, scopes, services.zodyTaskService, view],
   );
 
   return {

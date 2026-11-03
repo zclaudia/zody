@@ -30,7 +30,7 @@ const services = {
       return response.json();
     },
   },
-  zcodeAgentService: { onAgentRuntimeRestarted: () => ({ dispose() {} }) },
+  zodyAgentService: { onAgentRuntimeRestarted: () => ({ dispose() {} }) },
   clientConfigService: {
     getSnapshot: async () => {
       const response = await fetch("/order");

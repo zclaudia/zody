@@ -506,7 +506,7 @@ function disposeCronRunSubscription(key: string): void {
 }
 
 async function applyCronRunConfigToExistingTask(params: {
-  zcodeTaskService: IZodyTaskService;
+  zodyTaskService: IZodyTaskService;
   taskId: string;
   traceId: TraceId;
   modelSelection?: ModelSelection;
@@ -515,7 +515,7 @@ async function applyCronRunConfigToExistingTask(params: {
   let thoughtAppliedWithModel = false;
   let modeAppliedWithModel = false;
   if (params.modelSelection) {
-    await params.zcodeTaskService.setAutomationSessionConfig({
+    await params.zodyTaskService.setAutomationSessionConfig({
       taskId: params.taskId,
       traceId: params.traceId,
       modelSelection: params.modelSelection,
@@ -526,7 +526,7 @@ async function applyCronRunConfigToExistingTask(params: {
     modeAppliedWithModel = true;
   }
   if (!modeAppliedWithModel && params.mode?.trim()) {
-    await params.zcodeTaskService.setConfigOption({
+    await params.zodyTaskService.setConfigOption({
       taskId: params.taskId,
       traceId: params.traceId,
       configId: "mode",
@@ -534,7 +534,7 @@ async function applyCronRunConfigToExistingTask(params: {
     });
   }
   if (!thoughtAppliedWithModel && params.modelSelection?.options?.reasoningLevel) {
-    await params.zcodeTaskService.setConfigOption({
+    await params.zodyTaskService.setConfigOption({
       taskId: params.taskId,
       traceId: params.traceId,
       configId: "thought_level",
@@ -544,7 +544,7 @@ async function applyCronRunConfigToExistingTask(params: {
 }
 
 function trackCronRunOutcome(params: {
-  zcodeTaskService: IZodyTaskService;
+  zodyTaskService: IZodyTaskService;
   taskId: string;
   traceId: TraceId;
   workspacePath: string;
@@ -558,7 +558,7 @@ function trackCronRunOutcome(params: {
   const key = cronRunSubscriptionKey(params.taskId, params.traceId);
   disposeCronRunSubscription(key);
   markCronRunOutcome({ ...params, outcome: "running" });
-  const disposable = params.zcodeTaskService.onDynamicTaskTerminalOutcome(params.taskId)(
+  const disposable = params.zodyTaskService.onDynamicTaskTerminalOutcome(params.taskId)(
     (result) => {
       if (result.inputId !== params.traceId) return;
       void settleCronRunTerminalOutcome({
@@ -569,7 +569,7 @@ function trackCronRunOutcome(params: {
         logWarn: (message, error) => logger.warn(message, error),
       });
       // 定时任务在后台完成后统一置为未读，真正打开 task 时再由导航链路清除。
-      void params.zcodeTaskService.setTaskUnread({
+      void params.zodyTaskService.setTaskUnread({
         taskId: params.taskId,
         workspacePath: params.workspacePath,
         ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
@@ -661,7 +661,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
         automationId: request.automationId,
       });
       await applyCronRunConfigToExistingTask({
-        zcodeTaskService: zodyTaskService,
+        zodyTaskService: zodyTaskService,
         taskId: task.taskId,
         traceId: promptTraceId,
         modelSelection: submissionModelSelection,
@@ -673,7 +673,7 @@ async function dispatchCronRun(request: CronRunDispatchRequest): Promise<{
     // （createTask→resumeTask→sendPrompt）与结算保持不变。
     trackedKey = cronRunSubscriptionKey(task.taskId, promptTraceId);
     trackCronRunOutcome({
-      zcodeTaskService: zodyTaskService,
+      zodyTaskService: zodyTaskService,
       taskId: task.taskId,
       traceId: promptTraceId,
       workspacePath: request.workspacePath,
@@ -1585,7 +1585,7 @@ async function createWindowRemoteConnectionHandle(params: {
       .then((settings) => settings.dynamicWorkflowMode)
       .catch(() => undefined);
     await pushDynamicWorkflowUserModeToRemoteHosts(
-      [{ target: params.target, zcodeAgentService: services.get(IZodyAgentService) }],
+      [{ target: params.target, zodyAgentService: services.get(IZodyAgentService) }],
       dynamicWorkflowUserMode,
       (error) => logger.warn("remote dynamic workflow user mode push failed", error),
     );
@@ -2829,7 +2829,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
                     .listReadyConnections()
                     .map(({ target, services: remoteServices }) => ({
                       target,
-                      zcodeAgentService: remoteServices.get(IZodyAgentService),
+                      zodyAgentService: remoteServices.get(IZodyAgentService),
                     })),
                   mode,
                   (error) => logger.warn("remote dynamic workflow user mode forward failed", error),

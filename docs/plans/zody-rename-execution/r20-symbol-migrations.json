@@ -11458,8 +11458,8 @@
     {
       "id": "R20.4-runtime-BCD-01",
       "base": "01f59a33c1c54a4a5102d0917cd64b3c678e0d4c",
-      "candidate": null,
-      "status": "controller-verified-pending-DeepSeek",
+      "candidate": "21c06e804020be17dc4dde62fbc0ee4d2b96beb4",
+      "status": "scoped-review-PASS",
       "records": [
         {
           "file": "apps/zody-cli/packages/adapters/src/auth/credential-cipher.ts",
@@ -15777,9 +15777,2747 @@
       ],
       "implementationReport": "reports/R20-runtime-BCD-implementation.md",
       "controllerReport": "reports/R20-runtime-BCD-controller-verification.md",
-      "review": null,
+      "review": "reports/R20-runtime-BCD-deepseek-review.md",
       "retentionAudit": "output/zody-rename-r20-runtime-next/runtime-closure/bcd-implementation/shorthand-owner-audit.json",
-      "remainingInternalMembers": "output/zody-rename-r20-runtime-next/runtime-closure/internal-members-preflight.json"
+      "remainingInternalMembers": "output/zody-rename-r20-runtime-next/runtime-closure/internal-members-preflight.json",
+      "recordCount": 319,
+      "uniqueNames": 268,
+      "declarationKeys": 308,
+      "actualDeclarationPositions": 336
+    },
+    {
+      "id": "R20.4-internal-members-01",
+      "base": "21c06e804020be17dc4dde62fbc0ee4d2b96beb4",
+      "candidate": null,
+      "status": "controller-verified-pending-DeepSeek",
+      "records": [
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/services/src/accessor.ts",
+              "line": 59,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 76,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/accessor.ts",
+              "line": 62,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 75,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/services/src/accessor.ts",
+              "line": 63,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 15,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/conversation-telemetry/conversationTelemetry.ts",
+              "line": 19,
+              "kind": "Parameter"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/client/src/remoteServiceAccess.ts",
+              "line": 64,
+              "kind": "PropertyDeclaration"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/client/src/remoteServiceAccess.ts",
+              "line": 66,
+              "kind": "PropertyDeclaration"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/client/src/remoteServiceAccess.ts",
+              "line": 67,
+              "kind": "PropertyDeclaration"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/scripts/gen-ui-fixture/react.tsx",
+              "line": 68,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/zody-agent/zodyTaskServiceAdapter.ts",
+              "line": 184,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 32,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/usage-stats/usageStatsService.ts",
+              "line": 7,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/plugins/pluginManagementService.ts",
+              "line": 9,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/node.ts",
+              "line": 1934,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/node.ts",
+              "line": 1989,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/src/node.ts",
+              "line": 2018,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/scripts/mcp-apps-host-fixture/managed-renderer.tsx",
+              "line": 60,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/scripts/mcp-apps-host-fixture/managed-renderer.tsx",
+              "line": 61,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/remoteWorkspaceServiceCollection.ts",
+              "line": 240,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/remoteDynamicWorkflowUserMode.ts",
+              "line": 15,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/index.ts",
+              "line": 509,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 4,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/index.ts",
+              "line": 547,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/index.ts",
+              "line": 664,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/index.ts",
+              "line": 676,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/index.ts",
+              "line": 1588,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/host/index.ts",
+              "line": 2832,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useAppPanels.ts",
+              "line": 179,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useAppPanels.ts",
+              "line": 179,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useSettingService.ts",
+              "line": 110,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/renderer/src/remoteWorkspaceSessionServices.ts",
+              "line": 21,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/renderer/src/remoteWorkspaceSessionServices.ts",
+              "line": 22,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/desktop/src/renderer/src/remoteWorkspaceSessionServices.ts",
+              "line": 23,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/hostRemoteWorkspaceServices.test.ts",
+              "line": 111,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/hostRemoteWorkspaceServices.test.ts",
+              "line": 116,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/hostRemoteWorkspaceServices.test.ts",
+              "line": 117,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/hostRemoteWorkspaceServices.test.ts",
+              "line": 523,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/services/src/accessor.ts",
+              "line": 59,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+              "line": 17,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+              "line": 18,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+              "line": 19,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+              "line": 20,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+              "line": 31,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+              "line": 49,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+              "line": 50,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteWorkspaceSessionServices.test.ts",
+              "line": 17,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteWorkspaceSessionServices.test.ts",
+              "line": 18,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/desktop/test/remoteWorkspaceSessionServices.test.ts",
+              "line": 19,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/test/pluginManagementService.test.ts",
+              "line": 22,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/test/usageStatsService.test.ts",
+              "line": 47,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/test/usageStatsService.test.ts",
+              "line": 67,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/test/usageStatsService.test.ts",
+              "line": 85,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/services/test/zodyLegacyTaskCompatTaskIndex.test.ts",
+              "line": 439,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/workspacePrepareRpc.ts",
+              "line": 17,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/app-shell/useWorkspaceSessionReload.ts",
+              "line": 99,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useTaskNotifications.ts",
+              "line": 97,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useSessionDebug.ts",
+              "line": 19,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 8,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useDynamicWorkflowAvailability.ts",
+              "line": 46,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useDynamicWorkflowAvailability.ts",
+              "line": 49,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/store/remotePinnedTaskStore.ts",
+              "line": 15,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/store/remotePinnedTaskStore.ts",
+              "line": 42,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/store/remotePinnedTaskStore.ts",
+              "line": 155,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/store/remoteTimelineTaskStore.ts",
+              "line": 17,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/store/remoteTimelineTaskStore.ts",
+              "line": 60,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/store/remoteTimelineTaskStore.ts",
+              "line": 210,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/Root.tsx",
+              "line": 337,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/useTreemappingConversationMessage.ts",
+              "line": 73,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/lib/zodyDraftSkillInvalidation.ts",
+              "line": 10,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/lib/remotePluginSyncRefresh.ts",
+              "line": 93,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/lib/remotePluginSyncRefresh.ts",
+              "line": 94,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/lib/remotePluginSyncRefresh.ts",
+              "line": 112,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/WorkspaceHeaderSections.tsx",
+              "line": 798,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/WorkspaceHeaderSections.tsx",
+              "line": 826,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/WorkspaceHeaderSections.tsx",
+              "line": 827,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/WorkspaceSidebarItem.tsx",
+              "line": 1174,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/WorkspaceSidebarItem.tsx",
+              "line": 1202,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/WorkspaceSidebarItem.tsx",
+              "line": 1203,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/WorkspaceTimelineTasksSection.tsx",
+              "line": 346,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/hooks/useSettingsSync.ts",
+              "line": 465,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/lib/zodySessionRestore.ts",
+              "line": 76,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/lib/zodySessionRestore.ts",
+              "line": 77,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/lib/zodySessionRestore.ts",
+              "line": 200,
+              "kind": "PropertySignature"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/AutomationsSection.tsx",
+              "line": 404,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 19,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/BrowserSettingsSection.tsx",
+              "line": 124,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/HooksSection.tsx",
+              "line": 332,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/PluginStorePage.tsx",
+              "line": 248,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/SkillsSection.tsx",
+              "line": 421,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/SkillsSection.tsx",
+              "line": 474,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/SkillsSection.tsx",
+              "line": 1072,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/settings/SkillsSection.tsx",
+              "line": 1101,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/ConversationDraftSuggestedPromptsContainer.tsx",
+              "line": 282,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/composer/useDraftConfigControl.ts",
+              "line": 367,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/SessionPane.tsx",
+              "line": 705,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 4,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/SessionPane.tsx",
+              "line": 706,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/SessionPane.tsx",
+              "line": 3756,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/V4ConversationContext.tsx",
+              "line": 120,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/src/v4/useSessionsIndex.ts",
+              "line": 26,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 4,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/archivedTasksActionsMenu.test.ts",
+              "line": 144,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/automationEditSessionCreatedDirtyState.test.ts",
+              "line": 33,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/browser/manual-review/pending/developer-tools.fixture.tsx",
+              "line": 13,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/browser/manual-review/pending/plugin-picker-order.fixture.tsx",
+              "line": 33,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/conversationTelemetryAttachment.test.ts",
+              "line": 100,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/dynamicWorkflowUserModeSync.test.ts",
+              "line": 28,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/dynamicWorkflowUserModeSync.test.ts",
+              "line": 44,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/dynamicWorkflowUserModeSync.test.ts",
+              "line": 50,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/dynamicWorkflowUserModeSync.test.ts",
+              "line": 97,
+              "kind": "BindingElement"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/groupedTaskViewStreamingStability.test.ts",
+              "line": 296,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/remotePluginSyncRefresh.test.ts",
+              "line": 100,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/remotePluginSyncRefresh.test.ts",
+              "line": 101,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/rootUpdateReadyOverlay.test.ts",
+              "line": 91,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/savedWorkflowGlobalGroup.test.ts",
+              "line": 59,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/savedWorkflowProjectGroup.test.ts",
+              "line": 71,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/sessionsIndexRegistry.test.ts",
+              "line": 412,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/sessionsIndexRegistryEndpointMismatch.test.ts",
+              "line": 79,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/skillsSection.test.ts",
+              "line": 349,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useAppPanelsBrowserViewLifecycle.test.ts",
+              "line": 19,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useAppPanelsInterfaceMode.test.ts",
+              "line": 10,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useAppPanelsWorkflowArtifactOpen.test.ts",
+              "line": 31,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useAppPanelsWorkflowArtifactOpen.test.ts",
+              "line": 32,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useGlobalTaskListRemoteSessionsIndex.test.ts",
+              "line": 329,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useGlobalTaskListRemoteSessionsIndex.test.ts",
+              "line": 351,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useGlobalTaskListSessionsIndex.test.ts",
+              "line": 285,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useGlobalTaskListSessionsIndex.test.ts",
+              "line": 293,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useGroupedTaskView.test.ts",
+              "line": 510,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/usePluginReferenceCatalog.test.ts",
+              "line": 23,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useRemoteWorkspaceHistory.test.ts",
+              "line": 62,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useRemoteWorkspaceHistory.test.ts",
+              "line": 63,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useSessionDebug.test.ts",
+              "line": 21,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useSettingServiceAutoResolution.test.ts",
+              "line": 13,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 5,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useSettingServiceAutoResolution.test.ts",
+              "line": 29,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useSettingServiceEnvironmentIsolation.test.ts",
+              "line": 27,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useSkills.test.ts",
+              "line": 17,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 201,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 214,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 334,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 348,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 531,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 541,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 707,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 714,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 727,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+              "line": 734,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/useWorkspaceTaskNavigation.test.ts",
+              "line": 57,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4AssistantPreviewCards.test.ts",
+              "line": 162,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4AssistantPreviewCards.test.ts",
+              "line": 165,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4ConversationDraftSuggestedPromptsContainer.test.ts",
+              "line": 94,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4ConversationRemoteReadiness.test.ts",
+              "line": 98,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4ConversationRemoteReadiness.test.ts",
+              "line": 110,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4ConversationRemoteReadiness.test.ts",
+              "line": 134,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneComposerContinuity.test.ts",
+              "line": 161,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneComposerContinuity.test.ts",
+              "line": 164,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneEditUserQuery.test.ts",
+              "line": 92,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneEditUserQuery.test.ts",
+              "line": 95,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneErrorBanner.test.ts",
+              "line": 50,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneErrorBanner.test.ts",
+              "line": 53,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneFollowupModeSettingsSync.test.ts",
+              "line": 76,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneFollowupModeSettingsSync.test.ts",
+              "line": 80,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneLayoutParity.test.ts",
+              "line": 94,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneLayoutParity.test.ts",
+              "line": 97,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneModelSwitchRecovery.test.ts",
+              "line": 185,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneModelSwitchRecovery.test.ts",
+              "line": 200,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneModelSwitchRecovery.test.ts",
+              "line": 232,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneModelSwitchRecovery.test.ts",
+              "line": 185,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 10,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneModelSwitchRecovery.test.ts",
+              "line": 233,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneModelSwitchRecovery.test.ts",
+              "line": 200,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneReadOnly.test.ts",
+              "line": 60,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/v4SessionPaneReadOnly.test.ts",
+              "line": 63,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/webRemoteControlTaskIndexLayout.test.ts",
+              "line": 31,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceConnectionRegistry.test.ts",
+              "line": 492,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceHeaderTitleSection.test.ts",
+              "line": 111,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceSidebarItemRenderStability.test.ts",
+              "line": 10,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceSidebarRemoteNotice.test.ts",
+              "line": 196,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceStartupRpcEffects.test.ts",
+              "line": 97,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceTaskSectionsRenderStability.test.ts",
+              "line": 41,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceTaskSectionsRenderStability.test.ts",
+              "line": 41,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 4,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceTimelineTasksSectionRenderStability.test.ts",
+              "line": 35,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/workspaceTimelineTasksSectionRenderStability.test.ts",
+              "line": 35,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 4,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodyDraftSkillInvalidation.test.ts",
+              "line": 30,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodyDraftSkillInvalidation.test.ts",
+              "line": 55,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodyDraftSkillInvalidation.test.ts",
+              "line": 75,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 105,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 121,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 153,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 159,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 164,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 165,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 191,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 197,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 2,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 202,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 203,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 237,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 3,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 251,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 284,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 303,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 321,
+              "kind": "VariableDeclaration"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/ui/test/zodySessionRestore.test.ts",
+              "line": 330,
+              "kind": "ShorthandPropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/web/src/mobile-remote/homeOnlyServices.ts",
+              "line": 158,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeAgentService",
+          "new": "zodyAgentService",
+          "declarations": [
+            {
+              "file": "packages/web/src/mobile-remote/homeOnlyServices.ts",
+              "line": 159,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeSessionService",
+          "new": "zodySessionService",
+          "declarations": [
+            {
+              "file": "packages/web/src/mobile-remote/homeOnlyServices.ts",
+              "line": 167,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/web/test/mobileNotificationNavigation.test.ts",
+              "line": 47,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        },
+        {
+          "old": "zcodeTaskService",
+          "new": "zodyTaskService",
+          "declarations": [
+            {
+              "file": "packages/web/test/mobileNotificationNavigation.test.ts",
+              "line": 47,
+              "kind": "PropertyAssignment"
+            }
+          ],
+          "referenceCount": 1,
+          "category": "internal-member-symbol-group"
+        }
+      ],
+      "memberNames": 3,
+      "symbolGroups": 198,
+      "bindingReferences": 493,
+      "edits": 516,
+      "files": [
+        "packages/services/src/accessor.ts",
+        "packages/ui/src/plugin-ui/adapters/pluginUiManagedPage.ts",
+        "packages/desktop/src/host/remoteWorkspaceServiceCollection.ts",
+        "packages/ui/src/hooks/useZodyTaskService.ts",
+        "packages/ui/src/hooks/useWorkspaceProviderConfigFile.ts",
+        "packages/desktop/src/renderer/src/remoteWorkspaceSessionServices.ts",
+        "packages/desktop/test/remoteWorkspaceSessionServices.test.ts",
+        "packages/ui/src/app-shell/useWorkspaceSessionReload.ts",
+        "packages/ui/src/app-shell/useWorkspaceShellLifecycle.ts",
+        "packages/ui/src/app-shell/useWorkspaceTaskNavigation.ts",
+        "packages/ui/src/App.tsx",
+        "packages/ui/src/store/remotePinnedTaskStore.ts",
+        "packages/ui/src/store/remoteTimelineTaskStore.ts",
+        "packages/ui/src/WebRemoteControlTaskIndex.tsx",
+        "packages/ui/src/WorkspaceArchivedTasksFlatSection.tsx",
+        "packages/ui/src/hooks/useGroupedTaskView.ts",
+        "packages/ui/src/WorkspaceGroupedTasksSection.tsx",
+        "packages/ui/src/WorkspaceHeaderSections.tsx",
+        "packages/ui/src/WorkspacePinnedTasksSection.tsx",
+        "packages/ui/src/hooks/useWorkspaceTaskLists.ts",
+        "packages/ui/src/WorkspaceSidebarItem.tsx",
+        "packages/ui/src/WorkspaceTimelineTasksSection.tsx",
+        "packages/ui/src/hooks/useGenUi.ts",
+        "packages/web/src/mobile-remote/mobileNotificationNavigation.ts",
+        "packages/web/src/webRemoteControlBridgeTaskRead.ts",
+        "packages/web/src/mobile-remote/bootstrap.tsx",
+        "packages/web/test/homeOnlyWebRemoteControlServices.test.ts",
+        "packages/ui/src/store/remoteWorkspaceSessionStore.ts",
+        "packages/desktop/src/host/remoteConnectionServiceCollection.ts",
+        "packages/ui/src/hooks/useSkills.ts",
+        "packages/ui/src/hooks/useZodyAgentService.ts",
+        "packages/desktop/test/serverRemoteConnection.test.ts",
+        "packages/ui/src/Root.tsx",
+        "packages/ui/src/SSHDialog.tsx",
+        "packages/ui/src/hooks/useTaskInteractionAutoResolutionSnooze.ts",
+        "packages/ui/src/hooks/usePluginReferenceCatalog.ts",
+        "packages/ui/src/v4/useWorkspaceSessionsIndexItems.ts",
+        "packages/ui/src/hooks/useSessionSubagents.ts",
+        "packages/ui/src/hooks/useWorkflowRunSave.ts",
+        "packages/ui/src/cua-permission/CuaPermissionObservationAttachment.tsx",
+        "packages/ui/src/mentions/providers/sessionsMentionProvider.ts",
+        "packages/ui/src/settings/PluginsSection.tsx",
+        "packages/ui/src/settings/saved-workflows/useSavedWorkflowGlobalGroup.ts",
+        "packages/ui/src/settings/saved-workflows/SavedWorkflowProjectGroup.tsx",
+        "packages/ui/src/v4/V4ConversationContext.tsx",
+        "packages/ui/src/v4/WorkbenchPane.tsx",
+        "packages/ui/src/v4/telemetry/ConversationTelemetryAttachment.tsx",
+        "packages/ui/test/useGlobalTaskListRemoteSessionsIndex.test.ts",
+        "packages/ui/test/useWorkspaceServices.test.ts",
+        "packages/ui/src/hooks/useZodySessionService.ts",
+        "packages/ui/src/v4/ConversationDraftSuggestedPromptsContainer.tsx",
+        "packages/services/src/conversation-telemetry/conversationTelemetry.ts",
+        "packages/client/src/remoteServiceAccess.ts",
+        "packages/desktop/scripts/gen-ui-fixture/react.tsx",
+        "packages/services/src/zody-agent/zodyTaskServiceAdapter.ts",
+        "packages/services/src/usage-stats/usageStatsService.ts",
+        "packages/services/src/plugins/pluginManagementService.ts",
+        "packages/services/src/node.ts",
+        "packages/desktop/scripts/mcp-apps-host-fixture/managed-renderer.tsx",
+        "packages/desktop/src/host/remoteDynamicWorkflowUserMode.ts",
+        "packages/desktop/src/host/index.ts",
+        "packages/ui/src/hooks/useAppPanels.ts",
+        "packages/ui/src/hooks/useSettingService.ts",
+        "packages/desktop/test/hostRemoteWorkspaceServices.test.ts",
+        "packages/desktop/test/legacyRemoteWorkspaceRpcContract.test.ts",
+        "packages/desktop/test/remoteDynamicWorkflowUserMode.test.ts",
+        "packages/services/test/pluginManagementService.test.ts",
+        "packages/services/test/usageStatsService.test.ts",
+        "packages/services/test/zodyLegacyTaskCompatTaskIndex.test.ts",
+        "packages/ui/src/hooks/workspacePrepareRpc.ts",
+        "packages/ui/src/hooks/useTaskNotifications.ts",
+        "packages/ui/src/hooks/useSessionDebug.ts",
+        "packages/ui/src/hooks/useDynamicWorkflowAvailability.ts",
+        "packages/ui/src/v4/useTreemappingConversationMessage.ts",
+        "packages/ui/src/lib/zodyDraftSkillInvalidation.ts",
+        "packages/ui/src/lib/remotePluginSyncRefresh.ts",
+        "packages/ui/src/hooks/useSettingsSync.ts",
+        "packages/ui/src/lib/zodySessionRestore.ts",
+        "packages/ui/src/settings/AutomationsSection.tsx",
+        "packages/ui/src/settings/BrowserSettingsSection.tsx",
+        "packages/ui/src/settings/HooksSection.tsx",
+        "packages/ui/src/settings/PluginStorePage.tsx",
+        "packages/ui/src/settings/SkillsSection.tsx",
+        "packages/ui/src/v4/composer/useDraftConfigControl.ts",
+        "packages/ui/src/v4/SessionPane.tsx",
+        "packages/ui/src/v4/useSessionsIndex.ts",
+        "packages/ui/test/archivedTasksActionsMenu.test.ts",
+        "packages/ui/test/automationEditSessionCreatedDirtyState.test.ts",
+        "packages/ui/test/browser/manual-review/pending/developer-tools.fixture.tsx",
+        "packages/ui/test/browser/manual-review/pending/plugin-picker-order.fixture.tsx",
+        "packages/ui/test/conversationTelemetryAttachment.test.ts",
+        "packages/ui/test/dynamicWorkflowUserModeSync.test.ts",
+        "packages/ui/test/groupedTaskViewStreamingStability.test.ts",
+        "packages/ui/test/remotePluginSyncRefresh.test.ts",
+        "packages/ui/test/rootUpdateReadyOverlay.test.ts",
+        "packages/ui/test/savedWorkflowGlobalGroup.test.ts",
+        "packages/ui/test/savedWorkflowProjectGroup.test.ts",
+        "packages/ui/test/sessionsIndexRegistry.test.ts",
+        "packages/ui/test/sessionsIndexRegistryEndpointMismatch.test.ts",
+        "packages/ui/test/skillsSection.test.ts",
+        "packages/ui/test/useAppPanelsBrowserViewLifecycle.test.ts",
+        "packages/ui/test/useAppPanelsInterfaceMode.test.ts",
+        "packages/ui/test/useAppPanelsWorkflowArtifactOpen.test.ts",
+        "packages/ui/test/useGlobalTaskListSessionsIndex.test.ts",
+        "packages/ui/test/useGroupedTaskView.test.ts",
+        "packages/ui/test/usePluginReferenceCatalog.test.ts",
+        "packages/ui/test/useRemoteWorkspaceHistory.test.ts",
+        "packages/ui/test/useSessionDebug.test.ts",
+        "packages/ui/test/useSettingServiceAutoResolution.test.ts",
+        "packages/ui/test/useSettingServiceEnvironmentIsolation.test.ts",
+        "packages/ui/test/useSkills.test.ts",
+        "packages/ui/test/useWorkspaceTaskListsMembershipEvents.test.ts",
+        "packages/ui/test/useWorkspaceTaskNavigation.test.ts",
+        "packages/ui/test/v4AssistantPreviewCards.test.ts",
+        "packages/ui/test/v4ConversationDraftSuggestedPromptsContainer.test.ts",
+        "packages/ui/test/v4ConversationRemoteReadiness.test.ts",
+        "packages/ui/test/v4SessionPaneComposerContinuity.test.ts",
+        "packages/ui/test/v4SessionPaneEditUserQuery.test.ts",
+        "packages/ui/test/v4SessionPaneErrorBanner.test.ts",
+        "packages/ui/test/v4SessionPaneFollowupModeSettingsSync.test.ts",
+        "packages/ui/test/v4SessionPaneLayoutParity.test.ts",
+        "packages/ui/test/v4SessionPaneModelSwitchRecovery.test.ts",
+        "packages/ui/test/v4SessionPaneReadOnly.test.ts",
+        "packages/ui/test/webRemoteControlTaskIndexLayout.test.ts",
+        "packages/ui/test/workspaceConnectionRegistry.test.ts",
+        "packages/ui/test/workspaceHeaderTitleSection.test.ts",
+        "packages/ui/test/workspaceSidebarItemRenderStability.test.ts",
+        "packages/ui/test/workspaceSidebarRemoteNotice.test.ts",
+        "packages/ui/test/workspaceStartupRpcEffects.test.ts",
+        "packages/ui/test/workspaceTaskSectionsRenderStability.test.ts",
+        "packages/ui/test/workspaceTimelineTasksSectionRenderStability.test.ts",
+        "packages/ui/test/zodyDraftSkillInvalidation.test.ts",
+        "packages/ui/test/zodySessionRestore.test.ts",
+        "packages/web/src/mobile-remote/homeOnlyServices.ts",
+        "packages/web/test/mobileNotificationNavigation.test.ts",
+        "packages/desktop/src/host/legacyRemoteWorkspaceRpcContract.ts",
+        "packages/web/test/mobileRemoteDialogSurface.test.ts",
+        "packages/ui/test/automationsPopulatedListFidelity.test.ts",
+        "packages/services/test/zodyAgentService.pluginOperationProgress.test.ts",
+        "packages/services/test/zodyAgentService.v4.test.ts",
+        "packages/desktop/test/e2e/manual-review/pending/mobile-remote-onboarding.mjs",
+        "packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-settings-connection.mjs"
+      ],
+      "spec": "specs/zody-brand-residual-cleanup.md",
+      "implementationReport": "reports/R20-internal-members-implementation.md",
+      "controllerReport": "reports/R20-internal-members-controller-verification.md",
+      "review": null
     }
   ]
 }

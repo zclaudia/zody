@@ -51,7 +51,7 @@ export function useSessionSubagents(options: {
   workspacePath: string;
 }) {
   const services = useServices();
-  const zodyAgentService = services.zcodeAgentService;
+  const zodyAgentService = services.zodyAgentService;
   const [state, setState] = useState<SessionSubagentsViewState>(emptyState);
   const requestVersionRef = useRef(0);
   const requestInFlightRef = useRef(false);

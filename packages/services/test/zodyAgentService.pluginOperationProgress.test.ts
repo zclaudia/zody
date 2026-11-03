@@ -5,7 +5,7 @@ import {
   type ZodyPluginOperationProgressNotification,
 } from "@zody/shared";
 
-describe("zcodeAgentService Plugin operation progress", () => {
+describe("zodyAgentService Plugin operation progress", () => {
   it("projects a validated Agent progress notification by operationId", async () => {
     let notificationListener:
       | ((notification: { method: string; params?: unknown }) => void)

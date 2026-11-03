@@ -211,7 +211,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
   );
   const confirmDialog = useConfirmDialog();
   const baseServices = useBaseWorkspaceServices();
-  const zodyTaskService = services.zcodeTaskService;
+  const zodyTaskService = services.zodyTaskService;
   const taskItemsRef = useRef(taskItems);
   taskItemsRef.current = taskItems;
   const workspaceZodyStateRef = useRef(workspaceZodyState);
@@ -1160,8 +1160,8 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
         remoteMcpSyncService={services.mcpSyncService}
         localPluginSyncService={baseServices.pluginSyncService}
         remotePluginSyncService={services.pluginSyncService}
-        localZCodeAgentService={baseServices.zcodeAgentService}
-        remoteZCodeAgentService={services.zcodeAgentService}
+        localZCodeAgentService={baseServices.zodyAgentService}
+        remoteZCodeAgentService={services.zodyAgentService}
         remoteTarget={tab.remoteTarget}
         skillWorkspacePath={tab.workspacePath}
         mcpWorkspacePath={tab.workspacePath}
@@ -1171,7 +1171,7 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
         workspaceIdentity={tab.workspaceIdentity}
         onSkillsSynced={async () => {
           await invalidateDeferredDraftSessionForSkillChange({
-            zcodeSessionService: services.zcodeSessionService,
+            zodySessionService: services.zodySessionService,
             workspacePath: tab.workspacePath,
             workspaceIdentity: tab.workspaceIdentity,
             reason: "sidebar-remote-skill-sync",
@@ -1199,8 +1199,8 @@ export const WorkspaceSidebarItem = memo(function WorkspaceSidebarItem({
             skillsService: services.skillsService,
             workspaceIdentity: tab.workspaceIdentity,
             workspacePath: tab.workspacePath,
-            zcodeAgentService: services.zcodeAgentService,
-            zcodeSessionService: services.zcodeSessionService,
+            zodyAgentService: services.zodyAgentService,
+            zodySessionService: services.zodySessionService,
           });
         }}
       />

@@ -10,5 +10,5 @@ export function useZodyAgentService(
   const services = workspacePath
     ? useWorkspaceServices(workspacePath, preferredRemoteSessionId, workspaceIdentity)
     : useServices();
-  return services.zcodeAgentService;
+  return services.zodyAgentService;
 }

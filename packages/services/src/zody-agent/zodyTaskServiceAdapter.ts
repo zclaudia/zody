@@ -181,7 +181,7 @@ interface TaskOverlay {
 }
 
 interface CreateZodyTaskServiceAdapterOptions {
-  zcodeAgentService: IZodyAgentService;
+  zodyAgentService: IZodyAgentService;
   taskIndexRepo?: TaskIndexRepo;
   // syncer 现在持有 workspace emitter 和 broadcast 入口，adapter 必须共用同一实例，
   // 否则 desktop-continuous 路径和 task adapter 路径的事件订阅会分裂成两份，UI 收不全。
@@ -414,7 +414,7 @@ export function createZodyTaskServiceAdapter(
         // 上传/寄存命令面尚未建模（CLI 侧 fork-edit-retry.ts 同款裁决“附件命令面后续”）。
         // 带附件输入保留旧 session/send，避免手机 replayable 图片/文件输入回归；
         // 过渡归宿 = v4 附件命令面（届时由 v4 sendText 承接）。
-        await options.zcodeAgentService.sendPrompt({
+        await options.zodyAgentService.sendPrompt({
           workspacePath: target.workspacePath,
           workspaceIdentity: target.workspaceIdentity,
           ...(target.remoteSessionId ? { remoteSessionId: target.remoteSessionId } : {}),
@@ -439,7 +439,7 @@ export function createZodyTaskServiceAdapter(
         // queue 的 traceId 对账（completeRuntimeCommandByInputId 语义不变）。
         // heldQueueDisposition=keepQueueAndSend：旧 session/send 没有 held choice 闸门，
         // replayable 无人机交互路径按“立即发送、不动队列”等价老语义。
-        const ack = await options.zcodeAgentService.sendConversationCommandV4({
+        const ack = await options.zodyAgentService.sendConversationCommandV4({
           workspacePath: target.workspacePath,
           workspaceIdentity: target.workspaceIdentity,
           ...(target.remoteSessionId ? { remoteSessionId: target.remoteSessionId } : {}),
@@ -1143,7 +1143,7 @@ export function createZodyTaskServiceAdapter(
     rememberTaskTarget(params);
     const thoughtLevel = params.thoughtLevel?.trim();
     const mcpServers = await resolveProductMcpServers(params.mcpServers);
-    return options.zcodeAgentService.resumeSession({
+    return options.zodyAgentService.resumeSession({
       workspacePath: params.workspacePath,
       workspaceIdentity: params.workspaceIdentity,
       sessionId: params.taskId,
@@ -1170,7 +1170,7 @@ export function createZodyTaskServiceAdapter(
   ): Promise<void> {
     await sendHostCasCommandV4({
       send: (envelope) =>
-        options.zcodeAgentService.sendConversationCommandV4({
+        options.zodyAgentService.sendConversationCommandV4({
           workspacePath: target.workspacePath,
           workspaceIdentity: target.workspaceIdentity,
           envelope,
@@ -1193,7 +1193,7 @@ export function createZodyTaskServiceAdapter(
     mode: ZodySessionMode,
   ): Promise<void> {
     if (mode === "auto") {
-      await options.zcodeAgentService.setMode({
+      await options.zodyAgentService.setMode({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         sessionId: target.taskId,
@@ -1216,7 +1216,7 @@ export function createZodyTaskServiceAdapter(
     const repaired = await repairImportedClaudeSessionSnapshot({
       snapshot,
       target: params,
-      createSession: (input) => options.zcodeAgentService.createSession(input),
+      createSession: (input) => options.zodyAgentService.createSession(input),
       onRepair: (history) => {
         logger.warn(
           undefined,
@@ -1325,7 +1325,7 @@ export function createZodyTaskServiceAdapter(
       if (legacySnapshot.meta.migrationSource === "claudeCode") {
         try {
           const mcpServers = await resolveProductMcpServers(params.mcpServers);
-          const snapshot = await options.zcodeAgentService.createSession({
+          const snapshot = await options.zodyAgentService.createSession({
             workspacePath: params.workspacePath,
             workspaceIdentity: params.workspaceIdentity,
             sessionId: params.taskId,
@@ -1839,7 +1839,7 @@ export function createZodyTaskServiceAdapter(
   }
 
   async function disposeZodyAgentServiceAndWait(): Promise<void> {
-    const agentService = options.zcodeAgentService as IZodyAgentService & {
+    const agentService = options.zodyAgentService as IZodyAgentService & {
       disposeAllAndWait?: () => Promise<void>;
     };
     if (agentService.disposeAllAndWait) {
@@ -1854,7 +1854,7 @@ export function createZodyTaskServiceAdapter(
     disposeAllAndWait(): Promise<void>;
   } = {
     async initialize(params) {
-      const result = await options.zcodeAgentService.initialize(params);
+      const result = await options.zodyAgentService.initialize(params);
       return {
         available: result.available,
         version: result.protocolName
@@ -1866,7 +1866,7 @@ export function createZodyTaskServiceAdapter(
     async releaseWorkspacePreparation(params): Promise<void> {
       // 关闭 workspace UI 只会释放 RPC 使用方，不会自动终止已预热的 Agent。
       // WSL Host 共享后 Host 会继续存活，因此必须按 workspaceKey 显式回收对应 runtime。
-      await options.zcodeAgentService.disposeWorkspace(normalizeWorkspaceParams(params));
+      await options.zodyAgentService.disposeWorkspace(normalizeWorkspaceParams(params));
     },
 
     async checkCodexConnectivity(): Promise<ZodyCodexConnectivityCheckResult> {
@@ -1888,7 +1888,7 @@ export function createZodyTaskServiceAdapter(
       let snapshot: ZodySessionStateSnapshot | null = null;
       if (draftSessionId && !mcpServers) {
         try {
-          snapshot = await options.zcodeAgentService.readSession({
+          snapshot = await options.zodyAgentService.readSession({
             ...target,
             sessionId: draftSessionId,
           });
@@ -1896,7 +1896,7 @@ export function createZodyTaskServiceAdapter(
             if (!sameModelSelection(snapshot.settings.model.current, requestedSelection)) {
               // replayable 首发复用 draft session 时，draft 可能仍停在预热时的旧模型。
               // 复用前必须同步 UI 当前模型，否则手机远控首发会显示新模型但真实请求仍用旧模型。
-              snapshot = await options.zcodeAgentService.setModel({
+              snapshot = await options.zodyAgentService.setModel({
                 ...target,
                 sessionId: draftSessionId,
                 model: requestedSelection,
@@ -1909,7 +1909,7 @@ export function createZodyTaskServiceAdapter(
           ) {
             // replayable 首发复用 draft session 时也必须以 UI 当前 thought_level 为准。
             // 否则手机远控可能复用旧 draft session，导致首发请求沿用过期推理强度。
-            snapshot = await options.zcodeAgentService.setThoughtLevel({
+            snapshot = await options.zodyAgentService.setThoughtLevel({
               ...target,
               sessionId: draftSessionId,
               thoughtLevel: requestedSelection.options.reasoningLevel,
@@ -1936,7 +1936,7 @@ export function createZodyTaskServiceAdapter(
           const model = requestedSelection;
           const ack = assertV4CommandAckOk(
             "createSession",
-            await options.zcodeAgentService.sendConversationCommandV4({
+            await options.zodyAgentService.sendConversationCommandV4({
               ...target,
               envelope: createHostCommandEnvelope({
                 type: "createSession",
@@ -1961,12 +1961,12 @@ export function createZodyTaskServiceAdapter(
           if (!sessionId) {
             throw new Error("v4 createSession accepted without sessionId result");
           }
-          snapshot = await options.zcodeAgentService.readSession({
+          snapshot = await options.zodyAgentService.readSession({
             ...target,
             sessionId,
           });
         } else {
-          snapshot = await options.zcodeAgentService.createSession({
+          snapshot = await options.zodyAgentService.createSession({
             ...target,
             sessionTraceId: createSessionTraceId(),
             mode: toZodyMode(params.mode),
@@ -2181,7 +2181,7 @@ export function createZodyTaskServiceAdapter(
         workspacePath: target.workspacePath,
       });
       // session/stop → v4 stop 命令（goal-pause barrier 语义由 CLI 原生 handler 承接）。
-      const ack = await options.zcodeAgentService.sendConversationCommandV4({
+      const ack = await options.zodyAgentService.sendConversationCommandV4({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         envelope: createHostCommandEnvelope({
@@ -2220,7 +2220,7 @@ export function createZodyTaskServiceAdapter(
         activePromptInputIds.set(taskKey(target), params.inputId);
       }
       try {
-        const result = await options.zcodeAgentService.compactSession({
+        const result = await options.zodyAgentService.compactSession({
           workspacePath: target.workspacePath,
           workspaceIdentity: target.workspaceIdentity,
           sessionId: params.taskId,
@@ -2274,7 +2274,7 @@ export function createZodyTaskServiceAdapter(
         workspaceIdentity: target.workspaceIdentity,
         workspacePath: target.workspacePath,
       });
-      const result = await options.zcodeAgentService.goalSession({
+      const result = await options.zodyAgentService.goalSession({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         sessionId: params.taskId,
@@ -2325,7 +2325,7 @@ export function createZodyTaskServiceAdapter(
       // interactionId ≡ 业务 requestId（CLI interaction-broker 同源注册）；optionId 由
       // CLI 侧 buildProtocolPermissionOptions 精确回映 response（allow_project 的
       // permissionUpdates 持久化规则不丢，见 interaction-broker v4AnswerToPermissionResponse）。
-      const ack = await options.zcodeAgentService.sendConversationCommandV4({
+      const ack = await options.zodyAgentService.sendConversationCommandV4({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         envelope: createHostCommandEnvelope({
@@ -2352,7 +2352,7 @@ export function createZodyTaskServiceAdapter(
       // AskUserQuestion/plan-approval 回执收敛 v4 resolveInteraction。
       // answer.action/content 是 additive 扩展（多题答案/注解无损承载，CLI 侧
       // interaction-broker 优先按 action 精确映射，缺省回落 optionId/freeText 兼容路径）。
-      const ack = await options.zcodeAgentService.sendConversationCommandV4({
+      const ack = await options.zodyAgentService.sendConversationCommandV4({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         envelope: createHostCommandEnvelope({
@@ -2386,7 +2386,7 @@ export function createZodyTaskServiceAdapter(
     async closeTask(params): Promise<void> {
       // 此兼容入口仍通过 closeSession 关闭会话；尚无只关闭 runtime、保留会话的独立操作。
       const target = getTaskTarget(params.taskId);
-      await options.zcodeAgentService.closeSession({
+      await options.zodyAgentService.closeSession({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         sessionId: params.taskId,
@@ -2755,7 +2755,7 @@ export function createZodyTaskServiceAdapter(
 
     async getTaskModelSelection(params): Promise<ModelSelection | null> {
       const target = getTaskTarget(params.taskId);
-      const snapshot = await options.zcodeAgentService.readSession({
+      const snapshot = await options.zodyAgentService.readSession({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         sessionId: params.taskId,
@@ -2814,7 +2814,7 @@ export function createZodyTaskServiceAdapter(
           const targetWorkspaceIdentity = params.workspacePath
             ? params.workspaceIdentity
             : undefined;
-          const snapshot = await options.zcodeAgentService.createSession({
+          const snapshot = await options.zodyAgentService.createSession({
             workspacePath: source.workspacePath,
             workspaceIdentity: targetWorkspaceIdentity,
             sessionId: buildImportedClaudeTaskId(source.workspacePath, source.sessionId),
@@ -2877,7 +2877,7 @@ export function createZodyTaskServiceAdapter(
         // thought 字段承载；provider/model 取当前会话选型，与桌面 v4 工具条同一命令面）。
         // 同 provider 同 model 直切，不涉及 runtimeModel（provider 凭据）解析——这正是
         // setModel 尚不能迁移的原因（见下方 setModel 标注）。
-        const current = await options.zcodeAgentService.readSession({
+        const current = await options.zodyAgentService.readSession({
           workspacePath: target.workspacePath,
           workspaceIdentity: target.workspaceIdentity,
           sessionId: params.taskId,
@@ -2911,7 +2911,7 @@ export function createZodyTaskServiceAdapter(
       // Snapshot；模型执行事实已经收敛到目标 Worker Registry，Host 只发送 Selection。
       // 过渡归宿 = task facade 原生消费 V4 config 投影与 revision。
       const target = getTaskTarget(params.taskId);
-      await options.zcodeAgentService.setModel({
+      await options.zodyAgentService.setModel({
         workspacePath: target.workspacePath,
         workspaceIdentity: target.workspaceIdentity,
         sessionId: params.taskId,
@@ -2991,7 +2991,7 @@ export function createZodyTaskServiceAdapter(
     async getTaskTokenUsage(params): Promise<ZodyTaskTokenUsageResult> {
       // 摘要面板需要展示 task 的累计模型消耗，不能复用 usage_update 的 context window。
       // 这里通过 ZCode Protocol 读 agent SQLite 的 model_usage 聚合，保持桌面和远控同一事实源。
-      return options.zcodeAgentService.getTaskTokenUsage({
+      return options.zodyAgentService.getTaskTokenUsage({
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
         sessionId: params.taskId,
@@ -3006,7 +3006,7 @@ export function createZodyTaskServiceAdapter(
     },
 
     async restartWorkspaceProcess(params): Promise<void> {
-      await options.zcodeAgentService.disposeWorkspace(normalizeWorkspaceParams(params));
+      await options.zodyAgentService.disposeWorkspace(normalizeWorkspaceParams(params));
     },
 
     async deleteTask(params): Promise<void> {
@@ -3102,7 +3102,7 @@ export function createZodyTaskServiceAdapter(
           titleLength: meta.title.length,
         });
         try {
-          const ack = await options.zcodeAgentService.sendConversationCommandV4({
+          const ack = await options.zodyAgentService.sendConversationCommandV4({
             workspacePath: params.workspacePath,
             workspaceIdentity: params.workspaceIdentity,
             envelope: createHostCommandEnvelope({
@@ -3259,7 +3259,7 @@ export function createZodyTaskServiceAdapter(
         // 协议 + 手机 store + bots 投影整波重做（且 ui/store 本波由并行 agent 主修，避让）。
         // 死期改判 = replayable 读路径 v4 store 波次（波次 3），与 host/index.ts 镜像、
         // mapStateUpdated/mapServiceEvent、agentService.onDynamicSessionEvent 同批摘除。
-        const upstreamDisposable = options.zcodeAgentService.onDynamicSessionEvent({
+        const upstreamDisposable = options.zodyAgentService.onDynamicSessionEvent({
           workspacePath: params.workspacePath,
           workspaceIdentity: params.workspaceIdentity,
           sessionId: params.taskId,
@@ -3291,7 +3291,7 @@ export function createZodyTaskServiceAdapter(
       // 必须在 agentService.disposeAll 前释放，否则 emitter dispose 时仍会回调到已失效的 syncer。
       // workspaceEmitters 已下沉到 syncer，由 syncer.disposeAll 统一回收。
       taskIndexSyncer.disposeAll();
-      options.zcodeAgentService.disposeAll();
+      options.zodyAgentService.disposeAll();
       disposeLocalTaskState();
     },
 

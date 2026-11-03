@@ -61,10 +61,10 @@ export class RemoteServiceAccess implements IServiceAccessor {
   readonly onboardingRecordService: IOnboardingRecordService;
   readonly credentialService: ICredentialService;
   readonly broadcastService: IBroadcastService;
-  readonly zcodeTaskService: IZodyTaskService;
+  readonly zodyTaskService: IZodyTaskService;
   readonly windowControllerService: IWindowControllerService;
-  readonly zcodeAgentService: IZodyAgentService;
-  readonly zcodeSessionService: IZodySessionService;
+  readonly zodyAgentService: IZodyAgentService;
+  readonly zodySessionService: IZodySessionService;
   // cuaPermissionService 在 IServiceAccessor 上是可选（远端/bots host 不提供），但桌面 renderer
   // 经 RPC 一定能拿到（main host 始终注册此 descriptor；非 macOS / 未启用时方法返回 available:false）。
   readonly cuaPermissionService: ICuaPermissionService;
@@ -133,16 +133,16 @@ export class RemoteServiceAccess implements IServiceAccessor {
     this.broadcastService = ProxyChannel.toService<IBroadcastService>(
       channelClient.getChannel(IBroadcastService.channelName),
     );
-    this.zcodeTaskService = ProxyChannel.toService<IZodyTaskService>(
+    this.zodyTaskService = ProxyChannel.toService<IZodyTaskService>(
       channelClient.getChannel(IZodyTaskService.channelName),
     );
     this.windowControllerService = ProxyChannel.toService<IWindowControllerService>(
       channelClient.getChannel(IWindowControllerService.channelName),
     );
-    this.zcodeAgentService = ProxyChannel.toService<IZodyAgentService>(
+    this.zodyAgentService = ProxyChannel.toService<IZodyAgentService>(
       channelClient.getChannel(IZodyAgentService.channelName),
     );
-    this.zcodeSessionService = ProxyChannel.toService<IZodySessionService>(
+    this.zodySessionService = ProxyChannel.toService<IZodySessionService>(
       channelClient.getChannel(IZodySessionService.channelName),
     );
     this.cuaPermissionService = ProxyChannel.toService<ICuaPermissionService>(

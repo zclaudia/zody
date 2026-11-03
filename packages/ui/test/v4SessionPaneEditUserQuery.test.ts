@@ -89,10 +89,10 @@ const projectionState = vi.hoisted(() => ({
 const servicesMock = vi.hoisted(() => ({
   // fork（F4.2）：原 highspeedCardService mock 随加速卡全链路删除。
   // 修复原因：readiness hook 将 service 作为 effect 依赖；每次 render 重建会导致无限重渲染直至 OOM。
-  zcodeSessionService: {
+  zodySessionService: {
     updateProviderRegistry: vi.fn(),
   },
-  zcodeTaskService: {
+  zodyTaskService: {
     restartWorkspaceProcess: vi.fn(),
   },
 }));

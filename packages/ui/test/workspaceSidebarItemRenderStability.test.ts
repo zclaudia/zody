@@ -7,7 +7,7 @@ import type { WorkspaceTabState } from "@/store/tabStore.js";
 const { taskListCalls, stableServices, zcodeSessionStoreState } = vi.hoisted(() => ({
   taskListCalls: [] as Array<Record<string, unknown>>,
   stableServices: {
-    zcodeTaskService: {
+    zodyTaskService: {
       archiveTask: async () => null,
       renameTask: async () => null,
       setTaskPinned: async () => null,

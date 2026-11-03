@@ -28,7 +28,7 @@ vi.mock("@/ControlHintTooltip.js", () => ({
 
 function createTestServices() {
   return {
-    zcodeTaskService: {
+    zodyTaskService: {
       archiveTask: vi.fn(),
       setTaskPinned: vi.fn(),
     },

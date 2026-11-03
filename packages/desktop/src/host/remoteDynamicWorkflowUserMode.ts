@@ -12,7 +12,7 @@ import type { IZodyAgentService } from "@zody/services";
 export async function pushDynamicWorkflowUserModeToRemoteHosts(
   connections: ReadonlyArray<{
     target: RemoteTarget;
-    zcodeAgentService: Pick<IZodyAgentService, "syncDynamicWorkflowUserMode">;
+    zodyAgentService: Pick<IZodyAgentService, "syncDynamicWorkflowUserMode">;
   }>,
   mode: DynamicWorkflowMode | undefined,
   onError: (error: unknown) => void,
@@ -22,7 +22,7 @@ export async function pushDynamicWorkflowUserModeToRemoteHosts(
       .filter((connection) => connection.target.kind !== "server")
       .map(async (connection) => {
         try {
-          await connection.zcodeAgentService.syncDynamicWorkflowUserMode(mode ? { mode } : {});
+          await connection.zodyAgentService.syncDynamicWorkflowUserMode(mode ? { mode } : {});
         } catch (error) {
           onError(error);
         }

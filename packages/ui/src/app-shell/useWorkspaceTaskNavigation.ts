@@ -165,7 +165,7 @@ export function useWorkspaceTaskNavigation({
             `[App] 选择 task 时跳过未读持久化，远程 workspace 未连接 workspace=${targetWorkspacePath} taskId=${taskId}`,
           );
         } else {
-          void targetServices.zcodeTaskService
+          void targetServices.zodyTaskService
             .setTaskUnread({
               ...targetTask,
               unread: false,

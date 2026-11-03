@@ -830,20 +830,20 @@ export function App({
         setTestMessages([...messages]);
       },
       getChatMessageCount: () => testMessages?.length ?? 0,
-      getPluginsOverview: (params) => services.zcodeAgentService.getPluginsOverview(params),
-      addPluginMarketplace: (params) => services.zcodeAgentService.addPluginMarketplace(params),
+      getPluginsOverview: (params) => services.zodyAgentService.getPluginsOverview(params),
+      addPluginMarketplace: (params) => services.zodyAgentService.addPluginMarketplace(params),
       updatePluginMarketplace: (params) =>
-        services.zcodeAgentService.updatePluginMarketplace(params),
-      installPlugin: (params) => services.zcodeAgentService.installPlugin(params),
-      listPlugins: (params) => services.zcodeAgentService.listPlugins(params),
+        services.zodyAgentService.updatePluginMarketplace(params),
+      installPlugin: (params) => services.zodyAgentService.installPlugin(params),
+      listPlugins: (params) => services.zodyAgentService.listPlugins(params),
       getPluginReferenceCatalog: (params) =>
-        services.zcodeAgentService.getPluginReferenceCatalog(params),
+        services.zodyAgentService.getPluginReferenceCatalog(params),
     }),
     [
       locale,
       // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
-      services.zcodeTaskService,
-      services.zcodeAgentService,
+      services.zodyTaskService,
+      services.zodyAgentService,
       setLocale,
       theme,
       setTheme,

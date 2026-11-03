@@ -346,7 +346,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
     rpcReady: true,
   }),
   useWorkspaceServices: () => ({
-    zcodeTaskService: {
+    zodyTaskService: {
       createTask: vi.fn(async () => ({
         taskId: "task-1",
         provider: "claude",

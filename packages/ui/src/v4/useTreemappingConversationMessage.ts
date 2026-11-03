@@ -70,16 +70,16 @@ export function useTreemappingConversationMessage(params: {
   workspaceIdentity?: string;
 }): TaskChatMessage | null {
   const { sessionId, workspacePath, workspaceIdentity } = params;
-  const { zcodeAgentService } = useServices();
+  const { zodyAgentService } = useServices();
   const layer = useMemo(
     () =>
       new SessionDataLayer({
-        transport: createAgentConversationTransport(zcodeAgentService, {
+        transport: createAgentConversationTransport(zodyAgentService, {
           workspacePath,
           workspaceIdentity,
         }),
       }),
-    [zcodeAgentService, workspacePath, workspaceIdentity],
+    [zodyAgentService, workspacePath, workspaceIdentity],
   );
   useEffect(() => {
     return () => layer.dispose();

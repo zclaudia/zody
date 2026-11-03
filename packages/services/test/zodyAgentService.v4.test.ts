@@ -333,7 +333,7 @@ function readRequests(logPath: string): Array<{ method: string; params: Record<s
     .map((line) => JSON.parse(line) as { method: string; params: Record<string, unknown> });
 }
 
-describe("zcodeAgentService v4 conversation channel", () => {
+describe("zodyAgentService v4 conversation channel", () => {
   const createdDirs: string[] = [];
 
   afterEach(() => {

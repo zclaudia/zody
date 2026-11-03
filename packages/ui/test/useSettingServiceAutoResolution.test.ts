@@ -10,7 +10,7 @@ const settingService = {
 const broadcastService = {
   send: vi.fn<(message: { channel: string; payload: unknown }) => Promise<void>>(),
 };
-const zcodeAgentService = {
+const zodyAgentService = {
   syncAppRuntimePreferences:
     vi.fn<
       (preferences: {
@@ -26,7 +26,7 @@ vi.mock("@/hooks/useServices.js", () => ({
   useServices: () => ({
     broadcastService,
     settingService,
-    zcodeAgentService,
+    zodyAgentService,
   }),
 }));
 
@@ -43,7 +43,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
     } as AppSettings);
     settingService.update.mockResolvedValue(undefined);
     broadcastService.send.mockResolvedValue(undefined);
-    zcodeAgentService.syncAppRuntimePreferences.mockResolvedValue(undefined);
+    zodyAgentService.syncAppRuntimePreferences.mockResolvedValue(undefined);
   });
 
   it("persists, waits for the current Host ACK, then broadcasts the strict preference", async () => {
@@ -64,7 +64,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
     expect(settingService.update).toHaveBeenCalledWith({
       askUserQuestionAutoResolutionEnabled: false,
     });
-    expect(zcodeAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith({
+    expect(zodyAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith({
       askUserQuestionAutoResolutionEnabled: false,
       modelIoFullRetentionEnabled: false,
     });
@@ -75,7 +75,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
         modelIoFullRetentionEnabled: false,
       },
     });
-    expect(zcodeAgentService.syncAppRuntimePreferences.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(zodyAgentService.syncAppRuntimePreferences.mock.invocationCallOrder[0]).toBeLessThan(
       broadcastService.send.mock.invocationCallOrder[0] ?? 0,
     );
 
@@ -98,7 +98,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
       askUserQuestionAutoResolutionEnabled: true,
       modelIoFullRetentionEnabled: true,
     };
-    expect(zcodeAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith(preferences);
+    expect(zodyAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith(preferences);
     expect(broadcastService.send).toHaveBeenCalledWith({
       channel: APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL,
       payload: preferences,

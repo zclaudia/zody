@@ -141,7 +141,7 @@ describe("归档更多菜单", () => {
     render(
       createElement(
         ServiceProvider,
-        { services: { zcodeTaskService: service } as never },
+        { services: { zodyTaskService: service } as never },
         createElement(WebRemoteControlTaskIndex, {
           activeWorkspacePath: "/project",
           activeTaskId: null,

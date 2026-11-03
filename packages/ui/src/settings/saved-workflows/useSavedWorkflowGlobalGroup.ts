@@ -66,7 +66,7 @@ export function useSavedWorkflowGlobalGroup({
 }: UseSavedWorkflowGlobalGroupParams) {
   const { intl, locale } = useZodyIntl();
   const requestConfirmation = useConfirmDialog();
-  const { zcodeAgentService: agentService, fileWatcherService } = useServices();
+  const { zodyAgentService: agentService, fileWatcherService } = useServices();
 
   const state = useSavedWorkflowStore((store) =>
     selectSavedWorkflowState(store, GLOBAL_SAVED_WORKFLOW_TARGET),

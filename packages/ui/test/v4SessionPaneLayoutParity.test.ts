@@ -91,10 +91,10 @@ vi.mock("@/hooks/useSettingService.js", () => ({
 vi.mock("@/hooks/useServices.js", () => ({
   useOptionalServices: () => null,
   useServices: () => ({
-    zcodeSessionService: {
+    zodySessionService: {
       updateProviderRegistry: vi.fn(),
     },
-    zcodeTaskService: {
+    zodyTaskService: {
       restartWorkspaceProcess: vi.fn(),
     },
   }),

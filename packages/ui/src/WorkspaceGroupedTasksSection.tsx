@@ -1104,7 +1104,7 @@ export function WorkspaceGroupedTasksSection({
     }
 
     try {
-      const meta = await workspaceServices.services.zcodeTaskService.renameTask(
+      const meta = await workspaceServices.services.zodyTaskService.renameTask(
         {
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -1156,7 +1156,7 @@ export function WorkspaceGroupedTasksSection({
         return;
       }
 
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .setTaskUnread({
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -1215,7 +1215,7 @@ export function WorkspaceGroupedTasksSection({
         return new Set(current).add(closingTaskKey);
       });
 
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .archiveTask({
           taskId: task.taskId,
           workspacePath: task.workspacePath,

@@ -334,7 +334,7 @@ function RootInner({
   useDynamicWorkflowUserModeSync({
     settingsLoaded: Boolean(appSettings),
     userMode: appSettings?.dynamicWorkflowMode,
-    zcodeAgentService: services.zcodeAgentService,
+    zodyAgentService: services.zodyAgentService,
     clientConfigService: services.clientConfigService,
   });
   // fork（F4.1b）：session-expired 启动标记随 OAuth 链摘除——JWT 过期重启标记只由
@@ -397,7 +397,7 @@ function RootInner({
           return;
         }
         void refreshAppSettings();
-        void services.zcodeAgentService.syncAppRuntimePreferences(parsed.data).catch((error) => {
+        void services.zodyAgentService.syncAppRuntimePreferences(parsed.data).catch((error) => {
           logger.warn("[settings] 同步跨窗口运行时偏好失败", error);
         });
         // fork（bot-channels 移除）：botsService 的跨窗口偏好同步分支随 BotsService 删除。
@@ -436,14 +436,14 @@ function RootInner({
     refreshAppSettings,
     // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
     services.broadcastService,
-    services.zcodeAgentService,
+    services.zodyAgentService,
   ]);
 
   useEffect(() => {
     if (!appSettings) {
       return;
     }
-    void services.zcodeAgentService
+    void services.zodyAgentService
       .syncAppRuntimePreferences({
         askUserQuestionAutoResolutionEnabled:
           appSettings.askUserQuestionAutoResolutionEnabled !== false,
@@ -457,7 +457,7 @@ function RootInner({
     appSettings?.askUserQuestionAutoResolutionEnabled,
     appSettings?.modelIoFullRetentionEnabled,
     // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
-    services.zcodeAgentService,
+    services.zodyAgentService,
   ]);
 
   const tabs = useTabStore((state) => state.tabs);

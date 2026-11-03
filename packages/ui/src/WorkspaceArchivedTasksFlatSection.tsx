@@ -106,7 +106,7 @@ export function WorkspaceArchivedTasksFlatSection({
           label: tab.label || getPathLeaf(tab.workspacePath),
           service: workspaceServiceLookup.get(
             buildTaskWorkspaceKey(tab.workspacePath, tab.workspaceIdentity),
-          )?.services.zcodeTaskService,
+          )?.services.zodyTaskService,
         }))}
         onDeleted={removeTaskFromTaskCaches}
         onRefresh={refresh}
@@ -222,7 +222,7 @@ export function WorkspaceArchivedTasksFlatSection({
                   onClick={(event) => {
                     event.preventDefault();
                     event.stopPropagation();
-                    void services.zcodeTaskService
+                    void services.zodyTaskService
                       .unarchiveTask({
                         taskId: task.taskId,
                         workspacePath: task.workspacePath,
@@ -287,7 +287,7 @@ export function WorkspaceArchivedTasksFlatSection({
 
                         setDeletingTaskKeys((current) => new Set(current).add(taskKey));
                         try {
-                          await services.zcodeTaskService.deleteTask({
+                          await services.zodyTaskService.deleteTask({
                             taskId: task.taskId,
                             workspacePath: task.workspacePath,
                             ...(task.workspaceIdentity

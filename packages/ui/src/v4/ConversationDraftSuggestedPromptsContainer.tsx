@@ -279,7 +279,7 @@ export function ConversationDraftSuggestedPromptsContainer({
   const revalidateAndPrependPlugin = useCallback(
     async (current: DraftSuggestedPluginFlow, requestVersion: number) => {
       await invalidateDeferredDraftSessionForSkillChange({
-        zcodeSessionService: resolution.services.zcodeSessionService,
+        zodySessionService: resolution.services.zodySessionService,
         workspacePath,
         workspaceIdentity,
         reason: "suggested-prompt-plugin-change",
@@ -300,7 +300,7 @@ export function ConversationDraftSuggestedPromptsContainer({
       isWebRemoteControl,
       prependResolvedPlugin,
       resolution.services.pluginManagementService,
-      resolution.services.zcodeSessionService,
+      resolution.services.zodySessionService,
       targetParams,
       workspaceIdentity,
       workspacePath,

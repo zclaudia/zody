@@ -73,11 +73,11 @@ const servicesMock = vi.hoisted(() => ({
     share: vi.fn(),
   },
   // 修复原因：readiness hook 将 service 作为 effect 依赖；每次 render 重建会导致无限重渲染直至 OOM。
-  zcodeSessionService: {
+  zodySessionService: {
     updateProviderRegistry: vi.fn(),
     readSession: vi.fn(async () => ({})),
   },
-  zcodeTaskService: {
+  zodyTaskService: {
     restartWorkspaceProcess: vi.fn(),
   },
 }));

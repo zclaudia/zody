@@ -218,7 +218,7 @@ export function WorkspacePinnedTasksSection({
         return;
       }
       const { item, services } = current;
-      void services.zcodeTaskService
+      void services.zodyTaskService
         .archiveTask({
           taskId: item.taskId,
           workspacePath: item.workspacePath,
@@ -291,7 +291,7 @@ export function WorkspacePinnedTasksSection({
         previousState: { pinned: true, archived: false },
         nextState: { pinned, archived: false },
       });
-      void services.zcodeTaskService
+      void services.zodyTaskService
         .setTaskPinned({
           taskId: item.taskId,
           workspacePath: item.workspacePath,
@@ -350,7 +350,7 @@ export function WorkspacePinnedTasksSection({
         return;
       }
       const { item, services } = current;
-      void services.zcodeTaskService
+      void services.zodyTaskService
         .setTaskUnread({
           taskId: item.taskId,
           workspacePath: item.workspacePath,
@@ -504,7 +504,7 @@ export function WorkspacePinnedTasksSection({
               handleCancelRenameTask();
               return;
             }
-            void services.zcodeTaskService
+            void services.zodyTaskService
               .renameTask({
                 taskId: item.taskId,
                 workspacePath: item.workspacePath,
@@ -614,7 +614,7 @@ export function WorkspacePinnedTasksSection({
                 previousState: { pinned: true, archived: false },
                 nextState: { pinned, archived: false },
               });
-              void contextMenuServices.zcodeTaskService
+              void contextMenuServices.zodyTaskService
                 .setTaskPinned({
                   taskId: contextMenuItem.taskId,
                   workspacePath: contextMenuItem.workspacePath,
@@ -675,7 +675,7 @@ export function WorkspacePinnedTasksSection({
               setRenameDraft(currentTitle);
             }}
             onArchiveTask={() => {
-              void contextMenuServices.zcodeTaskService
+              void contextMenuServices.zodyTaskService
                 .archiveTask({
                   taskId: contextMenuItem.taskId,
                   workspacePath: contextMenuItem.workspacePath,
@@ -714,7 +714,7 @@ export function WorkspacePinnedTasksSection({
                 });
             }}
             onMarkTaskAsUnread={() => {
-              void contextMenuServices.zcodeTaskService
+              void contextMenuServices.zodyTaskService
                 .setTaskUnread({
                   taskId: contextMenuItem.taskId,
                   workspacePath: contextMenuItem.workspacePath,

@@ -63,7 +63,7 @@ export function createRemoteConnectionServiceCollection(params: {
       .register(ICredentialService, params.credentialService)
       .register(IBroadcastService, createBroadcastService(params.parentPort))
       .register(IZodyTaskService, params.remoteZCodeTaskService)
-      .register(IZodyAgentService, params.connectionServices.zcodeAgentService)
+      .register(IZodyAgentService, params.connectionServices.zodyAgentService)
       .register(IZodySessionService, params.remoteZCodeSessionService)
       .register(IPromptAttachmentTransferService, params.promptAttachmentTransferService)
       .register(IFileWatcherService, params.connectionServices.fileWatcherService)

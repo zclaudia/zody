@@ -13,3 +13,5 @@
 主控 UI runner 的两次调用错误单独记录于 `runner-provenance.md`：首次包 cwd 导致重复路径 ENOENT；第二次从根使用最小 UI 配置误采集 output 内旧快照，发现后对本任务确切 Vitest PID 发送 SIGINT，退出 130。该部分运行不作候选证据。最终使用根配置的 managed includes、aliases 和 setup；产品文件集合/哈希随后重新核对，未为错误调用修改源码。TUI 的 runner 错误也已独立纠正。
 
 本批准备交独立 DeepSeek 审查。原构建失败、fixture 失败、runner 错误及既有 UI/Main 失败没有删去；完整 R21/R22、原生 Desktop、最终容器和发行门禁仍未完成。剩余内部成员、少量 JS 局部声明及当前文字清理由后续 R20 收口。
+
+独立审查收口：DeepSeek 对固定01f→21c返回 scoped PASS。319 为原清单记录数，涉及268个唯一旧名称、308个按(文件,旧名,声明种类)去重的声明键及336个实际新声明位置，不称为319个唯一符号。既有 UI/Main 失败、runner纠正过程和完整最终门禁限制保持。

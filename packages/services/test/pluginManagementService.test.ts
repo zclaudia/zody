@@ -19,7 +19,7 @@ describe("pluginManagementService suggested prompt operations", () => {
       cancelled: true,
     }));
     const service = createPluginManagementService({
-      zcodeAgentService: {
+      zodyAgentService: {
         resolveSuggestedPluginReference,
         cancelPluginOperation,
         onDynamicPluginOperationProgress,

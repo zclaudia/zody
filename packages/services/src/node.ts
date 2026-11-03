@@ -1931,7 +1931,7 @@ export function createLocalServices(options: {
   });
   // task wrapper 由 ZCode task service adapter 提供；核心 session 状态由 ZCode agent server 维护。
   const zodyTaskService = createZodyTaskServiceAdapter({
-    zcodeAgentService: zodyAgentService,
+    zodyAgentService: zodyAgentService,
     taskIndexRepo,
     taskIndexSyncer: zodyTaskIndexSyncer,
     settingService,
@@ -1986,7 +1986,7 @@ export function createLocalServices(options: {
     .register(
       IUsageStatsService,
       createUsageStatsService({
-        zcodeAgentService: zodyAgentService,
+        zodyAgentService: zodyAgentService,
       }),
     )
     // fork（F2.6b）：client-config 服务改纯本地实现，不再请求 /api/v1/client/configs；
@@ -2015,7 +2015,7 @@ export function createLocalServices(options: {
     .register(IPluginSyncService, pluginSyncService)
     .register(IPluginsService, createPluginsService({ isDesktopRuntime: true }))
     // 设置页插件管理薄服务——plugins/* 旧协议词的 host 侧唯一消费点。
-    .register(IPluginManagementService, createPluginManagementService({ zcodeAgentService: zodyAgentService }))
+    .register(IPluginManagementService, createPluginManagementService({ zodyAgentService: zodyAgentService }))
     .register(ISubagentsService, subagentsService)
     .register(ICommandsService, createCommandsService({ isDesktopRuntime: true }))
     .register(

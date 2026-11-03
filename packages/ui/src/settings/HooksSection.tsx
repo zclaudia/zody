@@ -329,7 +329,7 @@ export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionP
         reason,
         workspaceIdentity: targetWorkspaceIdentity,
         workspacePath: targetWorkspacePath,
-        zcodeSessionService: zodySessionService,
+        zodySessionService: zodySessionService,
       });
     },
     [targetWorkspaceIdentity, targetWorkspacePath, zodySessionService],

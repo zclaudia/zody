@@ -38,7 +38,7 @@ const {
     sessionsById: {} as Record<string, unknown>,
   },
   stableBaseServices: {
-    zcodeTaskService: {
+    zodyTaskService: {
       archiveTask: vi.fn(async () => null),
       renameTask: vi.fn(async () => null),
       setTaskPinned: vi.fn(async () => null),
@@ -288,10 +288,10 @@ describe("workspace task section render stability", () => {
     remoteTimelineState.itemsByWorkspaceKey = {};
     remoteTimelineState.loadingByWorkspaceKey = {};
     remoteTimelineState.totalByWorkspaceKey = {};
-    stableBaseServices.zcodeTaskService.archiveTask.mockReset();
-    stableBaseServices.zcodeTaskService.renameTask.mockReset();
-    stableBaseServices.zcodeTaskService.setTaskPinned.mockReset();
-    stableBaseServices.zcodeTaskService.setTaskUnread.mockReset();
+    stableBaseServices.zodyTaskService.archiveTask.mockReset();
+    stableBaseServices.zodyTaskService.renameTask.mockReset();
+    stableBaseServices.zodyTaskService.setTaskPinned.mockReset();
+    stableBaseServices.zodyTaskService.setTaskUnread.mockReset();
     zcodeSessionStoreState.removeOptimisticTaskListItem.mockReset();
     zcodeSessionStoreState.removeTaskState.mockReset();
     zcodeSessionStoreState.setTaskUnreadIndicator.mockReset();

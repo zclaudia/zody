@@ -73,8 +73,8 @@ function getSessionSnapshotDiagnostics(snapshot: ZodySessionStateSnapshot) {
 }
 
 export async function readDesktopContinuousSessionRestoreSnapshot(params: {
-  zcodeSessionService: ZodySessionRestoreService;
-  zcodeTaskService?: ZodyLegacyTaskSnapshotRestoreService;
+  zodySessionService: ZodySessionRestoreService;
+  zodyTaskService?: ZodyLegacyTaskSnapshotRestoreService;
   workspacePath: string;
   workspaceIdentity?: string;
   sessionId: string;
@@ -88,7 +88,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
   let resumedSessionSnapshot: ZodySessionStateSnapshot;
   try {
     const resumeStartedAt = Date.now();
-    resumedSessionSnapshot = await params.zcodeSessionService.resumeSession({
+    resumedSessionSnapshot = await params.zodySessionService.resumeSession({
       workspacePath: params.workspacePath,
       workspaceIdentity: params.workspaceIdentity,
       sessionId: params.sessionId,
@@ -108,7 +108,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
     });
   } catch (error) {
     if (
-      !params.zcodeTaskService ||
+      !params.zodyTaskService ||
       (!isSessionMissingError(error) && !isRuntimeModelUnavailableError(error))
     ) {
       throw error;
@@ -133,7 +133,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
     // 都不能继续伪造 active session。这里退回 task facade 的 snapshot 读取，只恢复历史显示；
     // 真正续聊必须等用户显式选择当前可用模型。
     const legacyStartedAt = Date.now();
-    const legacySnapshot = await params.zcodeTaskService.getTaskSnapshot({
+    const legacySnapshot = await params.zodyTaskService.getTaskSnapshot({
       taskId: params.sessionId,
       workspacePath: params.workspacePath,
       workspaceIdentity: params.workspaceIdentity,
@@ -166,7 +166,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
     };
   }
   const readStartedAt = Date.now();
-  const readSessionSnapshot = await params.zcodeSessionService.readSession({
+  const readSessionSnapshot = await params.zodySessionService.readSession({
     workspacePath: params.workspacePath,
     workspaceIdentity: params.workspaceIdentity,
     sessionId: params.sessionId,
@@ -197,7 +197,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
 }
 
 export async function readWebRemoteReplayableSessionConfigOptions(params: {
-  zcodeSessionService: ZodySessionRestoreService;
+  zodySessionService: ZodySessionRestoreService;
   workspacePath: string;
   workspaceIdentity?: string;
   sessionId: string;
@@ -210,7 +210,7 @@ export async function readWebRemoteReplayableSessionConfigOptions(params: {
       const resumeStartedAt = Date.now();
       // Bugfix: 手机 replayable 配置读取会早于后续 resumeTask。
       // 先带历史模型激活 session，避免 readSession 读取到被默认模型污染的 settings/context window。
-      const resumed = await params.zcodeSessionService.resumeSession({
+      const resumed = await params.zodySessionService.resumeSession({
         workspacePath: params.workspacePath,
         workspaceIdentity: params.workspaceIdentity,
         sessionId: params.sessionId,
@@ -228,7 +228,7 @@ export async function readWebRemoteReplayableSessionConfigOptions(params: {
         workspacePath: params.workspacePath,
       });
     }
-    const snapshot = await params.zcodeSessionService.readSession({
+    const snapshot = await params.zodySessionService.readSession({
       workspacePath: params.workspacePath,
       workspaceIdentity: params.workspaceIdentity,
       sessionId: params.sessionId,

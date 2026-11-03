@@ -88,7 +88,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", async (importOriginal) => {
     // 此 hook 的首参是 workspacePath。旧 mock 原样返回首参，只因早期 return 未读取服务才未暴露。
     // 数据库 loading 提前订阅工作区服务后，测试也必须返回真实契约形状。
     useWorkspaceServices: () => ({
-      zcodeAgentService: {
+      zodyAgentService: {
         prepareStorage: vi.fn(async () => {}),
         getStorageStartupState: vi.fn(async () => null),
         onDynamicStorageStartupState: vi.fn(() => () => ({ dispose: vi.fn() })),

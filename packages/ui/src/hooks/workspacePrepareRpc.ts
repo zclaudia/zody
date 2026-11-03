@@ -14,7 +14,7 @@ export async function prepareWorkspaceWithZodySessionService(params: {
   workspacePath: string;
   workspaceIdentity?: string;
   provider: ZodyProvider;
-  zcodeSessionService: Pick<IZodySessionService, "readWorkspacePresentation">;
+  zodySessionService: Pick<IZodySessionService, "readWorkspacePresentation">;
 }): Promise<ZodyWorkspacePrepareResult> {
   const startedAt = Date.now();
   logger.info("[zcode-workspace-presentation] workspace prepare start", {
@@ -25,7 +25,7 @@ export async function prepareWorkspaceWithZodySessionService(params: {
 
   let presentation: Awaited<ReturnType<IZodySessionService["readWorkspacePresentation"]>>;
   try {
-    presentation = await params.zcodeSessionService.readWorkspacePresentation({
+    presentation = await params.zodySessionService.readWorkspacePresentation({
       workspacePath: params.workspacePath,
       workspaceIdentity: params.workspaceIdentity,
     });

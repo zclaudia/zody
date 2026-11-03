@@ -107,7 +107,7 @@ async function refreshSettingsStore(settingService: ISettingService | undefined)
 /** 获取和更新应用设置 */
 export function useSettings() {
   // fork（bot-channels 移除）：botsService 解构随 BotsService 删除（specs/bot-channels-removal.md）。
-  const { broadcastService, settingService, zcodeAgentService } = useServices();
+  const { broadcastService, settingService, zodyAgentService } = useServices();
   const platform = usePlatform();
   const settingsStore = getSettingsStore(settingService);
   const [snapshot, setSnapshot] = useState<SettingsSnapshot>(settingsStore.snapshot);
@@ -157,7 +157,7 @@ export function useSettings() {
         };
         // fork（bot-channels 移除）：botsService 偏好同步随 BotsService 删除。
         const syncResults = await Promise.allSettled([
-          zcodeAgentService.syncAppRuntimePreferences(preferences),
+          zodyAgentService.syncAppRuntimePreferences(preferences),
         ]);
         const syncError = syncResults.find(
           (result): result is PromiseRejectedResult => result.status === "rejected",
@@ -176,7 +176,7 @@ export function useSettings() {
       broadcastService,
       settingService,
       settingsStore,
-      zcodeAgentService,
+      zodyAgentService,
       platform,
       refresh,
     ],

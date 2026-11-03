@@ -364,7 +364,7 @@ export function useDraftConfigControl(params: {
       workspacePath,
       workspaceIdentity,
       provider: displayProvider,
-      zcodeSessionService: zodySessionService,
+      zodySessionService: zodySessionService,
     })
       .then((prepareResult) => {
         const baseOptions = prepareResult.configOptions ?? [];

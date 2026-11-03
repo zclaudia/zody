@@ -32,7 +32,7 @@ const {
     sessionsById: {} as Record<string, unknown>,
   },
   stableBaseServices: {
-    zcodeTaskService: {
+    zodyTaskService: {
       archiveTask: vi.fn(async () => null),
       renameTask: vi.fn(async () => null),
       setTaskPinned: vi.fn(async () => null),
@@ -249,10 +249,10 @@ describe("WorkspaceTimelineTasksSection render stability", () => {
     remoteTimelineState.itemsByWorkspaceKey = {};
     remoteTimelineState.loadingByWorkspaceKey = {};
     remoteTimelineState.totalByWorkspaceKey = {};
-    stableBaseServices.zcodeTaskService.archiveTask.mockReset();
-    stableBaseServices.zcodeTaskService.renameTask.mockReset();
-    stableBaseServices.zcodeTaskService.setTaskPinned.mockReset();
-    stableBaseServices.zcodeTaskService.setTaskUnread.mockReset();
+    stableBaseServices.zodyTaskService.archiveTask.mockReset();
+    stableBaseServices.zodyTaskService.renameTask.mockReset();
+    stableBaseServices.zodyTaskService.setTaskPinned.mockReset();
+    stableBaseServices.zodyTaskService.setTaskUnread.mockReset();
     delete (globalThis as { document?: unknown }).document;
     delete (globalThis as { window?: unknown }).window;
     delete (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown })

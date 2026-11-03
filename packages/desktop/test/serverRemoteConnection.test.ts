@@ -183,7 +183,7 @@ describe("server remote connection", () => {
       workspaces: [{ path: "/home/dev/project" }],
     });
     await expect(
-      connection.services.zcodeAgentService.helloConversationV4(),
+      connection.services.zodyAgentService.helloConversationV4(),
     ).resolves.toMatchObject({
       clientMode: "desktop-continuous",
       deliveryProfile: "continuous",
@@ -193,7 +193,7 @@ describe("server remote connection", () => {
     const browserServices = await connectViaWebSocket(`ws://127.0.0.1:${address.port}/ws`, {
       onOpenSocket: (socket) => (browserSocket = socket),
     });
-    await expect(browserServices.zcodeAgentService.helloConversationV4()).resolves.toMatchObject({
+    await expect(browserServices.zodyAgentService.helloConversationV4()).resolves.toMatchObject({
       clientMode: "web-remote-replayable",
       deliveryProfile: "replayable",
     });
@@ -203,7 +203,7 @@ describe("server remote connection", () => {
       "x-zcode-rpc-client-mode": "desktop-continuous",
     });
     await expect(
-      legacyHeaderConnection.services.zcodeAgentService.helloConversationV4(),
+      legacyHeaderConnection.services.zodyAgentService.helloConversationV4(),
     ).resolves.toMatchObject({
       clientMode: "web-remote-replayable",
       deliveryProfile: "replayable",
@@ -242,7 +242,7 @@ describe("server remote connection", () => {
     disposables.push(connection);
 
     await expect(
-      connection.services.zcodeAgentService.helloConversationV4(),
+      connection.services.zodyAgentService.helloConversationV4(),
     ).resolves.toMatchObject({
       clientMode: "desktop-continuous",
       deliveryProfile: "continuous",
@@ -296,7 +296,7 @@ describe("server remote connection", () => {
       const telemetry = registerHostServiceResourceTelemetry({
         services: new ServiceCollection().register(
           IZodyAgentService,
-          connection.services.zcodeAgentService,
+          connection.services.zodyAgentService,
         ),
         runtimeSurface: "remote",
         telemetrySupported: connection.serverInfo.capabilities.processResourceTelemetry === true,
@@ -306,7 +306,7 @@ describe("server remote connection", () => {
 
       // 同一连接的 RPC 应答是前面 EventListen 已处理的屏障，无需 sleep 猜测订阅时序。
       await expect(
-        connection.services.zcodeAgentService.helloConversationV4(),
+        connection.services.zodyAgentService.helloConversationV4(),
       ).resolves.toMatchObject({
         deliveryProfile: "continuous",
       });
@@ -361,7 +361,7 @@ describe("server remote connection", () => {
     const trusted = await connectNodeRpc(wsHost, {
       "x-zcode-rpc-host-capability": ticket.capability,
     });
-    await expect(trusted.services.zcodeAgentService.helloConversationV4()).resolves.toMatchObject({
+    await expect(trusted.services.zodyAgentService.helloConversationV4()).resolves.toMatchObject({
       clientMode: "desktop-continuous",
       deliveryProfile: "continuous",
     });

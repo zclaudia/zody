@@ -151,7 +151,7 @@ function buildSessionMentionScopes(params: {
     return [];
   }
 
-  const currentAgentService = params.currentServices.zcodeAgentService;
+  const currentAgentService = params.currentServices.zodyAgentService;
   const scopes: WorkspaceSessionsIndexScope[] = [];
   const seenWorkspaceKeys = new Set<string>();
   const candidates: Array<
@@ -191,7 +191,7 @@ function buildSessionMentionScopes(params: {
     // 未连接 remote 也会在 resolver 处返回 null，不能回退到本地 base service。
     if (
       !resolved ||
-      resolved.services.zcodeAgentService !== currentAgentService
+      resolved.services.zodyAgentService !== currentAgentService
     ) {
       continue;
     }
@@ -205,7 +205,7 @@ function buildSessionMentionScopes(params: {
       ...(resolved.remoteSessionId
         ? { endpointKey: resolved.remoteSessionId }
         : {}),
-      agentService: resolved.services.zcodeAgentService,
+      agentService: resolved.services.zodyAgentService,
     });
   }
 
@@ -264,7 +264,7 @@ export function useSessionsMentionProvider(
           ...(workspaceIdentity ? { workspaceIdentity } : {}),
           ...(remoteSessionId ? { endpointKey: remoteSessionId } : {}),
           // 远端必须显式携带已解析 endpoint 的 service，不能让本机 Host 查询远端路径。
-          agentService: workspaceServices.zcodeAgentService,
+          agentService: workspaceServices.zodyAgentService,
         },
       ];
     }

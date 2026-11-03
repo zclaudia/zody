@@ -48,7 +48,7 @@ const services = {
     update: async () => {},
     updateDataBaseDir: async () => {},
   },
-  zcodeAgentService: {syncAppRuntimePreferences: async () => ({})},
+  zodyAgentService: {syncAppRuntimePreferences: async () => ({})},
   systemService: {
     info: async () => ({homedir: '/tmp', platform: 'darwin'}),
     listIntegratedTerminalShells: async () => [],

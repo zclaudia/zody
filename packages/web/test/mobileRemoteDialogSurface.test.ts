@@ -76,7 +76,7 @@ describe("bootstrap notification action rejected path (notify-4)", () => {
       "utf8",
     );
     const submitStart = source.indexOf(
-      "await result.services.zcodeTaskService.respondPermission",
+      "await result.services.zodyTaskService.respondPermission",
     );
     const warnMarker = source.indexOf("notification action submit rejected");
     expect(submitStart).toBeGreaterThan(-1);

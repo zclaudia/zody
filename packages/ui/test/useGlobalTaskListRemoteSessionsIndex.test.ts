@@ -326,7 +326,7 @@ function createEndpointServices(options: EndpointMockOptions) {
       unsubscribeControllerV4: vi.fn(async () => {}),
       onDynamicControllerFrame: () => controllerFrames.event,
     },
-    zcodeTaskService: {
+    zodyTaskService: {
       listTaskList,
       listPinnedTaskIds: vi.fn(
         async (): Promise<string[]> => options.pinnedTaskIds ?? [],
@@ -348,7 +348,7 @@ function createEndpointServices(options: EndpointMockOptions) {
       ),
       onDynamicWorkspaceEvent: () => () => ({ dispose() {} }),
     },
-    zcodeAgentService: {
+    zodyAgentService: {
       ...v4Handshake(`connection-${options.workspaceId}`),
       subscribeSessionsIndexV4,
       unsubscribeSessionsIndexV4,
@@ -487,25 +487,25 @@ describe("useGlobalTaskList remote shard tasks-index 行 + sessions-index detail
       endpointKey: "remote-mac",
       workspacePath: "/Users/dev",
       workspaceIdentity: macIdentity,
-      agentService: mac.services.zcodeAgentService,
+      agentService: mac.services.zodyAgentService,
     };
     const macProjectScope: WorkspaceSessionsIndexScope = {
       endpointKey: "remote-mac",
       workspacePath: "/Users/dev/ZCodeProject",
       workspaceIdentity: macProjectIdentity,
-      agentService: mac.services.zcodeAgentService,
+      agentService: mac.services.zodyAgentService,
     };
     const zcodeScope: WorkspaceSessionsIndexScope = {
       endpointKey: "remote-zcode",
       workspacePath: "/root",
       workspaceIdentity: zcodeIdentity,
-      agentService: zcode.services.zcodeAgentService,
+      agentService: zcode.services.zodyAgentService,
     };
     const zcodeProjectScope: WorkspaceSessionsIndexScope = {
       endpointKey: "remote-zcode",
       workspacePath: "/root/demo-project",
       workspaceIdentity: zcodeProjectIdentity,
-      agentService: zcode.services.zcodeAgentService,
+      agentService: zcode.services.zodyAgentService,
     };
     let scopes: WorkspaceSessionsIndexScope[] = [macScope, macProjectScope];
     let latest: ReturnType<typeof useWorkspaceSessionsIndexItems> | null = null;
@@ -665,13 +665,13 @@ describe("useGlobalTaskList remote shard tasks-index 行 + sessions-index detail
     });
     const localScope: WorkspaceSessionsIndexScope = {
       workspacePath: "/workspace",
-      agentService: local.services.zcodeAgentService,
+      agentService: local.services.zodyAgentService,
     };
     const remoteScope: WorkspaceSessionsIndexScope = {
       endpointKey: "remote-added",
       workspacePath: "/remote-added",
       workspaceIdentity: "remote:ssh:added:/remote-added",
-      agentService: remote.services.zcodeAgentService,
+      agentService: remote.services.zodyAgentService,
     };
     let scopes: WorkspaceSessionsIndexScope[] = [localScope];
     let latest: ReturnType<typeof useWorkspaceSessionsIndexItems> | null = null;
@@ -878,7 +878,7 @@ describe("useGlobalTaskList remote shard tasks-index 行 + sessions-index detail
     });
     const localScope: WorkspaceSessionsIndexScope = {
       workspacePath: "/workspace-generation",
-      agentService: local.services.zcodeAgentService,
+      agentService: local.services.zodyAgentService,
     };
     const remoteScopeBase = {
       endpointKey: "remote-generation",
@@ -889,7 +889,7 @@ describe("useGlobalTaskList remote shard tasks-index 行 + sessions-index detail
       localScope,
       {
         ...remoteScopeBase,
-        agentService: remoteOld.services.zcodeAgentService,
+        agentService: remoteOld.services.zodyAgentService,
       },
     ];
     let latest: ReturnType<typeof useWorkspaceSessionsIndexItems> | null = null;
@@ -915,7 +915,7 @@ describe("useGlobalTaskList remote shard tasks-index 行 + sessions-index detail
       localScope,
       {
         ...remoteScopeBase,
-        agentService: remoteNew.services.zcodeAgentService,
+        agentService: remoteNew.services.zodyAgentService,
       },
     ];
     await act(async () => {

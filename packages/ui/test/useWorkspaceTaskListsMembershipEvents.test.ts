@@ -198,7 +198,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
     const workspaceEventListeners = new Map<string, (event: ZodyWorkspaceEvent) => void>();
     const setTaskUnread = vi.fn(async () => ({ ...task, unreadAt: 123 }));
     const services = {
-      zcodeTaskService: {
+      zodyTaskService: {
         listPinnedTaskIds: vi.fn(async (): Promise<string[]> => []),
         listArchivedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
         listTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => [task]),
@@ -211,7 +211,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
             return { dispose() {} };
           },
       },
-      zcodeAgentService: {
+      zodyAgentService: {
         ...v4Handshake("connection-cross-workspace-unread"),
         subscribeSessionsIndexV4: vi.fn(async ({ workspacePath }: { workspacePath: string }) => ({
           ack: {
@@ -331,7 +331,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
     const listDeletedTaskIds = vi.fn(async () => deletedIds);
     const listTasks = vi.fn(async (): Promise<ZodyTaskMeta[]> => activeTasks);
     const services = {
-      zcodeTaskService: {
+      zodyTaskService: {
         listWorkspaceTaskLists,
         listPinnedTaskIds,
         listArchivedTasks,
@@ -345,7 +345,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
           };
         },
       },
-      zcodeAgentService: {
+      zodyAgentService: {
         ...v4Handshake("connection-local"),
         subscribeSessionsIndexV4: vi.fn(async () => {
           const initial = snapshotFrame([createSession()]);
@@ -528,7 +528,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
           : Promise.resolve([createTaskMeta()] as ZodyTaskMeta[]),
       );
       const services = {
-        zcodeTaskService: {
+        zodyTaskService: {
           listPinnedTaskIds: vi.fn(async (): Promise<string[]> => []),
           listArchivedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
           listTasks,
@@ -538,7 +538,7 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
             return { dispose() {} };
           },
         },
-        zcodeAgentService: {
+        zodyAgentService: {
           ...v4Handshake("connection-race"),
           subscribeSessionsIndexV4: vi.fn(async () => {
             const initial = snapshotFrame([
@@ -704,14 +704,14 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
       ],
     );
     const remoteServices = {
-      zcodeTaskService: {
+      zodyTaskService: {
         listPinnedTaskIds: vi.fn(async (): Promise<string[]> => []),
         listArchivedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
         listTasks: remoteListTasks,
         listPinnedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
         onDynamicWorkspaceEvent: () => () => ({ dispose() {} }),
       },
-      zcodeAgentService: {
+      zodyAgentService: {
         ...v4Handshake("connection-remote"),
         subscribeSessionsIndexV4: remoteSubscribe,
         unsubscribeSessionsIndexV4: vi.fn(async () => {}),
@@ -724,14 +724,14 @@ describe("useWorkspaceTaskLists membership events (tasks-index 行 + session det
     } as unknown as IServiceAccessor;
     const baseFrameListeners: Array<(frame: SessionsIndexTopicWireFrame) => void> = [];
     const baseServices = {
-      zcodeTaskService: {
+      zodyTaskService: {
         listPinnedTaskIds: vi.fn(async (): Promise<string[]> => []),
         listArchivedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
         listTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => [createTaskMeta()]),
         listPinnedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),
         onDynamicWorkspaceEvent: () => () => ({ dispose() {} }),
       },
-      zcodeAgentService: {
+      zodyAgentService: {
         ...v4Handshake("connection-base"),
         subscribeSessionsIndexV4: vi.fn(async () => {
           const initial = snapshotFrame([createSession()]);

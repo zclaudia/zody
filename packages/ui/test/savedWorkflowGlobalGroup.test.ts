@@ -56,7 +56,7 @@ const agent = {
 };
 
 vi.mock("@/hooks/useServices.js", () => ({
-  useServices: () => ({ zcodeAgentService: agent, fileWatcherService }),
+  useServices: () => ({ zodyAgentService: agent, fileWatcherService }),
 }));
 vi.mock("@/hooks/useConfirmDialog.js", () => ({ useConfirmDialog: () => confirmMock }));
 vi.mock("@/components/ui/toast.js", () => ({ toast: (...args: unknown[]) => toastMock(...args) }));

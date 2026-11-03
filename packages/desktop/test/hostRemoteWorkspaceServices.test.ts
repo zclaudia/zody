@@ -108,13 +108,13 @@ function makeRemoteServices() {
     gitCheckpointService: { remote: "git-checkpoint" },
     systemService: { remote: "system" },
     terminalService: { remote: "terminal" },
-    zcodeAgentService: {
+    zodyAgentService: {
       onDynamicSessionRuntimePreferencesRequest: vi.fn(() => runtimePreferencesEmitter.event),
       respondSessionRuntimePreferences: vi.fn(async () => undefined),
     },
     runtimePreferencesEmitter,
-    zcodeTaskService: { sendPrompt: vi.fn() },
-    zcodeSessionService: { remote: "zcode-session" },
+    zodyTaskService: { sendPrompt: vi.fn() },
+    zodySessionService: { remote: "zcode-session" },
     fileWatcherService: { remote: "file-watcher" },
     skillsService: { remote: "skills" },
     skillSyncService: { remote: "skill-sync" },
@@ -185,10 +185,10 @@ describe("remote workspace host service wiring", () => {
     expect(services.get(ITerminalService)).toBe(remoteServices.terminalService);
     expect(services.get(IFileWatcherService)).toBe(remoteServices.fileWatcherService);
     expect(services.get(IZodyTaskService)).toEqual({
-      wrapped: remoteServices.zcodeTaskService,
+      wrapped: remoteServices.zodyTaskService,
     });
-    expect(services.get(IZodyAgentService)).toBe(remoteServices.zcodeAgentService);
-    expect(services.get(IZodySessionService)).toBe(remoteServices.zcodeSessionService);
+    expect(services.get(IZodyAgentService)).toBe(remoteServices.zodyAgentService);
+    expect(services.get(IZodySessionService)).toBe(remoteServices.zodySessionService);
 
     expect(services.get(IClientConfigService)).toBe(clientConfigService);
     expect(services.get(ISettingService)).toBeTruthy();
@@ -312,10 +312,10 @@ describe("remote workspace host service wiring", () => {
 
       await vi.waitFor(() => {
         expect(
-          remoteServices.zcodeAgentService.onDynamicSessionRuntimePreferencesRequest,
+          remoteServices.zodyAgentService.onDynamicSessionRuntimePreferencesRequest,
         ).toHaveBeenCalledWith();
         expect(
-          remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+          remoteServices.zodyAgentService.respondSessionRuntimePreferences,
         ).toHaveBeenCalledWith({
           requestId: "request-runtime-preferences",
           resolution: {
@@ -337,7 +337,7 @@ describe("remote workspace host service wiring", () => {
 
       await vi.waitFor(() => {
         expect(
-          remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+          remoteServices.zodyAgentService.respondSessionRuntimePreferences,
         ).toHaveBeenCalledWith({
           requestId: "request-user-execution-preferences",
           resolution: {
@@ -369,7 +369,7 @@ describe("remote workspace host service wiring", () => {
     const remoteServices = makeRemoteServices();
     const transportError = new Error("transport closed");
     const onError = vi.fn();
-    remoteServices.zcodeAgentService.respondSessionRuntimePreferences.mockRejectedValueOnce(
+    remoteServices.zodyAgentService.respondSessionRuntimePreferences.mockRejectedValueOnce(
       transportError,
     );
     const services = createRemoteWorkspaceServiceCollection({
@@ -399,10 +399,10 @@ describe("remote workspace host service wiring", () => {
       });
       expect(onError).toHaveBeenCalledWith(transportError);
       expect(
-        remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+        remoteServices.zodyAgentService.respondSessionRuntimePreferences,
       ).toHaveBeenCalledOnce();
       expect(
-        remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+        remoteServices.zodyAgentService.respondSessionRuntimePreferences,
       ).toHaveBeenCalledWith({
         requestId: "request-closed-transport",
         resolution: {
@@ -520,7 +520,7 @@ describe("remote workspace host service wiring", () => {
     const observedByReporting: unknown[] = [];
     const remoteServices = {
       ...makeRemoteServices(),
-      zcodeTaskService: { sendPrompt: rawSendPrompt },
+      zodyTaskService: { sendPrompt: rawSendPrompt },
     } as never;
     const services = createRemoteWorkspaceServiceCollection({
       clientConfigService,

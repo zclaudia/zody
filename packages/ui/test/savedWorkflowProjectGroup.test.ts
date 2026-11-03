@@ -68,7 +68,7 @@ const agentByPath: Record<string, ReturnType<typeof makeAgent>> = {
 
 vi.mock("@/hooks/useWorkspaceServices.js", () => ({
   useWorkspaceServicesResolution: (workspacePath: string) => ({
-    services: { zcodeAgentService: agentByPath[workspacePath] ?? agentRepo, fileWatcherService },
+    services: { zodyAgentService: agentByPath[workspacePath] ?? agentRepo, fileWatcherService },
     remoteSessionId: null,
     isRemoteTarget: false,
     connectionKind: "local-ready" as const,

@@ -53,7 +53,7 @@ describe("createHomeOnlyWebRemoteControlServices", () => {
       diagnostics: [],
     });
     await expect(
-      services.zcodeTaskService.listTasks({ workspacePath: "/remote/offline" }),
+      services.zodyTaskService.listTasks({ workspacePath: "/remote/offline" }),
     ).resolves.toEqual([]);
     await expect(
       services.gitService.getRepositorySummary({ workspacePath: "/remote/offline" }),

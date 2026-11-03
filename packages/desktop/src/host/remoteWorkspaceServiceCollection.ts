@@ -94,7 +94,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
   // fork（F4.7）：remote workspace host 不再重建 OAuth 服务/凭据仓库/账号派生 Key logout。
   // fork（F4.8）：远端 workspace 的会话分享服务装配已删除。
   const reportingRemoteZodyTaskService = params.createReportingRemoteZodyTaskService(
-    params.connectionServices.zcodeTaskService,
+    params.connectionServices.zodyTaskService,
   );
   // 手机 remote 的 replayable mirror 在 reporting wrapper 中发布用户消息；
   // 附件物化必须包在 reporting 外层，确保 mirror 和真正发给远端 agent 的 prompt 使用同一份远端路径。
@@ -102,7 +102,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
     reportingRemoteZodyTaskService,
   );
   const remoteZodySessionService = params.createRemotePromptAttachmentSessionService(
-    params.connectionServices.zcodeSessionService,
+    params.connectionServices.zodySessionService,
   );
   const remoteProviderProvisioningService =
     createRemoteProviderProvisioningExecutorFromWorkspace(params);
@@ -110,7 +110,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
   // desktop-attached remote 的 Agent 运行在远端，但 app-global 设置权威仍在
   // desktop shared Host。通过窄化的 runtime-preferences 请求原路返回，避免远端读取自己的 setting。
   const { onError } = params.runtimePreferencesBridge;
-  params.connectionServices.zcodeAgentService.onDynamicSessionRuntimePreferencesRequest()(
+  params.connectionServices.zodyAgentService.onDynamicSessionRuntimePreferencesRequest()(
     (request) => {
       const startedAt = Date.now();
       const requestContext = {
@@ -188,7 +188,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
           });
         }
         // 只把设置读取失败编码为 -32603；发送失败交给最终 onError 记录，不能重试同一请求。
-        await params.connectionServices.zcodeAgentService.respondSessionRuntimePreferences({
+        await params.connectionServices.zodyAgentService.respondSessionRuntimePreferences({
           requestId: request.requestId,
           resolution,
         });
@@ -224,7 +224,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
     .register(ICredentialService, localCredentialService)
     .register(IBroadcastService, localBroadcastService)
     .register(IZodyTaskService, remoteZodyTaskService)
-    .register(IZodyAgentService, params.connectionServices.zcodeAgentService)
+    .register(IZodyAgentService, params.connectionServices.zodyAgentService)
     .register(IZodySessionService, remoteZodySessionService)
     // fork（F4.8）：IConversationShareService 注册随会话分享功能删除。
     // fork（bot channels 移除，specs/bot-channels-removal.md）：IBotsService 注册随
@@ -237,7 +237,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
     .register(
       IUsageStatsService,
         createUsageStatsService({
-          zcodeAgentService: params.connectionServices.zcodeAgentService,
+          zodyAgentService: params.connectionServices.zodyAgentService,
         }),
     )
     .register(IClientConfigService, params.clientConfigService)
@@ -290,9 +290,9 @@ export function createServerRemoteWorkspaceServiceCollection(params: {
     .register(ISettingService, params.connectionServices.settingService)
     .register(ICredentialService, params.connectionServices.credentialService)
     .register(IBroadcastService, params.connectionServices.broadcastService)
-    .register(IZodyTaskService, params.connectionServices.zcodeTaskService)
-    .register(IZodyAgentService, params.connectionServices.zcodeAgentService)
-    .register(IZodySessionService, params.connectionServices.zcodeSessionService)
+    .register(IZodyTaskService, params.connectionServices.zodyTaskService)
+    .register(IZodyAgentService, params.connectionServices.zodyAgentService)
+    .register(IZodySessionService, params.connectionServices.zodySessionService)
     // fork（F4.8）：IConversationShareService 兜底注册随会话分享功能删除。
     // fork（bot channels 移除，specs/bot-channels-removal.md）：server 透传的
     // IBotsService 注册随第三方 IM bot 功能删除。

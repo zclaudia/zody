@@ -10,5 +10,5 @@ export function useZodySessionService(
   const services = workspacePath
     ? useWorkspaceServices(workspacePath, preferredRemoteSessionId, workspaceIdentity)
     : useServices();
-  return services.zcodeSessionService;
+  return services.zodySessionService;
 }

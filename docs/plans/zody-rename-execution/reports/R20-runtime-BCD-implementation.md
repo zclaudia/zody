@@ -13,3 +13,5 @@
 主控扩大验证发现两处活跃 OAuth 子进程 fixture 仍导入旧工厂：`apps/zody-cli/packages/adapters/tests/fixtures/shared-credentials-concurrent-process.ts` 与 `mcp-oauth-child-driver.ts` 均同步当前 `createSharedZodyCredentialStore`，其 credential payload 未变。两文件对应 auth 与跨进程 OAuth 单独运行 13/13 通过；在活跃 TS/TSX/CTS/MTS 的 319 名称候选中核对 import 和生成代码，唯一模板候选引用现有 R44 provider 参数及环境键，保持原义（证据 `active-import-and-code-strings.json`、`active-template-code-candidates.json`）。
 
 独立主控 root 7 项 Web relay 失败，固定祖先 7c clean 树以相同 root runner 实测同样 7 失败、4 通过（`web-7c-baseline.log`；该祖先不是本批同源码）。该 fixture 的 `@zody/client` mock 缺少真实 bridge 调用的 `connectViaProtocolOwned`；补充返回 services 与 dispose 的 mock，原恢复断言及 timeout 不变，当前单文件 11/11 通过（`web-target-fixed.log`）。未将主控误用 Vitest 执行 node:test 的 runner 失败归为源码问题；完整复验由主控执行。
+
+独立审查收口：DeepSeek 对固定01f→21c返回 scoped PASS。319 为原清单记录数，涉及268个唯一旧名称、308个按(文件,旧名,声明种类)去重的声明键及336个实际新声明位置，不称为319个唯一符号。既有 UI/Main 失败、runner纠正过程和完整最终门禁限制保持。

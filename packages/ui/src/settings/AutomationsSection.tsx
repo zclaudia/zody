@@ -401,7 +401,7 @@ export function AutomationsSection({
 }: AutomationsSectionProps) {
   const { intl, locale } = useZodyIntl();
   const platform = usePlatform();
-  const { clientScenesService, zcodeAgentService } = useServices();
+  const { clientScenesService, zodyAgentService } = useServices();
   const confirmDialog = useConfirmDialog();
   // fork（F4.3）：offPeakTaskService/useOffPeakEligibility/升级弹窗与 Coding Plan 门
   // （只服务闲时创建提示）随闲时任务全链路删除。
@@ -500,14 +500,14 @@ export function AutomationsSection({
     void initialize({
       workspacePath,
       workspaceIdentity,
-      agentService: zcodeAgentService,
+      agentService: zodyAgentService,
     }).then(() => {
       if (!disposed) setLoadedWorkspaceKey(workspaceKey);
     });
     return () => {
       disposed = true;
     };
-  }, [workspacePath, workspaceIdentity, zcodeAgentService, initialize]);
+  }, [workspacePath, workspaceIdentity, zodyAgentService, initialize]);
 
   // fork（F4.3）：Idle tab 收敛 effect 随闲时任务全链路删除。
 
@@ -556,12 +556,12 @@ export function AutomationsSection({
     setRefreshing(true);
     try {
       // fork（F4.3）：offPeakRefresh 并行刷新随闲时任务全链路删除。
-      await refresh(zcodeAgentService);
+      await refresh(zodyAgentService);
       setNow(Date.now());
     } finally {
       setRefreshing(false);
     }
-  }, [refresh, zcodeAgentService]);
+  }, [refresh, zodyAgentService]);
 
   // fork（F4.3）：闲时预填草稿消费与远端 workspace 退出闲时视图的 effect 随闲时任务全链路删除。
 
@@ -659,7 +659,7 @@ export function AutomationsSection({
       workspaceIdentity: targetIdentity,
     }: AutomationEditSubmit) => {
       if (view.mode === "edit") {
-        const ok = await updateAutomation(view.automation.automationId, input, zcodeAgentService);
+        const ok = await updateAutomation(view.automation.automationId, input, zodyAgentService);
         if (!ok) {
           toast(
             intl.formatMessage({
@@ -681,7 +681,7 @@ export function AutomationsSection({
           workspacePath: targetPath,
           workspaceIdentity: targetIdentity,
         },
-        zcodeAgentService,
+        zodyAgentService,
       );
       void reportAutomationCreateResult(platform, {
         automationId: created?.automationId,
@@ -715,13 +715,13 @@ export function AutomationsSection({
       showAutomationCreateLimitToast,
       updateAutomation,
       view,
-      zcodeAgentService,
+      zodyAgentService,
     ],
   );
 
   const handleToggle = useCallback(
     async (automation: ZodyAutomation, enabled: boolean) => {
-      await setEnabled(automation.automationId, enabled, zcodeAgentService);
+      await setEnabled(automation.automationId, enabled, zodyAgentService);
       const message = useAutomationManagementStore.getState().error;
       if (message) toast(intl.formatMessage({ id: getAutomationActionErrorToastId("toggle") }));
       else {
@@ -742,12 +742,12 @@ export function AutomationsSection({
         setNow(Date.now());
       }
     },
-    [intl, setEnabled, zcodeAgentService],
+    [intl, setEnabled, zodyAgentService],
   );
 
   const handleRestart = useCallback(
     async (automation: ZodyAutomation) => {
-      await restartAutomation(automation.automationId, zcodeAgentService);
+      await restartAutomation(automation.automationId, zodyAgentService);
       const message = useAutomationManagementStore.getState().error;
       if (message)
         toast(
@@ -757,7 +757,7 @@ export function AutomationsSection({
         );
       else setNow(Date.now());
     },
-    [intl, restartAutomation, zcodeAgentService],
+    [intl, restartAutomation, zodyAgentService],
   );
 
   const handleRunNow = useCallback(
@@ -772,14 +772,14 @@ export function AutomationsSection({
         automation,
         providerSettingsView,
       });
-      const result = await runAutomationNow(automation.automationId, zcodeAgentService);
+      const result = await runAutomationNow(automation.automationId, zodyAgentService);
       logger.debug("[automations] 立即运行交互结束", {
         automationId: automation.automationId,
         source,
         result,
       });
       if (result === "queued") {
-        await loadRuns(automation.automationId, zcodeAgentService, true);
+        await loadRuns(automation.automationId, zodyAgentService, true);
         const latestSessionId = useAutomationManagementStore
           .getState()
           .runsCache[automation.automationId]?.runs?.find(
@@ -824,7 +824,7 @@ export function AutomationsSection({
       platform,
       providerSettingsView,
       runAutomationNow,
-      zcodeAgentService,
+      zodyAgentService,
     ],
   );
 
@@ -850,7 +850,7 @@ export function AutomationsSection({
         automation,
         providerSettingsView,
       });
-      await deleteAutomation(automation.automationId, zcodeAgentService);
+      await deleteAutomation(automation.automationId, zodyAgentService);
       const message = useAutomationManagementStore.getState().error;
       if (message) toast(intl.formatMessage({ id: getAutomationActionErrorToastId("delete") }));
       // 若在编辑该任务的整页,删除后回列表。
@@ -860,7 +860,7 @@ export function AutomationsSection({
           : prev,
       );
     },
-    [confirmDialog, deleteAutomation, intl, platform, providerSettingsView, zcodeAgentService],
+    [confirmDialog, deleteAutomation, intl, platform, providerSettingsView, zodyAgentService],
   );
 
   // fork（F4.3）：handleOffPeak{OpenSession,Open,Cancel,Delete,DeleteHistory,Submit}
@@ -898,11 +898,11 @@ export function AutomationsSection({
           runsEntry={view.mode === "edit" ? runsCache[view.automation.automationId] : undefined}
           onLoadRuns={() => {
             if (view.mode === "edit")
-              void loadRuns(view.automation.automationId, zcodeAgentService, true);
+              void loadRuns(view.automation.automationId, zodyAgentService, true);
           }}
           onDeleteRun={(runId) => {
             if (view.mode === "edit") {
-              void deleteRun(view.automation.automationId, runId, zcodeAgentService);
+              void deleteRun(view.automation.automationId, runId, zodyAgentService);
             }
           }}
           onOpenSession={

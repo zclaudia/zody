@@ -99,7 +99,7 @@ function updateBlockingLoadingState(
 // workspace 分组结果以 tasks-index task rows 为持久行，sessions-index 只补 activity/detail。
 // remote shard 使用自己的 endpoint task service，返回与旧协议同形的 group map。
 async function buildWorkspaceGroupsFromSessions(params: {
-  service: IServiceAccessor["zcodeTaskService"];
+  service: IServiceAccessor["zodyTaskService"];
   scopes: Array<{ workspacePath: string; workspaceIdentity?: string }>;
   sessions: ZodyTaskMeta[];
   sortBy: "created" | "updated";
@@ -389,7 +389,7 @@ export function useWorkspaceTaskLists(params: {
             ? { workspaceIdentity: config.scope.workspaceIdentity }
             : {}),
           ...(shard.shardKey === "__base__" ? {} : { endpointKey: shard.shardKey }),
-          agentService: shard.services.zcodeAgentService,
+          agentService: shard.services.zodyAgentService,
         })),
       ),
     [endpointShards],
@@ -529,7 +529,7 @@ export function useWorkspaceTaskLists(params: {
             // 本机和 remote shard 都以各自 endpoint 的 tasks-index 行为集合，
             // 再用同 endpoint/workspace 的 sessions-index activity/detail enrich。
             const groupByWorkspaceKey = await buildWorkspaceGroupsFromSessions({
-              service: shard.services.zcodeTaskService,
+              service: shard.services.zodyTaskService,
               scopes: shardConfigs.map((config) => config.scope),
               sessions: sessionsForRequest,
               sortBy: params.sortBy,
@@ -673,7 +673,7 @@ export function useWorkspaceTaskLists(params: {
       );
 
       for (const config of configByWorkspaceKey.values()) {
-        const disposable = shard.services.zcodeTaskService.onDynamicWorkspaceEvent({
+        const disposable = shard.services.zodyTaskService.onDynamicWorkspaceEvent({
           workspacePath: config.scope.workspacePath,
           ...(config.scope.workspaceIdentity
             ? { workspaceIdentity: config.scope.workspaceIdentity }
@@ -692,7 +692,7 @@ export function useWorkspaceTaskLists(params: {
           syncTaskUnreadFromStatusWorkspaceEvent({
             activeWorkspace: activeWorkspaceRef.current,
             event,
-            service: shard.services.zcodeTaskService,
+            service: shard.services.zodyTaskService,
           });
           if (!shouldRefetchTaskListMembershipForWorkspaceEvent(event)) {
             return;

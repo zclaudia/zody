@@ -6,7 +6,7 @@ import type { IZodyAgentService } from "../zody-agent/zodyAgent.js";
 import type { IPluginManagementService } from "./pluginManagement.js";
 
 export interface PluginManagementServiceDependencies {
-  zcodeAgentService: Pick<
+  zodyAgentService: Pick<
     IZodyAgentService,
     | "listPlugins"
     | "getPluginReferenceCatalog"
@@ -32,7 +32,7 @@ export interface PluginManagementServiceDependencies {
 export function createPluginManagementService(
   dependencies: PluginManagementServiceDependencies,
 ): IPluginManagementService {
-  const agent = dependencies.zcodeAgentService;
+  const agent = dependencies.zodyAgentService;
   return {
     listPlugins: (params) => agent.listPlugins(params),
     getPluginReferenceCatalog: (params) => agent.getPluginReferenceCatalog(params),

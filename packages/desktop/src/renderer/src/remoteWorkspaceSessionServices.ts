@@ -18,9 +18,9 @@ export function buildRemoteWorkspaceSessionServices(
     // MCP / 插件状态检查走 zcodeAgentService 的控制面 app-server。
     // SSH 远端如果沿用本机 base service，会把远端 MCP 配置拿到本机 app-server 里检查，
     // 其 PATH / cwd 都不是远端环境，导致同步后仍显示 `spawn npx ENOENT`。
-    zcodeAgentService: remoteServices.zcodeAgentService,
-    zcodeTaskService: remoteServices.zcodeTaskService,
-    zcodeSessionService: remoteServices.zcodeSessionService,
+    zodyAgentService: remoteServices.zodyAgentService,
+    zodyTaskService: remoteServices.zodyTaskService,
+    zodySessionService: remoteServices.zodySessionService,
     // fork（F4.8）：conversationShareService 随会话分享功能删除。
     fileWatcherService: remoteServices.fileWatcherService,
     // Provider/Model 事实属于目标 Environment；不能因 merge 先展开 baseServices 而回落到本地。

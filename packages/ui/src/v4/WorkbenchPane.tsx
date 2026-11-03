@@ -201,7 +201,7 @@ function PaneRestoredGuard({
   onMissing,
 }: PaneRestoredGuardProps) {
   const services = useServices();
-  const agentService = services.zcodeAgentService;
+  const agentService = services.zodyAgentService;
   const { workspacePath, workspaceIdentity, remoteSessionId } = scope;
 
   useEffect(() => {

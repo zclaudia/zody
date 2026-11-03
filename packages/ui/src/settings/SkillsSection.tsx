@@ -418,7 +418,7 @@ export function SkillsSection({
           enabled,
         });
         await invalidateDeferredDraftSessionForSkillChange({
-          zcodeSessionService: zodySessionService,
+          zodySessionService: zodySessionService,
           workspacePath: activeWorkspacePath,
           workspaceIdentity: activeWorkspaceIdentity,
           reason: "settings-skill-enabled",
@@ -471,7 +471,7 @@ export function SkillsSection({
           skillId: skill.id,
         });
         await invalidateDeferredDraftSessionForSkillChange({
-          zcodeSessionService: zodySessionService,
+          zodySessionService: zodySessionService,
           workspacePath: activeWorkspacePath,
           workspaceIdentity: activeWorkspaceIdentity,
           reason: "settings-skill-delete",
@@ -1069,7 +1069,7 @@ export function SkillsSection({
         onOpenChange={setImportDialogOpen}
         onImported={async () => {
           await invalidateDeferredDraftSessionForSkillChange({
-            zcodeSessionService: zodySessionService,
+            zodySessionService: zodySessionService,
             workspacePath: activeWorkspacePath,
             workspaceIdentity: activeWorkspaceIdentity,
             reason: "settings-skill-import",
@@ -1098,7 +1098,7 @@ export function SkillsSection({
         workspaceIdentity={activeWorkspaceIdentity}
         onSkillsSynced={async () => {
           await invalidateDeferredDraftSessionForSkillChange({
-            zcodeSessionService: zodySessionService,
+            zodySessionService: zodySessionService,
             workspacePath: activeWorkspacePath,
             workspaceIdentity: activeWorkspaceIdentity,
             reason: "settings-remote-skill-sync",

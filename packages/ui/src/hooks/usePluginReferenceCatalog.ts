@@ -109,7 +109,7 @@ export function usePluginReferenceCatalog(
 
   useEffect(() => {
     if (!enabled || !workspacePath || !sessionId || !rpcReady) return;
-    const subscription = services.zcodeAgentService.onAgentRuntimeRestarted((event) => {
+    const subscription = services.zodyAgentService.onAgentRuntimeRestarted((event) => {
       if (event.workspaceKey !== workspaceKey) return;
       // Runtime restart 后 workspace/session/attachment 都可能保持不变；显式推进代次，
       // 让旧 authority 首帧失效并保证新 runtime 必须重新执行 RPC。

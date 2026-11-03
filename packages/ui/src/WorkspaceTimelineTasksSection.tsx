@@ -343,7 +343,7 @@ export function WorkspaceTimelineTasksSection({
         ...(tab.workspaceIdentity
           ? { workspaceIdentity: tab.workspaceIdentity }
           : {}),
-        zcodeTaskService: workspaceServices.services.zcodeTaskService,
+        zodyTaskService: workspaceServices.services.zodyTaskService,
         sortBy: taskSortBy,
         limit: visibleTaskLimit,
       });
@@ -385,7 +385,7 @@ export function WorkspaceTimelineTasksSection({
         return;
       }
       const { item, workspaceServices } = current;
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .archiveTask({
           taskId: item.taskId,
           workspacePath: item.workspacePath,
@@ -477,7 +477,7 @@ export function WorkspaceTimelineTasksSection({
         previousState: { pinned: false, archived: false },
         nextState: { pinned, archived: false },
       });
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .setTaskPinned({
           taskId: item.taskId,
           workspacePath: item.workspacePath,
@@ -563,7 +563,7 @@ export function WorkspaceTimelineTasksSection({
         return;
       }
       const { item, workspaceServices } = current;
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .setTaskUnread({
           taskId: item.taskId,
           workspacePath: item.workspacePath,
@@ -743,7 +743,7 @@ export function WorkspaceTimelineTasksSection({
               handleCancelRenameTask();
               return;
             }
-            void workspaceServices.services.zcodeTaskService
+            void workspaceServices.services.zodyTaskService
               .renameTask({
                 taskId: item.taskId,
                 workspacePath: item.workspacePath,
@@ -885,7 +885,7 @@ export function WorkspaceTimelineTasksSection({
                 previousState: { pinned: false, archived: false },
                 nextState: { pinned, archived: false },
               });
-              void contextMenuWorkspaceServices.services.zcodeTaskService
+              void contextMenuWorkspaceServices.services.zodyTaskService
                 .setTaskPinned({
                   taskId: contextMenuItem.taskId,
                   workspacePath: contextMenuItem.workspacePath,
@@ -954,7 +954,7 @@ export function WorkspaceTimelineTasksSection({
             onArchiveTask={() => {
               setPendingArchiveItemKey(null);
               handleCancelRenameTask();
-              void contextMenuWorkspaceServices.services.zcodeTaskService
+              void contextMenuWorkspaceServices.services.zodyTaskService
                 .archiveTask({
                   taskId: contextMenuItem.taskId,
                   workspacePath: contextMenuItem.workspacePath,
@@ -996,7 +996,7 @@ export function WorkspaceTimelineTasksSection({
                 });
             }}
             onMarkTaskAsUnread={() => {
-              void contextMenuWorkspaceServices.services.zcodeTaskService
+              void contextMenuWorkspaceServices.services.zodyTaskService
                 .setTaskUnread({
                   taskId: contextMenuItem.taskId,
                   workspacePath: contextMenuItem.workspacePath,

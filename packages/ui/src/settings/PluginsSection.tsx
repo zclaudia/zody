@@ -869,8 +869,8 @@ function PluginList({
         onPluginOpenChange={setRemotePluginSyncOpen}
         localPluginSyncService={baseServices.pluginSyncService}
         remotePluginSyncService={targetServiceResolution.services.pluginSyncService}
-        localZCodeAgentService={baseServices.zcodeAgentService}
-        remoteZCodeAgentService={targetServiceResolution.services.zcodeAgentService}
+        localZCodeAgentService={baseServices.zodyAgentService}
+        remoteZCodeAgentService={targetServiceResolution.services.zodyAgentService}
         remoteTarget={connectedRemoteSyncTarget}
         skillWorkspacePath=""
         mcpWorkspacePath=""

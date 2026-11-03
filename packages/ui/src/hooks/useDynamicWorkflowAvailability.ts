@@ -43,10 +43,10 @@ export function useDynamicWorkflowAvailabilityLoader(service: IClientConfigServi
 export function useDynamicWorkflowUserModeSync(params: {
   settingsLoaded: boolean;
   userMode: DynamicWorkflowMode | undefined;
-  zcodeAgentService: Pick<IZodyAgentService, "syncDynamicWorkflowUserMode">;
+  zodyAgentService: Pick<IZodyAgentService, "syncDynamicWorkflowUserMode">;
   clientConfigService: IClientConfigService;
 }): void {
-  const { settingsLoaded, userMode, zcodeAgentService, clientConfigService } = params;
+  const { settingsLoaded, userMode, zodyAgentService, clientConfigService } = params;
   const reload = useDynamicWorkflowAvailabilityStore((state) => state.reload);
   const observedRef = useRef<{ userMode: DynamicWorkflowMode | undefined } | null>(null);
   const chainRef = useRef<Promise<void>>(Promise.resolve());
@@ -57,7 +57,7 @@ export function useDynamicWorkflowUserModeSync(params: {
     if (observed === null || observed.userMode === userMode) return;
     chainRef.current = chainRef.current.then(async () => {
       try {
-        await zcodeAgentService.syncDynamicWorkflowUserMode(userMode ? { mode: userMode } : {});
+        await zodyAgentService.syncDynamicWorkflowUserMode(userMode ? { mode: userMode } : {});
       } catch (error) {
         logger.warn("[dynamic-workflow] 用户选择同步到 Host 失败", {
           error: error instanceof Error ? error.message : String(error),
@@ -65,5 +65,5 @@ export function useDynamicWorkflowUserModeSync(params: {
       }
       await reload(clientConfigService);
     });
-  }, [clientConfigService, reload, settingsLoaded, userMode, zcodeAgentService]);
+  }, [clientConfigService, reload, settingsLoaded, userMode, zodyAgentService]);
 }

@@ -10,7 +10,7 @@ document.documentElement.classList.add(
   params.get("theme") === "light" ? "theme-zai-light" : "theme-zai-dark",
 );
 const services = {
-  zcodeAgentService: {
+  zodyAgentService: {
     readSessionDebug: async (target: unknown) => {
       const response = await fetch("/debug", { method: "POST", body: JSON.stringify(target) });
       if (!response.ok) throw new Error("debug failed");

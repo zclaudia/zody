@@ -507,7 +507,7 @@ describe("useGroupedTaskView remote data refresh", () => {
     const listPinnedTasks = vi.fn(async (): Promise<ZodyTaskMeta[]> => []);
     const listDeletedTaskIds = vi.fn(async (): Promise<string[]> => []);
     const services = {
-      zcodeTaskService: {
+      zodyTaskService: {
         listGroupedTaskViewStructure,
         listPinnedTaskIds,
         listArchivedTasks,

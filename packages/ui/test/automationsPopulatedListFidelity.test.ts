@@ -61,7 +61,7 @@ describe("Automations populated-list Figma contract", () => {
 
     expect(refreshAction).toBeGreaterThanOrEqual(0);
     expect(createAction).toBeGreaterThan(refreshAction);
-    expect(automationsSectionSource).toContain("refresh(zcodeAgentService)");
+    expect(automationsSectionSource).toContain("refresh(zodyAgentService)");
     // fork（F4.3）：offPeakRefresh 并行断言随闲时任务全链路删除。
     expect(automationsSectionSource).toMatch(
       /variant="outline"\s+size="icon"\s+aria-label=\{intl\.formatMessage\(\{ id: "automations\.refresh" \}\)\}/,

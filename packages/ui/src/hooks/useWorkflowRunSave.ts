@@ -84,7 +84,7 @@ export function useWorkflowRunSave(host: WorkflowRunSaveHost): WorkflowRunSaveCo
     host.workspaceIdentity,
   );
   const { rpcReady, services } = resolution;
-  const agentService = services.zcodeAgentService;
+  const agentService = services.zodyAgentService;
   const isRemote = resolution.isRemoteTarget;
 
   const target = useMemo<WorkflowRunSaveTarget>(

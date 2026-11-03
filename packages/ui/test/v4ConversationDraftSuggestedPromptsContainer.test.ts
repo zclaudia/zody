@@ -91,7 +91,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => {
       resolveSuggestedPluginReference,
       setPluginEnabled,
     },
-    zcodeSessionService: {},
+    zodySessionService: {},
   };
   return {
     useWorkspaceServicesResolution: (

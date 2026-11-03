@@ -282,7 +282,7 @@ async function renderHarness(options: HarnessOptions) {
       unsubscribeControllerV4: vi.fn(async () => {}),
       onDynamicControllerFrame: () => controllerFrames.event,
     },
-    zcodeTaskService: {
+    zodyTaskService: {
       listTaskList,
       listPinnedTaskIds: vi.fn(async () => options.pinnedIds ?? []),
       listArchivedTasks: vi.fn(async () => archivedTaskMetas),
@@ -290,7 +290,7 @@ async function renderHarness(options: HarnessOptions) {
       listPinnedTasks: vi.fn(async () => pinnedTaskMetas),
       onDynamicWorkspaceEvent: () => () => ({ dispose() {} }),
     },
-    zcodeAgentService: {
+    zodyAgentService: {
       ...v4Handshake(),
       subscribeSessionsIndexV4: vi.fn(async () => {
         const initial = snapshotFrame(options.sessions);

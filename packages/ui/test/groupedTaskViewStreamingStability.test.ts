@@ -293,7 +293,7 @@ function createServices(windowControllerService: unknown): IServiceAccessor {
   const activeTasks = [createTaskMeta()];
   return {
     windowControllerService,
-    zcodeTaskService: {
+    zodyTaskService: {
       listGroupedTaskViewStructure: vi.fn(async () => structure),
       listPinnedTaskIds: vi.fn(async (): Promise<string[]> => []),
       listArchivedTasks: vi.fn(async (): Promise<ZodyTaskMeta[]> => []),

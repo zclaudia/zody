@@ -76,3 +76,9 @@ localStorage、分区和 cookie 改名不迁移旧值：0.1.0 无正式存量用
 shared、bootstrap、services 和其消费者的内部声明、导出、动态导入与内部依赖注入属性按真实绑定同步重命名；CUA broker 的 JS 与配套声明及消费者作为同一接口批次。`Error.name`、ServiceChannels、环境变量、wire、持久化字段和插件外部身份保留既有值，由各自后续契约阶段处理。对象简写若属于外部字段，重命名绑定时显式保留原字段名。验收应覆盖动态导入与 mock、依赖注入、保留错误身份和 CUA JS/声明一致，并验证现有客户端链路。
 
 剩余 CLI、provider、desktop、UI 与 Web 的内部绑定及其活跃 JS/MJS 调用方遵循同一规则；对历史版本、外部插件桥和持久化字段按各自契约保留原名。验收覆盖跨语言工厂调用、provider revision 旧字段、UI provider 与源码结构断言。
+
+## 服务访问器内部成员
+
+`IServiceAccessor` 的 task、agent、session 三个进程内服务代理成员统一使用 `zodyTaskService`、`zodyAgentService`、`zodySessionService`；本地和远端实现、workspace 路由、UI 与手机 Web、内部 helper 参数及测试 double 同步使用新成员名。服务对象只在当前进程作为依赖传递；远端调用由 descriptor 的 `channelName` 选择通道，成员名不作为通道名称或消息字段。现有 `zcode-task`、`zcode-agent`、`zcode-session` 通道值及其协议数据保持原合同，后续代际切换依对应远程协议任务执行。 Desktop legacy 远端访问器的完整性检查通过字段名数组反射本地对象，因此数组和缺失字段诊断随访问器成员更新，不更改远端 channel 值。
+
+验收覆盖本地及远端访问器创建、workspace identity 路由、Desktop 连续流与手机可恢复 attachment 的实际消费者、内部注入和 mock；不能因同名变量而重命名插件桥、持久化字段、环境变量、builtin 配置或其他外部键。

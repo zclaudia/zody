@@ -56,11 +56,11 @@ export interface IServiceAccessor {
   readonly onboardingRecordService?: IOnboardingRecordService;
   readonly credentialService: ICredentialService;
   readonly broadcastService: IBroadcastService;
-  readonly zcodeTaskService: IZodyTaskService;
+  readonly zodyTaskService: IZodyTaskService;
   /** 窗口 Host 聚合面；旧 server wire 或测试 double 可暂不提供。 */
   readonly windowControllerService?: IWindowControllerService;
-  readonly zcodeAgentService: IZodyAgentService;
-  readonly zcodeSessionService: IZodySessionService;
+  readonly zodyAgentService: IZodyAgentService;
+  readonly zodySessionService: IZodySessionService;
   // CUA 是 opt-in 内测特性：local macOS host 提供，远端 等 host 没有。可选避免连锁必填。
   readonly cuaPermissionService?: ICuaPermissionService;
   // fork（F4.8）：conversationShareService（会话分享发布/导入）随分享功能删除。

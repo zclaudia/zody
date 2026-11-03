@@ -30,7 +30,7 @@ const stableHookValues = vi.hoisted(() => ({
   effectiveSelection: undefined as ModelSelection | null | undefined,
   selectionInputs: [] as Array<{ selection: ModelSelection | null } | undefined>,
   locale: "zh-CN" as "zh-CN" | "en-US",
-  services: { zcodeAgentService: {} },
+  services: { zodyAgentService: {} },
 }));
 
 vi.mock("@/components/ui/select.js", async () => {

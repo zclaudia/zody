@@ -20,7 +20,7 @@ const resolution = {
     pluginManagementService: {
       getPluginReferenceCatalog,
     },
-    zcodeAgentService: {
+    zodyAgentService: {
       onAgentRuntimeRestarted,
     },
   },

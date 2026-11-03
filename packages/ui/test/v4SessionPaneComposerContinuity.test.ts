@@ -158,10 +158,10 @@ const servicesMock = vi.hoisted(() => ({
     onDidChange: vi.fn(() => ({ dispose: vi.fn() })),
     validate: vi.fn(),
   },
-  zcodeSessionService: {
+  zodySessionService: {
     updateProviderRegistry: vi.fn(),
   },
-  zcodeTaskService: {
+  zodyTaskService: {
     restartWorkspaceProcess: vi.fn(),
   },
 }));

@@ -90,7 +90,7 @@ export function useWorkspaceProviderConfigFile(
     workspaceIdentity,
   );
   const baseZodyService = useRemoteWorkspaceSessionStore(
-    (state) => state.baseServices?.zcodeTaskService ?? null,
+    (state) => state.baseServices?.zodyTaskService ?? null,
   );
   const workspaceRpcEnabled = shouldEnableWorkspaceRpc({
     workspaceIdentity,

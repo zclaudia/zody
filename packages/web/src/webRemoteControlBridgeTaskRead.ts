@@ -49,7 +49,7 @@ export async function markCurrentWebRemoteControlBridgeTaskRead({
   }
 
   const result = await markWebRemoteControlTaskRead({
-    service: services.zcodeTaskService,
+    service: services.zodyTaskService,
     target: {
       taskId: task.taskId,
       workspacePath: task.workspacePath,
@@ -77,7 +77,7 @@ export async function markOpenedWebRemoteControlBridgeTaskRead({
   const result = await markWebRemoteControlBridgeTaskRead({
     bridge,
     expectedUnreadAt,
-    service: services.zcodeTaskService,
+    service: services.zodyTaskService,
   });
   if (!result.ok) {
     logWebRemoteControlTaskReadFailure(result.error, {

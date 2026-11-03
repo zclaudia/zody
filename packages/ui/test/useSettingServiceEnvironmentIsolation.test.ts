@@ -24,7 +24,7 @@ function createServices(settings: AppSettings) {
     broadcastService: {
       send: vi.fn(async () => {}),
     },
-    zcodeAgentService: {
+    zodyAgentService: {
       syncAppRuntimePreferences: vi.fn(async () => {}),
     },
   } as never;

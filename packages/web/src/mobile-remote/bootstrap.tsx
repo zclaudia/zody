@@ -1335,7 +1335,7 @@ async function startGatewaySession(
       throw error;
     }
     try {
-      await result.services.zcodeTaskService.respondPermission({
+      await result.services.zodyTaskService.respondPermission({
         taskId: notification.target.taskId,
         requestId: notification.interactionId,
         optionId: action.optionId,
