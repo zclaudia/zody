@@ -7256,6 +7256,16 @@
     ],
     "operation": "byte-preserving reference-resource move; update exact current skill reference",
     "preserve": "prior graphPathClosure consumerPaths remain historical evidence; external guide skill and historical documents unchanged",
-    "status": "implemented; controller review pending"
+    "status": "controller exact-byte/consumer verification complete; DeepSeek scoped PASS at8dfd3615",
+    "controllerEvidence": "task-ledger.md; reports/R21-domain-reference-path-implementation.md controller addendum"
+  },
+  "r21NativeLicenseInputClosure": {
+    "base": "8dfd3615410d763631b5646056ed83fc02aca2bf",
+    "file": "third-party/native-search/sources.json",
+    "jsonPath": "inputs.scripts/native-search-tools-config.mjs",
+    "before": "06e9d2b066a22f4bb731fb7356d786b52cf08e20dd6faf91e1a82b167d7462e8",
+    "after": "2efb3f3aade0205b400b990b8a7dda3ce3437b568008d508e8c16465c5254078",
+    "reason": "only repository native-search root path changed from apps/zcode-cli to apps/zody-cli; config versions, URLs, archive hashes and original licenses unchanged",
+    "status": "controller-authorized exact source fingerprint refresh; final generation pending"
   }
 }

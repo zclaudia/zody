@@ -12,3 +12,7 @@
 - `pnpm typecheck`、`pnpm lint`、`pnpm architecture:check --changed` 均退出 0；lint 有 303 warnings，日志分别为 `typecheck.log`、`lint.log`、`architecture-after.log`。架构结果仅为 changed-only，不是全量架构通过。
 
 日志与审计均在 `output/zody-rename-r21/graph-path-closure/`。graph 既有 68 missing/18 symbol 等语义缺口仍属独立验收，本次不增删节点/边，也不宣称语义闭合；完整最终候选的安装及第三方生成另验。未 install、Docker、WDIO、提交或修改 task-ledger。
+
+## 固定 b867 的证据计数更正
+
+上文 26 行是实施当时工作树的即时扫描记录，不是固定最终对象的总数。对固定 `b867ad3d359d3219b0a111c8e9b2911ea172b096` 使用 `git grep -n -F 'zcode-feature-graph.yaml' b867ad3d359d3219b0a111c8e9b2911ea172b096` 重算为 27 行，逐行证据见 `output/zody-rename-r21/graph-path-closure/references-b867.txt` 与 `remaining-old-classified-b867.json`，历史原始文件不覆盖。固定对象的 `file-assignments.json:15180` 已是新路径，`:15189` 是旧 writeSet 记录；实施报告和主控复核报告的两条 old/new 历史引文归类为 `review-doc-quote`。该计数更正不改变迁移前后图字节一致及实际消费者验证结果，也不代表旧路径全应删除。

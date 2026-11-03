@@ -1,0 +1,11 @@
+# R21 最终 clean install 与许可生成记录：8dfd
+
+独立 detached worktree `output/zody-rename-r21/final-clean-8dfd3615` 固定 HEAD `8dfd3615410d763631b5646056ed83fc02aca2bf`、tree `e3c3cb4ad259a8daa9263b84ee65e23d26de7fff`，日志位于 `output/zody-rename-r21/final-validation-8dfd3615/`。预检时工作树干净，node_modules 和 dist 目录均为零；Node 24.14.0、pnpm 10.33.2，开始磁盘可用约 16 GiB。根锁及保存的 7c 锁 SHA-256 同为 `12e11b834269bada1625ea6b086eabab1234881e2038adb2a3cac21eb345a63f`。
+
+根目录真实 `/Users/zhvala/Library/pnpm/bin/pnpm install --frozen-lockfile` 退出 0，含 Desktop postinstall/node-pty rebuild，安装 50 个 workspace；未使用 ignore-scripts。50 个成员、92 个 workspace manifest 依赖和 92 条 lock `link:` 双向一致，实链目标及 package.name 核对无误；根锁的 packages、snapshots、patchedDependencies 与 7c 基线逐字段 0 差异且锁字节未变。root workspace owner test、turbo/tsx 入口检查均退出 0。workspace 依赖无声明 bin 的消费者记录；四个 workspace 自有 bin（CLI、server、iOS 和 Android）指向尚未构建的 dist，均明确 pending，不宣称 bin 已可执行。copied-components 实际 12 个组件、23 roots 全存在。
+
+`node scripts/licenses.mjs notices` 实际退出 1，`scripts/third-party-notices.mjs:91` 报 `Native license versions changed: scripts/native-search-tools-config.mjs`。runner 保存了失败后 pair：before/after notices SHA-256 均为 `188e3fa1943d8db9aba911e9e7d706391fa0ca1a4ae86e4ec98e247e5abf29e7`，inventory 均为 `2694a09f0cd44b0edb0b69b0a94b72fc410f45a8d853152ffb11ce6cee5c8d4a`，因此这次未写入半对文件，未生成新 inventory，也未通过许可生成。
+
+只读对比 `033f91783901e6adaf968d3d4b8ca34c41d89442` 到 8dfd：`scripts/native-search-tools-config.mjs` 唯一变动是本地归档目录 `apps/zcode-cli/dependencies/native-search` → `apps/zody-cli/dependencies/native-search`。旧配置 SHA `06e9d2b066a22f4bb731fb7356d786b52cf08e20dd6faf91e1a82b167d7462e8` 与 `third-party/native-search/sources.json` 的登记值相同，新配置 SHA 为 `2efb3f3aade0205b400b990b8a7dda3ce3437b568008d508e8c16465c5254078`；remote config、native-search 材料目录及 upstream 原文相对该基线无 diff，配置中版本、来源、归档 pin 和许可原文均未变化。精确 diff 为 `native-input-baseline.diff`。最小待审核修正是只更新 sources.json 中该配置路径对应的 input hash，再以新的固定候选重跑生成和逐字段比较；本 worktree 未修改该收据，也未重跑生成。
+
+生成失败后、主控停止后续检查的消息到达前已独立启动的只读 `node scripts/licenses.mjs check` 实际退出 1，报现存 inventory 对 `apps/dev-docs/package.json` 的 input hash 已过期，日志为 `license-check-independent.{stdout,stderr}.log` 和 `.exit`。按主控指示，后续许可测试和 strict 未执行；不得将未运行项或本次生成写成通过。所有 runner 命令的实际 argv、cwd、时间、退出码及分离日志哈希保存在 `state.json`。未执行构建、Docker、签名或发布；此记录不是完整 R21 或最终发行通过。

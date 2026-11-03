@@ -15201,7 +15201,8 @@
       "docs/feature-boundary-graph-visualization.md",
       "docs/feature-impact-discovery.md",
       "docs/monitoring/mcp-process-arms-telemetry.md",
-      "docs/testing/model-selection-regression-factor-catalog.yaml"
+      "docs/testing/model-selection-regression-factor-catalog.yaml",
+      "third-party/native-search/sources.json"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -15269,7 +15270,12 @@
       ],
       "operation": "byte-preserving reference-resource move; update exact current skill reference",
       "preserve": "prior graphPathClosure consumerPaths remain historical evidence; external guide skill and historical documents unchanged",
-      "status": "implemented; controller review pending"
+      "status": "controller exact-byte/consumer verification complete; DeepSeek scoped PASS at8dfd3615",
+      "controllerEvidence": "task-ledger.md; reports/R21-domain-reference-path-implementation.md controller addendum"
+    },
+    "nativeLicenseInputClosure": {
+      "file": "third-party/native-search/sources.json",
+      "operation": "update only inputs.scripts/native-search-tools-config.mjs fingerprint after exact internal path move; original licenses, component versions, archives and sources unchanged"
     }
   },
   "R22": {

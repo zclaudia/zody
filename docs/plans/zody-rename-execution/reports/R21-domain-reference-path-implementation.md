@@ -12,3 +12,7 @@
 预检目标不存在且同目录 casefold 碰撞为零；移动后旧路径不存在、新路径存在、唯一现行引用解析到新文件；`.agents/skills` 下不再有 basename 包含 `zcode` 的路径。前后记录见 `output/zody-rename-r21/domain-reference/{before,after}.json`。产品插件 `zcode-configuration-guide` 的公开技能名、manifest 和 seed 属 R54/R56 身份兼容范围，本次没有改动。
 
 `pnpm exec oxfmt --check .agents/skills/feature-boundary-planner/SKILL.md` 退出 0；`git diff --check` 退出 0。三个元数据 JSON 的 `oxfmt --check` 退出 1；对 HEAD 原始三文件的同一检查也各报告格式问题（`metadata-format-check.log`、`metadata-baseline-format.log`），没有为此重排大型历史清单。可选的执行计划格式检查同样在 HEAD 基线失败，因而没有改该计划；两次日志保留。文档路径变更复用上一 graph 路径批次实际执行的根 typecheck/lint/changed architecture 退出 0 证据，见 [graph 实施报告](R21-graph-path-closure-implementation.md)；本次未重复构建或测试，也未安装。当前候选待主控核对和独立审查，不代表 R21/R22 已完成。
+
+## 主控集成与独立审查补充
+
+上文“未修改 ledger/待主控”描述作者交付时点。主控随后独立复算原文件与新文件字节、SKILL 唯一精确路径替换及 JSON 可解析性，追加 task-ledger 并冻结为 `8dfd3615410d763631b5646056ed83fc02aca2bf`；symbol migration ledger 未改变。DeepSeek 对固定 b867→8df 返回 scoped PASS，收据见 R21-domain-reference-path-deepseek-review.md。对应状态现在记录复核完成；旧 graph consumerPaths 保留历史事实，当前 contentMap 跟随后续映射。bot-removal checklist 的旧文件名是当时任务引用，不是当前 skill 读取入口，本次不追求删除历史文字。外部配置指南的 R20 目录移动所有权不意味着获准改公开技能名；后者仍依 R54/R56 兼容合同。
