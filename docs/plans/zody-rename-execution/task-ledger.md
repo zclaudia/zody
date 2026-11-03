@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed product candidate: `8dfd3615410d763631b5646056ed83fc02aca2bf`. R21 graph and internal reference path moves received scoped PASS. Current text70366 received CHANGES_REQUIRED; exact hook diagnostic/current-comment correction and additional61 comment-only files are controller-verified, awaiting a new frozen candidate and re-review. Final8df clean root installation passed50members/92links, but notices generation failed on one stale native input fingerprint; pair remained unchanged. Fingerprint correction is now ready. Full R21/R22, remaining rename phases and release gates remain incomplete.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest product/derived candidate `ad859813ec8ace8e21d418186cfe1d16939abb59` (source4fac). Text correction4fac and native-inputff395 received scoped PASS; generated-pair diffad859 also scoped PASS. R21 complete license coverage is CHANGES_REQUIRED: preexisting name-only workspace filtering omits production npm debug@4.4.3. Concrete proposal is prepared and user alignment is pending under AGENTS:48; generator remains unchanged. R22.1 ran: type/lint pass; fullarchitecture2fail,knip1,unit34files/104assertions fail,6environment files rerun62pass; remaining failure attribution is running. Main85 baseline confirmed, narrow33/37 lacks frozen inputs. R22.2 build/R30+ and release remain unexecuted.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -8,9 +8,9 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 - Implementation cwd: `/Users/zhvala/SourceCode/zody/.worktrees/zody-full-rename`.
 - Main worktree unrelated changes are preserved; only the two rename plans were copied into this worktree.
 - Implementation agents use native `gpt-6.1-terra`; original R00 ownership is historical. Controller now maintains manifest, scopes and this ledger.
-- DeepSeek A returned CHANGES_REQUIRED for current text70366; corrections are ready for fixed-candidate re-review. B accepted graph pathb867 with a nonblocking evidence-count correction; C accepted domain reference8df with bookkeeping observations now reconciled. Broker agent handles remain recorded in earlier chronology; all use read-only deepseek-flash / magpie / group/deepseek.
+- DeepSeek A accepted corrected text4fac; B accepted native-inputff395; C accepted ad859 pair diff but requires changes for complete production-license coverage. Raw receipts are preserved in reports; all used read-only deepseek-flash / magpie / group/deepseek.
 - Broker grant: exact implementation cwd, connection scope, no UI grant.
-- All Terra source/build/install writers are stopped. Controller is freezing the native-input and text-correction batches before a new complete clean install/generation snapshot. Previous8df evidence/worktree remains intact; no source or manifest changes in that failed-generation snapshot.
+- Product source/install writers stopped. Terra R01 holds the sole R22 test/build-artifact lock for targeted failure/ancestor validation only; no source correction or build:zody yet. R21 license design awaits the user's pending choice; R30 preparation is read-only and is not an implementation authorization.
 
 | Task | Status     | Implementation                    | Review / gate                                                                                                    |
 | ---- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -18,9 +18,9 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 | R01  | integrated | /root/terra_r01                   | Accepted contracts at 40cae940; later source/doc refinements preserve those contracts |
 | R02  | review     | controller / prior Terra evidence | Source preservation and isolated restore gate passed; old runtime smoke recorded. Standalone old server-cli defect and full mixed-mode runtime evidence remain unresolved for R48 |
 | R10  | verified   | /root/terra_r10                   | DeepSeek review-2 PASS at 0e403023; P1 scope only, not release validation                                        |
-| R20  | review     | /root/terra_r01 + /root/terra_r21_links | Basename/type/runtime/member groups independently accepted; final text/JS70366 pending review. Whole-candidate rebuild/residual gate belongs R21/R22 |
-| R21  | running    | /root/terra_r10 + /root/terra_r21_links | Root-only installation implemented and old7c clean install passed; final graph basename, clean final candidate install and paired notices generation pending |
-| R22  | planned    | unassigned                        | not run                                                                                                          |
+| R20  | review | Terra + controller | Source/basename/symbol/text batches scoped PASS through4fac; integration depends R21/R22. Historical A-MO-01 quote follow-up remains recorded below |
+| R21  | changes-required | Terra + controller | Root-only install/generation and pair-diff verified; complete license coverage blocked on same-name debug omission, user design choice pending; strict19 remain |
+| R22  | running | /root/terra_r01 | Static/full tests actually executed with failures; environment rerun62pass, remaining baseline attribution running; complete build not run |
 | R30  | planned    | unassigned                        | not run                                                                                                          |
 | R40  | planned    | unassigned                        | not run                                                                                                          |
 | R41  | planned    | unassigned                        | not run                                                                                                          |
@@ -299,3 +299,9 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 - DeepSeek A scoped PASS for80-file correction4fac; original70366 remains review1 changes-required historically. Exact candidate/receipt pointers updated. Nonblocking historical A-MO-01 quote in mobileStartPageStandalone.test.ts:15 should be restored to old useZCodeStore or rewritten without quoting old text in the next source batch; keep this as an explicit R20 follow-up before final R61, not a runtime blocker.
 - DeepSeek B scoped PASS native-inputff395. New complete4fac clean install0, notices0, basic0, license11/11; strict1 on unchanged19reviewRequired. Controller approved paired integration after independent3081input/2826copied hashes and exact3path-only notice reconstruction. Prior inventory drift16inputs(including7copied sourcehashes) was already present at033f, precisely reconciled. Package/peer/integrity/source/license obligations did not drift. Four distbins and actualR22 remain pending.
 - Storage recovery removed only task-created old854 checkout/node_modules after saving metadata; source/lock/originallogs retained. Physical recovery~1.11GB, not the2.8GiB logicaldu estimate. 7c/8df/frozen artifacts intact; old854 rerun now requires reinstall.
+
+## License coverage design decision and R22 results
+
+- Complete production coverage cannot be inferred from the generated-pair diff or basiccheck0. Same-name workspace filtering excludes npmdebug4.4.3; independent review requires correction before completeness/release claims. Concrete proposal and evidence archived; async user decision pending, no generator code changed.
+- ad859 final confirmation reused its own fresh4fac dependency installation after outputs-only promotion; frozen reinstall0,source/lock/pair unchanged,50members/92links. Actual -146 removals lack a saved pre-install physical graph; no causal claim from skipped146.
+- R22.1 results and environmental tool downloads retained in R22-static-ad859.md. 1792files/15972tests actual root run failed34files/104 assertions; isolated shorterTMP/BrewPython rerun6files62/62 only addresses those cases. Failure triage and permitted ancestor tests continue without altering source/expectations.
