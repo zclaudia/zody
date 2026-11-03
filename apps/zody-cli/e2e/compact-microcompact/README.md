@@ -109,7 +109,7 @@ This writes:
 - `cases/<case>/events.json`: ZCode runtime/session events.
 - `cases/<case>/result.json`: focused case result.
 
-The Dockerfile defaults to `node:24.14-alpine`. To use a local mirror or already cached Node image:
+The Dockerfile defaults to `node:24.14.0-alpine`. To use a local mirror or already cached Node image:
 
 ```bash
 docker build \

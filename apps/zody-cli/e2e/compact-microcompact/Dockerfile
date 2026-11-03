@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-ARG NODE_IMAGE=node:24.14-alpine
+ARG NODE_IMAGE=node:24.14.0-alpine
 FROM ${NODE_IMAGE}
 
 ARG NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
@@ -19,6 +19,15 @@ RUN if [ "${INSTALL_CA_CERTIFICATES}" = "true" ]; then \
       apt-get install -y --no-install-recommends ca-certificates && \
       rm -rf /var/lib/apt/lists/*; \
     fi; \
+  fi
+RUN if command -v apk >/dev/null 2>&1; then \
+    apk add --no-cache python3 make g++ cmake; \
+  elif command -v apt-get >/dev/null 2>&1; then \
+    apt-get update && \
+    apt-get install -y --no-install-recommends python3 make g++ cmake && \
+    rm -rf /var/lib/apt/lists/*; \
+  else \
+    echo "A supported package manager is required for native build dependencies" >&2; exit 1; \
   fi
 RUN corepack enable
 

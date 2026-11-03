@@ -552,7 +552,7 @@
     {
       "id": "R20.4-symbols-04",
       "base": "3cb3a0050fb47771305fe084852fc6aed994eb92",
-      "candidate": null,
+      "candidate": "677771fef8ea7b14498668d7b52057bdf7c1bef4",
       "status": "controller-verified-with-baseline-failures-pending-review",
       "records": [
         {
