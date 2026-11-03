@@ -18,7 +18,7 @@ This script uses the default HOME data paths shown above and does not read custo
 
 ## Quick Commands
 
-From the z-code repository root:
+From the Zody repository root:
 
 ```bash
 node .agents/skills/zody-large-task-fixture/scripts/generate-large-task-fixture.mjs \

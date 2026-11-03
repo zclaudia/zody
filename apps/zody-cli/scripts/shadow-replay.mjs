@@ -8,7 +8,7 @@
 // 运行前先构建：pnpm -C apps/zody-cli build（脚本从各包 dist 导入）。
 //
 // 用法：
-//   node scripts/shadow-replay.mjs [--db <path>] [--limit <n>] [--session <id>] [--verbose] [--no-copy]
+//   node --import tsx scripts/shadow-replay.mjs [--db <path>] [--limit <n>] [--session <id>] [--verbose] [--no-copy]
 import { parseArgs } from "node:util";
 import { homedir, tmpdir } from "node:os";
 import { join, dirname, basename } from "node:path";
@@ -16,8 +16,7 @@ import { copyFileSync, existsSync, mkdtempSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const pkg = (relative) =>
-  import(pathToFileURL(join(here, "..", "packages", relative)).href);
+const pkg = (relative) => import(pathToFileURL(join(here, "..", "packages", relative)).href);
 
 const { values: args } = parseArgs({
   options: {
@@ -29,17 +28,13 @@ const { values: args } = parseArgs({
   },
 });
 
-const [{ createSqliteSessionStore }, hydration, projectionModule, contracts] =
-  await Promise.all([
-    pkg("adapters/dist/storage/index.js"),
-    pkg("bootstrap/dist/zcode-protocol-v4/transcript-hydration.js"),
-    pkg("bootstrap/dist/zcode-protocol-v4/product-projection.js"),
-    pkg("contracts/dist/index.js"),
-  ]);
-const {
-  synthesizeEventsFromMessages,
-  goalVerificationEntriesFromSessionEntries,
-} = hydration;
+const [{ createSqliteSessionStore }, hydration, projectionModule, contracts] = await Promise.all([
+  pkg("adapters/dist/storage/index.js"),
+  pkg("bootstrap/dist/zody-protocol-v4/transcript-hydration.js"),
+  pkg("bootstrap/dist/zody-protocol-v4/product-projection.js"),
+  pkg("contracts/dist/index.js"),
+]);
+const { synthesizeEventsFromMessages, goalVerificationEntriesFromSessionEntries } = hydration;
 const { ProductProjection } = projectionModule;
 const { SESSION_ENTRY_TARGET_COMPLETION_VERIFICATION } = contracts;
 
@@ -114,9 +109,7 @@ for (const session of sessions) {
         }
       }
     }
-    const actualTexts = rows
-      .filter((row) => row.kind === "assistantText")
-      .map((row) => row.text);
+    const actualTexts = rows.filter((row) => row.kind === "assistantText").map((row) => row.text);
     const remaining = [...actualTexts];
     let missingTexts = 0;
     for (const text of expectedTexts) {
@@ -219,13 +212,10 @@ for (const session of sessions) {
           continue;
         }
         if (
-          (action === "editUserQuery" ||
-            action === "retryTurn" ||
-            action === "forkAssistant") &&
+          (action === "editUserQuery" || action === "retryTurn" || action === "forkAssistant") &&
           (!messageId ||
             ("messageId" in resolution && resolution.messageId !== messageId) ||
-            ("editTarget" in resolution &&
-              resolution.editTarget.productTurnId !== row.turnId))
+            ("editTarget" in resolution && resolution.editTarget.productTurnId !== row.turnId))
         ) {
           actionProblems += 1;
         }
@@ -271,8 +261,6 @@ if (offenders.length > 0 && !args.verbose) {
   }
 }
 process.exitCode =
-  totals.crashed > 0 ||
-  totals.entityTargetMismatch > 0 ||
-  totals.actionAddressabilityMismatch > 0
+  totals.crashed > 0 || totals.entityTargetMismatch > 0 || totals.actionAddressabilityMismatch > 0
     ? 1
     : 0;

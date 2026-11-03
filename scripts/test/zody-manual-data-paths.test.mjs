@@ -139,6 +139,10 @@ test("large fixture generate verify and delete use new HOME databases only", asy
   assert.equal(output.taskIndexPath, context.task);
   assert.equal(output.cliDbPath, context.cli);
   assert.ok(output.backupDir.startsWith(join(context.home, ".zody") + sep));
+  assert.equal(
+    output.manifestPath,
+    join(context.home, ".zody", "perf-task-manifests", `${output.sessionId}.json`),
+  );
   await access(output.manifestPath);
   assert.equal(count(context.task, "tasks"), 1);
   assert.equal(count(context.cli, "session"), 1);

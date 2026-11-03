@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed candidate: `83680ddc523fb95a06512ea43fc62c5a5b1ccb75` (manual data paths), under fixed-SHA DeepSeek review. The remaining98 basename candidate `f28dfddcbd4e646d7fa93d2e593b91a62063b2b6` received scoped DeepSeek PASS. Full rename remains incomplete; R22 and later stage gates have not passed.
+Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan using Terra; independent DeepSeek review/acceptance; controller integrates and verifies. Latest committed candidate: `7c4ff9113680a38e273032b09bee32ee6ba399af` (root-only installation), under fixed-SHA DeepSeek review. Manual data paths at83680ddc require the manifest destination test correction before acceptance. The remaining98 basename candidate `f28dfddcbd4e646d7fa93d2e593b91a62063b2b6` received scoped DeepSeek PASS. Full rename remains incomplete; R22 and later stage gates have not passed.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -8,9 +8,9 @@ Updated: 2026-11-03 (Asia/Shanghai). Goal: implement the full execution plan usi
 - Implementation cwd: `/Users/zhvala/SourceCode/zody/.worktrees/zody-full-rename`.
 - Main worktree unrelated changes are preserved; only the two rename plans were copied into this worktree.
 - Implementation agents use native `gpt-6.1-terra`; original R00 ownership is historical. Controller now maintains manifest, scopes and this ledger.
-- Current DeepSeek reviewer B: `broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19ccf-8092-7d11-9010-8010e395f2a5`, route `deepseek-flash`, provider `magpie`, model `group/deepseek`, access `read-only`. Completed f28 basename review with scoped PASS. Reviewer C (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cdb-5be9-73f3-9b21-930b5c45f36a`) reviews fixed f28→83680ddc manual data paths. Earlier reviewer handles below are historical.
+- Current DeepSeek reviewer B: `broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19ccf-8092-7d11-9010-8010e395f2a5`, route `deepseek-flash`, provider `magpie`, model `group/deepseek`, access `read-only`. Completed f28 basename review with scoped PASS; reviewing fixed836→7c root installation. Reviewer C (`broker:deepseek-flash-ro-7e02c5e0e0181fbe:01a19cdb-5be9-73f3-9b21-930b5c45f36a`) returned a manual-path test finding; correction assigned to Terra R10. Earlier reviewer handles below are historical.
 - Broker grant: exact implementation cwd, connection scope, no UI grant.
-- Controller owns this ledger and all dispatch locks. Terra R21 alone owns current product/build/install writes for the user-approved root workspace installation change, based on 83680ddc. Terra R01 prepares full type-batch validation and remaining binding inventory; Terra R10 prepares six directory-consumer corrections in isolated output. Neither preparatory agent may write current product/build files.
+- Controller owns this ledger and all dispatch locks. Terra R10 owns current source/build writes for the manifest destination test and six directory-consumer corrections. Terra R21 owns only the independent clean worktree rooted at output/zody-rename-r21/root-owner-clean-7c4ff911 for frozen install/build/container validation, plus its own report. Terra R01 prepares full type-batch bindings from fixed7c in isolated output, with no current product/build writes.
 
 | Task | Status     | Implementation                    | Review / gate                                                                                                    |
 | ---- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -214,3 +214,10 @@ The original preview missed complete internal basename/TS symbol ownership. R20.
 
 - User-approved root-only installation implemented across26 exact paths, preserving root lock bytes and Turbo task semantics after root-relative input mapping. Controller independently verified all hashes and reran47 Node tests, root typecheck and lint successfully (303 warnings). Terra current-tree frozen install and50 member/92 link checks pass; clean candidate install and container checks remain pending.
 - DeepSeek C requested a manual-path test correction: assert manifest destination, not merely existence. Product behavior was not rejected; exact test correction is queued before re-review. Raw report saved as R20-manual-data-paths-deepseek-review.md.
+
+- Root-only installation frozen as `7c4ff9113680a38e273032b09bee32ee6ba399af`, tree `de2caf21b05edeb5178de715344830ae8ae5bc40`. Controller created a new detached worktree at `output/zody-rename-r21/root-owner-clean-7c4ff911` from that exact commit; Terra R21 receives its isolated install/build validation lock. DeepSeek B reviews only836→7c. No main merge or release.
+
+## Directory consumers and manual manifest regression
+
+- Terra corrected six active directory consumers and the manual tool manifest destination assertion; exact8-file source scope independently verified. Controller reran26 CLI +7 services +2 Node tests, typecheck and lint successfully (303 warnings). Mutation that restores only the old manifest directory fails at the new assertion. Shadow replay empty synthetic SQLite initialization works via tsx; plain Node export-resolution limitation and lack of actual session replay remain explicit.
+- Root installation clean-worktree validation uses frozen7c independently; initial Turbo build had shared-worktree cache hits and is not claimed as a cache-free rebuild. Terra will perform serial forced build after CLI tests.

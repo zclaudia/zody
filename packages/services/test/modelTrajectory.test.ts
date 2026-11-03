@@ -254,7 +254,7 @@ describe("readModelTrajectory", () => {
     const readPromise = readModelTrajectory("sess_large");
     expect(readPromise).toBeInstanceOf(Promise);
     const implementation = await readFile(
-      join(import.meta.dirname, "../src/zcode-agent/modelTrajectory.ts"),
+      join(import.meta.dirname, "../src/zody-agent/modelTrajectory.ts"),
       "utf8",
     );
     expect(implementation).not.toContain("readFileSync");

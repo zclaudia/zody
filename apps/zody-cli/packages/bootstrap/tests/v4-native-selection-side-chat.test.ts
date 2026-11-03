@@ -10,7 +10,7 @@ import type {
   V4SessionRecordView,
 } from "../src/zody-protocol-v4/commands/types.js";
 
-vi.mock("../src/zcode-protocol-v4/commands/prompt-turn.js", () => ({
+vi.mock("../src/zody-protocol-v4/commands/prompt-turn.js", () => ({
   startPromptTurn: vi.fn(),
 }));
 

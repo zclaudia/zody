@@ -20142,5 +20142,22 @@
     "report": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-implementation.md",
     "status": "controller-verified-pending-review",
     "controllerReport": "docs/plans/zody-rename-execution/reports/R20-manual-data-paths-controller-verification.md"
+  },
+  "directoryConsumerCorrection": {
+    "baseline": "7c4ff9113680a38e273032b09bee32ee6ba399af",
+    "files": [
+      "apps/zody-cli/packages/bootstrap/tests/v4-native-boundary.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/v4-native-selection-side-chat.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/conversation-topic-publisher-hydration-bound.test.ts",
+      "apps/zody-cli/scripts/shadow-replay.mjs",
+      "apps/zody-cli/packages/bootstrap/tests/provider-m2-legacy-boundary.test.ts",
+      "packages/services/test/modelTrajectory.test.ts",
+      "scripts/test/zody-manual-data-paths.test.mjs",
+      ".agents/skills/zody-large-task-fixture/SKILL.md"
+    ],
+    "status": "implemented-controller-verified-pending-fixed-review",
+    "implementationReport": "docs/plans/zody-rename-execution/reports/R20-directory-residual-implementation.md",
+    "controllerReport": "docs/plans/zody-rename-execution/reports/R20-directory-residual-controller-verification.md",
+    "boundary": "Current path consumers and manual manifest regression only; preserve runtime identities and frozen sources."
   }
 }

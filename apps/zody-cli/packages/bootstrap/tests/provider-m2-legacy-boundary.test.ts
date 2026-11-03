@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const retiredProviderSources = [
   "../src/app/official-mcp-trusted-origins.ts",
   "../src/app/model-catalog-overlay.ts",
-  "../src/zcode-protocol/active-session-model-limits.ts",
+  "../src/zody-protocol/active-session-model-limits.ts",
 ] as const;
 
 describe("M2 Bootstrap Provider legacy boundary", () => {
