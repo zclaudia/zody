@@ -45,4 +45,4 @@ RUN --mount=type=cache,id=zcode-pnpm-store,target=/pnpm/store \
 
 RUN pnpm --dir apps/zody-cli build
 
-ENTRYPOINT ["node", "apps/zody-cli/e2e/compact-microcompact/run.mjs"]
+ENTRYPOINT ["node", "--import", "tsx", "apps/zody-cli/e2e/compact-microcompact/run.mjs"]

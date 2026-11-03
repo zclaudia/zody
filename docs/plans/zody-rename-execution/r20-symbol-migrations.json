@@ -5404,8 +5404,8 @@
     {
       "id": "R20.4-types-remaining-01",
       "base": "a8a0fe2b5b168536bfb68d24911ba4368f7d1ff5",
-      "candidate": null,
-      "status": "controller-verified-pending-DeepSeek",
+      "candidate": "2d9e7d398037df3c42ad7b97fe1eed8713196701",
+      "status": "scoped-review-PASS",
       "records": [
         {
           "file": "apps/zody-cli/packages/adapters/src/auth/credential-cipher.ts",
@@ -6295,7 +6295,8 @@
       "edits": 854,
       "patchSha256": "b28712e630cb208877a47b0ad81ed12b63cc422f79c9c0b85078859e23d7984a",
       "controllerReport": "docs/plans/zody-rename-execution/reports/R20-symbols-types-remaining-controller-verification.md",
-      "implementationReport": "docs/plans/zody-rename-execution/reports/R20-symbols-types-remaining-implementation.md"
+      "implementationReport": "docs/plans/zody-rename-execution/reports/R20-symbols-types-remaining-implementation.md",
+      "review": "reports/R20-symbols-types-remaining-deepseek-review.md"
     }
   ]
 }

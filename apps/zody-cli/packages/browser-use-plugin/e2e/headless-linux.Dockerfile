@@ -1,7 +1,7 @@
 FROM node:24.14.0-bookworm-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends chromium ca-certificates \
+    && apt-get install -y --no-install-recommends chromium ca-certificates python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
 RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
 

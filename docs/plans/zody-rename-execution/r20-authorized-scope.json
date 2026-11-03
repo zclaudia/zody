@@ -20106,11 +20106,13 @@
       {
         "id": "R20.4-types-remaining-01",
         "base": "a8a0fe2b5b168536bfb68d24911ba4368f7d1ff5",
-        "status": "controller-verified-pending-DeepSeek",
+        "status": "scoped-review-PASS",
         "declarations": 106,
         "files": 140,
         "edits": 854,
-        "migrationRecord": "docs/plans/zody-rename-execution/r20-symbol-migrations.json"
+        "migrationRecord": "docs/plans/zody-rename-execution/r20-symbol-migrations.json",
+        "candidate": "2d9e7d398037df3c42ad7b97fe1eed8713196701",
+        "review": "reports/R20-symbols-types-remaining-deepseek-review.md"
       }
     ]
   },
