@@ -19,9 +19,8 @@ const useBootstrapWithRemoteBuild = process.env.ZCODE_BOOTSTRAP_WITH_REMOTE === 
 const pnpmRunEnv = {
   ...process.env,
   ZCODE_ENV: await resolveBuiltinProviderBuildEnvironment({ root: repoRoot }),
-  // pnpm 11 的 verify-deps-before-run 会在 apps/zody-cli 子 workspace
-  // 执行每个 run 前触发 pnpm install；子 workspace 运行时依赖根仓库 @zcode/shared，
-  // 自动 install 无法解析根 workspace 包，导致 dev:desktop:test 和 E2E onPrepare 失败。
+  // 历史上 pnpm 11 在嵌套 workspace 的 run 前自动安装并无法解析根包。
+  // 现在根 workspace 统一安装；保留此设置，避免构建时触发隐式安装。
   PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
 };
 // Bug 根因：filesystem plugin seed 若缺少 Sharp closure，会一直到 screenshot/zoom 才报错。
@@ -153,10 +152,7 @@ if (useBootstrapWithRemoteBuild) {
 }
 
 if (!useTurboBuild) {
-  // Linux 容器 demo 里没有仓库级 turbo 根，`turbo --cwd apps/zody-cli`
-  // 会把 apps/zody-cli 当根目录，并拒绝 turbo.json 中指向 ../../packages/shared 的 inputs。
-  // 同时 agent 子 workspace 不包含根 packages/shared，但 agent 包依赖 @zcode/shared。
-  // 因此默认改用仓库根 workspace 的明确 pnpm 包顺序构建，避免 WDIO 前置构建卡在子 workspace 解析。
+  // 默认按明确的包顺序构建；可选 Turbo 模式使用同一根 workspace。
   for (const filter of defaultBuildFilters) {
     runCommand("pnpm", ["--filter", filter, "build"], {
       env: pnpmRunEnv,
@@ -179,9 +175,6 @@ runCommand(
   [
     "exec",
     "turbo",
-    "--skip-infer",
-    "--cwd",
-    "apps/zody-cli",
     "run",
     "build:desktop-agent",
     "--filter=@zody/cli",

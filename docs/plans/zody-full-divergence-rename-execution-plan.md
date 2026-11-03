@@ -29,7 +29,7 @@
 | ------------------------------------------------ | ----------------------------------------------------------------------- |
 | 任务账本、派发 `writeSet`、总验收结论            | 主控；子代理只写自己的报告                                              |
 | 全仓目录移动、包名和 import 重写                 | R20 独占；所有其他产品源码写者停止                                      |
-| 根与 CLI 独立工作区的 `pnpm-lock.yaml`           | R21；其他任务只提出 manifest 需求，不自行 install 改锁                  |
+| 根工作区 `pnpm-lock.yaml`                         | R21；根为唯一安装 owner，其他任务不自行 install 改锁                   |
 | feature graph                                    | R21 更新路径；需要语义变更时由主控串行交接，不并行重写                  |
 | 根 package.json、workspace/CI/toolchain 配置     | R10 → R20 → R30 串行接力；各自只改所属阶段                              |
 | shared wire/schema/exports                       | R40 先固定接口，R41/R42/R44 只消费；后续 R45/R47/R50 分批取得对应文件锁 |
@@ -152,9 +152,9 @@ flowchart TD
 ### R21 — P2 lock、生成物与 feature graph 收口
 
 - **依赖/锁**：R20 写入停止；唯一 lock/graph 写者。
-- **写范围**：根 `pnpm-lock.yaml`、当前 `apps/zcode-cli/pnpm-lock.yaml`（P2 后按新路径）、`third-party/inventory.json` 及其同源生成 notices 的必要变化、feature graph 路径和同源生成物，以及报告；不改包 manifest/生产实现，不改第三方作者归属。生成物路径由 R00 展开，不能自行扩展到全部 NOTICE/LICENSE。根与 CLI 的 `skills-lock.json` 纳入残留审计，只有实际引用需要变化时才由主控授予写权限，不因包名改动重生成外部技能来源/hash。
-- **操作**：按当前 mise/packageManager 固定 Node/pnpm；先诊断根和 CLI 的 manifest、workspace 与锁是否在改名前一致，再基于旧 lock 增量更新，审查第三方版本/integrity/peer 差异。改名前即存在的失步应独立复现；删除嵌套 workspace/lock、改变安装 owner 或重新解析第三方依赖均不是机械改名，须先明确方案和文件授权，不能为通过 frozen install 顺手实施。按真实现有工具生成 inventory；graph 保持节点 ID 和产品语义，仅映射已移动 codeSeeds/docs。若图为手工维护则按现有校验方式更新，不臆造“再生成”命令。
-- **验收**：主控先把 R20+R21 的完整结果制成临时集成提交，记录 commit/tree SHA；从该提交建立干净验证工作树，在根和移动后的 CLI 独立工作区分别运行 `pnpm install --frozen-lockfile`（如已批准更改安装 owner，则按修订后的唯一入口及 CLI 子目录脚本场景验收），不得检出未包含改动的旧 HEAD 代验。检查实际 workspace symlink 的目标、包名及 bin，而非只检查锁文件文本。不存在无关依赖升级；图路径与 exports 校验通过。R22 通过后以相同内容原子合入，修复改变内容时重新建立并验证集成版本。包 manifest 需要修正时交回 R20，禁止这里临时扩权。
+- **写范围**：根 `pnpm-lock.yaml`、根 workspace / Turbo 和 CLI 开发入口、对应测试、CI/容器、安装文档、`third-party/inventory.json` 与同源 notices 的必要变化、feature graph 和报告；精确文件由主控交接，第三方作者归属不变。CLI `skills-lock.json` 是外部来源证据，不因安装 owner 改动重生成。
+- **操作**：用户已决定根工作区为唯一安装 owner，移除 CLI 嵌套 workspace 与旧锁，保留 `pnpm --dir apps/zody-cli …`。根锁维持现有第三方解析，不删除重解析或升级；CLI Turbo 入口限定其 packages/tools，真实依赖闭包可含根包。按真实工具生成 inventory；图仅作已授权路径映射。
+- **验收**：主控将完整候选制成临时集成提交，记录 commit/tree SHA，在该提交的干净工作树从根执行 `pnpm install --frozen-lockfile`；核对成员、CLI 入口、Turbo 选择范围及依赖闭包、本地链接真实目标、包名及实际 bin。不得出现无关第三方版本/integrity/peer 漂移；图与 exports 校验另行执行。R22 通过后以相同内容原子合入，内容变化时重新建立并验证集成版本。
 
 ### R22 — P2 集成与构建门禁
 

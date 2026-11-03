@@ -14,7 +14,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:desktop-agent": "node scripts/build.mjs --desktop-agent",
-    "build:sea": "pnpm --dir ../../../.. exec turbo --skip-infer --cwd apps/zody-cli run build --filter=!@zody/cli --force && pnpm build && node scripts/build-sea.mjs --all",
+    "build:sea": "pnpm --dir ../../../.. exec turbo run build --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*} --filter=!@zody/cli --force && pnpm build && node scripts/build-sea.mjs --all",
     "sea": "node scripts/build-sea.mjs",
     "upload:sea": "node scripts/upload-sea-smb.mjs",
     "clean": "node ../../scripts/clean-dist.mjs",

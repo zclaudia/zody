@@ -7209,12 +7209,14 @@
       {
         "old": "pnpm-lock.yaml",
         "new": "pnpm-lock.yaml",
-        "policy": "唯一写者增量更新并核对第三方解析差异"
+        "policy": "唯一安装解析所有者；保留根锁第三方版本、integrity、peer 与 patch，干净工作树从根 frozen install"
       },
       {
         "old": "apps/zcode-cli/pnpm-lock.yaml",
         "new": "apps/zody-cli/pnpm-lock.yaml",
-        "policy": "审计并仅在必要时增量映射；不无故更改依赖"
+        "policy": "历史嵌套锁：用户决定移除；当前仅根工作区与根锁安装，不合并或重解析旧锁",
+        "disposition": "removed",
+        "currentPath": null
       },
       {
         "old": "apps/zcode-cli/skills-lock.json",

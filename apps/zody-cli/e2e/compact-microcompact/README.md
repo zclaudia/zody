@@ -76,8 +76,10 @@ node e2e/compact-microcompact/run.mjs --dry-run
 
 ## Docker
 
+Run from the repository root:
+
 ```bash
-docker build -f e2e/compact-microcompact/Dockerfile -t zcode-compact-microcompact .
+docker build -f apps/zody-cli/e2e/compact-microcompact/Dockerfile -t zcode-compact-microcompact .
 docker run --rm -e ZCODE_API_KEY zcode-compact-microcompact
 ```
 
@@ -113,7 +115,7 @@ The Dockerfile defaults to `node:24.14-alpine`. To use a local mirror or already
 docker build \
   --build-arg NODE_IMAGE=node:24-bookworm-slim \
   --build-arg NPM_CONFIG_REGISTRY=https://registry.npmmirror.com \
-  -f e2e/compact-microcompact/Dockerfile \
+  -f apps/zody-cli/e2e/compact-microcompact/Dockerfile \
   -t zcode-compact-microcompact .
 ```
 

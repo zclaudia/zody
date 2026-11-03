@@ -40,7 +40,7 @@ pnpm dev:desktop
 pnpm dev:web
 ```
 
-Agent 源码在 `apps/zody-cli/`，随仓库提供，不是 Git submodule。
+Agent 源码在 `apps/zody-cli/`，随仓库提供，不是 Git submodule。依赖由根 workspace 和根 lock 统一安装；`pnpm --dir apps/zody-cli …` 仍限定 CLI 任务入口。
 
 ```bash
 pnpm --filter @zody/cli... build

@@ -53,6 +53,8 @@ P0 同时定义残留检查输入和精确允许清单;P2 起对受 Git 追踪�
 
 ### 1.2 workspace/lockfile
 
+**当前决定**：根工作区与根锁为唯一安装所有者，移除 CLI 嵌套 workspace/lock；保留 `pnpm --dir apps/zody-cli …`，CLI Turbo 从根上下文选择 CLI 包及其真实依赖。下列计数保留调查时历史基线。
+
 - `pnpm-workspace.yaml`:3 行 glob 含 `apps/zcode-cli`。
 - `pnpm-lock.yaml`(v9):importer 键 37 处路径前缀 + 92 处 `@zcode/` workspace 链接键。保留现有 lock 基线,由固定工具链增量更新 importer/workspace 链接,不删除 lock 后重新解析整个依赖树。当前工具链为 `mise.toml` 的 Node 24.14.0、根 `package.json` 的 pnpm 10.33.2,实施时复核。第三方版本、integrity 与 peer 解析变化必须逐项说明,无关依赖升级移出本批;最后在干净检出执行 `pnpm install --frozen-lockfile`。
 - 根 `package.json`:name 已是 `zody`,但约 25 处脚本引用 `@zcode/*` filter、`pnpm --dir apps/zcode-cli`、`build:zcode`/`build:zody` 双别名指向 `scripts/build-zcode.mjs`。
@@ -294,7 +296,7 @@ P2 前保存可复原的旧归档、摘要、签名身份与匹配源码版本;�
 | 阶段                          | 命令/场景                                                                                                                                                                                                    | 通过条件与环境                                                                                          |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | P1—P5 代码批次                | `pnpm typecheck`; `pnpm lint`; `pnpm architecture:check --changed`                                                                                                                                           | 记录基线与改后结果;架构检查范围必须覆盖实际变更                                                         |
-| P2 workspace                  | `pnpm install --frozen-lockfile`; `pnpm knip`; `pnpm test:unit`                                                                                                                                              | 干净检出安装;无未解释的依赖漂移、失效导出或新增失败                                                     |
+| P2 workspace                  | 根 `pnpm install --frozen-lockfile`（唯一安装 owner）；核对 CLI `--dir` 包集合与 links；`pnpm knip`; `pnpm test:unit`                                                                                                                                              | 干净检出安装;无未解释的依赖漂移、失效导出或新增失败                                                     |
 | P2 CLI/Web                    | `pnpm build:zody --all`                                                                                                                                                                                      | 当前支持 darwin-arm64、darwin-x64、win32-x64、linux-x64 的 CLI/Web 产物;不含 Desktop                    |
 | P2 Desktop 准备 / P5 最终出包 | `pnpm bundle:desktop -- --os mac --arch arm64`                                                                                                                                                               | P2 记录准备检查与冻结阻塞,不能记最终出包通过;P5 在具备签名身份、SDK 与冻结输入的 macOS arm64 上真实执行 |
 | 其他发布 Desktop 目标         | `pnpm bundle:desktop -- --os win --arch x64`; `pnpm bundle:desktop -- --os linux --arch x64`;如发布 mac x64,执行对应 `--os mac --arch x64`                                                                   | 使用具备目标依赖的 CI/主机;脚本接受参数不代表跨平台构建或签名已经验证。P0 固定本次实际发布目标          |

@@ -41,6 +41,8 @@ pnpm build:zody --target darwin-arm64
 
 CLI/Web output defaults to `dist/zody/`. Targets: `darwin-arm64`, `darwin-x64`, `win32-x64`, `linux-x64`; `--all` selects all four. Each target needs matching native assets. SSH/WSL uses bundled runtimes without a remote CDN fallback. Browser Use remains available; unavailable system Computer Use entries are hidden.
 
+The root workspace and lockfile own installation; `pnpm --dir apps/zody-cli …` keeps CLI task entrypoints scoped to CLI packages.
+
 See [build and release instructions](docs/fork/build.md) and [Android and gateway setup](docs/mobile-remote-control-android.md). A version tag runs checks and builds a draft Release. Human acceptance precedes publication as a Pre-release. Missing Android signing Secrets or third-party license evidence blocks release; local diagnostic archives are not approved release artifacts.
 
 Zody keeps the original authors’ copyright and the [Apache-2.0 LICENSE](LICENSE). Read [usage and privacy information](NOTICE.md), [third-party notices](THIRD-PARTY-NOTICES.md), and the [0.1.0 specification](specs/zody-0.1.0-release.md).

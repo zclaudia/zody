@@ -936,9 +936,8 @@ function createPnpmChildEnv() {
     // CI 清理 .e2e-home 后会找不到 corepack 管理的 pnpm.mjs。
     ...(HOST_HOME_DIR ? { HOME: HOST_HOME_DIR } : {}),
     ...(HOST_USERPROFILE_DIR ? { USERPROFILE: HOST_USERPROFILE_DIR } : {}),
-    // Bugfix: agent 构建脚本会进入 apps/zody-cli 子 workspace；pnpm 11 的
-    // verify-deps-before-run 会触发子 workspace install，但该 workspace 运行时
-    // 依赖根仓库 @zcode/shared，自动 install 无法解析，必须在 E2E 构建链路关闭。
+    // 历史上嵌套 workspace 自动安装无法解析根包；当前根 workspace 统一安装。
+    // E2E 构建链路继续关闭自动安装，避免在运行阶段隐式改变依赖。
     PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
     // 修复原因：E2E 依赖 renderer 暴露 store bridge；只在 WDIO 构建链路显式注入，
     // 避免普通 production/test 产品构建意外暴露可变全局 store。

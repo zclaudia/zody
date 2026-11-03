@@ -22,18 +22,8 @@ RUN if [ "${INSTALL_CA_CERTIFICATES}" = "true" ]; then \
   fi
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-COPY packages/adapters/package.json packages/adapters/package.json
-COPY packages/bootstrap/package.json packages/bootstrap/package.json
-COPY packages/cli/package.json packages/cli/package.json
-COPY packages/contracts/package.json packages/contracts/package.json
-COPY packages/core/package.json packages/core/package.json
-COPY packages/debug/package.json packages/debug/package.json
-COPY packages/i18n/package.json packages/i18n/package.json
-COPY packages/shared-types/package.json packages/shared-types/package.json
-COPY packages/swift-bridge/package.json packages/swift-bridge/package.json
-COPY packages/tui/package.json packages/tui/package.json
-COPY tools/typescript/package.json tools/typescript/package.json
+# 根 workspace 是唯一安装所有者；保持锁、补丁与所有 workspace manifest 同步。
+COPY . .
 
 RUN --mount=type=cache,id=zcode-pnpm-store,target=/pnpm/store \
   pnpm config set store-dir /pnpm/store && \
@@ -41,9 +31,9 @@ RUN --mount=type=cache,id=zcode-pnpm-store,target=/pnpm/store \
   pnpm config set fetch-retries 5 && \
   pnpm config set fetch-retry-maxtimeout 120000 && \
   pnpm config set fetch-timeout 300000 && \
-  pnpm install --frozen-lockfile
+  pnpm --filter '{./apps/zody-cli/packages/*}...' --filter '{./apps/zody-cli/tools/*}...' \
+    --filter zody --filter zody-cli install --frozen-lockfile
 
-COPY . .
-RUN pnpm build
+RUN pnpm --dir apps/zody-cli build
 
-ENTRYPOINT ["node", "e2e/compact-microcompact/run.mjs"]
+ENTRYPOINT ["node", "apps/zody-cli/e2e/compact-microcompact/run.mjs"]

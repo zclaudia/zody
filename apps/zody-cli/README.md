@@ -6,7 +6,7 @@ For installation and supported platforms, see the [repository README](../../READ
 
 ## Development
 
-Use Node.js 24.14.0 and pnpm 10.33.2 as pinned in the repository root. Run these commands from that root:
+Use Node.js 24.14.0 and pnpm 10.33.2 as pinned in the repository root. The root workspace and lockfile own installation; CLI task entrypoints select CLI packages and their required dependencies. Run these commands from that root:
 
 ```sh
 pnpm bootstrap

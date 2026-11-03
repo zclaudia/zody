@@ -99,5 +99,5 @@
 
 以下命令从 z-code 仓库根目录执行；若当前已在 `apps/zody-cli`，省略 `--dir apps/zody-cli`。
 
-- CLI 代码变更除根验证矩阵外，运行 `pnpm --dir apps/zody-cli typecheck`、`pnpm --dir apps/zody-cli lint`，以及受影响 CLI 包与调用方的测试。用 CLI 自身的 package scripts / Turbo 选择范围，不能用根 `pnpm test:unit:affected` 代替。
+- CLI 代码变更除根验证矩阵外，运行 `pnpm --dir apps/zody-cli typecheck`、`pnpm --dir apps/zody-cli lint`，以及受影响 CLI 包与调用方的测试。根 workspace 和 lock 是唯一安装所有者；用 CLI 自身的 package scripts / 根 Turbo 选择 CLI 入口范围，不能用根 `pnpm test:unit:affected` 代替。
 - 无法可靠确定影响范围，或修改 CLI 公共配置、测试基础设施时，运行 `pnpm --dir apps/zody-cli test`。必要检查通过后不重复运行；纯文档、环境阻塞、提交条件均遵循根规则。

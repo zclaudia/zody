@@ -178,7 +178,7 @@ test("keeps package SEA build scripts aligned with the existing all-target contr
 
   assert.equal(
     cliPackage.scripts["build:sea"],
-    "pnpm --dir ../../../.. exec turbo --skip-infer --cwd apps/zody-cli run build --filter=!@zody/cli --force && pnpm build && node scripts/build-sea.mjs --all",
+    "pnpm --dir ../../../.. exec turbo run build --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*} --filter=!@zody/cli --force && pnpm build && node scripts/build-sea.mjs --all",
   );
   assert.equal(cliPackage.scripts["build:sea:all"], undefined);
   assert.equal(cliWorkspacePackage.scripts["build:sea"], "pnpm --filter @zody/cli build:sea");
@@ -1214,14 +1214,14 @@ test("rebuilds workspace dependencies without caching SEA outputs before packagi
 
   assert.equal(
     packageJson.scripts?.["build:sea"],
-    "pnpm --dir ../../../.. exec turbo --skip-infer --cwd apps/zody-cli run build --filter=!@zody/cli --force && pnpm build && node scripts/build-sea.mjs --all",
+    "pnpm --dir ../../../.. exec turbo run build --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*} --filter=!@zody/cli --force && pnpm build && node scripts/build-sea.mjs --all",
   );
 });
 
 test("resolves Turbo from the repository while retaining the CLI workspace graph", () => {
   const cliPackageRoot = new URL("..", import.meta.url);
 
-  // 回归原因：CLI 是嵌套 workspace，--workspace-root 会把 Turbo 限定到未安装 binary 的内层 node_modules。
+  // 回归原因：根 workspace 包含其他产品包，SEA 必须限制 CLI 入口并排除 CLI 自身。
   const result = spawnSync(
     "pnpm",
     [
@@ -1229,11 +1229,10 @@ test("resolves Turbo from the repository while retaining the CLI workspace graph
       "../../../..",
       "exec",
       "turbo",
-      "--skip-infer",
-      "--cwd",
-      "apps/zody-cli",
       "run",
       "build",
+      "--filter={./apps/zody-cli/packages/*}",
+      "--filter={./apps/zody-cli/tools/*}",
       "--filter=!@zody/cli",
       "--force",
       "--dry=json",
@@ -1247,7 +1246,7 @@ test("resolves Turbo from the repository while retaining the CLI workspace graph
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /"taskId":/u);
-  assert.doesNotMatch(result.stdout, /"package": "@zcode\/cli"/u);
+  assert.doesNotMatch(result.stdout, /"package": "@zody\/cli"/u);
 });
 
 test("can be dynamically imported when argv[1] is missing", () => {

@@ -27,8 +27,8 @@ const cliBundlePath = resolve(repoRoot, "apps/zody-cli/packages/cli/dist/zody.cj
 const adaptersRoot = resolve(repoRoot, "apps/zody-cli/packages/adapters");
 const pnpmRunEnv = {
   ...process.env,
-  // pnpm 11 会在 apps/zody-cli 子 workspace 执行 run 前触发 install；
-  // 子 workspace 不能解析根 workspace 的 @zcode/shared，Docker/web app 打包会因此卡在插件 runtime 构建。
+  // 历史上 pnpm 11 的嵌套 workspace 自动安装无法解析根包。
+  // 当前由根 workspace 统一安装，构建时继续避免隐式安装。
   PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
 };
 const BROWSER_USE_PLUGIN_PACKAGE_NAME = "@zody/browser-use-plugin";

@@ -64,3 +64,9 @@ localStorage、分区和 cookie 改名不迁移旧值：0.1.0 无正式存量用
 大型任务 fixture 工具的默认任务索引和 CLI 会话数据库位于 `~/.zody/v2/tasks-index.sqlite` 与 `~/.zody/cli/db/db.sqlite`；备份和 manifest 位于同一 `.zody` 根。`--workspace` 仅指定任务工作区，不改变数据库目标。恢复旧会话工具默认从 `~/.zcode/v2/sessions` 扫描历史快照，目标使用上述 `.zody` 数据库；既有 `--legacy-dir`、`--snapshot`、`--task-index` 和 `--cli-db` 保持各自的覆盖语义。工具不自动迁移旧数据库。
 
 验收：隔离 HOME 下生成、验证和删除仅影响新默认库及其备份；恢复默认读取旧快照、写入新目标，显式输入与数据库路径覆盖准确生效；历史源和旧数据库不被改变。E2E case 中 HOME 下的 model-io 和 image-cache fixture 描述与 `.zody/cli` 实际路径一致。
+
+## 根 workspace 安装与 CLI 任务范围
+
+根 `pnpm-workspace.yaml` 和 `pnpm-lock.yaml` 是仓库唯一的 pnpm 工作区与安装解析所有者。CLI 包随根工作区安装，不再维护嵌套 workspace 或锁；保留 `pnpm --dir apps/zody-cli …` 开发入口。CLI 的 Turbo 批量任务只选择 CLI packages 与 tools 为入口，允许按真实依赖执行根工作区的构建任务；不得递归执行 CLI 根脚本或将无关根包选为入口。根锁中的第三方版本、integrity、peer 和 patch 不因所有权调整变化。CI 和容器从根使用 frozen install，执行入口保持相同。
+
+验收：完整候选提交的干净工作树根 frozen install 成功；根与 CLI 命令发现相同 workspace，逐项核对本地依赖链接目标和包名。Turbo 对 build、clean、coverage、lint、lint:fix、test、typecheck 及 check 所用 typecheck 的入口和依赖闭包正确，SEA 构建排除 CLI 自身入口，选择其余 CLI 包及真实依赖；这些选择使用 dry-run 核查，再执行受影响真实测试和构建。旧嵌套锁只作为历史证据，不参与当前安装。

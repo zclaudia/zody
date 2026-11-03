@@ -192,7 +192,7 @@ test("both repository configurations pass the runtime release decoder", async ()
 
 test("Turbo and bootstrap include the out-of-workspace configuration inputs", async () => {
   const turbo = JSON.parse(
-    await readFile(resolve(repositoryRoot, "apps/zody-cli/turbo.json"), "utf8"),
+    await readFile(resolve(repositoryRoot, "turbo.json"), "utf8"),
   );
   for (const taskName of ["@zody/cli#build", "build:desktop-agent"]) {
     const task = turbo.tasks[taskName];
@@ -205,7 +205,7 @@ test("Turbo and bootstrap include the out-of-workspace configuration inputs", as
       "packages/provider/src/**",
       "packages/provider-node/src/zody-builtin-release.ts",
     ]) {
-      assert.ok(task.inputs.includes(`$TURBO_ROOT$/../../${input}`), `${taskName}: ${input}`);
+      assert.ok(task.inputs.includes(`$TURBO_ROOT$/${input}`), `${taskName}: ${input}`);
     }
   }
   const bootstrap = await readFile(

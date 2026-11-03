@@ -15206,14 +15206,13 @@
       "共享接口未经主控交接不得修改"
     ],
     "plannedPaths": [
-      "apps/zody-cli/pnpm-lock.yaml",
       "apps/zody-cli/skills-lock.json",
       "docs/plans/zody-rename-execution/reports/R21.md"
     ],
     "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R20 父目录迁移完成后由 R21 独占审计与必要映射，基于集成提交在干净工作树验证；禁止无关依赖漂移。",
+    "gate": "用户决定根 workspace 为唯一安装 owner；移除 CLI 嵌套 workspace/lock，完整集成提交在干净工作树根 frozen install，核验 CLI 入口、包成员、本地 links 和第三方解析无漂移。",
     "structureScope": [
-      "独占根 lock、CLI lock 和 skills-lock 的审计与必要增量映射；CLI 两文件随 P2 父目录迁移；skills-lock 外部来源不机械改名，不无理由改依赖。"
+      "根 lock 唯一安装解析；删除过时 CLI 嵌套 workspace/lock，保留根 Turbo 上 CLI 任务入口范围及真实依赖闭包；skills-lock 外部来源不重生成。"
     ]
   },
   "R22": {
