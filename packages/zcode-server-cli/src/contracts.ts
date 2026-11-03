@@ -6,6 +6,17 @@ export const CRASH_WINDOW_MS = 5 * 60_000;
 export const CRASH_BACKOFF_MS = [1_000, 2_000, 4_000, 8_000, 16_000] as const;
 export const MAX_CONTROL_FRAME_BYTES = 64 * 1024;
 
+// Core ready 等待预算；CLI 与 Supervisor 共用，等待方由这里推导，不能各自写死。
+export const CORE_READY_TIMEOUT_MS = 15_000;
+// serve --daemon 等待方需要覆盖 Supervisor 冷启动（进程拉起、模块加载、取锁、启动恢复、control 监听）
+// 与 Core ready 预算。Bug 原因（a60ba6a7）：旧的 10 秒写死上限短于 Supervisor 自身的 15 秒 Core ready
+// 预算；机器繁忙时 Supervisor 冷启动实测可达 8～14 秒，CLI 先报 "Timed out waiting for Server ready"，
+// daemon 随后照常 ready。
+export const SERVER_READY_WAIT_TIMEOUT_MS = CORE_READY_TIMEOUT_MS + 10_000;
+// update 降级未显式确认时的公开错误码；CLI 顶层按结构读取后原样输出给上层调用方。
+export const SOURCE_SERVER_DOWNGRADE_UNCONFIRMED_ERROR_CODE =
+  "source-server-downgrade-unconfirmed" as const;
+
 export const lifecycleStateSchema = z.enum([
   "starting",
   "ready",

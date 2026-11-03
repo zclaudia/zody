@@ -5,12 +5,14 @@ import { fileURLToPath } from "node:url";
 import { dirname, isAbsolute, join } from "node:path";
 import { ZCODE_VERSION } from "@zcode/shared";
 import {
+  CORE_READY_TIMEOUT_MS,
+  SERVER_READY_WAIT_TIMEOUT_MS,
   controlRequestSchema,
   createStoppedServerStatus,
   serverStatusSchema,
   type ServerStatus,
 } from "./contracts.js";
-import { requestControl } from "./ipc/controlClient.js";
+import { isControlEndpointUnavailable, requestControl } from "./ipc/controlClient.js";
 import {
   resolveCanonicalServerLayout,
   resolveServerLayout,
@@ -19,7 +21,7 @@ import {
 import { validateServerInstallOwnership } from "./runtime/installationOwnership.js";
 import { createReleaseAgentWiring, type BundledAgentWiring } from "./runtime/agentWiring.js";
 import { writeStableLauncher } from "./runtime/stableLauncher.js";
-import { runUpdateCommand } from "./runtime/updateCommand.js";
+import { runLocalArchiveUpdateCommand, runUpdateCommand } from "./runtime/updateCommand.js";
 import { DataRootLock } from "./runtime/lock.js";
 import {
   acquireUninstallLock,
@@ -97,6 +99,18 @@ export async function runServerCli(
       case "restart":
         return await runControl(command, io, json, {}, layout);
       case "update":
+        // --from-archive 从本地 archive 安装；方向判定为降级时必须显式 --allow-downgrade。
+        if (parsed.argv.includes("--from-archive")) {
+          return await runLocalArchiveUpdateCommand(parsed.argv, io, json, layout, () =>
+            runControl(
+              "apply-update",
+              io,
+              json,
+              { force: parsed.argv.includes("--force") },
+              layout,
+            ),
+          );
+        }
         return await runUpdateCommand(parsed.argv, io, json, layout, () =>
           runControl("apply-update", io, json, { force: parsed.argv.includes("--force") }, layout),
         );
@@ -222,13 +236,10 @@ async function runServe(
       layout,
       "ready",
       baselineUpdatedAt,
-      () => {
-        if (childEarlyExit) {
-          throw new Error(
-            `Zody Server daemon exited before ready (code=${childEarlyExit.code ?? "null"} signal=${childEarlyExit.signal ?? "none"}); check ${layout.statusFile} for details`,
-          );
-        }
-      },
+      () =>
+        childEarlyExit
+          ? `Zody Server daemon exited before ready (code=${childEarlyExit.code ?? "null"} signal=${childEarlyExit.signal ?? "none"})`
+          : undefined,
       serviceStarted,
     );
     if (json) stdout(io, started);
@@ -355,11 +366,6 @@ async function runControl(
   return 0;
 }
 
-function isControlEndpointUnavailable(error: unknown): boolean {
-  if (typeof error !== "object" || error === null || !("code" in error)) return false;
-  return error.code === "ENOENT" || error.code === "ECONNREFUSED" || error.code === "EINVAL";
-}
-
 async function runUninstall(
   io: CliIO,
   json: boolean,
@@ -412,6 +418,7 @@ async function finishUninstall(
     "service",
     "current.json",
     "pending.json",
+    "downgrade.json",
     "install.json",
     "uninstalled.json",
     "update-transaction.json",
@@ -453,14 +460,36 @@ async function finishUninstall(
   }
 }
 
-async function waitForPersistedStatus(
+// Bug 原因（a60ba6a7）：Core 启动失败时 Supervisor 已把原因写进 status，CLI 等待失败却只报
+// "Timed out waiting for Server ready"，远端超时工单因此查不到 Core 为什么起不来。
+// 失败时追加本次启动写过的 state 与 lastExitReason；启动前的旧快照不能冒充本次原因。
+function describeStartupStatus(status: ServerStatus | null, minUpdatedAt: number): string {
+  if (!status || status.updatedAt <= minUpdatedAt) return "";
+  return ` (state=${status.state}${status.lastExitReason ? `, last exit: ${status.lastExitReason}` : ""})`;
+}
+
+// 追加的 Core 原因可能含 permission denied、ECONNREFUSED、timeout 等文本；上层按文本猜类别时
+// 会因此改换展示。按原首句的类别显式带码，详情只用于展示。
+function startupWaitError(
+  message: string,
+  code: "remote-connection-timeout" | "remote-connection-unknown",
+): Error {
+  return Object.assign(new Error(message), { code });
+}
+
+// 导出供测试直接验证等待失败时的状态透出与超时预算；生产调用方仍只经 runServerCli 进入。
+export async function waitForPersistedStatus(
   layout: ReturnType<typeof resolveServerLayout>,
   expectedState: "ready" | "stopped",
   minUpdatedAt = 0,
-  assertStillWaiting?: () => void,
+  /** 返回值非空表示等待对象已失败，值为错误首句；状态详情由本函数追加。 */
+  readEarlyFailure?: () => string | undefined,
   expectedServiceRegistered?: boolean,
 ): Promise<ServerStatus> {
-  const deadline = Date.now() + 10_000;
+  // Bug 原因（a60ba6a7）：旧的 10 秒写死上限短于 Supervisor 自身的 15 秒 Core ready 预算；机器繁忙
+  // 时 Supervisor 冷启动可达 8～14 秒，CLI 先报超时，daemon 随后照常 ready。预算统一由 contracts 推导。
+  const deadline = Date.now() + SERVER_READY_WAIT_TIMEOUT_MS;
+  let lastStatus: ServerStatus | null = null;
   while (Date.now() < deadline) {
     const status = await readPersistedStatus(layout);
     if (
@@ -470,16 +499,31 @@ async function waitForPersistedStatus(
         status.serviceRegistered === expectedServiceRegistered)
     )
       return status;
-    assertStillWaiting?.();
+    lastStatus = status ?? lastStatus;
+    const earlyFailure = readEarlyFailure?.();
+    if (earlyFailure) {
+      // Supervisor 退出前写下的最终状态可能晚于本轮读取，报告前再读一次。
+      const detail = describeStartupStatus(
+        (await readPersistedStatus(layout)) ?? lastStatus,
+        minUpdatedAt,
+      );
+      throw startupWaitError(
+        `${earlyFailure}${detail || `; check ${layout.statusFile} for details`}`,
+        "remote-connection-unknown",
+      );
+    }
     await new Promise<void>((resolve) => setTimeout(resolve, 100));
   }
-  throw new Error(`Timed out waiting for Server ${expectedState}`);
+  throw startupWaitError(
+    `Timed out waiting for Server ${expectedState}${describeStartupStatus(lastStatus, minUpdatedAt)}`,
+    "remote-connection-timeout",
+  );
 }
 
 async function waitForSupervisorReady(supervisor: {
   status: () => ServerStatus;
 }): Promise<ServerStatus> {
-  const deadline = Date.now() + 15_000;
+  const deadline = Date.now() + CORE_READY_TIMEOUT_MS;
   while (Date.now() < deadline) {
     const status = supervisor.status();
     if (status.state === "ready") return status;

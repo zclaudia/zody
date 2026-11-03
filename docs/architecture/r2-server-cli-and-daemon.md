@@ -52,7 +52,7 @@ R2 不交付：
 | Task 恢复 | Core 崩溃或更新后，运行中的 Task 中断，不自动恢复或重放输入 |
 | stop | 停止当前实例，但保留自启动注册 |
 | uninstall | 停止实例、移除服务注册、删除 ZCode 自有数据；Workspace/Repo/用户文件不删除 |
-| update | 默认从配置的 release catalog 在线下载并校验；无网络时可应用本地 pending；使用原子切换和失败回滚 |
+| update | 默认从配置的 release catalog 在线下载并校验；无网络时可应用本地 pending；使用原子切换和失败回滚；`--from-archive` 从本地 archive 安装，方向判定为降级时必须显式 `--allow-downgrade` |
 | 组件更新 | 以 Node、server、agent、official-plugins、native-search-tools 五个粗粒度组件做内容寻址缓存；完整 release 仍是原子运行单元 |
 | 平台服务注册 | 生成 descriptor 后调用当前用户的 launchctl / systemctl --user / schtasks；命令不可用时保留 descriptor 并返回可诊断错误；OS service 是 daemon 的唯一启动 owner，Supervisor 不重复注册服务 |
 
@@ -345,6 +345,7 @@ Agent 接线约定：发行包内 Core 不在 monorepo、也没有 Electron runt
 │   └── manifest.json
 ├── current.json
 ├── pending.json
+├── downgrade.json                    # 显式降级标记；仅 releaseId 与 current 一致时有效
 ├── bin/zcode                       # Windows 为 zcode.cmd；OS service 稳定入口
 ├── service/<root-hash>.<platform>  # 运行时按 canonical root 生成，显式携带 --server-root
 ├── cache/components/<target>/<component>/<sha256>/
@@ -360,15 +361,20 @@ descriptor 不随 release archive 打包，而是在 `serve --daemon` 注册时�
 卸载仍只删除 ZCode allowlist，未知文件会保留并列入 `uninstalled.json.preservedPaths`。
 
 `current.json` 和 `pending.json` 只通过临时文件加 rename 更新。release 目录按 archive SHA 内容寻址
-且不可变：安装器只能把完整临时目录原子 promote 到尚不存在的 `releases/<releaseId>`；目标已存在
-时校验 archive identity 与 runtime manifest 后复用，内容不一致必须失败，禁止删除、覆盖或 rename
-走一个可能正被 Core 使用的 release 目录。组件缓存命中时只下载变化组件并组装新的 release，最后
-仍只切换一次 `current.json`。任何启动失败都恢复旧 pointer，临时目录和半成品缓存会被清理。
+且不可变：安装器只能把完整临时目录原子 promote 到尚不存在的 `releases/<releaseId>`；目标已存在时
+只有两种合法结论——与本次 archive 的完整 identity（archive SHA、content SHA、target、version）与
+磁盘内容一致时复用，或它是本次 archive 的损坏副本（内容偏离自身的完整性记录、manifest 不一致或
+校验失败）时替换。完整性记录缺失或 identity 指向别的 release 时无法证明它是本 release 的副本，
+仍必须按冲突失败。替换语义：先把损坏副本 rename 到同目录隐藏名，再把已校验的 incoming rename 到
+目标；第二步失败时把损坏副本移回原位，移回也失败时如实上报 AggregateError 并保留隐藏名副本，等待
+再次重装恢复。禁止删除、覆盖或 rename 走一个可能正被 Core 使用且无法证明归属的 release 目录。
+组件缓存命中时只下载变化组件并组装新的 release，最后仍只切换一次 `current.json`。任何启动失败都
+恢复旧 pointer，临时目录和半成品缓存会被清理。
 
 完整 archive 安装与组件增量组装必须复用同一个 immutable promote 语义：`incoming` 只能 rename 到
-不存在的目标；目标已存在时只允许校验完整 release identity 与内容 hash 后复用。无论复用还是失败，
-未 promote 的 `incoming` 都必须清理。禁止为了发布新内容把既有目标移动到 backup；该目标可能已在
-另一个并发 update 完成后成为活动 release。
+不存在的目标；目标已存在时按上一段的两态结论复用或替换。无论复用还是失败，未 promote 的
+`incoming` 都必须清理。禁止为了发布新内容把既有目标移动到 backup；该目标可能已在另一个并发
+update 完成后成为活动 release。
 
 更新回滚必须先收口未就绪的新 Core，再恢复旧 pointer 并启动旧 release；超时但仍存活的 Core
 不得与回滚后的旧 Core 并存：
@@ -429,6 +435,13 @@ status、lock、Core 或 SQLite。
 组件增量组装先从旧 release 复制，再删除所有已变化或已移除组件声明的旧路径，之后解压新组件并
 校验新 manifest；这样新 manifest 移除插件/工具等组件时不会把旧文件带入新 release。
 
+`update --from-archive <absolute-path>` 从本地 archive 强制安装并应用 release（daemon 在线时走
+apply-update，离线时走本地事务切换）。降级只能由用户显式确认：安装完成后按当前真实 `current.json`
+比较版本方向，目标版本更低且未提供 `--allow-downgrade` 时必须删除 pending 并以公开错误码
+`source-server-downgrade-unconfirmed` 拒绝；确认降级则在切换前写 `downgrade.json` 标记（含目标
+releaseId 与被替换版本）。标记只在 releaseId 等于 `current.json` 时有效：之后的升级或回滚到其他
+release 会让它自然失效，读取方不依赖额外清理时序。首装或非 semver 历史版本无法证明方向时不算降级。
+
 R2 至少准备以下平台资产：
 
 - `darwin-x64`、`darwin-arm64`；
@@ -446,6 +459,7 @@ zcode stop
 zcode restart
 zcode update
 zcode update --force
+zcode update --from-archive <absolute-path> [--allow-downgrade]
 zcode uninstall
 ```
 
@@ -458,7 +472,16 @@ zcode uninstall
 | `restart` | 有界停止并重新启动；不自动恢复中断 Task |
 | `update` | 获取 catalog 中当前 target 的新 release（或使用已有 pending），校验并安装后应用；catalog 与 current archive 相同返回成功的 `up-to-date`，不得继续请求 apply；未配置 catalog 且没有 pending 时返回明确的 release source 错误；有运行 Task 时默认返回可操作的 guard 错误，不中断任务 |
 | `update --force` | 明确允许中断运行 Task 后应用 release |
+| `update --from-archive` | 从本地绝对路径 archive 安装并应用；daemon 在线时仍受运行任务 guard 约束（`--force` 跳过）；目标版本低于 current 时必须额外 `--allow-downgrade`，否则删除 pending 并以 `source-server-downgrade-unconfirmed` 拒绝 |
 | `uninstall` | 检查运行 Task（有运行 Task 时拒绝并保持原状态），要求两次输入 `DELETE`，停止并移除服务，删除允许列表内的 ZCode 数据 |
+
+CLI 等待 Supervisor 的超时预算唯一来源是 `packages/zcode-server-cli/src/contracts.ts`：Core ready
+预算为 `CORE_READY_TIMEOUT_MS`（15 秒），`serve --daemon` 等待方使用
+`SERVER_READY_WAIT_TIMEOUT_MS = CORE_READY_TIMEOUT_MS + 10 秒`，覆盖 Supervisor 冷启动（进程拉起、
+模块加载、取锁、启动恢复、control 监听）与 Core ready；等待方不得各自写死短于该预算的上限。等待
+失败（早退或超时）的错误必须追加本次启动写出的 `state` 与 `lastExitReason`（启动前的旧快照不能
+冒充本次原因），并携带显式错误码（`remote-connection-timeout` / `remote-connection-unknown`），
+让上层按码分类而不是按文案猜测。
 
 `uninstall` 允许删除：
 
@@ -504,6 +527,7 @@ Workspace / Repo / User files
 必须保持：
 
 - 单实例 key = 当前 OS 用户 + data root；
+- 锁判活按进程身份，不只按 PID：新格式锁记录携带 `processIdentity`（Linux 为 boot_id + `/proc/<pid>/stat` starttime，macOS 为固定 UTC 的 `ps lstart`），身份一致才认定写锁的进程仍存活；PID 等于自己时只有本进程实际持有的 ownerToken 才算存活。旧格式锁文件没有身份字段（或平台读不到身份）时回退 PID 判定以保持兼容——已部署的锁文件必须可读；回退路径中 EPERM 视为 PID 被其他用户复用（锁文件 0600，写锁的不可能是别人的进程），ESRCH 视为进程不存在。容器/WSL 重启后进程消失而锁文件残留时，不得把残留锁判成存活导致 "already running"；
 - stale lock 回收必须先按 ownership token 原子 claim 到隔离路径；release 只能删除仍属于自己的 token，禁止按一次陈旧的 PID 判断直接删除当前路径；
 - Workspace 隔离使用 `workspaceKey = workspaceIdentity?.trim() || workspacePath`；
 - 路径执行继续使用 `workspacePath`；
