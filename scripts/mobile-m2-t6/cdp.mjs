@@ -9,8 +9,18 @@ import WebSocket from "ws";
 const devtoolsPort = Number(process.env.ZODY_E2E_DEVTOOLS_PORT || 9222);
 
 export async function listTargets() {
-  const response = await fetch(`http://127.0.0.1:${devtoolsPort}/json/list`);
-  return response.json();
+  // force-stop/Activity 重建后 adb forward 会短暂失效；重试避免一次 fetch failed 终止整轮 E2E。
+  let lastError;
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      const response = await fetch(`http://127.0.0.1:${devtoolsPort}/json/list`);
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+  }
+  throw lastError ?? new Error("webview devtools target list unavailable");
 }
 
 export async function waitForTarget(predicate, timeoutMs = 30000, label = "target") {

@@ -19,6 +19,13 @@
  *   GET /offline
  *   GET /delay?ms=<n>
  *   GET /quit
+ *
+ * M3-T5 扩展（不改变 M2-T6 默认行为）：
+ *   GET /root?value=<absolute dir>    只替换 Remote 制品根目录，不重建 Gateway backend，
+ *                                     保持 backendId/session 不变，用于 release A→B→A。
+ *   GET /release-status?value=<http>  对 /mobile-ui/release 强制返回 429/5xx（0 关闭）。
+ *   GET /workspaces?value=none|disconnected
+ *                                     控制 bootstrap 返回的 workspace 列表。
  */
 import { createServer } from "node:http";
 import { resolve } from "node:path";
@@ -40,9 +47,17 @@ const publicGatewayUrl = (process.env.ZODY_E2E_PUBLIC_GATEWAY_URL || gatewayUrl)
   /\/+$/u,
   "",
 );
-const remoteRoot = resolve(
+let remoteRoot = resolve(
   process.env.ZODY_E2E_REMOTE_ROOT || `${repoRoot}/packages/web/dist-mobile-remote`,
 );
+let remoteProvider = null;
+let releaseFailureStatus = 0;
+let workspaceMode = process.env.ZODY_E2E_WORKSPACES === "disconnected" ? "disconnected" : "none";
+let activeChannelCount = 0;
+let totalChannelCount = 0;
+let releaseFetchCount = 0;
+let lastReleaseFetchAt = null;
+const releaseFetchTimes = [];
 if (!gatewayUrl || !credential || !publicGatewayUrl) {
   console.error("[provider] missing gateway environment");
   process.exit(1);
@@ -68,8 +83,26 @@ function send(channel, frame) {
   if (channel.isOpen !== false) channel.send(JSON.stringify(frame));
 }
 
+function bootstrapWorkspaces() {
+  if (workspaceMode === "disconnected") {
+    // 关键：没有 remoteSessionId 的 remote workspace 让页面进入 home-only Root，
+    // 从而挂载 composer/settings 等真实 UI 状态；不触发 workspace bridge 协议。
+    return [
+      {
+        kind: "remote",
+        workspacePath: "/e2e/disconnected-workspace",
+        label: "Disconnected E2E Workspace",
+        connectionState: "disconnected",
+      },
+    ];
+  }
+  return [];
+}
+
 function handleChannel(channel) {
   channelCount += 1;
+  totalChannelCount += 1;
+  activeChannelCount += 1;
   console.error("[provider] channel open", channel.channelId, channel.kind);
   channel.onMessage((message) => {
     if (message.binary) return;
@@ -100,6 +133,22 @@ function handleChannel(channel) {
     }
     if (frame.type !== "data" || !frame.payload || typeof frame.payload !== "object") return;
     const payload = frame.payload;
+    if (payload.zcode_type === "workspace-list-request") {
+      // home-only Root 在渲染前调用 listWorkspaces；不响应会让 M3 guard 场景一直等超时。
+      send(channel, {
+        type: "data",
+        payload: {
+          zcode_type: "workspace-list-response",
+          requestId: payload.requestId,
+          success: true,
+          result: {
+            workspaces: bootstrapWorkspaces(),
+            tasks: [],
+          },
+        },
+      });
+      return;
+    }
     if (payload.zcode_type !== "bootstrap-request") return;
     const respond = () => {
       send(channel, {
@@ -112,7 +161,7 @@ function handleChannel(channel) {
             windowControlSessionId: "m2-t6-e2e-window",
             desktopAppVersion: "0.1.0-e2e",
             mobileCapabilities: {},
-            workspaces: [],
+            workspaces: bootstrapWorkspaces(),
             tasks: [],
             desktopWindowState: "open",
             recentProjects: [],
@@ -123,7 +172,20 @@ function handleChannel(channel) {
     if (bootstrapDelayMs > 0) setTimeout(respond, bootstrapDelayMs);
     else respond();
   });
-  channel.onClose(() => console.error("[provider] channel closed", channel.channelId));
+  channel.onClose(() => {
+    activeChannelCount = Math.max(0, activeChannelCount - 1);
+    console.error("[provider] channel closed", channel.channelId);
+  });
+}
+
+function createRemoteProvider() {
+  remoteProvider = createMobileUiAssetProvider({
+    rootDir: remoteRoot,
+    resolveSecurityContext: () => ({
+      gatewayHttpOrigin: new URL(publicGatewayUrl).origin,
+      gatewayWsOrigin: new URL(publicGatewayUrl).origin.replace(/^http/u, "ws"),
+    }),
+  });
 }
 
 async function stopBackend() {
@@ -140,18 +202,23 @@ async function stopBackend() {
 async function startBackend(nextMode) {
   await stopBackend();
   mode = nextMode;
-  const provider = createMobileUiAssetProvider({
-    rootDir: remoteRoot,
-    resolveSecurityContext: () => ({
-      gatewayHttpOrigin: new URL(publicGatewayUrl).origin,
-      gatewayWsOrigin: new URL(publicGatewayUrl).origin.replace(/^http/u, "ws"),
-    }),
-  });
+  createRemoteProvider();
   const mobileUiHandler =
     mode === "new"
       ? async (request) => {
           httpProxyPaths.push(request.path);
-          return provider(request);
+          if (request.path === "/mobile-ui/release") {
+            releaseFetchCount += 1;
+            lastReleaseFetchAt = Date.now();
+            releaseFetchTimes.push(lastReleaseFetchAt);
+            if (releaseFailureStatus !== 0) {
+              return {
+                status: releaseFailureStatus,
+                headers: { "cache-control": "no-store", "content-type": "application/json" },
+              };
+            }
+          }
+          return remoteProvider(request);
         }
       : undefined;
   backend = createRemoteGatewayBackend({
@@ -191,6 +258,14 @@ const control = createServer(async (request, response) => {
           state,
           backendId,
           channelCount,
+          activeChannelCount,
+          totalChannelCount,
+          releaseFailureStatus,
+          releaseFetchCount,
+          lastReleaseFetchAt,
+          releaseFetchTimes: releaseFetchTimes.slice(-20),
+          remoteRoot,
+          workspaceMode,
           lastHello,
           bootstrapDelayMs,
           httpProxyPaths: httpProxyPaths.slice(-20),
@@ -209,6 +284,42 @@ const control = createServer(async (request, response) => {
       await startBackend(nextMode);
       response.writeHead(200, { "content-type": "application/json" });
       response.end(JSON.stringify({ ok: true, mode, state }));
+      return;
+    }
+    if (url.pathname === "/root") {
+      const nextRoot = url.searchParams.get("value");
+      if (!nextRoot) {
+        response.writeHead(400).end("root value is required");
+        return;
+      }
+      // 只换制品根目录，不重建 backend：GATEWAY backendId / Host channel 保持原所有者，
+      // 这样已在运行的 Remote 页面不需要重新配对即可观察到新 releaseId。
+      remoteRoot = resolve(nextRoot);
+      createRemoteProvider();
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ ok: true, remoteRoot }));
+      return;
+    }
+    if (url.pathname === "/release-status") {
+      const nextStatus = Number(url.searchParams.get("value") || 0);
+      if (!Number.isInteger(nextStatus) || nextStatus < 0 || nextStatus > 599) {
+        response.writeHead(400).end("status must be 0 or a valid HTTP status");
+        return;
+      }
+      releaseFailureStatus = nextStatus;
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ ok: true, releaseFailureStatus }));
+      return;
+    }
+    if (url.pathname === "/workspaces") {
+      const nextMode = url.searchParams.get("value");
+      if (nextMode !== "none" && nextMode !== "disconnected") {
+        response.writeHead(400).end("workspaces must be none|disconnected");
+        return;
+      }
+      workspaceMode = nextMode;
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ ok: true, workspaceMode }));
       return;
     }
     if (url.pathname === "/offline") {
