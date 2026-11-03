@@ -15,15 +15,13 @@ function failure(code: string): string {
 
 describe("native notification capability", () => {
   it("keeps ordinary web unsupported and validates cold click data", async () => {
-    expect(
-      createMobileNotificationPlatform({}, { sessionId: "session-1" }),
-    ).toBeUndefined();
+    expect(createMobileNotificationPlatform({}, { sessionId: "session-1" })).toBeUndefined();
     const native = {
       notificationGetPendingClick: vi.fn((_sessionId: string) =>
         success({ click: { backendId: "b", notificationId: "n" } }),
       ),
-      notificationSyncSubscription: vi.fn(
-        (_sessionId: string, _config: string) => success({ status: { status: "ready" } }),
+      notificationSyncSubscription: vi.fn((_sessionId: string, _config: string) =>
+        success({ status: { status: "ready" } }),
       ),
       notificationAcknowledgeClick: vi.fn(() => success()),
       notificationGetStatus: vi.fn((_sessionId: string) =>
@@ -40,10 +38,7 @@ describe("native notification capability", () => {
     expect(await capability.getPendingClick()).toEqual({ backendId: "b", notificationId: "n" });
     expect(native.notificationGetPendingClick).toHaveBeenCalledWith("session-1");
     await capability.setActiveTarget?.("target");
-    expect(native.notificationSetActiveTarget).toHaveBeenCalledWith(
-      "session-1",
-      "target",
-    );
+    expect(native.notificationSetActiveTarget).toHaveBeenCalledWith("session-1", "target");
     native.notificationGetPendingClick.mockReturnValue(
       success({ click: { backendId: "b", notificationId: "" } }),
     );
@@ -87,18 +82,75 @@ describe("native notification capability", () => {
       expect.any(String),
     );
     expect(native.notificationGetStatus).toHaveBeenCalledWith("session-1");
-    expect(native.notificationAcknowledgeClick).toHaveBeenCalledWith(
-      "session-1",
-      "n",
-    );
+    expect(native.notificationAcknowledgeClick).toHaveBeenCalledWith("session-1", "n");
     expect(native.notificationRequestPermission).toHaveBeenCalledWith("session-1");
     expect(native.notificationShow).toHaveBeenCalledWith("session-1", expect.any(String));
     expect(native.notificationGetPendingAction).toHaveBeenCalledWith("session-1");
-    expect(native.notificationAcknowledgeAction).toHaveBeenCalledWith(
-      "session-1",
-      "n",
-    );
+    expect(native.notificationAcknowledgeAction).toHaveBeenCalledWith("session-1", "n");
     expect(native.notificationCancel).toHaveBeenCalledWith("session-1", "n");
+  });
+
+  it("forwards permission changes and only exposes transport capabilities the shell implements", () => {
+    let permissionListener: ((granted: boolean) => void) | undefined;
+    const dispose = vi.fn();
+    const native = {
+      notificationGetPendingClick: vi.fn(() => success({ click: null })),
+      notificationSyncSubscription: vi.fn(() => success({ status: { status: "ready" } })),
+      notificationAcknowledgeClick: vi.fn(() => success()),
+      notificationGetStatus: vi.fn(() => success({ status: { status: "ready" } })),
+      notificationRequestPermission: vi.fn(() => success()),
+      notificationShow: vi.fn(() => success({ shown: true })),
+    };
+    const capability = createMobileNotificationPlatform(
+      { ZodyRemoteBridge: native },
+      {
+        sessionId: "session-1",
+        subscribePermission: (listener) => {
+          permissionListener = listener;
+          return dispose;
+        },
+      },
+    )!;
+
+    const statusListener = vi.fn();
+    expect(capability.onStatusChanged).toBeDefined();
+    const unsubscribe = capability.onStatusChanged!(statusListener);
+    permissionListener?.(true);
+    expect(statusListener).toHaveBeenCalledOnce();
+    unsubscribe();
+    expect(dispose).toHaveBeenCalledOnce();
+
+    // 旧壳没有 action/cancel 方法时，页面必须保持能力缺失（快速路径提示升级），不能假装成功。
+    expect(capability.getPendingAction).toBeUndefined();
+    expect(capability.acknowledgeAction).toBeUndefined();
+    expect(capability.cancel).toBeUndefined();
+  });
+
+  it("parses only fully-formed pending actions from the native slot", async () => {
+    const native = {
+      notificationGetPendingClick: vi.fn(() => success({ click: null })),
+      notificationSyncSubscription: vi.fn(() => success({ status: { status: "ready" } })),
+      notificationAcknowledgeClick: vi.fn(() => success()),
+      notificationGetStatus: vi.fn(() => success({ status: { status: "ready" } })),
+      notificationRequestPermission: vi.fn(() => success()),
+      notificationGetPendingAction: vi.fn(() =>
+        success({
+          action: {
+            backendId: "b",
+            notificationId: "n",
+            optionId: "opt",
+            optionKind: "escalate",
+          },
+        }),
+      ),
+      notificationAcknowledgeAction: vi.fn(() => success()),
+    };
+    const capability = createMobileNotificationPlatform(
+      { ZodyRemoteBridge: native },
+      { sessionId: "session-1" },
+    )!;
+
+    expect(await capability.getPendingAction?.()).toBeNull();
   });
 
   it("supports statusRaw and degrades failure envelopes to an explicit error", async () => {

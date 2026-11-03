@@ -347,6 +347,70 @@ class MobileShellControllerTest {
     }
 
     @Test
+    fun `retains another backend pending click and action until that backend is ready`() {
+        val store = newStore(backendId = "backend-1")
+        val (controller, host, _) = startedController(store, restoreRemote = true)
+        val firstSession = controller.remoteSessionSnapshot()!!.sessionId
+        assertEquals(MobileShellTransitionResult.Success, controller.markRemoteReady(firstSession))
+
+        // 当前 Remote 是 backend-1；backend-2 的点击与按钮动作都必须保留，不能派发到错误会话。
+        controller.onNotificationClick("backend-2", "notification-b")
+        controller.onNotificationAction("backend-2", "notification-b", "opt", "deny")
+        assertTrue(host.notifications.isEmpty())
+
+        assertEquals(
+            MobileShellTransitionResult.Success,
+            controller.returnShellFromRemote("switch", firstSession),
+        )
+        store.saveConfig(
+            MobileShellConfigWrite(
+                gatewayUrl = "https://gateway.example",
+                namespace = "zody",
+                credential = "zgd_test_credential",
+                backendId = "backend-2",
+            ),
+        )
+        val revision = store.readConfig()!!.configRevision
+        assertEquals(
+            MobileShellTransitionResult.Success,
+            controller.openRemoteFromShell("backend-2", revision.toDouble()),
+        )
+        val secondSession = controller.remoteSessionSnapshot()!!.sessionId
+        assertEquals(MobileShellTransitionResult.Success, controller.markRemoteReady(secondSession))
+
+        assertEquals(2, host.notifications.size)
+        assertTrue(host.notifications[0].startsWith("click:"))
+        assertTrue(host.notifications[0].contains("notification-b"))
+        assertTrue(host.notifications[1].startsWith("action:"))
+        assertTrue(host.notifications[1].contains("\"optionKind\":\"deny\""))
+
+        // 重复 ready 不会再次派发已经消费的事件。
+        controller.markRemoteReady(secondSession)
+        assertEquals(2, host.notifications.size)
+    }
+
+    @Test
+    fun `stale ready and shutdown cannot dispatch retained pending notifications`() {
+        val (controller, host, _) = startedController(restoreRemote = true)
+        val sessionId = controller.remoteSessionSnapshot()!!.sessionId
+        controller.onNotificationClick("backend-1", "notification-1")
+
+        assertEquals(
+            "stale-session",
+            (controller.markRemoteReady("old-session") as MobileShellTransitionResult.Failure).code,
+        )
+        assertTrue(host.notifications.isEmpty())
+
+        // Activity 销毁会丢弃内存队列；durable pending 槽由原生 SharedPreferences 保留，
+        // 由下一次 Remote ready 的页面重新读取，不能在这里误 ack。
+        controller.shutdown()
+        controller.start(restoreRemote = true)
+        val restoredSession = controller.remoteSessionSnapshot()!!.sessionId
+        controller.markRemoteReady(restoredSession)
+        assertTrue(host.notifications.isEmpty())
+    }
+
+    @Test
     fun `requiring repair shows confirmation and confirmRepairAndClear removes the legacy schema`() {
         val secureStore = InMemorySecureStore().apply {
             values["config"] = """{"gatewayUrl":"https://gateway.example","backendId":"old-backend"}"""

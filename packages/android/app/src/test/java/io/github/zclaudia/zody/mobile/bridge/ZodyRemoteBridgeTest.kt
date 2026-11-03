@@ -348,6 +348,34 @@ class ZodyRemoteBridgeTest {
     }
 
     @Test
+    fun `notification action ack and cancel require the current remote session`() {
+        val environment = environment()
+
+        listOf(
+            environment.bridge.notificationAcknowledgeAction("old-session", "notification-1"),
+            environment.bridge.notificationCancel("old-session", "notification-1"),
+        ).forEach { raw ->
+            val stale = envelope(raw)
+            assertFalse(stale.getBoolean("ok"))
+            assertEquals("stale-session", stale.getJSONObject("error").getString("code"))
+        }
+
+        assertTrue(
+            envelope(
+                environment.bridge.notificationAcknowledgeAction(
+                    environment.sessionId,
+                    "notification-1",
+                ),
+            ).getBoolean("ok"),
+        )
+        assertTrue(
+            envelope(
+                environment.bridge.notificationCancel(environment.sessionId, "notification-1"),
+            ).getBoolean("ok"),
+        )
+    }
+
+    @Test
     fun `returnShell rejects stale ids and invalidates the current session after success`() {
         val environment = environment()
 
