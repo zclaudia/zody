@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildZodySourceHeadersFromContext,
   ZCODE_SOURCE_HEADERS,
-  ZCODE_SOURCE_REFERER_URL,
-  ZCODE_SOURCE_TITLE,
+  ZODY_SOURCE_REFERER_URL,
+  ZODY_SOURCE_TITLE,
 } from "../src/zody-source-headers.js";
 
 describe("buildZodySourceHeadersFromContext", () => {
@@ -55,13 +55,13 @@ describe("buildZodySourceHeadersFromContext", () => {
 
   it("未注入构建期 define 时来源标识常量为空，即默认不发", () => {
     expect(ZCODE_SOURCE_HEADERS).toEqual({ "User-Agent": "Zody/unknown" });
-    expect(ZCODE_SOURCE_REFERER_URL).toBe("");
-    expect(ZCODE_SOURCE_TITLE).toBe("");
+    expect(ZODY_SOURCE_REFERER_URL).toBe("");
+    expect(ZODY_SOURCE_TITLE).toBe("");
   });
 
   it("构建期注入来源标识后才发送 HTTP-Referer 与 X-Title", async () => {
-    vi.stubGlobal("__ZCODE_SOURCE_REFERER_URL__", "https://fork.example.dev");
-    vi.stubGlobal("__ZCODE_SOURCE_TITLE__", "ForkCode");
+    vi.stubGlobal("__ZODY_SOURCE_REFERER_URL__", "https://fork.example.dev");
+    vi.stubGlobal("__ZODY_SOURCE_TITLE__", "ForkCode");
     try {
       // 带 query 强制 vitest 重新执行模块，模拟 bundler define 注入后的构建产物。
       const injected = await import("../src/zody-source-headers.js?build-time-injected");

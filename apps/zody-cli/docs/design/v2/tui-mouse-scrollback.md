@@ -23,7 +23,7 @@ selection must remain available across the whole TUI by default.
 
 ## Non-Goals
 
-- Do not add a new `ZCODE_` environment variable or user configuration surface.
+- Do not add a new `ZODY_` environment variable or user configuration surface.
 - Do not change runtime session, provider, tool, permission, or event schemas.
 - Do not make terminal emulator scrollback the source of truth. The TUI
   transcript projection remains the scrollable surface.

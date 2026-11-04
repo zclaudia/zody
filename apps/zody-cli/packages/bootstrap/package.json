@@ -19,7 +19,7 @@
     "build": "tsc",
     "clean": "node ../../scripts/clean-dist.mjs",
     "test": "vitest run",
-    "test:fault-matrix": "ZCODE_FAULT_MATRIX=full vitest run tests/workflow-fault-matrix tests/fault-matrix-harness.test.ts tests/fake-provider-server.test.ts",
+    "test:fault-matrix": "ZODY_FAULT_MATRIX=full vitest run tests/workflow-fault-matrix tests/fault-matrix-harness.test.ts tests/fake-provider-server.test.ts",
     "coverage": "vitest run tests --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint src",

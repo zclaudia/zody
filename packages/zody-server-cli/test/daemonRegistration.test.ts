@@ -64,7 +64,7 @@ describe("daemon service registration", () => {
   it("returns registration failure without starting a disguised fallback", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-r2-daemon-registration-"));
     const errors: string[] = [];
-    vi.stubEnv("ZCODE_SERVER_SKIP_SERVICE_REGISTRATION", "0");
+    vi.stubEnv("ZODY_SERVER_SKIP_SERVICE_REGISTRATION", "0");
 
     const exit = await runServerCli(["serve", "--daemon", "--server-root", join(root, "server")], {
       stderr: { write: (value) => errors.push(value) },
@@ -138,7 +138,7 @@ describe("daemon service registration", () => {
       throw new Error(`Unexpected command: ${request.command}`);
     });
     const errors: string[] = [];
-    vi.stubEnv("ZCODE_SERVER_SKIP_SERVICE_REGISTRATION", "0");
+    vi.stubEnv("ZODY_SERVER_SKIP_SERVICE_REGISTRATION", "0");
     try {
       const exit = await runServerCli(["serve", "--daemon", "--server-root", layout.serverRoot], {
         stderr: { write: (value) => errors.push(value) },

@@ -1,6 +1,6 @@
 # Zody rename execution ledger
 
-Updated: 2026-11-04 (Asia/Shanghai). User resumed implementation after disk cleanup and added mandatory cleanup after every stage acceptance. Product baseline is `7089ad3e095ec10727772107100d3e019b78d456`. Exact6fb unified archives/host smoke and7089 standalone stage have independent scoped acceptance. Completed isolated root unit is15917pass/42fail/20skip, with4 additional suite-level failures; no full-green claim. Distribution and supplemental Desktop Node groups each18/18 pass; narrow33/37 and Main85 remain red. DeepSeek final review permits R30 on a P2 rename-resolution/startup scoped-conditional basis, preserving all failure ownership and release limits. R30.1 spec and behavioral red tests are authorized; broad production cutover awaits the exact scope review. R30+ and release remain incomplete. Historical entries below are superseded by this summary and the current task table.
+Updated: 2026-11-04 (Asia/Shanghai). User resumed implementation after disk cleanup and added mandatory cleanup after every stage acceptance. Product baseline is `7089ad3e095ec10727772107100d3e019b78d456`. Exact6fb unified archives/host smoke and7089 standalone stage have independent scoped acceptance. Completed isolated root unit is15917pass/42fail/20skip, with4 additional suite-level failures; no full-green claim. Distribution and supplemental Desktop Node groups each18/18 pass; narrow33/37 and Main85 remain red. DeepSeek final review permits R30 on a P2 rename-resolution/startup scoped-conditional basis, preserving all failure ownership and release limits. R30.1 behavioral red tests are present. Reviews 1 and 2 rejected incomplete scopes; review 3 permits applying the frozen complete v3 candidate and proceeding to validation, with the identified legacy passthrough-envelope regression to be fixed before acceptance. R30 implementation and the envelope repack fix now have independent scoped acceptance; final root/CLI checks and targeted runtime tests passed. Stage cleanup is pending before R40. R40+ and release remain incomplete. Historical entries below are superseded by this summary and the current task table.
 
 - Source base: `033f91783901e6adaf968d3d4b8ca34c41d89442`.
 - Frozen plan commit: `06ad2270f121c46a0f5c069ae3da18641c6a9858`.
@@ -21,7 +21,7 @@ Updated: 2026-11-04 (Asia/Shanghai). User resumed implementation after disk clea
 | R20  | review | Terra + controller | Source/basename/symbol/text batches scoped PASS through4fac; integration depends R21/R22. Historical A-MO-01 quote follow-up closed by comment-only correction9d |
 | R21  | verified-scoped | Terra + controller | Root-only install and path/link identity correction verified; fresh9d pair integratededb and independently PASS; strict19 and4built-bin checks remain separate R22/release obligations |
 | R22  | scoped-conditional | /root/terra_r22_resume + controller | Independent final review permits R30 for P2 rename resolution/startup only; complete unit42 failures,4 suite failures, architecture/knip/Main85/narrow4 and unresolved timing remain; not full green or release |
-| R30  | running-R30.1 | /root/terra_r30_dispatch | R22 conditional transition accepted; spec/env behavioral red tests authorized;581-path production cutover still awaits independent scope review; one product writer |
+| R30  | verified-scoped; cleanup pending | /root/terra_r30_dispatch | DeepSeek final implementation acceptance; final root/CLI checks and focused runtime tests pass; Windows and existing full-suite/release limitations retained |
 | R40  | planned    | unassigned                        | not run                                                                                                          |
 | R41  | planned    | unassigned                        | not run                                                                                                          |
 | R42  | planned    | unassigned                        | not run                                                                                                          |
@@ -42,6 +42,17 @@ Updated: 2026-11-04 (Asia/Shanghai). User resumed implementation after disk clea
 | R61  | planned    | unassigned                        | not run                                                                                                          |
 
 ## Historical baseline verification
+
+### R30 residual handoff (2026-11-04)
+
+The bounded post-patch audit also identified non-environment items. `output/zody-rename-r30/implementation-v2/residual-owner-review/{decisions.json,report.md}` records their current paths and evidence. These are outstanding work, not a claim that old product names are all removed:
+
+- R20.3/4/5 follow-up owns internal binding closures, paired diagnostic markers and internal control argv. In particular `ZCODE_NODE_REPL_CONTROL_FLAG` requires all three declarations/validators and subprocess consumers to move together; coordinate its plugin callers with R50–R53.
+- R54 owns `ZCODE_PLUGIN_HOST_COMMAND` migration because `official-plugin-runtime.ts` writes the hidden command into generated plugin manifest `mcpServers.args`. R20.3 and R50–R53 consume that decision; do not treat it as an ephemeral argv-only rename or silently break existing generated manifests.
+- R40 owns the shared error-code review for `ZCODE_RUNTIME_MODEL_UNAVAILABLE` and `ZCODE_FILE_LOCK_TIMEOUT`, coordinating the actual UI/RPC/CLI consumers. The inspected CLI fixture is not proof of a runtime producer or historical persistence; the lock error can cross RPC but is not written to the lock JSON in the inspected path.
+- R55 retains old plugin/template keys for its explicit compatibility contract; R47 retains hook provenance fields. Their old names do not authorize R30 replacement. The remaining protocol and telemetry items stay with their existing R40–R46 owners.
+
+R40 read-only interface preflight is recorded in `reports/R40-preflight.md`; no R40 source changes or tests have run. Revalidate that handoff against the accepted R30 commit before granting its product write lock.
 
 - Main-worktree freshness: passed, main ahead 37 / behind 0 against origin/main; recorded before worktree creation.
 - Implementation baseline has only the frozen plan changes. Product checks and environment preparation tracked below when actually executed.

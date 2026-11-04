@@ -1,4 +1,4 @@
-import { ZCODE_VERSION } from "@zody/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import type { IRemoteBackend, RemoteEnvironment } from "@zody/server/remote/backend.js";
 import {
   REMOTE_BASE,
@@ -300,7 +300,7 @@ async function resolveComponentManifest(
         remoteCdnBaseUrl: options.remoteCdnBaseUrl,
         remoteCdnBaseUrls: options.remoteCdnBaseUrls,
         remoteCacheDir: options.remoteCacheDir,
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: `${env.platform}-${env.arch}`,
         manifestRequestTimeoutMs: options.manifestRequestTimeoutMs,
         remoteAssetNetwork: options.remoteAssetNetwork,

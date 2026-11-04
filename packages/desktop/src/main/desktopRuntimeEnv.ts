@@ -6,15 +6,15 @@ import type { ConnectOptions } from "@zody/server/remote";
 import { listSSHConfigAliasesFromLocalConfig } from "@zody/services/node";
 import { DEV_HELPER_APP_NAME, HELPER_APP_NAME } from "@zody/zody-cua/broker/helperConstants";
 import {
-  ZCODE_APP_VERSION_ENV,
-  ZCODE_BUILD_COMMIT_ID_ENV,
+  ZODY_APP_VERSION_ENV,
+  ZODY_BUILD_COMMIT_ID_ENV,
   ZCODE_AGENT_RUNTIME,
-  ZCODE_COMMIT,
-  ZCODE_DYNAMIC_WORKFLOW_MODE_ENV,
-  ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
-  ZCODE_RUNTIME_ENV_KEY,
-  ZCODE_VERSION,
+  ZODY_COMMIT,
+  ZODY_DYNAMIC_WORKFLOW_MODE_ENV,
+  ZODY_ENV,
+  ZODY_PRODUCT_FLAVOR,
+  ZODY_RUNTIME_ENV_KEY,
+  ZODY_VERSION,
   ZCODE_DATA_ROOT_DIR_NAME,
   buildZodyToolEnvPassthroughEnv,
   resolveRuntimeZodyEndpointOrigin,
@@ -27,24 +27,24 @@ import { resolvePlatformKeyForPackagedApp } from "../../scripts/target-platform.
 import {
   getAppConfigDir,
   getDataBaseDir,
-  ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV,
-  ZCODE_WINDOWS_APP_INSTALL_DIR_ENV,
+  ZODY_CUA_BUNDLED_HELPER_APP_PATH_ENV,
+  ZODY_WINDOWS_APP_INSTALL_DIR_ENV,
 } from "@zody/services/node";
 import { type ResolveRemoteCdnOptions } from "./remoteCdn.js";
 import { getElectronAppPath, isElectronAppPackaged } from "./desktopElectronApp.js";
 import { resolveCandidateApplicationName } from "./candidateNativeHostLaunch.js";
 
-declare const __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: Readonly<Record<string, string>> | undefined;
-declare const __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__: string | undefined;
+declare const __ZODY_PACKAGED_AGENT_TELEMETRY_ENV__: Readonly<Record<string, string>> | undefined;
+declare const __ZODY_NORMAL_CUA_CANDIDATE_UI_NAME__: string | undefined;
 
 const isLocalDevelopmentRuntime = !isElectronAppPackaged();
 export const desktopRuntimeEnv: ZodyRuntimeEnv = isLocalDevelopmentRuntime
   ? "development"
   : "production";
-// 身份看编译期 flavor 而不是 ZCODE_ENV：ZCODE_PREVIEW_IDENTITY=1 的生产后端构建同样是 Preview，
+// 身份看编译期 flavor 而不是 ZODY_ENV：ZODY_PREVIEW_IDENTITY=1 的生产后端构建同样是 Preview，
 // 需要独立的应用名、Electron 数据目录和 Helper 安装子目录才能与正式版并排运行。
 export const isPreviewPackagedRuntime =
-  !isLocalDevelopmentRuntime && ZCODE_PRODUCT_FLAVOR === "preview";
+  !isLocalDevelopmentRuntime && ZODY_PRODUCT_FLAVOR === "preview";
 
 function readRuntimeEnvOverride(name: string): string | undefined {
   return process.env[name]?.trim() || undefined;
@@ -63,22 +63,22 @@ const candidateApplicationName = !isLocalDevelopmentRuntime
   : undefined;
 export const runtimeApplicationName =
   candidateApplicationName ??
-  readRuntimeEnvOverride("ZCODE_DESKTOP_APPLICATION_NAME") ??
+  readRuntimeEnvOverride("ZODY_DESKTOP_APPLICATION_NAME") ??
   (isLocalDevelopmentRuntime ? "Zody Dev" : isPreviewPackagedRuntime ? "Zody Preview" : "Zody");
 // Electron 的 app.getPath("home") 不一定跟随测试进程里的 HOME 覆盖。
 // e2e 默认工作区依赖 home 路径，因此提供显式覆盖，避免测试写到开发者真实 ~/ZodyProject。
-export const runtimeHomePath = readRuntimeEnvOverride("ZCODE_DESKTOP_HOME_DIR");
+export const runtimeHomePath = readRuntimeEnvOverride("ZODY_DESKTOP_HOME_DIR");
 // Chromedriver 管理 Electron 时会注入临时 userData；e2e 默认路径模式下导入期不能提前读取 appData。
 export const shouldUseElectronDefaultUserDataPath = isTruthyRuntimeEnvOverride(
-  "ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA",
+  "ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA",
 );
 // Candidate builds use a separate fixed Electron UI profile. This does not replace the
 // native Host launch seam or the shared CLI session store used by real sessions.
 /** Normal CUA candidate UI identity is fixed at build time and never selected by runtime input. */
 export function resolveNormalCuaCandidateUiName(
-  configured: string | undefined = typeof __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__ === "undefined"
+  configured: string | undefined = typeof __ZODY_NORMAL_CUA_CANDIDATE_UI_NAME__ === "undefined"
     ? undefined
-    : __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__,
+    : __ZODY_NORMAL_CUA_CANDIDATE_UI_NAME__,
 ): string | undefined {
   if (configured === undefined) return undefined;
   if (typeof configured !== "string") {
@@ -97,13 +97,13 @@ const candidateProfileRoot =
     : undefined;
 export const runtimeUserDataPath =
   (candidateProfileRoot ? join(candidateProfileRoot, "user-data") : undefined) ??
-  readRuntimeEnvOverride("ZCODE_DESKTOP_USER_DATA_DIR") ??
+  readRuntimeEnvOverride("ZODY_DESKTOP_USER_DATA_DIR") ??
   (shouldUseElectronDefaultUserDataPath
     ? undefined
     : join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "desktop", runtimeApplicationName));
 export const runtimeSessionDataPath =
   (candidateProfileRoot ? join(candidateProfileRoot, "session-data") : undefined) ??
-  readRuntimeEnvOverride("ZCODE_DESKTOP_SESSION_DATA_DIR") ??
+  readRuntimeEnvOverride("ZODY_DESKTOP_SESSION_DATA_DIR") ??
   (runtimeUserDataPath ? join(runtimeUserDataPath, "session") : undefined);
 // Chromedriver 会注入临时 --user-data-dir，并在该目录等待 DevToolsActivePort。
 // e2e 如果再用 app.setPath 覆盖 userData/sessionData，端口文件会被写到另一个目录，
@@ -230,9 +230,9 @@ export function loadHostProcessEnvFromLocalFiles(): Record<string, string> {
 export function resolvePackagedAgentTelemetryEnv(
   compiledEnv:
     | Readonly<Record<string, string>>
-    | undefined = typeof __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__ === "undefined"
+    | undefined = typeof __ZODY_PACKAGED_AGENT_TELEMETRY_ENV__ === "undefined"
     ? undefined
-    : __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__,
+    : __ZODY_PACKAGED_AGENT_TELEMETRY_ENV__,
 ): Record<string, string> {
   if (!compiledEnv) {
     return {};
@@ -243,7 +243,9 @@ export function resolvePackagedAgentTelemetryEnv(
       value.trim() &&
       (key.startsWith("OTEL_") ||
         key.startsWith("ZCODE_TELEMETRY_") ||
-        key === "ZCODE_MODEL_TELEMETRY_ENABLED"),
+        key.startsWith("ZODY_TELEMETRY_") ||
+        key === "ZCODE_MODEL_TELEMETRY_ENABLED" ||
+        key === "ZODY_MODEL_TELEMETRY_ENABLED"),
   )?.[0];
   if (configuredKey) {
     throw new Error(`${configuredKey} is disabled for Zody release builds`);
@@ -263,14 +265,14 @@ export function resolveZodyEndpointEnvBaseOrigin(
   localEnv: LocalRuntimeEnv = {},
 ): string | undefined {
   const scopedEnvName =
-    ZCODE_ENV === "production" ? "ZCODE_PRODUCTION_BASE_URL" : "ZCODE_TEST_BASE_URL";
+    ZODY_ENV === "production" ? "ZODY_PRODUCTION_BASE_URL" : "ZODY_TEST_BASE_URL";
   // Bugfix: main 进程临时验证更新服务时不会重新写 .env，命令行传入的 endpoint 必须优先于本地文件。
   return (
-    process.env["ZCODE_BASE_URL"]?.trim() ||
-    process.env["ZCODE_ENDPOINT_ORIGIN"]?.trim() ||
+    process.env["ZODY_BASE_URL"]?.trim() ||
+    process.env["ZODY_ENDPOINT_ORIGIN"]?.trim() ||
     process.env[scopedEnvName]?.trim() ||
-    localEnv.ZCODE_BASE_URL?.trim() ||
-    localEnv.ZCODE_ENDPOINT_ORIGIN?.trim() ||
+    localEnv.ZODY_BASE_URL?.trim() ||
+    localEnv.ZODY_ENDPOINT_ORIGIN?.trim() ||
     localEnv[scopedEnvName]?.trim() ||
     undefined
   );
@@ -289,15 +291,15 @@ function readDefinedProcessEnv(): Record<string, string> {
 function applySelectedZodyEnvLinks(env: Record<string, string>): Record<string, string> {
   const endpointEnv = {
     ...env,
-    ZCODE_ENV,
+    ZODY_ENV,
   };
-  const endpointOrigin = env.ZCODE_BASE_URL ?? resolveRuntimeZodyEndpointOrigin(endpointEnv);
+  const endpointOrigin = env.ZODY_BASE_URL ?? resolveRuntimeZodyEndpointOrigin(endpointEnv);
 
   return {
     ...env,
-    // fork（F3.1）：未配置端点时不再注入空 ZCODE_BASE_URL；下游按「键不存在 = 未配置」
+    // fork（F3.1）：未配置端点时不再注入空 ZODY_BASE_URL；下游按「键不存在 = 未配置」
     // 关闭远端能力，避免空字符串在子进程里被误当成有效地址。
-    ...(endpointOrigin ? { ZCODE_BASE_URL: endpointOrigin } : {}),
+    ...(endpointOrigin ? { ZODY_BASE_URL: endpointOrigin } : {}),
     // fork（F4.1a）：官方账号下线后不再向 Host/Agent 进程注入 ZAI_*（OAuth/Business/ClientId），
     // 这些变量只服务已移除的官方账号换证与 Business 计费链（shared 内解析函数随 F4.5/F4.9 删除）。
   };
@@ -308,7 +310,7 @@ function resolveHostProcessNodeEnv(): ZodyRuntimeEnv {
 }
 
 function resolveRemoteAssetCacheDir(localEnv: LocalRuntimeEnv = {}): string {
-  const overrideCacheDir = resolveEnvValue("ZCODE_REMOTE_ASSET_CACHE_DIR", localEnv);
+  const overrideCacheDir = resolveEnvValue("ZODY_REMOTE_ASSET_CACHE_DIR", localEnv);
   if (overrideCacheDir) {
     // 开发态需要复用正式版 remote cache 验证下载判断，但不能整体切换 Electron userData。
     // 因此只允许覆盖 remote assets cache 目录，避免污染登录态、窗口状态等其它开发数据。
@@ -460,10 +462,10 @@ export function resolveDynamicWorkflowModeHostEnv(options: {
 }): Record<string, string> {
   if (!options.isPackaged) {
     const mode = normalizeDynamicWorkflowMode(options.inheritedValue);
-    return mode ? { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: mode } : {};
+    return mode ? { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: mode } : {};
   }
   if (options.isPreview) {
-    return { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: "alwaysOn" };
+    return { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: "alwaysOn" };
   }
   return {};
 }
@@ -477,7 +479,7 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
     glmBinaryPath,
   );
   const resolvedLarkCliBinaryPath = resolveHostProcessBinaryEnv(
-    "ZCODE_LARK_CLI_BINARY",
+    "ZODY_LARK_CLI_BINARY",
     hostProcessLocalEnv,
     larkCliBinaryPath,
   );
@@ -496,11 +498,11 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
           // (1|true|on, case-insensitive). Accepting only the literal "1" silently
           // ignored `true`/`on` set by scripts following the documented dev flow.
           ["1", "true", "on"].includes(
-              rawInheritedEnv.ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL?.trim().toLowerCase() ?? "",
+              rawInheritedEnv.ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL?.trim().toLowerCase() ?? "",
             )
-          ? rawInheritedEnv.ZCODE_CUA_BUNDLED_HELPER_APP_PATH?.trim() ||
+          ? rawInheritedEnv.ZODY_CUA_BUNDLED_HELPER_APP_PATH?.trim() ||
             join(
-              rawInheritedEnv.ZCODE_HOME?.trim() || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME),
+              rawInheritedEnv.ZODY_HOME?.trim() || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME),
               "computer-use",
               "dev",
               DEV_HELPER_APP_NAME,
@@ -511,13 +513,20 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
   const agentTelemetryEnv = packagedDesktop ? {} : readZodyAgentTelemetryEnv(rawInheritedEnv);
   // Desktop 身份由 host 从凭据仓库和本机状态读取后可信注入；开发态外部环境可以配置 OTLP 连接，
   // 不能伪造 uid/device/runtime surface 或绕过本地 identity state 的隔离边界。打包态上面会丢弃连接字段。
+  // 旧身份残留与新身份均不可由外部环境伪造或透传。
   for (const key of [
     "ZCODE_TELEMETRY_USER_ID",
+    "ZODY_TELEMETRY_USER_ID",
     "ZCODE_TELEMETRY_USER_ID_HASH",
+    "ZODY_TELEMETRY_USER_ID_HASH",
     "ZCODE_TELEMETRY_USER_SUBJECT_ID",
+    "ZODY_TELEMETRY_USER_SUBJECT_ID",
     "ZCODE_TELEMETRY_IDENTITY_STATE",
+    "ZODY_TELEMETRY_IDENTITY_STATE",
     "ZCODE_TELEMETRY_DEVICE_MID",
+    "ZODY_TELEMETRY_DEVICE_MID",
     "ZCODE_TELEMETRY_RUNTIME_SURFACE",
+    "ZODY_TELEMETRY_RUNTIME_SURFACE",
   ]) {
     delete agentTelemetryEnv[key];
   }
@@ -529,16 +538,17 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
   // Otherwise a developer shell/launchctl variable can make the signed app
   // reject its verified bundled Helper and route onboarding to a stale dev app.
   if (packagedDesktop) {
+    delete inheritedEnv.ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL;
     delete inheritedEnv.ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL;
   }
   const dynamicWorkflowModeHostEnv = resolveDynamicWorkflowModeHostEnv({
-    inheritedValue: rawInheritedEnv[ZCODE_DYNAMIC_WORKFLOW_MODE_ENV],
+    inheritedValue: rawInheritedEnv[ZODY_DYNAMIC_WORKFLOW_MODE_ENV],
     isPackaged: packagedDesktop,
     isPreview: isPreviewPackagedRuntime,
   });
   // 三层里有两层不写这个键，空对象无法覆盖 inheritedEnv，所以先无条件删掉继承值再按决策 spread 回去。
   // 少了这一行，production 包和 dev 的非法取值都会原样穿透到 Host。
-  delete inheritedEnv[ZCODE_DYNAMIC_WORKFLOW_MODE_ENV];
+  delete inheritedEnv[ZODY_DYNAMIC_WORKFLOW_MODE_ENV];
 
   return {
     ...inheritedEnv,
@@ -546,28 +556,28 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
     // 后续只在启动 Agent 时短暂注入，不会进入 Bash/MCP/tool env。
     ...agentTelemetryEnv,
     // ZCode 运行时不再使用 NODE_ENV；它会被用户 shell、包管理器和测试框架复用。
-    // 这里显式下发 ZCODE_RUNTIME_ENV，并在继承环境里清掉 NODE_ENV，避免 host/agent/Bash 被污染。
-    [ZCODE_RUNTIME_ENV_KEY]: resolveHostProcessNodeEnv(),
+    // 这里显式下发 ZODY_RUNTIME_ENV，并在继承环境里清掉 NODE_ENV，避免 host/agent/Bash 被污染。
+    [ZODY_RUNTIME_ENV_KEY]: resolveHostProcessNodeEnv(),
     // 显式注入编译期产品身份，保证主进程与 host 的身份语义一致；地址独立解析。
     // inheritedEnv 从 .env 通用变量补齐 ZCode/ZAI 链接，未覆盖时统一使用线上默认值。
-    ZCODE_ENV,
+    ZODY_ENV,
     // Preview 与生产版共享任务、配置和凭据，但不同版本的 Helper 不能互相覆盖或触发降级保护。
-    // 只隔离 computer-use 下的运行组件，不改写 ZCODE_HOME / ZCODE_DATA_BASE_DIR 业务数据根。
-    ...(isPreviewPackagedRuntime ? { ZCODE_CUA_HELPER_INSTALL_VARIANT: "preview" } : {}),
+    // 只隔离 computer-use 下的运行组件，不改写 ZODY_HOME / ZODY_DATA_BASE_DIR 业务数据根。
+    ...(isPreviewPackagedRuntime ? { ZODY_CUA_HELPER_INSTALL_VARIANT: "preview" } : {}),
     // Dynamic Workflow 灰度的本地覆盖：Main 决策后写入，production 包为空对象（继承值已在上面删除）。
     ...dynamicWorkflowModeHostEnv,
     // 模型请求默认 header 由 agent 进程构造，过去只继承 shell env 导致桌面启动时拿不到 app 版本。
     // 这里从 main 进程显式下发，agent 子进程继承 host env 后即可稳定写入请求 header。
-    [ZCODE_APP_VERSION_ENV]: ZCODE_VERSION,
+    [ZODY_APP_VERSION_ENV]: ZODY_VERSION,
     // Telemetry 的构建身份必须来自 Desktop 编译期元数据，不能让 Agent 在运行时读取
     // 工作树或根据安装路径猜测；否则同一产品版本的不同修复包无法在 ARMS 中区分。
-    [ZCODE_BUILD_COMMIT_ID_ENV]: ZCODE_COMMIT,
-    ...(dataBaseDir !== homedir() ? { ZCODE_DATA_BASE_DIR: dataBaseDir } : {}),
-    ...(windowsAppInstallDir ? { [ZCODE_WINDOWS_APP_INSTALL_DIR_ENV]: windowsAppInstallDir } : {}),
+    [ZODY_BUILD_COMMIT_ID_ENV]: ZODY_COMMIT,
+    ...(dataBaseDir !== homedir() ? { ZODY_DATA_BASE_DIR: dataBaseDir } : {}),
+    ...(windowsAppInstallDir ? { [ZODY_WINDOWS_APP_INSTALL_DIR_ENV]: windowsAppInstallDir } : {}),
     ...(bundledCuaHelperAppPath
-      ? { [ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV]: bundledCuaHelperAppPath }
+      ? { [ZODY_CUA_BUNDLED_HELPER_APP_PATH_ENV]: bundledCuaHelperAppPath }
       : {}),
     ...(resolvedGlmBinaryPath ? { GLM_BINARY_PATH: resolvedGlmBinaryPath } : {}),
-    ...(resolvedLarkCliBinaryPath ? { ZCODE_LARK_CLI_BINARY: resolvedLarkCliBinaryPath } : {}),
+    ...(resolvedLarkCliBinaryPath ? { ZODY_LARK_CLI_BINARY: resolvedLarkCliBinaryPath } : {}),
   };
 }

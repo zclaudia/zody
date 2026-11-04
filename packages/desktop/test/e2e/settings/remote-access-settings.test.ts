@@ -34,7 +34,7 @@ import {
  * RC-E2E-REMOTE-ACCESS-01（T4.1）：桌面设置页的远程访问配置、状态与手机链路。
  *
  * 表单、开关和「测试连接」不依赖真实 gateway；gateway 相关场景在没有
- * `ZCODE_GATEWAY_IT_URL` 等凭证时用 `this.skip()` 明确跳过（原因见测试名和 deviations）。
+ * `ZODY_GATEWAY_IT_URL` 等凭证时用 `this.skip()` 明确跳过（原因见测试名和 deviations）。
  */
 
 const REMOTE_ACCESS_SETTINGS = 'data-testid="remote-access-settings"';
@@ -110,7 +110,7 @@ async function verifyMobileHtmlWithRealGateway(
     mobileBrowser = await chromium.launch({
       headless: true,
       executablePath:
-        process.env.ZCODE_E2E_CHROME_BINARY?.trim() ||
+        process.env.ZODY_E2E_CHROME_BINARY?.trim() ||
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     });
     const mobileContext = await mobileBrowser.newContext({

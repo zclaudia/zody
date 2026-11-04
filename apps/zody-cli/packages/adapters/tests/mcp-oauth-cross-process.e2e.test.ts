@@ -347,7 +347,7 @@ async function createCredentials(secret: string): Promise<{
   const credentialsPath = join(directory, "credentials.json");
   return {
     credentialStore: createSharedZodyCredentialStore({
-      env: { ZCODE_CREDENTIAL_SECRET: secret },
+      env: { ZODY_CREDENTIAL_SECRET: secret },
       filePath: credentialsPath,
     }),
     credentialsPath,

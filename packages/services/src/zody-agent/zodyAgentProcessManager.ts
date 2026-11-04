@@ -20,7 +20,7 @@ import {
 import {
   ZCODE_AGENT_RUNTIME,
   ZCODE_AGENT_PROVIDER,
-  ZCODE_RUNTIME_ENV_KEY,
+  ZODY_RUNTIME_ENV_KEY,
   resolveWorkspaceKey,
   resolveZodyRuntimeEnv,
   sanitizeZodyRuntimeEnv,
@@ -277,8 +277,8 @@ if (coverageDirectory) {
 export function buildE2EAgentCoverageEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): Record<string, string> {
-  const artifactDir = env.ZCODE_E2E_ARTIFACT_DIR?.trim();
-  if (env.ZCODE_E2E_COVERAGE !== "1" || !artifactDir) {
+  const artifactDir = env.ZODY_E2E_ARTIFACT_DIR?.trim();
+  if (env.ZODY_E2E_COVERAGE !== "1" || !artifactDir) {
     return {};
   }
   const directory = resolve(artifactDir, "coverage", "raw", "cli");
@@ -395,7 +395,7 @@ function parseArgsJson(raw: string | undefined): string[] | undefined {
   }
   const parsed = JSON.parse(trimmed) as unknown;
   if (!Array.isArray(parsed) || parsed.some((item) => typeof item !== "string")) {
-    throw new Error("ZCODE_AGENT_SERVER_ARGS_JSON must be a JSON string array");
+    throw new Error("ZODY_AGENT_SERVER_ARGS_JSON must be a JSON string array");
   }
   return parsed;
 }
@@ -451,7 +451,7 @@ function resolveBundledWorkspaceZodyAgentCommand(
   const distEntrypoint = findUpward("apps/zody-cli/packages/cli/dist/zody.cjs");
   if (distEntrypoint) {
     const useBytecode =
-      process.versions.electron && process.env.ZCODE_DESKTOP_AGENT_BYTECODE === "1";
+      process.versions.electron && process.env.ZODY_DESKTOP_AGENT_BYTECODE === "1";
     const entrypoint = useBytecode
       ? join(dirname(distEntrypoint), "zcode.bytecode.cjs")
       : distEntrypoint;
@@ -486,7 +486,7 @@ function resolveBundledWorkspaceZodyAgentCommand(
 function resolveDeployedZodyAgentBinaryCommand(
   context: ZodyAgentCommandResolverContext,
 ): ZodyAgentCommand | null {
-  // 旧 resolver 只识别 ZCODE_AGENT_SERVER_COMMAND env 和 monorepo 源码树。
+  // 旧 resolver 只识别 ZODY_AGENT_SERVER_COMMAND env 和 monorepo 源码树。
   // SSH 远端把 zody-server.cjs 单文件部署到 ~/.zody/server/，宿主进程的 cwd 不在仓库内、
   // env 也不会被 ssh exec 继承，即使 zcode-agent 已经部署到 ~/.zody/server/agents/glm/，
   // resolver 也找不到，第一次 getClient 就抛 "Zody agent server command is not configured"。
@@ -630,13 +630,13 @@ export function resolveDefaultZodyAgentCommand(
   if (options?.nativeRuntime) {
     return resolveZodyAgentNativeRuntimeCommand(options.nativeRuntime, context);
   }
-  const command = process.env.ZCODE_AGENT_SERVER_COMMAND?.trim();
+  const command = process.env.ZODY_AGENT_SERVER_COMMAND?.trim();
   if (command) {
     return applyPresentationSurfaceToCommand(
       {
         command,
-        args: parseArgsJson(process.env.ZCODE_AGENT_SERVER_ARGS_JSON) ?? ["app-server", "--stdio"],
-        cwd: process.env.ZCODE_AGENT_SERVER_CWD?.trim() || context.workspacePath,
+        args: parseArgsJson(process.env.ZODY_AGENT_SERVER_ARGS_JSON) ?? ["app-server", "--stdio"],
+        cwd: process.env.ZODY_AGENT_SERVER_CWD?.trim() || context.workspacePath,
       },
       context.presentationSurface,
     );
@@ -1335,7 +1335,7 @@ export class ZodyAgentProcessManager {
     const resolveCommandDurationMs = Date.now() - resolveCommandStartedAt;
     if (!command) {
       throw new Error(
-        "Zody agent server command is not configured. Set ZCODE_AGENT_SERVER_COMMAND before integration.",
+        "Zody agent server command is not configured. Set ZODY_AGENT_SERVER_COMMAND before integration.",
       );
     }
     if (admissionSignal.aborted) {
@@ -1382,7 +1382,7 @@ export class ZodyAgentProcessManager {
     if ((this.restartGenerationByWorkspaceKey.get(workspaceKey) ?? 0) !== startGeneration) {
       throw new Error("Zody agent process start was cancelled.");
     }
-    // app 以本地开发方式启动时，让 agent 子进程也带上 ZCODE_RUNTIME_ENV=development；
+    // app 以本地开发方式启动时，让 agent 子进程也带上 ZODY_RUNTIME_ENV=development；
     // 不再传 NODE_ENV，避免用户 shell/runtime 变量影响 ZCode 运行模式或泄漏到 Bash 工具。
     const runtimeEnv = resolveZodyRuntimeEnv(process.env);
     log("ZCode agent spawn preflight", {
@@ -1397,7 +1397,7 @@ export class ZodyAgentProcessManager {
       detached: shouldSpawnInDetachedProcessGroup(),
       env: {
         ...sanitizeZodyRuntimeEnv(process.env),
-        [ZCODE_RUNTIME_ENV_KEY]: runtimeEnv,
+        [ZODY_RUNTIME_ENV_KEY]: runtimeEnv,
         ...spawnEnv,
         ...effectiveCommand.env,
         // 生成文件根目录由执行端 Host 唯一决定，保证 Agent 写入与 Host 读取授权一致。
@@ -1796,7 +1796,7 @@ export class ZodyAgentProcessManager {
         : {
             available: false,
             workspaceKey,
-            reason: "ZCODE_AGENT_SERVER_COMMAND is not configured",
+            reason: "ZODY_AGENT_SERVER_COMMAND is not configured",
           };
     } catch (error) {
       return {

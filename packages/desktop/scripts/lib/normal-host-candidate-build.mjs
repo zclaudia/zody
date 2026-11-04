@@ -11,17 +11,17 @@ import { createWorkspaceSourcePlugin } from "./cua-desktop-session-workspace-sou
 
 export function sourceDefines({ buildMetadata, environment, productFlavor, buildTimeDefines }) {
   return {
-    __ZCODE_VERSION__: JSON.stringify(buildMetadata.appVersion),
-    __ZCODE_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
-    __ZCODE_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
-    __ZCODE_ENV__: JSON.stringify(environment),
-    __ZCODE_PRODUCT_FLAVOR__: JSON.stringify(productFlavor),
+    __ZODY_VERSION__: JSON.stringify(buildMetadata.appVersion),
+    __ZODY_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
+    __ZODY_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
+    __ZODY_ENV__: JSON.stringify(environment),
+    __ZODY_PRODUCT_FLAVOR__: JSON.stringify(productFlavor),
     ...buildTimeDefines,
-    __ZCODE_CUA_HELPER_BUILD_ID__: JSON.stringify(
-      process.env.ZCODE_CUA_HELPER_BUILD_ID?.trim() ?? "",
+    __ZODY_CUA_HELPER_BUILD_ID__: JSON.stringify(
+      process.env.ZODY_CUA_HELPER_BUILD_ID?.trim() ?? "",
     ),
-    __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify([]),
-    __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify({}),
+    __ZODY_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify([]),
+    __ZODY_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify({}),
   };
 }
 
@@ -58,16 +58,16 @@ export function verifyCompiledCandidateSources({
   profileKind,
   launcherRelativePath,
 }) {
-  if (mainSource.includes("typeof __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__")) {
+  if (mainSource.includes("typeof __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__")) {
     throw new Error("normal main still contains unresolved candidate Host define");
   }
   if (
-    mainSource.includes("typeof __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__") ||
+    mainSource.includes("typeof __ZODY_NORMAL_CUA_CANDIDATE_UI_NAME__") ||
     !mainSource.includes(displayName)
   ) {
     throw new Error("normal main is missing the fixed candidate UI identity");
   }
-  if (hostSource.includes("typeof __ZCODE_CUA_NARROW_AGENT__")) {
+  if (hostSource.includes("typeof __ZODY_CUA_NARROW_AGENT__")) {
     throw new Error("compiled Host still contains unresolved narrow profile define");
   }
   if (!hostSource.includes(profileKind) || !hostSource.includes("workspace-relay")) {
@@ -76,7 +76,7 @@ export function verifyCompiledCandidateSources({
   if (!hostSource.includes(launcherRelativePath)) {
     throw new Error("compiled Host is missing the fixed relative narrow launcher path");
   }
-  if (hostSource.includes("ZCODE_CUA_NARROW_AGENT_JSON")) {
+  if (hostSource.includes("ZODY_CUA_NARROW_AGENT_JSON")) {
     throw new Error("compiled Host exposes a runtime narrow-profile environment switch");
   }
   for (const [label, source] of [

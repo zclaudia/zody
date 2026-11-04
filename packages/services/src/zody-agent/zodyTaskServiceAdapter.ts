@@ -248,7 +248,7 @@ function formatZodyAgentLogDate(now: Date): string {
 }
 
 function resolveZodyAgentCurrentLogFilePath(now = new Date()): string {
-  const configuredLogDir = process.env.ZCODE_LOG_DIR?.trim();
+  const configuredLogDir = process.env.ZODY_LOG_DIR?.trim();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const logDir = configuredLogDir || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
   return join(logDir, `zody-${formatZodyAgentLogDate(now)}.jsonl`);

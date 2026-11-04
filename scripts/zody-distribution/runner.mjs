@@ -17,9 +17,9 @@ const agentEntry = join(root, "agent", "zody.cjs");
 const cliBinary = join(root, "bin", process.platform === "win32" ? "zody-cli.exe" : "zody-cli");
 const runtimeToolsRoot = join(root, "runtime-tools");
 const runtimeToolEnvNames = Object.freeze({
-  bfs: "ZCODE_BFS_BINARY",
-  ripgrep: "ZCODE_RG_BINARY",
-  ugrep: "ZCODE_UGREP_BINARY",
+  bfs: "ZODY_BFS_BINARY",
+  ripgrep: "ZODY_RG_BINARY",
+  ugrep: "ZODY_UGREP_BINARY",
 });
 
 function usage() {
@@ -195,13 +195,13 @@ async function serve(options) {
       ...process.env,
       ...runtimeToolEnv,
       PORT: String(port),
-      ZCODE_AGENT_SERVER_ARGS_JSON: JSON.stringify([agentEntry, "app-server", "--stdio"]),
-      ZCODE_AGENT_SERVER_COMMAND: runtimeNode,
-      ZCODE_SERVER_HOST: options.host,
-      ZCODE_SERVER_WORKSPACE: options.workspace,
-      ZCODE_WEB_STATIC_ROOT: webRoot,
+      ZODY_AGENT_SERVER_ARGS_JSON: JSON.stringify([agentEntry, "app-server", "--stdio"]),
+      ZODY_AGENT_SERVER_COMMAND: runtimeNode,
+      ZODY_SERVER_HOST: options.host,
+      ZODY_SERVER_WORKSPACE: options.workspace,
+      ZODY_WEB_STATIC_ROOT: webRoot,
       // 显式关闭 token 时必须清空继承值，否则 --no-token 仍会开启后端鉴权。
-      ZCODE_SERVER_AUTH_TOKEN: token,
+      ZODY_SERVER_AUTH_TOKEN: token,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });

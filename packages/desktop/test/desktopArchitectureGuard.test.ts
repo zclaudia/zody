@@ -5,7 +5,7 @@ import {
   maybeWarnArchitectureMismatch,
 } from "../src/main/desktopArchitectureGuard.js";
 
-// fork（F2.5）：「前往下载」改读构建期 ZCODE_DOWNLOAD_PAGE_URL（阶段 2 细则
+// fork（F2.5）：「前往下载」改读构建期 ZODY_DOWNLOAD_PAGE_URL（阶段 2 细则
 // 「强制升级 gate（删除）」规则 4）。单测环境没有 define 注入，常量恒为空串；
 // 用 getter 桩在「未配置 / 已配置」场景间切换——mock 工厂只在首次导入时执行，
 // getter 保证函数调用时读到 beforeEach 里设置的当前值。
@@ -13,7 +13,7 @@ const downloadPageUrlState = vi.hoisted(() => ({ value: "" }));
 
 vi.mock("@zody/shared", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@zody/shared")>()),
-  get ZCODE_DOWNLOAD_PAGE_URL() {
+  get ZODY_DOWNLOAD_PAGE_URL() {
     return downloadPageUrlState.value;
   },
 }));
@@ -108,7 +108,7 @@ describe("maybeWarnArchitectureMismatch", () => {
     downloadPageUrlState.value = "";
   });
 
-  it("未配置 ZCODE_DOWNLOAD_PAGE_URL 时弹框只有「暂不处理」，不调用 shell.openExternal", async () => {
+  it("未配置 ZODY_DOWNLOAD_PAGE_URL 时弹框只有「暂不处理」，不调用 shell.openExternal", async () => {
     electronDialogMocks.showMessageBox.mockResolvedValue({ response: 0 });
 
     await maybeWarnArchitectureMismatch({

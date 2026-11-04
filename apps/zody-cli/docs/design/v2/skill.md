@@ -340,7 +340,7 @@ skills.rules
 
 Skill 配置不声明环境变量入口。需要调整 skill 开关、兼容目录或 metadata budget 时，走 config file、CLI/session override 或更高层的运行时配置契约。
 
-新增 `ZCODE_` 环境变量必须先补齐 spec，明确用途、优先级、错误行为和测试覆盖，避免把临时实现细节扩散成长期配置面。
+新增 `ZODY_` 环境变量必须先补齐 spec，明确用途、优先级、错误行为和测试覆盖，避免把临时实现细节扩散成长期配置面。
 
 Config 合并仍走 system/user/project/session/env/cli 优先级，core 不读取环境变量。
 

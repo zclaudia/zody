@@ -4,7 +4,7 @@
 
 桌面 E2E 运行结束后，将整次运行的 `summary.json` 与 `summary.md` 上传到 ZCode E2E 报告平台；失败 case 的窗口视频在报告创建成功后按用例标题逐个补传。GitLab CI 继续保存二进制 artifact，报告平台保存结构化汇总和可按需下载的视频。
 
-此功能通过 `ZCODE_E2E_FAILURE_ARTIFACTS=1` 显式开启失败 case 日志和视频采集；默认 `pnpm test:e2e` 不产生逐 case 视频或日志，避免日常回归增加磁盘与 CPU 开销。仓库内负责上传报告的 GitLab macOS、Windows job 必须在 job `variables` 中显式将该值设为 `"1"`，不能依赖项目级外部变量。
+此功能通过 `ZODY_E2E_FAILURE_ARTIFACTS=1` 显式开启失败 case 日志和视频采集；默认 `pnpm test:e2e` 不产生逐 case 视频或日志，避免日常回归增加磁盘与 CPU 开销。仓库内负责上传报告的 GitLab macOS、Windows job 必须在 job `variables` 中显式将该值设为 `"1"`，不能依赖项目级外部变量。
 
 ## 产物契约
 
@@ -55,7 +55,7 @@ GitLab job 在主 `script` 中保存 E2E 退出码，再依次执行 Bitable 与
 
 本地执行同一脚本可以验证报告上传；本地没有 GitLab 环境时不影响报告或视频上传，只是 GitLab artifact URL 不适用。
 
-Windows 常驻入口 `scripts/ci/run-e2e-bitable-loop.ps1` 会为每轮测试启用 `ZCODE_E2E_FAILURE_ARTIFACTS=1`，先保留原有 Bitable 汇总指标上传，再调用报告上传器。启动前必须同时配置 Bitable 凭据和 `ZCODE_FEEDBACK_NOTIFICATION_TOKEN`；Bitable 与报告平台任一上传失败都不会阻止另一上传器执行。可用 `-UploadTimeoutSeconds` 控制 Bitable 上传进程上限，用 `-FeedbackUploadTimeoutSeconds` 控制包含视频在内的报告上传进程上限。
+Windows 常驻入口 `scripts/ci/run-e2e-bitable-loop.ps1` 会为每轮测试启用 `ZODY_E2E_FAILURE_ARTIFACTS=1`，先保留原有 Bitable 汇总指标上传，再调用报告上传器。启动前必须同时配置 Bitable 凭据和 `ZCODE_FEEDBACK_NOTIFICATION_TOKEN`；Bitable 与报告平台任一上传失败都不会阻止另一上传器执行。可用 `-UploadTimeoutSeconds` 控制 Bitable 上传进程上限，用 `-FeedbackUploadTimeoutSeconds` 控制包含视频在内的报告上传进程上限。
 
 ## 并行边界
 

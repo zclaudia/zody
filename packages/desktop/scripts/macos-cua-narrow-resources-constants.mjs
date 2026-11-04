@@ -4,8 +4,8 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-export const NARROW_MANIFEST_ENV = "ZCODE_CUA_NARROW_MANIFEST";
-export const CANDIDATE_HOST_LAUNCH_ENV = "ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON";
+export const NARROW_MANIFEST_ENV = "ZODY_CUA_NARROW_MANIFEST";
+export const CANDIDATE_HOST_LAUNCH_ENV = "ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON";
 export const NARROW_SLOT = "cua-narrow";
 export const NARROW_APP_NAME = "Zody CUA Desktop Session.app";
 export const NARROW_EXECUTABLE_NAME = "macos-cua-desktop-session";

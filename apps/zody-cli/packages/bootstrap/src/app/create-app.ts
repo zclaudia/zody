@@ -401,7 +401,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
       (messageEnabled
         ? createNodeSessionMailboxAdapter({
             rootDir: resolvePath(
-              (options.env ?? process.env).ZCODE_MAILBOX_ROOT ??
+              (options.env ?? process.env).ZODY_MAILBOX_ROOT ??
                 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
                 `~/${ZCODE_DATA_ROOT_DIR_NAME}/mailbox`,
             ),

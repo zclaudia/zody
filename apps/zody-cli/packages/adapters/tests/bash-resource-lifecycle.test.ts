@@ -352,7 +352,7 @@ describe("Bash 隔离输出根（I16）", () => {
     await mkdir(storageRoot);
     const adapter = new OutputPathProbe({
       outputRootDir: blockedRoot,
-      processEnv: { ...process.env, ZCODE_STORAGE_DIR: storageRoot },
+      processEnv: { ...process.env, ZODY_STORAGE_DIR: storageRoot },
     });
     try {
       const request = bashRequest(root, {
@@ -361,7 +361,7 @@ describe("Bash 隔离输出根（I16）", () => {
         command: "echo never",
       });
       const paths = await adapter.preparePathsFor(request);
-      // 第二层回落：默认数据根 <ZCODE_STORAGE_DIR>/cli/exec，不与配置根混用。
+      // 第二层回落：默认数据根 <ZODY_STORAGE_DIR>/cli/exec，不与配置根混用。
       expect(paths.stdoutPersistedOutputPath).toBe(
         join(storageRoot, "cli", "exec", "fallback-session", "fallback-call", "stdout.log"),
       );
@@ -410,7 +410,7 @@ describe("Bash 隔离输出根（I16）", () => {
     await utimes(staleSnapshot, oldDate, oldDate);
     const adapter = new OutputPathProbe({
       outputRootDir: blockedRoot,
-      processEnv: { ...process.env, ZCODE_STORAGE_DIR: storageRoot },
+      processEnv: { ...process.env, ZODY_STORAGE_DIR: storageRoot },
     });
     try {
       const paths = await adapter.preparePathsFor(
@@ -443,7 +443,7 @@ describe("Bash 隔离输出根（I16）", () => {
     await writeFile(blockedDefault, "not a directory");
     const adapter = new OutputPathProbe({
       outputRootDir: blockedRoot,
-      processEnv: { ...process.env, ZCODE_STORAGE_DIR: blockedDefault },
+      processEnv: { ...process.env, ZODY_STORAGE_DIR: blockedDefault },
     });
     try {
       const paths = await adapter.preparePathsFor(
@@ -490,7 +490,7 @@ describe("Bash 隔离输出根（I16）", () => {
       await writeFile(script, "process.stdout.write('fallback-output')");
       const adapter = new NodeExecutionAdapter({
         outputRootDir: blockedRoot,
-        processEnv: { ...process.env, ZCODE_STORAGE_DIR: blockedDefault },
+        processEnv: { ...process.env, ZODY_STORAGE_DIR: blockedDefault },
       });
       try {
         const baseRequest = bashRequest(root, {
@@ -551,7 +551,7 @@ describe("Bash 隔离输出根（I16）", () => {
     };
     const adapter = new NodeExecutionAdapter({
       outputRootDir: blockedRoot,
-      processEnv: { ...process.env, ZCODE_STORAGE_DIR: blockedDefault },
+      processEnv: { ...process.env, ZODY_STORAGE_DIR: blockedDefault },
     });
     // os.tmpdir() 每次调用读取环境变量；指向不存在目录即可让 mkdtemp 失败。
     process.env.TMPDIR = missingTmp;
@@ -711,7 +711,7 @@ describe("Bash 隔离输出根（I16）", () => {
     await writeFile(blockedDefault, "not a directory");
     const adapter = new GatedOutputPreparationAdapter({
       outputRootDir: blockedRoot,
-      processEnv: { ...process.env, ZCODE_STORAGE_DIR: blockedDefault },
+      processEnv: { ...process.env, ZODY_STORAGE_DIR: blockedDefault },
     });
     try {
       const starting = adapter.start(
@@ -754,7 +754,7 @@ describe("Bash 隔离输出根（I16）", () => {
     await writeFile(blockedDefault, "not a directory");
     const adapter = new GatedOutputPreparationAdapter({
       outputRootDir: blockedRoot,
-      processEnv: { ...process.env, ZCODE_STORAGE_DIR: blockedDefault },
+      processEnv: { ...process.env, ZODY_STORAGE_DIR: blockedDefault },
     });
     try {
       const pending = adapter.runBashWithBackgroundLifecycle(
@@ -1000,7 +1000,7 @@ describe("Bash 隔离输出根（I16）", () => {
     await writeFile(script, "process.stdout.write('temp-query-output')");
     const adapter = new NodeExecutionAdapter({
       outputRootDir: blockedRoot,
-      processEnv: { ...process.env, ZCODE_STORAGE_DIR: blockedDefault },
+      processEnv: { ...process.env, ZODY_STORAGE_DIR: blockedDefault },
     });
     const sessionId = "temp-query-session";
     try {

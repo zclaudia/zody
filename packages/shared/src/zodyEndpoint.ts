@@ -13,7 +13,7 @@ export const DEFAULT_ZCODE_ENDPOINT_ORIGIN = "";
  * fork（F3.1）：测试环境占位端点。
  *
  * `example.invalid` 是 RFC 2606 保留域名，保证测试环境即使漏配也不会命中真实服务；
- * 真实的 fork 测试域由部署方通过 ZCODE_TEST_BASE_URL / ZCODE_BASE_URL 显式注入。
+ * 真实的 fork 测试域由部署方通过 ZODY_TEST_BASE_URL / ZODY_BASE_URL 显式注入。
  */
 export const TEST_ZCODE_ENDPOINT_ORIGIN = "https://example.invalid";
 
@@ -25,11 +25,11 @@ export const TEST_ZCODE_ENDPOINT_ORIGIN = "https://example.invalid";
 
 export interface RuntimeZodyEndpointEnv {
   [key: string]: string | undefined;
-  ZCODE_ENV?: string;
-  ZCODE_BASE_URL?: string;
-  ZCODE_ENDPOINT_ORIGIN?: string;
-  ZCODE_TEST_BASE_URL?: string;
-  ZCODE_PRODUCTION_BASE_URL?: string;
+  ZODY_ENV?: string;
+  ZODY_BASE_URL?: string;
+  ZODY_ENDPOINT_ORIGIN?: string;
+  ZODY_TEST_BASE_URL?: string;
+  ZODY_PRODUCTION_BASE_URL?: string;
 }
 
 function readRuntimeEnvValue(
@@ -76,10 +76,10 @@ export function resolveZodyEndpointOrigin(options?: {
 }
 
 export function resolveRuntimeZodyEnv(env: RuntimeZodyEndpointEnv = {}): ZodyEnv {
-  // 独立 CLI / 服务测试未注入 ZCODE_ENV 时默认生产环境；桌面测试包会显式下发 ZCODE_ENV=test。
-  // fork（F3.1）：「生产环境」只决定读取 ZCODE_PRODUCTION_BASE_URL，不再意味着官方地址；
+  // 独立 CLI / 服务测试未注入 ZODY_ENV 时默认生产环境；桌面测试包会显式下发 ZODY_ENV=test。
+  // fork（F3.1）：「生产环境」只决定读取 ZODY_PRODUCTION_BASE_URL，不再意味着官方地址；
   // 端点未配置时 resolveRuntimeZodyEndpointOrigin 返回空字符串。
-  return env.ZCODE_ENV?.trim().toLowerCase() === "test" ? "test" : "production";
+  return env.ZODY_ENV?.trim().toLowerCase() === "test" ? "test" : "production";
 }
 
 export function resolveRuntimeZodyEndpointOrigin(
@@ -89,14 +89,14 @@ export function resolveRuntimeZodyEndpointOrigin(
   const zodyEnv = resolveRuntimeZodyEnv(env);
   const scopedBaseOrigin =
     zodyEnv === "production"
-      ? readRuntimeEnvValue(env, "ZCODE_PRODUCTION_BASE_URL")
-      : readRuntimeEnvValue(env, "ZCODE_TEST_BASE_URL");
+      ? readRuntimeEnvValue(env, "ZODY_PRODUCTION_BASE_URL")
+      : readRuntimeEnvValue(env, "ZODY_TEST_BASE_URL");
 
   return resolveZodyEndpointOrigin({
     env: zodyEnv,
     envBaseOrigin:
-      readRuntimeEnvValue(env, "ZCODE_BASE_URL") ??
-      readRuntimeEnvValue(env, "ZCODE_ENDPOINT_ORIGIN") ??
+      readRuntimeEnvValue(env, "ZODY_BASE_URL") ??
+      readRuntimeEnvValue(env, "ZODY_ENDPOINT_ORIGIN") ??
       scopedBaseOrigin,
     overrideOrigin: options?.overrideOrigin,
   });

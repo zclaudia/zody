@@ -42,7 +42,7 @@ export async function assertIncomingMessage(
       "utf8",
     ),
   ) as { expected: Record<Presentation, string> };
-  const artifactDir = process.env.ZCODE_E2E_ARTIFACT_DIR;
+  const artifactDir = process.env.ZODY_E2E_ARTIFACT_DIR;
   if (artifactDir) {
     const directory = join(artifactDir, "incoming-message-wire");
     await mkdir(directory, { recursive: true });

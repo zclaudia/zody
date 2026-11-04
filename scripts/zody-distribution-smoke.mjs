@@ -20,7 +20,7 @@ const runner = join(root, "bin/zody.mjs");
 const workspace = join(directory, "workspace");
 const env = {
   ...process.env,
-  ZCODE_DATA_BASE_DIR: join(directory, "data"),
+  ZODY_DATA_BASE_DIR: join(directory, "data"),
   NODE_PATH: "",
   NODE_OPTIONS: "",
   TERM: "xterm-256color",

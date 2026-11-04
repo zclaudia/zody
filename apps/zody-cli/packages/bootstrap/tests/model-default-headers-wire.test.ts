@@ -82,10 +82,10 @@ function createFixture(
   if (!provider.ok || !model.ok) throw new Error("invalid header fixture");
   const executionConfig = createRuntimeAiSdkModelExecutionConfig(
     options.env ?? {
-      ZCODE_APP_VERSION: CLIENT_VERSION,
-      ZCODE_ENV: "production",
+      ZODY_APP_VERSION: CLIENT_VERSION,
+      ZODY_ENV: "production",
       // fork（F3.1）：端点未配置时不再发送 HTTP-Referer；这里显式配置来源地址验证 header 链路。
-      ZCODE_BASE_URL: "https://endpoint.example.test",
+      ZODY_BASE_URL: "https://endpoint.example.test",
     },
     { sourceTitle: options.sourceTitle ?? "electron", appVersion: options.appVersion },
   );
@@ -246,13 +246,13 @@ describe("模型请求默认 Header：Bootstrap → Adapter → 真实 SDK", () 
   it.each([
     { env: {}, sourceTitle: "cli" as const, appVersion: "1.2.3", expected: "1.2.3" },
     {
-      env: { ZCODE_APP_VERSION: "3.12.0" },
+      env: { ZODY_APP_VERSION: "3.12.0" },
       sourceTitle: "electron" as const,
       appVersion: "0.13.3",
       expected: "3.12.0",
     },
     {
-      env: { ZCODE_APP_VERSION: "bad\r\nheader" },
+      env: { ZODY_APP_VERSION: "bad\r\nheader" },
       sourceTitle: "cli" as const,
       appVersion: "1.2.3",
       expected: undefined,

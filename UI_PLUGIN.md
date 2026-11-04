@@ -259,7 +259,7 @@ node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-p
 
 ```sh
 cd "$ZCODE_REPO"
-ZCODE_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
+ZODY_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
   node packages/desktop/scripts/mcp-apps-host-e2e.mjs --showcase-only
 ```
 

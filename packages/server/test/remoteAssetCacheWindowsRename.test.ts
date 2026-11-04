@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join, normalize } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_VERSION } from "@zody/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import { createTarGzArchive } from "@zody/server/remote/localTarGz.js";
 
 function remoteAssetRenameEperm(): NodeJS.ErrnoException {
@@ -48,7 +48,7 @@ describe("remote asset cache Windows directory commit", () => {
   it("retries transient EPERM while committing a staged release component directory", async () => {
     const rootDir = await mkdtemp(join(tmpdir(), "zcode-remote-cache-rename-"));
     const sourceRoot = join(rootDir, "source");
-    const cdnRoot = join(rootDir, "cdn", ZCODE_VERSION);
+    const cdnRoot = join(rootDir, "cdn", ZODY_VERSION);
     const remoteCacheDir = join(rootDir, "remote-cache");
     const platformArch = "linux-x64";
     const failedRenameTargets: string[] = [];
@@ -64,7 +64,7 @@ describe("remote asset cache Windows directory commit", () => {
       const components = [
         {
           id: "server-bundle",
-          version: `${ZCODE_VERSION}-server-bundle`,
+          version: `${ZODY_VERSION}-server-bundle`,
           artifactPath: `components/${platformArch}/server-bundle.tar.gz`,
           mount: "server",
         },
@@ -104,7 +104,7 @@ describe("remote asset cache Windows directory commit", () => {
         JSON.stringify(
           {
             schemaVersion: 1,
-            appVersion: ZCODE_VERSION,
+            appVersion: ZODY_VERSION,
             platformArch,
             components: manifestComponents,
           },
@@ -159,7 +159,7 @@ describe("remote asset cache Windows directory commit", () => {
         {
           remoteCdnBaseUrl: pathToFileURL(join(rootDir, "cdn")).href,
           remoteCacheDir,
-          version: ZCODE_VERSION,
+          version: ZODY_VERSION,
           platformArch,
         },
         { log: () => undefined, logWarn: () => undefined },
@@ -169,7 +169,7 @@ describe("remote asset cache Windows directory commit", () => {
         join(
           remoteCacheDir,
           "releases",
-          ZCODE_VERSION,
+          ZODY_VERSION,
           platformArch,
           "glm-content",
           glmSha256,

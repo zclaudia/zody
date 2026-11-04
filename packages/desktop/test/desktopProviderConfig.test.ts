@@ -15,7 +15,7 @@ describe("resolveZCodeBuiltinProviderConfigFilePath", () => {
           isPackaged: true,
           resourcesPath: "/Applications/ZCode.app/Contents/Resources",
           appPath: "/Applications/ZCode.app/Contents/Resources/app.asar",
-          // 隔离宿主环境变量：ZCode 开发运行时会注入 ZCODE_BUILTIN_PROVIDER_CONFIG_FILE，
+          // 隔离宿主环境变量：ZCode 开发运行时会注入 ZODY_BUILTIN_PROVIDER_CONFIG_FILE，
           // 不显式清空会让本机跑单测时短路进 explicitPath 分支（CI 无此变量所以一直是绿的）。
           env: {},
         }),
@@ -36,7 +36,7 @@ describe("resolveZCodeBuiltinProviderConfigFilePath", () => {
   it("显式 ZCode Built-in Config Source 优先于安装布局", () => {
     expect(
       resolveZodyBuiltinProviderConfigFilePath({
-        env: { ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: "/fixtures/zody-builtin.json" },
+        env: { ZODY_BUILTIN_PROVIDER_CONFIG_FILE: "/fixtures/zody-builtin.json" },
         isPackaged: true,
         resourcesPath: "/Applications/ZCode.app/Contents/Resources",
       }),
@@ -51,7 +51,7 @@ describe("开发态按编译环境选取配置", () => {
   });
   it.each(["test", "production"])("%s 不受启动时的环境变量反向覆盖", async (environment) => {
     vi.resetModules();
-    vi.stubGlobal("__ZCODE_ENV__", environment);
+    vi.stubGlobal("__ZODY_ENV__", environment);
     const { resolveZodyBuiltinProviderConfigFilePath: resolvePath } =
       await import("../src/main/desktopProviderConfig.js");
     expect(
@@ -59,7 +59,7 @@ describe("开发态按编译环境选取配置", () => {
         resolvePath({
           isPackaged: false,
           appPath: "/repo/packages/desktop",
-          env: { ZCODE_ENV: environment === "test" ? "production" : "test" },
+          env: { ZODY_ENV: environment === "test" ? "production" : "test" },
         }),
       ),
     ).toBe(

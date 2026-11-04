@@ -115,7 +115,7 @@ test("actual audit CLI reports overridden formal rejection in JSON and text", as
   await writeFile(specPath, "it('has no fixture contract', async () => {});\n", "utf8");
   const env = {
     ...process.env,
-    ZCODE_CONVERSATION_SESSION_FORMAL_ADMISSION_ROOT: root,
+    ZODY_CONVERSATION_SESSION_FORMAL_ADMISSION_ROOT: root,
   };
 
   try {
@@ -140,14 +140,14 @@ test("ordinary audit CLI rejects the formal root override as test-only", async (
   const env = {
     ...process.env,
     NODE_ENV: "test",
-    ZCODE_CONVERSATION_SESSION_FORMAL_ADMISSION_ROOT: root,
+    ZODY_CONVERSATION_SESSION_FORMAL_ADMISSION_ROOT: root,
   };
   delete env.NODE_TEST_CONTEXT;
 
   try {
     const run = await runAudit(["--check"], env);
     assert.notEqual(run.exitCode, 0);
-    assert.match(run.stderr, /ZCODE_CONVERSATION_SESSION_FORMAL_ADMISSION_ROOT is test-only/);
+    assert.match(run.stderr, /ZODY_CONVERSATION_SESSION_FORMAL_ADMISSION_ROOT is test-only/);
   } finally {
     await rm(root, { force: true, recursive: true });
   }

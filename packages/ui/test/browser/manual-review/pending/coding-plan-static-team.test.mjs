@@ -6,7 +6,7 @@ import { chromium } from "playwright-core";
 // 连接真实 App 验证完整 hook/RPC/渲染链路，不注入套餐数据或修改登录态。
 test("未登录使用静态目录展示个人和团队横幅", async () => {
   const browser = await chromium.connectOverCDP(
-    process.env.ZCODE_E2E_CDP_URL ?? "http://localhost:9229",
+    process.env.ZODY_E2E_CDP_URL ?? "http://localhost:9229",
   );
   const page = browser
     .contexts()[0]

@@ -3,16 +3,16 @@ import {
   disposeServiceResourcesAndWait,
   materializeZodyBuiltinProviderConfig,
   getAppConfigDir,
-  ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/services/node";
 import { IZodyAgentService } from "@zody/services";
-import { ZCODE_VERSION } from "@zody/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import { createCoreHttpServer } from "./http.js";
 import { installParentDisconnectHandler } from "./parentDisconnect.js";
 import { resolveCoreServerId } from "./serverIdentity.js";
 import { createTaskActivityTracker } from "./taskActivityTracker.js";
 
-declare const __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__: string | undefined;
+declare const __ZODY_BUILTIN_PROVIDER_CONFIG_JSON__: string | undefined;
 
 export async function runServerCore(generation: number): Promise<void> {
   let shutdown: ((reason: string) => Promise<void>) | undefined;
@@ -25,18 +25,18 @@ export async function runServerCore(generation: number): Promise<void> {
   // fork（bot channels 移除）：topic-resource relay（createTopicResourcePeers /
   // topicResourceRelayChannel）是第三方 IM bot 的资源回传链，随 bot channels 整体删除。
   const explicitZodyBuiltinProviderConfigFilePath =
-    process.env[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
+    process.env[ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
   const zodyBuiltinProviderConfigFilePath = explicitZodyBuiltinProviderConfigFilePath
     ? explicitZodyBuiltinProviderConfigFilePath
-    : typeof __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__ === "string"
+    : typeof __ZODY_BUILTIN_PROVIDER_CONFIG_JSON__ === "string"
       ? await materializeZodyBuiltinProviderConfig({
           environmentConfigRoot: getAppConfigDir(),
-          content: __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__,
+          content: __ZODY_BUILTIN_PROVIDER_CONFIG_JSON__,
         })
       : undefined;
   if (!zodyBuiltinProviderConfigFilePath) {
     throw new Error(
-      `当前构建未嵌入 Zody Built-in Provider Config，且未设置 ${ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV}`,
+      `当前构建未嵌入 Zody Built-in Provider Config，且未设置 ${ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV}`,
     );
   }
   const services = createLocalServices({
@@ -64,7 +64,7 @@ export async function runServerCore(generation: number): Promise<void> {
     type: "ready",
     host: http.host,
     port: http.port,
-    version: ZCODE_VERSION,
+    version: ZODY_VERSION,
     generation,
   });
   let shutdownStarted = false;

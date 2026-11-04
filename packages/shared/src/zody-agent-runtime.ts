@@ -35,7 +35,7 @@ export const ZCODE_AGENT_RUNTIME: ZodyAgentRuntimeDescriptor = {
   nativeConfigDir: `${ZCODE_DATA_ROOT_DIR_NAME}/cli`,
   nativeConfigFileName: "config.json",
   missingBinaryMessage:
-    "[Zody Agent] glm binary 未找到，请设置 ZCODE_AGENT_WORKDIR、GLM_BINARY_PATH 或先准备 GLM 运行时资源",
+    "[Zody Agent] glm binary 未找到，请设置 ZODY_AGENT_WORKDIR、GLM_BINARY_PATH 或先准备 GLM 运行时资源",
   resolveEntrySegments: (platform) => [resolvePlatformBinaryName("zcode-agent", platform)],
   nodeBundleEntryFile: "zody.cjs",
   resolveNodeBundleSegments() {

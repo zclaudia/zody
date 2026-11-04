@@ -57,7 +57,7 @@ reads the active free plan identity and the daily quota bucket renewal time from
 one balance request:
 
 ```http
-GET https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZCODE_VERSION>
+GET https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZODY_VERSION>
 Authorization: Bearer <zcodejwttoken>          # Z.AI
 Authorization: Bearer <zcodejwttoken>          # BigModel
 X-Device-Mid: <telemetry-state.json deviceMid>  # required; missing -> 400 {"code":3001,"msg":"parameter error"}
@@ -76,7 +76,7 @@ include `data.plans` for active-plan detection and subscription metadata, plus
 `data.balances` for quota/remaining display. Clients must not call `current`
 before `balance` or issue a second `balance` request for the same snapshot.
 
-`app_version` always uses the current app `ZCODE_VERSION`, including development
+`app_version` always uses the current app `ZODY_VERSION`, including development
 builds, so backend gating observes the same version identity as the running app.
 
 `zcodejwttoken` is the OAuth backend JWT saved during Z.AI or BigModel login.
@@ -233,7 +233,7 @@ pricing cards, and any other client-config consumers in the same provider
 instance:
 
 ```http
-GET https://zcode.z.ai/api/v1/client/configs?app_version=<ZCODE_VERSION>&platform=<platform>-<arch>
+GET https://zcode.z.ai/api/v1/client/configs?app_version=<ZODY_VERSION>&platform=<platform>-<arch>
 ```
 
 `StartPlanCard` uses `configs.startPlanPreview`:

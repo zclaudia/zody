@@ -6,7 +6,7 @@ import {
 } from "@zody/services/node";
 
 /** Fixed compile-time opt-in. Missing/undefined keeps the normal Electron utility Host path. */
-declare const __ZCODE_CUA_NARROW_AGENT__: unknown;
+declare const __ZODY_CUA_NARROW_AGENT__: unknown;
 
 export const CUA_NARROW_PROFILE_KIND = "zody-cua-narrow-agent-profile";
 export const CUA_NARROW_PROFILE_SCHEMA_VERSION = 1;
@@ -247,5 +247,5 @@ export function parseCuaNarrowAgentBuildProfile(value: unknown): CuaNarrowAgentB
 }
 
 export function readCuaNarrowAgentBuildProfile(): unknown {
-  return typeof __ZCODE_CUA_NARROW_AGENT__ === "undefined" ? undefined : __ZCODE_CUA_NARROW_AGENT__;
+  return typeof __ZODY_CUA_NARROW_AGENT__ === "undefined" ? undefined : __ZODY_CUA_NARROW_AGENT__;
 }

@@ -19,7 +19,7 @@
 - pnpm 固定为 `10.33.2`，与 `apps/zcode-cli/package.json` 的 `packageManager` 保持一致。
 - `mise.toml` 不设置 `ELECTRON_MIRROR`，依赖安装阶段的 Electron 默认从官方源下载。访问 GitHub release 不稳定时，在本机 shell 或未入库的 `mise.local.toml` 中显式设置镜像，例如 `ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/`；预构建脚本的 Node 下载源同理用 `ZCODE_NODE_DIST_MIRROR` 覆盖，默认 `https://nodejs.org/dist`。
 - 任务入口仍调用根目录 `package.json` 中已有脚本，避免 desktop / web / agent 的启动语义分叉。
-- `dev` 任务调用 `pnpm dev:desktop:test`，并注入 `ZCODE_DATA_BASE_DIR=$HOME/.zody-dev-home`；实际应用数据落到 `$HOME/.zody-dev-home/.zody/`。
+- `dev` 任务调用 `pnpm dev:desktop:test`，并注入 `ZODY_DATA_BASE_DIR=$HOME/.zody-dev-home`；实际应用数据落到 `$HOME/.zody-dev-home/.zody/`。
 - Dev 数据目录不会从正式环境自动复制凭据、设置、任务历史或插件状态；首次启动需要重新登录和配置。
 - `pnpm dev:desktop:test` 本身仍保持原有数据目录语义；隔离只属于 `mise run dev` 入口。
 - 生产环境桌面启动使用 `dev-desktop-prod`，不继承 `dev` 任务的数据目录变量。
@@ -30,7 +30,7 @@
 
 `3996dcbdb3`（revert storage-profile 系列）撤掉了源码 Desktop 按 `app.isPackaged=false`
 自动选 `$HOME/.zcode-dev/` 的能力，也顺带撤掉了本入口的隔离。现在 storage profile 不再
-参与，mise 入口注入 `ZCODE_DATA_BASE_DIR` 是唯一的隔离手段；`$HOME/.zcode-dev/` 属于
+参与，mise 入口注入 `ZODY_DATA_BASE_DIR` 是唯一的隔离手段；`$HOME/.zcode-dev/` 属于
 废弃目录，不再被任何启动路径使用。
 
 ## 验证

@@ -134,7 +134,7 @@ describe("Node logging adapter", () => {
 
     try {
       const logger = createNodeLoggerFactory({
-        env: { ZCODE_RUNTIME_ENV: "development" },
+        env: { ZODY_RUNTIME_ENV: "development" },
         logDir,
       }).createLogger("test");
 
@@ -174,7 +174,7 @@ describe("Node logging adapter", () => {
 
     try {
       const logger = createNodeLoggerFactory({
-        env: { ZCODE_RUNTIME_ENV: "development", ZCODE_LOG_LEVEL: "info" },
+        env: { ZODY_RUNTIME_ENV: "development", ZCODE_LOG_LEVEL: "info" },
         logDir,
       }).createLogger("test");
 

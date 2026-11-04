@@ -16,7 +16,7 @@ signal.
 - Clear the indicator when the active turn completes, fails, is paused, or hands
   off to another local UI state such as a selection list.
 - Keep the feature local to the TUI presentation surface; do not add a
-  `ZCODE_` environment variable or alter provider/runtime contracts.
+  `ZODY_` environment variable or alter provider/runtime contracts.
 
 ## Rendering Contract
 

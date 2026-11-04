@@ -42,7 +42,7 @@ function parseEnvFile(content: string): Record<string, string> {
 
 async function readGatewayEnvFile(): Promise<Record<string, string>> {
   const candidates = [
-    process.env.ZCODE_GATEWAY_ENV_FILE?.trim(),
+    process.env.ZODY_GATEWAY_ENV_FILE?.trim(),
     join(process.cwd(), ".env.gateway.local"),
     join(process.cwd(), "../../.env.gateway.local"),
   ].filter((candidate): candidate is string => Boolean(candidate));
@@ -60,15 +60,15 @@ async function readGatewayEnvFile(): Promise<Record<string, string>> {
 export async function resolveGatewayE2EConfig(): Promise<GatewayE2EConfig | null> {
   const fileValues = await readGatewayEnvFile();
   const read = (key: string) => process.env[key]?.trim() || fileValues[key]?.trim() || "";
-  const gatewayUrl = read("ZCODE_GATEWAY_IT_URL");
-  const backendCredential = read("ZCODE_GATEWAY_BACKEND_CREDENTIAL");
-  const deviceCredential = read("ZCODE_GATEWAY_DEVICE_CREDENTIAL");
+  const gatewayUrl = read("ZODY_GATEWAY_IT_URL");
+  const backendCredential = read("ZODY_GATEWAY_BACKEND_CREDENTIAL");
+  const deviceCredential = read("ZODY_GATEWAY_DEVICE_CREDENTIAL");
   if (!gatewayUrl || !backendCredential || !deviceCredential) {
     return null;
   }
   return {
     gatewayUrl,
-    namespace: read("ZCODE_GATEWAY_NAMESPACE") || "zody",
+    namespace: read("ZODY_GATEWAY_NAMESPACE") || "zody",
     backendCredential,
     deviceCredential,
   };

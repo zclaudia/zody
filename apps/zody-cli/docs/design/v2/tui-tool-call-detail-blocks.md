@@ -117,7 +117,7 @@ the full patch.
   not values.
 - A single detail block should remain small, normally no more than four lines.
   Lines must be truncated using display-cell width, not JavaScript string length.
-- The feature does not add any `ZCODE_` environment variables.
+- The feature does not add any `ZODY_` environment variables.
 
 ## Failure Behavior
 

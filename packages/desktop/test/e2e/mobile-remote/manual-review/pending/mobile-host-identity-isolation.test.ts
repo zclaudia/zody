@@ -34,11 +34,11 @@ const SAVE_CREDENTIAL_BUTTON = "remote-access-save-credential";
 const CREDENTIAL_STATUS = "remote-access-credential-status";
 const GATEWAY_STATUS = "remote-access-gateway-status";
 const REMOTE_ACCESS_TOGGLE = "remote-access-toggle";
-const WORKSPACE_PATH = process.env.ZCODE_E2E_P8_IDENTITY_WORKSPACE_PATH?.trim() ?? "";
-const SSH_A_PORT = Number(process.env.ZCODE_E2E_P8_IDENTITY_A_PORT);
-const SSH_B_PORT = Number(process.env.ZCODE_E2E_P8_IDENTITY_B_PORT);
-const SSH_A_PASSWORD_FILE = process.env.ZCODE_E2E_P8_IDENTITY_A_PASSWORD_FILE?.trim() ?? "";
-const SSH_B_PASSWORD_FILE = process.env.ZCODE_E2E_P8_IDENTITY_B_PASSWORD_FILE?.trim() ?? "";
+const WORKSPACE_PATH = process.env.ZODY_E2E_P8_IDENTITY_WORKSPACE_PATH?.trim() ?? "";
+const SSH_A_PORT = Number(process.env.ZODY_E2E_P8_IDENTITY_A_PORT);
+const SSH_B_PORT = Number(process.env.ZODY_E2E_P8_IDENTITY_B_PORT);
+const SSH_A_PASSWORD_FILE = process.env.ZODY_E2E_P8_IDENTITY_A_PASSWORD_FILE?.trim() ?? "";
+const SSH_B_PASSWORD_FILE = process.env.ZODY_E2E_P8_IDENTITY_B_PASSWORD_FILE?.trim() ?? "";
 const SEARCH_QUERY = "P8_HOST_IDENTITY_SEARCH_TOKEN";
 const CASE_MARKER = "E2E_MOBILE_P8_HOST_IDENTITY";
 

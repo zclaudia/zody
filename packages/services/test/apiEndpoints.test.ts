@@ -11,8 +11,8 @@ describe("ZCode API endpoints", () => {
   it("通过统一 ApiClient 注册并请求 client scenes", async () => {
     // fork（F3.1）：endpoint 常量在模块加载时解析，测试必须显式配置后再导入，
     // 避免依赖已删除的官方默认端点。
-    vi.stubEnv("ZCODE_ENV", "test");
-    vi.stubEnv("ZCODE_BASE_URL", TEST_ZCODE_ORIGIN);
+    vi.stubEnv("ZODY_ENV", "test");
+    vi.stubEnv("ZODY_BASE_URL", TEST_ZCODE_ORIGIN);
     vi.resetModules();
     const { ZCODE_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
     const { createNodeApiClient } = await import("../src/providers/api/nodeApiClient.js");
@@ -43,11 +43,11 @@ describe("ZCode API endpoints", () => {
   });
 
   it("fork（F3.1）：未配置端点时不生成相对 URL", async () => {
-    vi.stubEnv("ZCODE_ENV", "production");
-    vi.stubEnv("ZCODE_BASE_URL", "");
-    vi.stubEnv("ZCODE_ENDPOINT_ORIGIN", "");
-    vi.stubEnv("ZCODE_PRODUCTION_BASE_URL", "");
-    vi.stubEnv("ZCODE_TEST_BASE_URL", "");
+    vi.stubEnv("ZODY_ENV", "production");
+    vi.stubEnv("ZODY_BASE_URL", "");
+    vi.stubEnv("ZODY_ENDPOINT_ORIGIN", "");
+    vi.stubEnv("ZODY_PRODUCTION_BASE_URL", "");
+    vi.stubEnv("ZODY_TEST_BASE_URL", "");
     vi.resetModules();
     const { ZCODE_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
 

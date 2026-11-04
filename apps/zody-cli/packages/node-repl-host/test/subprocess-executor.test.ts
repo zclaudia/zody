@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import type { NodeReplRunResult } from "@zody/core/repl";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { buildNodeReplHostBundle } from "../scripts/build.mjs";
 import { createSubprocessNodeReplExecutor } from "@zody/node-repl-host/subprocess-executor";
 import { NODE_REPL_BROWSER_BRIDGE_SYMBOL } from "../src/runtime-bridge.js";
@@ -166,7 +166,9 @@ describe("candidate subprocess node_repl executor", () => {
       ZCODE_TEST_SECRET: "synthetic-secret",
       ZCODE_CUA_PERMISSION_BROKER_TOKEN: "synthetic-cua-token",
       ZCODE_NODE_REPL_BROWSER_BROKER_SOCKET: "/tmp/synthetic-browser.sock",
+      ZODY_NODE_REPL_BROWSER_BROKER_SOCKET: "/tmp/synthetic-browser-new.sock",
       ZCODE_NODE_REPL_BROWSER_BROKER_TOKEN: "synthetic-browser-token",
+      ZODY_NODE_REPL_BROWSER_BROKER_TOKEN: "synthetic-browser-new-token",
       NODE_OPTIONS: "--inspect=127.0.0.1:65531",
       NODE_PATH: "/tmp/synthetic-node-path",
       ELECTRON_RUN_AS_NODE: "1",
@@ -182,12 +184,27 @@ describe("candidate subprocess node_repl executor", () => {
     };
 
     expect(value.env.HOME).toBe(process.env.HOME);
-    expect(Object.keys(value.env).filter((key) => key.startsWith("ZCODE_"))).toEqual([]);
+    expect(Object.keys(value.env).filter((key) => (key.startsWith("ZCODE_") || key.startsWith("ZODY_")))).toEqual([]);
     expect(value.env.NODE_OPTIONS).toBeUndefined();
     expect(value.env.NODE_PATH).toBeUndefined();
     expect(value.env.ELECTRON_RUN_AS_NODE).toBe("1");
     expect(value.execArgv).toEqual([]);
     expect(value.electron).toBeUndefined();
+  });
+
+  it("does not expose old or new synthetic broker tokens to the child", async () => {
+    const result = await execute(
+      "({ oldPresent: process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN !== undefined, newPresent: process.env.ZODY_CUA_PERMISSION_BROKER_TOKEN !== undefined })",
+      {
+        env: {
+          PATH: process.env.PATH,
+          HOME: process.env.HOME,
+          ZCODE_CUA_PERMISSION_BROKER_TOKEN: "synthetic-old-token",
+          ZODY_CUA_PERMISSION_BROKER_TOKEN: "synthetic-new-token",
+        },
+      },
+    );
+    expect(resultObject(result)).toEqual({ oldPresent: false, newPresent: false });
   });
 
   it("only adds --jitless when the trusted composition explicitly requests it", async () => {
@@ -396,8 +413,8 @@ describe("candidate subprocess node_repl executor", () => {
       {
         env: {
           ...process.env,
-          ZCODE_NODE_REPL_BROWSER_BROKER_SOCKET: join(tmpdir(), "synthetic-does-not-exist.sock"),
-          ZCODE_NODE_REPL_BROWSER_BROKER_TOKEN: "synthetic",
+          ZODY_NODE_REPL_BROWSER_BROKER_SOCKET: join(tmpdir(), "synthetic-does-not-exist.sock"),
+          ZODY_NODE_REPL_BROWSER_BROKER_TOKEN: "synthetic",
         },
       },
     );
@@ -437,8 +454,8 @@ describe("candidate subprocess node_repl executor", () => {
       const withoutCapability = await execute(browserCode, {
         env: {
           ...process.env,
-          ZCODE_NODE_REPL_BROWSER_BROKER_SOCKET: socketPath,
-          ZCODE_NODE_REPL_BROWSER_BROKER_TOKEN: "synthetic",
+          ZODY_NODE_REPL_BROWSER_BROKER_SOCKET: socketPath,
+          ZODY_NODE_REPL_BROWSER_BROKER_TOKEN: "synthetic",
         },
       });
       expect(withoutCapability.result).toContain("unavailable:");
@@ -458,3 +475,25 @@ async function listen(server: Server, path: string): Promise<void> {
 async function closeServer(server: Server): Promise<void> {
   await new Promise<void>((resolve) => server.close(() => resolve()));
 }
+
+
+describe("CUA documentation root environment", () => {
+  it.each([
+    ["/synthetic/new", undefined, "/synthetic/new/docs"],
+    [undefined, "/synthetic/old", "/synthetic/browser/docs"],
+    ["/synthetic/new", "/synthetic/old", "/synthetic/new/docs"],
+    [undefined, undefined, "/synthetic/browser/docs"],
+  ])("consumes only the active CUA root", async (current, old, expected) => {
+    vi.resetModules();
+    vi.stubEnv("ZCODE_PLUGIN_ROOT", "/synthetic/browser");
+    vi.stubEnv("ZODY_CUA_PLUGIN_ROOT", current);
+    vi.stubEnv("ZCODE_CUA_PLUGIN_ROOT", old);
+    try {
+      const { DEFAULT_CUA_DOCUMENTATION_ROOT } = await import("../src/node-repl-session-executor.js");
+      expect(DEFAULT_CUA_DOCUMENTATION_ROOT).toBe(expected);
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
+  });
+});

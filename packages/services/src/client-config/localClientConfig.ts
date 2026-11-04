@@ -15,7 +15,7 @@ import {
  */
 
 /**
- * 动态工作流 offer：`ZCODE_DYNAMIC_WORKFLOW_MODE` 三档覆盖规则不变（shared 折叠裁决），
+ * 动态工作流 offer：`ZODY_DYNAMIC_WORKFLOW_MODE` 三档覆盖规则不变（shared 折叠裁决），
  * 覆盖缺省时落到 fork 固定提供值 `onDemand`（来源 default），再叠加用户设置
  * `dynamicWorkflowMode`（launch.md「The user's choice」；读取失败按抛错上抛，
  * 与原订阅服务路径一致，由调用方按各自契约降级）。

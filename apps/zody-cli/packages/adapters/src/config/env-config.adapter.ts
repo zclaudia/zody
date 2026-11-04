@@ -6,7 +6,7 @@ interface EnvConfigOptions {
   prefix?: string;
 }
 
-const DEFAULT_PREFIX = "ZCODE_";
+const DEFAULT_PREFIX = "ZODY_";
 
 /**
  * Parse ZCODE_* environment variables into config
@@ -67,7 +67,7 @@ export function parseEnvConfig(
  */
 export function getToolConcurrencyConfig(): { maxConcurrency: number } {
   return {
-    maxConcurrency: normalizeNumber(process.env.ZCODE_MAX_TOOL_CONCURRENCY ?? "10"),
+    maxConcurrency: normalizeNumber(process.env.ZODY_MAX_TOOL_CONCURRENCY ?? "10"),
   };
 }
 

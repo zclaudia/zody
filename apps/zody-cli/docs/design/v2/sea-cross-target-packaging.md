@@ -20,7 +20,7 @@ ZCode 的默认发布形态仍然是标准 Node.js CLI 包：`dist/zcode.cjs` �
 - 不实现完整 release pipeline、上传、压缩归档或包管理器发布。
 - 不实现 Windows Authenticode、macOS Developer ID、公证或 Linux 包格式。
 - 不支持 Alpine/musl 作为首批 SEA target。
-- 不把 target 配置做成 `ZCODE_` 环境变量。
+- 不把 target 配置做成 `ZODY_` 环境变量。
 
 ## Target 契约
 

@@ -128,6 +128,6 @@ it("编译失败保留上次可运行的加载器，编译阶段不执行 CLI", 
 it("拒绝 coverage 构建混用字节码", async () => {
   const { entryPath } = await fixture("42;");
   await expect(
-    buildDesktopAgentBytecode({ entryPath, electronPath, env: { ZCODE_E2E_COVERAGE: "1" } }),
+    buildDesktopAgentBytecode({ entryPath, electronPath, env: { ZODY_E2E_COVERAGE: "1" } }),
   ).rejects.toThrow(/coverage/);
 });

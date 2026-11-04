@@ -23,7 +23,7 @@ import {
 const createdRoots: string[] = [];
 
 afterEach(() => {
-  delete process.env.ZCODE_CUA_NARROW_AGENT_JSON;
+  delete process.env.ZODY_CUA_NARROW_AGENT_JSON;
   for (const root of createdRoots.splice(0).reverse()) {
     rmSync(root, { recursive: true, force: true });
   }
@@ -154,7 +154,7 @@ describe("cua narrow agent runtime", () => {
     const workspace = createWorkspace();
     const resources = createResources();
     const profile = createProfile(resources, [workspace]);
-    process.env.ZCODE_CUA_NARROW_AGENT_JSON = JSON.stringify(profile);
+    process.env.ZODY_CUA_NARROW_AGENT_JSON = JSON.stringify(profile);
 
     expect(readCuaNarrowAgentBuildProfile()).toBeUndefined();
     expect(() => parseCuaNarrowAgentBuildProfile(undefined)).toThrow(/kind/);

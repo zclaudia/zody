@@ -99,8 +99,8 @@ describe("Host startup identity to live CommandInbox submission", () => {
         : undefined,
       env: {
         HOME: workspacePath,
-        ZCODE_SESSION_DB_PATH: join(workspacePath, "db.sqlite"),
-        ZCODE_STORAGE_DIR: workspacePath,
+        ZODY_SESSION_DB_PATH: join(workspacePath, "db.sqlite"),
+        ZODY_STORAGE_DIR: workspacePath,
       },
       modelExecutor: modelExecutor(options.gates, options.onModelGenerate),
       runtimeConfig: {

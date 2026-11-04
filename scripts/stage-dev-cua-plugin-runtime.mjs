@@ -12,7 +12,7 @@ export function stageDevCuaPluginRuntime({
   desktopPackageRoot = resolve(repositoryRoot, "packages", "desktop"),
   pluginRoot = resolve(repositoryRoot, "apps", "zody-cli", "packages", "zody-cua-plugin"),
 } = {}) {
-  if (env.ZCODE_CUA_DEV_MODE !== "1") return [];
+  if (env.ZODY_CUA_DEV_MODE !== "1") return [];
   // 开源占位包不提供 Computer Use 原生能力，也不随附 Sharp：没有真实 producer 时不暂存。
   if (!isRealComputerUseProducerInstalled({ desktopPackageRoot })) return [];
 

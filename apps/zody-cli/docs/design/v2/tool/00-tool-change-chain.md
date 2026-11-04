@@ -948,7 +948,7 @@ Tool Agent Trace 统一在单调用 Executor 外层建立，handler 不单独埋
 
 核对项：
 
-- 新配置优先走 config/session/project/CLI 参数；新增 `ZCODE_` 环境变量前必须先写 spec。
+- 新配置优先走 config/session/project/CLI 参数；新增 `ZODY_` 环境变量前必须先写 spec。
 - model capability、provider kind、MCP capability、plugin namespace、subagent tool pool 是否影响 tool 可见性。
 - 删除旧实现时，导出入口、tests、docs、migration、legacy aliases 是否同步处理。
 - dynamic tool / MCP tool 必须经过 capability 声明、schema normalization、命名空间隔离和权限收口。

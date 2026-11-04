@@ -69,7 +69,7 @@ apps/zcode-cli/packages/zcode-guide-plugin/
 - **诊断默认隐藏**：`zcode commands|skills|plugins list` 人类模式需加 `--verbose` 才打印 diagnostics；`--json` 恒包含。
 - **hooks 信任门已移除**（commit bfde6ff44）：`canRunPluginHooks` 现恒 `true`，三方插件 hook **也会执行**。旧“仅官方执行/三方仅诊断”说法已过时；`marketplace.ts` 仍残留一条误导性 `plugin_unsupported_component` 警告。配置文件 hooks 需显式 `hooks.enabled=true`；有任一插件 hook 时运行器被强制启用。
 - **hooks 事件名**（精确 7 个）：`SessionStart`、`UserPromptSubmit`、`PreToolUse`、`PermissionRequest`、`PostToolUse`、`PostToolUseFailure`、`Stop`。`matcher` 是**大小写敏感正则**，对工具事件匹配工具名（含别名 `Task→Agent`、`Write|Edit→ApplyPatch`）。`command` 的 `timeout` 单位为**秒**，`process` 的 `timeoutMs` 为**毫秒**；`async` 字段目前是运行时 no-op。
-- **git 代理只认 `ZCODE_HTTP_PROXY`**（不认裸 `http_proxy`）——marketplace clone 失败时先查这个。
+- **git 代理只认 `ZODY_HTTP_PROXY`**（不认裸 `http_proxy`）——marketplace clone 失败时先查这个。
 - 停用/禁用状态持久化在 `~/.zcode/cli/config.json` 的 `plugins.enabledPlugins[id]`；内置“卸载”写 `plugins.suppressedBuiltins`；按路径禁用 skill/command 用 `skill["/abs/SKILL.md"].enable=false`。
 
 ## 验收

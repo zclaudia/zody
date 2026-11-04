@@ -51,7 +51,7 @@
       ],
       "cache": true,
       "env": [
-        "ZCODE_ENV",
+        "ZODY_ENV",
         "NODE_ENV"
       ]
     },
@@ -116,7 +116,7 @@
       ],
       "cache": true,
       "env": [
-        "ZCODE_ENV",
+        "ZODY_ENV",
         "NODE_ENV"
       ]
     }

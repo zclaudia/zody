@@ -200,8 +200,8 @@ describe("createZodyApp CUA control composition", () => {
         : {}),
       env: {
         HOME: workspacePath,
-        ZCODE_SESSION_DB_PATH: join(workspacePath, "db.sqlite"),
-        ZCODE_STORAGE_DIR: workspacePath,
+        ZODY_SESSION_DB_PATH: join(workspacePath, "db.sqlite"),
+        ZODY_STORAGE_DIR: workspacePath,
       },
       ...(composition.loggerFactory ? { loggerFactory: composition.loggerFactory } : {}),
       modelExecutor: modelExecutor(gates, onGenerate),

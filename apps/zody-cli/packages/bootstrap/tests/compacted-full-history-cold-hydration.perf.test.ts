@@ -31,7 +31,7 @@ const ACTIVE_EXTRA_TEXT_PART_COUNT = 14;
 const CHECKPOINT_COUNT = 1_805;
 const TOOL_NAMES = ["Read", "Grep", "Bash", "Edit"] as const;
 
-describe.skipIf(process.env.ZCODE_PERF_REPRO !== "1")(
+describe.skipIf(process.env.ZODY_PERF_REPRO !== "1")(
   "PERF03-E compacted full-history cold hydration repro",
   () => {
     it("replays the full branch even though runtime history uses the compact tail", () => {

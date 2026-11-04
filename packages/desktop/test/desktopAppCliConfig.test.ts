@@ -5,20 +5,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const originalHome = process.env.HOME;
 const originalUserProfile = process.env.USERPROFILE;
-const originalDeferAppDataCleanup = process.env.ZCODE_E2E_DEFER_APP_DATA_CLEANUP;
+const originalDeferAppDataCleanup = process.env.ZODY_E2E_DEFER_APP_DATA_CLEANUP;
 const tempHomes: string[] = [];
 
 afterEach(async () => {
   process.env.HOME = originalHome;
   process.env.USERPROFILE = originalUserProfile;
-  process.env.ZCODE_E2E_DEFER_APP_DATA_CLEANUP = originalDeferAppDataCleanup;
+  process.env.ZODY_E2E_DEFER_APP_DATA_CLEANUP = originalDeferAppDataCleanup;
   vi.resetModules();
   await Promise.all(tempHomes.splice(0).map((home) => rm(home, { recursive: true, force: true })));
 });
 
 describe("desktop e2e CLI config helpers", () => {
   it("defers app data cleanup to the WDIO afterSession owner", async () => {
-    process.env.ZCODE_E2E_DEFER_APP_DATA_CLEANUP = "1";
+    process.env.ZODY_E2E_DEFER_APP_DATA_CLEANUP = "1";
     const { clearAppData } = await importDesktopAppHelper();
 
     await expect(clearAppData()).resolves.toBeUndefined();

@@ -23,7 +23,7 @@ From the repository root:
 
 ```bash
 pnpm build
-ZCODE_API_KEY=sk-... node e2e/compact-microcompact/run.mjs
+ZODY_API_KEY=sk-... node e2e/compact-microcompact/run.mjs
 ```
 
 Run only local scripted cases, with no API key:
@@ -65,7 +65,7 @@ pnpm --filter zcode-cli exec tsx ../../apps/zody-cli/e2e/compact-microcompact/ru
 Run one case:
 
 ```bash
-ZCODE_API_KEY=sk-... node e2e/compact-microcompact/run.mjs --case=microcompact
+ZODY_API_KEY=sk-... node e2e/compact-microcompact/run.mjs --case=microcompact
 ```
 
 Dry-run setup:
@@ -80,7 +80,7 @@ Run from the repository root:
 
 ```bash
 docker build -f apps/zody-cli/e2e/compact-microcompact/Dockerfile -t zcode-compact-microcompact .
-docker run --rm -e ZCODE_API_KEY zcode-compact-microcompact
+docker run --rm -e ZODY_API_KEY zcode-compact-microcompact
 ```
 
 Run only the local scripted background Bash case in Docker, with no API key:

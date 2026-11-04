@@ -48,8 +48,8 @@ test("default darwin arm64 build selects the pinned narrow profile and manifest"
     CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerSelection.providerId,
   );
   assert.deepEqual(createMacosCuaDemoBuildEnv(selection), {
-    ZCODE_CUA_NARROW_MANIFEST: selection.manifestPath,
-    ZCODE_CUA_NARROW_AGENT_JSON: selection.profileJson,
+    ZODY_CUA_NARROW_MANIFEST: selection.manifestPath,
+    ZODY_CUA_NARROW_AGENT_JSON: selection.profileJson,
   });
 
   assert.equal(

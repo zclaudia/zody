@@ -30,7 +30,7 @@ describe("ensureTelemetryDeviceMid", () => {
 
   it("远端主机没有 telemetry-state.json 时 ensureTelemetryDeviceMid 会创建；来源头已停发 X-Device-Mid", async () => {
     // F2.10：来源头不再携带 X-Device-Mid；ensureTelemetryDeviceMid 只服务遥测 body 的
-    // device_mid 字段（遥测上报整体由构建期 ZCODE_TELEMETRY_REPORT_ENDPOINT 控制）。
+    // device_mid 字段（遥测上报整体由构建期 ZODY_TELEMETRY_REPORT_ENDPOINT 控制）。
     const { stateFile } = createIsolatedDataBaseDir();
     expect(existsSync(stateFile)).toBe(false);
     expect(buildZodySourceHeaders()["X-Device-Mid"]).toBeUndefined();

@@ -21,7 +21,7 @@ App 允许设置「数据存储路径」（`setting.json.dataBaseDir`），但**
 | --- | --- | --- | --- |
 | app services（host 进程） | `{dataBaseDir}/.zcode`，默认 `~/.zcode` | 是 | `packages/services/src/paths.ts` `getZCodeDataRootDir()` |
 | 「数据存储路径」切换时的迁移 | 只复制 `.zcode/v2`，且是复制不是移动 | — | `packages/services/src/paths.ts` `copyDataDirectory()` |
-| zcode-cli（agent 进程） | `~/.zcode/cli/config.json` 的 `storage.dir`，默认 `~/.zcode`；app **不下发** `ZCODE_STORAGE_DIR` | 否 | `apps/zcode-cli/packages/bootstrap/src/app/create-app.ts:184` |
+| zcode-cli（agent 进程） | `~/.zcode/cli/config.json` 的 `storage.dir`，默认 `~/.zcode`；app **不下发** `ZODY_STORAGE_DIR` | 否 | `apps/zcode-cli/packages/bootstrap/src/app/create-app.ts:184` |
 | 模型调用轨迹 model-io | 直接 `homedir()/.zcode/cli/{debug,rollout}` | 否（硬编码） | `apps/zcode-cli/packages/adapters/src/model/runner-debug.ts` `getModelIOBaseDir` |
 | hooks 信任库 / subagents / skills / commands | 读 `~/.zcode/cli/config.json` 的 `storage.dir` | 否 | `packages/services/src/hooks/hooksService.ts:153-173` 等 |
 | Computer Use Helper、日志导出对 cli 目录的引用 | `homedir()/.zcode/...` | 否（硬编码） | `packages/desktop/src/main/exportLogs.ts:34-48` |

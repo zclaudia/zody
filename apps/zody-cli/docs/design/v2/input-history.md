@@ -89,7 +89,7 @@ points past the oldest entry for the project.
 ## Persistence
 
 Input history uses the existing session SQLite database, controlled by
-`storage.sessionDbPath`. No new `ZCODE_` environment variable is introduced.
+`storage.sessionDbPath`. No new `ZODY_` environment variable is introduced.
 
 ```sql
 create table input_history (

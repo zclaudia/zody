@@ -26,11 +26,11 @@
 
 1. 主进程启动 → 从 `homedir()/.zody/v2/setting.json` 读取 `dataBaseDir`
 2. 如果有值 → 调用 `setDataBaseDir(dir)` 切换后续所有数据路径
-3. 启动 host process 时通过环境变量 `ZCODE_DATA_BASE_DIR` 传递给子进程
+3. 启动 host process 时通过环境变量 `ZODY_DATA_BASE_DIR` 传递给子进程
 
 路径解析优先级（`getDataBaseDir()`）：
 1. `setDataBaseDir()` 设置的值（主进程 bootstrap）
-2. `process.env.ZCODE_DATA_BASE_DIR`（host process 通过环境变量接收）
+2. `process.env.ZODY_DATA_BASE_DIR`（host process 通过环境变量接收）
 3. `os.homedir()`（兜底默认值）
 
 ## 复制行为

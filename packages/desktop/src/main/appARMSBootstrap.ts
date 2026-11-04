@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { basename } from "node:path";
 import armsRum from "@arms/rum-electron";
 import { ZCODE_AGENT_LIFECYCLE_LOG_MARKER } from "@zody/shared/process-diagnostic";
-import { ZCODE_ARMS_RUM_ENDPOINT, ZCODE_VERSION, mapZodyEnvToArmsRumEnv } from "@zody/shared";
+import { ZODY_ARMS_RUM_ENDPOINT, ZODY_VERSION, mapZodyEnvToArmsRumEnv } from "@zody/shared";
 import { ARMS_BROWSER_COLLECTORS, parseArmsViewName } from "../shared/armsRumShared.js";
 import { redactArmsEventBatch } from "./armsEventRedaction.js";
 import { ensureDesktopDeviceMidSync } from "./desktopDeviceMid.js";
@@ -162,16 +162,16 @@ armsRum.client.useReporter = (reporter) => {
 };
 export const armsInitPromise = armsRum
   .init({
-    enable: ZCODE_ARMS_RUM_ENDPOINT !== "",
-    version: ZCODE_VERSION,
-    endpoint: ZCODE_ARMS_RUM_ENDPOINT,
+    enable: ZODY_ARMS_RUM_ENDPOINT !== "",
+    version: ZODY_VERSION,
+    endpoint: ZODY_ARMS_RUM_ENDPOINT,
     env: armsRumEnv,
     // Browser SDK 由 SDK 在 dom-ready 经 executeJavaScript 注入；勿再在 preload/renderer 手动 init，避免重复采集
     autoInject: true,
     browserCollectors: { ...ARMS_BROWSER_COLLECTORS },
     app: {
       name: runtimeApplicationName,
-      version: ZCODE_VERSION,
+      version: ZODY_VERSION,
       env: armsRumEnv,
       type: "electron",
       framework: "react",
@@ -249,7 +249,7 @@ export const armsInitPromise = armsRum
     },
   })
   .then(() => {
-    logger.info(`[arms] electron initialized env=${armsRumEnv} version=${ZCODE_VERSION}`);
+    logger.info(`[arms] electron initialized env=${armsRumEnv} version=${ZODY_VERSION}`);
   })
   .catch((error) => {
     logger.error("[arms] electron init failed:", error);

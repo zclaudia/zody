@@ -43,7 +43,7 @@ export type {
 } from "./protocol.js";
 export type { WorkspacePurpose } from "./workspacePurpose.js";
 export { DEFAULT_LOCALE } from "./protocol.js";
-export { ZCODE_VERSION, ZCODE_COMMIT, ZCODE_BUILD_TIME } from "./version.js";
+export { ZODY_VERSION, ZODY_COMMIT, ZODY_BUILD_TIME } from "./version.js";
 export type { HelloMessage, HelloAckMessage } from "./handshake.js";
 export type { ArmsRumEnv, ZodyEnv, ZodyProductFlavor } from "./env.js";
 export type { RemoteAssetInstallMode } from "./remoteAssetInstallMode.js";
@@ -76,16 +76,16 @@ export {
   serializeShortcutBinding,
 } from "./shortcutCommands.js";
 export {
-  ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
-  ZCODE_APP_VERSION_ENV,
-  ZCODE_BUILD_COMMIT_ID_ENV,
+  ZODY_ENV,
+  ZODY_PRODUCT_FLAVOR,
+  ZODY_APP_VERSION_ENV,
+  ZODY_BUILD_COMMIT_ID_ENV,
   RUNTIME_ZCODE_DEBUG,
-  ZCODE_ARMS_RUM_ENDPOINT,
-  ZCODE_TELEMETRY_REPORT_ENDPOINT,
-  ZCODE_AUTO_UPDATE_ENABLED,
-  ZCODE_DOWNLOAD_PAGE_URL,
-  ZCODE_FEEDBACK_ISSUE_URL,
+  ZODY_ARMS_RUM_ENDPOINT,
+  ZODY_TELEMETRY_REPORT_ENDPOINT,
+  ZODY_AUTO_UPDATE_ENABLED,
+  ZODY_DOWNLOAD_PAGE_URL,
+  ZODY_FEEDBACK_ISSUE_URL,
   isDesktopAutoUpdateActive,
   mapZodyEnvToArmsRumEnv,
   normalizeZodyEnv,

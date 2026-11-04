@@ -11,11 +11,11 @@ import { fileURLToPath } from "node:url";
 import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE, ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts";
 import {
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-  ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
-  ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
+  ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
-  ZCODE_RUNTIME_ENV_KEY,
-  ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
+  ZODY_RUNTIME_ENV_KEY,
+  ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY,
   readZodyToolEnvPassthroughEnv,
   resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
@@ -185,7 +185,7 @@ test("prepares a sanitized CLI runtime env with ZCode-owned runtime keys", () =>
     NODE_ENV: "development",
     HTTP_PROXY: "http://ambient-proxy:8080",
     NODE_EXTRA_CA_CERTS: "/tmp/ambient-ca.pem",
-    ZCODE_HTTP_PROXY: "http://zcode-proxy:8080",
+    ZODY_HTTP_PROXY: "http://zcode-proxy:8080",
     no_proxy: ".example.test",
     npm_config_proxy: "http://npm-proxy:8080",
   };
@@ -193,9 +193,9 @@ test("prepares a sanitized CLI runtime env with ZCode-owned runtime keys", () =>
   const env = prepareCliRuntimeEnv(sourceEnv, ["/usr/bin/node", "/workspace/bin/zcode.js"]);
   const toolEnv = readZodyToolEnvPassthroughEnv(env);
 
-  assert.equal(env.ZCODE_RUNTIME_ENV, "production");
-  assert.equal(env.ZCODE_HTTP_PROXY, "http://zcode-proxy:8080");
-  assert.ok(env[ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY]);
+  assert.equal(env.ZODY_RUNTIME_ENV, "production");
+  assert.equal(env.ZODY_HTTP_PROXY, "http://zcode-proxy:8080");
+  assert.ok(env[ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY]);
   assert.deepEqual(toolEnv, {
     HTTP_PROXY: "http://ambient-proxy:8080",
     NODE_EXTRA_CA_CERTS: "/tmp/ambient-ca.pem",
@@ -213,37 +213,37 @@ test("prepares a sanitized CLI runtime env with ZCode-owned runtime keys", () =>
 test("prepares beta CLI runtime env with beta storage root", () => {
   const env = prepareCliRuntimeEnv(
     {
-      ZCODE_BETA: "1",
+      ZODY_BETA: "1",
     },
     ["/usr/bin/node", "/workspace/bin/zcode.js"],
   );
 
-  assert.equal(env.ZCODE_STORAGE_DIR, join(homedir(), ".zody", "beta"));
+  assert.equal(env.ZODY_STORAGE_DIR, join(homedir(), ".zody", "beta"));
 });
 
 test("detects zody-beta executable name and stores data under ~/.zody/beta", () => {
   const env = prepareCliRuntimeEnv({}, ["/usr/bin/node", "/usr/local/bin/zody-beta"]);
-  assert.equal(env.ZCODE_STORAGE_DIR, join(homedir(), ".zody", "beta"));
+  assert.equal(env.ZODY_STORAGE_DIR, join(homedir(), ".zody", "beta"));
 
   const windowsEnv = prepareCliRuntimeEnv({}, ["C:\\node.exe", "C:\\Zody\\zody-beta.exe"]);
-  assert.equal(windowsEnv.ZCODE_STORAGE_DIR, join(homedir(), ".zody", "beta"));
+  assert.equal(windowsEnv.ZODY_STORAGE_DIR, join(homedir(), ".zody", "beta"));
 });
 
 test("does not treat the upstream zcode-beta executable name as beta", () => {
   const env = prepareCliRuntimeEnv({}, ["/usr/bin/node", "/usr/local/bin/zcode-beta"]);
-  assert.equal(env.ZCODE_STORAGE_DIR, undefined);
+  assert.equal(env.ZODY_STORAGE_DIR, undefined);
 });
 
 test("preserves explicit storage root when beta mode is enabled", () => {
   const env = prepareCliRuntimeEnv(
     {
-      ZCODE_BETA: "1",
-      ZCODE_STORAGE_DIR: "/tmp/custom-zcode-home",
+      ZODY_BETA: "1",
+      ZODY_STORAGE_DIR: "/tmp/custom-zcode-home",
     },
     ["/usr/bin/node", "/workspace/bin/zcode.js"],
   );
 
-  assert.equal(env.ZCODE_STORAGE_DIR, "/tmp/custom-zcode-home");
+  assert.equal(env.ZODY_STORAGE_DIR, "/tmp/custom-zcode-home");
 });
 
 test("opens the TUI by default", async () => {
@@ -298,7 +298,7 @@ test("passes developer mode, version, and workspace git branch into the TUI", as
     ...createPromptDeps(),
     cwd: () => workspaceDirectory,
     env: {
-      ZCODE_RUNTIME_ENV: "development",
+      ZODY_RUNTIME_ENV: "development",
     },
     resolveWorkspaceGitBranch: async (options) => {
       assert.equal(options.workspaceDirectory, workspaceDirectory);
@@ -3844,12 +3844,12 @@ test("retired argv-based CUA host fails closed without the shared node_repl mark
   const serverPath = join(root, "server.js");
   const outputPath = join(root, "host-output.json");
   const keys = [
-    "ZCODE_CUA_PERMISSION_BROKER_SOCKET",
+    "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
     ZCODE_PLUGIN_ID_ENV_KEY,
-    ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-    ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+    ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+    ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
   const originalEnv = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
 
@@ -3867,12 +3867,12 @@ export async function main() {
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
     process.env[ZCODE_PLUGIN_ID_ENV_KEY] = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
-    process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
+    process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
-    process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
+    process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
-    assert.equal(process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
+    assert.equal(process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
     const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
     const exitCode = await runPluginHostCommand(ctx, [
@@ -3903,12 +3903,12 @@ test("shared node_repl host restores the captured CUA broker credentials", async
   const serverPath = join(root, "server.js");
   const outputPath = join(root, "host-output.json");
   const keys = [
-    "ZCODE_CUA_PERMISSION_BROKER_SOCKET",
+    "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
     ZCODE_PLUGIN_ID_ENV_KEY,
-    ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-    ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+    ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+    ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
   const originalEnv = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
 
@@ -3919,7 +3919,7 @@ test("shared node_repl host restores the captured CUA broker credentials", async
       `import { writeFile } from "node:fs/promises";
 export async function main() {
   await writeFile(process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT, JSON.stringify({
-    socket: process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET,
+    socket: process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET,
     token: process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN,
   }));
 }
@@ -3927,10 +3927,10 @@ export async function main() {
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
     process.env[ZCODE_PLUGIN_ID_ENV_KEY] = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
-    process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
-    process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
+    process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
+    process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
-    process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
+    process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
@@ -3947,7 +3947,7 @@ export async function main() {
     assert.equal(hostEnv.socket, "/tmp/cua-broker.sock");
     assert.equal(hostEnv.token, undefined);
     // 宿主只在运行期间短暂恢复，跑完父进程 env 必须回到已剔除状态。
-    assert.equal(process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET, undefined);
+    assert.equal(process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET, undefined);
     assert.equal(process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN, undefined);
   } finally {
     resetCapturedZodyCuaBrokerCredentialsForTest();
@@ -3967,12 +3967,12 @@ test("shared node_repl host launches with identity-mode credentials (socket + au
   const serverPath = join(root, "server.js");
   const outputPath = join(root, "host-output.json");
   const keys = [
-    "ZCODE_CUA_PERMISSION_BROKER_SOCKET",
+    "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
     ZCODE_PLUGIN_ID_ENV_KEY,
-    ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-    ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+    ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+    ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
   const originalEnv = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
 
@@ -3983,7 +3983,7 @@ test("shared node_repl host launches with identity-mode credentials (socket + au
       `import { writeFile } from "node:fs/promises";
 export async function main() {
   await writeFile(process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT, JSON.stringify({
-    socket: process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET,
+    socket: process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET,
     token: process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN ?? null,
   }));
 }
@@ -3991,10 +3991,10 @@ export async function main() {
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
     process.env[ZCODE_PLUGIN_ID_ENV_KEY] = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
-    process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
-    process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
+    process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
+    process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     delete process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN;
-    process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
+    process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
@@ -4020,12 +4020,12 @@ test("plugin host refuses non-official code while product broker credentials are
   const serverPath = join(root, "server.js");
   const outputPath = join(root, "host-output.json");
   const keys = [
-    "ZCODE_CUA_PERMISSION_BROKER_SOCKET",
+    "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
     ZCODE_PLUGIN_ID_ENV_KEY,
-    ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-    ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+    ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+    ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
   const originalEnv = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
 
@@ -4041,12 +4041,12 @@ export async function main() {
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
     process.env[ZCODE_PLUGIN_ID_ENV_KEY] = "zcode-cua@third-party";
-    process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
+    process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "must-not-leak";
-    process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-authority";
+    process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-authority";
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
-    assert.equal(process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
+    assert.equal(process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
     const ctx = createContext([
       ZCODE_PLUGIN_HOST_COMMAND,
@@ -4471,10 +4471,10 @@ test("loads dotenv before creating the prompt app", async () => {
     env,
     loadDotenv: (options) => {
       if (options?.env) {
-        options.env.ZCODE_API_KEY = "loaded-at-runtime";
+        options.env.ZODY_API_KEY = "loaded-at-runtime";
       }
       return {
-        keys: ["ZCODE_API_KEY"],
+        keys: ["ZODY_API_KEY"],
         loaded: true,
         path: "/tmp/project/.env",
       };
@@ -4482,7 +4482,7 @@ test("loads dotenv before creating the prompt app", async () => {
   });
 
   assert.equal(exitCode, 0);
-  assert.equal(appEnv?.ZCODE_API_KEY, "loaded-at-runtime");
+  assert.equal(appEnv?.ZODY_API_KEY, "loaded-at-runtime");
   assert.equal(ctx.stdout.output(), "hello env\n");
   assert.equal(ctx.stderr.output(), "");
 });
@@ -5560,7 +5560,7 @@ test("dispatches app-server stdio command to the ZCode Protocol runner without p
       assert.equal(options?.output, ctx.stdout);
       assert.equal(options?.version, "0.0.0");
       assert.equal(options?.presentationSurface, "terminal");
-      assert.equal(options?.env?.[ZCODE_RUNTIME_ENV_KEY], "production");
+      assert.equal(options?.env?.[ZODY_RUNTIME_ENV_KEY], "production");
     },
   });
 
@@ -5637,16 +5637,16 @@ test("loads dotenv for app-server only in development runtime", async () => {
   const exitCode = await run(ctx, {
     cwd: () => "/workspace",
     env: {
-      [ZCODE_RUNTIME_ENV_KEY]: "development",
+      [ZODY_RUNTIME_ENV_KEY]: "development",
     },
     loadDotenv: (options) => {
       dotenvCalls += 1;
       assert.equal(options?.cwd, "/workspace");
       if (options?.env) {
-        options.env.ZCODE_API_KEY = "loaded-for-dev-protocol";
+        options.env.ZODY_API_KEY = "loaded-for-dev-protocol";
       }
       return {
-        keys: ["ZCODE_API_KEY"],
+        keys: ["ZODY_API_KEY"],
         loaded: true,
         path: "/workspace/.env",
       };
@@ -5654,8 +5654,8 @@ test("loads dotenv for app-server only in development runtime", async () => {
     runZodyProtocolAgent: async (options) => {
       called = true;
       assert.equal(options?.cwd, "/workspace");
-      assert.equal(options?.env?.[ZCODE_RUNTIME_ENV_KEY], "development");
-      assert.equal(options?.env?.ZCODE_API_KEY, "loaded-for-dev-protocol");
+      assert.equal(options?.env?.[ZODY_RUNTIME_ENV_KEY], "development");
+      assert.equal(options?.env?.ZODY_API_KEY, "loaded-for-dev-protocol");
     },
   });
 

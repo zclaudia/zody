@@ -83,7 +83,7 @@ embedded search 分支，主智能体和 `Explore` child runtime 都不暴露 di
 
 Node adapter 默认使用随包发布的 ripgrep WASM 能力执行内容搜索。WASM ripgrep 是基础设施层细节：它不暴露给 core，不要求用户系统安装 `rg`，也不通过 shell 执行外部命令。adapter 必须保留受控 JS fallback，用于 WASM 初始化失败、打包环境不支持 WASI 或测试注入；fallback 的行为应尽量保持与 ripgrep 输出契约一致。
 
-第一版不新增 `ZCODE_` 环境变量开关。普通 npm 包和 SEA 打包都必须把 ripgrep WASM 运行时代码纳入发布产物，详见 `docs/design/v2/tool/11-ripgrep-wasm-packaging.md`。
+第一版不新增 `ZODY_` 环境变量开关。普通 npm 包和 SEA 打包都必须把 ripgrep WASM 运行时代码纳入发布产物，详见 `docs/design/v2/tool/11-ripgrep-wasm-packaging.md`。
 
 ## 结果预算
 

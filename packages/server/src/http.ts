@@ -32,7 +32,7 @@ import {
   remoteTargetSchema,
   SERVER_REMOTE_PROTOCOL_VERSION,
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
-  ZCODE_VERSION,
+  ZODY_VERSION,
   type ServerRemoteInfo,
   type ServerRemoteWorkspaceInfo,
 } from "@zody/shared";
@@ -154,7 +154,7 @@ function readTrimmedEnv(name: string): string | undefined {
 
 function resolveServerId(options: HttpServerOptions): string {
   return (
-    options.serverId?.trim() || readTrimmedEnv("ZCODE_SERVER_ID") || hostname() || "zody-server"
+    options.serverId?.trim() || readTrimmedEnv("ZODY_SERVER_ID") || hostname() || "zody-server"
   );
 }
 
@@ -162,7 +162,7 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
   if (options.workspaces) {
     return options.workspaces;
   }
-  const workspacePath = readTrimmedEnv("ZCODE_SERVER_WORKSPACE") || process.cwd();
+  const workspacePath = readTrimmedEnv("ZODY_SERVER_WORKSPACE") || process.cwd();
   return [
     {
       path: workspacePath,
@@ -174,10 +174,10 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
 function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
   return {
     serverId: resolveServerId(options),
-    ...(options.name?.trim() || readTrimmedEnv("ZCODE_SERVER_NAME")
-      ? { name: options.name?.trim() || readTrimmedEnv("ZCODE_SERVER_NAME") }
+    ...(options.name?.trim() || readTrimmedEnv("ZODY_SERVER_NAME")
+      ? { name: options.name?.trim() || readTrimmedEnv("ZODY_SERVER_NAME") }
       : {}),
-    version: ZCODE_VERSION,
+    version: ZODY_VERSION,
     protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
     authRequired: Boolean(options.authToken?.trim()),
     workspaces: resolveServerWorkspaces(options),

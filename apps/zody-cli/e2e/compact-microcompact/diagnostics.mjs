@@ -35,7 +35,7 @@ function truncate(value, maxLength = 2000) {
 
 function redactSecrets(value) {
   let output = value;
-  for (const secret of [process.env.ZCODE_API_KEY]) {
+  for (const secret of [process.env.ZODY_API_KEY]) {
     if (secret && secret.length > 8) {
       output = output.split(secret).join(`${secret.slice(0, 4)}...${secret.slice(-4)}`);
     }

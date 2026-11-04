@@ -40,8 +40,8 @@ const SAVE_CREDENTIAL_BUTTON = "remote-access-save-credential";
 const CREDENTIAL_STATUS = "remote-access-credential-status";
 const TOGGLE = "remote-access-toggle";
 const GATEWAY_STATUS = "remote-access-gateway-status";
-const WORKSPACE_PATH = process.env.ZCODE_E2E_P8_REMOTE_WORKSPACE?.trim() ?? "";
-const SSH_CONTAINER = process.env.ZCODE_E2E_P8_SSH_CONTAINER?.trim() ?? "";
+const WORKSPACE_PATH = process.env.ZODY_E2E_P8_REMOTE_WORKSPACE?.trim() ?? "";
+const SSH_CONTAINER = process.env.ZODY_E2E_P8_SSH_CONTAINER?.trim() ?? "";
 
 let gatewayConfig: GatewayE2EConfig | null = null;
 let provider: SSHLifecycleProvider | null = null;
@@ -60,13 +60,13 @@ describe("P8 mobile remote SSH workspace", () => {
 
   it("P8-R01/02 通过 Gateway 搜索和浏览 SSH workspace，断开后更新附件并重读", async function () {
     if (!gatewayConfig || !WORKSPACE_PATH || !SSH_CONTAINER) this.skip();
-    const passwordFile = process.env.ZCODE_E2E_P8_SSH_PASSWORD_FILE?.trim();
+    const passwordFile = process.env.ZODY_E2E_P8_SSH_PASSWORD_FILE?.trim();
     if (!passwordFile) this.skip();
     const password = (await readFile(passwordFile, "utf8")).trim();
     sshConfig = {
-      host: process.env.ZCODE_E2E_P8_SSH_HOST ?? "127.0.0.1",
-      port: Number(process.env.ZCODE_E2E_P8_SSH_PORT),
-      username: process.env.ZCODE_E2E_P8_SSH_USERNAME ?? "root",
+      host: process.env.ZODY_E2E_P8_SSH_HOST ?? "127.0.0.1",
+      port: Number(process.env.ZODY_E2E_P8_SSH_PORT),
+      username: process.env.ZODY_E2E_P8_SSH_USERNAME ?? "root",
       password,
     };
     const gateway = gatewayConfig;
@@ -243,7 +243,7 @@ async function openMobilePage(config: GatewayE2EConfig) {
     browserInstance = await chromium.launch({
       headless: true,
       executablePath:
-        process.env.ZCODE_E2E_CHROME_BINARY?.trim() ||
+        process.env.ZODY_E2E_CHROME_BINARY?.trim() ||
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     });
     const context = await browserInstance.newContext({
@@ -302,9 +302,9 @@ async function assertUnavailableRemoteSearch(page: import("playwright-core").Pag
 }
 
 async function publishHandoffAndWaitForRelease(gateway: GatewayE2EConfig, backendId: string) {
-  const handoffPath = process.env.ZCODE_E2E_P8_REMOTE_HANDOFF_FILE?.trim();
-  const releasePath = process.env.ZCODE_E2E_P8_REMOTE_RELEASE_FILE?.trim();
-  const deviceCredentialFile = process.env.ZCODE_E2E_P8_REMOTE_DEVICE_CREDENTIAL_FILE?.trim();
+  const handoffPath = process.env.ZODY_E2E_P8_REMOTE_HANDOFF_FILE?.trim();
+  const releasePath = process.env.ZODY_E2E_P8_REMOTE_RELEASE_FILE?.trim();
+  const deviceCredentialFile = process.env.ZODY_E2E_P8_REMOTE_DEVICE_CREDENTIAL_FILE?.trim();
   if (!handoffPath || !releasePath || !deviceCredentialFile) {
     throw new Error("P8 Android handoff paths were not configured");
   }

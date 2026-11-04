@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ProviderConfigMap, createAccountProviderConfigSnapshot } from "@zody/provider";
 import {
-  ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
-  ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/provider-node";
 import { zodyProtocolMethods } from "@zody/shared";
 import {
@@ -25,10 +25,10 @@ async function startRuntime() {
   const directory = await mkdtemp(join(tmpdir(), "account-delivery-"));
   cleanups.push(() => rm(directory, { recursive: true, force: true }));
   const started = await startProcessProviderRegistryRuntime({
-    [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: fileURLToPath(
+    [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: fileURLToPath(
       new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
     ),
-    [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(directory, "personal.json"),
+    [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(directory, "personal.json"),
   });
   cleanups.unshift(async () => started.dispose());
   return started;

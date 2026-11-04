@@ -23,7 +23,7 @@ import {
 
 export {
   materializeZodyBuiltinProviderConfig,
-  ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/provider-node";
 // fork（bots 移除）：readTopicResourceFromRelay / validateTopicResourceFromRelay 只被 topic
 // resource executor 使用，随 bot channels 功能整体删除；IChannel import 只服务已删除的
@@ -57,8 +57,8 @@ export {
   parseFsFaultRulesFromEnvValue,
   resetProcessFsFaultInjectorForTests,
   setFsFaultInjectorForTests,
-  ZCODE_E2E_FS_FAULTS_ALLOW_ENV,
-  ZCODE_E2E_FS_FAULTS_ENV,
+  ZODY_E2E_FS_FAULTS_ALLOW_ENV,
+  ZODY_E2E_FS_FAULTS_ENV,
 } from "./fs/fsFaultInjection.js";
 export type {
   FsFaultCheckInput,
@@ -82,7 +82,7 @@ export {
   getGitCheckpointIndexRootDir,
   copyDataDirectory,
   validateDataBaseDirTarget,
-  ZCODE_WINDOWS_APP_INSTALL_DIR_ENV,
+  ZODY_WINDOWS_APP_INSTALL_DIR_ENV,
 } from "./paths.js";
 export { createGitService } from "./git/gitService.js";
 export { GitCommitMessageGenerator } from "./git/gitCommitMessageGenerator.js";
@@ -460,13 +460,13 @@ import {
   isZodyCuaMcpCommand,
   isZodyCuaMcpPackageArg,
   isZodyCuaInternalFeatureEnabled,
-  ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   type ZodyAutomation,
   type ZodyAutomationRun,
   getCapturedZodyAgentTelemetryEnv,
-  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
-  ZCODE_VERSION,
-  ZCODE_ENV,
+  ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  ZODY_VERSION,
+  ZODY_ENV,
 } from "@zody/shared";
 
 // fork（F4.8）：conversation-share 的 Node 实现（服务/HTTP 客户端/connection scope）
@@ -921,12 +921,12 @@ export function createDefaultCuaProductHelper(
   };
 }
 
-export const ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV = "ZCODE_CUA_BUNDLED_HELPER_APP_PATH";
+export const ZODY_CUA_BUNDLED_HELPER_APP_PATH_ENV = "ZODY_CUA_BUNDLED_HELPER_APP_PATH";
 
 export function resolveBundledCuaHelperAppPath(
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
-  const injectedPath = env[ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV]?.trim();
+  const injectedPath = env[ZODY_CUA_BUNDLED_HELPER_APP_PATH_ENV]?.trim();
   if (injectedPath) {
     return injectedPath;
   }
@@ -1101,7 +1101,7 @@ export function createLocalServices(options: {
   initializeRuntimeProcessEnv(options?.runtimeProcessEnvPatch);
 
   const desktopContextPromptEnabledRaw =
-    process.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]?.trim();
+    process.env[ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]?.trim();
   const desktopContextPromptEnabled =
     desktopContextPromptEnabledRaw === "1"
       ? true
@@ -1162,7 +1162,7 @@ export function createLocalServices(options: {
     zcodeBuiltinEnvironment: {
       environmentConfigRoot: resolveAppConfigDir(),
       platform: clientConfigPlatform,
-      appVersion: ZCODE_VERSION,
+      appVersion: ZODY_VERSION,
       resolveEndpointOrigin: resolveCurrentZodyEndpointOrigin,
       onRefreshResult: (event) => {
         if (event.result === "updated")
@@ -1174,7 +1174,7 @@ export function createLocalServices(options: {
           apiClient,
           endpointOrigin,
           signal,
-          appVersion: ZCODE_VERSION,
+          appVersion: ZODY_VERSION,
           platform: clientConfigPlatform,
         }),
     },
@@ -1311,8 +1311,8 @@ export function createLocalServices(options: {
   // service 创建完成后再赋值。Helper recovery 始终不能回收 Agent。
   let hasActiveTurnRef: (() => boolean) | undefined;
   const isCuaEnabledForContext = (context?: CuaProductMcpServerResolverContext): boolean =>
-    // 保留 main 原有 gate 行为（避免回归）：dev/internal 特性开启时（ZCODE_CUA_DEV_MODE=1 或
-    // ZCODE_CUA_PRODUCT_HELPER=1）即视为启用，不依赖 config.json 显式 enable——main 的 bootstrap
+    // 保留 main 原有 gate 行为（避免回归）：dev/internal 特性开启时（ZODY_CUA_DEV_MODE=1 或
+    // ZODY_CUA_PRODUCT_HELPER=1）即视为启用，不依赖 config.json 显式 enable——main 的 bootstrap
     // 用 isZodyCuaInternalFeatureEnabled 门控 bundled plugin，与 feat 的 workspace enablement 不同。
     // 生产路径（dev mode off）回落到官方插件 workspace enablement 判定（与 feat 一致）。
     isZodyCuaInternalFeatureEnabled(process.env) ||
@@ -1410,13 +1410,13 @@ export function createLocalServices(options: {
   // 即本文件已经用来 import buildHelperOpenArgs 的那个 subpath，可正常导入）。
   //
   // 行为等价性（别误读成安全加固）：上游是 `COMPILED_LOCAL_DEVELOPMENT_RUNTIME &&
-  // ZCODE_RUNTIME_ENV!=="production"`，而那个编译期常量只有 scripts/build-cua-helper-app.mjs
+  // ZODY_RUNTIME_ENV!=="production"`，而那个编译期常量只有 scripts/build-cua-helper-app.mjs
   // 会用 define 折叠（Helper bundle）；desktop host bundle 没有该 define，于是回退成
   // `process.env.NODE_ENV !== "production"` —— 正是复制品写的那一项。所以在**当前**打包形态下
-  // 两者逐字等价，关门靠的是 ZCODE_RUNTIME_ENV=production（打包态显式注入且不传 NODE_ENV）。
+  // 两者逐字等价，关门靠的是 ZODY_RUNTIME_ENV=production（打包态显式注入且不传 NODE_ENV）。
   //
   // 换成上游的收益是消除漂移面：折叠点、因子个数与 fail-closed 方向都由上游一处决定，
-  // 哪天 host bundle 也补上 __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__ define（Helper 侧已经有），
+  // 哪天 host bundle 也补上 __ZODY_LOCAL_DEVELOPMENT_RUNTIME__ define（Helper 侧已经有），
   // 编译期门自动生效，不需要再回来改这里。
 
   const launchStandaloneCuaHelperForStatus = async (): Promise<string | null> => {
@@ -1730,7 +1730,7 @@ export function createLocalServices(options: {
     ...(modelSelectionReadinessSource ? { modelSelectionReadinessSource } : {}),
     authorizeLocalMediaPreviewPath: options?.authorizeLocalMediaPreviewPath,
     // fork（F2.6b）：动态工作流 offer 改由本地模块提供（细则 D1b：固定 onDemand、来源 default，
-    // ZCODE_DYNAMIC_WORKFLOW_MODE 三档覆盖不变，叠加用户设置），不再经订阅服务读远端。
+    // ZODY_DYNAMIC_WORKFLOW_MODE 三档覆盖不变，叠加用户设置），不再经订阅服务读远端。
     // 不按 serviceAuthorityMode 裁剪——SSH/WSL/Docker 的
     // desktop-attached-remote Host 是它自己那些 workspace 的唯一裁决者，
     // 灰度开启时远程 workspace 同样提供工作流。
@@ -1792,12 +1792,12 @@ export function createLocalServices(options: {
           process.platform === "win32" ? getStableCuaPipeName() : resolveBrokerSocketPath();
         cuaProductHelperEnv = {
           [BROKER_SOCKET_ENV]: brokerSocket,
-          [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: randomBytes(16).toString("hex"),
+          [ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]: randomBytes(16).toString("hex"),
         };
         if (process.platform === "win32") {
           const recipe = await resolveStableCuaWinRecipe();
           if (recipe) {
-            cuaProductHelperEnv["ZCODE_CUA_WIN_HELPER_RECIPE"] = JSON.stringify({
+            cuaProductHelperEnv["ZODY_CUA_WIN_HELPER_RECIPE"] = JSON.stringify({
               ...recipe,
               hostPid: process.pid,
             });

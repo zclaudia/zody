@@ -143,8 +143,8 @@ describe("plugins/referenceCatalog protocol", () => {
 
   it("serves the live workspace catalog when no sessionId is provided (draft picker)", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-plugin-reference-workspace-"));
-    const previousStorageDir = process.env.ZCODE_STORAGE_DIR;
-    process.env.ZCODE_STORAGE_DIR = join(root, "cli");
+    const previousStorageDir = process.env.ZODY_STORAGE_DIR;
+    process.env.ZODY_STORAGE_DIR = join(root, "cli");
     try {
       const result = await getPluginReferenceCatalog({} as ZodyProtocolAgentServerContext, {
         workspace: { workspacePath: root, workspaceKey: root },
@@ -187,8 +187,8 @@ describe("plugins/referenceCatalog protocol", () => {
       ).toEqual(zcodeGuide?.descriptionI18n);
       expect(JSON.stringify(result)).not.toContain("rootPath");
     } finally {
-      if (previousStorageDir === undefined) delete process.env.ZCODE_STORAGE_DIR;
-      else process.env.ZCODE_STORAGE_DIR = previousStorageDir;
+      if (previousStorageDir === undefined) delete process.env.ZODY_STORAGE_DIR;
+      else process.env.ZODY_STORAGE_DIR = previousStorageDir;
       await rm(root, { force: true, recursive: true });
     }
   });

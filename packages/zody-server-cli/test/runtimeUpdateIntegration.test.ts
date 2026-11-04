@@ -75,7 +75,7 @@ describe.skipIf(process.platform === "win32")("runtime update integration", () =
     );
     const harness = [
       "import { fork } from 'node:child_process';",
-      `const core = fork(${JSON.stringify(coreEntry)}, ['1'], { execArgv: ['--import', 'tsx'], env: { ...process.env, ZCODE_SERVER_ROOT: ${JSON.stringify(layout.serverRoot)}, ZCODE_DATA_BASE_DIR: ${JSON.stringify(layout.dataBaseDir)}, ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: ${JSON.stringify(zcodeBuiltinProviderConfigFilePath)} }, stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });`,
+      `const core = fork(${JSON.stringify(coreEntry)}, ['1'], { execArgv: ['--import', 'tsx'], env: { ...process.env, ZODY_SERVER_ROOT: ${JSON.stringify(layout.serverRoot)}, ZODY_DATA_BASE_DIR: ${JSON.stringify(layout.dataBaseDir)}, ZODY_BUILTIN_PROVIDER_CONFIG_FILE: ${JSON.stringify(zcodeBuiltinProviderConfigFilePath)} }, stdio: ['ignore', 'ignore', 'ignore', 'ipc'] });`,
       "core.on('message', (message) => { if (message && message.type === 'ready') process.stdout.write(JSON.stringify(message)); });",
     ].join("\n");
     const supervisor = spawn(process.execPath, ["--input-type=module", "-e", harness], {

@@ -102,7 +102,7 @@ export async function runForkProbes(context: D06ProbeContext): Promise<D06CaseRe
         ...observed,
         checks: {
           "synthetic ZCODE secret absent": !Object.keys(env).some((key) =>
-            key.startsWith("ZCODE_"),
+            (key.startsWith("ZCODE_") || key.startsWith("ZODY_")),
           ),
           "synthetic cloud secret absent": env.AWS_SECRET_ACCESS_KEY === undefined,
           "NODE_OPTIONS absent": env.NODE_OPTIONS === undefined,

@@ -7,7 +7,7 @@ async function loadSettingsNavigation(env: "test" | "production") {
       await vi.importActual<typeof import("@zody/shared")>("@zody/shared");
     return {
       ...actual,
-      ZCODE_ENV: env,
+      ZODY_ENV: env,
     };
   });
 

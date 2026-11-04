@@ -84,10 +84,10 @@ describe("Todo104 CLI 同文件默认选择", () => {
     const oldInput = JSON.stringify({ model: "fixture/model-a" });
     await writeFile(legacyPath, oldInput);
     const env = {
-      ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: fileURLToPath(
+      ZODY_BUILTIN_PROVIDER_CONFIG_FILE: fileURLToPath(
         new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
       ),
-      ZCODE_PERSONAL_PROVIDER_CONFIG_FILE: personalPath,
+      ZODY_PERSONAL_PROVIDER_CONFIG_FILE: personalPath,
     };
     // 不读取测试机账号凭据，只有迁移和正式文件读写参与本用例。
     const credentialStore = { loadMany: async () => ({}) } as unknown as SharedZodyCredentialStore;

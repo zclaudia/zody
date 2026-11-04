@@ -35,7 +35,7 @@
 
 ## 审批 E2E 录屏依赖修复（2026-09-17）
 
-转正后的 Hook 用例默认回放已复现：业务断言完成后，强制录屏收尾因 `spawn ffmpeg ENOENT` 失败（失败报告（本机报告 `desktop-e2e-20260917-105436-295`））。录屏是人工审核证据，不是审批功能的前置条件；仅当已有 `ZCODE_E2E_MANUAL_REVIEW=1` 时启用录屏及两段 3 秒阅读停留，编码器仍沿用 `ZCODE_E2E_FFMPEG_PATH` / PATH。默认回放保留截图、交互轨迹及全部业务断言，不创建录屏、不标记已生成视频。人工录屏失败继续报错，不捕获吞掉。
+转正后的 Hook 用例默认回放已复现：业务断言完成后，强制录屏收尾因 `spawn ffmpeg ENOENT` 失败（失败报告（本机报告 `desktop-e2e-20260917-105436-295`））。录屏是人工审核证据，不是审批功能的前置条件；仅当已有 `ZODY_E2E_MANUAL_REVIEW=1` 时启用录屏及两段 3 秒阅读停留，编码器仍沿用 `ZODY_E2E_FFMPEG_PATH` / PATH。默认回放保留截图、交互轨迹及全部业务断言，不创建录屏、不标记已生成视频。人工录屏失败继续报错，不捕获吞掉。
 
 验证：未配置 ffmpeg 的默认回放 1/1（本机报告 `desktop-e2e-20260917-110126-662`） 通过，产物 `video_capture_mode=null` 且无视频；显式人工录屏回放 1/1（本机报告 `desktop-e2e-20260917-110306-504`） 通过，产物标记 `electron_capture_page` 且视频非空。两条路径均保留全部审批和 provider result 断言。E2E/root typecheck、lint（195 warnings / 0 errors）、fixture check、架构及覆盖审计通过；未改生产代码或 provider fixture。
 

@@ -18,10 +18,10 @@ export async function prepareZodyTelemetryEnv(
     ...env,
   }, {
     ...options,
-    productVersion: options.productVersion ?? env.ZCODE_APP_VERSION,
+    productVersion: options.productVersion ?? env.ZODY_APP_VERSION,
   });
-  const deviceMid = prepared.ZCODE_TELEMETRY_DEVICE_MID;
-  return deviceMid ? { ...env, ZCODE_TELEMETRY_DEVICE_MID: deviceMid } : env;
+  const deviceMid = prepared.ZODY_TELEMETRY_DEVICE_MID;
+  return deviceMid ? { ...env, ZODY_TELEMETRY_DEVICE_MID: deviceMid } : env;
 }
 
 /**

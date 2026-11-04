@@ -39,10 +39,10 @@ import {
  *   + `GatewayDeviceTransport`；
  * - 手机：`GatewayTerminalTransport`（`@zclaudia/gateway-client@0.3.0`，与 packages/web 一致）。
  *
- * 显式开启：只有同时设置 `ZCODE_GATEWAY_IT_URL` 与 `ZCODE_GATEWAY_IT_ADMIN_TOKEN` 才执行；
+ * 显式开启：只有同时设置 `ZODY_GATEWAY_IT_URL` 与 `ZODY_GATEWAY_IT_ADMIN_TOKEN` 才执行；
  * 缺失时整个 suite 跳过并在名称里说明原因（不伪造结果）。凭证由测试用管理 API 现签现删，
  * 不读取、也不打印任何已存在的凭证。gateway 重启场景需要显式提供
- * `ZCODE_GATEWAY_IT_RESTART_COMMAND`（例如 `docker restart <container>`），避免测试擅自
+ * `ZODY_GATEWAY_IT_RESTART_COMMAND`（例如 `docker restart <container>`），避免测试擅自
  * 重启共享实例。
  *
  * 说明：manager / bridge 的 ACK 与重放属于 (b)(c) 层，本测试不装配完整 manager；
@@ -51,19 +51,19 @@ import {
  *
  * 本地运行（T0.2 生成的 .env.gateway.local 已含 IT_URL/管理令牌）：
  *   set -a; source .env.gateway.local; set +a
- *   ZCODE_GATEWAY_IT_RESTART_COMMAND='docker restart zclaudia-gateway-gateway-1' \
+ *   ZODY_GATEWAY_IT_RESTART_COMMAND='docker restart zclaudia-gateway-gateway-1' \
  *     pnpm vitest run packages/desktop/test/mobileRemoteGatewayIntegration.test.ts
  * 不设置重启命令时只跳过「gateway 重启」一个场景。
  */
 
-const gatewayUrl = process.env.ZCODE_GATEWAY_IT_URL?.trim();
-const adminToken = process.env.ZCODE_GATEWAY_IT_ADMIN_TOKEN?.trim();
-const namespace = process.env.ZCODE_GATEWAY_IT_NAMESPACE?.trim() || "zcode";
-const restartCommand = process.env.ZCODE_GATEWAY_IT_RESTART_COMMAND?.trim();
+const gatewayUrl = process.env.ZODY_GATEWAY_IT_URL?.trim();
+const adminToken = process.env.ZODY_GATEWAY_IT_ADMIN_TOKEN?.trim();
+const namespace = process.env.ZODY_GATEWAY_IT_NAMESPACE?.trim() || "zcode";
+const restartCommand = process.env.ZODY_GATEWAY_IT_RESTART_COMMAND?.trim();
 const skipReason = !gatewayUrl
-  ? "未设置 ZCODE_GATEWAY_IT_URL"
+  ? "未设置 ZODY_GATEWAY_IT_URL"
   : !adminToken
-    ? "未设置 ZCODE_GATEWAY_IT_ADMIN_TOKEN"
+    ? "未设置 ZODY_GATEWAY_IT_ADMIN_TOKEN"
     : undefined;
 
 const DESKTOP_APP_VERSION = "0.0.0-integration";
@@ -929,7 +929,7 @@ describeIntegration(integrationName, () => {
 
   const restartTestName = restartCommand
     ? "gateway 重启后两端自动重连并恢复业务"
-    : "gateway 重启后两端自动重连并恢复业务（跳过：未设置 ZCODE_GATEWAY_IT_RESTART_COMMAND）";
+    : "gateway 重启后两端自动重连并恢复业务（跳过：未设置 ZODY_GATEWAY_IT_RESTART_COMMAND）";
   (restartCommand ? it : it.skip)(
     restartTestName,
     async () => {

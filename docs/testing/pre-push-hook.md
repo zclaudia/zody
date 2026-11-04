@@ -34,7 +34,7 @@ pre-push 直接使用当前 `PATH` 中的 pnpm / Node，不强制依赖 mise。�
 
 pre-push 的单测入口是 `pnpm run test:unit:affected`，默认验证本次 push 新增的变更，而不是固定比较 `origin/main`。base 选择顺序：
 
-- 显式设置 `ZCODE_PRE_PUSH_BASE` / `ZCODE_AFFECTED_TEST_BASE` 时，使用该 base 与 `HEAD` 的 merge-base，便于手动做 MR 范围自检。
+- 显式设置 `ZODY_PRE_PUSH_BASE` / `ZODY_AFFECTED_TEST_BASE` 时，使用该 base 与 `HEAD` 的 merge-base，便于手动做 MR 范围自检。
 - Git `pre-push` hook 传入 stdin 时，优先使用其中的 `remote_sha..local_sha`。这对应当前远端跟踪分支到本次推送目标的增量，适合日常 push。
 - 没有 hook stdin 时，使用当前分支的 `@{upstream}..HEAD`，适合手动执行 `pnpm run test:unit:affected`。
 - 新分支或没有 upstream 时，才退回到 `origin/HEAD`、`origin/main`、`origin/master`、`main`、`master` 这类默认分支，并使用 merge-base 计算范围。

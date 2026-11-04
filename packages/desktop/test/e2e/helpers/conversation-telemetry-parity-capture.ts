@@ -187,7 +187,7 @@ async function prepareArmsCapture(): Promise<FinalArmsCaptureMode> {
     [...CONVERSATION_ARMS_EVENT_NAMES],
   );
   if (hasFinalBridge) return "bridge";
-  if (!process.env.ZCODE_TELEMETRY_PARITY_LEGACY_ARMS_PATH?.trim()) {
+  if (!process.env.ZODY_TELEMETRY_PARITY_LEGACY_ARMS_PATH?.trim()) {
     throw new Error("旧版缺少 main sendCustom 临时捕获路径，已在发送前停止");
   }
   return "legacy-file";
@@ -380,7 +380,7 @@ async function waitForTargetFinalArms(
 
 async function readTargetFinalArms(mode: FinalArmsCaptureMode): Promise<JsonRecord[]> {
   if (mode === "legacy-file") {
-    const capturePath = process.env.ZCODE_TELEMETRY_PARITY_LEGACY_ARMS_PATH?.trim();
+    const capturePath = process.env.ZODY_TELEMETRY_PARITY_LEGACY_ARMS_PATH?.trim();
     if (!capturePath) return [];
     try {
       const contents = await readFile(capturePath, "utf8");
@@ -428,7 +428,7 @@ function isTargetFinalArmsPayload(payload: unknown): payload is JsonRecord {
 }
 
 async function writeParityArtifact(artifact: ConversationTelemetryParityCapture): Promise<void> {
-  const artifactPath = process.env.ZCODE_TELEMETRY_PARITY_CAPTURE_PATH?.trim();
+  const artifactPath = process.env.ZODY_TELEMETRY_PARITY_CAPTURE_PATH?.trim();
   if (!artifactPath) return;
   await mkdir(dirname(artifactPath), { recursive: true });
   await writeFile(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
@@ -437,7 +437,7 @@ async function writeParityArtifact(artifact: ConversationTelemetryParityCapture)
 async function writeParityCaseArtifact(
   artifact: ConversationTelemetryParityCapture,
 ): Promise<void> {
-  const captureDir = process.env.ZCODE_TELEMETRY_PARITY_CAPTURE_DIR?.trim();
+  const captureDir = process.env.ZODY_TELEMETRY_PARITY_CAPTURE_DIR?.trim();
   if (!captureDir) {
     await writeParityArtifact(artifact);
     return;

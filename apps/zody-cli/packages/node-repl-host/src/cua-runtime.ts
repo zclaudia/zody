@@ -8,10 +8,10 @@ import { createComputerUseRuntime, type ComputerUseRuntime } from "@zody/zody-cu
 export function captureComputerUseRuntimeFromEnvironment(
   env: NodeJS.ProcessEnv = process.env,
 ): ComputerUseRuntime | undefined {
-  const socketPath = env.ZCODE_CUA_PERMISSION_BROKER_SOCKET?.trim();
+  const socketPath = env.ZODY_CUA_PERMISSION_BROKER_SOCKET?.trim();
   if (!socketPath) return undefined;
   return createComputerUseRuntime({
     brokerSocketPath: socketPath,
-    refreshMarkerPath: env.ZCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER?.trim(),
+    refreshMarkerPath: env.ZODY_CUA_PERMISSION_BROKER_REFRESH_MARKER?.trim(),
   });
 }

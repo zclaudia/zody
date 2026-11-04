@@ -19,7 +19,7 @@ const pluginRoot = process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_RO
 
 export const DEFAULT_BROWSER_DOCUMENTATION_ROOT = resolve(pluginRoot, "docs");
 export const DEFAULT_CUA_DOCUMENTATION_ROOT = resolve(
-  process.env.ZCODE_CUA_PLUGIN_ROOT ?? pluginRoot,
+  process.env.ZODY_CUA_PLUGIN_ROOT ?? pluginRoot,
   "docs",
 );
 

@@ -112,7 +112,7 @@ async function seedCredentials(input: {
   const directory = await mkdtemp(join(tmpdir(), "zcode-mcp-oauth-refresh-"));
   temporaryDirectories.push(directory);
   const credentialStore = createSharedZodyCredentialStore({
-    env: { ZCODE_CREDENTIAL_SECRET: input.secret },
+    env: { ZODY_CREDENTIAL_SECRET: input.secret },
     filePath: join(directory, "credentials.json"),
   });
   const mcpUrl = `${input.authBaseUrl}/mcp`;
@@ -356,7 +356,7 @@ describe("MCP OAuth refresh single-flight", () => {
     const directory = await mkdtemp(join(tmpdir(), "zcode-mcp-oauth-no-refresh-"));
     temporaryDirectories.push(directory);
     const credentialStore = createSharedZodyCredentialStore({
-      env: { ZCODE_CREDENTIAL_SECRET: "refresh-none-secret" },
+      env: { ZODY_CREDENTIAL_SECRET: "refresh-none-secret" },
       filePath: join(directory, "credentials.json"),
     });
     const mcpUrl = `${authServer.baseUrl}/mcp`;

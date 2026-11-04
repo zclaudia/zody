@@ -61,7 +61,7 @@ describe("Server CLI routing", () => {
   });
 
   it("honors the explicit service-registration opt-out", () => {
-    vi.stubEnv("ZCODE_SERVER_SKIP_SERVICE_REGISTRATION", "1");
+    vi.stubEnv("ZODY_SERVER_SKIP_SERVICE_REGISTRATION", "1");
     try {
       expect(serviceRegistrationEnabled()).toBe(false);
     } finally {
@@ -73,7 +73,7 @@ describe("Server CLI routing", () => {
     expect(SERVER_SERVICE_ARGS).toEqual(["serve", "--supervisor"]);
     expect(isRegisteredServiceEntry(SERVER_SERVICE_ARGS.slice(1))).toBe(false);
     expect(isRegisteredServiceEntry(["--supervisor", "--service-entry"])).toBe(true);
-    expect(daemonStartupMode({ ZCODE_SERVER_SKIP_SERVICE_REGISTRATION: "1" })).toBe("fallback");
+    expect(daemonStartupMode({ ZODY_SERVER_SKIP_SERVICE_REGISTRATION: "1" })).toBe("fallback");
     expect(daemonStartupMode({})).toBe("service");
     expect(shouldRegisterService(true, false)).toBe(true);
     expect(shouldRegisterService(true, true)).toBe(false);
@@ -96,7 +96,7 @@ describe("Server CLI routing", () => {
 
   it("treats stop as an idempotent no-op after the supervisor socket is gone", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-r2-cli-stop-"));
-    vi.stubEnv("ZCODE_DATA_BASE_DIR", root);
+    vi.stubEnv("ZODY_DATA_BASE_DIR", root);
     const layout = resolveServerLayout();
     await mkdir(layout.runDir, { recursive: true });
     await writeFile(layout.statusFile, `${JSON.stringify({
@@ -193,7 +193,7 @@ describe("Server CLI routing", () => {
     await new Promise<void>((resolve) => catalogServer.listen(0, "127.0.0.1", resolve));
     const address = catalogServer.address();
     if (!address || typeof address === "string") throw new Error("catalog server is not listening");
-    vi.stubEnv("ZCODE_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
+    vi.stubEnv("ZODY_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
     const errors: string[] = [];
     try {
       const exit = await runServerCli(["update", "--server-root", layout.serverRoot], {
@@ -248,7 +248,7 @@ describe("Server CLI routing", () => {
     await new Promise<void>((resolve) => catalogServer.listen(0, "127.0.0.1", resolve));
     const address = catalogServer.address();
     if (!address || typeof address === "string") throw new Error("catalog server is not listening");
-    vi.stubEnv("ZCODE_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
+    vi.stubEnv("ZODY_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
     const errors: string[] = [];
     try {
       const exit = await runServerCli(["update", "--server-root", layout.serverRoot], {
@@ -299,7 +299,7 @@ describe("Server CLI routing", () => {
     await new Promise<void>((resolve) => catalogServer.listen(0, "127.0.0.1", resolve));
     const address = catalogServer.address();
     if (!address || typeof address === "string") throw new Error("catalog server is not listening");
-    vi.stubEnv("ZCODE_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
+    vi.stubEnv("ZODY_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
     const errors: string[] = [];
     try {
       const exit = await runServerCli(["update", "--server-root", layout.serverRoot], {
@@ -357,7 +357,7 @@ describe("Server CLI routing", () => {
     await new Promise<void>((resolve) => catalogServer.listen(0, "127.0.0.1", resolve));
     const address = catalogServer.address();
     if (!address || typeof address === "string") throw new Error("catalog server is not listening");
-    vi.stubEnv("ZCODE_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
+    vi.stubEnv("ZODY_SERVER_RELEASE_MANIFEST_URL", `http://127.0.0.1:${address.port}/catalog.json`);
     const commands: string[] = [];
     const control = await createControlServer(layout.controlEndpoint, async (request) => {
       commands.push(request.command);
@@ -397,7 +397,7 @@ describe("Server CLI routing", () => {
     const root = await mkdtemp(join(process.platform === "win32" ? tmpdir() : "/tmp", "zcode-r2-cli-no-source-"));
     const layout = resolveServerLayout(join(root, ".zcoder", "server"));
     const errors: string[] = [];
-    vi.stubEnv("ZCODE_SERVER_RELEASE_MANIFEST_URL", "");
+    vi.stubEnv("ZODY_SERVER_RELEASE_MANIFEST_URL", "");
     const control = await createControlServer(layout.controlEndpoint, async (request) => {
       if (request.command === "prepare-update") return { status: "ready", runningTaskCount: 0 };
       throw new Error(`Unexpected control command: ${request.command}`);
@@ -429,7 +429,7 @@ describe("Server CLI routing", () => {
       return { applied: true, version: "3.1.0" };
     });
     const output: string[] = [];
-    vi.stubEnv("ZCODE_SERVER_RELEASE_MANIFEST_URL", "");
+    vi.stubEnv("ZODY_SERVER_RELEASE_MANIFEST_URL", "");
     try {
       const exit = await runServerCli(["update", "--server-root", layout.serverRoot, "--json"], {
         stdout: { write: (value) => output.push(value) },
@@ -454,7 +454,7 @@ describe("Server CLI routing", () => {
 
   it("cancels uninstall unless both confirmations are exactly DELETE (R2-CLI-10)", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-r2-cli-uninstall-cancel-"));
-    vi.stubEnv("ZCODE_DATA_BASE_DIR", root);
+    vi.stubEnv("ZODY_DATA_BASE_DIR", root);
     const errors: string[] = [];
     try {
       const layout = resolveServerLayout();
@@ -493,7 +493,7 @@ describe("Server CLI routing", () => {
 
   it("uninstalls offline data, writes the uninstalled marker and keeps user files (R2-CLI-11)", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-r2-cli-uninstall-"));
-    vi.stubEnv("ZCODE_DATA_BASE_DIR", root);
+    vi.stubEnv("ZODY_DATA_BASE_DIR", root);
     try {
       const layout = resolveServerLayout();
       await new ReleaseManager(layout).ensure();
@@ -532,7 +532,7 @@ describe("Server CLI routing", () => {
 
   it("fails closed when control is unavailable and the lock is malformed", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-r2-cli-uninstall-corrupt-lock-"));
-    vi.stubEnv("ZCODE_DATA_BASE_DIR", root);
+    vi.stubEnv("ZODY_DATA_BASE_DIR", root);
     try {
       const layout = resolveServerLayout();
       await new ReleaseManager(layout).ensure();
@@ -553,7 +553,7 @@ describe("Server CLI routing", () => {
 
   it("fails closed when a live lock owner is present even if status is corrupt", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-r2-cli-uninstall-live-lock-"));
-    vi.stubEnv("ZCODE_DATA_BASE_DIR", root);
+    vi.stubEnv("ZODY_DATA_BASE_DIR", root);
     const layout = resolveServerLayout();
     const lock = new DataRootLock(layout.lockFile);
     try {

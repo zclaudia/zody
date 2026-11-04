@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button.js";
 import { useFeedbackStore } from "@/feedback/feedbackStore.js";
 import { DownloadIcon, ExternalLinkIcon } from "lucide-react";
 // fork（F2.9，决策门 D7）：官方工单提交停用，反馈中心收敛为本地面板——
-// 「导出诊断日志」+「打开 fork 问题反馈地址」（构建期 ZCODE_FEEDBACK_ISSUE_URL，未配置不显示）。
+// 「导出诊断日志」+「打开 fork 问题反馈地址」（构建期 ZODY_FEEDBACK_ISSUE_URL，未配置不显示）。
 // 旧的提交表单 / 工单列表 / 产品需求弹窗文件保留（阶段 4 删除），此处不再挂载。
-import { ZCODE_FEEDBACK_ISSUE_URL } from "@zody/shared";
+import { ZODY_FEEDBACK_ISSUE_URL } from "@zody/shared";
 import type { IFeedbackService } from "@zody/services";
 import type { IPlatformService } from "@zody/shared";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
@@ -28,8 +28,8 @@ export const FeedbackCenter = memo(function FeedbackCenterComponent({
     void runExportLogsAction(platform, intl);
   };
   const handleOpenIssuePage = () => {
-    if (ZCODE_FEEDBACK_ISSUE_URL) {
-      void platform.openExternal(ZCODE_FEEDBACK_ISSUE_URL);
+    if (ZODY_FEEDBACK_ISSUE_URL) {
+      void platform.openExternal(ZODY_FEEDBACK_ISSUE_URL);
     }
   };
 
@@ -55,7 +55,7 @@ export const FeedbackCenter = memo(function FeedbackCenterComponent({
               <DownloadIcon className="size-4" />
               {intl.formatMessage({ id: "feedback.center.exportLogsAction" })}
             </Button>
-            {ZCODE_FEEDBACK_ISSUE_URL ? (
+            {ZODY_FEEDBACK_ISSUE_URL ? (
               <Button
                 type="button"
                 variant="outline"

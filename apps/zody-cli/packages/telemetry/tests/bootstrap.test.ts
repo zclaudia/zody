@@ -85,7 +85,7 @@ describe("Telemetry V4 bootstrap", () => {
     const home = await mkdtemp(join(tmpdir(), "zcode-telemetry-"));
     const env = {
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://127.0.0.1:1/v1/traces",
-      ZCODE_HOME: home,
+      ZODY_HOME: home,
     };
     const [first, second] = await Promise.all([
       prepareModelTelemetryEnv(env, {
@@ -98,11 +98,42 @@ describe("Telemetry V4 bootstrap", () => {
       }),
     ]);
 
-    expect(first.ZCODE_TELEMETRY_DEVICE_MID).toMatch(/^[0-9a-f-]{36}$/u);
-    expect(second.ZCODE_TELEMETRY_DEVICE_MID).toBe(first.ZCODE_TELEMETRY_DEVICE_MID);
+    expect(first.ZODY_TELEMETRY_DEVICE_MID).toMatch(/^[0-9a-f-]{36}$/u);
+    expect(second.ZODY_TELEMETRY_DEVICE_MID).toBe(first.ZODY_TELEMETRY_DEVICE_MID);
     const state = JSON.parse(await readFile(join(home, "v2", "telemetry-state.json"), "utf8")) as {
       deviceMid: string;
     };
-    expect(state.deviceMid).toBe(first.ZCODE_TELEMETRY_DEVICE_MID);
+    expect(state.deviceMid).toBe(first.ZODY_TELEMETRY_DEVICE_MID);
+  });
+});
+
+describe("R30 build commit environment key", () => {
+  it.each([
+    { name: "only new", env: { ZODY_BUILD_COMMIT_ID: "abcdef1" }, expected: "abcdef1" },
+    { name: "only old", env: { ZCODE_BUILD_COMMIT_ID: "1234567" }, expected: undefined },
+    {
+      name: "both",
+      env: { ZODY_BUILD_COMMIT_ID: "abcdef1", ZCODE_BUILD_COMMIT_ID: "1234567" },
+      expected: "abcdef1",
+    },
+    { name: "neither", env: {}, expected: undefined },
+  ])("builds the telemetry resource with $name", async ({ env, expected }) => {
+    const exporter = await import("../src/otlp-exporter.js");
+    const create = vi.spyOn(exporter, "createOwnedAgentTelemetryRuntime").mockReturnValue({
+      shutdown: async () => {},
+    } as never);
+    try {
+      await prepareModelTelemetryEnv({
+        ...env,
+        OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "https://example.invalid/v1/traces",
+        ZCODE_TELEMETRY_DEVICE_MID: "01234567-89ab-4cde-8fab-0123456789ab",
+        ZODY_TELEMETRY_DEVICE_MID: "01234567-89ab-4cde-8fab-0123456789ab",
+      });
+      expect(create).toHaveBeenCalledOnce();
+      expect(create.mock.calls[0]?.[0].resource.buildCommitId).toBe(expected);
+    } finally {
+      await shutdownPreparedModelTelemetry();
+      create.mockRestore();
+    }
   });
 });

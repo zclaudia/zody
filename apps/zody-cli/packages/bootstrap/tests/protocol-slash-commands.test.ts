@@ -32,7 +32,7 @@ describe("protocol slash command surface", () => {
       await writeCommand(userCommands, "workflow", "Shadowing workflow", "Should be hidden.");
 
       const commands = await listProtocolSlashCommands({
-        env: { ZCODE_ENV: "test" },
+        env: { ZODY_ENV: "test" },
         homeDirectory: home,
         skipUserConfig: true,
         workingDirectory: workspace,
@@ -83,7 +83,7 @@ describe("protocol slash command surface", () => {
       await writeCommand(userCommands, "model", "Reserved model", "Should not expand.");
 
       const options = {
-        env: { ZCODE_ENV: "test" },
+        env: { ZODY_ENV: "test" },
         homeDirectory: home,
         skipUserConfig: true,
         workingDirectory: workspace,
@@ -118,7 +118,7 @@ describe("protocol slash command surface", () => {
       await mkdir(userCommands, { recursive: true });
       await writeCommand(userCommands, "workflow", "Shadowing workflow", "Should not expand.");
       const options = {
-        env: { ZCODE_ENV: "test" },
+        env: { ZODY_ENV: "test" },
         homeDirectory: home,
         skipUserConfig: true,
         workingDirectory: workspace,
@@ -228,7 +228,7 @@ describe("protocol slash command surface", () => {
       );
 
       const prompt = await resolveZodyCustomCommandPrompt("/ralph-loop build demo", {
-        env: { ZCODE_ENV: "test" },
+        env: { ZODY_ENV: "test" },
         executionPort,
         projectConfigPath: configPath,
         sessionId,
@@ -286,7 +286,7 @@ describe("protocol slash command surface", () => {
       );
 
       const options = {
-        env: { ZCODE_ENV: "test" },
+        env: { ZODY_ENV: "test" },
         executionPort,
         homeDirectory: home,
         skipUserConfig: true,

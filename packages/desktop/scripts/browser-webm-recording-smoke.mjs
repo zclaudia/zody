@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createElectronBrowserWebmRecorder } from "../out/main/browserWebmRecorder.js";
 
-const OUTPUT_PATH = process.env.ZCODE_WEBM_SMOKE_OUTPUT_PATH;
-const CAPTURE_MS = Number(process.env.ZCODE_WEBM_SMOKE_CAPTURE_MS) || 1_500;
+const OUTPUT_PATH = process.env.ZODY_WEBM_SMOKE_OUTPUT_PATH;
+const CAPTURE_MS = Number(process.env.ZODY_WEBM_SMOKE_CAPTURE_MS) || 1_500;
 
 function htmlDataUrl(html) {
   return `data:text/html;base64,${Buffer.from(html).toString("base64")}`;

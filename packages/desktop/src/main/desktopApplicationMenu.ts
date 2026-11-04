@@ -5,7 +5,7 @@ import {
   getDesktopMenuMessage,
   isDesktopAutoUpdateActive,
   isValidShortcutBinding,
-  ZCODE_ENV,
+  ZODY_ENV,
   type DesktopCommandId,
   type Locale,
 } from "@zody/shared";
@@ -292,7 +292,7 @@ function buildApplicationMenuTemplate(options: {
               { type: "separator" as const },
             ]
           : []),
-        ...(ZCODE_ENV === "test"
+        ...(ZODY_ENV === "test"
           ? [
               {
                 label: getLabel(desktopMenuMessageIds.helpZCodeEndpoint),

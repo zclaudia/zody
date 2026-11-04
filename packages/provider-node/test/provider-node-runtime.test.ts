@@ -21,8 +21,8 @@ import {
   encodeProviderConfigFile,
   resolveZodyBuiltinCachePaths,
   resolveNodeProviderRuntimePaths,
-  ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
-  ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
 } from "../src/index.js";
 
 // macOS 26(darwin 25)上 Node 的目录级 fs.watch 不再派发任何事件(22.14–26.7 全系复现,
@@ -259,13 +259,13 @@ describe("@zody/provider-node", () => {
     expect(resolveNodeProviderRuntimePaths({})).toBeNull();
     expect(() =>
       resolveNodeProviderRuntimePaths({
-        [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/zcodeBuiltin.json",
+        [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/zcodeBuiltin.json",
       }),
     ).toThrow("必须同时提供");
     expect(
       resolveNodeProviderRuntimePaths({
-        [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: " /zcodeBuiltin.json ",
-        [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: " /personal.json ",
+        [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: " /zcodeBuiltin.json ",
+        [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: " /personal.json ",
       }),
     ).toEqual({
       zcodeBuiltinFilePath: "/zcodeBuiltin.json",
@@ -277,8 +277,8 @@ describe("@zody/provider-node", () => {
         personalFilePath: "/personal.json",
       }),
     ).toEqual({
-      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/zcodeBuiltin.json",
-      [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/personal.json",
+      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/zcodeBuiltin.json",
+      [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/personal.json",
     });
   });
 

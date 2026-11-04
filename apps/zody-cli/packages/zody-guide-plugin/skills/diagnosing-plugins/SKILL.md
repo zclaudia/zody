@@ -11,7 +11,7 @@ Goal: reduce any plugin problem to a single concrete fix.
 
 Plugins are managed in **Settings → Plugin Management** — the **Installed** tab (enable/disable, view details, configure, uninstall) and the **Discover** tab (browse, install, and add marketplaces via the **`+`** button).
 
-> Key facts: enable/disable state is stored under `plugins` in `~/.zody/cli/config.json`; the official marketplace is `zcode-plugins-official`; and for cloning marketplace repositories behind a proxy, Zody reads the proxy from `ZCODE_HTTP_PROXY` (a bare `http_proxy` is not used).
+> Key facts: enable/disable state is stored under `plugins` in `~/.zody/cli/config.json`; the official marketplace is `zcode-plugins-official`; and for cloning marketplace repositories behind a proxy, Zody reads the proxy from `ZODY_HTTP_PROXY` (a bare `http_proxy` is not used).
 
 ## 1. Plugin lifecycle and persistence
 
@@ -40,7 +40,7 @@ Plugins are managed in **Settings → Plugin Management** — the **Installed** 
 ## 4. Common pitfalls (symptom → cause → fix)
 
 1. **A plugin is not listed at all** — its marketplace was never added, so there is no installation record or cache; or `plugins.enabled` is false. → Add the marketplace on the Discover tab and install it, or set `plugins.enabled: true`.
-2. **Adding a marketplace or installing fails to clone** — an error such as `RPC failed`, `timed out`, or `early EOF` (after retries). The clone process did not inherit the shell proxy. → **Set `ZCODE_HTTP_PROXY=http://host:port`** (Zody reads the proxy only from this variable; a bare `http_proxy` is ignored).
+2. **Adding a marketplace or installing fails to clone** — an error such as `RPC failed`, `timed out`, or `early EOF` (after retries). The clone process did not inherit the shell proxy. → **Set `ZODY_HTTP_PROXY=http://host:port`** (Zody reads the proxy only from this variable; a bare `http_proxy` is ignored).
 3. **Enabled but its skills or commands are missing** — a component path escapes the plugin root, the plugin is actually disabled, or it is not being treated as enabled where the session reads it. → Open the plugin's detail view to see the invalid component, and make the manifest path relative and inside the plugin root.
 4. **A built-in plugin still appears after being disabled, or returns after uninstalling** — the suppression state was not applied where it was read. → Confirm the plugin id is in the suppressed-built-ins list in `~/.zody/cli/config.json`; restoring it removes that entry and re-seeds.
 5. **Not enabled as expected — listed as enabled but a skill reports "not found" in the session** — the default-enabled set was not applied along the session's discovery path even though the listing shows it enabled. → Verify the plugin's skills are actually available in the session (via **Settings → Skills** and the `/` menu), not only that the plugin shows as enabled.
@@ -57,5 +57,5 @@ Plugins are managed in **Settings → Plugin Management** — the **Installed** 
 2. **Look at the plugin.** On the **Installed** tab, confirm whether the plugin is present and enabled; open its detail view for its source, components, and any warnings.
 3. **Classify by presence.** Entirely absent → a marketplace or installation problem (confirm the marketplace was added and the plugin installed). Present but disabled → check the enable state against the default. Present and enabled but broken at runtime → a component-path problem (pitfall 3) or a session-versus-listing divergence (pitfall 5).
 4. **Built-in issues.** Compare the suppressed-built-ins list against what the official marketplace offers, and confirm the plugin cache is current.
-5. **Installation and network.** Reproduce the clone with the proxy set, confirming `ZCODE_HTTP_PROXY`, and look for the retryable-error signatures.
+5. **Installation and network.** Reproduce the clone with the proxy set, confirming `ZODY_HTTP_PROXY`, and look for the retryable-error signatures.
 6. **Session-versus-listing divergence.** If the plugin shows enabled but its capabilities are absent in the session, treat it as a discovery-path problem: confirm the plugin's skills and commands actually appear in the session (Settings → Skills, the `/` menu), not merely that the plugin is enabled.

@@ -11,8 +11,8 @@ import type { IDisposable, Event } from "@zody/rpc";
 import {
   getRemoteRuntimeToolsForPlatform,
   ZCODE_AGENT_RUNTIME,
-  ZCODE_RUNTIME_ENV_KEY,
-  ZCODE_VERSION,
+  ZODY_RUNTIME_ENV_KEY,
+  ZODY_VERSION,
 } from "@zody/shared";
 import type { IRemoteBackend, StdioStream } from "@zody/server/remote/backend.js";
 import { deployZodyAgentRuntime } from "@zody/server/remote/zodyAgentDeploy.js";
@@ -181,7 +181,7 @@ class FakeRemoteBackend implements IRemoteBackend {
   ) {
     this.commandPlans = options.commandPlans ?? [];
     this.serverVersions = options.serverVersions?.slice() ?? [
-      options.serverVersion ?? ZCODE_VERSION,
+      options.serverVersion ?? ZODY_VERSION,
     ];
     this.lockCloseCode = options.lockCloseCode ?? 0;
     this.lockAcquireGate = options.lockAcquireGate;
@@ -219,7 +219,7 @@ class FakeRemoteBackend implements IRemoteBackend {
       const versionSource =
         this.serverVersions.length > 1
           ? this.serverVersions.shift()!
-          : (this.serverVersions[0] ?? ZCODE_VERSION);
+          : (this.serverVersions[0] ?? ZODY_VERSION);
       const version = typeof versionSource === "function" ? versionSource() : versionSource;
       return createClosedStream(`${version}\n`);
     }
@@ -400,7 +400,7 @@ async function stageRemoteRuntimeRelease(
   },
 ): Promise<void> {
   const platformKey = `${options.platform}-${options.arch}`;
-  const releaseDir = join(rootDir, "releases", ZCODE_VERSION);
+  const releaseDir = join(rootDir, "releases", ZODY_VERSION);
   const nodeDir = join(releaseDir, "node", platformKey);
   const serverDir = join(releaseDir, "server");
   const nodePtyDir = join(releaseDir, "node-pty", platformKey);
@@ -673,8 +673,8 @@ async function stageRemoteAssetArchive(
     useLegacyFileName?: boolean;
   },
 ): Promise<void> {
-  const sourceReleaseDir = join(mockCdnDir, "releases", ZCODE_VERSION);
-  const outputVersionDir = join(outputRoot, ZCODE_VERSION);
+  const sourceReleaseDir = join(mockCdnDir, "releases", ZODY_VERSION);
+  const outputVersionDir = join(outputRoot, ZODY_VERSION);
   const platformKey = options?.platformKey ?? "linux-arm64";
   const archiveFileName = options?.useLegacyFileName
     ? "remote-assets.tar.gz"
@@ -723,8 +723,8 @@ function buildRemoteComponentArtifactSpecs(
   const specs: RemoteComponentArtifactSpec[] = [
     {
       id: "server-bundle",
-      version: `${ZCODE_VERSION}-server-bundle`,
-      artifactPath: `components/${platformKey}/server-bundle/${ZCODE_VERSION}-server-bundle.tar.gz`,
+      version: `${ZODY_VERSION}-server-bundle`,
+      artifactPath: `components/${platformKey}/server-bundle/${ZODY_VERSION}-server-bundle.tar.gz`,
       mount: "server",
       sourcePath: "server",
     },
@@ -836,8 +836,8 @@ async function stageRemoteComponentArtifacts(
   options?: StageRemoteComponentArtifactsOptions,
 ): Promise<RemoteComponentManifest> {
   const platformKey = options?.platformKey ?? "linux-arm64";
-  const sourceReleaseDir = join(mockCdnDir, "releases", ZCODE_VERSION);
-  const outputVersionDir = join(outputRoot, ZCODE_VERSION);
+  const sourceReleaseDir = join(mockCdnDir, "releases", ZODY_VERSION);
+  const outputVersionDir = join(outputRoot, ZODY_VERSION);
   const componentSpecs = buildRemoteComponentArtifactSpecs(platformKey);
   const components: RemoteComponentManifestItem[] = [];
 
@@ -856,13 +856,13 @@ async function stageRemoteComponentArtifacts(
   const manifest = options?.mutateManifest
     ? options.mutateManifest({
         schemaVersion: 1,
-        appVersion: ZCODE_VERSION,
+        appVersion: ZODY_VERSION,
         platformArch: platformKey,
         components,
       })
     : {
         schemaVersion: 1,
-        appVersion: ZCODE_VERSION,
+        appVersion: ZODY_VERSION,
         platformArch: platformKey,
         components,
       };
@@ -984,7 +984,7 @@ async function computePathContentSha256(path: string): Promise<string> {
 }
 
 function toVersionedArtifactRequestPath(artifactPath: string): string {
-  return `/${ZCODE_VERSION}/${artifactPath}`;
+  return `/${ZODY_VERSION}/${artifactPath}`;
 }
 
 function toComponentArtifactRequestPath(artifactPath: string): string {
@@ -1054,8 +1054,8 @@ async function createStaticFileServer(
 
 const tempDirs: string[] = [];
 const originalCwd = process.cwd();
-const originalRemoteDevAgentBundleEnv = process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE;
-const originalZCodeRuntimeEnv = process.env[ZCODE_RUNTIME_ENV_KEY];
+const originalRemoteDevAgentBundleEnv = process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE;
+const originalZCodeRuntimeEnv = process.env[ZODY_RUNTIME_ENV_KEY];
 const DEV_CLI_BUNDLE_TEST_SUFFIX = join(
   "apps",
   "zody-cli",
@@ -1069,14 +1069,14 @@ afterEach(async () => {
   vi.unstubAllGlobals();
   process.chdir(originalCwd);
   if (originalRemoteDevAgentBundleEnv === undefined) {
-    delete process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE;
+    delete process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE;
   } else {
-    process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE = originalRemoteDevAgentBundleEnv;
+    process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE = originalRemoteDevAgentBundleEnv;
   }
   if (originalZCodeRuntimeEnv === undefined) {
-    delete process.env[ZCODE_RUNTIME_ENV_KEY];
+    delete process.env[ZODY_RUNTIME_ENV_KEY];
   } else {
-    process.env[ZCODE_RUNTIME_ENV_KEY] = originalZCodeRuntimeEnv;
+    process.env[ZODY_RUNTIME_ENV_KEY] = originalZCodeRuntimeEnv;
   }
   await Promise.all(tempDirs.splice(0).map((dir) => rm(dir, { force: true, recursive: true })));
 });
@@ -1098,8 +1098,8 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
   it("本地来源忽略 remote-download/CDN，完整上传且不调用任何资源网络出口", async () => {
     const fixture = await createLocalRuntimeFixture("linux-arm64");
     tempDirs.push(fixture.root);
-    process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE = "1";
-    process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
+    process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE = "1";
+    process.env[ZODY_RUNTIME_ENV_KEY] = "development";
     const backend = new FakeRemoteBackend({}, { serverVersion: "old" });
     const networkFetch = vi.fn(() => {
       throw new Error("network forbidden");
@@ -1188,7 +1188,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const remoteFiles = createFullyDeployedRemoteFiles("linux-arm64");
     addMatchingGlmAndServerArtifactIdentities(remoteFiles, manifest, "linux-arm64");
     const backend = new FakeRemoteBackend(remoteFiles, {
-      serverVersions: ["previous-version", ZCODE_VERSION],
+      serverVersions: ["previous-version", ZODY_VERSION],
     });
 
     const deployed = await deployServer(
@@ -1220,7 +1220,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     });
     const backend = new FakeRemoteBackend(remoteFiles, { lockAcquireGate });
     const cdnServer = await createStaticFileServer(cdnRoot);
-    const manifestPath = `/${ZCODE_VERSION}/manifest-linux-arm64.json`;
+    const manifestPath = `/${ZODY_VERSION}/manifest-linux-arm64.json`;
 
     try {
       const deployPromise = deployServer(
@@ -1639,7 +1639,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const localProviderDir = join(
       mockCdnDir,
       "releases",
-      ZCODE_VERSION,
+      ZODY_VERSION,
       retiredProtocolPrefix,
       "linux-x64",
       LEGACY_REMOTE_TEST_AGENT_RUNTIME.claude.bundledResourceDir,
@@ -2166,8 +2166,8 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       ),
     );
     process.chdir(repoDir);
-    process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE = "1";
-    process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
+    process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE = "1";
+    process.env[ZODY_RUNTIME_ENV_KEY] = "development";
 
     const backend = new FakeRemoteBackend();
     const installer: RemoteAssetInstaller = {
@@ -2212,8 +2212,8 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     await writeFile(cliBundlePath, "console.log('dev zcode agent');\n", "utf8");
     await writeTestOfficialPluginPackages(repoDir);
     process.chdir(repoDir);
-    process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE = "1";
-    process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
+    process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE = "1";
+    process.env[ZODY_RUNTIME_ENV_KEY] = "development";
 
     const backend = new FakeRemoteBackend();
     const installedFiles: string[] = [];
@@ -2301,8 +2301,8 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       await writeFile(cliBundlePath, "console.log('same dev zcode agent');\n", "utf8");
       await writeTestOfficialPluginPackages(repoDir);
       process.chdir(repoDir);
-      process.env.ZCODE_REMOTE_DEV_AGENT_BUNDLE = "1";
-      process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
+      process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE = "1";
+      process.env[ZODY_RUNTIME_ENV_KEY] = "development";
 
       const devVersion = await computeDevelopmentAgentAssetsSha256ForTest(repoDir, cliBundlePath);
       const backend = new FakeRemoteBackend(
@@ -2566,8 +2566,8 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         ),
       ).toBe(false);
       expect(hasUploadForStagingTarget(backend, "~/.zody/server/tools/ripgrep/rg.new")).toBe(true);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(1);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
         0,
       );
       expect(
@@ -2612,7 +2612,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(directFetch).not.toHaveBeenCalled();
       expect(
         remoteAssetFetch.mock.calls.some(([input]) =>
-          String(input).endsWith(`/${ZCODE_VERSION}/manifest-linux-arm64.json`),
+          String(input).endsWith(`/${ZODY_VERSION}/manifest-linux-arm64.json`),
         ),
       ).toBe(true);
       const glmComponent = findManifestComponent(manifest, "glm");
@@ -2647,7 +2647,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
             remoteAssetNetwork: { fetch: remoteAssetFetch },
             remoteCdnBaseUrl: "https://remote-assets.example.test",
             remoteCacheDir: join(rootDir, "remote-cache"),
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
             componentIds: ["glm"],
           },
@@ -2702,7 +2702,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(nodeUpload?.localPath).toContain(remoteCacheDir);
       expect(nodeUpload?.localPath).not.toContain(mockCdnDir);
       expect(
-        cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-x64.json`),
+        cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-x64.json`),
       ).toBeGreaterThan(0);
     } finally {
       await cdnServer.close();
@@ -2723,7 +2723,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
     await stageRemoteRuntimeRelease(cdnSourceDir);
     await writeFile(
-      join(cdnSourceDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"),
+      join(cdnSourceDir, "releases", ZODY_VERSION, "glm", "linux-arm64", "zody.cjs"),
       "new CDN GLM bytes under the same semantic version",
       "utf8",
     );
@@ -2732,7 +2732,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const cdnGlm = cdnManifest.components.find((component) => component.id === "glm");
     expect(cdnGlm?.version).toBe(mockGlm?.version);
     expect(cdnGlm?.sha256).not.toBe(mockGlm?.sha256);
-    await rm(join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"));
+    await rm(join(mockCdnDir, "releases", ZODY_VERSION, "glm", "linux-arm64", "zody.cjs"));
     const remoteFiles = createFullyDeployedRemoteFiles("linux-arm64");
     addMatchingGlmArtifactIdentity(remoteFiles, mockManifest, "linux-arm64");
     const backend = new FakeRemoteBackend(remoteFiles);
@@ -2893,7 +2893,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
             componentIds: ["glm"],
           },
@@ -2903,7 +2903,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
             componentIds: ["glm"],
             requiredReleasePaths: [requiredReleasePath],
@@ -2946,7 +2946,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
 
     try {
       const remoteFiles = {
-        "~/.zody/server/version.txt": `${ZCODE_VERSION}\n`,
+        "~/.zody/server/version.txt": `${ZODY_VERSION}\n`,
         "~/.zody/server/node": "node",
         "~/.zody/server/.asset-components/node-runtime.json":
           '{"id":"node-runtime","version":"24.10.0-node-runtime","platformArch":"linux-arm64"}\n',
@@ -2990,7 +2990,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       join(
         mockCdnDir,
         "releases",
-        ZCODE_VERSION,
+        ZODY_VERSION,
         retiredProtocolPrefix,
         "linux-arm64",
         retiredProtocolPrefix,
@@ -3025,7 +3025,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           (upload) => upload.remotePath === `~/.zody/server/agents/${retiredProtocolPrefix}.tar.gz`,
         ),
       ).toBe(false);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(0);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(0);
     } finally {
       await cdnServer.close();
     }
@@ -3081,7 +3081,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(backend.uploads).toEqual([]);
       expect(backend.commands.some((command) => command.includes("curl -fL"))).toBe(true);
       expect(backend.commands.some((command) => command.includes("sha256sum"))).toBe(true);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(1);
     } finally {
       await cdnServer.close();
     }
@@ -3217,7 +3217,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const localClaudeDir = join(
       mockCdnDir,
       "releases",
-      ZCODE_VERSION,
+      ZODY_VERSION,
       retiredProtocolPrefix,
       "linux-x64",
       LEGACY_REMOTE_TEST_AGENT_RUNTIME.claude.bundledResourceDir,
@@ -3286,7 +3286,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(
         backend.commands.some((command) => command.includes("/components/linux-x64/glm/")),
       ).toBe(false);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-x64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-x64.json`)).toBe(1);
     } finally {
       await cdnServer.close();
     }
@@ -3308,7 +3308,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
           },
           { log: () => {}, logWarn: () => {} },
@@ -3332,15 +3332,15 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
           },
           { log: () => {}, logWarn: () => {} },
         ),
       ).resolves.toBe(
-        join(remoteCacheDir, "releases", ZCODE_VERSION, "linux-arm64", "glm-content", glm.sha256),
+        join(remoteCacheDir, "releases", ZODY_VERSION, "linux-arm64", "glm-content", glm.sha256),
       );
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(2);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(2);
       expect(
         cdnServer.getRequestCount(toVersionedArtifactRequestPath(serverBundle.artifactPath)),
       ).toBe(0);
@@ -3375,17 +3375,17 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       await expect(
         ensureRemoteReleaseDirFromCdn(
           {
-            remoteCdnBaseUrl: `${cdnServer.baseUrl}/${ZCODE_VERSION}`,
+            remoteCdnBaseUrl: `${cdnServer.baseUrl}/${ZODY_VERSION}`,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
           },
           { log: () => {}, logWarn: () => {} },
         ),
       ).resolves.toBe(
-        join(remoteCacheDir, "releases", ZCODE_VERSION, "linux-arm64", "glm-content", glm.sha256),
+        join(remoteCacheDir, "releases", ZODY_VERSION, "linux-arm64", "glm-content", glm.sha256),
       );
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(1);
       expect(
         cdnServer.getRequestCount(toVersionedArtifactRequestPath(serverBundle.artifactPath)),
       ).toBe(0);
@@ -3407,9 +3407,9 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const remoteCacheDir = join(rootDir, "remote-cache");
     await stageRemoteRuntimeRelease(mockCdnDir);
     const backupManifest = await stageRemoteComponentArtifacts(mockCdnDir, backupCdnRoot);
-    await mkdir(join(primaryCdnRoot, ZCODE_VERSION), { recursive: true });
+    await mkdir(join(primaryCdnRoot, ZODY_VERSION), { recursive: true });
     await writeFile(
-      join(primaryCdnRoot, ZCODE_VERSION, "manifest-linux-arm64.json"),
+      join(primaryCdnRoot, ZODY_VERSION, "manifest-linux-arm64.json"),
       JSON.stringify(backupManifest, null, 2),
       "utf8",
     );
@@ -3440,10 +3440,10 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       );
 
       expect(deployed).toBe(false);
-      expect(primaryCdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(
+      expect(primaryCdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(
         1,
       );
-      expect(backupCdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(
+      expect(backupCdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(
         0,
       );
       expect(
@@ -3463,10 +3463,10 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         backupCdnServer.getRequestCount(toComponentArtifactRequestPath(ripgrepBundle.artifactPath)),
       ).toBe(1);
       expect(
-        primaryCdnServer.getRequestCount(`/${ZCODE_VERSION}/remote-assets-linux-arm64.tar.gz`),
+        primaryCdnServer.getRequestCount(`/${ZODY_VERSION}/remote-assets-linux-arm64.tar.gz`),
       ).toBe(0);
       expect(
-        backupCdnServer.getRequestCount(`/${ZCODE_VERSION}/remote-assets-linux-arm64.tar.gz`),
+        backupCdnServer.getRequestCount(`/${ZODY_VERSION}/remote-assets-linux-arm64.tar.gz`),
       ).toBe(0);
     } finally {
       await primaryCdnServer.close();
@@ -3559,14 +3559,14 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           },
         ),
       ).rejects.toThrow(/manifest not found/u);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(1);
       expect(
         cdnServer.getRequestCount(toVersionedArtifactRequestPath(serverBundle.artifactPath)),
       ).toBe(0);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
         0,
       );
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/remote-assets.tar.gz`)).toBe(0);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/remote-assets.tar.gz`)).toBe(0);
     } finally {
       await cdnServer.close();
     }
@@ -3677,7 +3677,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           expect.stringMatching(/^~\/.zody\/server\/agents\/glm\/packages\.tar\.gz-[\w-]+$/u),
         ]),
       );
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(1);
       for (const componentId of ["server-bundle"]) {
         expect(
           cdnServer.getRequestCount(
@@ -3820,7 +3820,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           matcher: /command mv -f .*zody-server\.cjs\.new.*zody-server\.cjs/u,
           exitCode: 0,
           onExec: () => {
-            remoteServerVersion = ZCODE_VERSION;
+            remoteServerVersion = ZODY_VERSION;
           },
         },
         {
@@ -3832,7 +3832,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
               JSON.stringify({
                 id: "glm",
                 platformArch: "linux-arm64",
-                pendingRefreshAppVersion: ZCODE_VERSION,
+                pendingRefreshAppVersion: ZODY_VERSION,
               }),
             );
           },
@@ -3852,7 +3852,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           },
         ),
       ).rejects.toThrow("mock glm upload failed");
-      expect(remoteServerVersion).toBe(ZCODE_VERSION);
+      expect(remoteServerVersion).toBe(ZODY_VERSION);
       expect(backend.remoteFiles.get("~/.zody/server/.asset-components/glm.json")).toContain(
         "pendingRefreshAppVersion",
       );
@@ -4025,7 +4025,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           matcher: /command mv -f .*zody-server\.cjs\.new.*zody-server\.cjs/u,
           exitCode: 0,
           onExec: () => {
-            remoteServerVersion = ZCODE_VERSION;
+            remoteServerVersion = ZODY_VERSION;
           },
         },
         {
@@ -4037,7 +4037,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
               JSON.stringify({
                 id: "glm",
                 platformArch: "linux-arm64",
-                pendingRefreshAppVersion: ZCODE_VERSION,
+                pendingRefreshAppVersion: ZODY_VERSION,
               }),
             );
           },
@@ -4056,7 +4056,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           },
         ),
       ).rejects.toThrow("mock node-pty install failed");
-      expect(remoteServerVersion).toBe(ZCODE_VERSION);
+      expect(remoteServerVersion).toBe(ZODY_VERSION);
       expect(backend.commands.some((command) => command.includes(glm.artifactPath))).toBe(false);
 
       const deployed = await deployServer(
@@ -4346,13 +4346,13 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
 
       expect(deployed).toBe(false);
       expect(backend.uploads).toEqual([]);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(1);
       const glm = manifest.components.find((component) => component.id === "glm");
       if (!glm) {
         throw new Error("missing glm component in staged manifest");
       }
       expect(cdnServer.getRequestCount(toComponentArtifactRequestPath(glm.artifactPath))).toBe(0);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
         0,
       );
     } finally {
@@ -4366,7 +4366,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
 
     const cdnRoot = join(rootDir, "cdn");
     const remoteCacheDir = join(rootDir, "remote-cache");
-    const manifestPath = `/${ZCODE_VERSION}/manifest-linux-arm64.json`;
+    const manifestPath = `/${ZODY_VERSION}/manifest-linux-arm64.json`;
     const cdnServer = await createStaticFileServer(cdnRoot, {
       stalledPaths: [manifestPath],
     });
@@ -4409,7 +4409,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     tempDirs.push(rootDir);
     const cdnRoot = join(rootDir, "cdn");
     const remoteCacheDir = join(rootDir, "remote-cache");
-    const manifestPath = `/${ZCODE_VERSION}/manifest-linux-arm64.json`;
+    const manifestPath = `/${ZODY_VERSION}/manifest-linux-arm64.json`;
     const cdnServer = await createStaticFileServer(cdnRoot, {
       stalledPaths: [manifestPath],
     });
@@ -4442,7 +4442,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     tempDirs.push(rootDir);
     const cdnRoot = join(rootDir, "cdn");
     const remoteCacheDir = join(rootDir, "remote-cache");
-    const manifestPath = `/${ZCODE_VERSION}/manifest-linux-arm64.json`;
+    const manifestPath = `/${ZODY_VERSION}/manifest-linux-arm64.json`;
     const cdnServer = await createStaticFileServer(cdnRoot, {
       stalledPaths: [manifestPath],
     });
@@ -4472,7 +4472,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const rootDir = await mkdtemp(join(tmpdir(), "zcode-remote-deploy-"));
     tempDirs.push(rootDir);
     const cdnRoot = join(rootDir, "cdn");
-    const manifestPath = `/${ZCODE_VERSION}/manifest-linux-arm64.json`;
+    const manifestPath = `/${ZODY_VERSION}/manifest-linux-arm64.json`;
     const cdnServer = await createStaticFileServer(cdnRoot, {
       stalledPaths: [manifestPath],
     });
@@ -4481,7 +4481,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       await expect(
         fetchRemoteDownloadManifest(
           {
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
             remoteCdnBaseUrl: cdnServer.baseUrl,
             manifestRequestTimeoutMs: 25,
@@ -4522,7 +4522,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(backend.uploads).toEqual([]);
 
       await writeFile(
-        join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"),
+        join(mockCdnDir, "releases", ZODY_VERSION, "glm", "linux-arm64", "zody.cjs"),
         "glm bundle republished with the same semantic version",
         "utf8",
       );
@@ -4545,7 +4545,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
         true,
       );
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(2);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(2);
     } finally {
       await cdnServer.close();
     }
@@ -4601,7 +4601,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       );
 
       await writeFile(
-        join(mockCdnDir, "releases", ZCODE_VERSION, "server", "zody-server.cjs"),
+        join(mockCdnDir, "releases", ZODY_VERSION, "server", "zody-server.cjs"),
         "// server bundle republished under the same App version\n",
         "utf8",
       );
@@ -4662,7 +4662,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         ),
       ]);
 
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(1);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(1);
 
       // warm cache 下的第二轮并发也只能创建一个 refresh task。
       await Promise.all([
@@ -4677,7 +4677,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           { remoteCdnBaseUrl: cdnServer.baseUrl, remoteCacheDir },
         ),
       ]);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(2);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(2);
 
       // remote-download 也必须让身份判断与实际安装共享同一个 manifest 请求。
       await Promise.all([
@@ -4698,7 +4698,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           },
         ),
       ]);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(3);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(3);
     } finally {
       await cdnServer.close();
     }
@@ -4727,7 +4727,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     };
 
     await writeFile(
-      join(mockCdnDir, "releases", ZCODE_VERSION, "glm", "linux-arm64", "zody.cjs"),
+      join(mockCdnDir, "releases", ZODY_VERSION, "glm", "linux-arm64", "zody.cjs"),
       "new GLM bytes under the same semantic version",
       "utf8",
     );
@@ -4746,12 +4746,12 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
             componentIds: ["glm"],
             manifestRef: {
               manifest: pinnedInitialManifest,
-              releaseBaseCandidatesForComponents: [`${cdnServer.baseUrl}/${ZCODE_VERSION}`],
+              releaseBaseCandidatesForComponents: [`${cdnServer.baseUrl}/${ZODY_VERSION}`],
             },
           },
           { log: () => {}, logWarn: () => {} },
@@ -4760,12 +4760,12 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
             componentIds: ["glm"],
             manifestRef: {
               manifest: updatedManifest,
-              releaseBaseCandidatesForComponents: [`${cdnServer.baseUrl}/${ZCODE_VERSION}`],
+              releaseBaseCandidatesForComponents: [`${cdnServer.baseUrl}/${ZODY_VERSION}`],
             },
           },
           { log: () => {}, logWarn: () => {} },
@@ -4809,7 +4809,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const releaseOptions = {
       remoteCdnBaseUrl: cdnServer.baseUrl,
       remoteCacheDir,
-      version: ZCODE_VERSION,
+      version: ZODY_VERSION,
       platformArch: "linux-arm64",
       componentIds: ["glm"],
       requiredReleasePaths: [
@@ -4820,7 +4820,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       ],
       manifestRef: {
         manifest,
-        releaseBaseCandidatesForComponents: [`${cdnServer.baseUrl}/${ZCODE_VERSION}`],
+        releaseBaseCandidatesForComponents: [`${cdnServer.baseUrl}/${ZODY_VERSION}`],
       },
     };
     const loggers = { log: () => {}, logWarn: () => {} };
@@ -4872,7 +4872,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const platformKey = "linux-arm64";
     await stageRemoteRuntimeRelease(mockCdnDir);
 
-    const sourceReleaseDir = join(mockCdnDir, "releases", ZCODE_VERSION);
+    const sourceReleaseDir = join(mockCdnDir, "releases", ZODY_VERSION);
     const legacyReleaseDir = join(remoteCacheDir, "releases", "1.2.9", platformKey);
     await cp(sourceReleaseDir, legacyReleaseDir, { recursive: true });
     await writeFile(join(legacyReleaseDir, ".remote-assets-ready"), "legacy-ready\n", "utf8");
@@ -4913,13 +4913,13 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: platformKey,
           },
           { log: () => {}, logWarn: () => {} },
         ),
       ).resolves.toBe(
-        join(remoteCacheDir, "releases", ZCODE_VERSION, platformKey, "glm-content", glm.sha256),
+        join(remoteCacheDir, "releases", ZODY_VERSION, platformKey, "glm-content", glm.sha256),
       );
 
       expect(
@@ -4953,7 +4953,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const platformKey = "linux-arm64";
     await stageRemoteRuntimeRelease(mockCdnDir);
 
-    const sourceReleaseDir = join(mockCdnDir, "releases", ZCODE_VERSION);
+    const sourceReleaseDir = join(mockCdnDir, "releases", ZODY_VERSION);
     const oldGlmComponentVersion = `${LEGACY_REMOTE_TEST_AGENT_RUNTIME.glm.version}-glm+legacyhash001`;
     const oldGlmComponentDir = join(
       remoteCacheDir,
@@ -4996,14 +4996,14 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: platformKey,
             componentIds: ["glm"],
           },
           { log: () => {}, logWarn: () => {} },
         ),
       ).resolves.toBe(
-        join(remoteCacheDir, "releases", ZCODE_VERSION, platformKey, "glm-content", glm.sha256),
+        join(remoteCacheDir, "releases", ZODY_VERSION, platformKey, "glm-content", glm.sha256),
       );
 
       expect(cdnServer.getRequestCount(toComponentArtifactRequestPath(glm.artifactPath))).toBe(1);
@@ -5028,7 +5028,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const platformKey = "linux-arm64";
     await stageRemoteRuntimeRelease(mockCdnDir);
 
-    const sourceReleaseDir = join(mockCdnDir, "releases", ZCODE_VERSION);
+    const sourceReleaseDir = join(mockCdnDir, "releases", ZODY_VERSION);
     const semanticGlmComponentVersion = `${LEGACY_REMOTE_TEST_AGENT_RUNTIME.glm.version}-glm`;
     const oldGlmComponentVersion = `${semanticGlmComponentVersion}+aaaaaa000001`;
     const oldGlmComponentDir = join(
@@ -5072,14 +5072,14 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: platformKey,
             componentIds: ["glm"],
           },
           { log: () => {}, logWarn: () => {} },
         ),
       ).resolves.toBe(
-        join(remoteCacheDir, "releases", ZCODE_VERSION, platformKey, "glm-content", glm.sha256),
+        join(remoteCacheDir, "releases", ZODY_VERSION, platformKey, "glm-content", glm.sha256),
       );
 
       expect(cdnServer.getRequestCount(toComponentArtifactRequestPath(glm.artifactPath))).toBe(1);
@@ -5118,7 +5118,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir: remoteCacheDirA,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
           },
           { log: () => {}, logWarn: () => {} },
@@ -5127,7 +5127,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           {
             remoteCdnBaseUrl: cdnServer.baseUrl,
             remoteCacheDir: remoteCacheDirB,
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platformArch: "linux-arm64",
           },
           { log: () => {}, logWarn: () => {} },
@@ -5137,7 +5137,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(releaseDirA).not.toBe(releaseDirB);
       expect(releaseDirA).toContain("remote-cache-a");
       expect(releaseDirB).toContain("remote-cache-b");
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/manifest-linux-arm64.json`)).toBe(2);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(2);
       expect(
         cdnServer.getRequestCount(toVersionedArtifactRequestPath(serverBundle.artifactPath)),
       ).toBe(0);
@@ -5183,7 +5183,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
           },
         ),
       ).rejects.toThrow(/mount|白名单|路径|path|invalid|escape/iu);
-      expect(cdnServer.getRequestCount(`/${ZCODE_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/remote-assets-linux-arm64.tar.gz`)).toBe(
         0,
       );
     } finally {

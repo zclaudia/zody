@@ -18,12 +18,12 @@ describe("buildAgentProxyEnv", () => {
     expect(buildAgentProxyEnv("   ")).toEqual({});
   });
 
-  it("sets the standard uppercase proxy keys plus ZCODE_HTTP_PROXY", () => {
+  it("sets the standard uppercase proxy keys plus ZODY_HTTP_PROXY", () => {
     expect(buildAgentProxyEnv("http://127.0.0.1:7890")).toEqual({
       HTTP_PROXY: "http://127.0.0.1:7890",
       HTTPS_PROXY: "http://127.0.0.1:7890",
       ALL_PROXY: "http://127.0.0.1:7890",
-      ZCODE_HTTP_PROXY: "http://127.0.0.1:7890",
+      ZODY_HTTP_PROXY: "http://127.0.0.1:7890",
     });
   });
 
@@ -42,10 +42,10 @@ describe("buildAgentCaCertEnv", () => {
     expect(buildAgentCaCertEnv("  ")).toEqual({});
   });
 
-  it("sets NODE_EXTRA_CA_CERTS and ZCODE_AGENT_CA_CERT to the cert path", () => {
+  it("sets NODE_EXTRA_CA_CERTS and ZODY_AGENT_CA_CERT to the cert path", () => {
     expect(buildAgentCaCertEnv("/tmp/zcode-network-ca.pem")).toEqual({
       NODE_EXTRA_CA_CERTS: "/tmp/zcode-network-ca.pem",
-      ZCODE_AGENT_CA_CERT: "/tmp/zcode-network-ca.pem",
+      ZODY_AGENT_CA_CERT: "/tmp/zcode-network-ca.pem",
     });
   });
 });
@@ -56,11 +56,11 @@ describe("buildAgentNoProxyEnv", () => {
     expect(buildAgentNoProxyEnv("  ")).toEqual({});
   });
 
-  it("sets standard no-proxy keys plus ZCODE_NO_PROXY", () => {
+  it("sets standard no-proxy keys plus ZODY_NO_PROXY", () => {
     expect(buildAgentNoProxyEnv(" localhost, 127.0.0.1 ,.example.com ")).toEqual({
       NO_PROXY: "localhost,127.0.0.1,.example.com",
       no_proxy: "localhost,127.0.0.1,.example.com",
-      ZCODE_NO_PROXY: "localhost,127.0.0.1,.example.com",
+      ZODY_NO_PROXY: "localhost,127.0.0.1,.example.com",
     });
   });
 });
@@ -77,12 +77,12 @@ describe("buildAgentRuntimeEnv", () => {
       HTTP_PROXY: "http://127.0.0.1:7890",
       HTTPS_PROXY: "http://127.0.0.1:7890",
       ALL_PROXY: "http://127.0.0.1:7890",
-      ZCODE_HTTP_PROXY: "http://127.0.0.1:7890",
+      ZODY_HTTP_PROXY: "http://127.0.0.1:7890",
       NO_PROXY: "localhost,127.0.0.1",
       no_proxy: "localhost,127.0.0.1",
-      ZCODE_NO_PROXY: "localhost,127.0.0.1",
+      ZODY_NO_PROXY: "localhost,127.0.0.1",
       NODE_EXTRA_CA_CERTS: "/tmp/root-ca.pem",
-      ZCODE_AGENT_CA_CERT: "/tmp/root-ca.pem",
+      ZODY_AGENT_CA_CERT: "/tmp/root-ca.pem",
     });
   });
 
@@ -91,7 +91,7 @@ describe("buildAgentRuntimeEnv", () => {
       HTTP_PROXY: "http://127.0.0.1:7890",
       HTTPS_PROXY: "http://127.0.0.1:7890",
       ALL_PROXY: "http://127.0.0.1:7890",
-      ZCODE_HTTP_PROXY: "http://127.0.0.1:7890",
+      ZODY_HTTP_PROXY: "http://127.0.0.1:7890",
     });
   });
 
@@ -100,14 +100,14 @@ describe("buildAgentRuntimeEnv", () => {
       buildAgentRuntimeEnv({ httpProxy: undefined, caCertPath: " /tmp/root-ca.pem " }),
     ).toEqual({
       NODE_EXTRA_CA_CERTS: "/tmp/root-ca.pem",
-      ZCODE_AGENT_CA_CERT: "/tmp/root-ca.pem",
+      ZODY_AGENT_CA_CERT: "/tmp/root-ca.pem",
     });
   });
 });
 
 /* 权威 endpoint origin 的注入不变量（原 CR-01）。
    host 的输入是 env + settings 覆盖，agent 的输入只有 env——因此必须把 host 解析出的
-   权威 origin 通过 ZCODE_BASE_URL 下发，否则 test env + 自定义端点时两侧会分叉。
+   权威 origin 通过 ZODY_BASE_URL 下发，否则 test env + 自定义端点时两侧会分叉。
    fork（F4.6）：官方 MCP 信任判定已删除；注入本身仍是 spawn 环境的一部分。 */
 describe("buildAgentEndpointOriginEnv", () => {
   it("returns an empty patch when the origin is missing or blank", () => {
@@ -116,19 +116,19 @@ describe("buildAgentEndpointOriginEnv", () => {
     expect(buildAgentEndpointOriginEnv("   ")).toEqual({});
   });
 
-  it("pins the resolved origin onto ZCODE_BASE_URL", () => {
+  it("pins the resolved origin onto ZODY_BASE_URL", () => {
     expect(buildAgentEndpointOriginEnv("https://zcode.z.ai")).toEqual({
-      ZCODE_BASE_URL: "https://zcode.z.ai",
+      ZODY_BASE_URL: "https://zcode.z.ai",
     });
   });
 
   it("outranks the inherited endpoint keys it must override", () => {
-    // ZCODE_BASE_URL 必须压过继承来的 ZCODE_ENDPOINT_ORIGIN / ZCODE_TEST_BASE_URL，
+    // ZODY_BASE_URL 必须压过继承来的 ZODY_ENDPOINT_ORIGIN / ZODY_TEST_BASE_URL，
     // 否则注入了也不生效。
     const hostEnv = {
-      ZCODE_ENDPOINT_ORIGIN: "https://inherited-endpoint.example",
-      ZCODE_ENV: "test",
-      ZCODE_TEST_BASE_URL: "https://inherited-test.example",
+      ZODY_ENDPOINT_ORIGIN: "https://inherited-endpoint.example",
+      ZODY_ENV: "test",
+      ZODY_TEST_BASE_URL: "https://inherited-test.example",
     };
     const agentEnv = {
       ...hostEnv,
@@ -142,7 +142,7 @@ describe("buildAgentEndpointOriginEnv", () => {
 describe("buildAgentWorkspaceIdentityEnv", () => {
   it("injects only a trimmed remote workspace identity", () => {
     expect(buildAgentWorkspaceIdentityEnv(" remote:ssh:host:/repo ")).toEqual({
-      ZCODE_WORKSPACE_IDENTITY: "remote:ssh:host:/repo",
+      ZODY_WORKSPACE_IDENTITY: "remote:ssh:host:/repo",
     });
     expect(buildAgentWorkspaceIdentityEnv("   ")).toEqual({});
     expect(buildAgentWorkspaceIdentityEnv(undefined)).toEqual({});
@@ -207,6 +207,6 @@ describe("node.ts lazy CUA spawn helper selection", () => {
     const cuaBlock = source.slice(spawnEnvStart, spawnEnvStart + 6000);
     expect(cuaBlock).toContain("getStableCuaPipeName()");
     expect(cuaBlock.indexOf("getOrCreateDefaultCuaProductHelper(context)")).toBe(-1);
-    expect(cuaBlock).toContain("ZCODE_CUA_WIN_HELPER_RECIPE");
+    expect(cuaBlock).toContain("ZODY_CUA_WIN_HELPER_RECIPE");
   });
 });

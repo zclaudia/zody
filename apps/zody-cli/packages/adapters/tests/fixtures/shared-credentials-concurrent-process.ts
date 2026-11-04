@@ -24,7 +24,7 @@ process.once(
 
     try {
       const store = createSharedZodyCredentialStore({
-        env: { ZCODE_CREDENTIAL_SECRET: "test-secret" },
+        env: { ZODY_CREDENTIAL_SECRET: "test-secret" },
         filePath: message.filePath,
       });
       if (message.operation === "read-corrupt") {

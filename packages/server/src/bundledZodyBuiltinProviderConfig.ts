@@ -1,6 +1,6 @@
 import { materializeZodyBuiltinProviderConfig } from "@zody/services/node";
 
-declare const __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__: string | undefined;
+declare const __ZODY_BUILTIN_PROVIDER_CONFIG_JSON__: string | undefined;
 
 export interface MaterializeBundledZodyBuiltinProviderConfigOptions {
   readonly environmentConfigRoot: string;
@@ -9,10 +9,10 @@ export interface MaterializeBundledZodyBuiltinProviderConfigOptions {
 
 /** 返回构建时嵌入远端 Server 的 ZCode Built-in Provider Config。 */
 export function readBundledZodyBuiltinProviderConfig(): string {
-  if (typeof __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__ !== "string") {
+  if (typeof __ZODY_BUILTIN_PROVIDER_CONFIG_JSON__ !== "string") {
     throw new Error("当前构建未嵌入 ZCode Built-in Provider Config");
   }
-  return __ZCODE_BUILTIN_PROVIDER_CONFIG_JSON__;
+  return __ZODY_BUILTIN_PROVIDER_CONFIG_JSON__;
 }
 
 /**

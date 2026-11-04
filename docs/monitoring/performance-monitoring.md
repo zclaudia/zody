@@ -28,7 +28,7 @@
 | 字段                       | 说明                                                                                |
 | -------------------------- | ----------------------------------------------------------------------------------- |
 | `platform`                 | `macos` / `windows` / `linux`                                                       |
-| `app_version`              | `ZCODE_VERSION`                                                                     |
+| `app_version`              | `ZODY_VERSION`                                                                     |
 | `arms_env`                 | `prod` / `local`（`mapZCodeEnvToArmsRumEnv(runtimeEnv)`；本地开发态固定为 `local`） |
 | `device_mid`               | 桌面端设备标识（`userData` 路径哈希）                                               |
 | `telemetry_schema_version` | 稳定性事件口径版本；本次修复后的事件固定为 `2`                                      |

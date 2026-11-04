@@ -100,7 +100,7 @@
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 桌面上下文提示（`desktopContextPrompt`，#3） | Desktop Host 为 Agent 注入「ZCode Desktop Context」系统提示段（`apps/zcode-cli/packages/core/src/context/sections/desktop.ts`）：Gen UI 内联视图、文件与 URL 的 Markdown 链接、`::code-comment` 行内评审批注 | **开**                    | 这些都是桌面端已实现的渲染能力，关闭时 Agent 不会使用，桌面体验退化为终端；只影响本机注入的提示，不发请求                                                                                    | Desktop Main：`desktopContextPromptEnabled()` 固定返回 true，经 `ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1` 下发 Host                                                      |
 | 渲染端动作追踪（`rendererActionTrace`，#4）  | 渲染进程用户动作的 OTLP trace 采样与本地 TTFT 统计                                                                                                                                                           | **关**                    | 属于遥测；fork 无自有 OTLP 端点，开启也无处上报；符合隐私原则                                                                                                                                | Desktop Main：固定使用 `DISABLED_RENDERER_ACTION_TRACE_CONFIG`                                                                                                          |
-| 动态工作流（`dynamicWorkflow`，#6）          | `/workflow` 命令、`dynamic-workflows` 技能、自动化页工作流 tab，以及向模型注册的 10 个工作流工具                                                                                                             | **提供，默认 `onDemand`** | 功能完整可用且用户可在设置里改为 `alwaysOn` 或 `disabled`；`onDemand` 在会话首次使用 `/workflow` 前不注册工具，普通会话不增加提示词和工具面，BYOK 用户不会因模型自发启动工作流而产生额外费用 | Host：提供值固定为 `onDemand`，来源记为 `default`；开发与运维仍可用 `ZCODE_DYNAMIC_WORKFLOW_MODE` 覆盖（现有三档规则不变），用户选择仍以设置 `dynamicWorkflowMode` 为准 |
+| 动态工作流（`dynamicWorkflow`，#6）          | `/workflow` 命令、`dynamic-workflows` 技能、自动化页工作流 tab，以及向模型注册的 10 个工作流工具                                                                                                             | **提供，默认 `onDemand`** | 功能完整可用且用户可在设置里改为 `alwaysOn` 或 `disabled`；`onDemand` 在会话首次使用 `/workflow` 前不注册工具，普通会话不增加提示词和工具面，BYOK 用户不会因模型自发启动工作流而产生额外费用 | Host：提供值固定为 `onDemand`，来源记为 `default`；开发与运维仍可用 `ZODY_DYNAMIC_WORKFLOW_MODE` 覆盖（现有三档规则不变），用户选择仍以设置 `dynamicWorkflowMode` 为准 |
 | 闲时任务（`offPeak`）                        | Coding Plan 闲时额度下的排队任务                                                                                                                                                                             | **关，随阶段 4 删除**     | 依赖官方账号与闲时票据，路线 B 不再提供                                                                                                                                                      | 无（随 `coding-plan-subscription/` 删除）                                                                                                                               |
 
 注意：动态工作流的提供值目前由 `BigModelCodingPlanSubscriptionProvider.getDynamicWorkflowClientConfig()`（`packages/services/src/coding-plan-subscription/`）读取远端得到，而该目录将在总纲阶段 4 删除。本阶段先把提供值的所有者迁到独立于官方账号的 Host 模块（例如 `services/src/dynamic-workflow/` 下的本地 offer 提供者），阶段 4 删除 `coding-plan-subscription/` 时不受影响。
@@ -135,7 +135,7 @@
 | 自动更新是否生效                     | `@zcode/shared` 的 `isDesktopAutoUpdateActive()`；所有入口只读它                                         |
 | 更新器状态（检查、下载、就绪）       | `autoUpdater.ts`（现状不变），未生效时不进入任何状态                                                     |
 | 桌面上下文提示、渲染端动作追踪的取值 | Desktop Main，本地固定值（D1b），不读远端                                                                |
-| 动态工作流的提供值（offer）          | Host 内独立于官方账号的本地 offer 提供者，固定 `onDemand`，`ZCODE_DYNAMIC_WORKFLOW_MODE` 可覆盖          |
+| 动态工作流的提供值（offer）          | Host 内独立于官方账号的本地 offer 提供者，固定 `onDemand`，`ZODY_DYNAMIC_WORKFLOW_MODE` 可覆盖          |
 | 动态工作流的用户选择                 | 设置 `dynamicWorkflowMode`（现状不变）                                                                   |
 
 ## 时序
@@ -151,7 +151,7 @@ sequenceDiagram
     M->>M: 创建主窗口（无 gate、无同步网络等待）
     M->>M: 灰度取本地固定值：上下文提示=开，动作追踪=关
     M->>H: fork Host，env: ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1
-    H->>H: 动态工作流 offer = onDemand（或 ZCODE_DYNAMIC_WORKFLOW_MODE 覆盖），叠加用户设置
+    H->>H: 动态工作流 offer = onDemand（或 ZODY_DYNAMIC_WORKFLOW_MODE 覆盖），叠加用户设置
     M-xO: 不再请求 /api/v1/client/configs、营销触达或任何带设备标识的接口
 ```
 
@@ -177,7 +177,7 @@ sequenceDiagram
 2. **官方响应无影响（打包版）**：把官方端点指向本地桩（`ZCODE_BASE_URL`），桩对 `/api/v1/client/configs` 返回 `forceUpdate.minimalVersion = 99.0.0` 及各灰度键的相反取值。打包版启动后主窗口正常出现，桩日志中**没有任何请求**；灰度功能表现与 D1b 一致。
 3. **下载页按钮**：未配置 `ZCODE_DOWNLOAD_PAGE_URL` 时架构不匹配弹框无「前往下载」；配置后点击只打开该地址（断言 `shell.openExternal` 的参数，不含官方域名）。
 4. **构建校验**：`ZCODE_DOWNLOAD_PAGE_URL` 为 `http://example.com` 或非法 URL 时构建失败；loopback 的 http 通过；`ZCODE_AUTO_UPDATE=1` 时构建失败并给出指向本文的信息。
-5. **灰度本地值（单测）**：Host 启动 env 中 `ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1`，Agent 系统提示包含「ZCode Desktop Context」段；渲染端动作追踪配置为禁用；动态工作流 offer 为 `onDemand`、来源 `default`，`ZCODE_DYNAMIC_WORKFLOW_MODE` 覆盖规则不变，用户设置可改为 `alwaysOn`/`disabled`；上述过程均不调用 `fetchConfig`。
+5. **灰度本地值（单测）**：Host 启动 env 中 `ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1`，Agent 系统提示包含「ZCode Desktop Context」段；渲染端动作追踪配置为禁用；动态工作流 offer 为 `onDemand`、来源 `default`，`ZODY_DYNAMIC_WORKFLOW_MODE` 覆盖规则不变，用户设置可改为 `alwaysOn`/`disabled`；上述过程均不调用 `fetchConfig`。
 6. **自动更新 fail-closed（单测，fake `electron-updater`）**：`initAutoUpdater({enabled:false})` 之后，`requestAutoUpdateCheckWithoutWindow`、`refreshAutoUpdaterReleaseChannel`、`checkForUpdateMenuClick`、`downloadAvailableUpdate` 对 `checkForUpdates` 与下载的调用次数均为 0；不注册更新相关 IPC。
 7. **UI**：自动更新未生效时，应用菜单、Windows 标题栏菜单、托盘无「检查更新」，设置页无「接收预览更新」；生效时均出现。
 8. **残留检查**：`desktopArchitectureGuard.ts` 不再出现官方下载页；`pnpm knip` 没有新增未使用导出。

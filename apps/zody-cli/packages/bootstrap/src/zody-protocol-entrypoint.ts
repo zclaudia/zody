@@ -167,11 +167,11 @@ export async function runZodyProtocolAgent(
       create: () =>
         prepareZodyTelemetryEnv(runtimeEnv, {
           cliVersion: options.version,
-          productVersion: options.env?.ZCODE_APP_VERSION,
+          productVersion: options.env?.ZODY_APP_VERSION,
           runtimeSurface,
         }),
     });
-    const telemetryDeviceMid = telemetryEnv.ZCODE_TELEMETRY_DEVICE_MID;
+    const telemetryDeviceMid = telemetryEnv.ZODY_TELEMETRY_DEVICE_MID;
     mcpTelemetryTracker =
       configResult.config.features.mcp === false
         ? undefined
@@ -237,7 +237,7 @@ export async function runZodyProtocolAgent(
           env: {
             ...telemetryEnv,
             ...appOptions.env,
-            ...(telemetryDeviceMid ? { ZCODE_TELEMETRY_DEVICE_MID: telemetryDeviceMid } : {}),
+            ...(telemetryDeviceMid ? { ZODY_TELEMETRY_DEVICE_MID: telemetryDeviceMid } : {}),
           },
           ...(nodeReplBrowserBroker ? { nodeReplBrowserBroker } : {}),
           ...(mcpConnectionPool
@@ -356,7 +356,7 @@ function resolveProtocolRuntimeSurface(
   env: NodeJS.ProcessEnv,
 ): "desktop_local_host" | "remote_workspace_host" {
   // Bug 根因：入口曾无条件覆盖 Host 注入值，远程 SSH/WSL/容器 Trace 被归入本地 Desktop。
-  return env.ZCODE_TELEMETRY_RUNTIME_SURFACE?.trim() === "remote_workspace_host"
+  return env.ZODY_TELEMETRY_RUNTIME_SURFACE?.trim() === "remote_workspace_host"
     ? "remote_workspace_host"
     : "desktop_local_host";
 }

@@ -29,7 +29,7 @@
 - 短生命周期目录必须使用单次唯一子目录，结束后在 `finally` 中清理。
 - 失败清理不能影响主流程结果，但残留必须留在上述可控目录中，便于后续“完全清理”功能删除。
 - zcode-cli 主流程仍优先使用配置解析后的 `storageRoot`；只有 adapter 默认兜底才使用默认 `~/.zody/cli/exec`。
-- service / desktop 侧使用现有 data base dir 语义，默认落到 `~/.zcode`，配置了 `ZCODE_DATA_BASE_DIR` 时落到 `{dataBaseDir}/.zcode`。
+- service / desktop 侧使用现有 data base dir 语义，默认落到 `~/.zcode`，配置了 `ZODY_DATA_BASE_DIR` 时落到 `{dataBaseDir}/.zcode`。
 
 ## Bash 执行输出隔离目录（2026-10-24 / I16）
 
@@ -42,7 +42,7 @@
 {outputRoot}/<sanitized sessionId>/<sanitized toolCallId>/stderr.log   （仅通用 pipe 执行）
 ```
 
-- `outputRoot` 按下节顺序尝试三处：调用方传入的 `outputRootDir`（生产为 `join(storageRoot, "cli", "exec")`）、adapter 默认 `resolveDefaultOutputRootDir(processEnv)`（`ZCODE_STORAGE_DIR` → `~/.zody`，再拼 `cli/exec`）、三层都不可用时的进程临时根。
+- `outputRoot` 按下节顺序尝试三处：调用方传入的 `outputRootDir`（生产为 `join(storageRoot, "cli", "exec")`）、adapter 默认 `resolveDefaultOutputRootDir(processEnv)`（`ZODY_STORAGE_DIR` → `~/.zody`，再拼 `cli/exec`）、三层都不可用时的进程临时根。
 - Bash merged output（`command.mode === "shell" && shellProfile === "posix-bash"`）只创建 `stdout.log`，stderr 写入同一文件；通用 pipe 执行才创建 `stderr.log`。
 - 目录名与文件名由 execution adapter 的 `prepareOutputPaths()`（内部 `deriveOutputPaths()`）唯一生成并缓存；runtime、tool、UI 只消费返回的 `artifactPath` / `outputPath`，不得自行拼接。
 - 展示用标题可以由 `outputPath` 派生，但只用于 UI 标签，不回写为路径事实：Side Pane 代码查看器使用 `backgroundBashOutputTitle()` 保留最后两段（`<toolCallId>/stdout.log`），避免并发任务的标签都退化成 `stdout.log`；完整路径仍通过 `CodeViewerSource.path` 传递。

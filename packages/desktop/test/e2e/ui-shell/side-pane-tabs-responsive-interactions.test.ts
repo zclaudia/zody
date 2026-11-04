@@ -301,7 +301,7 @@ describe("Side Pane Tab responsive interactions", () => {
       expect(terminalTabStyle.gap).toBe("4px");
       await browser.saveScreenshot(
         join(
-          process.env.ZCODE_E2E_ARTIFACT_DIR || process.cwd(),
+          process.env.ZODY_E2E_ARTIFACT_DIR || process.cwd(),
           `independent-panels-${theme}.png`,
         ),
       );

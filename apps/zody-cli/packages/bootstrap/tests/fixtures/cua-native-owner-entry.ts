@@ -143,7 +143,7 @@ async function main(): Promise<void> {
   const workspacePath = await mkdtemp(join(tmpdir(), "zody-cua-native-owner-"));
   const env = {
     HOME: workspacePath,
-    ZCODE_SESSION_DB_PATH: join(workspacePath, "db.sqlite"),
+    ZODY_SESSION_DB_PATH: join(workspacePath, "db.sqlite"),
     ZCODE_STORAGE_DIR: workspacePath,
   };
 

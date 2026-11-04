@@ -1,6 +1,6 @@
 import { app } from "electron";
 import { join } from "node:path";
-import { ZCODE_ENV } from "@zody/shared";
+import { ZODY_ENV } from "@zody/shared";
 
 export function resolveZodyBuiltinProviderConfigFilePath(options?: {
   readonly appPath?: string;
@@ -8,7 +8,7 @@ export function resolveZodyBuiltinProviderConfigFilePath(options?: {
   readonly isPackaged?: boolean;
   readonly resourcesPath?: string;
 }): string {
-  const explicitPath = (options?.env ?? process.env)["ZCODE_BUILTIN_PROVIDER_CONFIG_FILE"]?.trim();
+  const explicitPath = (options?.env ?? process.env)["ZODY_BUILTIN_PROVIDER_CONFIG_FILE"]?.trim();
   if (explicitPath) return explicitPath;
   if (options?.isPackaged ?? app.isPackaged) {
     return join(
@@ -17,6 +17,6 @@ export function resolveZodyBuiltinProviderConfigFilePath(options?: {
     );
   }
   // 开发态没有 resources 复制步骤，必须与构建注入的产品环境读取同一份源文件。
-  const filename = ZCODE_ENV === "production" ? "zody-builtin.json" : "zody-builtin.test.json";
+  const filename = ZODY_ENV === "production" ? "zody-builtin.json" : "zody-builtin.test.json";
   return join(options?.appPath ?? app.getAppPath(), "../../config/provider", filename);
 }

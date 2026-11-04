@@ -34,7 +34,7 @@ describe("createModelAdapter", () => {
 describe("createRuntimeAiSdkModelExecutionConfig", () => {
   it("只装配来源 Header、网络、环境和签名基础设施", () => {
     const config = createRuntimeAiSdkModelExecutionConfig(
-      { ZCODE_APP_VERSION: "3.9.0", ZCODE_ENV: "test" },
+      { ZODY_APP_VERSION: "3.9.0", ZODY_ENV: "test" },
       {
         network: {
           caCertFile: "/tmp/test-ca.pem",
@@ -72,7 +72,7 @@ describe("createRuntimeAiSdkModelExecutionConfig", () => {
 describe("buildCliZCodeSourceHeaders", () => {
   it("生成运行时来源 Header，不根据模型或 Provider 推断", () => {
     const headers = buildCliZodySourceHeaders(
-      { ZCODE_APP_VERSION: "3.9.0", ZCODE_ENV: "production" },
+      { ZODY_APP_VERSION: "3.9.0", ZODY_ENV: "production" },
       { sourceTitle: "cli" },
     );
     expect(headers).toMatchObject({
@@ -88,9 +88,9 @@ describe("buildCliZCodeSourceHeaders", () => {
     expect(
       buildCliZodySourceHeaders(
         {
-          ZCODE_APP_VERSION: "3.9.0",
-          ZCODE_ENV: "test",
-          ZCODE_BASE_URL: "https://endpoint.example.test",
+          ZODY_APP_VERSION: "3.9.0",
+          ZODY_ENV: "test",
+          ZODY_BASE_URL: "https://endpoint.example.test",
         },
         { sourceTitle: "cli" },
       ),
@@ -98,5 +98,20 @@ describe("buildCliZCodeSourceHeaders", () => {
       "HTTP-Referer": "https://endpoint.example.test",
       "X-Release-Channel": "test",
     });
+  });
+});
+
+describe("R30 app-version environment key", () => {
+  it.each([
+    { name: "only new", env: { ZODY_APP_VERSION: "1.2.3" }, expected: "Zody/1.2.3" },
+    { name: "only old", env: { ZCODE_APP_VERSION: "9.8.7" }, expected: "Zody/unknown" },
+    {
+      name: "both",
+      env: { ZODY_APP_VERSION: "1.2.3", ZCODE_APP_VERSION: "9.8.7" },
+      expected: "Zody/1.2.3",
+    },
+    { name: "neither", env: {}, expected: "Zody/unknown" },
+  ])("builds the provider header with $name", ({ env, expected }) => {
+    expect(buildCliZodySourceHeaders(env)["User-Agent"]).toBe(expected);
   });
 });

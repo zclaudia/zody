@@ -105,29 +105,29 @@ describe("DataRootLock", () => {
     const childProgram = `
       import { access, appendFile, writeFile } from "node:fs/promises";
       import { setTimeout as delay } from "node:timers/promises";
-      const { DataRootLock } = await import(process.env.ZCODE_TEST_LOCK_MODULE);
-      await writeFile(process.env.ZCODE_TEST_LOCK_READY, "ready\\n");
-      while (true) { try { await access(process.env.ZCODE_TEST_LOCK_BARRIER); break; } catch { await delay(5); } }
-      const lock = new DataRootLock(process.env.ZCODE_TEST_LOCK_FILE);
+      const { DataRootLock } = await import(process.env.ZODY_TEST_LOCK_MODULE);
+      await writeFile(process.env.ZODY_TEST_LOCK_READY, "ready\\n");
+      while (true) { try { await access(process.env.ZODY_TEST_LOCK_BARRIER); break; } catch { await delay(5); } }
+      const lock = new DataRootLock(process.env.ZODY_TEST_LOCK_FILE);
       try {
         await lock.acquire();
-        await appendFile(process.env.ZCODE_TEST_LOCK_RESULTS, "success " + process.env.ZCODE_TEST_LOCK_CHILD + "\\n");
+        await appendFile(process.env.ZODY_TEST_LOCK_RESULTS, "success " + process.env.ZODY_TEST_LOCK_CHILD + "\\n");
         await delay(1_000);
         await lock.release();
       } catch {
-        await appendFile(process.env.ZCODE_TEST_LOCK_RESULTS, "locked " + process.env.ZCODE_TEST_LOCK_CHILD + "\\n");
+        await appendFile(process.env.ZODY_TEST_LOCK_RESULTS, "locked " + process.env.ZODY_TEST_LOCK_CHILD + "\\n");
       }
     `;
     const children = Array.from({ length: 8 }, (_, index) => new Promise<void>((resolve, reject) => {
       const child = spawn(process.execPath, ["--import", "tsx", "--input-type=module", "--eval", childProgram], {
         env: {
           ...process.env,
-          ZCODE_TEST_LOCK_MODULE: moduleUrl,
-          ZCODE_TEST_LOCK_BARRIER: barrierFile,
-          ZCODE_TEST_LOCK_FILE: lockFile,
-          ZCODE_TEST_LOCK_READY: join(readyDir, String(index)),
-          ZCODE_TEST_LOCK_RESULTS: resultsFile,
-          ZCODE_TEST_LOCK_CHILD: String(index),
+          ZODY_TEST_LOCK_MODULE: moduleUrl,
+          ZODY_TEST_LOCK_BARRIER: barrierFile,
+          ZODY_TEST_LOCK_FILE: lockFile,
+          ZODY_TEST_LOCK_READY: join(readyDir, String(index)),
+          ZODY_TEST_LOCK_RESULTS: resultsFile,
+          ZODY_TEST_LOCK_CHILD: String(index),
         },
         stdio: ["ignore", "ignore", "pipe"],
       });

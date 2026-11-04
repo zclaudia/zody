@@ -1,11 +1,11 @@
 /**
  * Live 层集成测试（phase 1.5 步骤 7，**默认不跑**）：真实 driver + 真实 AgentRuntime + 真实 model adapter。
- * 用 `describe.skipIf` 按环境变量 `ZCODE_WORKFLOW_LIVE_TEST` 门控——缺省整块跳过，`pnpm test` 保持确定性。
+ * 用 `describe.skipIf` 按环境变量 `ZODY_WORKFLOW_LIVE_TEST` 门控——缺省整块跳过，`pnpm test` 保持确定性。
  *
  * 如何运行：
- *   ZCODE_WORKFLOW_LIVE_TEST=1 pnpm --filter @zody/bootstrap exec vitest run tests/workflow-driver.live.test.ts
+ *   ZODY_WORKFLOW_LIVE_TEST=1 pnpm --filter @zody/bootstrap exec vitest run tests/workflow-driver.live.test.ts
  * 凭据与模型直接取自本机 v2 配置（~/.zody/v2/config.json + setting.json）里活跃的 provider——见
- * resolveV2ModelConfig。无需额外 env（可选 ZCODE_WORKFLOW_LIVE_MODEL 覆盖模型 id）。若本机无 v2
+ * resolveV2ModelConfig。无需额外 env（可选 ZODY_WORKFLOW_LIVE_MODEL 覆盖模型 id）。若本机无 v2
  * 配置或活跃 provider 无内联 apiKey，则整块跳过。
  *
  * 覆盖真模型才能验证的东西（phase 1 用 fake driver 无法证）：真实 submit 的 schema 一致性、
@@ -38,7 +38,7 @@ import type { ActorRuntimeFactory } from "../src/app/workflow-driver.js";
  * 的做法。CLI 的 createConfig 只读已废弃的 v1 ~/.zody/cli/config.json，不认 v2 provider map（v2 的
  * 原生解析在桌面 @zcode/services，按协议边界不被 CLI 依赖），所以这里让 live 测试自解析 v2 并注入
  * modelConfig，而不是依赖那条会落到 v1 空配置的 fallback。测试专用，只读不写，绝不落盘或打印密钥。
- * 可用 ZCODE_WORKFLOW_LIVE_MODEL 覆盖模型 id。
+ * 可用 ZODY_WORKFLOW_LIVE_MODEL 覆盖模型 id。
  */
 interface ResolvedLiveModel {
   modelConfig: RuntimeModelConfig;
@@ -61,7 +61,7 @@ function resolveV2ModelConfig(): ResolvedLiveModel | undefined {
   const apiKey: string | undefined = p?.options?.apiKey;
   if (!apiKey) return undefined; // 无内联 key（如 oauth-only family）：跳过，本 live 测试只覆盖 apiKey provider。
   const modelId: string | undefined =
-    process.env.ZCODE_WORKFLOW_LIVE_MODEL ?? Object.keys(p.models ?? {})[0];
+    process.env.ZODY_WORKFLOW_LIVE_MODEL ?? Object.keys(p.models ?? {})[0];
   if (!modelId) return undefined;
   return {
     modelConfig: {
@@ -105,16 +105,16 @@ function pickActiveProviderId(providers: Record<string, any>): string | undefine
   return undefined;
 }
 
-const RESOLVED = process.env.ZCODE_WORKFLOW_LIVE_TEST ? resolveV2ModelConfig() : undefined;
+const RESOLVED = process.env.ZODY_WORKFLOW_LIVE_TEST ? resolveV2ModelConfig() : undefined;
 const LIVE = Boolean(RESOLVED);
 
 /**
- * ZCODE_WORKFLOW_LIVE_TRANSCRIPT=<path>：把每次模型请求/应答以 JSONL 追加到该文件，供人工/agent
+ * ZODY_WORKFLOW_LIVE_TRANSCRIPT=<path>：把每次模型请求/应答以 JSONL 追加到该文件，供人工/agent
  * 复核真实会话是否合理（schema 尾注、submit 载荷、feedback 线程化、同 actor 上下文延续）。
  * 请求体不含凭据（key 在 adapter 闭包里）；仅调试用，缺省关闭、零开销。
  */
 function withTranscript<T>(adapter: T): T {
-  const path = process.env.ZCODE_WORKFLOW_LIVE_TRANSCRIPT;
+  const path = process.env.ZODY_WORKFLOW_LIVE_TRANSCRIPT;
   if (!path) return adapter;
   let seq = 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

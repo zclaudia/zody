@@ -1,7 +1,7 @@
 import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
 import { Emitter, type IDisposable, type Event } from "@zody/rpc";
-import { ZCODE_VERSION } from "@zody/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import { connectRemote, pickRemoteRuntimeEnv } from "../src/remote/connect.js";
 import type { IRemoteBackend, RemoteDisconnectEvent, StdioStream } from "../src/remote/backend.js";
 
@@ -59,7 +59,7 @@ class FakeConnectBackend implements IRemoteBackend {
         stdout.write(
           `${JSON.stringify({
             type: "zcode-hello",
-            version: ZCODE_VERSION,
+            version: ZODY_VERSION,
             platform: "linux",
             arch: "arm64",
             pid: 123,
@@ -77,7 +77,7 @@ class FakeConnectBackend implements IRemoteBackend {
   }
 
   async readFile(): Promise<string> {
-    return `${ZCODE_VERSION}\n`;
+    return `${ZODY_VERSION}\n`;
   }
 
   async resolveRuntimeProxy(proxyUrl: string): Promise<string> {
@@ -102,11 +102,11 @@ describe("connectRemote", () => {
   it("透传 Desktop SP 灰度结果到远端 server，但不透传未列入白名单的变量", () => {
     expect(
       pickRemoteRuntimeEnv({
-        ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED: "1",
+        ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED: "1",
         ZCODE_OAUTH_TOKEN: "secret",
       }),
     ).toEqual({
-      ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED: "1",
+      ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED: "1",
     });
   });
 
@@ -115,11 +115,11 @@ describe("connectRemote", () => {
   it("透传 Desktop Main 写定的 Dynamic Workflow 灰度档位", () => {
     expect(
       pickRemoteRuntimeEnv({
-        ZCODE_DYNAMIC_WORKFLOW_MODE: "alwaysOn",
+        ZODY_DYNAMIC_WORKFLOW_MODE: "alwaysOn",
         ZCODE_OAUTH_TOKEN: "secret",
       }),
     ).toEqual({
-      ZCODE_DYNAMIC_WORKFLOW_MODE: "alwaysOn",
+      ZODY_DYNAMIC_WORKFLOW_MODE: "alwaysOn",
     });
     // Main 在 production 包里已经删掉这个键，远端因此什么也收不到。
     expect(pickRemoteRuntimeEnv({})).toEqual({});
@@ -243,7 +243,7 @@ describe("connectRemote", () => {
     });
     connection.dispose();
 
-    expect(backend.commands[0]).toContain('ZCODE_SERVER_RUNTIME_ROOT="$HOME/.zody/server"');
+    expect(backend.commands[0]).toContain('ZODY_SERVER_RUNTIME_ROOT="$HOME/.zody/server"');
     expect(backend.commands[0]).not.toContain(retiredProxyEnvName);
   });
 
@@ -256,7 +256,7 @@ describe("connectRemote", () => {
     });
     connection.dispose();
 
-    expect(backend.commands[0]).toContain('ZCODE_SERVICE_AUTHORITY_MODE="desktop-attached-remote"');
+    expect(backend.commands[0]).toContain('ZODY_SERVICE_AUTHORITY_MODE="desktop-attached-remote"');
   });
 
   it("启动远端 server 时 shell quote 注入 app version", async () => {
@@ -269,7 +269,7 @@ describe("connectRemote", () => {
     });
     connection.dispose();
 
-    expect(backend.commands[0]).toContain(`ZCODE_APP_VERSION='2.13.1+build'"'"'7'`);
+    expect(backend.commands[0]).toContain(`ZODY_APP_VERSION='2.13.1+build'"'"'7'`);
   });
 
   it("启动远端 server 时只注入受控的测试环境 endpoint 变量，不再转发 ZAI_* 账号端点", async () => {
@@ -279,8 +279,8 @@ describe("connectRemote", () => {
       clientId: "test-client",
       skipDeploy: true,
       remoteRuntimeEnv: {
-        ZCODE_ENV: "test",
-        ZCODE_BASE_URL: "https://zcode.z.ai/api/v1",
+        ZODY_ENV: "test",
+        ZODY_BASE_URL: "https://zcode.z.ai/api/v1",
         ZAI_OAUTH_ORIGIN: "https://chat.z.ai",
         ZAI_OAUTH_CLIENT_ID: "client_'test",
         ZAI_OAUTH_APP_SECRET: "must-not-cross-ssh",
@@ -288,8 +288,8 @@ describe("connectRemote", () => {
     });
     connection.dispose();
 
-    expect(backend.commands[0]).toContain("ZCODE_ENV='test'");
-    expect(backend.commands[0]).toContain("ZCODE_BASE_URL='https://zcode.z.ai/api/v1'");
+    expect(backend.commands[0]).toContain("ZODY_ENV='test'");
+    expect(backend.commands[0]).toContain("ZODY_BASE_URL='https://zcode.z.ai/api/v1'");
     // fork（F4.1a）：官方账号下线后远端不再需要 ZAI_*（OAuth/ClientId）端点，一律不转发。
     expect(backend.commands[0]).not.toContain("ZAI_OAUTH_ORIGIN");
     expect(backend.commands[0]).not.toContain("ZAI_OAUTH_CLIENT_ID");
@@ -315,9 +315,9 @@ describe("connectRemote", () => {
     connection.dispose();
 
     expect(resolveRuntimeProxy).toHaveBeenCalledWith("http://127.0.0.1:7890");
-    expect(backend.commands[0]).toContain("ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY='1'");
-    expect(backend.commands[0]).toContain("ZCODE_REMOTE_HTTP_PROXY='http://172.21.240.1:7890/'");
-    expect(backend.commands[0]).toContain("ZCODE_REMOTE_NO_PROXY='localhost,127.0.0.1'");
+    expect(backend.commands[0]).toContain("ZODY_REMOTE_RUNTIME_NETWORK_AUTHORITY='1'");
+    expect(backend.commands[0]).toContain("ZODY_REMOTE_HTTP_PROXY='http://172.21.240.1:7890/'");
+    expect(backend.commands[0]).toContain("ZODY_REMOTE_NO_PROXY='localhost,127.0.0.1'");
   });
 
   it("backend 断连时即使 stdio 未关闭也应上报远端关闭", async () => {

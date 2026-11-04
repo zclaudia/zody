@@ -93,7 +93,7 @@ describe("release installer", () => {
     ));
     await new ReleaseInstaller(layout).installArchive({ archivePath, target: "win32-x64", version: "1.2.4" });
     const launcher = await readFile(join(layout.stableBinDir, "zcode.cmd"), "utf8");
-    expect(launcher).toContain("ZCODE_SERVER_ROOT");
+    expect(launcher).toContain("ZODY_SERVER_ROOT");
     expect(launcher).toContain("Invalid current Zody Server release");
     // I11: Windows 入口必须解析链接目标并用哨兵 fail-closed，且不能沿用父进程的 RELEASE_DIR。
     // 本机无 PowerShell，无法执行该入口，至少钉住生成文本中的关键分支防止被回退。

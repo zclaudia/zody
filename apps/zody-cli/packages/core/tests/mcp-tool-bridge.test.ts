@@ -15,7 +15,7 @@ import {
   ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME as ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
   sanitizeZodyRuntimeEnv,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-  ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 import {
@@ -82,9 +82,9 @@ function cuaActionReceipt(overrides: Record<string, unknown> = {}): string {
 // capture 路径（sanitize 时捕获完整凭据组）来播种，绝不能直接改写内部状态。
 function seedCapturedBrokerCredentials(): void {
   sanitizeZodyRuntimeEnv({
-    ZCODE_CUA_PERMISSION_BROKER_SOCKET: "/tmp/zcode-cua-test.sock",
+    ZODY_CUA_PERMISSION_BROKER_SOCKET: "/tmp/zcode-cua-test.sock",
     ZCODE_CUA_PERMISSION_BROKER_TOKEN: "test-broker-token",
-    [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: TEST_PLUGIN_AUTHORITY,
+    [ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]: TEST_PLUGIN_AUTHORITY,
   });
 }
 
@@ -161,7 +161,7 @@ describe("MCP tool bridge", () => {
               command: "zcode-cua",
               env: {
                 [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-                [ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY]: TEST_PLUGIN_AUTHORITY,
+                [ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]: TEST_PLUGIN_AUTHORITY,
               },
             },
           },

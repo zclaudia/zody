@@ -128,6 +128,7 @@ describe.skipIf(process.platform === "win32")("sealed cell source snapshot execu
         HOME: process.env.HOME,
         TMPDIR: process.env.TMPDIR,
         ZCODE_CUA_PERMISSION_BROKER_TOKEN: "synthetic-token",
+        ZODY_CUA_PERMISSION_BROKER_TOKEN: "synthetic-new-token",
         NODE_OPTIONS: "--inspect=127.0.0.1:65531",
       },
     });
@@ -139,7 +140,7 @@ describe.skipIf(process.platform === "win32")("sealed cell source snapshot execu
 
     expect(value.argv).toEqual([process.execPath, "-", CELL_RUN_FLAG]);
     expect(value.execArgv).toEqual(["--jitless", "--input-type=module"]);
-    expect(Object.keys(value.env).filter((key) => key.startsWith("ZCODE_"))).toEqual([]);
+    expect(Object.keys(value.env).filter((key) => (key.startsWith("ZCODE_") || key.startsWith("ZODY_")))).toEqual([]);
     expect(value.env.NODE_OPTIONS).toBeUndefined();
     expect(JSON.stringify(value)).not.toContain(marker);
   }, 60_000);

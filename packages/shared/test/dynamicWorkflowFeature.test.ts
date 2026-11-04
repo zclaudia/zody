@@ -7,7 +7,7 @@ import {
   isDynamicWorkflowOffered,
   normalizeDynamicWorkflowMode,
   resolveDynamicWorkflowClientConfig,
-  ZCODE_DYNAMIC_WORKFLOW_MODE_ENV,
+  ZODY_DYNAMIC_WORKFLOW_MODE_ENV,
 } from "../src/dynamic-workflow-feature.js";
 
 // DWG-01（docs/dynamic-workflow/launch.md「Gray release: the `dynamicWorkflow` feature key」）：
@@ -61,13 +61,13 @@ describe("resolveDynamicWorkflowClientConfig（DWG-01）", () => {
     expect(
       resolveDynamicWorkflowClientConfig({
         remote: remote("disabled"),
-        env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: "alwaysOn" },
+        env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: "alwaysOn" },
       }),
     ).toEqual({ mode: "alwaysOn", enabled: true, source: "override", offeredMode: "alwaysOn" });
     expect(
       resolveDynamicWorkflowClientConfig({
         remote: remote("alwaysOn"),
-        env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: "disabled" },
+        env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: "disabled" },
       }),
     ).toEqual({ mode: "disabled", enabled: false, source: "override", offeredMode: "disabled" });
   });
@@ -76,13 +76,13 @@ describe("resolveDynamicWorkflowClientConfig（DWG-01）", () => {
     expect(
       resolveDynamicWorkflowClientConfig({
         remote: remote("alwaysOn"),
-        env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: "yes" },
+        env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: "yes" },
       }),
     ).toEqual({ mode: "alwaysOn", enabled: true, source: "remote", offeredMode: "alwaysOn" });
     expect(
       resolveDynamicWorkflowClientConfig({
         remote: undefined,
-        env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: "" },
+        env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: "" },
       }).source,
     ).toBe("default");
   });
@@ -91,7 +91,7 @@ describe("resolveDynamicWorkflowClientConfig（DWG-01）", () => {
     expect(
       resolveDynamicWorkflowClientConfig({
         remote: undefined,
-        env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: " alwaysOn " },
+        env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: " alwaysOn " },
       }),
     ).toEqual({ mode: "alwaysOn", enabled: true, source: "override", offeredMode: "alwaysOn" });
   });
@@ -162,7 +162,7 @@ describe("applyDynamicWorkflowUserMode（DWG-18）", () => {
     expect(
       resolveDynamicWorkflowClientConfig({
         remote: remote("alwaysOn"),
-        env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: "onDemand" },
+        env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: "onDemand" },
         userMode: "disabled",
       }),
     ).toEqual({

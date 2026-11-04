@@ -2524,11 +2524,11 @@ WFA01：pending，`manual-review/pending/workflow-face-motion.test.mjs`。独立
 灰度档位由 case-local 配置网关 `packages/desktop/test/e2e/helpers/dynamic-workflow-config-mock-server.ts` 提供：
 它复用 `packages/desktop/test/e2e/fixtures/coding-plan-client-configs.json`，只改写 `dynamicWorkflow` 这一个键，
 并按 spec 文件名选档（与 `model-context-budget-config-mock-server.ts` 同一套路），在 wdio 的 `beforeSession` 注入
-`ZCODE_BASE_URL` / `ZCODE_TEST_BASE_URL` / `ZCODE_ENDPOINT_ORIGIN`。disabled 与 alwaysOn 两档 spec 必须分属不同 worker；
+`ZODY_BASE_URL` / `ZODY_TEST_BASE_URL` / `ZODY_ENDPOINT_ORIGIN`。disabled 与 alwaysOn 两档 spec 必须分属不同 worker；
 用户选择 spec 的文件名含 always-on 档片段，与 DWG-08-B 同档。
 两档共用的定位与观测原语在 `packages/desktop/test/e2e/helpers/dynamic-workflow-gray.ts`。
 
-不覆盖：`onDemand` 档位、本地 `ZCODE_DYNAMIC_WORKFLOW_MODE` 覆盖、已存在 run 的渲染与 Resume 收回、
+不覆盖：`onDemand` 档位、本地 `ZODY_DYNAMIC_WORKFLOW_MODE` 覆盖、已存在 run 的渲染与 Resume 收回、
 手机远控与远端 Host；这些由 DWG-01～DWG-07 的单测承担。
 
 ## SHARE. 会话分享与继续工作覆盖

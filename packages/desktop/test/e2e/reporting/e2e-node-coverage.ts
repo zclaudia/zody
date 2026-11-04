@@ -101,7 +101,7 @@ const COMPACTED_FILE_INDEX_MARKER = ".zcode-compacted-coverage-files-v1.marker";
 export function createE2ENodeCoverageCollector(
   options: E2ENodeCoverageCollectorOptions,
 ) {
-  const enabled = process.env.ZCODE_E2E_COVERAGE === COVERAGE_ENABLED_VALUE;
+  const enabled = process.env.ZODY_E2E_COVERAGE === COVERAGE_ENABLED_VALUE;
   const coverageDir = resolve(options.artifactDir, "coverage");
   const rawRoot = resolve(coverageDir, "raw");
   const sourceMapRoots: Record<E2ENodeCoverageDomain, string> = {

@@ -897,7 +897,7 @@ async function restoreBuiltinPluginCore(options: RestoreBuiltinPluginOptions): P
   ) {
     // overview 虽然隐藏了恢复入口，但协议调用仍可绕过 UI 写用户配置。
     // 功能开关关闭时在写盘前失败，确保用户配置与插件缓存都保持零痕迹。
-    throw new Error("computer-use built-in plugin requires ZCODE_CUA_PRODUCT_HELPER to be enabled");
+    throw new Error("computer-use built-in plugin requires ZODY_CUA_PRODUCT_HELPER to be enabled");
   }
   const { configResult } = resolvePluginContext(options);
   await removeSuppressedBuiltinInFileConfig(configResult.sources.user.path, options.pluginId);

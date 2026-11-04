@@ -1,7 +1,7 @@
 import type { EmbeddedSearchBackend } from "@zody/contracts";
 import { getRuntimeToolRuntime } from "@zody/shared";
 
-const EMBEDDED_SEARCH_COMMAND_ENV = "ZCODE_EMBEDDED_SEARCH_COMMAND";
+const EMBEDDED_SEARCH_COMMAND_ENV = "ZODY_EMBEDDED_SEARCH_COMMAND";
 const INTERNAL_SEARCH_ENTRYPOINT = "__internal-search";
 
 export function resolveDefaultEmbeddedSearchBackend(input: {

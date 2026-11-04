@@ -15,7 +15,7 @@ const originalHome = process.env.HOME;
 const tempHomes: string[] = [];
 
 function createTestCipher(secret = "credential-value-format-secret") {
-  return createCredentialCipherProvider({ env: { ZCODE_CREDENTIAL_SECRET: secret } });
+  return createCredentialCipherProvider({ env: { ZODY_CREDENTIAL_SECRET: secret } });
 }
 
 function splitEncryptedValue(encrypted: string): [string, string, string] {

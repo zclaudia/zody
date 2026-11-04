@@ -16,8 +16,8 @@ import {
   type ZodyCredentialCipher,
 } from "./credential-cipher.js";
 
-const ZCODE_DATA_BASE_DIR_ENV_KEY = "ZCODE_DATA_BASE_DIR";
-const CREDENTIAL_SECRET_ENV_KEY = "ZCODE_CREDENTIAL_SECRET";
+const ZODY_DATA_BASE_DIR_ENV_KEY = "ZODY_DATA_BASE_DIR";
+const CREDENTIAL_SECRET_ENV_KEY = "ZODY_CREDENTIAL_SECRET";
 const credentialChangeListeners = new Map<string, Set<() => void | Promise<void>>>();
 
 // fork（F4.9）：`oauth:*`、`oauth:zai:*`、`oauth:bigmodel:*` 与 `zcodejwttoken` 等
@@ -256,7 +256,7 @@ export function resolveSharedZodyCredentialsPath(
   }
 
   const env = options.env ?? process.env;
-  const baseDir = options.baseDir ?? env[ZCODE_DATA_BASE_DIR_ENV_KEY] ?? homedir();
+  const baseDir = options.baseDir ?? env[ZODY_DATA_BASE_DIR_ENV_KEY] ?? homedir();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   return join(resolveUserPath(baseDir), ZCODE_DATA_ROOT_DIR_NAME, "v2", "credentials.json");
 }

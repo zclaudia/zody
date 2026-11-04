@@ -2,7 +2,7 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { generateText } from "ai";
 
 const client = createAnthropic({
-  apiKey: process.env.ZCODE_API_KEY,
+  apiKey: process.env.ZODY_API_KEY,
   baseURL: "https://open.bigmodel.cn/api/coding/paas/v4",
 });
 

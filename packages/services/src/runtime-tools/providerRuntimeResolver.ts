@@ -9,7 +9,7 @@ import {
 import { getDataBaseDir, getProviderWorkspaceConfigDir } from "../paths.js";
 import { buildRuntimeProcessEnvPatch } from "./runtimeCommandEnv.js";
 
-const ZCODE_AGENT_WORKDIR_ENV = "ZCODE_AGENT_WORKDIR";
+const ZODY_AGENT_WORKDIR_ENV = "ZODY_AGENT_WORKDIR";
 
 /** 返回 provider + workspace 在应用内的专属配置目录路径 */
 export function resolveProviderConfigDir(
@@ -178,7 +178,7 @@ export function findBinary(provider: string): string | null {
   if (provider !== "glm") {
     return null;
   }
-  // GLM 开发态：ZCODE_AGENT_WORKDIR 或相邻目录发现，返回源码入口路径作为 "binary"
+  // GLM 开发态：ZODY_AGENT_WORKDIR 或相邻目录发现，返回源码入口路径作为 "binary"
   const devEntry = findGlmDevEntry();
   if (devEntry) {
     return devEntry.agentPath;
@@ -188,7 +188,7 @@ export function findBinary(provider: string): string | null {
 
 /**
  * GLM 开发态源码入口发现。
- * 优先读取 ZCODE_AGENT_WORKDIR。
+ * 优先读取 ZODY_AGENT_WORKDIR。
  * 未设置时在 cwd 相邻目录查找 zcode-cli / glm。
  */
 interface GlmDevEntry {
@@ -216,7 +216,7 @@ function resolveGlmDevEntry(workdir: string): GlmDevEntry | null {
 }
 
 function findGlmDevEntry(): GlmDevEntry | null {
-  const workdir = process.env[ZCODE_AGENT_WORKDIR_ENV];
+  const workdir = process.env[ZODY_AGENT_WORKDIR_ENV];
   if (workdir) {
     const entry = resolveGlmDevEntry(workdir);
     if (entry) {

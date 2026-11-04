@@ -37,7 +37,7 @@ import {
   resolveWorkspaceKey,
   ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-  ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 
@@ -626,7 +626,7 @@ describe("ZCode legacy task compat task index", () => {
   // - keeps trusted remote session routing on group admission and rejects a foreign workspace before IO
   it("points the native session log at the Zody CLI log file name", async () => {
     const logDir = mkdtempSync(join(tmpdir(), "zody-cli-log-"));
-    vi.stubEnv("ZCODE_LOG_DIR", logDir);
+    vi.stubEnv("ZODY_LOG_DIR", logDir);
     try {
       const { service } = createService();
       const result = await service.getTaskNativeSessionLogFile({
@@ -949,7 +949,7 @@ describe("ZCode legacy task compat task index", () => {
           args: ["zcode-cua"],
           env: [
             { name: ZCODE_PLUGIN_ID_ENV_KEY, value: ZCODE_CUA_OFFICIAL_PLUGIN_ID },
-            { name: ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY, value: "test-authority" },
+            { name: ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY, value: "test-authority" },
           ],
         },
       ],

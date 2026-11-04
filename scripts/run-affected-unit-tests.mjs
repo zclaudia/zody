@@ -133,7 +133,7 @@ function resolveDefaultBranchBase(root) {
 }
 
 function resolvePrePushTarget(root) {
-  const entries = parsePrePushInput(process.env.ZCODE_PRE_PUSH_STDIN ?? "");
+  const entries = parsePrePushInput(process.env.ZODY_PRE_PUSH_STDIN ?? "");
   if (entries.length === 0) {
     return undefined;
   }
@@ -189,7 +189,7 @@ function resolveUpstreamTarget(root) {
 
 function resolveDiffTarget(root) {
   const explicitBase =
-    process.env.ZCODE_PRE_PUSH_BASE?.trim() || process.env.ZCODE_AFFECTED_TEST_BASE?.trim();
+    process.env.ZODY_PRE_PUSH_BASE?.trim() || process.env.ZODY_AFFECTED_TEST_BASE?.trim();
   if (explicitBase) {
     if (!hasCommit(root, explicitBase)) {
       throw new Error(`显式 base 不存在或不是 commit: ${explicitBase}`);

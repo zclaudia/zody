@@ -97,13 +97,13 @@ directory (local cache) are skipped first; missing fonts are resolved from these
 1. **Bundled fonts** — `env_setup/fonts/` next to `font_list.txt`. Relative paths match the entries
    in `font_list.txt` with the leading `/` stripped, e.g.
    `env_setup/fonts/usr/share/fonts/truetype/chinese/NotoSansSC[wght].ttf`.
-2. **Fork-hosted mirror** — set `ZCODE_OFFICE_FONTS_BASE_URL` to a base URL serving the same
+2. **Fork-hosted mirror** — set `ZODY_OFFICE_FONTS_BASE_URL` to a base URL serving the same
    relative layout, e.g. `https://fonts.example.com/office-skill/fonts`. The script appends the
    leading-slash-stripped path and URL-encodes `[`, `]` and spaces.
 3. **Manual placement** — copy the fonts listed in `font_list.txt` into the user font directory
    (flat filenames); the script skips files that are already present.
 
-If neither a bundled directory nor `ZCODE_OFFICE_FONTS_BASE_URL` is available, the script reports an
+If neither a bundled directory nor `ZODY_OFFICE_FONTS_BASE_URL` is available, the script reports an
 error for the still-missing fonts and lists these options. It never falls back to the upstream CDN.
 
 - **Font list**: `env_setup/font_list.txt` (80 fonts, one path per line)
@@ -137,7 +137,7 @@ error for the still-missing fonts and lists these options. It never falls back t
 Point the script at a fork-hosted mirror:
 
 ```bash
-export ZCODE_OFFICE_FONTS_BASE_URL="https://fonts.example.com/office-skill/fonts"
+export ZODY_OFFICE_FONTS_BASE_URL="https://fonts.example.com/office-skill/fonts"
 ```
 
 Or copy fonts directly from a local mirror (flat filenames):

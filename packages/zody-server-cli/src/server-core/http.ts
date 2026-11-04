@@ -23,7 +23,7 @@ import { createServiceLogger } from "@zody/services/node";
 import {
   SERVER_REMOTE_PROTOCOL_VERSION,
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
-  ZCODE_VERSION,
+  ZODY_VERSION,
   type ServerRemoteInfo,
 } from "@zody/shared";
 import { createHostCapabilityStore, type HostCapabilityStore } from "./hostCapability.js";
@@ -139,7 +139,7 @@ export async function createCoreHttpServer(
   }
   const info: ServerRemoteInfo = {
     serverId: options.serverId ?? hostname() ?? "zody-server",
-    version: ZCODE_VERSION,
+    version: ZODY_VERSION,
     protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
     authRequired: false,
     workspaces: [],

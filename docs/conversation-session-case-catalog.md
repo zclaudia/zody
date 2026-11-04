@@ -3335,7 +3335,7 @@ WFS03（accepted）：Snippet 运行→完成/失败；运行摘要计时且代�
 两档共用同一组动作、相反断言。`goal` 不参与灰度，两档都必须在场，作为「CLI catalog 已送达」的正向对照；
 `disabled` 档额外要求在观察窗内标签不会迟到出现，避免把「还没渲染」读成「已关闭」。
 不扩展 `onDemand`（本版本行为与 `alwaysOn` 相同，由 `isDynamicWorkflowModeEnabled` 单测覆盖）、
-本地 `ZCODE_DYNAMIC_WORKFLOW_MODE` 覆盖档位、手机远控与 SSH/WSL/Docker 远端 Host。
+本地 `ZODY_DYNAMIC_WORKFLOW_MODE` 覆盖档位、手机远控与 SSH/WSL/Docker 远端 Host。
 
 ## SHARE. 会话分享与继续工作
 

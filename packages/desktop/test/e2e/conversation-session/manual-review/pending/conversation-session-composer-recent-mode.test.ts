@@ -23,7 +23,7 @@ const CASE_NAME = "conversation-session-composer-recent-mode";
 const CASE_DIR = resolveE2ERuntimePath(CASE_NAME);
 const OUTPUT_PATH = resolveE2EToolPath(CASE_NAME, "result.txt");
 const EVIDENCE_DIR = join(
-  process.env.ZCODE_E2E_ARTIFACT_DIR ?? join(process.cwd(), ".e2e-artifacts"),
+  process.env.ZODY_E2E_ARTIFACT_DIR ?? join(process.cwd(), ".e2e-artifacts"),
   CASE_NAME,
 );
 

@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import process from "node:process";
 
 const DEFAULT_WEB_DEV_ORIGIN = "http://localhost:5173";
-const webDevOrigin = process.env.ZCODE_MOBILE_WEB_DEV_ORIGIN?.trim() || DEFAULT_WEB_DEV_ORIGIN;
+const webDevOrigin = process.env.ZODY_MOBILE_WEB_DEV_ORIGIN?.trim() || DEFAULT_WEB_DEV_ORIGIN;
 const mobilePageUrl = `${webDevOrigin}/mobile.html`;
 
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";

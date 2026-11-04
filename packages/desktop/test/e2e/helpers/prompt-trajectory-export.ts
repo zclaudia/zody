@@ -21,8 +21,8 @@ export async function exportPromptTrajectory(
   label: string,
   querySource = "main_turn",
 ): Promise<TrajectoryManifest> {
-  const artifactRoot = process.env.ZCODE_E2E_ARTIFACT_DIR;
-  if (!artifactRoot) throw new Error("Missing ZCODE_E2E_ARTIFACT_DIR");
+  const artifactRoot = process.env.ZODY_E2E_ARTIFACT_DIR;
+  if (!artifactRoot) throw new Error("Missing ZODY_E2E_ARTIFACT_DIR");
   const out = join(artifactRoot, "prompt-trajectory", label);
   await mkdir(out, { recursive: true });
   const capture = process.env.E2E_PROVIDER_CAPTURE_PATH;

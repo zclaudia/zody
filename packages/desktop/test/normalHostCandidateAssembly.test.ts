@@ -255,7 +255,7 @@ describe("normal Host candidate build evidence", () => {
   it("records generated esbuild define inputs without reading files or dumping expressions", async () => {
     const root = createRoot();
     const evidenceDir = join(root, "build-evidence");
-    const defineName = "__ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__";
+    const defineName = "__ZODY_PACKAGED_AGENT_TELEMETRY_ENV__";
     const expression = JSON.stringify({ token: "must-not-be-archived" });
     const builds = buildsFor({
       main: "src/main/index.ts",
@@ -290,7 +290,7 @@ describe("normal Host candidate build evidence", () => {
 
   it("rejects generated define inputs without an exact supplied expression", async () => {
     const root = createRoot();
-    const defineName = "__ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__";
+    const defineName = "__ZODY_PACKAGED_AGENT_TELEMETRY_ENV__";
     const builds = buildsFor({
       main: "src/main/index.ts",
       host: "src/host/index.ts",

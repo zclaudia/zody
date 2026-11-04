@@ -30,7 +30,7 @@ process.execPath  <Electron Helper>
 ```sh
 #!/bin/sh
 set -eu
-runtime_root="${ZCODE_SERVER_RUNTIME_ROOT:-$HOME/.zody/server}"
+runtime_root="${ZODY_SERVER_RUNTIME_ROOT:-$HOME/.zody/server}"
 exec "$runtime_root/node" "$HOME/.zody/server/agents/glm/zody.cjs" "$@"
 ```
 

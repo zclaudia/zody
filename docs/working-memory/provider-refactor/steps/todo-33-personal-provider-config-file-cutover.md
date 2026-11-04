@@ -77,7 +77,7 @@ Desktop 每个窗口拥有一个 Local Host；多个窗口可以共享同一 Env
 
 ### 3.2 Desktop Agent Worker
 
-Desktop 派发的 Agent Worker 只通过 `ZCODE_PERSONAL_PROVIDER_CONFIG_FILE` 读取 `provider_config.json`。它不持有
+Desktop 派发的 Agent Worker 只通过 `ZODY_PERSONAL_PROVIDER_CONFIG_FILE` 读取 `provider_config.json`。它不持有
 Legacy Importer，不参与迁移；长期存活时继续使用 Bugfix 05 的 content-revision 轮询追踪外部写入。
 
 ### 3.3 Standalone CLI
@@ -125,7 +125,7 @@ CLI 用户 `config.json` 并执行一次性导入。协议 Worker 路径仍只�
 必须统一修改：
 
 - Desktop Local Host 默认 Personal Config 路径；
-- Host 派发给本地/远程 Agent 的 `ZCODE_PERSONAL_PROVIDER_CONFIG_FILE`；
+- Host 派发给本地/远程 Agent 的 `ZODY_PERSONAL_PROVIDER_CONFIG_FILE`；
 - Standalone CLI 的 `~/.zcode/v2/provider_config.json`；
 - Desktop E2E 的 Provider Config seed；
 - Provider Node、Services、CLI、Desktop 的路径与迁移测试。

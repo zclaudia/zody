@@ -2,8 +2,8 @@ import { version as readOsVersion } from "node:os";
 import {
   buildZodySourceHeadersFromContext,
   normalizeZodySourceHeaderValue,
-  ZCODE_ENV,
-  ZCODE_VERSION,
+  ZODY_ENV,
+  ZODY_VERSION,
 } from "@zody/shared";
 
 interface ZodySourceHeaderOptions {
@@ -35,8 +35,8 @@ export function buildZodySourceHeaders(
 ): Record<string, string> {
   const platform = options.platform ?? process.platform;
   const arch = options.arch ?? process.arch;
-  const appVersion = normalizePrintableHeaderValue(options.appVersion ?? ZCODE_VERSION);
-  const releaseChannel = normalizePrintableHeaderValue(options.releaseChannel ?? ZCODE_ENV);
+  const appVersion = normalizePrintableHeaderValue(options.appVersion ?? ZODY_VERSION);
+  const releaseChannel = normalizePrintableHeaderValue(options.releaseChannel ?? ZODY_ENV);
   const clientLanguage =
     normalizePrintableHeaderValue(options.clientLanguage) ?? resolveClientLanguage();
   const clientTimezone =

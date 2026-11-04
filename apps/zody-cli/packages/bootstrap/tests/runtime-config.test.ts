@@ -476,7 +476,7 @@ describe("resolveAppRuntimeConfig", () => {
       configResult: createConfigResult(),
       options: {
         env: {
-          ZCODE_EMBEDDED_SEARCH_COMMAND: "/tmp/zcode-test",
+          ZODY_EMBEDDED_SEARCH_COMMAND: "/tmp/zcode-test",
         },
       },
       workingDirectory,

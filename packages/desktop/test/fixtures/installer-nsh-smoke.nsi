@@ -20,15 +20,15 @@ SilentInstall silent
 !define UNINSTALL_FILENAME "uninstaller.exe"
 ; This fixture invokes the cleanup macro from a normal section; electron-builder's real uninstaller uses un.*.
 !ifdef BUILD_UNINSTALLER
-  !define ZCODE_UNINSTALLER_FUNCTION_PREFIX ""
+  !define ZODY_UNINSTALLER_FUNCTION_PREFIX ""
 !endif
 ; Simulate a manually launched overwrite installer without --updated.
 !define isUpdated `1 == 0`
 !define allowToChangeInstallationDirectory
-!define ZCODE_INSTALLER_DEFAULT_LOG_PATH "${DEFAULT_LOG_PATH}"
-!define ZCODE_INSTALLER_ELEVATED_LOG_PATH "${ELEVATED_LOG_PATH}"
+!define ZODY_INSTALLER_DEFAULT_LOG_PATH "${DEFAULT_LOG_PATH}"
+!define ZODY_INSTALLER_ELEVATED_LOG_PATH "${ELEVATED_LOG_PATH}"
 !ifdef FORCE_ELEVATED_INNER
-  !define ZCODE_INSTALLER_IS_ELEVATED_INNER `1 == 1`
+  !define ZODY_INSTALLER_IS_ELEVATED_INNER `1 == 1`
 !endif
 
 Var appExe
@@ -37,7 +37,7 @@ Var newStartMenuLink
 Var newDesktopLink
 Var keepShortcuts
 
-!include "${ZCODE_INSTALLER_NSH}"
+!include "${ZODY_INSTALLER_NSH}"
 ; 回归原因：electron-builder 异步生成 header 时，自定义 include 可能先于插件目录注册。
 ; 普通场景使用真实 UAC 判据，避免恒假替身掩盖插件尚未可用的编译错误。
 !addplugindir /x86-unicode "${NSIS_PLUGIN_DIR}"

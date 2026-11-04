@@ -244,7 +244,7 @@ MVP 可以让 Node Core、Hub Core 和 HTTP Gateway 同处一个 Node.js 进程�
 | per-window Remote Host                    | 窗口级 SSH / WSL pool，Docker dedicated         | app-wide Hub connector pool                               |
 | Desktop Main mobile bridge                | relay frame 接到某个窗口已有 Host               | relay device transport 接到 Hub logical attachment        |
 
-当前 Browser Web 只读取一个 `ZCODE_SERVER_WORKSPACE`，不能管理动态 workspace catalog；普通 Web
+当前 Browser Web 只读取一个 `ZODY_SERVER_WORKSPACE`，不能管理动态 workspace catalog；普通 Web
 也不能完整处理长文本临时附件。目标 Hub / Workspace Registry 和 Resource Store 必须先补齐这些合同，
 再开放跨 Node Web 管理，不能只把 UI 入口显示出来。
 

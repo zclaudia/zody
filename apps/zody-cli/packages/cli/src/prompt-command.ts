@@ -193,7 +193,7 @@ export const runPrompt = async (
     const appEnv = prepareTelemetry
       ? await prepareTelemetry(env, {
           cliVersion: version,
-          productVersion: env.ZCODE_APP_VERSION,
+          productVersion: env.ZODY_APP_VERSION,
         })
       : env;
     const startProviderRegistryRuntime =

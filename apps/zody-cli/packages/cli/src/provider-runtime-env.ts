@@ -7,15 +7,15 @@ import {
   PERSONAL_PROVIDER_CONFIG_FILE_NAME,
   resolveZodyBuiltinCachePaths,
   resolveZodyBuiltinClientPlatform,
-  ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV,
-  ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
-  ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV,
+  ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
   type ZodyBuiltinRefreshEvent,
 } from "@zody/provider-node";
 import {
   resolveRuntimeZodyEndpointOrigin,
   ZCODE_DATA_ROOT_DIR_NAME,
-  ZCODE_VERSION,
+  ZODY_VERSION,
 } from "@zody/shared";
 import type { CliEnv } from "./env.js";
 
@@ -59,13 +59,13 @@ export async function prepareCliProviderRuntimeEnv(
 ): Promise<Record<string, string>> {
   if (!requiresProviderRuntime(options.argv)) return {};
 
-  const explicitZodyBuiltin = options.env[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
-  const explicitPersonal = options.env[ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]?.trim();
-  const dataBaseDir = options.dataBaseDir ?? options.env.ZCODE_DATA_BASE_DIR?.trim() ?? homedir();
+  const explicitZodyBuiltin = options.env[ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]?.trim();
+  const explicitPersonal = options.env[ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]?.trim();
+  const dataBaseDir = options.dataBaseDir ?? options.env.ZODY_DATA_BASE_DIR?.trim() ?? homedir();
   if (explicitZodyBuiltin && explicitPersonal) {
     return {
-      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: explicitZodyBuiltin,
-      [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: explicitPersonal,
+      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: explicitZodyBuiltin,
+      [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: explicitPersonal,
     };
   }
 
@@ -80,7 +80,7 @@ export async function prepareCliProviderRuntimeEnv(
   const personalFilePath =
     explicitPersonal ??
     join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", PERSONAL_PROVIDER_CONFIG_FILE_NAME);
-  const appVersion = options.appVersion ?? ZCODE_VERSION;
+  const appVersion = options.appVersion ?? ZODY_VERSION;
   const platform = options.platform ?? resolveZodyBuiltinClientPlatform();
   const zodyEndpointOrigin = resolveRuntimeZodyEndpointOrigin(options.env);
   const cachePaths = resolveZodyBuiltinCachePaths({
@@ -102,9 +102,9 @@ export async function prepareCliProviderRuntimeEnv(
   }
 
   return {
-    [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: cachePaths.activeFilePath,
-    [ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV]: zodyBuiltinFilePath,
-    [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
+    [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: cachePaths.activeFilePath,
+    [ZODY_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE_ENV]: zodyBuiltinFilePath,
+    [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
   };
 }
 

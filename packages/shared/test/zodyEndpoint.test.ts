@@ -21,17 +21,17 @@ describe("zcodeEndpoint", () => {
 
   it("keeps production unconfigured unless an explicit env base url is provided", () => {
     expect(resolveZodyEndpointOrigin({ env: "production" })).toBe(DEFAULT_ZCODE_ENDPOINT_ORIGIN);
-    expect(resolveRuntimeZodyEndpointOrigin({ ZCODE_ENV: "production" })).toBe("");
+    expect(resolveRuntimeZodyEndpointOrigin({ ZODY_ENV: "production" })).toBe("");
   });
 
   it("falls back to the test placeholder in non-production without env base url", () => {
     expect(resolveZodyEndpointOrigin({ env: "test" })).toBe(TEST_ZCODE_ENDPOINT_ORIGIN);
-    expect(resolveRuntimeZodyEndpointOrigin({ ZCODE_ENV: "test" })).toBe(
+    expect(resolveRuntimeZodyEndpointOrigin({ ZODY_ENV: "test" })).toBe(
       TEST_ZCODE_ENDPOINT_ORIGIN,
     );
   });
 
-  it("uses explicit ZCODE_BASE_URL style env base in both environments", () => {
+  it("uses explicit ZODY_BASE_URL style env base in both environments", () => {
     expect(
       resolveZodyEndpointOrigin({
         env: "test",
@@ -49,7 +49,7 @@ describe("zcodeEndpoint", () => {
   it("resolves the runtime env selection without implying an endpoint", () => {
     // 生产默认只表示「环境选择」，不再意味着官方地址；端点仍需显式配置。
     expect(resolveRuntimeZodyEnv({})).toBe("production");
-    expect(resolveRuntimeZodyEnv({ ZCODE_ENV: "test" })).toBe("test");
+    expect(resolveRuntimeZodyEnv({ ZODY_ENV: "test" })).toBe("test");
     expect(resolveRuntimeZodyEndpointOrigin({})).toBe("");
   });
 
@@ -83,20 +83,20 @@ describe("zcodeEndpoint", () => {
   });
 
   it("builds runtime API urls from the selected environment", () => {
-    expect(buildRuntimeZodyApiUrl({ ZCODE_ENV: "test" }, "/api/v1/client/scenes")).toBe(
+    expect(buildRuntimeZodyApiUrl({ ZODY_ENV: "test" }, "/api/v1/client/scenes")).toBe(
       `${TEST_ZCODE_ENDPOINT_ORIGIN}/api/v1/client/scenes`,
     );
     expect(
       buildRuntimeZodyApiUrl(
-        { ZCODE_ENV: "test", ZCODE_BASE_URL: "http://localhost:3030/x" },
+        { ZODY_ENV: "test", ZODY_BASE_URL: "http://localhost:3030/x" },
         "/health",
       ),
     ).toBe("http://localhost:3030/health");
     // 未配置端点时不拼接相对路径（相对 URL 会被 Node fetch 当成非法地址）。
-    expect(buildRuntimeZodyApiUrl({ ZCODE_ENV: "production" }, "/api/v1/client/scenes")).toBe("");
+    expect(buildRuntimeZodyApiUrl({ ZODY_ENV: "production" }, "/api/v1/client/scenes")).toBe("");
     expect(
       buildRuntimeZodyApiUrl(
-        { ZCODE_ENV: "production", ZCODE_BASE_URL: "https://zcode.example.test/x" },
+        { ZODY_ENV: "production", ZODY_BASE_URL: "https://zcode.example.test/x" },
         "/health",
       ),
     ).toBe("https://zcode.example.test/health");

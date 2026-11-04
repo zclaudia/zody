@@ -42,7 +42,7 @@ try {
     backendEntry,
     `import { createServer } from "node:http";
 
-const startDelayMs = Number(process.env.ZCODE_TEST_BACKEND_START_DELAY_MS || 0);
+const startDelayMs = Number(process.env.ZODY_TEST_BACKEND_START_DELAY_MS || 0);
 
 setTimeout(() => {
   const server = createServer((req, res) => {
@@ -75,12 +75,12 @@ setTimeout(() => {
       NODE_OPTIONS: appendNodeImport(process.env.NODE_OPTIONS, injectResetEntry),
       PORT: String(publicPort),
       ZCODE_BACKEND_PORT: String(backendPort),
-      ZCODE_DATA_BASE_DIR: dataDir,
+      ZODY_DATA_BASE_DIR: dataDir,
       ZCODE_SERVER_ENTRY: backendEntry,
       ZCODE_AGENT_ENTRY: agentEntry,
-      ZCODE_SERVER_WORKSPACE: workspaceDir,
-      ZCODE_STORAGE_DIR: join(dataDir, ".zcode"),
-      ZCODE_TEST_BACKEND_START_DELAY_MS: "1000",
+      ZODY_SERVER_WORKSPACE: workspaceDir,
+      ZODY_STORAGE_DIR: join(dataDir, ".zcode"),
+      ZODY_TEST_BACKEND_START_DELAY_MS: "1000",
       ZCODE_WEB_DIST_DIR: webDistDir,
     },
     stdio: ["ignore", "pipe", "pipe"],

@@ -21,7 +21,7 @@ CJK text, emoji, or styled content.
 ## Non-Goals
 
 - Do not move session state into the TUI layer.
-- Do not introduce new `ZCODE_` environment variables.
+- Do not introduce new `ZODY_` environment variables.
 - Do not change the runtime event contract or permission broker schema.
 - Do not replace the CLI packaging path.
 

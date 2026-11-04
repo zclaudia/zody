@@ -8,7 +8,7 @@ import {
   DEFAULT_LOCALE,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   PlatformChannels,
-  ZCODE_VERSION,
+  ZODY_VERSION,
   desktopMenuMessageIds,
   formatDesktopMenuMessage,
   getDesktopMenuMessage,
@@ -25,11 +25,11 @@ import { ManifestUpdateProvider, getElectronReleasePlatform } from "./manifestUp
 export const CHECK_FOR_UPDATE_MENU_ID = "check-for-update";
 const AUTO_UPDATE_POLL_INTERVAL_MS = 15 * 60 * 1000;
 const AUTO_UPDATE_VISIBLE_POLL_INTERVAL_MS = 2 * 60 * 1000;
-const UPDATE_FEED_URL_ENV = "ZCODE_UPDATE_FEED_URL";
+const UPDATE_FEED_URL_ENV = "ZODY_UPDATE_FEED_URL";
 const UPDATE_FEED_URL_SWITCH = "--zcode-update-feed-url";
-const DEV_AUTO_UPDATE_ENV = "ZCODE_AUTO_UPDATE_DEV";
+const DEV_AUTO_UPDATE_ENV = "ZODY_AUTO_UPDATE_DEV";
 const DEV_AUTO_UPDATE_SWITCH = "--zcode-auto-update-dev";
-const DEV_AUTO_UPDATE_VERSION_ENV = "ZCODE_AUTO_UPDATE_DEV_VERSION";
+const DEV_AUTO_UPDATE_VERSION_ENV = "ZODY_AUTO_UPDATE_DEV_VERSION";
 const DEV_AUTO_UPDATE_VERSION_SWITCH = "--zcode-auto-update-dev-version";
 let readyUpdateVersion: string | null = null;
 let readyUpdateReleaseNotes: PostUpdateReleaseNotesPayload | null = null;
@@ -180,7 +180,7 @@ function resolveDevAutoUpdateVersion(): string | null {
   const configuredVersion =
     process.env[DEV_AUTO_UPDATE_VERSION_ENV]?.trim() ||
     readCommandLineSwitchValue(DEV_AUTO_UPDATE_VERSION_SWITCH)?.trim() ||
-    ZCODE_VERSION;
+    ZODY_VERSION;
   const parsed = semver.parse(configuredVersion);
   if (!parsed) {
     logger.warn(`[auto-update] ignore invalid dev update version=${configuredVersion}`);

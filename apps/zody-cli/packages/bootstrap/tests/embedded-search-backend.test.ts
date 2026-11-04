@@ -6,9 +6,9 @@ describe("resolveDefaultEmbeddedSearchBackend", () => {
     expect(
       resolveDefaultEmbeddedSearchBackend({
         env: {
-          ZCODE_BFS_BINARY: "/opt/zcode/tools/bfs/bfs",
-          ZCODE_RG_BINARY: "/opt/zcode/tools/ripgrep/rg",
-          ZCODE_UGREP_BINARY: "/opt/zcode/tools/ugrep/ugrep",
+          ZODY_BFS_BINARY: "/opt/zcode/tools/bfs/bfs",
+          ZODY_RG_BINARY: "/opt/zcode/tools/ripgrep/rg",
+          ZODY_UGREP_BINARY: "/opt/zcode/tools/ugrep/ugrep",
         },
       }),
     ).toEqual({
@@ -31,7 +31,7 @@ describe("resolveDefaultEmbeddedSearchBackend", () => {
   it("preserves the explicit internal CLI compatibility override", () => {
     expect(
       resolveDefaultEmbeddedSearchBackend({
-        env: { ZCODE_EMBEDDED_SEARCH_COMMAND: "/tmp/zcode-test" },
+        env: { ZODY_EMBEDDED_SEARCH_COMMAND: "/tmp/zcode-test" },
       }),
     ).toEqual({
       kind: "internal-cli",

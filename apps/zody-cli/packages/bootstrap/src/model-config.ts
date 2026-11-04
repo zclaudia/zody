@@ -6,7 +6,7 @@ import type {
 import {
   resolveRuntimeZodyEnv,
   resolveRuntimeZodyEndpointOrigin,
-  ZCODE_APP_VERSION_ENV,
+  ZODY_APP_VERSION_ENV,
 } from "@zody/shared";
 import {
   createRuntimePlatformHeaders,
@@ -72,7 +72,7 @@ function resolveAppVersionForHeaders(
   env: EnvRecord,
   options: Pick<RuntimeExecutionConfigOptions, "appVersion">,
 ): string | undefined {
-  return normalizePrintableHeaderValue(env[ZCODE_APP_VERSION_ENV] ?? options.appVersion);
+  return normalizePrintableHeaderValue(env[ZODY_APP_VERSION_ENV] ?? options.appVersion);
 }
 
 function detectDefaultProviderSourceTitle(): ModelProviderSourceTitle {

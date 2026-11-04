@@ -1,8 +1,8 @@
 import {
   mapZodyEnvToArmsRumEnv,
   type ZodyRuntimeEnv,
-  ZCODE_ARMS_RUM_ENDPOINT,
-  ZCODE_VERSION,
+  ZODY_ARMS_RUM_ENDPOINT,
+  ZODY_VERSION,
 } from "@zody/shared";
 
 /** 主进程 init 的 browserCollectors，经 autoInject 注入到 renderer 的 RumSDK.init(collectors) */
@@ -36,9 +36,9 @@ export function parseArmsViewName(url: string): string {
 /** Renderer Browser SDK init 配置（与主进程 endpoint/env/version 对齐） */
 export function buildArmsBrowserInitConfig(runtimeEnv: ZodyRuntimeEnv) {
   return {
-    enable: ZCODE_ARMS_RUM_ENDPOINT !== "",
-    version: ZCODE_VERSION,
-    endpoint: ZCODE_ARMS_RUM_ENDPOINT,
+    enable: ZODY_ARMS_RUM_ENDPOINT !== "",
+    version: ZODY_VERSION,
+    endpoint: ZODY_ARMS_RUM_ENDPOINT,
     env: mapZodyEnvToArmsRumEnv(runtimeEnv),
     sessionConfig: {
       sampleRate: 1,

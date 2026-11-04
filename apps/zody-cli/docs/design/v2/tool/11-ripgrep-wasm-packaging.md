@@ -10,7 +10,7 @@
 
 - `Grep` 默认走 bundled ripgrep WASM，语义向 ripgrep 靠齐。
 - core 仍只依赖 `FileSystemPort.searchText`，不知道 ripgrep 的存在。
-- 不新增 `ZCODE_` 环境变量；搜索能力由 adapter 和发布产物决定。
+- 不新增 `ZODY_` 环境变量；搜索能力由 adapter 和发布产物决定。
 - 普通 npm 包发布和 SEA 打包都包含 ripgrep WASM 运行时代码。
 - WASM 不可用时保留 JS fallback，保证工具可降级。
 

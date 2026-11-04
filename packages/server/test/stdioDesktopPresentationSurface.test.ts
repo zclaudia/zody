@@ -11,18 +11,18 @@ import {
 } from "@zody/services/node";
 import {
   SERVICE_AUTHORITY_MODE_ENV,
-  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
-  ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
-  ZCODE_REMOTE_NO_PROXY_ENV_KEY,
-  ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
+  ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  ZODY_REMOTE_HTTP_PROXY_ENV_KEY,
+  ZODY_REMOTE_NO_PROXY_ENV_KEY,
+  ZODY_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
 } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createStdioServices, resolveRemoteAgentNetworkFromEnv } from "../src/stdioServices.js";
 
 const originalHome = process.env.HOME;
-const originalCommand = process.env.ZCODE_AGENT_SERVER_COMMAND;
-const originalArgsJson = process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
-const originalDesktopContextPromptEnabled = process.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV];
+const originalCommand = process.env.ZODY_AGENT_SERVER_COMMAND;
+const originalArgsJson = process.env.ZODY_AGENT_SERVER_ARGS_JSON;
+const originalDesktopContextPromptEnabled = process.env[ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV];
 
 function restoreEnv(name: string, value: string | undefined): void {
   if (value === undefined) {
@@ -38,9 +38,9 @@ describe("stdio Desktop presentation surface", () => {
   afterEach(async () => {
     setDataBaseDir(null);
     restoreEnv("HOME", originalHome);
-    restoreEnv("ZCODE_AGENT_SERVER_COMMAND", originalCommand);
-    restoreEnv("ZCODE_AGENT_SERVER_ARGS_JSON", originalArgsJson);
-    restoreEnv(ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV, originalDesktopContextPromptEnabled);
+    restoreEnv("ZODY_AGENT_SERVER_COMMAND", originalCommand);
+    restoreEnv("ZODY_AGENT_SERVER_ARGS_JSON", originalArgsJson);
+    restoreEnv(ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV, originalDesktopContextPromptEnabled);
     vi.restoreAllMocks();
     await Promise.all(
       tempHomes.splice(0).map((home) => rm(home, { recursive: true, force: true })),
@@ -50,15 +50,15 @@ describe("stdio Desktop presentation surface", () => {
   it("只从 Host 权威标记读取一次性 WSL Agent 网络配置", () => {
     expect(
       resolveRemoteAgentNetworkFromEnv({
-        [ZCODE_REMOTE_HTTP_PROXY_ENV_KEY]: " http://172.21.240.1:7890 ",
-        [ZCODE_REMOTE_NO_PROXY_ENV_KEY]: " localhost,127.0.0.1 ",
+        [ZODY_REMOTE_HTTP_PROXY_ENV_KEY]: " http://172.21.240.1:7890 ",
+        [ZODY_REMOTE_NO_PROXY_ENV_KEY]: " localhost,127.0.0.1 ",
       }),
     ).toBeUndefined();
     expect(
       resolveRemoteAgentNetworkFromEnv({
-        [ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY]: "1",
-        [ZCODE_REMOTE_HTTP_PROXY_ENV_KEY]: " http://172.21.240.1:7890 ",
-        [ZCODE_REMOTE_NO_PROXY_ENV_KEY]: " localhost,127.0.0.1 ",
+        [ZODY_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY]: "1",
+        [ZODY_REMOTE_HTTP_PROXY_ENV_KEY]: " http://172.21.240.1:7890 ",
+        [ZODY_REMOTE_NO_PROXY_ENV_KEY]: " localhost,127.0.0.1 ",
       }),
     ).toEqual({
       httpProxy: "http://172.21.240.1:7890",
@@ -71,12 +71,12 @@ describe("stdio Desktop presentation surface", () => {
     tempHomes.push(home);
     process.env.HOME = home;
     setDataBaseDir(home);
-    // Bugfix: 开发机可能导出 ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=0（如本机 ZCode 安装的 shell 集成），
+    // Bugfix: 开发机可能导出 ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED=0（如本机 ZCode 安装的 shell 集成），
     // 会把 desktop-attached-remote 推导出的 presentationSurface 灭成 undefined，
     // 让「surface 贯穿装配」断言变成环境敏感；显式置 1 恢复用例封闭性。
-    process.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV] = "1";
-    process.env.ZCODE_AGENT_SERVER_COMMAND = process.execPath;
-    process.env.ZCODE_AGENT_SERVER_ARGS_JSON = JSON.stringify([
+    process.env[ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV] = "1";
+    process.env.ZODY_AGENT_SERVER_COMMAND = process.execPath;
+    process.env.ZODY_AGENT_SERVER_ARGS_JSON = JSON.stringify([
       "zody.cjs",
       "app-server",
       "--stdio",

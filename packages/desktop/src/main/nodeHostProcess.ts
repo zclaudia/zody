@@ -466,7 +466,7 @@ export function spawnNativeHostProcess(options: {
       env: {
         ...inheritedEnvWithoutElectronRunAsNode(),
         ...config.env,
-        ZCODE_PROCESS_LABEL: options.label,
+        ZODY_PROCESS_LABEL: options.label,
       },
       stdio,
       windowsHide: true,
@@ -511,7 +511,7 @@ export function spawnNodeHostProcess(options: {
     env: {
       ...inheritedEnvWithoutElectronRunAsNode(),
       ...options.config.env,
-      ZCODE_PROCESS_LABEL: options.label,
+      ZODY_PROCESS_LABEL: options.label,
     },
     stdio: ["ignore", "pipe", "pipe", "ipc"],
     serialization: "advanced",

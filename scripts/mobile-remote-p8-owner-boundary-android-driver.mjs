@@ -21,7 +21,7 @@ const artifactDir = join(sharedDir, "artifacts");
 const backupDir = join(sharedDir, "device-backup");
 const deviceSerial = process.env.ZODY_P8_OWNER_DEVICE?.trim() || "emulator-5554";
 const pkg = "io.github.zclaudia.zody.mobile";
-const credentialsPath = process.env.ZCODE_P8_CREDENTIAL_FILE?.trim();
+const credentialsPath = process.env.ZODY_P8_CREDENTIAL_FILE?.trim();
 
 const sleep = (ms) => new Promise((resolveSleep) => setTimeout(resolveSleep, ms));
 
@@ -338,7 +338,7 @@ async function commandBackup() {
 
 async function commandSetup() {
   const trace = (step) => console.error(`[setup] ${step}`);
-  if (!credentialsPath) throw new Error("Set ZCODE_P8_CREDENTIAL_FILE before driving the device");
+  if (!credentialsPath) throw new Error("Set ZODY_P8_CREDENTIAL_FILE before driving the device");
   trace("reading-credentials");
   const credentials = await readJson(credentialsPath);
   trace("waiting-ready");

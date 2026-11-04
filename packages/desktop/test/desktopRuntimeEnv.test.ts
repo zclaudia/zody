@@ -16,7 +16,7 @@ const appMock = {
   getPath: vi.fn((name: string) => `/mock/${name}`),
 };
 
-// 编译期常量 ZCODE_PRODUCT_FLAVOR 决定 isPreviewPackagedRuntime；Dynamic Workflow 灰度的
+// 编译期常量 ZODY_PRODUCT_FLAVOR 决定 isPreviewPackagedRuntime；Dynamic Workflow 灰度的
 // 「打包 production」档位必须能与 preview 区分，因此这里改成可切换的持有者，默认仍是 preview。
 const productFlavorMock = { value: "preview" as string };
 
@@ -25,10 +25,10 @@ vi.mock("electron", () => ({
 }));
 
 vi.mock("@zody/shared", () => ({
-  ZCODE_APP_VERSION_ENV: "ZCODE_APP_VERSION",
-  ZCODE_BUILD_COMMIT_ID_ENV: "ZCODE_BUILD_COMMIT_ID",
-  ZCODE_RUNTIME_ENV_KEY: "ZCODE_RUNTIME_ENV",
-  ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY: "ZCODE_TOOL_ENV_PASSTHROUGH_JSON",
+  ZODY_APP_VERSION_ENV: "ZODY_APP_VERSION",
+  ZODY_BUILD_COMMIT_ID_ENV: "ZODY_BUILD_COMMIT_ID",
+  ZODY_RUNTIME_ENV_KEY: "ZODY_RUNTIME_ENV",
+  ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY: "ZODY_TOOL_ENV_PASSTHROUGH_JSON",
   ZCODE_AGENT_RUNTIME: {
     binaryKind: "native-binary",
     binaryEnvVar: "GLM_BINARY_PATH",
@@ -42,23 +42,23 @@ vi.mock("@zody/shared", () => ({
       platform === "win32" ? "zcode-agent.exe" : "zcode-agent",
     ],
   },
-  ZCODE_ENV: "test",
+  ZODY_ENV: "test",
   ZCODE_DATA_ROOT_DIR_NAME: ".zody",
-  get ZCODE_PRODUCT_FLAVOR() {
+  get ZODY_PRODUCT_FLAVOR() {
     return productFlavorMock.value;
   },
-  ZCODE_DYNAMIC_WORKFLOW_MODE_ENV: "ZCODE_DYNAMIC_WORKFLOW_MODE",
+  ZODY_DYNAMIC_WORKFLOW_MODE_ENV: "ZODY_DYNAMIC_WORKFLOW_MODE",
   normalizeDynamicWorkflowMode: (value: unknown) => {
     if (typeof value !== "string") return undefined;
     const trimmed = value.trim();
     return ["disabled", "onDemand", "alwaysOn"].includes(trimmed) ? trimmed : undefined;
   },
-  ZCODE_COMMIT: "commit-test",
-  ZCODE_VERSION: "0.0.0-test",
+  ZODY_COMMIT: "commit-test",
+  ZODY_VERSION: "0.0.0-test",
   DEFAULT_ZCODE_ENDPOINT_ORIGIN: "",
   TEST_ZCODE_ENDPOINT_ORIGIN: "https://example.invalid",
   resolveRuntimeZodyEndpointOrigin: (env: Record<string, string | undefined>) =>
-    env.ZCODE_BASE_URL ?? env.ZCODE_TEST_BASE_URL ?? "",
+    env.ZODY_BASE_URL ?? env.ZODY_TEST_BASE_URL ?? "",
   sanitizeZodyRuntimeEnv: (env: Record<string, string | undefined>) => {
     const sanitizedKeys = new Set([
       "NODE_ENV",
@@ -82,7 +82,9 @@ vi.mock("@zody/shared", () => ({
         sanitizedKeys.has(key.toUpperCase()) ||
         key.toUpperCase().startsWith("OTEL_") ||
         key.toUpperCase().startsWith("ZCODE_TELEMETRY_") ||
+        key.toUpperCase().startsWith("ZODY_TELEMETRY_") ||
         key.toUpperCase() === "ZCODE_MODEL_TELEMETRY_ENABLED" ||
+        key.toUpperCase() === "ZODY_MODEL_TELEMETRY_ENABLED" ||
         /^(npm_config|yarn|pnpm)_(http_proxy|https_proxy|proxy|all_proxy|no_proxy|cafile|ca)$/i.test(
           key,
         )
@@ -100,8 +102,8 @@ vi.mock("@zody/shared", () => ({
         return (
           value != null &&
           (upperKey.startsWith("OTEL_") ||
-            upperKey.startsWith("ZCODE_TELEMETRY_") ||
-            upperKey === "ZCODE_MODEL_TELEMETRY_ENABLED")
+            upperKey.startsWith("ZODY_TELEMETRY_") ||
+            upperKey === "ZODY_MODEL_TELEMETRY_ENABLED")
         );
       }),
     ),
@@ -132,7 +134,7 @@ vi.mock("@zody/shared", () => ({
       }
     }
     return Object.keys(captured).length > 0
-      ? { ZCODE_TOOL_ENV_PASSTHROUGH_JSON: JSON.stringify(captured) }
+      ? { ZODY_TOOL_ENV_PASSTHROUGH_JSON: JSON.stringify(captured) }
       : {};
   },
 }));
@@ -140,29 +142,29 @@ vi.mock("@zody/shared", () => ({
 vi.mock("@zody/services/node", () => ({
   getAppConfigDir: vi.fn(() => "/mock/config"),
   getDataBaseDir: vi.fn(() => "/mock/db"),
-  ZCODE_CUA_BUNDLED_HELPER_APP_PATH_ENV: "ZCODE_CUA_BUNDLED_HELPER_APP_PATH",
-  ZCODE_WINDOWS_APP_INSTALL_DIR_ENV: "ZCODE_WINDOWS_APP_INSTALL_DIR",
+  ZODY_CUA_BUNDLED_HELPER_APP_PATH_ENV: "ZODY_CUA_BUNDLED_HELPER_APP_PATH",
+  ZODY_WINDOWS_APP_INSTALL_DIR_ENV: "ZODY_WINDOWS_APP_INSTALL_DIR",
 }));
 
 const originalUseCdnSwitch = process.env["ZCODE_DEV_REMOTE_ASSET_USE_CDN"];
 const originalCdnBaseUrl = process.env["ZCODE_REMOTE_ASSET_CDN_BASE_URL"];
-const originalRemoteAssetCacheDir = process.env["ZCODE_REMOTE_ASSET_CACHE_DIR"];
+const originalRemoteAssetCacheDir = process.env["ZODY_REMOTE_ASSET_CACHE_DIR"];
 const originalNodeNoWarnings = process.env["NODE_NO_WARNINGS"];
 const originalNodeEnv = process.env["NODE_ENV"];
-const originalZCodeRuntimeEnv = process.env["ZCODE_RUNTIME_ENV"];
+const originalZCodeRuntimeEnv = process.env["ZODY_RUNTIME_ENV"];
 const originalGlmBinaryPath = process.env["GLM_BINARY_PATH"];
-const originalZCodeBaseUrl = process.env["ZCODE_BASE_URL"];
-const originalZCodeEndpointOrigin = process.env["ZCODE_ENDPOINT_ORIGIN"];
-const originalDynamicWorkflowMode = process.env["ZCODE_DYNAMIC_WORKFLOW_MODE"];
+const originalZCodeBaseUrl = process.env["ZODY_BASE_URL"];
+const originalZCodeEndpointOrigin = process.env["ZODY_ENDPOINT_ORIGIN"];
+const originalDynamicWorkflowMode = process.env["ZODY_DYNAMIC_WORKFLOW_MODE"];
 const originalZaiOAuthOrigin = process.env["ZAI_OAUTH_ORIGIN"];
 const originalZaiBusinessBaseUrl = process.env["ZAI_BUSINESS_BASE_URL"];
 const originalZaiOAuthClientId = process.env["ZAI_OAUTH_CLIENT_ID"];
-const originalDesktopApplicationName = process.env["ZCODE_DESKTOP_APPLICATION_NAME"];
-const originalDesktopHomeDir = process.env["ZCODE_DESKTOP_HOME_DIR"];
-const originalDesktopUserDataDir = process.env["ZCODE_DESKTOP_USER_DATA_DIR"];
-const originalDesktopSessionDataDir = process.env["ZCODE_DESKTOP_SESSION_DATA_DIR"];
+const originalDesktopApplicationName = process.env["ZODY_DESKTOP_APPLICATION_NAME"];
+const originalDesktopHomeDir = process.env["ZODY_DESKTOP_HOME_DIR"];
+const originalDesktopUserDataDir = process.env["ZODY_DESKTOP_USER_DATA_DIR"];
+const originalDesktopSessionDataDir = process.env["ZODY_DESKTOP_SESSION_DATA_DIR"];
 const originalDesktopUseElectronDefaultUserData =
-  process.env["ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"];
+  process.env["ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"];
 const originalCwd = process.cwd();
 const originalResourcesPathDescriptor = Object.getOwnPropertyDescriptor(process, "resourcesPath");
 const createdDirs: string[] = [];
@@ -176,7 +178,7 @@ function restoreEnvValue(key: string, value: string | undefined) {
 }
 
 // Bugfix: 开发机 shell（如 ~/.codegeex/mamba profile）常注入 NO_PROXY/SSL_CERT_FILE 等代理证书
-// 变量，buildHostProcessEnv 会把它们并入 ZCODE_TOOL_ENV_PASSTHROUGH_JSON / telemetry env，
+// 变量，buildHostProcessEnv 会把它们并入 ZODY_TOOL_ENV_PASSTHROUGH_JSON / telemetry env，
 // 断言随宿主机环境漂移。逐个枚举清单必然漏网，这里按 passthrough/telemetry 捕获口径全量清理并恢复。
 const AMBIENT_TOOL_PASSTHROUGH_ENV_KEYS = new Set([
   "HTTP_PROXY",
@@ -189,20 +191,20 @@ const AMBIENT_TOOL_PASSTHROUGH_ENV_KEYS = new Set([
   "REQUESTS_CA_BUNDLE",
   "CURL_CA_BUNDLE",
   "GIT_SSL_CAINFO",
-  "ZCODE_MODEL_TELEMETRY_ENABLED",
+  "ZODY_MODEL_TELEMETRY_ENABLED",
 ]);
 const AMBIENT_PACKAGE_MANAGER_PROXY_ENV_PATTERN =
   /^(npm_config|yarn|pnpm)_(http_proxy|https_proxy|proxy|all_proxy|no_proxy|cafile|ca)$/i;
 
 // Bugfix: buildHostProcessEnv 会把 process.env 叠在用例显式入参之上（readDefinedProcessEnv 后展开），
 // 宿主机若导出 CUA dev Helper 相关变量（例如从桌面 App 内打开的终端会带上
-// ZCODE_CUA_BUNDLED_HELPER_APP_PATH 指向已安装应用的 Resources），会覆盖用例传入的
+// ZODY_CUA_BUNDLED_HELPER_APP_PATH 指向已安装应用的 Resources），会覆盖用例传入的
 // hostProcessLocalEnv，使免签 dev bundle 断言随宿主机环境漂移。这三个键是 dev 分支的
 // 全部环境输入，按上方 ambient 清理口径一并隔离并在 afterAll 恢复。
 const AMBIENT_CUA_DEV_ENV_KEYS = new Set([
-  "ZCODE_CUA_BUNDLED_HELPER_APP_PATH",
-  "ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL",
-  "ZCODE_HOME",
+  "ZODY_CUA_BUNDLED_HELPER_APP_PATH",
+  "ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL",
+  "ZODY_HOME",
 ]);
 
 function isAmbientHostEnvKey(key: string): boolean {
@@ -211,11 +213,13 @@ function isAmbientHostEnvKey(key: string): boolean {
     AMBIENT_TOOL_PASSTHROUGH_ENV_KEYS.has(upperKey) ||
     AMBIENT_CUA_DEV_ENV_KEYS.has(upperKey) ||
     upperKey.startsWith("OTEL_") ||
+    upperKey.startsWith("ZODY_TELEMETRY_") ||
     upperKey.startsWith("ZCODE_TELEMETRY_") ||
     // 在 ZCode 桌面进程拉起的终端里跑测试时，Host 会继承 ZCODE_CUA_*（例如打包态的
-    // ZCODE_CUA_BUNDLED_HELPER_APP_PATH）。buildHostProcessEnv 里 readDefinedProcessEnv()
+    // ZODY_CUA_BUNDLED_HELPER_APP_PATH）。buildHostProcessEnv 里 readDefinedProcessEnv()
     // 的优先级高于入参里的本地 env，这些外部键会覆盖用例显式传入的 dev Helper 路径，
     // 让「本地免签 CUA」断言读到 /Applications 下的打包路径。测试基线必须与宿主环境隔离。
+    upperKey.startsWith("ZODY_CUA_") ||
     upperKey.startsWith("ZCODE_CUA_") ||
     AMBIENT_PACKAGE_MANAGER_PROXY_ENV_PATTERN.test(key)
   );
@@ -279,7 +283,7 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
     appMock.getPath.mockImplementation((name: string) => `/mock/${name}`);
     delete process.env["ZCODE_DEV_REMOTE_ASSET_USE_CDN"];
     delete process.env["ZCODE_REMOTE_ASSET_CDN_BASE_URL"];
-    delete process.env["ZCODE_REMOTE_ASSET_CACHE_DIR"];
+    delete process.env["ZODY_REMOTE_ASSET_CACHE_DIR"];
   });
 
   afterAll(() => {
@@ -296,9 +300,9 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
     }
 
     if (originalRemoteAssetCacheDir == null) {
-      delete process.env["ZCODE_REMOTE_ASSET_CACHE_DIR"];
+      delete process.env["ZODY_REMOTE_ASSET_CACHE_DIR"];
     } else {
-      process.env["ZCODE_REMOTE_ASSET_CACHE_DIR"] = originalRemoteAssetCacheDir;
+      process.env["ZODY_REMOTE_ASSET_CACHE_DIR"] = originalRemoteAssetCacheDir;
     }
 
     if (originalNodeNoWarnings == null) {
@@ -341,7 +345,7 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
 
   it("remote asset cache 目录支持环境变量覆盖", async () => {
     const overrideCacheDir = join(tmpdir(), "zcode-prod-remote-assets-cache");
-    process.env["ZCODE_REMOTE_ASSET_CACHE_DIR"] = overrideCacheDir;
+    process.env["ZODY_REMOTE_ASSET_CACHE_DIR"] = overrideCacheDir;
     const { resolveRemoteAssetDirs } = await import("../src/main/desktopRuntimeEnv.js");
     const dirs = resolveRemoteAssetDirs({
       locale: "zh-CN",
@@ -360,7 +364,7 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
         timeZone: "Asia/Shanghai",
       },
       {
-        ZCODE_REMOTE_ASSET_CACHE_DIR: overrideCacheDir,
+        ZODY_REMOTE_ASSET_CACHE_DIR: overrideCacheDir,
       },
     );
 
@@ -378,7 +382,7 @@ describe("desktopRuntimeEnv resolveRemoteAssetDirs", () => {
       {
         ZCODE_DEV_REMOTE_ASSET_USE_CDN: "1",
         ZCODE_REMOTE_ASSET_CDN_BASE_URL: "https://cdn.example.com/releases///",
-        ZCODE_REMOTE_ASSET_CACHE_DIR: overrideCacheDir,
+        ZODY_REMOTE_ASSET_CACHE_DIR: overrideCacheDir,
       },
     );
 
@@ -396,22 +400,22 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     appMock.getPath.mockImplementation((name: string) => `/mock/${name}`);
     delete process.env["NODE_NO_WARNINGS"];
     delete process.env["NODE_ENV"];
-    delete process.env["ZCODE_RUNTIME_ENV"];
+    delete process.env["ZODY_RUNTIME_ENV"];
     deleteAmbientHostEnv();
     delete process.env["GLM_BINARY_PATH"];
-    delete process.env["ZCODE_BASE_URL"];
-    delete process.env["ZCODE_ENDPOINT_ORIGIN"];
-    delete process.env["ZCODE_DYNAMIC_WORKFLOW_MODE"];
+    delete process.env["ZODY_BASE_URL"];
+    delete process.env["ZODY_ENDPOINT_ORIGIN"];
+    delete process.env["ZODY_DYNAMIC_WORKFLOW_MODE"];
     productFlavorMock.value = "preview";
     process.chdir(originalCwd);
   });
 
   afterAll(() => {
     restoreEnvValue("NODE_NO_WARNINGS", originalNodeNoWarnings);
-    restoreEnvValue("ZCODE_DYNAMIC_WORKFLOW_MODE", originalDynamicWorkflowMode);
+    restoreEnvValue("ZODY_DYNAMIC_WORKFLOW_MODE", originalDynamicWorkflowMode);
     productFlavorMock.value = "preview";
     restoreEnvValue("NODE_ENV", originalNodeEnv);
-    restoreEnvValue("ZCODE_RUNTIME_ENV", originalZCodeRuntimeEnv);
+    restoreEnvValue("ZODY_RUNTIME_ENV", originalZCodeRuntimeEnv);
     deleteAmbientHostEnv();
     for (const [key, value] of Object.entries(originalAmbientHostEnv)) {
       process.env[key] = value;
@@ -422,8 +426,8 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     } else {
       process.env["GLM_BINARY_PATH"] = originalGlmBinaryPath;
     }
-    restoreEnvValue("ZCODE_BASE_URL", originalZCodeBaseUrl);
-    restoreEnvValue("ZCODE_ENDPOINT_ORIGIN", originalZCodeEndpointOrigin);
+    restoreEnvValue("ZODY_BASE_URL", originalZCodeBaseUrl);
+    restoreEnvValue("ZODY_ENDPOINT_ORIGIN", originalZCodeEndpointOrigin);
     restoreEnvValue("ZAI_OAUTH_ORIGIN", originalZaiOAuthOrigin);
     restoreEnvValue("ZAI_BUSINESS_BASE_URL", originalZaiBusinessBaseUrl);
     restoreEnvValue("ZAI_OAUTH_CLIENT_ID", originalZaiOAuthClientId);
@@ -453,8 +457,8 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
 
     const env = buildHostProcessEnv({});
 
-    expect(env.ZCODE_APP_VERSION).toBe("0.0.0-test");
-    expect(env.ZCODE_BUILD_COMMIT_ID).toBe("commit-test");
+    expect(env.ZODY_APP_VERSION).toBe("0.0.0-test");
+    expect(env.ZODY_BUILD_COMMIT_ID).toBe("commit-test");
   });
 
   it("只把 Agent OTLP 配置定向注入 host，并剔除外部身份字段", async () => {
@@ -464,10 +468,15 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "https://arms.example.com/v1/traces",
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: "Authorization=secret",
       ZCODE_TELEMETRY_USER_ID: "raw-oauth-user",
+      ZODY_TELEMETRY_USER_ID: "raw-oauth-user",
       ZCODE_TELEMETRY_USER_SUBJECT_ID: "spoofed-user-subject",
+      ZODY_TELEMETRY_USER_SUBJECT_ID: "spoofed-user-subject",
       ZCODE_TELEMETRY_IDENTITY_STATE: "authenticated",
+      ZODY_TELEMETRY_IDENTITY_STATE: "authenticated",
       ZCODE_TELEMETRY_DEVICE_MID: "spoofed-device",
+      ZODY_TELEMETRY_DEVICE_MID: "spoofed-device",
       ZCODE_TELEMETRY_RUNTIME_SURFACE: "standalone-cli",
+      ZODY_TELEMETRY_RUNTIME_SURFACE: "standalone-cli",
     });
 
     expect(env).toMatchObject({
@@ -475,11 +484,16 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       OTEL_EXPORTER_OTLP_TRACES_HEADERS: "Authorization=secret",
     });
     expect(env.ZCODE_TELEMETRY_USER_ID).toBeUndefined();
+    expect(env.ZODY_TELEMETRY_USER_ID).toBeUndefined();
     expect(env.ZCODE_TELEMETRY_USER_SUBJECT_ID).toBeUndefined();
+    expect(env.ZODY_TELEMETRY_USER_SUBJECT_ID).toBeUndefined();
     expect(env.ZCODE_TELEMETRY_IDENTITY_STATE).toBeUndefined();
+    expect(env.ZODY_TELEMETRY_IDENTITY_STATE).toBeUndefined();
     expect(env.ZCODE_TELEMETRY_DEVICE_MID).toBeUndefined();
+    expect(env.ZODY_TELEMETRY_DEVICE_MID).toBeUndefined();
     expect(env.ZCODE_TELEMETRY_RUNTIME_SURFACE).toBeUndefined();
-    expect(env.ZCODE_TOOL_ENV_PASSTHROUGH_JSON).toBeUndefined();
+    expect(env.ZODY_TELEMETRY_RUNTIME_SURFACE).toBeUndefined();
+    expect(env.ZODY_TOOL_ENV_PASSTHROUGH_JSON).toBeUndefined();
   });
 
   it("正式安装包 OTLP 常量必须为空，非空配置会阻止运行", async () => {
@@ -491,7 +505,7 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
         OTEL_EXPORTER_OTLP_ENDPOINT: "https://arms.example.com/otlp",
         OTEL_EXPORTER_OTLP_HEADERS: "x-arms-license-key=write-only",
         OTEL_SERVICE_NAME: "zcode-cli-agent",
-        ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
+        ZODY_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
       }),
     ).toThrow("OTEL_EXPORTER_OTLP_ENDPOINT is disabled for Zody release builds");
   });
@@ -507,11 +521,11 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       const env = buildHostProcessEnv({
         OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "https://arms.example.com/v1/traces",
         OTEL_EXPORTER_OTLP_TRACES_HEADERS: "Authorization=secret",
-        ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
+        ZODY_TELEMETRY_RUNTIME_DISTRIBUTION: "packaged",
       });
       expect(env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT).toBeUndefined();
       expect(env.OTEL_EXPORTER_OTLP_TRACES_HEADERS).toBeUndefined();
-      expect(env.ZCODE_TELEMETRY_RUNTIME_DISTRIBUTION).toBeUndefined();
+      expect(env.ZODY_TELEMETRY_RUNTIME_DISTRIBUTION).toBeUndefined();
     } finally {
       appMock.isPackaged = false;
     }
@@ -550,12 +564,12 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     ).toBeUndefined();
   });
 
-  it("本地开发态 host 进程显式注入 ZCODE_RUNTIME_ENV=development 且不传 NODE_ENV", async () => {
+  it("本地开发态 host 进程显式注入 ZODY_RUNTIME_ENV=development 且不传 NODE_ENV", async () => {
     const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
     const env = buildHostProcessEnv({});
 
-    expect(env.ZCODE_RUNTIME_ENV).toBe("development");
+    expect(env.ZODY_RUNTIME_ENV).toBe("development");
     expect(env.NODE_ENV).toBeUndefined();
   });
 
@@ -569,12 +583,12 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
       const env = buildHostProcessEnv({
-        ZCODE_HOME: "/tmp/zcode-cua-dev-home",
-        ZCODE_CUA_PRODUCT_HELPER: "1",
-        ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
+        ZODY_HOME: "/tmp/zcode-cua-dev-home",
+        ZODY_CUA_PRODUCT_HELPER: "1",
+        ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
       });
 
-      expect(env.ZCODE_CUA_BUNDLED_HELPER_APP_PATH).toBe(
+      expect(env.ZODY_CUA_BUNDLED_HELPER_APP_PATH).toBe(
         join("/tmp/zcode-cua-dev-home", "computer-use", "dev", "ZCode Computer Use Dev.app"),
       );
     },
@@ -586,13 +600,13 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
       const env = buildHostProcessEnv({
-        ZCODE_HOME: "/tmp/zcode-cua-dev-home",
-        ZCODE_CUA_PRODUCT_HELPER: "1",
-        ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
-        ZCODE_CUA_BUNDLED_HELPER_APP_PATH: "/tmp/new-helper/ZCode Computer Use Dev.app",
+        ZODY_HOME: "/tmp/zcode-cua-dev-home",
+        ZODY_CUA_PRODUCT_HELPER: "1",
+        ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
+        ZODY_CUA_BUNDLED_HELPER_APP_PATH: "/tmp/new-helper/ZCode Computer Use Dev.app",
       });
 
-      expect(env.ZCODE_CUA_BUNDLED_HELPER_APP_PATH).toBe(
+      expect(env.ZODY_CUA_BUNDLED_HELPER_APP_PATH).toBe(
         "/tmp/new-helper/ZCode Computer Use Dev.app",
       );
     },
@@ -604,19 +618,19 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
       const env = buildHostProcessEnv({
-        ZCODE_HOME: "/tmp/zcode-cua-dev-home",
-        ZCODE_CUA_PRODUCT_HELPER: "1",
-        ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
-        ZCODE_CUA_BUNDLED_HELPER_APP_PATH: "   ",
+        ZODY_HOME: "/tmp/zcode-cua-dev-home",
+        ZODY_CUA_PRODUCT_HELPER: "1",
+        ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
+        ZODY_CUA_BUNDLED_HELPER_APP_PATH: "   ",
       });
 
-      expect(env.ZCODE_CUA_BUNDLED_HELPER_APP_PATH).toBe(
+      expect(env.ZODY_CUA_BUNDLED_HELPER_APP_PATH).toBe(
         join("/tmp/zcode-cua-dev-home", "computer-use", "dev", "ZCode Computer Use Dev.app"),
       );
     },
   );
 
-  it("打包态 host 进程显式注入 ZCODE_RUNTIME_ENV=production 且不传 NODE_ENV", async () => {
+  it("打包态 host 进程显式注入 ZODY_RUNTIME_ENV=production 且不传 NODE_ENV", async () => {
     appMock.isPackaged = true;
     Object.defineProperty(process, "resourcesPath", {
       value: "/mock/resources",
@@ -625,13 +639,13 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
     const env = buildHostProcessEnv({
-      ZCODE_CUA_BUNDLED_HELPER_APP_PATH: "/tmp/untrusted-helper.app",
-      ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
+      ZODY_CUA_BUNDLED_HELPER_APP_PATH: "/tmp/untrusted-helper.app",
+      ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
     });
 
-    expect(env.ZCODE_RUNTIME_ENV).toBe("production");
+    expect(env.ZODY_RUNTIME_ENV).toBe("production");
     expect(env.NODE_ENV).toBeUndefined();
-    expect(env.ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL).toBeUndefined();
+    expect(env.ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL).toBeUndefined();
   });
 
   it("打包 Preview 不向 Host 注入 storage profile 或精确 CLI 根", async () => {
@@ -645,8 +659,8 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     const env = buildHostProcessEnv({});
 
     expect(env.ZCODE_STORAGE_PROFILE).toBeUndefined();
-    expect(env.ZCODE_STORAGE_DIR).toBeUndefined();
-    expect(env.ZCODE_HOME).toBeUndefined();
+    expect(env.ZODY_STORAGE_DIR).toBeUndefined();
+    expect(env.ZODY_HOME).toBeUndefined();
   });
 
   it("源码开发态不向 Host 注入独立 storage profile 或精确 CLI 根", async () => {
@@ -656,13 +670,13 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
     const env = buildHostProcessEnv({});
 
     expect(env.ZCODE_STORAGE_PROFILE).toBeUndefined();
-    expect(env.ZCODE_STORAGE_DIR).toBeUndefined();
-    expect(env.ZCODE_HOME).toBeUndefined();
+    expect(env.ZODY_STORAGE_DIR).toBeUndefined();
+    expect(env.ZODY_HOME).toBeUndefined();
   });
 
   // 拆出来的原因：「打包态用 Resources 里的签名 Helper 覆盖外部传入路径」这条断言只在 darwin
   // 成立（desktopRuntimeEnv.ts:474 非 darwin 直接给 undefined，继承值原样穿透），
-  // 而同一条用例里的 ZCODE_RUNTIME_ENV / NODE_ENV / ALLOW_UNSIGNED 是跨平台契约，
+  // 而同一条用例里的 ZODY_RUNTIME_ENV / NODE_ENV / ALLOW_UNSIGNED 是跨平台契约，
   // 整条 skip 会连带丢掉这三条覆盖，所以只把 macOS 专属的那条单独 gate。
   it.skipIf(process.platform !== "darwin")(
     "打包态 host 进程用 Resources 里的 Helper 覆盖外部传入的 bundled 路径",
@@ -675,11 +689,11 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
       const env = buildHostProcessEnv({
-        ZCODE_CUA_BUNDLED_HELPER_APP_PATH: "/tmp/untrusted-helper.app",
-        ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
+        ZODY_CUA_BUNDLED_HELPER_APP_PATH: "/tmp/untrusted-helper.app",
+        ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL: "1",
       });
 
-      expect(env.ZCODE_CUA_BUNDLED_HELPER_APP_PATH).toBe(
+      expect(env.ZODY_CUA_BUNDLED_HELPER_APP_PATH).toBe(
         join("/mock/resources", "cua-helper", "ZCode Computer Use.app"),
       );
     },
@@ -697,14 +711,14 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       NODE_NO_WARNINGS: "1",
     });
 
-    expect(env.ZCODE_RUNTIME_ENV).toBe("development");
+    expect(env.ZODY_RUNTIME_ENV).toBe("development");
     expect(env.NODE_ENV).toBeUndefined();
     expect(env.HTTP_PROXY).toBeUndefined();
     expect(env.http_proxy).toBeUndefined();
     expect(env.NODE_EXTRA_CA_CERTS).toBeUndefined();
     expect(env.NODE_NO_WARNINGS).toBeUndefined();
     expect(env.npm_config_proxy).toBeUndefined();
-    expect(JSON.parse(env.ZCODE_TOOL_ENV_PASSTHROUGH_JSON ?? "{}")).toMatchObject({
+    expect(JSON.parse(env.ZODY_TOOL_ENV_PASSTHROUGH_JSON ?? "{}")).toMatchObject({
       http_proxy: "http://local-proxy:8080",
       HTTP_PROXY: "http://ambient-proxy:8080",
       NODE_EXTRA_CA_CERTS: "/tmp/ambient-ca.pem",
@@ -739,7 +753,7 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
 
     const env = loadHostProcessEnvFromLocalFiles();
 
-    expect(env.ZCODE_BASE_URL).toBe("https://zcode.z.ai");
+    expect(env.ZODY_BASE_URL).toBe("https://zcode.z.ai");
     // fork（F4.1a）：官方账号下线后 ZAI_* 只会误导残留的账号链代码，必须停止注入。
     expect(env.ZAI_OAUTH_ORIGIN).toBeUndefined();
     expect(env.ZAI_BUSINESS_BASE_URL).toBeUndefined();
@@ -747,24 +761,24 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
   });
 
   it("main 进程 endpoint 临时覆盖优先读取命令行环境变量", async () => {
-    process.env["ZCODE_ENDPOINT_ORIGIN"] = "http://127.0.0.1:18765";
+    process.env["ZODY_ENDPOINT_ORIGIN"] = "http://127.0.0.1:18765";
     const { resolveZodyEndpointEnvBaseOrigin } = await import("../src/main/desktopRuntimeEnv.js");
 
     expect(
       resolveZodyEndpointEnvBaseOrigin({
-        ZCODE_BASE_URL: "https://zcode.z.ai",
+        ZODY_BASE_URL: "https://zcode.z.ai",
       }),
     ).toBe("http://127.0.0.1:18765");
   });
 
-  it("打包后的测试环境未配置端点时不内置 ZCODE_BASE_URL，也不注入 ZAI 登录入口", async () => {
+  it("打包后的测试环境未配置端点时不内置 ZODY_BASE_URL，也不注入 ZAI 登录入口", async () => {
     appMock.isPackaged = true;
     Object.defineProperty(process, "resourcesPath", {
       value: "/mock/resources",
       configurable: true,
     });
-    delete process.env["ZCODE_BASE_URL"];
-    delete process.env["ZCODE_ENDPOINT_ORIGIN"];
+    delete process.env["ZODY_BASE_URL"];
+    delete process.env["ZODY_ENDPOINT_ORIGIN"];
     delete process.env["ZAI_OAUTH_ORIGIN"];
     delete process.env["ZAI_BUSINESS_BASE_URL"];
     delete process.env["ZAI_OAUTH_CLIENT_ID"];
@@ -774,19 +788,19 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
 
     const env = buildHostProcessEnv(loadHostProcessEnvFromLocalFiles());
 
-    expect(env.ZCODE_ENV).toBe("test");
+    expect(env.ZODY_ENV).toBe("test");
     // fork（F3.1）：默认端点为空即未配置，打包环境不再内置官方地址；
     // 未配置时连空字符串都不注入，下游按「键不存在」关闭远端能力。
-    expect(env.ZCODE_BASE_URL).toBeUndefined();
+    expect(env.ZODY_BASE_URL).toBeUndefined();
     // fork（F4.1a）：官方账号下线后 ZAI_* 只会误导残留的账号链代码，必须停止注入。
     expect(env.ZAI_OAUTH_ORIGIN).toBeUndefined();
     expect(env.ZAI_BUSINESS_BASE_URL).toBeUndefined();
     expect(env.ZAI_OAUTH_CLIENT_ID).toBeUndefined();
-    expect(env.ZCODE_CUA_HELPER_INSTALL_VARIANT).toBe("preview");
+    expect(env.ZODY_CUA_HELPER_INSTALL_VARIANT).toBe("preview");
   });
 
   // DWG-05（docs/dynamic-workflow/launch.md「Gray release」）：Main 对
-  // ZCODE_DYNAMIC_WORKFLOW_MODE 只有「写」和「删」两种动作，先在纯函数上钉住三档语义。
+  // ZODY_DYNAMIC_WORKFLOW_MODE 只有「写」和「删」两种动作，先在纯函数上钉住三档语义。
   describe("resolveDynamicWorkflowModeHostEnv", () => {
     it("未打包 dev 透传 shell 里的合法取值", async () => {
       const { resolveDynamicWorkflowModeHostEnv } =
@@ -798,7 +812,7 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
           isPackaged: false,
           isPreview: false,
         }),
-      ).toEqual({ ZCODE_DYNAMIC_WORKFLOW_MODE: "disabled" });
+      ).toEqual({ ZODY_DYNAMIC_WORKFLOW_MODE: "disabled" });
     });
 
     it("未打包 dev 丢弃非法取值和缺省值，而不是转发给 Host", async () => {
@@ -831,7 +845,7 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
           isPackaged: true,
           isPreview: true,
         }),
-      ).toEqual({ ZCODE_DYNAMIC_WORKFLOW_MODE: "alwaysOn" });
+      ).toEqual({ ZODY_DYNAMIC_WORKFLOW_MODE: "alwaysOn" });
     });
 
     it("打包 production 永不写入，shell 的合法取值同样无效", async () => {
@@ -849,17 +863,17 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
   });
 
   it("未打包 dev 的 host env 带上 shell 里的 Dynamic Workflow 覆盖，非法取值则整键消失", async () => {
-    process.env["ZCODE_DYNAMIC_WORKFLOW_MODE"] = "onDemand";
+    process.env["ZODY_DYNAMIC_WORKFLOW_MODE"] = "onDemand";
     const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
-    expect(buildHostProcessEnv({}).ZCODE_DYNAMIC_WORKFLOW_MODE).toBe("onDemand");
+    expect(buildHostProcessEnv({}).ZODY_DYNAMIC_WORKFLOW_MODE).toBe("onDemand");
 
     vi.resetModules();
-    process.env["ZCODE_DYNAMIC_WORKFLOW_MODE"] = "not-a-mode";
+    process.env["ZODY_DYNAMIC_WORKFLOW_MODE"] = "not-a-mode";
     const { buildHostProcessEnv: rebuilt } = await import("../src/main/desktopRuntimeEnv.js");
 
     // 非法值必须被删掉而不是随 inheritedEnv 穿透；否则 Host 还要自己分辨来源。
-    expect(rebuilt({}).ZCODE_DYNAMIC_WORKFLOW_MODE).toBeUndefined();
+    expect(rebuilt({}).ZODY_DYNAMIC_WORKFLOW_MODE).toBeUndefined();
   });
 
   it("打包 preview 的 host env 把 Dynamic Workflow 覆盖改写成 alwaysOn", async () => {
@@ -869,11 +883,11 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       value: "/mock/resources",
       configurable: true,
     });
-    process.env["ZCODE_DYNAMIC_WORKFLOW_MODE"] = "disabled";
+    process.env["ZODY_DYNAMIC_WORKFLOW_MODE"] = "disabled";
 
     const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
-    expect(buildHostProcessEnv({}).ZCODE_DYNAMIC_WORKFLOW_MODE).toBe("alwaysOn");
+    expect(buildHostProcessEnv({}).ZODY_DYNAMIC_WORKFLOW_MODE).toBe("alwaysOn");
   });
 
   it("打包 production 的 host env 删除继承的 Dynamic Workflow 覆盖", async () => {
@@ -883,14 +897,14 @@ describe("desktopRuntimeEnv buildHostProcessEnv", () => {
       value: "/mock/resources",
       configurable: true,
     });
-    process.env["ZCODE_DYNAMIC_WORKFLOW_MODE"] = "alwaysOn";
+    process.env["ZODY_DYNAMIC_WORKFLOW_MODE"] = "alwaysOn";
 
     const { buildHostProcessEnv } = await import("../src/main/desktopRuntimeEnv.js");
 
     // shell 和 .env 两条继承路径都要被删干净，本机环境变量不能自行打开灰度。
-    expect(buildHostProcessEnv({}).ZCODE_DYNAMIC_WORKFLOW_MODE).toBeUndefined();
+    expect(buildHostProcessEnv({}).ZODY_DYNAMIC_WORKFLOW_MODE).toBeUndefined();
     expect(
-      buildHostProcessEnv({ ZCODE_DYNAMIC_WORKFLOW_MODE: "alwaysOn" }).ZCODE_DYNAMIC_WORKFLOW_MODE,
+      buildHostProcessEnv({ ZODY_DYNAMIC_WORKFLOW_MODE: "alwaysOn" }).ZODY_DYNAMIC_WORKFLOW_MODE,
     ).toBeUndefined();
   });
 });
@@ -901,51 +915,51 @@ describe("desktopRuntimeEnv runtime identity", () => {
     appMock.isPackaged = false;
     appMock.getPath.mockClear();
     appMock.getPath.mockImplementation((name: string) => `/mock/${name}`);
-    delete process.env["ZCODE_DESKTOP_APPLICATION_NAME"];
-    delete process.env["ZCODE_DESKTOP_HOME_DIR"];
-    delete process.env["ZCODE_DESKTOP_USER_DATA_DIR"];
-    delete process.env["ZCODE_DESKTOP_SESSION_DATA_DIR"];
-    delete process.env["ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"];
+    delete process.env["ZODY_DESKTOP_APPLICATION_NAME"];
+    delete process.env["ZODY_DESKTOP_HOME_DIR"];
+    delete process.env["ZODY_DESKTOP_USER_DATA_DIR"];
+    delete process.env["ZODY_DESKTOP_SESSION_DATA_DIR"];
+    delete process.env["ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"];
   });
 
   afterAll(() => {
     if (originalDesktopApplicationName == null) {
-      delete process.env["ZCODE_DESKTOP_APPLICATION_NAME"];
+      delete process.env["ZODY_DESKTOP_APPLICATION_NAME"];
     } else {
-      process.env["ZCODE_DESKTOP_APPLICATION_NAME"] = originalDesktopApplicationName;
+      process.env["ZODY_DESKTOP_APPLICATION_NAME"] = originalDesktopApplicationName;
     }
 
     if (originalDesktopHomeDir == null) {
-      delete process.env["ZCODE_DESKTOP_HOME_DIR"];
+      delete process.env["ZODY_DESKTOP_HOME_DIR"];
     } else {
-      process.env["ZCODE_DESKTOP_HOME_DIR"] = originalDesktopHomeDir;
+      process.env["ZODY_DESKTOP_HOME_DIR"] = originalDesktopHomeDir;
     }
 
     if (originalDesktopUserDataDir == null) {
-      delete process.env["ZCODE_DESKTOP_USER_DATA_DIR"];
+      delete process.env["ZODY_DESKTOP_USER_DATA_DIR"];
     } else {
-      process.env["ZCODE_DESKTOP_USER_DATA_DIR"] = originalDesktopUserDataDir;
+      process.env["ZODY_DESKTOP_USER_DATA_DIR"] = originalDesktopUserDataDir;
     }
 
     if (originalDesktopSessionDataDir == null) {
-      delete process.env["ZCODE_DESKTOP_SESSION_DATA_DIR"];
+      delete process.env["ZODY_DESKTOP_SESSION_DATA_DIR"];
     } else {
-      process.env["ZCODE_DESKTOP_SESSION_DATA_DIR"] = originalDesktopSessionDataDir;
+      process.env["ZODY_DESKTOP_SESSION_DATA_DIR"] = originalDesktopSessionDataDir;
     }
 
     if (originalDesktopUseElectronDefaultUserData == null) {
-      delete process.env["ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"];
+      delete process.env["ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"];
     } else {
-      process.env["ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"] =
+      process.env["ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"] =
         originalDesktopUseElectronDefaultUserData;
     }
   });
 
   it("e2e 可通过环境变量隔离应用名和 Electron 数据目录", async () => {
-    process.env["ZCODE_DESKTOP_APPLICATION_NAME"] = "ZCode E2E";
-    process.env["ZCODE_DESKTOP_HOME_DIR"] = "/tmp/zcode-e2e/home";
-    process.env["ZCODE_DESKTOP_USER_DATA_DIR"] = "/tmp/zcode-e2e/user-data";
-    process.env["ZCODE_DESKTOP_SESSION_DATA_DIR"] = "/tmp/zcode-e2e/session-data";
+    process.env["ZODY_DESKTOP_APPLICATION_NAME"] = "ZCode E2E";
+    process.env["ZODY_DESKTOP_HOME_DIR"] = "/tmp/zcode-e2e/home";
+    process.env["ZODY_DESKTOP_USER_DATA_DIR"] = "/tmp/zcode-e2e/user-data";
+    process.env["ZODY_DESKTOP_SESSION_DATA_DIR"] = "/tmp/zcode-e2e/session-data";
 
     const { runtimeApplicationName, runtimeHomePath, runtimeSessionDataPath, runtimeUserDataPath } =
       await import("../src/main/desktopRuntimeEnv.js");
@@ -979,7 +993,7 @@ describe("desktopRuntimeEnv runtime identity", () => {
   });
 
   it("e2e 可保留 Chromedriver 注入的 Electron userData 目录", async () => {
-    process.env["ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"] = "1";
+    process.env["ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA"] = "1";
     appMock.getPath.mockImplementation((name: string) => {
       if (name === "appData") {
         throw new Error("Failed to get 'appData' path");

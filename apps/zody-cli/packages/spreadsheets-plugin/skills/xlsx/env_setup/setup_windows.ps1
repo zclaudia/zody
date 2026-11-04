@@ -170,11 +170,11 @@ Write-Host ""
 Write-Host "--- [4/5] Font Installation ---"
 # fork（F6.4）：不再从官方 CDN 下载字体。来源优先级：
 #   1. 随技能分发的 env_setup\fonts\（相对路径与 font_list.txt 一致）；
-#   2. ZCODE_OFFICE_FONTS_BASE_URL 指向的 fork 托管镜像；
+#   2. ZODY_OFFICE_FONTS_BASE_URL 指向的 fork 托管镜像；
 #   3. 本地缓存与上述来源都不足时明确报错并提示手动放置，不静默回退官方 CDN。
 $FontList = Join-Path $ScriptDir "font_list.txt"
 $FontBundledDir = Join-Path $ScriptDir "fonts"
-$FontRemoteBase = $env:ZCODE_OFFICE_FONTS_BASE_URL
+$FontRemoteBase = $env:ZODY_OFFICE_FONTS_BASE_URL
 if ($FontRemoteBase) { $FontRemoteBase = $FontRemoteBase.Trim().TrimEnd('/') }
 
 $UserFontDir = Join-Path $env:LOCALAPPDATA "Microsoft\Windows\Fonts"
@@ -208,10 +208,10 @@ if (Test-Path $Marker) {
                 Write-Ok "All $Total fonts already present in $UserFontDir (no download source needed)"
             } else {
                 # 明确失败而不是静默跳过：用户需要知道字体从哪来，且不能落到官方 CDN。
-                Write-Fail "No bundled fonts and ZCODE_OFFICE_FONTS_BASE_URL is not set - $LocalMissing/$Total fonts missing."
+                Write-Fail "No bundled fonts and ZODY_OFFICE_FONTS_BASE_URL is not set - $LocalMissing/$Total fonts missing."
                 Write-Info "This fork does not download fonts from the upstream CDN. Choose one source:"
                 Write-Info "  1) bundle fonts under $FontBundledDir (same relative paths as font_list.txt)"
-                Write-Info "  2) set ZCODE_OFFICE_FONTS_BASE_URL to a fork-hosted mirror of the same layout"
+                Write-Info "  2) set ZODY_OFFICE_FONTS_BASE_URL to a fork-hosted mirror of the same layout"
                 Write-Info "  3) copy the fonts listed in font_list.txt into $UserFontDir manually"
                 $Errors++
             }

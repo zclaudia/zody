@@ -42,7 +42,7 @@ import {
 import { repairLegacyRemoteOfficialPluginDirectoryPermissions } from "@zody/server/remote/zodyAgentOfficialPluginPermissionRepair.js";
 
 const DEV_AGENT_BUNDLE_RELATIVE_PATH = "apps/zody-cli/packages/cli/dist/zody.cjs";
-const DEV_AGENT_BUNDLE_ENV = "ZCODE_REMOTE_DEV_AGENT_BUNDLE";
+const DEV_AGENT_BUNDLE_ENV = "ZODY_REMOTE_DEV_AGENT_BUNDLE";
 const REMOTE_DEV_AGENT_BUNDLE_NAME = REMOTE_AGENT_BUNDLE_NAME;
 const REMOTE_DEV_AGENT_VERSION_FILE_NAME = ".dev-version";
 
@@ -256,7 +256,7 @@ async function shouldSkipDevelopmentZodyAgentDeploy(params: {
     await waitForClose(
       await params.backend.exec(
         // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-        `"\${ZCODE_SERVER_RUNTIME_ROOT:-$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server}/node" -e ${quotePosixShellArg(verifyBundleScript)} ${quotePosixPathArg(params.remoteBundlePath)} ${quotePosixShellArg(params.localBundleSha256)}`,
+        `"\${ZODY_SERVER_RUNTIME_ROOT:-$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server}/node" -e ${quotePosixShellArg(verifyBundleScript)} ${quotePosixPathArg(params.remoteBundlePath)} ${quotePosixShellArg(params.localBundleSha256)}`,
       ),
     );
   } catch {

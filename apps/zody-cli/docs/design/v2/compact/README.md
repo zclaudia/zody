@@ -199,7 +199,7 @@ Compact timeline 的显示规则属于客户端投影：
 
 ### 2.3 对配置和权限的要求
 
-ZCode 自有配置和环境变量必须使用 `ZCODE_` 前缀。
+ZCode 自有配置和环境变量必须使用 `ZODY_` 前缀。
 
 建议配置项：
 
@@ -209,7 +209,7 @@ ZCode 自有配置和环境变量必须使用 `ZCODE_` 前缀。
 - `compact.maxConsecutiveFailures`：自动 compact 失败熔断次数。
 - `compact.preserveRecentTokens`：session memory compact 或 partial compact 的最近上下文保留量。
 
-调试和运维 override 不声明环境变量入口，优先使用 config file、CLI/session override 或测试注入。新增 `ZCODE_` 环境变量必须先补齐 spec，明确用途、优先级、错误行为和测试覆盖。
+调试和运维 override 不声明环境变量入口，优先使用 config file、CLI/session override 或测试注入。新增 `ZODY_` 环境变量必须先补齐 spec，明确用途、优先级、错误行为和测试覆盖。
 
 权限上，compact 自身通常不是危险操作，但它会触发 provider 请求、hook 执行、session 写入和可能的文件读取恢复附件。因此它的副作用范围至少包括 `network`、`workspace`、`session-storage` 和 `user-visible-state`。
 

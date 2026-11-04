@@ -1,10 +1,10 @@
 {
   "task": "R30",
-  "status": "prepared-awaiting-R22-disposition-and-independent-scope-review",
+  "status": "verified-scoped; independent implementation acceptance; phase cleanup pending",
   "baselineCommit": "7089ad3e095ec10727772107100d3e019b78d456",
   "ownership": "one Terra product writer for the entire atomic R30 change; listed file groups are serial review checkpoints, not parallel grants",
-  "occurrenceManifest": "output/zody-rename-r30/resume-dispatch-7089/R30-merged-writeset.json",
-  "occurrenceManifestSha256": "0dfe8062551b53987b3bc0ccf8a8ada25d340f995c18494b80f4399b0e9167ce",
+  "occurrenceManifest": "output/zody-rename-r30/implementation-v2/R30-merged-writeset-v3.json",
+  "occurrenceManifestSha256": "c2bdbcbf2b961fd5414aacb26997a2e946697dfdf42dc64484b29649e32d2474",
   "sourceReview": "docs/plans/zody-rename-execution/reports/R30-resume-dispatch.md",
   "files": [
     {
@@ -50,14 +50,50 @@
       "tokenOperations": 1
     },
     {
+      "path": "apps/zody-cli/AGENTS.md",
+      "beforeBlob": "2a95fe5e4d9bf6b802b0980ad48f62c228ec2fe4",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
       "path": "apps/zody-cli/dependencies/README.md",
       "beforeBlob": "290bcd61db0c447eff9982c4a07dd915d3d3e3e1",
       "checkpointGroup": "A-cli",
       "tokenOperations": 1
     },
     {
+      "path": "apps/zody-cli/docs/design/v2/architecture.md",
+      "beforeBlob": "43c27a4a05e57401262d1294965a93940162eb47",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 2
+    },
+    {
       "path": "apps/zody-cli/docs/design/v2/compact/e2e.md",
       "beforeBlob": "a3657f9416e5d381886c67d0b74c8df8970da7ad",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/compact/README.md",
+      "beforeBlob": "9a66e290cbad31f00dc69c095a5223007d1b074b",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/hooks.md",
+      "beforeBlob": "ba34b96f24f4d3f44a8db9e8a071fc4911383c23",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/ink-tui-renderer.md",
+      "beforeBlob": "9f3abc403b0e957484c944ae58dc2b1761f47a10",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/input-history.md",
+      "beforeBlob": "40ab34f9b0971905c1a0594b39fdad52c6b1aaa4",
       "checkpointGroup": "A-cli",
       "tokenOperations": 1
     },
@@ -65,7 +101,7 @@
       "path": "apps/zody-cli/docs/design/v2/logging.md",
       "beforeBlob": "7262a8274ec23b44877627c1a641a8b41e3d3294",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/docs/design/v2/model/http-proxy.md",
@@ -77,25 +113,103 @@
       "path": "apps/zody-cli/docs/design/v2/model/README.md",
       "beforeBlob": "955757dc08bbaccfd93232e78152826d763cda59",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 12
+      "tokenOperations": 13
     },
     {
       "path": "apps/zody-cli/docs/design/v2/model/stream-error-retry.md",
       "beforeBlob": "eab596f8ddc8aca099a24404beb5dcb5e3f82040",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 9
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/model/streaming-tool-execution-and-recovery.md",
+      "beforeBlob": "34abfe8e91739e699bffd73611a59a00c4c8aa5e",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
     },
     {
       "path": "apps/zody-cli/docs/design/v2/network-capture-debug.md",
       "beforeBlob": "68e806448e9837a362e17a182b11561ca407a837",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 7
+      "tokenOperations": 12
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/pre-commit-quality-gate.md",
+      "beforeBlob": "c45455d9e19521bd4b5e5f7c6bb73b794c55bb62",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/sea-cross-target-packaging.md",
+      "beforeBlob": "8147d37c15a3849c013e5ec1241137deb37ec5d2",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/skill.md",
+      "beforeBlob": "7e83c566d8cb06b0713e3346337932f2f8bd327b",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tool/00-tool-change-chain.md",
+      "beforeBlob": "2050fc1505321f383c4b9007048d49b1f04cebd5",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
     },
     {
       "path": "apps/zody-cli/docs/design/v2/tool/05-webfetch.md",
       "beforeBlob": "ba0299543f6601d6e10831e5b9d04b0dec12559c",
       "checkpointGroup": "A-cli",
       "tokenOperations": 7
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tool/09-grep.md",
+      "beforeBlob": "2cc6675368f25873ea11b53da56a0ee2395d43cc",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tool/11-ripgrep-wasm-packaging.md",
+      "beforeBlob": "7fa8526a7bd9d9bacd6d665365df678dc1b77862",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tui-idle-logo-animation.md",
+      "beforeBlob": "eb707bf532b15d86faf2db4e81ca3bd8b9a43716",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tui-markdown-rendering.md",
+      "beforeBlob": "e19269a646fb9103d89047d8d41e5ba064da2f8f",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tui-mouse-scrollback.md",
+      "beforeBlob": "cacfd6f532400ffdf5b5758fea85fb2567570c18",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tui-theme.md",
+      "beforeBlob": "da92245f5318ffd4ba00fb99ca445ac9bcd0cd81",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tui-tool-call-detail-blocks.md",
+      "beforeBlob": "13252b829a00a20d590397e70c3e124b4ff95340",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/docs/design/v2/tui-turn-elapsed.md",
+      "beforeBlob": "30fc29262e36a89639e894e9d617f8cb6fa6ff26",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
     },
     {
       "path": "apps/zody-cli/docs/design/v2/zcode-protocol-agent-server.md",
@@ -143,7 +257,7 @@
       "path": "apps/zody-cli/e2e/memory/memory-bench-child.mjs",
       "beforeBlob": "1c26a6420e16593b1a18a5afd13c4f1a0d3f7099",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 3
     },
     {
       "path": "apps/zody-cli/e2e/memory/memory-e2e-runtime.mjs",
@@ -161,19 +275,19 @@
       "path": "apps/zody-cli/packages/adapters/src/auth/shared-credentials.ts",
       "beforeBlob": "ba1721febac1fcca4c9d1f8031f6de27e4f13eb0",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/adapters/src/config/env-config.adapter.ts",
       "beforeBlob": "7ea4e58e9c0468ecffa1cb92de5c4db93338afd3",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 2
     },
     {
       "path": "apps/zody-cli/packages/adapters/src/device/cli-device-mid.ts",
       "beforeBlob": "f9e21d067cc5abc1d70e93392ca4af1d5614f5b7",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 3
     },
     {
       "path": "apps/zody-cli/packages/adapters/src/exec/execution-utils.ts",
@@ -182,16 +296,40 @@
       "tokenOperations": 1
     },
     {
+      "path": "apps/zody-cli/packages/adapters/src/exec/outputEncoding.ts",
+      "beforeBlob": "19d7e104382cfb22c87fbdeccd3bf3949162c4b1",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
       "path": "apps/zody-cli/packages/adapters/src/logging/index.ts",
       "beforeBlob": "d07a9ce7771cdc18e8cd6c780e30b1dd6bee1baa",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/adapters/src/model/retry-policy.ts",
       "beforeBlob": "0e2744409d525fd312fa2fcd267bb8c9c99ddcca",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 4
+    },
+    {
+      "path": "apps/zody-cli/packages/adapters/src/model/runner-debug.ts",
+      "beforeBlob": "ea5ca6986280520906be45bc06a53aa7ddb6700d",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 6
+    },
+    {
+      "path": "apps/zody-cli/packages/adapters/src/network/http-config.ts",
+      "beforeBlob": "00ed6450ca6bf022cd5fe50263e01f13ae109405",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 8
+    },
+    {
+      "path": "apps/zody-cli/packages/adapters/src/network/subprocess-env.ts",
+      "beforeBlob": "0b29e707949d2b84311f3816eda8f02582b8f8b0",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 8
     },
     {
       "path": "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts",
@@ -203,7 +341,7 @@
       "path": "apps/zody-cli/packages/adapters/src/storage/fs-fault-injection.ts",
       "beforeBlob": "c61caad842b02b3d84f39a13bc623373b60fb3af",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 3
+      "tokenOperations": 9
     },
     {
       "path": "apps/zody-cli/packages/adapters/test-model.mjs",
@@ -233,7 +371,7 @@
       "path": "apps/zody-cli/packages/adapters/tests/config.test.ts",
       "beforeBlob": "4c3bef46b6f1994eb136485eb0e229b173cf8628",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 6
+      "tokenOperations": 11
     },
     {
       "path": "apps/zody-cli/packages/adapters/tests/env-model-config.test.ts",
@@ -245,7 +383,7 @@
       "path": "apps/zody-cli/packages/adapters/tests/exec.test.ts",
       "beforeBlob": "9a587188bef34a42a78c902b39ee1f3cebe9f4af",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 33
+      "tokenOperations": 40
     },
     {
       "path": "apps/zody-cli/packages/adapters/tests/http-response-status.test.ts",
@@ -257,7 +395,13 @@
       "path": "apps/zody-cli/packages/adapters/tests/http.test.ts",
       "beforeBlob": "ef603038b6aea887a5de6e2e3db3662019d0138d",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 11
+      "tokenOperations": 19
+    },
+    {
+      "path": "apps/zody-cli/packages/adapters/tests/logging.test.ts",
+      "beforeBlob": "fdbe68e8f9e9af162d6985a82b8b68afebdabf25",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 2
     },
     {
       "path": "apps/zody-cli/packages/adapters/tests/mcp-oauth-cross-process.e2e.test.ts",
@@ -287,7 +431,7 @@
       "path": "apps/zody-cli/packages/adapters/tests/mcp.test.ts",
       "beforeBlob": "dd542770ece6e09099f81538e978ae36de321e6e",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 5
     },
     {
       "path": "apps/zody-cli/packages/adapters/tests/model-execution.test.ts",
@@ -299,13 +443,19 @@
       "path": "apps/zody-cli/packages/adapters/tests/plugins.test.ts",
       "beforeBlob": "f57eb6ff8f07e4a3f127171fdfe2a55015f2e835",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 21
+    },
+    {
+      "path": "apps/zody-cli/packages/adapters/tests/runner-empty-delta-retry.test.ts",
+      "beforeBlob": "9ec05b6d8326553cfeb1cfe682277935e1738e09",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
     },
     {
       "path": "apps/zody-cli/packages/adapters/tests/runner.test.ts",
       "beforeBlob": "4eb2407158fba2ff988e85ca000eebadaeecd760",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 3
+      "tokenOperations": 30
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/src/app/built-in-node-repl.ts",
@@ -314,10 +464,46 @@
       "tokenOperations": 1
     },
     {
+      "path": "apps/zody-cli/packages/bootstrap/src/app/embedded-search-backend.ts",
+      "beforeBlob": "c15dafc03182d0f122c708a38e515b353958b3e2",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
       "path": "apps/zody-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts",
       "beforeBlob": "cde3fdcc2e182b32d77e1fe5c94dfc956afed1ca",
       "checkpointGroup": "A-cli",
+      "tokenOperations": 6
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/src/mcp-config.ts",
+      "beforeBlob": "6186583bf876a159332ead0f68b0a370283534f9",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 11
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/src/model-config.ts",
+      "beforeBlob": "b3ad460223054986852db51223b106759d95bfbe",
+      "checkpointGroup": "A-cli",
       "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/src/plugins.ts",
+      "beforeBlob": "b45bcc90f70183d4c69cf476abff944e9ed05bd2",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/src/telemetry-bootstrap.ts",
+      "beforeBlob": "a7e8f28e391aa469343e8243c15f21826ab0aed4",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 3
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/src/zody-protocol-entrypoint.ts",
+      "beforeBlob": "66af8390be4b62d03f43ae66f511d4833c16f40e",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/interaction-registry.ts",
@@ -329,8 +515,7 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/account-config-delivery.test.ts",
       "beforeBlob": "9cec0d1e6b58d4ac60fbec2bd24a924c6021865f",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 0,
-      "closureAction": "保留导入和计算属性绑定；生产常量值改名后增加新旧键行为断言，不机械改 binding。"
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/app-subagent-legacy-init.test.ts",
@@ -348,7 +533,7 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/cua-host-live-submission.test.ts",
       "beforeBlob": "7078f6d7953e449eedea3a591041786b4bf9db1a",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 2
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/cua-node-repl-mcp-port-wiring.test.ts",
@@ -360,7 +545,7 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/cua-runtime-control.integration.test.ts",
       "beforeBlob": "18e1053a54c5d8adeb8937e79e616390882c0c3e",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 2
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/dynamic-workflow-policy.test.ts",
@@ -372,7 +557,7 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/embedded-search-backend.test.ts",
       "beforeBlob": "1d0dd3fa96490b3b0958d97c922f7cf48f6ea4ca",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 3
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/embedded-search-native.e2e.test.ts",
@@ -387,6 +572,12 @@
       "tokenOperations": 1
     },
     {
+      "path": "apps/zody-cli/packages/bootstrap/tests/mcp-project-config.test.ts",
+      "beforeBlob": "46a53a54ca938b96aa884b87ab4e8e02d090d98c",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 37
+    },
+    {
       "path": "apps/zody-cli/packages/bootstrap/tests/mcp-protocol.test.ts",
       "beforeBlob": "3b4245c5b60fd22246803e67858f594fe28517b9",
       "checkpointGroup": "A-cli",
@@ -396,13 +587,13 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/model-config.test.ts",
       "beforeBlob": "41f88c00402c351ebf326007053957ceabd61d17",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 6
+      "tokenOperations": 7
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/model-default-headers-wire.test.ts",
       "beforeBlob": "11c0065a185644980d822d5194e28df77c29a43f",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 5
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/personal-config-default-integration.test.ts",
@@ -432,7 +623,7 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/process-provider-registry-runtime.test.ts",
       "beforeBlob": "a41b1c12d8b3d3f3028cb3a5ca8aa6976e9fe159",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 22
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/protocol-slash-commands.test.ts",
@@ -441,10 +632,16 @@
       "tokenOperations": 5
     },
     {
+      "path": "apps/zody-cli/packages/bootstrap/tests/runtime-config.test.ts",
+      "beforeBlob": "5896bf19a4d3aa1d3adfbd4fe8b6aa8af3d79612",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
       "path": "apps/zody-cli/packages/bootstrap/tests/session-persistence.test.ts",
       "beforeBlob": "3152d0b2d5e8ca19076ac7ced54f73f3fab41000",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 18
+      "tokenOperations": 23
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/session-selection-cold-resume.test.ts",
@@ -468,13 +665,13 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/subagent-runtime-config.test.ts",
       "beforeBlob": "dc91542590af5b4785288ba2e92ba938235ce220",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 5
+      "tokenOperations": 6
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/telemetry-bootstrap.test.ts",
       "beforeBlob": "7631e64aaa84fd17c700e6d413e1fa12ee4465c4",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 3
     },
     {
       "path": "apps/zody-cli/packages/bootstrap/tests/visualize-skill-gate.test.ts",
@@ -498,7 +695,7 @@
       "path": "apps/zody-cli/packages/bootstrap/tests/zody-protocol-telemetry-lifecycle.test.ts",
       "beforeBlob": "39f86b9d8d67d541d6b7d33945b2837ddb0647c2",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/cli/scripts/build-sea.mjs",
@@ -522,7 +719,19 @@
       "path": "apps/zody-cli/packages/cli/src/env.ts",
       "beforeBlob": "85e8340cfd7a8043188e7c30fef50fc66956eec1",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 3
+      "tokenOperations": 7
+    },
+    {
+      "path": "apps/zody-cli/packages/cli/src/plugin-host-command.ts",
+      "beforeBlob": "31e15eee5aa9965d447b44679ff770472262c717",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 8
+    },
+    {
+      "path": "apps/zody-cli/packages/cli/src/prompt-command.ts",
+      "beforeBlob": "67641e6044a792c6b8e3cd97723137866e2f6b32",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
     },
     {
       "path": "apps/zody-cli/packages/cli/src/protocol-lifecycle.ts",
@@ -534,7 +743,7 @@
       "path": "apps/zody-cli/packages/cli/src/provider-runtime-env.ts",
       "beforeBlob": "e78f327de5653374233090d48ff42e66bdac6805",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 3
+      "tokenOperations": 13
     },
     {
       "path": "apps/zody-cli/packages/cli/src/sea-runtime-tools.ts",
@@ -545,6 +754,12 @@
     {
       "path": "apps/zody-cli/packages/cli/src/shutdown.ts",
       "beforeBlob": "c4e691d6e9ed56d52e3500a8e74b1f9dd21b6154",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/cli/src/tui-prompt-handler-runtime.ts",
+      "beforeBlob": "b175d56666713178b2d6652b692d6653613c76c5",
       "checkpointGroup": "A-cli",
       "tokenOperations": 1
     },
@@ -564,7 +779,7 @@
       "path": "apps/zody-cli/packages/cli/tests/cli.unit.test.ts",
       "beforeBlob": "c8cae023a673ff396ac6431a26e33616c2d0d0dc",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 14
+      "tokenOperations": 53
     },
     {
       "path": "apps/zody-cli/packages/cli/tests/clipboard-image.test.ts",
@@ -573,16 +788,40 @@
       "tokenOperations": 1
     },
     {
+      "path": "apps/zody-cli/packages/cli/tests/plugin-host-entry.test.mjs",
+      "beforeBlob": "be08d92efd82add3e5acc24f9c7007f0a0159934",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 6
+    },
+    {
       "path": "apps/zody-cli/packages/cli/tests/provider-runtime-env.test.ts",
       "beforeBlob": "037872d41132464699d2c41eadf44a5597ebe739",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 13
     },
     {
       "path": "apps/zody-cli/packages/cli/tests/sea-runtime-tools.test.ts",
       "beforeBlob": "f97ab295111cf15eac1d5ba132b23ca27d575446",
       "checkpointGroup": "A-cli",
       "tokenOperations": 21
+    },
+    {
+      "path": "apps/zody-cli/packages/cli/tests/zody-cua-plugin-host-authority.node-test.ts",
+      "beforeBlob": "a38bc5d7802312dcff72e988fd89f9ba1f629073",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 9
+    },
+    {
+      "path": "apps/zody-cli/packages/core/src/runtime/methods/mcp.ts",
+      "beforeBlob": "66e5042e1265f98c3457c2a75546c1d9956c156d",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/packages/core/tests/mcp-tool-bridge.test.ts",
+      "beforeBlob": "bd2de62ef4d9dbd176dd0f8a86dfc55eacb89d19",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/core/tests/read-tool-contract.test.ts",
@@ -600,13 +839,13 @@
       "path": "apps/zody-cli/packages/debug/README.md",
       "beforeBlob": "d7611cff8cfade7c4bdc45aafe8dda2fce19ac4f",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 3
     },
     {
       "path": "apps/zody-cli/packages/debug/server/network-capture.ts",
       "beforeBlob": "29375a5319488242aaf1a9d1ab03dfd4af33e4b7",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 7
     },
     {
       "path": "apps/zody-cli/packages/debug/tests/network-capture.test.ts",
@@ -636,7 +875,19 @@
       "path": "apps/zody-cli/packages/node-repl-host/scripts/build.mjs",
       "beforeBlob": "f1873572e9dc0cccb5397ea350881ba31c123884",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 3
+      "tokenOperations": 7
+    },
+    {
+      "path": "apps/zody-cli/packages/node-repl-host/scripts/d06-probes-fork.ts",
+      "beforeBlob": "182b984f061453c322809fc0b6342f3e94266c91",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/node-repl-host/src/cua-runtime.ts",
+      "beforeBlob": "7422906d3f8e4ded32beb77be913ae1bfc4a6784",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 2
     },
     {
       "path": "apps/zody-cli/packages/node-repl-host/src/node-repl-session-executor.ts",
@@ -651,10 +902,22 @@
       "tokenOperations": 1
     },
     {
+      "path": "apps/zody-cli/packages/node-repl-host/test/cell-snapshot-execution.test.ts",
+      "beforeBlob": "736e1fc2ce0f24ebb3b4326d667ffe2e45697bba",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 1
+    },
+    {
       "path": "apps/zody-cli/packages/node-repl-host/test/mcp-server.test.ts",
       "beforeBlob": "3e88a3cfae4938d7431402fb2bf9dfcc5f356ab6",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/packages/node-repl-host/test/subprocess-executor.test.ts",
+      "beforeBlob": "0c19a8bb8c09a54438fd2464cf1e763977e3e91c",
+      "checkpointGroup": "A-cli",
+      "tokenOperations": 7
     },
     {
       "path": "apps/zody-cli/packages/pdf-plugin/skills/pdf/env_setup/setup_mac_linux.sh",
@@ -690,13 +953,13 @@
       "path": "apps/zody-cli/packages/telemetry/src/bootstrap.ts",
       "beforeBlob": "5d81ac285b9598ffa7314c8dfc2a039ad7ca0aab",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 2
+      "tokenOperations": 14
     },
     {
       "path": "apps/zody-cli/packages/telemetry/tests/bootstrap.test.ts",
       "beforeBlob": "4c4e61ca058639694cb67fe5f2d8d5484f34a065",
       "checkpointGroup": "A-cli",
-      "tokenOperations": 1
+      "tokenOperations": 4
     },
     {
       "path": "apps/zody-cli/packages/zody-cua-plugin/docs/computer-use.md",
@@ -1410,7 +1673,7 @@
       "path": "packages/desktop/electron-builder.config.js",
       "beforeBlob": "f6651db79125fc00ff2a0b11a214e79b0671b2c1",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 7
+      "tokenOperations": 8
     },
     {
       "path": "packages/desktop/scripts/browser-screenshot-surface-smoke.mjs",
@@ -1458,13 +1721,13 @@
       "path": "packages/desktop/scripts/bundle.mjs",
       "beforeBlob": "33bc67445926f19b6c1523101e171f1839e4c680",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 7
+      "tokenOperations": 10
     },
     {
       "path": "packages/desktop/scripts/desktop-product-identity.mjs",
       "beforeBlob": "fc03a40f30cd0597ac203de4ccde292895415b37",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 11
+      "tokenOperations": 14
     },
     {
       "path": "packages/desktop/scripts/e2e-formal-spec-selection.mjs",
@@ -1476,7 +1739,7 @@
       "path": "packages/desktop/scripts/ensure-e2e-desktop-build.mjs",
       "beforeBlob": "42dc865817083e1b5477dbc337f0286243a4d55d",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 9
+      "tokenOperations": 14
     },
     {
       "path": "packages/desktop/scripts/ensure-local-runtime-assets.mjs",
@@ -1488,26 +1751,25 @@
       "path": "packages/desktop/scripts/lib/normal-host-candidate-build.mjs",
       "beforeBlob": "bfd1a0dcbeb98d12462dbbade950537c50bdc1b3",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 11
+      "tokenOperations": 13
     },
     {
       "path": "packages/desktop/scripts/macos-cua-demo-defaults.mjs",
       "beforeBlob": "095b3aaca1eb60e993b2ac76ca7a127cc1d3c3ea",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 3
     },
     {
       "path": "packages/desktop/scripts/macos-cua-narrow-resources-build.test.mjs",
       "beforeBlob": "8e70254104bcb1bff42caa45dc6a48fd076f1ea1",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 0,
-      "closureAction": "保留 CANDIDATE_HOST_LAUNCH_ENV 绑定；随常量新值核验禁止注入，增加旧键不触发断言。"
+      "tokenOperations": 2
     },
     {
       "path": "packages/desktop/scripts/macos-cua-narrow-resources-constants.mjs",
       "beforeBlob": "541366b100a431bfe704aff4773ee612296fb874",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 1
+      "tokenOperations": 2
     },
     {
       "path": "packages/desktop/scripts/mcp-apps-host-e2e.mjs",
@@ -1519,7 +1781,7 @@
       "path": "packages/desktop/scripts/mcp-apps-host-fixture/agent.ts",
       "beforeBlob": "66ec3ef7317c7ca1592595ce83a17c86ab77647a",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 3
     },
     {
       "path": "packages/desktop/scripts/mcp-apps-host-fixture/model.ts",
@@ -1540,6 +1802,12 @@
       "tokenOperations": 3
     },
     {
+      "path": "packages/desktop/scripts/prepare-windows-cua-helper.mjs",
+      "beforeBlob": "9742f17ad0ddb9426f40235d6eac9f4debcdbfb0",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 2
+    },
+    {
       "path": "packages/desktop/scripts/run-all-e2e-coverage.mjs",
       "beforeBlob": "314a570e765321fd65704ede2ccc18bd0b858df3",
       "checkpointGroup": "B-desktop-scripts",
@@ -1549,7 +1817,7 @@
       "path": "packages/desktop/scripts/run-e2e-session-lifecycle-stress.mjs",
       "beforeBlob": "2fa99d627c515c981442506fcd29ecde11a2204e",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 3
+      "tokenOperations": 4
     },
     {
       "path": "packages/desktop/scripts/run-production-build.mjs",
@@ -1561,7 +1829,7 @@
       "path": "packages/desktop/scripts/run-windows-e2e-shards.mjs",
       "beforeBlob": "85d9f9393031834a5b367818ca993cb9b0d621be",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 16
+      "tokenOperations": 18
     },
     {
       "path": "packages/desktop/scripts/target-platform.mjs",
@@ -1573,14 +1841,19 @@
       "path": "packages/desktop/scripts/test-installer-nsh-smoke.mjs",
       "beforeBlob": "14382adba0f217238ae9611a7249230f38a1ad76",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 3
     },
     {
       "path": "packages/desktop/scripts/test-installer-preserve-files.mjs",
       "beforeBlob": "10e38bd6f3df04b8e2a43791776e44685dbb1a35",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 1,
-      "closureAction": "第96行 /DZCODE_UNINSTALLER_LOG_PATH → /DZODY_UNINSTALLER_LOG_PATH，与 installer.nsh 及 fixture 生产/消费原子修改；INSTALLER_NSH 是另一个 fixture 宏，按其引用单独审定。"
+      "tokenOperations": 4
+    },
+    {
+      "path": "packages/desktop/scripts/windows-cua-helper-assets.mjs",
+      "beforeBlob": "00042d54ce09a449eb3ce72a081d9a112b60d0e0",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 2
     },
     {
       "path": "packages/desktop/src/host/cuaNarrowAgentProfile.ts",
@@ -1604,13 +1877,13 @@
       "path": "packages/desktop/src/main/about.ts",
       "beforeBlob": "5982e8e9a80d8514a82d46fe013a1b480544962b",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 6
+      "tokenOperations": 8
     },
     {
       "path": "packages/desktop/src/main/appARMSBootstrap.ts",
       "beforeBlob": "d9797382ea3673d663498545f1d17056b2d5ac57",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 4
+      "tokenOperations": 7
     },
     {
       "path": "packages/desktop/src/main/autoUpdater.ts",
@@ -1646,7 +1919,7 @@
       "path": "packages/desktop/src/main/desktopContextPromptRollout.ts",
       "beforeBlob": "c8447bcc0b5fe5223e2f94137eb1716a2ffbeec2",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 4
     },
     {
       "path": "packages/desktop/src/main/desktopCronScheduler.ts",
@@ -1658,7 +1931,7 @@
       "path": "packages/desktop/src/main/desktopHostProcess.ts",
       "beforeBlob": "41145fe2c07d4df2de60dd850113efaab2f39970",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 1
+      "tokenOperations": 4
     },
     {
       "path": "packages/desktop/src/main/desktopMainIpcRemote.ts",
@@ -1682,7 +1955,7 @@
       "path": "packages/desktop/src/main/desktopRuntimeEnv.ts",
       "beforeBlob": "13b6bd3a2d3d97fdc4f14f4eb7a6166d6c83c38b",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 35
+      "tokenOperations": 64
     },
     {
       "path": "packages/desktop/src/main/e2eCoverage.ts",
@@ -1694,7 +1967,7 @@
       "path": "packages/desktop/src/main/index.ts",
       "beforeBlob": "f453d2bee95968f480cfb8003e368484baaae879",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 21
+      "tokenOperations": 28
     },
     {
       "path": "packages/desktop/src/main/logger.ts",
@@ -1736,19 +2009,19 @@
       "path": "packages/desktop/src/shared/armsRumShared.js",
       "beforeBlob": "6b3eec4fcb9994ac19a6d7331a30fdddcc87d5a7",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 5
     },
     {
       "path": "packages/desktop/src/shared/armsRumShared.ts",
       "beforeBlob": "65b03d58960546ff0b4d25b8ee9cf64972c16d06",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 5
     },
     {
       "path": "packages/desktop/test/appARMSBootstrap.test.ts",
       "beforeBlob": "b820aca90716b732dbf5ee697c6ab4fed04f78a4",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 3
     },
     {
       "path": "packages/desktop/test/armsBrowserInit.test.ts",
@@ -1781,6 +2054,12 @@
       "tokenOperations": 1
     },
     {
+      "path": "packages/desktop/test/cuaNarrowAgentRuntime.test.ts",
+      "beforeBlob": "1090fb003b8952919a2a1d4a3298c2497ebee1f7",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 2
+    },
+    {
       "path": "packages/desktop/test/customOpenAIProviderStore.test.ts",
       "beforeBlob": "68faaf93ee33e4a307eb8a5e8e80d39ffc5a974d",
       "checkpointGroup": "B-desktop-scripts",
@@ -1802,13 +2081,19 @@
       "path": "packages/desktop/test/desktopApplicationMenu.test.ts",
       "beforeBlob": "4ced11a81b3b820a83abfbc786bbd01dab45ff38",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 3
+      "tokenOperations": 4
     },
     {
       "path": "packages/desktop/test/desktopArmsCustomEventE2E.test.ts",
       "beforeBlob": "629c5690ea48d3cfcf095c27d9b34d25b58b406c",
       "checkpointGroup": "B-desktop-scripts",
       "tokenOperations": 4
+    },
+    {
+      "path": "packages/desktop/test/desktopHostProcess.test.ts",
+      "beforeBlob": "0eaef17e1ee3c28b46da8330a249f55ed05b80b2",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 3
     },
     {
       "path": "packages/desktop/test/desktopProductIdentity.test.ts",
@@ -1832,7 +2117,7 @@
       "path": "packages/desktop/test/desktopRuntimeEnv.test.ts",
       "beforeBlob": "3938e9eebcf2ce3d5315b502f7f593249c9b6c4b",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 82
+      "tokenOperations": 143
     },
     {
       "path": "packages/desktop/test/devDesktopRemoteProdScript.test.ts",
@@ -2108,7 +2393,7 @@
       "path": "packages/desktop/test/e2e/helpers/dynamic-workflow-config-mock-server.ts",
       "beforeBlob": "612b8290083e6d8e8a8f31042491ae1b801c7b7f",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 8
+      "tokenOperations": 10
     },
     {
       "path": "packages/desktop/test/e2e/helpers/dynamic-workflow-gray.ts",
@@ -2168,7 +2453,7 @@
       "path": "packages/desktop/test/e2e/helpers/mobile-remote-gateway.ts",
       "beforeBlob": "2b365c6592c4970a5bf929c012d8d43035b63b15",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 5
     },
     {
       "path": "packages/desktop/test/e2e/helpers/model-provider-replay.ts",
@@ -2270,7 +2555,7 @@
       "path": "packages/desktop/test/e2e/reporting/e2e-failure-artifacts.ts",
       "beforeBlob": "b1defe2f90c8be9a31bf4066cc312b1db45ce659",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 8
     },
     {
       "path": "packages/desktop/test/e2e/reporting/e2e-node-coverage.ts",
@@ -2390,19 +2675,25 @@
       "path": "packages/desktop/test/fixtures/installer-nsh-smoke.nsi",
       "beforeBlob": "81cdae889e88269b33266cb6d0e6b98a210b815a",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 4
+      "tokenOperations": 5
     },
     {
       "path": "packages/desktop/test/fixtures/installer-preserve-files.nsi",
       "beforeBlob": "8125d880443875285d58ff329bb093c066cfdf0e",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 1
+      "tokenOperations": 2
+    },
+    {
+      "path": "packages/desktop/test/forkRolloutLocalDefaults.test.ts",
+      "beforeBlob": "6a826a0159d54ca25194713bc003cbf3e5ad1290",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 3
     },
     {
       "path": "packages/desktop/test/macosReleaseAppDoctor.test.ts",
       "beforeBlob": "368ef3fc1703d0f1f38c1e363a28c066c8b9e83e",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 14
+      "tokenOperations": 24
     },
     {
       "path": "packages/desktop/test/mobileRemoteGatewayIntegration.test.ts",
@@ -2421,6 +2712,12 @@
       "beforeBlob": "c3d341721584f8d3d8408f3dcf08e97984238d3a",
       "checkpointGroup": "B-desktop-scripts",
       "tokenOperations": 2
+    },
+    {
+      "path": "packages/desktop/test/placeholderProducerDetection.test.ts",
+      "beforeBlob": "6954e0f6d0dbc3dce4c88e47cfec42791cacc522",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 1
     },
     {
       "path": "packages/desktop/test/prepare-native-search-tools.test.ts",
@@ -2456,7 +2753,7 @@
       "path": "packages/desktop/test/tsupChunkIsolation.test.ts",
       "beforeBlob": "ab39718663f1e3a6135b46ffb95d2639153298e9",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 9
+      "tokenOperations": 12
     },
     {
       "path": "packages/desktop/test/viteRendererConfig.test.ts",
@@ -2468,7 +2765,7 @@
       "path": "packages/desktop/test/windows-e2e-shards.test.ts",
       "beforeBlob": "e4ad753d5cce63cf499c37c7f44fb9581bfdef20",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 34
+      "tokenOperations": 45
     },
     {
       "path": "packages/desktop/test/windowsChromeAppBoundKey.test.ts",
@@ -2477,10 +2774,16 @@
       "tokenOperations": 1
     },
     {
+      "path": "packages/desktop/test/windowsInstallerCompile.test.ts",
+      "beforeBlob": "d1a2879e7a9fcfa4d4c7ca16a0fcc37aa1a591cb",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 0
+    },
+    {
       "path": "packages/desktop/tsup.config.ts",
       "beforeBlob": "8febe1ee57935c6f00af607eaaf6a39202566c1f",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 29
+      "tokenOperations": 37
     },
     {
       "path": "packages/desktop/vite.config.ts",
@@ -2492,7 +2795,7 @@
       "path": "packages/desktop/wdio.conf.ts",
       "beforeBlob": "9234bc88e66bc2c57044cd7d2469e28606e6951f",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 80
+      "tokenOperations": 90
     },
     {
       "path": "packages/e2e-report/src/node/index.ts",
@@ -2504,14 +2807,13 @@
       "path": "packages/provider-node/src/runtime-paths.ts",
       "beforeBlob": "b23599ce9e024c5c8ae08b3c067d72701b4365f2",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 2
+      "tokenOperations": 10
     },
     {
       "path": "packages/provider-node/test/provider-node-runtime.test.ts",
       "beforeBlob": "64b805aba13b7551906d3caa46c9adf8690d7348",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 0,
-      "closureAction": "保留计算属性绑定；常量值改名后增加仅新、仅旧、共存测试。"
+      "tokenOperations": 7
     },
     {
       "path": "packages/server/build-remote.ts",
@@ -2541,13 +2843,13 @@
       "path": "packages/server/src/http.ts",
       "beforeBlob": "96be9416d60847616763e189f24c48ccf2361244",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 3
+      "tokenOperations": 6
     },
     {
       "path": "packages/server/src/remote/connect.ts",
       "beforeBlob": "28f7a80b3553aecff81c91e7182cb6e783fc9a61",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 6
+      "tokenOperations": 18
     },
     {
       "path": "packages/server/src/remote/deploy.ts",
@@ -2598,6 +2900,12 @@
       "tokenOperations": 2
     },
     {
+      "path": "packages/server/src/stdioServices.ts",
+      "beforeBlob": "8f39eae5e0801c6b40096ef32aeee4c5490d846b",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 6
+    },
+    {
       "path": "packages/server/test/helpers/localRuntimeFixture.ts",
       "beforeBlob": "fa6185feb0abc2585dfa504bb9bf9052db482d19",
       "checkpointGroup": "C-shared-server-root",
@@ -2619,19 +2927,19 @@
       "path": "packages/server/test/remoteConnect.test.ts",
       "beforeBlob": "2ca2853b459542b7f09322833610fc8a929c443d",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 10
+      "tokenOperations": 17
     },
     {
       "path": "packages/server/test/remoteDeploy.test.ts",
       "beforeBlob": "62e318db5ccd0c2122120e7592577930ff1dd136",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 95
+      "tokenOperations": 103
     },
     {
       "path": "packages/server/test/stdioDesktopPresentationSurface.test.ts",
       "beforeBlob": "3d298031389f0df2880c69d6125ef22f6cf48077",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 6
+      "tokenOperations": 19
     },
     {
       "path": "packages/server/test/tsupConfig.test.ts",
@@ -2643,8 +2951,7 @@
       "path": "packages/server/test/zodyRenameEnv.test.ts",
       "beforeBlob": null,
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 0,
-      "closureAction": "New test-map RENAME-ENV behavioral red tests: new-only, old-only, both and neither with isolated synthetic environment; include server/child boundaries where owned."
+      "tokenOperations": 0
     },
     {
       "path": "packages/server/tsup.config.ts",
@@ -2677,6 +2984,12 @@
       "tokenOperations": 1
     },
     {
+      "path": "packages/services/src/cua-permission-broker/windowsCuaDevRuntime.ts",
+      "beforeBlob": "b9c174a8615350bce3fb67f2e7cc671e80ca945c",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 1
+    },
+    {
       "path": "packages/services/src/feedback/feedbackHttpClient.ts",
       "beforeBlob": "3cac45e9dce41921182c926de870a17b13364d1a",
       "checkpointGroup": "C-shared-server-root",
@@ -2692,13 +3005,13 @@
       "path": "packages/services/src/feedback/feedbackService.ts",
       "beforeBlob": "29486c9fee7a6f6882e041585bc0c198f8fb324e",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 4
+      "tokenOperations": 6
     },
     {
       "path": "packages/services/src/fs/fsFaultInjection.ts",
       "beforeBlob": "4a678ab9162d678eb1b44317cbc7f05ec4393ae9",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 3
+      "tokenOperations": 9
     },
     {
       "path": "packages/services/src/git/config.ts",
@@ -2710,13 +3023,13 @@
       "path": "packages/services/src/node.ts",
       "beforeBlob": "5c4226c38296c791669abe85be4c660155de67f0",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 6
+      "tokenOperations": 22
     },
     {
       "path": "packages/services/src/paths.ts",
       "beforeBlob": "109890de33e6f8f0c9f0f5ed7e6752710af7ddd4",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 2
+      "tokenOperations": 5
     },
     {
       "path": "packages/services/src/providers/sourceHeaders.ts",
@@ -2728,13 +3041,19 @@
       "path": "packages/services/src/runtime-tools/agentProxyEnv.ts",
       "beforeBlob": "66e005cb50a7ec423599686bf11d476ad8133d2a",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 9
+      "tokenOperations": 17
+    },
+    {
+      "path": "packages/services/src/runtime-tools/nodeEnv.ts",
+      "beforeBlob": "8283134ec8f62c22c56f49086678de092af9f89e",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 1
     },
     {
       "path": "packages/services/src/runtime-tools/providerRuntimeResolver.ts",
       "beforeBlob": "d7df220dede55c8ac7293317cec8d9e0f636cd68",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 3
+      "tokenOperations": 5
     },
     {
       "path": "packages/services/src/runtime-tools/runtimeCommandEnv.ts",
@@ -2758,7 +3077,7 @@
       "path": "packages/services/src/setting/settingService.ts",
       "beforeBlob": "c9622b80f15db09266e6e09c856aaf8330b824e6",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 1
+      "tokenOperations": 2
     },
     {
       "path": "packages/services/src/setting/settingsWriteQueue.ts",
@@ -2782,13 +3101,13 @@
       "path": "packages/services/src/telemetry/telemetryCore.ts",
       "beforeBlob": "b21d5784095d367f6f3b5d80693a39ba42f77176",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 4
+      "tokenOperations": 7
     },
     {
       "path": "packages/services/src/zody-agent/zodyAgentProcessManager.ts",
       "beforeBlob": "8e9f10c9d967cb74a9634fce276e50d51136053f",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 10
+      "tokenOperations": 13
     },
     {
       "path": "packages/services/src/zody-agent/zodyStdioTransport.ts",
@@ -2806,7 +3125,7 @@
       "path": "packages/services/test/agentProxyEnv.test.ts",
       "beforeBlob": "398a050b7beecff9372849e8394bbaf18281de59",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 20
+      "tokenOperations": 22
     },
     {
       "path": "packages/services/test/apiEndpoints.test.ts",
@@ -2854,7 +3173,7 @@
       "path": "packages/services/test/localClientConfig.test.ts",
       "beforeBlob": "6d9113ac4d9f10164595e863ae190fbca48e1270",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 1
+      "tokenOperations": 4
     },
     {
       "path": "packages/services/test/localServicesRemoteAuthority.test.ts",
@@ -2867,6 +3186,12 @@
       "beforeBlob": "11d87c5597d31e9e5317d61c9a4cbf67a691bbc3",
       "checkpointGroup": "C-shared-server-root",
       "tokenOperations": 5
+    },
+    {
+      "path": "packages/services/test/paths.test.ts",
+      "beforeBlob": "a1a617a7db7e4df26410ea93207d1441f9205f7d",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 3
     },
     {
       "path": "packages/services/test/providerProvisioningSource.test.ts",
@@ -2884,13 +3209,19 @@
       "path": "packages/services/test/runtimeCommandEnv.test.ts",
       "beforeBlob": "ce4f5193454295f9ca42193236995ef34c9e4dc3",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 3
+      "tokenOperations": 5
     },
     {
       "path": "packages/services/test/runtimeToolResolver.test.ts",
       "beforeBlob": "f6a1c65b3de12e609c950c06e0f78eef67c5bbf2",
       "checkpointGroup": "C-shared-server-root",
       "tokenOperations": 4
+    },
+    {
+      "path": "packages/services/test/serviceLogger.test.ts",
+      "beforeBlob": "c75e1ba1e7a01d780feb1800f6183eb4718b99d8",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 9
     },
     {
       "path": "packages/services/test/settingService.test.ts",
@@ -2908,7 +3239,7 @@
       "path": "packages/services/test/zodyAgentProcessManager.test.ts",
       "beforeBlob": "308591b1dbc7e9e63260c5555e7fd60f5d1880f1",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 37
+      "tokenOperations": 48
     },
     {
       "path": "packages/services/test/zodyAgentService.savedWorkflows.test.ts",
@@ -2920,13 +3251,31 @@
       "path": "packages/services/test/zodyLegacyTaskCompatTaskIndex.test.ts",
       "beforeBlob": "e2a5bcbb92fa155bdee2887cf5725ced3fd63bd5",
       "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 3
+    },
+    {
+      "path": "packages/services/test/zodySessionService.test.ts",
+      "beforeBlob": "011af8f5b90cb177d98532dcca795032bebead4c",
+      "checkpointGroup": "C-shared-server-root",
       "tokenOperations": 1
+    },
+    {
+      "path": "packages/shared/src/app-runtime-preferences.ts",
+      "beforeBlob": "5785630160f81abe5f30c95df56dfae635511f2a",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/shared/src/browser-use/nodeReplBroker.ts",
+      "beforeBlob": "16412c0273067e59519ab62e952fba73b0f338c3",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 2
     },
     {
       "path": "packages/shared/src/dynamic-workflow-feature.ts",
       "beforeBlob": "4eeb203b7ec74da82fecd20680ca27d751ffff89",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 2
+      "tokenOperations": 4
     },
     {
       "path": "packages/shared/src/e2e-test-bridge.ts",
@@ -2938,19 +3287,25 @@
       "path": "packages/shared/src/env.ts",
       "beforeBlob": "dd4d4a9de81e642cec3b9c31a4cd0f82fc19e8d6",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 22
+      "tokenOperations": 37
     },
     {
       "path": "packages/shared/src/index.ts",
       "beforeBlob": "1010c1d76c658aad06db9bb4aac5cbbc1087dea8",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 3
+      "tokenOperations": 12
     },
     {
       "path": "packages/shared/src/intranetDefaults.ts",
       "beforeBlob": "0a07bcd150f58ed9f37e034189ca19fd611b7218",
       "checkpointGroup": "C-shared-server-root",
       "tokenOperations": 3
+    },
+    {
+      "path": "packages/shared/src/node/genUiPaths.ts",
+      "beforeBlob": "44f2474cd2cd80f373893ed20ee73b18f0eba2db",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 1
     },
     {
       "path": "packages/shared/src/node/storedCredentialSecret.ts",
@@ -2974,13 +3329,19 @@
       "path": "packages/shared/src/runtimeEnv.ts",
       "beforeBlob": "e338ebdf0b7fe6e18b9dfb52c6487c4f5bb9febb",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 4
+      "tokenOperations": 58
+    },
+    {
+      "path": "packages/shared/src/serviceAuthority.ts",
+      "beforeBlob": "cf86e93063e6354da31b24b8a76d2d9aeab9de81",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 1
     },
     {
       "path": "packages/shared/src/version.ts",
       "beforeBlob": "3044074e0635665677fc8988f6af5dd41ff7898c",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 8
+      "tokenOperations": 9
     },
     {
       "path": "packages/shared/src/zody-agent-runtime.ts",
@@ -2992,7 +3353,7 @@
       "path": "packages/shared/src/zody-source-headers.ts",
       "beforeBlob": "0987a66a684915ce3b817d258f72a73540972ef5",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 6
+      "tokenOperations": 10
     },
     {
       "path": "packages/shared/src/zodyEndpoint.ts",
@@ -3004,14 +3365,19 @@
       "path": "packages/shared/test/dynamicWorkflowFeature.test.ts",
       "beforeBlob": "d7ea6c53fa9aaac74bcbb8853212ddc54d96f4be",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 0,
-      "closureAction": "保留导入/计算属性绑定；修改常量值后添加旧键不生效测试。"
+      "tokenOperations": 7
     },
     {
       "path": "packages/shared/test/env.test.ts",
       "beforeBlob": "82a513daaa64112a112bd754c467f51c198080e2",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 20
+      "tokenOperations": 29
+    },
+    {
+      "path": "packages/shared/test/runtimeEnv.test.ts",
+      "beforeBlob": "fe80a4c9b6ce90c3613bb931bc55de6da3e58814",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 41
     },
     {
       "path": "packages/shared/test/zodyEndpoint.test.ts",
@@ -3023,7 +3389,7 @@
       "path": "packages/shared/test/zodySourceHeaders.test.ts",
       "beforeBlob": "e4606cf313268dd0aa358a0c9844a1a5a813e053",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 2
+      "tokenOperations": 6
     },
     {
       "path": "packages/ui/src/lib/e2eStoreBridge.ts",
@@ -3104,10 +3470,22 @@
       "tokenOperations": 7
     },
     {
+      "path": "packages/zody-cua/broker-server.js",
+      "beforeBlob": "ed171ad891386ef7ab71f9ea0408a59bdb93b290",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/zody-cua/broker.js",
+      "beforeBlob": "257e42958d62ad764c7a8ff687c886a6e89f6dab",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 2
+    },
+    {
       "path": "packages/zody-server-cli/src/cli.ts",
       "beforeBlob": "16e924ba7b5a6c9163c649a8403e09a6436306ce",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 10
+      "tokenOperations": 12
     },
     {
       "path": "packages/zody-server-cli/src/runtime/agentWiring.ts",
@@ -3137,7 +3515,7 @@
       "path": "packages/zody-server-cli/src/server-core/core.ts",
       "beforeBlob": "6dc851b14369a50aaf836d5bd79ac2aa7d3c41fd",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 5
+      "tokenOperations": 8
     },
     {
       "path": "packages/zody-server-cli/src/server-core/http.ts",
@@ -3161,13 +3539,13 @@
       "path": "packages/zody-server-cli/test/cli.test.ts",
       "beforeBlob": "5d5f099c54bbeda8463753d78f3205f4903385fd",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 11
+      "tokenOperations": 13
     },
     {
       "path": "packages/zody-server-cli/test/fixtures/coreWiringFixture.mjs",
       "beforeBlob": "27a3fbb2fecd0a0b4deed307d0cd7a2c81e37373",
       "checkpointGroup": "C-shared-server-root",
-      "tokenOperations": 1
+      "tokenOperations": 4
     },
     {
       "path": "packages/zody-server-cli/test/lock.test.ts",
@@ -3233,7 +3611,7 @@
       "path": "scripts/build-desktop-agent-cli.mjs",
       "beforeBlob": "db22571d9b4333f6f2a70f722db81b026cacfdd8",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 3
+      "tokenOperations": 5
     },
     {
       "path": "scripts/build-native-search-tools.mjs",
@@ -3245,7 +3623,7 @@
       "path": "scripts/build-time-config.mjs",
       "beforeBlob": "e474ad8f2ce3457148cf7379824c9b537785f8d8",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 5
+      "tokenOperations": 14
     },
     {
       "path": "scripts/builtin-provider-config.mjs",
@@ -3254,10 +3632,16 @@
       "tokenOperations": 3
     },
     {
+      "path": "scripts/dev-desktop-cua-env.mjs",
+      "beforeBlob": "2bfb206b58f1b9bd0d461473c569566a30861a5b",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 5
+    },
+    {
       "path": "scripts/dev-desktop-env.mjs",
       "beforeBlob": "c8a0bd084fa4130680f688b63182a04cdf90077a",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 6
     },
     {
       "path": "scripts/dev-desktop-remote-prod.mjs",
@@ -3269,13 +3653,13 @@
       "path": "scripts/dev-gateway.mjs",
       "beforeBlob": "1406f55076e1d3ab524ecce683df1293d364d91f",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 18
+      "tokenOperations": 29
     },
     {
       "path": "scripts/dev-gateway.test.mjs",
       "beforeBlob": "7628793f45ccc9b1ea79ee3fd98552c49fc3e601",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 17
+      "tokenOperations": 22
     },
     {
       "path": "scripts/dev-mobile-remote.mjs",
@@ -3293,7 +3677,7 @@
       "path": "scripts/doctor-macos-release-app.sh",
       "beforeBlob": "ce40057aa884b0064ddb9981496f104e20988ffa",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 9
+      "tokenOperations": 20
     },
     {
       "path": "scripts/download-glm.mjs",
@@ -3323,7 +3707,7 @@
       "path": "scripts/ensure-native-search-deps.mjs",
       "beforeBlob": "4944c382b20c94b9c87de8efbe406bc777134028",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 7
+      "tokenOperations": 10
     },
     {
       "path": "scripts/intranetDefaults.mjs",
@@ -3347,8 +3731,7 @@
       "path": "scripts/native-search-tools-windows.mjs",
       "beforeBlob": "78bfc2495982e14f4fcee9a3899268e42e5dbe0a",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 8,
-      "closureAction": "8 个 -DZCODE_ 键 → -DZODY_；与 CMakeLists 消费和动态 source-dir 构造一起修改，保留路径和值。"
+      "tokenOperations": 8
     },
     {
       "path": "scripts/native-search-tools-windows/CMakeLists.txt",
@@ -3372,7 +3755,7 @@
       "path": "scripts/prepare-prebuilds.mjs",
       "beforeBlob": "41acffe0b53d23ae954b23c69a5a84a4ec0546c3",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 2
+      "tokenOperations": 6
     },
     {
       "path": "scripts/run-affected-unit-tests.mjs",
@@ -3384,25 +3767,31 @@
       "path": "scripts/run-mobile-host-identity-isolation-e2e.mjs",
       "beforeBlob": "dbc088026c8e972cff8e8acf5eb8952435011a60",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 23
+      "tokenOperations": 29
     },
     {
       "path": "scripts/run-mobile-p8-multihost-notification-click-e2e.mjs",
       "beforeBlob": "60784f7c9e55eb053abe13f559f8a3d03db3a6c0",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 28
+      "tokenOperations": 29
     },
     {
       "path": "scripts/run-mobile-p8-notification-owner-boundary-e2e.mjs",
       "beforeBlob": "d1a73f23f4bb5adf26e3fd326e0c8d14f6ea7739",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 18
+      "tokenOperations": 19
     },
     {
       "path": "scripts/run-mobile-remote-p8-ssh-e2e.mjs",
       "beforeBlob": "f1f0d0b055533ddce78b63e2d65adffdfc5cdd11",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 19
+      "tokenOperations": 25
+    },
+    {
+      "path": "scripts/stage-dev-cua-plugin-runtime.mjs",
+      "beforeBlob": "490b9c979a74a08d49dc2af5a95490487ed5b691",
+      "checkpointGroup": "B-desktop-scripts",
+      "tokenOperations": 1
     },
     {
       "path": "scripts/test-desktop-e2e-container.sh",
@@ -3432,7 +3821,7 @@
       "path": "scripts/test/build-time-config.test.mjs",
       "beforeBlob": "84c4575aa3ebd564740be5fc56a65ac6ff8ec18b",
       "checkpointGroup": "B-desktop-scripts",
-      "tokenOperations": 5
+      "tokenOperations": 38
     },
     {
       "path": "scripts/test/builtin-provider-config-build.test.mjs",
@@ -3486,8 +3875,13 @@
       "path": "specs/zody-rename-runtime-contract.md",
       "beforeBlob": "d6d06f304b117be23f3af077645c0e55312daca4",
       "checkpointGroup": "S-spec",
-      "tokenOperations": 0,
-      "closureAction": "优先补 R30 hard-cut、VITE bridge、旧键不读取及无迁移验收；保留既有独立 Server ESM 发行入口章节字节不变。"
+      "tokenOperations": 0
+    },
+    {
+      "path": "turbo.json",
+      "beforeBlob": "f58f32e03c30aa612812d467ff9cf14173a49bad",
+      "checkpointGroup": "C-shared-server-root",
+      "tokenOperations": 2
     },
     {
       "path": "UI_PLUGIN.en.md",
@@ -3500,6 +3894,180 @@
       "beforeBlob": "6f335a361d9c6ea8eea3d2c75deb28def3408f9b",
       "checkpointGroup": "C-shared-server-root",
       "tokenOperations": 1
+    },
+    {
+      "path": "packages/desktop/src/main/desktopArchitectureGuard.ts",
+      "beforeBlob": "bd191eb301d56ad9ad1109b801202bc93bd1d756",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 4
+    },
+    {
+      "path": "packages/desktop/test/desktopArchitectureGuard.test.ts",
+      "beforeBlob": "353f20c72520e45119b7e8b6de39c0e5f9e26729",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 3
+    },
+    {
+      "path": "packages/services/src/zody-agent/agentTelemetryEnv.ts",
+      "beforeBlob": "172d1a4dd64e4b77216275e923f82e4ec6db5453",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 5
+    },
+    {
+      "path": "packages/services/test/agentTelemetryEnv.test.ts",
+      "beforeBlob": "aad1e766b69cd4ecf5000334f5c3ce324c324819",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 4
+    },
+    {
+      "path": "packages/services/test/telemetryDeviceMid.test.ts",
+      "beforeBlob": "32c13bf67f606fa7fa4335323a50c33fe9178446",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/ui/src/feedback/FeedbackCenter.tsx",
+      "beforeBlob": "e3ca87e22d2909eedecb65c0a1bab3543e4188b8",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 5
+    },
+    {
+      "path": "packages/ui/test/feedbackCenter.test.ts",
+      "beforeBlob": "473e0659b44cb971ab47a64de3f202727adac1f9",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 4
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/src/app/app-config-options.ts",
+      "beforeBlob": "388b5cb15139c19b56118426b65d7d7ee604d70b",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/desktop/src/main/cuaAccessibilitySettings.ts",
+      "beforeBlob": "4010375dfad2f972005bc08f7bc5ebad3ec19730",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/desktop/src/main/desktopCuaHelperInstaller.ts",
+      "beforeBlob": "9e7368fe19d623a98c306dd5bc3041144c7e5041",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/desktop/src/main/rendererActionTraceIpc.ts",
+      "beforeBlob": "b16b4ff5d624472f80067b62b878186fd17c29ea",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 2
+    },
+    {
+      "path": "packages/desktop/test/rendererActionTraceIpc.test.ts",
+      "beforeBlob": "e51079019351c2ca3d9be03046273e91a7a2b48d",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 2
+    },
+    {
+      "path": "packages/zody-server-cli/src/packaging/nodeDistMirror.ts",
+      "beforeBlob": "df39210088906b4e8fd257654eee8a327dc3654a",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 3
+    },
+    {
+      "path": "packages/zody-server-cli/test/daemonRegistration.test.ts",
+      "beforeBlob": "0461476c381e88a542e917f751970e11d7cb8e1a",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 2
+    },
+    {
+      "path": "packages/zody-server-cli/test/nodeDistMirror.test.ts",
+      "beforeBlob": "15f4d4d4e1ff76ef8afbbb946d07e9e731b99a19",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/package.json",
+      "beforeBlob": "3c825f721c66883c151eb7fa05a3d3de0320904f",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/src/app/create-app.ts",
+      "beforeBlob": "a996b31cc607df0d9d85da20cefc933522eeaa1c",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/tests/helpers/fault-matrix-cells.ts",
+      "beforeBlob": "c13ec89ecb591bb29e715037bdfe1a1673309fbd",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/tests/workflow-fault-matrix.retry.test.ts",
+      "beforeBlob": "a0667d94d9916ae6983aee9481ebbdfaa29a46a8",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md",
+      "beforeBlob": "3b13e0ead81b087552236d06eb3bcb0b8b91952c",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-tool-history-order.test.ts",
+      "beforeBlob": "e53aacd5e528beeec6f5e4fd90dc66335e4a4532",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/desktop/test/e2e/helpers/e2e-electron-binary.ts",
+      "beforeBlob": "1f6f62097bdd1c2e58b8d99acf06a46361a03f9b",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/services/src/runtime-tools/clientPlatform.ts",
+      "beforeBlob": "8baa4594030591d3c4d2b6a112958b45396c0e16",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 3
+    },
+    {
+      "path": "apps/zody-cli/packages/browser-use-plugin/e2e/headless-linux.Dockerfile",
+      "beforeBlob": "74bb2600b889bccc9cd6619e284d21642a6c91d3",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/packages/browser-use-plugin/test/headless-browser.e2e.test.ts",
+      "beforeBlob": "bf5b3aea8271e9efc9e2968c6a4994441fa4149e",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 2
+    },
+    {
+      "path": "apps/zody-cli/packages/adapters/tests/fixtures/mcp-oauth-child-driver.ts",
+      "beforeBlob": "0870397b4ee5adf4cf1eb0a367be15587066c020",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/adapters/tests/fixtures/shared-credentials-concurrent-process.ts",
+      "beforeBlob": "8d85c5daecd106c0da5a3a9d3cff4a5162ebf0fc",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "apps/zody-cli/packages/bootstrap/tests/fixtures/cua-native-owner-entry.ts",
+      "beforeBlob": "680b845d40cd54e732038d2382cbdee548c8656f",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
+    },
+    {
+      "path": "packages/provider-node/test/zody-builtin-integrity.test.ts",
+      "beforeBlob": "8e0fdbb1e36d7bd03b284f9dd57ce3ea97d3c58b",
+      "checkpointGroup": "supplement-serial",
+      "tokenOperations": 1
     }
   ],
   "keepRules": [
@@ -3509,6 +4077,34 @@
     "R55 plugin identity/project/skill environment and templates",
     "external secret IDs, credential values, wire names and external data fields"
   ],
-  "verification": "580 existing Git blobs rechecked by controller; new file requires behavior-first red evidence; exact token/context edits only",
-  "phaseCleanup": "execution plan section 1.4; no new dependency installs or worktrees for routine verification"
+  "verification": "Controller reran verify-complete.py: 677 scope inputs match, 675 patch files, 0 held, git apply --check passes, 495 TS/JS parse with 0 syntax diagnostics. No production application or green behavior claim.",
+  "phaseCleanup": "execution plan section 1.4; no new dependency installs or worktrees for routine verification",
+  "additionalContracts": [
+    {
+      "path": "output/zody-rename-r30/implementation-v2/manifest-complete.json",
+      "sha256": "519369fce7941b39e67cb20c51b9f8018b3241d94ef220a88a5d5eb631a25fd8"
+    },
+    {
+      "path": "output/zody-rename-r30/implementation-v2/candidate-complete.patch",
+      "sha256": "a1f53f2ec3bfb09c8e17768dc0bfedf6425ab1e69d01d749b96826a66a4ebadc"
+    },
+    {
+      "path": "output/zody-rename-r30/implementation-v2/candidate-residual-final.json",
+      "sha256": "23efff5da2c553ac39967fbc7386a2a9cd9e787a7df78ebf70f057313200fec7"
+    },
+    {
+      "path": "output/zody-rename-r30/implementation-v2/residual-owner-review/decisions.json",
+      "sha256": "91decd2efbf78d0917d21abec89644c586ea27ab7b589637940d3594ef7541df"
+    },
+    {
+      "path": "output/zody-rename-r30/implementation-v2/residual-owner-review/report.md",
+      "sha256": "65c910d6034db83163cc75336eb6b8b4bf448f2a1695319772a1b840dedad9a1"
+    }
+  ],
+  "securityRule": "Security semantic actions override ordinary token replacements: retain rejection of legacy sensitive keys and add new ones, while active config/capture recognizes only new names; R55 templates remain unchanged.",
+  "patchSha256": "a1f53f2ec3bfb09c8e17768dc0bfedf6425ab1e69d01d749b96826a66a4ebadc",
+  "authority": "Final semantic patch, not raw occurrence replacements, defines authorized candidate behavior after independent approval.",
+  "implementationReview": "docs/plans/zody-rename-execution/reports/R30-implementation-acceptance.md",
+  "reviewFollowup": "Remove legacy ZCODE_TOOL_ENV_PASSTHROUGH_JSON at actual sanitizer/egress boundaries; preserve active new envelope behavior; add regression tests. No legacy config fallback.",
+  "finalSourceSnapshot": "output/zody-rename-r30/post-apply-validation-ca64-a1f53f/source-hashes-repack.json"
 }

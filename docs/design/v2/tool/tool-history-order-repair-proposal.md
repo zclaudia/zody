@@ -68,7 +68,7 @@ live         calls [Bash, Read] -> results [Bash, Read]
   未配置的 compact 而失败；下列命令修正准备条件后通过，不涉及产品代码调整。
 
 ```sh
-ZCODE_E2E_MANUAL_REVIEW=1 \
+ZODY_E2E_MANUAL_REVIEW=1 \
 ZCODE_E2E_DEEPSEEK_CONTEXT_WINDOW=128000 \
 ZCODE_E2E_DEEPSEEK_MAX_OUTPUT_TOKENS=32768 \
 E2E_PROVIDER_HTTP_MODE=replay \

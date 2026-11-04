@@ -207,7 +207,7 @@ describe("node_repl host and browser-use runtime bundles", () => {
     // 用一个不可能出现在产物里的值：走完整构建后守卫应当抛错。
     // 这里通过临时改写 define 名不现实，所以直接验证守卫的判据 —— 产物必须包含该值。
     const source = await readFile(new URL("../scripts/build.mjs", import.meta.url), "utf8");
-    expect(source).toContain("__ZCODE_CUA_HELPER_BUILD_ID__");
+    expect(source).toContain("__ZODY_CUA_HELPER_BUILD_ID__");
     expect(source).toMatch(/未折叠进|did not reach/u);
     // 并确认守卫只在 buildId 非空时生效（dev 空串不应让构建失败）。
     const devResult = await buildNodeReplHostBundle({ outfile, cuaHelperBuildId: "" });

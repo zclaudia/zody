@@ -12,7 +12,7 @@ import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ZCODE_AGENT_RUNTIME,
-  ZCODE_RUNTIME_ENV_KEY,
+  ZODY_RUNTIME_ENV_KEY,
   hostResponseMessageSchema,
 } from "@zody/shared";
 import {
@@ -54,8 +54,8 @@ describe("E2E agent coverage", () => {
     try {
       const env = buildE2EAgentCoverageEnv({
         NODE_OPTIONS: "--trace-warnings",
-        ZCODE_E2E_ARTIFACT_DIR: artifactDir,
-        ZCODE_E2E_COVERAGE: "1",
+        ZODY_E2E_ARTIFACT_DIR: artifactDir,
+        ZODY_E2E_COVERAGE: "1",
       });
       const preloadPath = join(
         artifactDir,
@@ -169,8 +169,8 @@ describe("resolveZodyAgentNativeRuntimeCommand", () => {
   });
 
   it("wins over PATH/env command discovery and is never wrapped by stdio tap", () => {
-    const previous = process.env.ZCODE_AGENT_SERVER_COMMAND;
-    process.env.ZCODE_AGENT_SERVER_COMMAND = "/tmp/attacker-cli";
+    const previous = process.env.ZODY_AGENT_SERVER_COMMAND;
+    process.env.ZODY_AGENT_SERVER_COMMAND = "/tmp/attacker-cli";
     try {
       const nativeConfig = { launcherPath: "/opt/zody/native/zody-native" };
       const command = resolveDefaultZodyAgentCommand(context, { nativeRuntime: nativeConfig });
@@ -180,8 +180,8 @@ describe("resolveZodyAgentNativeRuntimeCommand", () => {
         command,
       );
     } finally {
-      if (previous === undefined) delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-      else process.env.ZCODE_AGENT_SERVER_COMMAND = previous;
+      if (previous === undefined) delete process.env.ZODY_AGENT_SERVER_COMMAND;
+      else process.env.ZODY_AGENT_SERVER_COMMAND = previous;
     }
   });
 });
@@ -417,13 +417,13 @@ describe("resolveDefaultZodyAgentCommand", () => {
   ] as const;
 
   const originalCwd = process.cwd();
-  const originalCommand = process.env.ZCODE_AGENT_SERVER_COMMAND;
-  const originalArgsJson = process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
-  const originalCwdEnv = process.env.ZCODE_AGENT_SERVER_CWD;
+  const originalCommand = process.env.ZODY_AGENT_SERVER_COMMAND;
+  const originalArgsJson = process.env.ZODY_AGENT_SERVER_ARGS_JSON;
+  const originalCwdEnv = process.env.ZODY_AGENT_SERVER_CWD;
   const originalBinaryEnv = process.env[ZCODE_AGENT_RUNTIME.binaryEnvVar];
   const originalNodeEnv = process.env.NODE_ENV;
-  const originalRuntimeEnv = process.env[ZCODE_RUNTIME_ENV_KEY];
-  const originalBytecodeEnv = process.env.ZCODE_DESKTOP_AGENT_BYTECODE;
+  const originalRuntimeEnv = process.env[ZODY_RUNTIME_ENV_KEY];
+  const originalBytecodeEnv = process.env.ZODY_DESKTOP_AGENT_BYTECODE;
   const originalElectronVersion = Object.getOwnPropertyDescriptor(process.versions, "electron");
   const createdDirs: string[] = [];
 
@@ -436,7 +436,7 @@ describe("resolveDefaultZodyAgentCommand", () => {
   }
 
   beforeEach(() => {
-    delete process.env.ZCODE_DESKTOP_AGENT_BYTECODE;
+    delete process.env.ZODY_DESKTOP_AGENT_BYTECODE;
     // 修复原因：stdio tap 开关持久化在用户真实配置目录中。测试若直接读取该目录，
     // 本机开启抓包后会意外包装临时 Node agent，导致用例结果依赖用户环境。
     const dataBaseDir = mkdtempSync(join(tmpdir(), "zcode-agent-manager-data-"));
@@ -446,13 +446,13 @@ describe("resolveDefaultZodyAgentCommand", () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    restoreEnv("ZCODE_AGENT_SERVER_COMMAND", originalCommand);
-    restoreEnv("ZCODE_AGENT_SERVER_ARGS_JSON", originalArgsJson);
-    restoreEnv("ZCODE_AGENT_SERVER_CWD", originalCwdEnv);
+    restoreEnv("ZODY_AGENT_SERVER_COMMAND", originalCommand);
+    restoreEnv("ZODY_AGENT_SERVER_ARGS_JSON", originalArgsJson);
+    restoreEnv("ZODY_AGENT_SERVER_CWD", originalCwdEnv);
     restoreEnv(ZCODE_AGENT_RUNTIME.binaryEnvVar, originalBinaryEnv);
     restoreEnv("NODE_ENV", originalNodeEnv);
-    restoreEnv(ZCODE_RUNTIME_ENV_KEY, originalRuntimeEnv);
-    restoreEnv("ZCODE_DESKTOP_AGENT_BYTECODE", originalBytecodeEnv);
+    restoreEnv(ZODY_RUNTIME_ENV_KEY, originalRuntimeEnv);
+    restoreEnv("ZODY_DESKTOP_AGENT_BYTECODE", originalBytecodeEnv);
     if (originalElectronVersion)
       Object.defineProperty(process.versions, "electron", originalElectronVersion);
     else delete process.versions.electron;
@@ -471,9 +471,9 @@ describe("resolveDefaultZodyAgentCommand", () => {
   });
 
   it("内置 dist zody.cjs 通过 Electron Node 模式启动", () => {
-    delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-    delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
-    delete process.env.ZCODE_AGENT_SERVER_CWD;
+    delete process.env.ZODY_AGENT_SERVER_COMMAND;
+    delete process.env.ZODY_AGENT_SERVER_ARGS_JSON;
+    delete process.env.ZODY_AGENT_SERVER_CWD;
 
     const sandboxRoot = mkdtempSync(join(tmpdir(), "zcode-agent-default-command-"));
     createdDirs.push(sandboxRoot);
@@ -519,8 +519,8 @@ describe("resolveDefaultZodyAgentCommand", () => {
   ])(
     "字节码开关只替换 Electron 的 stdio 入口，保留存储 Worker JS 入口：electron=%s enabled=%s",
     (electron, enabled) => {
-      delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-      process.env.ZCODE_DESKTOP_AGENT_BYTECODE = enabled ? "1" : "0";
+      delete process.env.ZODY_AGENT_SERVER_COMMAND;
+      process.env.ZODY_DESKTOP_AGENT_BYTECODE = enabled ? "1" : "0";
       Object.defineProperty(process.versions, "electron", {
         configurable: true,
         value: electron ? "41.0.3" : undefined,
@@ -548,8 +548,8 @@ describe("resolveDefaultZodyAgentCommand", () => {
   );
 
   it("字节码入口缺失时拒绝静默回退 JS", () => {
-    delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-    process.env.ZCODE_DESKTOP_AGENT_BYTECODE = "1";
+    delete process.env.ZODY_AGENT_SERVER_COMMAND;
+    process.env.ZODY_DESKTOP_AGENT_BYTECODE = "1";
     Object.defineProperty(process.versions, "electron", { configurable: true, value: "41.0.3" });
     const root = mkdtempSync(join(tmpdir(), "zcode-bytecode-missing-"));
     createdDirs.push(root);
@@ -563,9 +563,9 @@ describe("resolveDefaultZodyAgentCommand", () => {
   });
 
   it("Desktop surface 会显式传给默认 app-server 命令", () => {
-    delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-    delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
-    delete process.env.ZCODE_AGENT_SERVER_CWD;
+    delete process.env.ZODY_AGENT_SERVER_COMMAND;
+    delete process.env.ZODY_AGENT_SERVER_ARGS_JSON;
+    delete process.env.ZODY_AGENT_SERVER_CWD;
 
     const sandboxRoot = mkdtempSync(join(tmpdir(), "zcode-agent-desktop-surface-"));
     createdDirs.push(sandboxRoot);
@@ -605,8 +605,8 @@ describe("resolveDefaultZodyAgentCommand", () => {
   it.each(desktopSurfaceArgsCases)(
     "Desktop surface 归一化 $name 时不吞掉无关参数",
     ({ input, expected }) => {
-      process.env.ZCODE_AGENT_SERVER_COMMAND = "zcode-agent";
-      process.env.ZCODE_AGENT_SERVER_ARGS_JSON = JSON.stringify(input);
+      process.env.ZODY_AGENT_SERVER_COMMAND = "zcode-agent";
+      process.env.ZODY_AGENT_SERVER_ARGS_JSON = JSON.stringify(input);
 
       const command = resolveDefaultZodyAgentCommand({
         presentationSurface: "desktop",
@@ -622,12 +622,12 @@ describe("resolveDefaultZodyAgentCommand", () => {
   );
 
   it("monorepo 不可达时回退到已部署原生 binary", () => {
-    delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-    delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
-    delete process.env.ZCODE_AGENT_SERVER_CWD;
+    delete process.env.ZODY_AGENT_SERVER_COMMAND;
+    delete process.env.ZODY_AGENT_SERVER_ARGS_JSON;
+    delete process.env.ZODY_AGENT_SERVER_CWD;
 
     // Bugfix: SSH 远端把 zody-server.cjs 部署到 ~/.zody/server/，cwd 不在仓库内、
-    // ZCODE_AGENT_SERVER_COMMAND 也没设；旧 resolver 只识别 env 和 monorepo 源码树，
+    // ZODY_AGENT_SERVER_COMMAND 也没设；旧 resolver 只识别 env 和 monorepo 源码树，
     // 即使 zcode-agent 已部署到 ~/.zody/server/agents/glm/，resolver 也找不到。
     // 这里用 GLM_BINARY_PATH（=runtime.binaryEnvVar）模拟该部署场景，
     // 验证 resolver 复用 findZodyAgentRuntimeBinary 命中已部署 binary。
@@ -805,13 +805,13 @@ describe("resolveDefaultZodyAgentCommand", () => {
         command: process.execPath,
         args: [
           "-e",
-          `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, JSON.stringify({ official: process.env.ZCODE_BUILTIN_PROVIDER_CONFIG_FILE, personal: process.env.ZCODE_PERSONAL_PROVIDER_CONFIG_FILE })); setInterval(() => {}, 1000);`,
+          `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, JSON.stringify({ official: process.env.ZODY_BUILTIN_PROVIDER_CONFIG_FILE, personal: process.env.ZODY_PERSONAL_PROVIDER_CONFIG_FILE })); setInterval(() => {}, 1000);`,
         ],
         cwd: workspacePath,
       }),
       resolveSpawnEnv: () => ({
-        ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: zcodeBuiltinFilePath,
-        ZCODE_PERSONAL_PROVIDER_CONFIG_FILE: personalFilePath,
+        ZODY_BUILTIN_PROVIDER_CONFIG_FILE: zcodeBuiltinFilePath,
+        ZODY_PERSONAL_PROVIDER_CONFIG_FILE: personalFilePath,
       }),
     });
 
@@ -1101,12 +1101,12 @@ setInterval(() => {}, 1000);
     }
   });
 
-  it("未声明 ZCODE_RUNTIME_ENV 时默认以 production 启动 agent 子进程且不传 NODE_ENV", async () => {
+  it("未声明 ZODY_RUNTIME_ENV 时默认以 production 启动 agent 子进程且不传 NODE_ENV", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-node-env-default-"));
     createdDirs.push(workspacePath);
     const nodeEnvPath = join(workspacePath, "node-env.txt");
     process.env.NODE_ENV = "development";
-    delete process.env[ZCODE_RUNTIME_ENV_KEY];
+    delete process.env[ZODY_RUNTIME_ENV_KEY];
     const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
@@ -1115,7 +1115,7 @@ setInterval(() => {}, 1000);
           `
 require("node:fs").writeFileSync(${JSON.stringify(nodeEnvPath)}, JSON.stringify({
   nodeEnv: process.env.NODE_ENV || "<empty>",
-  runtimeEnv: process.env.ZCODE_RUNTIME_ENV || "<empty>",
+  runtimeEnv: process.env.ZODY_RUNTIME_ENV || "<empty>",
 }));
 setInterval(() => {}, 1000);
 `,
@@ -1140,12 +1140,12 @@ setInterval(() => {}, 1000);
     }
   });
 
-  it("显式 ZCODE_RUNTIME_ENV=development 时保留 agent 子进程开发态", async () => {
+  it("显式 ZODY_RUNTIME_ENV=development 时保留 agent 子进程开发态", async () => {
     const workspacePath = mkdtempSync(join(tmpdir(), "zcode-agent-node-env-dev-"));
     createdDirs.push(workspacePath);
     const nodeEnvPath = join(workspacePath, "node-env.txt");
     delete process.env.NODE_ENV;
-    process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
+    process.env[ZODY_RUNTIME_ENV_KEY] = "development";
     const manager = new ZodyAgentProcessManager({
       commandResolver: () => ({
         command: process.execPath,
@@ -1154,7 +1154,7 @@ setInterval(() => {}, 1000);
           `
 require("node:fs").writeFileSync(${JSON.stringify(nodeEnvPath)}, JSON.stringify({
   nodeEnv: process.env.NODE_ENV || "<empty>",
-  runtimeEnv: process.env.ZCODE_RUNTIME_ENV || "<empty>",
+  runtimeEnv: process.env.ZODY_RUNTIME_ENV || "<empty>",
 }));
 setInterval(() => {}, 1000);
 `,
@@ -2200,7 +2200,7 @@ setInterval(() => {}, 1000);
     mkdirSync(dirname(tapScript), { recursive: true });
     writeFileSync(tapScript, "#!/usr/bin/env node\n");
     process.chdir(sandboxRoot);
-    process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
+    process.env[ZODY_RUNTIME_ENV_KEY] = "development";
     setDataBaseDir(sandboxRoot);
     setZodyStdioTapDevEnabled(true);
 
@@ -2244,9 +2244,9 @@ setInterval(() => {}, 1000);
       mkdirSync(dirname(tapScript), { recursive: true });
       writeFileSync(tapScript, "#!/usr/bin/env node\n");
       process.chdir(sandboxRoot);
-      process.env[ZCODE_RUNTIME_ENV_KEY] = "development";
-      process.env.ZCODE_AGENT_SERVER_COMMAND = "zcode-agent";
-      process.env.ZCODE_AGENT_SERVER_ARGS_JSON = JSON.stringify(input);
+      process.env[ZODY_RUNTIME_ENV_KEY] = "development";
+      process.env.ZODY_AGENT_SERVER_COMMAND = "zcode-agent";
+      process.env.ZODY_AGENT_SERVER_ARGS_JSON = JSON.stringify(input);
       setDataBaseDir(sandboxRoot);
       setZodyStdioTapDevEnabled(true);
 

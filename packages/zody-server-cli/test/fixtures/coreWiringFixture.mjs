@@ -5,11 +5,11 @@ const outputPath = process.env.ZCODE_TEST_WIRING_OUTPUT;
 if (!outputPath) throw new Error("ZCODE_TEST_WIRING_OUTPUT is required");
 
 await appendFile(outputPath, `${JSON.stringify({
-  agentArgs: JSON.parse(process.env.ZCODE_AGENT_SERVER_ARGS_JSON ?? "[]"),
-  agentCommand: process.env.ZCODE_AGENT_SERVER_COMMAND ?? null,
-  dataBaseDir: process.env.ZCODE_DATA_BASE_DIR ?? null,
+  agentArgs: JSON.parse(process.env.ZODY_AGENT_SERVER_ARGS_JSON ?? "[]"),
+  agentCommand: process.env.ZODY_AGENT_SERVER_COMMAND ?? null,
+  dataBaseDir: process.env.ZODY_DATA_BASE_DIR ?? null,
   generation,
-  runtimeRoot: process.env.ZCODE_SERVER_RUNTIME_ROOT ?? null,
+  runtimeRoot: process.env.ZODY_SERVER_RUNTIME_ROOT ?? null,
 })}\n`, "utf8");
 
 process.send?.({

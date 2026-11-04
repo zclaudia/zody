@@ -23,14 +23,14 @@ export default defineConfig(({ mode }) => {
   // 手机入口（mobile.html）用独立 mode 打包：产物与普通 Web 客户端分开，入口也不复用 index.html。
   // 这样普通 Web 客户端构建产物里不会带上手机页面（T3.4 之后它才会引入 @zclaudia/gateway-client）。
   const mobileEntry = mode === "mobile";
-  // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
+  // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZODY_ENV。
   // 启动脚本通过 process.env 显式选择 test/production；它必须优先于 .env 文件，
   // 否则 mode 对应的旧配置可能被误解析到错误 endpoint。
   const env = { ...loadEnv(mode, REPO_ROOT, ""), ...process.env };
-  const zodyEnv = resolveZodyEnv(env.ZCODE_ENV);
+  const zodyEnv = resolveZodyEnv(env.ZODY_ENV);
   const endpointEnv = {
     ...env,
-    ZCODE_ENV: zodyEnv,
+    ZODY_ENV: zodyEnv,
   };
   const zodyEndpointOrigin = resolveRuntimeZodyEndpointOrigin(endpointEnv);
 
@@ -71,11 +71,11 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      __ZCODE_VERSION__: JSON.stringify(
+      __ZODY_VERSION__: JSON.stringify(
         resolveRemoteFrontendVersion(version, process.env.WEB_REMOTE_FRONTEND_VERSION),
       ),
-      __ZCODE_COMMIT__: JSON.stringify(env.ZCODE_COMMIT || "unknown"),
-      __ZCODE_ENV__: JSON.stringify(zodyEnv),
+      __ZODY_COMMIT__: JSON.stringify(env.ZODY_COMMIT || "unknown"),
+      __ZODY_ENV__: JSON.stringify(zodyEnv),
       "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify(zodyEndpointOrigin),
       // 兼容旧 Web runtime 读取名；新代码统一读 VITE_ZCODE_BASE_URL。
       "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify(zodyEndpointOrigin),

@@ -45,7 +45,9 @@ export function createDesktopCuaHelperInstaller(
   // A signed app with a bundled Helper must be deterministic even when its
   // LaunchServices environment was polluted by an earlier dev session.
   if (bundledAppPath) {
+    // 打包 Helper 同时剔除旧、新免签开关，避免旧环境残留绕过边界。
     delete env.ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL;
+    delete env.ZODY_CUA_HELPER_ALLOW_UNSIGNED_LOCAL;
   }
   return createInstaller(
     canonicalizeCuaHelperInstallerOptions({

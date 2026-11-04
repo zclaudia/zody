@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
-  ZCODE_DYNAMIC_WORKFLOW_MODE_ENV,
+  ZODY_DYNAMIC_WORKFLOW_MODE_ENV,
 } from "@zody/shared";
 import {
   LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY,
@@ -31,9 +31,9 @@ describe("resolveLocalDynamicWorkflowClientConfig", () => {
     ["disabled", "disabled", false],
     ["onDemand", "onDemand", true],
     ["alwaysOn", "alwaysOn", true],
-  ])("ZCODE_DYNAMIC_WORKFLOW_MODE=%s 覆盖缺省值（三档规则不变，来源 override）", async (raw, mode, enabled) => {
+  ])("ZODY_DYNAMIC_WORKFLOW_MODE=%s 覆盖缺省值（三档规则不变，来源 override）", async (raw, mode, enabled) => {
     await expect(
-      resolveLocalDynamicWorkflowClientConfig({ env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: raw } }),
+      resolveLocalDynamicWorkflowClientConfig({ env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: raw } }),
     ).resolves.toEqual({
       mode,
       enabled,
@@ -44,7 +44,7 @@ describe("resolveLocalDynamicWorkflowClientConfig", () => {
 
   it("非法覆盖被忽略，落到缺省 onDemand/default", async () => {
     await expect(
-      resolveLocalDynamicWorkflowClientConfig({ env: { [ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]: "on" } }),
+      resolveLocalDynamicWorkflowClientConfig({ env: { [ZODY_DYNAMIC_WORKFLOW_MODE_ENV]: "on" } }),
     ).resolves.toMatchObject({ mode: "onDemand", source: "default" });
   });
 

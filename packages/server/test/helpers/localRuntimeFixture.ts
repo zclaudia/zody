@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { ZCODE_VERSION } from "@zody/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import { createTarGzArchive } from "../../src/remote/localTarGz.js";
 import { resolveRequiredLocalReleasePaths } from "../../src/remote/remoteAssetLocalPaths.js";
 
@@ -55,11 +55,11 @@ export async function createLocalRuntimeFixture(platformArch = "linux-x64") {
         .digest("hex"),
     });
   }
-  const manifest = { schemaVersion: 1, appVersion: ZCODE_VERSION, platformArch, components };
+  const manifest = { schemaVersion: 1, appVersion: ZODY_VERSION, platformArch, components };
   const manifestPath = join(
     source.rootDir,
     "releases",
-    ZCODE_VERSION,
+    ZODY_VERSION,
     `manifest-${platformArch}.json`,
   );
   await mkdir(dirname(manifestPath), { recursive: true });

@@ -18,7 +18,7 @@ import {
 
 // 发布验证必须指向最终上传的那份文件，而不是默认悄悄检查仓库源文件。
 const zcodeBuiltinProviderConfigFilePath =
-  process.env.ZCODE_BUILTIN_RELEASE_TEST_FILE?.trim() ||
+  process.env.ZODY_BUILTIN_RELEASE_TEST_FILE?.trim() ||
   fileURLToPath(new URL("../../../config/provider/zody-builtin.json", import.meta.url));
 
 function reasoningPatch(map: string, reasoningLevel: string) {

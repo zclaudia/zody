@@ -69,7 +69,7 @@ describe("node_repl MCP server", () => {
 
   it("captures Computer Use credentials before the plugin host restores its environment", async () => {
     const capturedRuntime = captureComputerUseRuntimeFromEnvironment({
-      ZCODE_CUA_PERMISSION_BROKER_SOCKET: "/tmp/deferred-cua.sock",
+      ZODY_CUA_PERMISSION_BROKER_SOCKET: "/tmp/deferred-cua.sock",
       ZCODE_CUA_PERMISSION_BROKER_TOKEN: "deferred-cua-token",
     });
     expect(capturedRuntime).toBeDefined();
@@ -320,7 +320,7 @@ describe("node_repl MCP server", () => {
 
   it("carries no copy of the Computer Use assets", () => {
     // 宿主与两个能力插件独立之后，CUA 的 SDK 与文档只有一份，属于 computer-use 插件；
-    // 宿主按 ZCODE_CUA_PLUGIN_ROOT 去取。2026-09-11 之前 browser-use 各存一份手工副本，
+    // 宿主按 ZODY_CUA_PLUGIN_ROOT 去取。2026-09-11 之前 browser-use 各存一份手工副本，
     // 其中文档那份悄悄停在重构前的 API，兜底路径会把它发给模型。
     for (const relative of [
       "../../browser-use-plugin/scripts/computer-use-client.mjs",

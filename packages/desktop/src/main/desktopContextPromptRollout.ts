@@ -1,8 +1,8 @@
 import {
   buildZodySourceHeadersFromContext,
   normalizeZodyEndpointOrigin,
-  ZCODE_ENV,
-  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  ZODY_ENV,
+  ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
 } from "@zody/shared";
 import {
   createSingleFeatureRollout,
@@ -10,7 +10,7 @@ import {
   type SingleFeatureRolloutLogger,
 } from "./singleFeatureRollout.js";
 
-export { ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV };
+export { ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV };
 
 export type DesktopContextPromptRolloutLogger = SingleFeatureRolloutLogger;
 export const DESKTOP_CONTEXT_PROMPT_REQUEST_TIMEOUT_MS = 3_000;
@@ -129,7 +129,7 @@ export function createElectronDesktopContextPromptConfigFetcher(options: {
         // fork（F2.10）：来源头停发 X-Device-Mid 与 HTTP-Referer；deviceMid 入参不再下传，
         // 本文件的下线改造归 F2.6a，此处仅做编译适配。
         platform: process.platform,
-        releaseChannel: ZCODE_ENV,
+        releaseChannel: ZODY_ENV,
         sourceTitle: "electron",
       });
       for (const [name, value] of Object.entries(sourceHeaders)) {

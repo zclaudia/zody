@@ -32,9 +32,9 @@ vi.mock("@zody/shared", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@zody/shared")>();
   return {
     ...actual,
-    ZCODE_ARMS_RUM_ENDPOINT: "https://example.test/endpoint",
-    ZCODE_ENV: "test",
-    ZCODE_VERSION: "0.0.0-test",
+    ZODY_ARMS_RUM_ENDPOINT: "https://example.test/endpoint",
+    ZODY_ENV: "test",
+    ZODY_VERSION: "0.0.0-test",
     mapZodyEnvToArmsRumEnv: vi.fn(() => "local"),
   };
 });

@@ -142,13 +142,13 @@ loadE2ELocalEnv();
 const BUILD_DESKTOP_AGENT_SCRIPT = resolve(REPO_ROOT, "scripts/build-desktop-agent-cli.mjs");
 const ZCODE_CLI_ENTRYPOINT = resolve(REPO_ROOT, "apps/zody-cli/packages/cli/dist/zody.cjs");
 const E2E_HOME_DIR = resolve(
-  process.env.ZCODE_E2E_HOME_DIR?.trim() ||
+  process.env.ZODY_E2E_HOME_DIR?.trim() ||
     // 修复原因：多个 WDIO 本地并发时会互相清理默认 .e2e-home，导致窗口白屏、
     // DevTools 断链或登录页等待失败；默认路径保持兼容，调试时允许显式隔离。
     resolve(DESKTOP_DIR, ".e2e-home"),
 );
-const E2E_PACKAGED_APP_BINARY_PATH = process.env.ZCODE_E2E_PACKAGED_APP_PATH?.trim()
-  ? resolve(process.env.ZCODE_E2E_PACKAGED_APP_PATH)
+const E2E_PACKAGED_APP_BINARY_PATH = process.env.ZODY_E2E_PACKAGED_APP_PATH?.trim()
+  ? resolve(process.env.ZODY_E2E_PACKAGED_APP_PATH)
   : null;
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
 const E2E_STORAGE_ROOT = resolve(E2E_HOME_DIR, ".zody");
@@ -166,14 +166,14 @@ const E2E_DEFAULT_ZCODE_BUILTIN_PROVIDER_CONFIG_FILE = resolve(
   "config/provider/zody-builtin.json",
 );
 const INITIAL_ZCODE_BUILTIN_PROVIDER_CONFIG_FILE =
-  process.env.ZCODE_BUILTIN_PROVIDER_CONFIG_FILE?.trim();
+  process.env.ZODY_BUILTIN_PROVIDER_CONFIG_FILE?.trim();
 const E2E_AGENTS_STATE_FILE = resolve(E2E_APP_CONFIG_DIR, "agents-state.json");
 const E2E_CLI_CONFIG_DIR = resolve(E2E_STORAGE_ROOT, "cli");
 const E2E_CLI_CONFIG_FILE = resolve(E2E_CLI_CONFIG_DIR, "config.json");
 const E2E_CLI_AGENTS_DIR = resolve(E2E_CLI_CONFIG_DIR, "agents");
 const E2E_USER_AGENTS_DIR = resolve(E2E_STORAGE_ROOT, "agents");
 const E2E_NETWORK_CAPTURE_DIR = resolve(
-  process.env.ZCODE_E2E_NETWORK_CAPTURE_DIR?.trim() ||
+  process.env.ZODY_E2E_NETWORK_CAPTURE_DIR?.trim() ||
     // 修复原因：beforeSession 会清空 .e2e-home；抓包代理的 CA 必须放在
     // reset 范围之外，否则 agent 读 httpProxyCaCertPath 时会遇到 ENOENT。
     resolve(DESKTOP_DIR, ".e2e-network-capture"),
@@ -202,7 +202,7 @@ const LEGACY_UPSTREAM_REPLAY_FIXTURE_PATHS = [
 const UPSTREAM_CAPTURE_RESPONSE_PREVIEW_BYTES = 8 * 1024 * 1024;
 const UPSTREAM_CAPTURE_RESPONSE_CHUNK_TIMELINE_BYTES = 16 * 1024 * 1024;
 const E2E_ELECTRON_INSTALL_TIMEOUT_MS =
-  readPositiveIntegerEnv("ZCODE_E2E_ELECTRON_INSTALL_TIMEOUT_MS") ??
+  readPositiveIntegerEnv("ZODY_E2E_ELECTRON_INSTALL_TIMEOUT_MS") ??
   DEFAULT_E2E_ELECTRON_INSTALL_TIMEOUT_MS;
 const ELECTRON_APP_BINARY_PATH =
   E2E_PACKAGED_APP_BINARY_PATH ??
@@ -343,10 +343,10 @@ const E2E_PROVIDER_PRESETS = {
 } as const;
 type E2EProviderPresetName = keyof typeof E2E_PROVIDER_PRESETS;
 const upstreamE2EContextWindowOverride = readPositiveIntegerEnv(
-  "ZCODE_E2E_UPSTREAM_CONTEXT_WINDOW",
+  "ZODY_E2E_UPSTREAM_CONTEXT_WINDOW",
 );
 const upstreamE2EMaxOutputTokensOverride = readPositiveIntegerEnv(
-  "ZCODE_E2E_UPSTREAM_MAX_OUTPUT_TOKENS",
+  "ZODY_E2E_UPSTREAM_MAX_OUTPUT_TOKENS",
 );
 const DESKTOP_PACKAGE_JSON = JSON.parse(
   readFileSync(resolve(DESKTOP_DIR, "package.json"), "utf-8"),
@@ -354,22 +354,22 @@ const DESKTOP_PACKAGE_JSON = JSON.parse(
 const ELECTRON_VERSION = DESKTOP_PACKAGE_JSON.devDependencies?.electron ?? "";
 const PNPM_COMMAND = "pnpm";
 const E2E_ELECTRON_APP_QUIT_TIMEOUT_MS =
-  readPositiveIntegerEnv("ZCODE_E2E_ELECTRON_APP_QUIT_TIMEOUT_MS") ?? 1000;
+  readPositiveIntegerEnv("ZODY_E2E_ELECTRON_APP_QUIT_TIMEOUT_MS") ?? 1000;
 const E2E_ELECTRON_FORCE_KILL_GRACE_MS =
-  readPositiveIntegerEnv("ZCODE_E2E_ELECTRON_FORCE_KILL_GRACE_MS") ?? 3000;
+  readPositiveIntegerEnv("ZODY_E2E_ELECTRON_FORCE_KILL_GRACE_MS") ?? 3000;
 const E2E_RENDERER_BRIDGE_PREFLIGHT_TIMEOUT_MS =
-  readPositiveIntegerEnv("ZCODE_E2E_RENDERER_BRIDGE_PREFLIGHT_TIMEOUT_MS") ?? 15000;
+  readPositiveIntegerEnv("ZODY_E2E_RENDERER_BRIDGE_PREFLIGHT_TIMEOUT_MS") ?? 15000;
 const E2E_RUNNER_FORCE_EXIT_TIMEOUT_MS =
-  readPositiveIntegerEnv("ZCODE_E2E_RUNNER_FORCE_EXIT_TIMEOUT_MS") ?? 5000;
+  readPositiveIntegerEnv("ZODY_E2E_RUNNER_FORCE_EXIT_TIMEOUT_MS") ?? 5000;
 const E2E_RUNNER_FINALIZATION_GUARD_TIMEOUT_MS =
-  readPositiveIntegerEnv("ZCODE_E2E_RUNNER_FINALIZATION_GUARD_TIMEOUT_MS") ?? 30000;
+  readPositiveIntegerEnv("ZODY_E2E_RUNNER_FINALIZATION_GUARD_TIMEOUT_MS") ?? 30000;
 const E2E_FAILURE_ARTIFACT_COLLECTION_TIMEOUT_MS = Math.min(
-  readPositiveIntegerEnv("ZCODE_E2E_FAILURE_ARTIFACT_COLLECTION_TIMEOUT_MS") ?? 60_000,
+  readPositiveIntegerEnv("ZODY_E2E_FAILURE_ARTIFACT_COLLECTION_TIMEOUT_MS") ?? 60_000,
   5 * 60_000,
 );
 const E2E_WEBDRIVER_REQUEST_LIMITS = resolveE2EWebDriverRequestLimits({
-  retryCount: process.env.ZCODE_E2E_WEBDRIVER_REQUEST_RETRY_COUNT,
-  timeoutMs: process.env.ZCODE_E2E_WEBDRIVER_REQUEST_TIMEOUT_MS,
+  retryCount: process.env.ZODY_E2E_WEBDRIVER_REQUEST_RETRY_COUNT,
+  timeoutMs: process.env.ZODY_E2E_WEBDRIVER_REQUEST_TIMEOUT_MS,
 });
 const E2E_HOME_REMOVE_RETRY_DELAYS_MS = [200, 500, 1000, 2000, 3000, 5000, 8000];
 const HOST_HOME_DIR = process.env.HOME?.trim();
@@ -404,10 +404,10 @@ const E2E_RENDERER_BRIDGE_REQUIRED_STATE_METHODS = [
 
 const requestedE2ESpecs = readRequestedE2ESpecs();
 const requestedE2EExcludeSpecs = readRequestedE2EExcludeSpecs();
-const configuredModelRetryMaxRetries = process.env.ZCODE_MODEL_RETRY_MAX_RETRIES;
+const configuredModelRetryMaxRetries = process.env.ZODY_MODEL_RETRY_MAX_RETRIES;
 const configuredE2EWorkerNetworkEnv = {
-  httpProxy: process.env.ZCODE_HTTP_PROXY,
-  noProxy: process.env.ZCODE_NO_PROXY,
+  httpProxy: process.env.ZODY_HTTP_PROXY,
+  noProxy: process.env.ZODY_NO_PROXY,
 };
 const upstreamProviderSpecRequested = process.argv
   .concat(requestedE2ESpecs)
@@ -429,12 +429,12 @@ const gitManualReviewSpecRequested = process.argv
   .concat(requestedE2ESpecs)
   .some((arg) => arg.includes("test/e2e/git/manual-review/"));
 const manualReviewE2E =
-  process.env.ZCODE_E2E_MANUAL_REVIEW?.trim() === "1" || manualReviewSpecRequested;
+  process.env.ZODY_E2E_MANUAL_REVIEW?.trim() === "1" || manualReviewSpecRequested;
 if (manualReviewE2E) {
-  process.env.ZCODE_E2E_MANUAL_REVIEW = "1";
+  process.env.ZODY_E2E_MANUAL_REVIEW = "1";
 }
-const manualReviewHoldMs = readPositiveIntegerEnv("ZCODE_E2E_MANUAL_REVIEW_HOLD_MS") ?? 0;
-const REQUESTED_UPSTREAM_HTTP_MODE_ENV = "ZCODE_E2E_REQUESTED_UPSTREAM_HTTP_MODE";
+const manualReviewHoldMs = readPositiveIntegerEnv("ZODY_E2E_MANUAL_REVIEW_HOLD_MS") ?? 0;
+const REQUESTED_UPSTREAM_HTTP_MODE_ENV = "ZODY_E2E_REQUESTED_UPSTREAM_HTTP_MODE";
 const requestedUpstreamE2EHttpMode =
   process.env[REQUESTED_UPSTREAM_HTTP_MODE_ENV] !== undefined
     ? process.env[REQUESTED_UPSTREAM_HTTP_MODE_ENV]?.trim() || undefined
@@ -444,7 +444,7 @@ const requestedAskUserQuestionClockScale =
 let upstreamE2EHttpMode = readUpstreamE2EHttpMode();
 const e2eProviderPresetName = readE2EProviderPresetName();
 const e2eProviderPreset = E2E_PROVIDER_PRESETS[e2eProviderPresetName];
-const containerE2E = process.env.ZCODE_E2E_CONTAINER === "1";
+const containerE2E = process.env.ZODY_E2E_CONTAINER === "1";
 const configuredE2ESpecs =
   requestedE2ESpecs.length > 0
     ? requestedE2ESpecs
@@ -475,9 +475,9 @@ const e2eRunnerFinalizationGuard = createE2ERunnerFinalizationGuard({
   onTimeout: forceFinalizeE2ERunnerFromGuard,
   timeoutMs: E2E_RUNNER_FINALIZATION_GUARD_TIMEOUT_MS,
 });
-const E2E_RUN_ID = process.env.ZCODE_E2E_RUN_ID?.trim();
+const E2E_RUN_ID = process.env.ZODY_E2E_RUN_ID?.trim();
 if (!E2E_RUN_ID) {
-  throw new Error("[e2e] ZCODE_E2E_RUN_ID missing after reporter initialization");
+  throw new Error("[e2e] ZODY_E2E_RUN_ID missing after reporter initialization");
 }
 const E2E_RUN_CACHE_DIR = resolve(DESKTOP_DIR, ".e2e-cache", E2E_RUN_ID);
 const E2E_APP_OUTPUT_DIR = resolve(E2E_RUN_CACHE_DIR, "app");
@@ -513,17 +513,17 @@ const containerChromeArgs = [
 
 process.env.HOME = E2E_HOME_DIR;
 process.env.USERPROFILE = E2E_HOME_DIR;
-process.env.ZCODE_E2E_HOME_DIR = E2E_HOME_DIR;
-process.env.ZCODE_E2E_RUN_ID = E2E_RUN_ID;
-process.env.ZCODE_DATA_BASE_DIR = E2E_HOME_DIR;
-process.env.ZCODE_DESKTOP_APPLICATION_NAME = "ZCode E2E";
-process.env.ZCODE_DESKTOP_HOME_DIR = E2E_HOME_DIR;
-process.env.ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA = "1";
-// Bugfix: renderer E2E store bridge 只能由 WDIO 进程显式打开，避免 ZCODE_ENV=test 的产品测试环境暴露全局可变 store。
-process.env.VITE_ZCODE_E2E_STORE_BRIDGE = "1";
+process.env.ZODY_E2E_HOME_DIR = E2E_HOME_DIR;
+process.env.ZODY_E2E_RUN_ID = E2E_RUN_ID;
+process.env.ZODY_DATA_BASE_DIR = E2E_HOME_DIR;
+process.env.ZODY_DESKTOP_APPLICATION_NAME = "ZCode E2E";
+process.env.ZODY_DESKTOP_HOME_DIR = E2E_HOME_DIR;
+process.env.ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA = "1";
+// Bugfix: renderer E2E store bridge 只能由 WDIO 进程显式打开，避免 ZODY_ENV=test 的产品测试环境暴露全局可变 store。
+process.env.VITE_ZODY_E2E_STORE_BRIDGE = "1";
 // Bugfix: e2e session 由 Chromedriver 管理调试端口；禁用主进程开发态固定的 9229，
 // 避免和本机已打开的 Zody Dev 冲突后出现空白窗口并卡在 session 创建阶段。
-process.env.ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT = "1";
+process.env.ZODY_DISABLE_FIXED_REMOTE_DEBUGGING_PORT = "1";
 
 let upstreamCaptureProxy: E2ENetworkCaptureProxy | null = null;
 let upstreamReplayServer: UpstreamReplayServer | null = null;
@@ -597,7 +597,7 @@ function loadE2ELocalEnv() {
 
 function readRequestedE2ESpecs() {
   const specs = new Set<string>();
-  appendRequestedE2ESpecs(specs, process.env.ZCODE_E2E_SPEC);
+  appendRequestedE2ESpecs(specs, process.env.ZODY_E2E_SPEC);
 
   for (let index = 0; index < process.argv.length; index += 1) {
     const arg = process.argv[index];
@@ -619,7 +619,7 @@ function readRequestedE2ESpecs() {
 
 function readRequestedE2EExcludeSpecs() {
   const specs = new Set<string>();
-  appendRequestedE2ESpecs(specs, process.env.ZCODE_E2E_EXCLUDE_SPEC);
+  appendRequestedE2ESpecs(specs, process.env.ZODY_E2E_EXCLUDE_SPEC);
 
   for (let index = 0; index < process.argv.length; index += 1) {
     const arg = process.argv[index];
@@ -645,7 +645,7 @@ function appendRequestedE2ESpecs(specs: Set<string>, value?: string) {
   }
 
   // 修复原因：`pnpm test:e2e -- --spec <file>` 下 WDIO 仍会先加载配置；
-  // 如果配置只读 ZCODE_E2E_SPEC，实际会回落到全量 spec，多个 worker 轮流重置
+  // 如果配置只读 ZODY_E2E_SPEC，实际会回落到全量 spec，多个 worker 轮流重置
   // .e2e-home 后就会把 上游 flash 选择冲掉。
   for (const spec of value.split(",")) {
     const trimmed = spec.trim();
@@ -822,9 +822,9 @@ function prepareDesktopAppBuild() {
     return;
   }
   // 修复原因：WDIO 配置会先被 esbuild 解析，CI 可执行字符串必须保持 ASCII 引号。
-  if (process.env.ZCODE_E2E_SKIP_BUILD === "1") {
-    console.log("[e2e] ZCODE_E2E_SKIP_BUILD=1, skipping onPrepare build");
-    assertDesktopE2EBuildReady("ZCODE_E2E_SKIP_BUILD=1");
+  if (process.env.ZODY_E2E_SKIP_BUILD === "1") {
+    console.log("[e2e] ZODY_E2E_SKIP_BUILD=1, skipping onPrepare build");
+    assertDesktopE2EBuildReady("ZODY_E2E_SKIP_BUILD=1");
     return;
   }
   // Bugfix: 直接执行 `wdio run` 会绕过 package.json 的 pretest:e2e；只检查
@@ -858,7 +858,7 @@ function assertDesktopE2EBuildReady(context: string) {
   }
 
   if (!isRendererE2EStoreBridgeCompiled(E2E_RENDERER_ASSETS_DIR)) {
-    throw new Error(`[e2e] ${context}: renderer build is missing VITE_ZCODE_E2E_STORE_BRIDGE=1`);
+    throw new Error(`[e2e] ${context}: renderer build is missing VITE_ZODY_E2E_STORE_BRIDGE=1`);
   }
 }
 
@@ -872,10 +872,10 @@ async function stageDesktopE2EAppOutput() {
   await stageE2EAppOutput(DESKTOP_BUILD_OUTPUT_DIR, E2E_APP_OUTPUT_DIR);
   if (
     hasRequiredSshE2EEnvironment(process.env) ||
-    process.env.ZCODE_E2E_SSH_HOST?.trim() ||
-    process.env.ZCODE_E2E_SSH_A_HOST?.trim() ||
-    process.env.ZCODE_E2E_SSH_B_HOST?.trim() ||
-    process.env.ZCODE_E2E_WSL_WORKSPACE_PATH?.trim()
+    process.env.ZODY_E2E_SSH_HOST?.trim() ||
+    process.env.ZODY_E2E_SSH_A_HOST?.trim() ||
+    process.env.ZODY_E2E_SSH_B_HOST?.trim() ||
+    process.env.ZODY_E2E_WSL_WORKSPACE_PATH?.trim()
   ) {
     // Bug 根因：CI 只有 build:remote:assets job 产出 mock-cdn/releases/<version>，且跑在通用
     // macos runner 槽位；conversation e2e 在专用 runner 上，mock-cdn 工作区持久化目录互不
@@ -905,7 +905,7 @@ async function stageDesktopE2EAppOutput() {
     throw new Error(`[e2e] staged desktop main entrypoint missing: ${E2E_APP_ENTRY_POINT}`);
   }
   if (!isRendererE2EStoreBridgeCompiled(E2E_APP_RENDERER_ASSETS_DIR)) {
-    throw new Error("[e2e] staged renderer is missing VITE_ZCODE_E2E_STORE_BRIDGE=1");
+    throw new Error("[e2e] staged renderer is missing VITE_ZODY_E2E_STORE_BRIDGE=1");
   }
 }
 
@@ -920,7 +920,7 @@ function isRendererE2EStoreBridgeCompiled(rendererAssetsDir: string) {
     }
 
     const source = readFileSync(resolve(rendererAssetsDir, entry.name), "utf-8");
-    return /["'\x60]?VITE_ZCODE_E2E_STORE_BRIDGE["'\x60]?\s*:\s*["'\x60]1["'\x60]/u.test(source);
+    return /["'\x60]?VITE_ZODY_E2E_STORE_BRIDGE["'\x60]?\s*:\s*["'\x60]1["'\x60]/u.test(source);
   });
 }
 
@@ -941,22 +941,22 @@ function createPnpmChildEnv() {
     PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
     // 修复原因：E2E 依赖 renderer 暴露 store bridge；只在 WDIO 构建链路显式注入，
     // 避免普通 production/test 产品构建意外暴露可变全局 store。
-    VITE_ZCODE_E2E_STORE_BRIDGE: "1",
-    ZCODE_DESKTOP_AGENT_BUILD_MODE: env.ZCODE_DESKTOP_AGENT_BUILD_MODE ?? "pnpm",
+    VITE_ZODY_E2E_STORE_BRIDGE: "1",
+    ZODY_DESKTOP_AGENT_BUILD_MODE: env.ZODY_DESKTOP_AGENT_BUILD_MODE ?? "pnpm",
   };
 }
 
 function prepareZodyAgentServer() {
   if (E2E_PACKAGED_APP_BINARY_PATH) {
     // 真正的 Preview 包必须使用随包 Agent，禁止测试 runner 注入源码入口掩盖漏打包。
-    delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-    delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
+    delete process.env.ZODY_AGENT_SERVER_COMMAND;
+    delete process.env.ZODY_AGENT_SERVER_ARGS_JSON;
     return;
   }
-  if (process.env.ZCODE_E2E_SKIP_AGENT_BUILD === "1") {
+  if (process.env.ZODY_E2E_SKIP_AGENT_BUILD === "1") {
     // 修复原因：Windows 全量 E2E 分片由父 runner 统一构建一次 agent；子 WDIO 若再次构建，
     // 会并发覆盖同一 dist 目录。跳过时仍校验入口，避免旧或缺失产物静默启动。
-    console.log("[e2e] ZCODE_E2E_SKIP_AGENT_BUILD=1, skipping agent build");
+    console.log("[e2e] ZODY_E2E_SKIP_AGENT_BUILD=1, skipping agent build");
     if (!existsSync(ZCODE_CLI_ENTRYPOINT)) {
       throw new Error(`ZCode CLI entrypoint not found: ${ZCODE_CLI_ENTRYPOINT}`);
     }
@@ -983,8 +983,8 @@ function prepareZodyAgentServer() {
 function configureZodyAgentServerEnv() {
   // 自定义命令没有 storagePreparationEntry / supportsStorageStartup 声明，会被启动准备拒绝。
   // 构建后由正式 resolver 找到仓库 bundle（打包 E2E 则使用随包 bundle），保留完整启动契约。
-  delete process.env.ZCODE_AGENT_SERVER_COMMAND;
-  delete process.env.ZCODE_AGENT_SERVER_ARGS_JSON;
+  delete process.env.ZODY_AGENT_SERVER_COMMAND;
+  delete process.env.ZODY_AGENT_SERVER_ARGS_JSON;
 }
 
 function assertUpstreamCaptureConfig() {
@@ -1058,7 +1058,7 @@ async function startUpstreamCaptureProxy() {
   upstreamCaptureProxy = await startE2ENetworkCaptureProxy({
     artifactPath: UPSTREAM_CAPTURE_ARTIFACT_PATH,
     // Bugfix: beforeSession 会在启动 capture proxy 后重置 .e2e-home；
-    // CA 若放在 .e2e-home 下会被删掉，agent 随后读取 ZCODE_AGENT_CA_CERT 就会 ENOENT。
+    // CA 若放在 .e2e-home 下会被删掉，agent 随后读取 ZODY_AGENT_CA_CERT 就会 ENOENT。
     caDir: E2E_NETWORK_CAPTURE_CA_DIR,
     recordResponseChunkTimeline: true,
     responseChunkTimelineLimitBytes: UPSTREAM_CAPTURE_RESPONSE_CHUNK_TIMELINE_BYTES,
@@ -1127,9 +1127,9 @@ async function startModelContextBudgetConfigE2EMock(specs: string[] = []) {
     await stopModelContextBudgetConfigE2EMock();
     modelContextBudgetConfigMockServer = await startModelContextBudgetConfigMockServer(scenario);
   }
-  process.env.ZCODE_BASE_URL = modelContextBudgetConfigMockServer.baseUrl;
-  process.env.ZCODE_TEST_BASE_URL = modelContextBudgetConfigMockServer.baseUrl;
-  process.env.ZCODE_ENDPOINT_ORIGIN = modelContextBudgetConfigMockServer.baseUrl;
+  process.env.ZODY_BASE_URL = modelContextBudgetConfigMockServer.baseUrl;
+  process.env.ZODY_TEST_BASE_URL = modelContextBudgetConfigMockServer.baseUrl;
+  process.env.ZODY_ENDPOINT_ORIGIN = modelContextBudgetConfigMockServer.baseUrl;
 }
 
 async function stopModelContextBudgetConfigE2EMock() {
@@ -1138,9 +1138,9 @@ async function stopModelContextBudgetConfigE2EMock() {
   }
   await modelContextBudgetConfigMockServer.stop();
   modelContextBudgetConfigMockServer = null;
-  delete process.env.ZCODE_BASE_URL;
-  delete process.env.ZCODE_TEST_BASE_URL;
-  delete process.env.ZCODE_ENDPOINT_ORIGIN;
+  delete process.env.ZODY_BASE_URL;
+  delete process.env.ZODY_TEST_BASE_URL;
+  delete process.env.ZODY_ENDPOINT_ORIGIN;
 }
 
 async function startDynamicWorkflowConfigE2EMock(specs: string[] = []) {
@@ -2008,7 +2008,7 @@ function usesProviderReadinessColdStartFixture(specs: string[] = []) {
 function usesMobileRemoteHistorySearchFixture(specs: string[] = []) {
   return (
     workerSpecsContain(specs, MOBILE_REMOTE_HISTORY_SEARCH_SPEC) &&
-    Boolean(process.env.ZCODE_GATEWAY_IT_URL?.trim())
+    Boolean(process.env.ZODY_GATEWAY_IT_URL?.trim())
   );
 }
 
@@ -2044,7 +2044,7 @@ async function seedE2EGitReviewEntryWorkspace(specs: string[] = []) {
 }
 
 async function runGitReviewEntryCommand(cwd: string, args: string[]) {
-  await execFileAsync(process.env.ZCODE_GIT_BINARY?.trim() || "git", args, {
+  await execFileAsync(process.env.ZODY_GIT_BINARY?.trim() || "git", args, {
     cwd,
     encoding: "utf8",
     windowsHide: true,
@@ -2062,7 +2062,7 @@ function shouldSeedGuideInteractionBehavior(specs: string[] = []) {
 // 插件 MCP skill 生命周期 spec 的 spec 名 → seed 状态映射。
 // 状态 A 不写任何 plugin 记录；状态 B 装入并启用；状态 C 装入但通过
 // `config.json#plugins.enabledPlugins[id] = false` 关闭。读取顺序：
-// ZCODE_E2E_PLUGIN_MCP_SKILL_STATE 环境变量 > spec 文件名约定。
+// ZODY_E2E_PLUGIN_MCP_SKILL_STATE 环境变量 > spec 文件名约定。
 const PLUGIN_MCP_SKILL_SPEC_PATTERN =
   /conversation-session-plugin-mcp-skill-(not-installed|installed-enabled|installed-disabled|workspace-enabled|workspace-disabled|workspace-inherited|workspace-isolation|workspace-root|workspace-freeze)\.test\.ts/u;
 const PLUGIN_MCP_SKILL_STATES = new Set([
@@ -2090,7 +2090,7 @@ function resolvePluginMcpSkillState(
   | "workspace-root"
   | "workspace-freeze"
   | null {
-  const envState = process.env.ZCODE_E2E_PLUGIN_MCP_SKILL_STATE?.trim();
+  const envState = process.env.ZODY_E2E_PLUGIN_MCP_SKILL_STATE?.trim();
   if (envState && PLUGIN_MCP_SKILL_STATES.has(envState)) {
     return envState as Exclude<ReturnType<typeof resolvePluginMcpSkillState>, null>;
   }
@@ -3007,40 +3007,40 @@ export const config: WebdriverIO.Config = {
       ? {
           // 真实公网 smoke 必须证明 Agent 没有偷偷回退开发机 Git；不存在的绝对路径会让
           // 任意 Git 调用稳定得到 ENOENT，同时不影响 WDIO runner 自身的进程清理命令。
-          ZCODE_GIT_BINARY: resolve(E2E_HOME_DIR, "missing-bin", "git"),
+          ZODY_GIT_BINARY: resolve(E2E_HOME_DIR, "missing-bin", "git"),
         }
       : {}),
-    VITE_ZCODE_E2E_STORE_BRIDGE: "1",
-    ZCODE_AGENT_SERVER_ARGS_JSON: "",
-    ZCODE_AGENT_SERVER_COMMAND: "",
-    ZCODE_DATA_BASE_DIR: E2E_HOME_DIR,
-    ZCODE_BUILTIN_PROVIDER_CONFIG_FILE:
+    VITE_ZODY_E2E_STORE_BRIDGE: "1",
+    ZODY_AGENT_SERVER_ARGS_JSON: "",
+    ZODY_AGENT_SERVER_COMMAND: "",
+    ZODY_DATA_BASE_DIR: E2E_HOME_DIR,
+    ZODY_BUILTIN_PROVIDER_CONFIG_FILE:
       INITIAL_ZCODE_BUILTIN_PROVIDER_CONFIG_FILE ?? E2E_DEFAULT_ZCODE_BUILTIN_PROVIDER_CONFIG_FILE,
-    ZCODE_DESKTOP_APPLICATION_NAME: "ZCode E2E",
-    ZCODE_DESKTOP_HOME_DIR: E2E_HOME_DIR,
-    ZCODE_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA: "1",
-    ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT: "1",
-    ZCODE_E2E_HOME_DIR: E2E_HOME_DIR,
-    ZCODE_E2E_ARTIFACT_DIR: e2eReporter.artifactDir,
-    ZCODE_E2E_DEFER_APP_DATA_CLEANUP: "1",
-    ZCODE_E2E_RUN_ID: E2E_RUN_ID,
-    ZCODE_ENV: "test",
+    ZODY_DESKTOP_APPLICATION_NAME: "ZCode E2E",
+    ZODY_DESKTOP_HOME_DIR: E2E_HOME_DIR,
+    ZODY_DESKTOP_USE_ELECTRON_DEFAULT_USER_DATA: "1",
+    ZODY_DISABLE_FIXED_REMOTE_DEBUGGING_PORT: "1",
+    ZODY_E2E_HOME_DIR: E2E_HOME_DIR,
+    ZODY_E2E_ARTIFACT_DIR: e2eReporter.artifactDir,
+    ZODY_E2E_DEFER_APP_DATA_CLEANUP: "1",
+    ZODY_E2E_RUN_ID: E2E_RUN_ID,
+    ZODY_ENV: "test",
     ...requestSecurityEndpointEnv(e2eProviderPresetName, upstreamE2EHttpMode),
-    ...(process.env.ZCODE_TELEMETRY_PARITY_CAPTURE_PATH?.trim()
+    ...(process.env.ZODY_TELEMETRY_PARITY_CAPTURE_PATH?.trim()
       ? {
-          ZCODE_TELEMETRY_PARITY_CAPTURE_PATH: process.env.ZCODE_TELEMETRY_PARITY_CAPTURE_PATH,
+          ZODY_TELEMETRY_PARITY_CAPTURE_PATH: process.env.ZODY_TELEMETRY_PARITY_CAPTURE_PATH,
         }
       : {}),
-    ...(process.env.ZCODE_TELEMETRY_PARITY_VARIANT?.trim()
+    ...(process.env.ZODY_TELEMETRY_PARITY_VARIANT?.trim()
       ? {
-          ZCODE_TELEMETRY_PARITY_VARIANT: process.env.ZCODE_TELEMETRY_PARITY_VARIANT,
+          ZODY_TELEMETRY_PARITY_VARIANT: process.env.ZODY_TELEMETRY_PARITY_VARIANT,
         }
       : {}),
   },
   framework: "mocha",
   reporters: ["spec"],
-  maxInstances: Number(process.env.ZCODE_E2E_MAX_INSTANCES ?? "1"),
-  maxInstancesPerCapability: Number(process.env.ZCODE_E2E_MAX_INSTANCES ?? "1"),
+  maxInstances: Number(process.env.ZODY_E2E_MAX_INSTANCES ?? "1"),
+  maxInstancesPerCapability: Number(process.env.ZODY_E2E_MAX_INSTANCES ?? "1"),
   ...(containerE2E
     ? {
         autoXvfb: true,
@@ -3170,9 +3170,9 @@ export const config: WebdriverIO.Config = {
           if (!E2E_PACKAGED_APP_BINARY_PATH) await stageDesktopE2EAppOutput();
         };
         // 旧覆盖报告只有路径，不能证明源码版本；复用构建不得追认当前工作树。
-        if (process.env.ZCODE_E2E_SOURCE_EVIDENCE === "1") {
+        if (process.env.ZODY_E2E_SOURCE_EVIDENCE === "1") {
           await withE2ESourceEvidence({
-            freshBuild: !E2E_PACKAGED_APP_BINARY_PATH && process.env.ZCODE_E2E_SKIP_BUILD !== "1",
+            freshBuild: !E2E_PACKAGED_APP_BINARY_PATH && process.env.ZODY_E2E_SKIP_BUILD !== "1",
             captureSources: () => captureWorkspaceSources(REPO_ROOT),
             build: buildAndStage,
             appOutputDir: E2E_APP_OUTPUT_DIR,

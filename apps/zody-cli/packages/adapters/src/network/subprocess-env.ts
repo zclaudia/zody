@@ -1,8 +1,8 @@
 import {
-  ZCODE_AGENT_CA_CERT_ENV_KEY,
-  ZCODE_HTTP_PROXY_ENV_KEY,
-  ZCODE_NO_PROXY_ENV_KEY,
-  ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
+  ZODY_AGENT_CA_CERT_ENV_KEY,
+  ZODY_HTTP_PROXY_ENV_KEY,
+  ZODY_NO_PROXY_ENV_KEY,
+  ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY,
   readZodyToolEnvPassthroughEnv,
 } from "@zody/shared";
 
@@ -36,8 +36,8 @@ const CA_SOURCE_KEYS = [
   "GIT_SSL_CAINFO",
 ] as const;
 const CA_TARGET_KEYS = CA_SOURCE_KEYS;
-const EXPLICIT_CA_SOURCE_KEYS = [ZCODE_AGENT_CA_CERT_ENV_KEY] as const;
-const EXPLICIT_NO_PROXY_SOURCE_KEYS = [ZCODE_NO_PROXY_ENV_KEY] as const;
+const EXPLICIT_CA_SOURCE_KEYS = [ZODY_AGENT_CA_CERT_ENV_KEY] as const;
+const EXPLICIT_NO_PROXY_SOURCE_KEYS = [ZODY_NO_PROXY_ENV_KEY] as const;
 
 export function applyNetworkEgressEnv(
   env: Record<string, string>,
@@ -47,7 +47,9 @@ export function applyNetworkEgressEnv(
   const sourceEnv = options.sourceEnv ?? {};
   const network = options.network ?? {};
 
-  deleteEnvKey(env, ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY, platform);
+  // 调用方可能传入未经共享清洗的环境；旧封存包含敏感信息且不再受支持。
+  deleteEnvKey(env, "ZCODE_TOOL_ENV_PASSTHROUGH_JSON", platform);
+  deleteEnvKey(env, ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY, platform);
   if (options.toolEnvPassthrough !== false) {
     applyToolEnvPassthroughEnv(env, sourceEnv, platform);
   }
@@ -83,7 +85,7 @@ function applyProxyEnv(
   }
 
   const zodyProxy = normalizeProxyValue(
-    getFirstEnvValue(sourceEnv, [ZCODE_HTTP_PROXY_ENV_KEY], platform),
+    getFirstEnvValue(sourceEnv, [ZODY_HTTP_PROXY_ENV_KEY], platform),
   );
   if (zodyProxy) {
     for (const key of ALL_PROXY_KEYS) {

@@ -19,13 +19,13 @@ zody
 zody --web --workspace /path/to/project --no-open
 ```
 
-Web 默认只监听 `127.0.0.1`。非回环监听地址必须启用 token；`--host 0.0.0.0` 默认生成 token，`--token` 可指定 token，不能在此模式下使用 `--no-token`。直接使用 HTTP 服务入口时，通过 `ZCODE_SERVER_AUTH_TOKEN` 配置认证。网络部署还需要自行配置 TLS 和访问控制。
+Web 默认只监听 `127.0.0.1`。非回环监听地址必须启用 token；`--host 0.0.0.0` 默认生成 token，`--token` 可指定 token，不能在此模式下使用 `--no-token`。直接使用 HTTP 服务入口时，通过 `ZODY_SERVER_AUTH_TOKEN` 配置认证。网络部署还需要自行配置 TLS 和访问控制。
 
 升级时手动下载新版；没有自动更新下载或安装。问题请提交至 [Issues](https://github.com/zclaudia/zody/issues)。
 
 ## 数据和项目配置
 
-用户级数据写入 `~/.zody/`；设置 `ZCODE_DATA_BASE_DIR` 可改变其父目录。Zody 不读取、迁移或自动删除旧 `~/.zcoder/`、`~/.zcode/` 用户数据。
+用户级数据写入 `~/.zody/`；设置 `ZODY_DATA_BASE_DIR` 可改变其父目录。Zody 不读取、迁移或自动删除旧 `~/.zcoder/`、`~/.zcode/` 用户数据。
 
 项目同时支持 `.zody/` 和 `.zcode/`：优先使用 `.zody/` 的同名文件或资源，缺失时读取 `.zcode/`，所有修改只写 `.zody/`。配置文件按文件覆盖，技能等目录资源按名称合并，Hook 声明仍需通过原有信任审查。详见 [兼容规则](apps/zody-cli/docs/design/v2/zody-path-compatibility.md)。内部 `@zcode/*` 包名、协议标识及已有 `ZCODE_*` 配置键不做机械替换。
 

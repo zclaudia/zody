@@ -411,6 +411,6 @@ export interface AppSettings {
    * 只存 Main 的凭据服务。缺省等价于 `{ enabled: false, gatewayUrl: "", namespace: "zcode" }`。
    */
   remoteAccess?: RemoteAccessSettings;
-  /** 设置页里的临时 endpoint override；正式/测试默认 base url 由 ZCODE_BASE_URL env 管理。 */
+  /** 设置页里的临时 endpoint override；正式/测试默认 base url 由 ZODY_BASE_URL env 管理。 */
   zodyEndpointOrigin?: string;
 }

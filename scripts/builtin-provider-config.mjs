@@ -11,7 +11,7 @@ export async function resolveBuiltinProviderBuildEnvironment({
   root = repositoryRoot,
   env = process.env,
 } = {}) {
-  let value = env.ZCODE_ENV;
+  let value = env.ZODY_ENV;
   if (!value?.trim()) {
     const files = [
       ".env",
@@ -28,12 +28,12 @@ export async function resolveBuiltinProviderBuildEnvironment({
         throw error;
       }
       const parsed = parseEnv(content);
-      if (parsed.ZCODE_ENV !== undefined) value = parsed.ZCODE_ENV;
+      if (parsed.ZODY_ENV !== undefined) value = parsed.ZODY_ENV;
     }
   }
   const normalized = value?.trim().toLowerCase() || "test";
   if (normalized !== "test" && normalized !== "production") {
-    throw new Error(`Invalid ZCODE_ENV for Built-in Provider build: ${normalized}`);
+    throw new Error(`Invalid ZODY_ENV for Built-in Provider build: ${normalized}`);
   }
   return normalized;
 }

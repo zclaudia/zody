@@ -68,12 +68,12 @@ const remoteNodeArchiveSha256 = {
 const componentSchemaVersion = 1;
 const remotePlatforms = ["linux-arm64", "linux-x64", "darwin-arm64", "darwin-x64"];
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-const isBootstrapWithRemote = process.env.ZCODE_BOOTSTRAP_WITH_REMOTE === "1";
+const isBootstrapWithRemote = process.env.ZODY_BOOTSTRAP_WITH_REMOTE === "1";
 
 /**
  * Node dist 下载源。默认使用官方 `https://nodejs.org/dist`；需要镜像时用
- * `ZCODE_NODE_DIST_MIRROR` 显式覆盖，例如
- * `ZCODE_NODE_DIST_MIRROR=https://cdn.npmmirror.com/binaries/node`
+ * `ZODY_NODE_DIST_MIRROR` 显式覆盖，例如
+ * `ZODY_NODE_DIST_MIRROR=https://cdn.npmmirror.com/binaries/node`
  * （与 `packages/zody-server-cli/src/packaging/nodeDistMirror.ts` 同一约定）。
  *
  * 修改原因：Zody 首发规格要求默认官方下载源，镜像只能显式启用
@@ -83,7 +83,7 @@ const isBootstrapWithRemote = process.env.ZCODE_BOOTSTRAP_WITH_REMOTE === "1";
 export const DEFAULT_NODE_DIST_BASE = "https://nodejs.org/dist";
 
 export function nodeDistBase(env = process.env) {
-  const mirror = env.ZCODE_NODE_DIST_MIRROR?.trim();
+  const mirror = env.ZODY_NODE_DIST_MIRROR?.trim();
   return (mirror || DEFAULT_NODE_DIST_BASE).replace(/\/+$/u, "");
 }
 const BROWSER_USE_PLUGIN_PACKAGE_NAME = "@zody/browser-use-plugin";
@@ -460,7 +460,7 @@ async function prepareNodeBinaries() {
     } catch (error) {
       console.error(`  [error] 下载或解压失败: ${url}`);
       console.error(
-        `  [error] 请检查 CI runner 的外网访问、tar/xz 依赖，或用 ZCODE_NODE_DIST_MIRROR 覆盖下载源（当前 ${nodeDistBase()}）`,
+        `  [error] 请检查 CI runner 的外网访问、tar/xz 依赖，或用 ZODY_NODE_DIST_MIRROR 覆盖下载源（当前 ${nodeDistBase()}）`,
       );
       throw error;
     }
@@ -744,7 +744,7 @@ function downloadRemoteNativeSearchToolsFromIntranet(platformKey, targetOs, targ
           cwd: rootDir,
           env: {
             ...process.env,
-            ZCODE_FORCE_REMOTE_MOCK_CDN: "1",
+            ZODY_FORCE_REMOTE_MOCK_CDN: "1",
           },
         },
       );

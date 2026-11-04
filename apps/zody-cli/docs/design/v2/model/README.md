@@ -303,14 +303,14 @@ OpenAI-compatible 回放一致的契约：
 
 原则：
 
-- ZCode 自有环境变量继续使用 `ZCODE_` 前缀。
+- ZCode 自有环境变量继续使用 `ZODY_` 前缀。
 - 如果没有加载到包含模型配置的 `~/.zcode/cli/config.json`、项目配置、session 配置或 CLI override，模型请求必须失败，错误码为 `model_config_missing`。
-- `modelCatalog.overrides` 和 `ZCODE_API_KEY` 都不能单独让模型变成可用；它们只提供能力元数据或密钥 fallback。
-- `ZCODE_MODEL` 是唯一能从环境变量声明当前可运行模型的入口。存在非空 `ZCODE_MODEL` 时，env scope 生成一个完整的 main model target，并按配置优先级覆盖 user/project `config.json` 中的 `model` 配置；这等价于本次进程忽略文件里的模型选择和 provider 连接。CLI/session override 仍高于 env。
-- env model target 默认使用 `anthropic` adapter。`ZCODE_MODEL` 可以是裸 model id，此时 provider id 默认为 `anthropic`；也可以是 `provider/model`，此时 provider id 取斜杠前缀，但 adapter kind 仍为 `anthropic`，用于 Anthropic-compatible gateway。`ZCODE_BASE_URL` 只在 `ZCODE_MODEL` 生效时作为该 target 的 base URL；单独设置 `ZCODE_BASE_URL` 不会让模型可用，也不改写文件配置。
-- 非空但无法解析的 `ZCODE_MODEL` 是配置错误，启动必须失败并保留原始 parse error cause；不能静默回落到文件模型配置。
-- env model target 不把 `ZCODE_API_KEY` 写进 runtime config。API key 继续在 model registry 边界按现有 fallback 解析：标准 provider key、provider 派生 key、最后 `ZCODE_API_KEY`。
-- API key 优先从 `model.apiKey` / `model.main.apiKey` / `model.lite.apiKey` 读取；配置未提供时，adapter 可以从环境变量 fallback，例如 provider 派生 key、标准 provider key 或 `ZCODE_API_KEY`。
+- `modelCatalog.overrides` 和 `ZODY_API_KEY` 都不能单独让模型变成可用；它们只提供能力元数据或密钥 fallback。
+- `ZODY_MODEL` 是唯一能从环境变量声明当前可运行模型的入口。存在非空 `ZODY_MODEL` 时，env scope 生成一个完整的 main model target，并按配置优先级覆盖 user/project `config.json` 中的 `model` 配置；这等价于本次进程忽略文件里的模型选择和 provider 连接。CLI/session override 仍高于 env。
+- env model target 默认使用 `anthropic` adapter。`ZODY_MODEL` 可以是裸 model id，此时 provider id 默认为 `anthropic`；也可以是 `provider/model`，此时 provider id 取斜杠前缀，但 adapter kind 仍为 `anthropic`，用于 Anthropic-compatible gateway。`ZODY_BASE_URL` 只在 `ZODY_MODEL` 生效时作为该 target 的 base URL；单独设置 `ZODY_BASE_URL` 不会让模型可用，也不改写文件配置。
+- 非空但无法解析的 `ZODY_MODEL` 是配置错误，启动必须失败并保留原始 parse error cause；不能静默回落到文件模型配置。
+- env model target 不把 `ZODY_API_KEY` 写进 runtime config。API key 继续在 model registry 边界按现有 fallback 解析：标准 provider key、provider 派生 key、最后 `ZODY_API_KEY`。
+- API key 优先从 `model.apiKey` / `model.main.apiKey` / `model.lite.apiKey` 读取；配置未提供时，adapter 可以从环境变量 fallback，例如 provider 派生 key、标准 provider key 或 `ZODY_API_KEY`。
 - 不暴露 `apiKeyEnv` 作为用户配置字段。环境变量名是 adapter 内部兼容策略，不进入长期用户配置面。
 - `headers` 支持自定义 string map，原样传给 provider adapter，但日志、错误和 session event 必须经过敏感字段 redaction。
 - CLI 入口负责在运行时从当前工作目录向上查找最近的 `.env` 并加载到环境中；已存在的 shell 环境变量优先，不被 `.env` 覆盖。
@@ -826,9 +826,9 @@ network/cache/parallel-tool/retry budget 全部提升为独立稳定 capability 
 
 - `provider/model` 解析，model id 内含 `/` 时仍正确。
 - `lite` 未配置时解析到 `main`。
-- `ZCODE_MODEL` + `ZCODE_BASE_URL` 生成 Anthropic adapter 的 env model target，并覆盖文件 model 配置。
-- 非法 `ZCODE_MODEL` 会产生配置错误，而不是回退到 `config.json`。
-- `ZCODE_MODEL` 不把 `ZCODE_API_KEY` 存入 runtime config，registry 仍能通过 `ZCODE_API_KEY` fallback 取得密钥。
+- `ZODY_MODEL` + `ZODY_BASE_URL` 生成 Anthropic adapter 的 env model target，并覆盖文件 model 配置。
+- 非法 `ZODY_MODEL` 会产生配置错误，而不是回退到 `config.json`。
+- `ZODY_MODEL` 不把 `ZODY_API_KEY` 存入 runtime config，registry 仍能通过 `ZODY_API_KEY` fallback 取得密钥。
 - schema 拒绝 `small_model`、`model.small` 和 inline model target。
 - provider 未配置、model 不存在、env key 缺失。
 - OpenAI-compatible provider baseURL 配置。

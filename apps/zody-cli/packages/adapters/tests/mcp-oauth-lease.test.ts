@@ -133,7 +133,7 @@ describe("MCP OAuth pending authorization record", () => {
   it("only lets the owning attempt delete the pending record", async () => {
     const credentialsPath = await createCredentialsPath();
     const credentialStore = createSharedZodyCredentialStore({
-      env: { ZCODE_CREDENTIAL_SECRET: "mcp-oauth-pending-secret" },
+      env: { ZODY_CREDENTIAL_SECRET: "mcp-oauth-pending-secret" },
       filePath: credentialsPath,
     });
     await publishPendingAuthorization(credentialStore, KEY_PREFIX, {
@@ -163,7 +163,7 @@ describe("MCP OAuth pending authorization record", () => {
   it("hides an expired pending record without deleting it", async () => {
     const credentialsPath = await createCredentialsPath();
     const credentialStore = createSharedZodyCredentialStore({
-      env: { ZCODE_CREDENTIAL_SECRET: "mcp-oauth-pending-expiry-secret" },
+      env: { ZODY_CREDENTIAL_SECRET: "mcp-oauth-pending-expiry-secret" },
       filePath: credentialsPath,
     });
     await publishPendingAuthorization(credentialStore, KEY_PREFIX, {

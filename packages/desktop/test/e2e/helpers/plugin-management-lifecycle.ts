@@ -73,8 +73,8 @@ export function requirePluginManualReview(): void {
   const runningPendingSpec = process.argv.some((arg) =>
     arg.replaceAll("\\", "/").includes("/plugins/manual-review/"),
   );
-  if (runningPendingSpec && process.env.ZCODE_E2E_MANUAL_REVIEW !== "1") {
-    throw new Error("Plugin lifecycle pending specs require ZCODE_E2E_MANUAL_REVIEW=1");
+  if (runningPendingSpec && process.env.ZODY_E2E_MANUAL_REVIEW !== "1") {
+    throw new Error("Plugin lifecycle pending specs require ZODY_E2E_MANUAL_REVIEW=1");
   }
 }
 

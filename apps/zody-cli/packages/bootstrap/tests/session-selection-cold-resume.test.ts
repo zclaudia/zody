@@ -28,7 +28,7 @@ describe("Session 完整选择的实际保存与冷恢复", () => {
       const executions: Array<{ providerId: string; modelId: string; reasoningLevel: unknown }> =
         [];
       const common = {
-        env: { ZCODE_HOME: root },
+        env: { ZODY_HOME: root },
         skipUserConfig: true,
         providerRegistry: registry,
         runtimeConfig: { workingDirectory: root, mcp: { enabled: false }, modelSelection: initial },
@@ -106,7 +106,7 @@ describe("Session 完整选择的实际保存与冷恢复", () => {
     const executions: Array<{ providerId: string; modelId: string; reasoningLevel: unknown }> =
       [];
     const makeCommon = (providerRegistry: ReturnType<typeof createTestProviderRegistry>) => ({
-      env: { ZCODE_HOME: root },
+      env: { ZODY_HOME: root },
       skipUserConfig: true,
       providerRegistry,
       runtimeConfig: { workingDirectory: root, mcp: { enabled: false }, modelSelection: initial },

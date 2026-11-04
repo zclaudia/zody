@@ -4,8 +4,8 @@ import { pathToFileURL } from "node:url";
 import { ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
 import {
   getCapturedZodyCuaBrokerCredentials,
-  ZCODE_CUA_BROKER_SOCKET_ENV_KEY,
-  ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+  ZODY_CUA_BROKER_SOCKET_ENV_KEY,
+  ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
 } from "@zody/shared/runtime-env";
 import { ZCODE_CUA_OFFICIAL_PLUGIN_ID, ZCODE_PLUGIN_ID_ENV_KEY } from "@zody/shared/mcp";
 import type { RunContext } from "@zody/shared-types";
@@ -67,25 +67,25 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
     }
 
     const originalArgv = process.argv;
-    const originalBrokerSocket = process.env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY];
+    const originalBrokerSocket = process.env[ZODY_CUA_BROKER_SOCKET_ENV_KEY];
     // shared node_repl 把同一凭据组恢复到环境，由 broker bridge 读取；旧的独立 CUA
     // MCP 不再拥有执行入口。
     process.argv = [process.execPath, serverPath, ...serverArgs];
     if (
       !controlOnly &&
       capturedBrokerCredentials.socket &&
-      process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] === "1"
+      process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] === "1"
     ) {
-      process.env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY] = capturedBrokerCredentials.socket;
+      process.env[ZODY_CUA_BROKER_SOCKET_ENV_KEY] = capturedBrokerCredentials.socket;
     }
     try {
       await module.main();
     } finally {
       process.argv = originalArgv;
       if (originalBrokerSocket === undefined) {
-        delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY];
+        delete process.env[ZODY_CUA_BROKER_SOCKET_ENV_KEY];
       } else {
-        process.env[ZCODE_CUA_BROKER_SOCKET_ENV_KEY] = originalBrokerSocket;
+        process.env[ZODY_CUA_BROKER_SOCKET_ENV_KEY] = originalBrokerSocket;
       }
     }
 
@@ -116,7 +116,7 @@ function assertCapturedBrokerLaunchIsAuthorized(credentials: CapturedBrokerCrede
     credentials.socket === undefined ||
     credentials.pluginAuthority === undefined ||
     pluginId !== ZCODE_CUA_OFFICIAL_PLUGIN_ID ||
-    process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] !== "1"
+    process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] !== "1"
   ) {
     throw new Error(
       "Captured Zody CUA broker credentials may only launch the trusted shared node_repl host",

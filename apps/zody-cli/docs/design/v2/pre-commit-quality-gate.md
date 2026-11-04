@@ -10,7 +10,7 @@
 - 在 lint 通过后自动运行根目录 `pnpm test`。
 - 复用现有 npm scripts，不在 Git hook 中复制 lint 或 test 规则。
 - 使用 Husky 管理 Git hooks，保持标准 Node.js CLI 仓库的安装体验。
-- 不新增 `ZCODE_` 环境变量，不读取外部配置，不触碰数据库结构。
+- 不新增 `ZODY_` 环境变量，不读取外部配置，不触碰数据库结构。
 
 ## 非目标
 

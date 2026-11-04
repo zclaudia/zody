@@ -196,7 +196,7 @@ Welcome 展示 Z.ai + BigModel 登录入口
 
 2026-08-06 已执行：
 
-- `ZCODE_E2E_MANUAL_REVIEW=1 pnpm --filter @zcode/desktop test:e2e -- --spec ./test/e2e/manual-review/pending/jwt-expiry-reauthentication.test.ts`
+- `ZODY_E2E_MANUAL_REVIEW=1 pnpm --filter @zcode/desktop test:e2e -- --spec ./test/e2e/manual-review/pending/jwt-expiry-reauthentication.test.ts`
   - 结果：通过，1 个 spec / 1 个 case passed。
   - Artifact：`packages/desktop/.e2e-artifacts/desktop-e2e-20260806040559238-p94707-95e800e8762670fe/summary.md`。
   - 运行时发现并修复：provider 启动门禁的 `open=false` 曾无条件清空 `session-expired`，导致用户确认后重新登录页被工作区覆盖；现在门禁只关闭自己拥有的 `startup-provider-required`。
@@ -331,7 +331,7 @@ desktop local 使用隔离 HOME 冷启动：OAuth 凭据为空，当前 Environm
 
 ### 自动运行记录
 
-- `ZCODE_E2E_MANUAL_REVIEW=1 pnpm --filter @zcode/desktop test:e2e:serial -- --spec ./test/e2e/manual-review/pending/subagent-coding-plan-login-catalog-stale.test.ts`
+- `ZODY_E2E_MANUAL_REVIEW=1 pnpm --filter @zcode/desktop test:e2e:serial -- --spec ./test/e2e/manual-review/pending/subagent-coding-plan-login-catalog-stale.test.ts`
   - 结果：通过，1 个 spec / 1 个 case passed。
   - Runtime 证据：`workspace/readState` 返回 `modelCount=5`，renderer workspace catalog 包含 `builtin:bigmodel-coding-plan/GLM-5.2` 及其 reasoning 档位，Subagent effort 控件为 supported。
   - Artifact：`packages/desktop/.e2e-artifacts/desktop-e2e-20260819-070650-011/summary.md`。
@@ -423,7 +423,7 @@ Todo103 本轮运行证据记录在 staging-integration ledger。
 
 ## HM-01～HM-04：帮助菜单应用入口
 
-用户于 2026-09-16 确认转正。正式用例 `packages/desktop/test/e2e/help-menu-about.test.ts`，默认 desktop E2E 收集 Preview 分支，production 使用 `ZCODE_E2E_HELP_MENU_FLAVOR=production` 与 production 构建单独运行。HM-02 对下载完成状态分别验证动作文案和版本 pill，关闭重开后再次验证版本。共 4 个 case，覆盖草稿页/设置页、中英文关于窗口、更新状态及禁用/重开、真实开发包检查更新回执和 Preview 隐藏。无模型请求，无 provider replay fixture 依赖；合成更新事件仅用于菜单状态展示。完整矩阵和运行命令见 [桌面帮助菜单](../windows-caption-help-menu.md)。
+用户于 2026-09-16 确认转正。正式用例 `packages/desktop/test/e2e/help-menu-about.test.ts`，默认 desktop E2E 收集 Preview 分支，production 使用 `ZODY_E2E_HELP_MENU_FLAVOR=production` 与 production 构建单独运行。HM-02 对下载完成状态分别验证动作文案和版本 pill，关闭重开后再次验证版本。共 4 个 case，覆盖草稿页/设置页、中英文关于窗口、更新状态及禁用/重开、真实开发包检查更新回执和 Preview 隐藏。无模型请求，无 provider replay fixture 依赖；合成更新事件仅用于菜单状态展示。完整矩阵和运行命令见 [桌面帮助菜单](../windows-caption-help-menu.md)。
 
 ## AUTH-07: OAuth 回调与轮询完成竞态（pending）
 

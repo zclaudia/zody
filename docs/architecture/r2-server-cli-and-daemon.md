@@ -46,7 +46,7 @@ R2 不交付：
 | Supervisor | 只拥有生命周期状态，不拥有 task/session/stream/queue/snapshot 业务状态 |
 | 监听地址 | 默认回环地址和动态端口；非回环监听必须启用鉴权 |
 | Web / WS | R2 实现并验证 Core 的 HTTP/WS ingress；具体远程 Transport 留给后续阶段 |
-| 数据目录 | 复用 `getZCodeDataRootDir()` 和 `ZCODE_DATA_BASE_DIR`；标准目录为 `<dataRoot>/server`。OS service 必须携带内部参数 `--server-root <absolute-path>`，不得依赖注册时 shell 的环境 |
+| 数据目录 | 复用 `getZCodeDataRootDir()` 和 `ZODY_DATA_BASE_DIR`；标准目录为 `<dataRoot>/server`。OS service 必须携带内部参数 `--server-root <absolute-path>`，不得依赖注册时 shell 的环境 |
 | Node runtime | 沿用现有远端资产流程的 Node `v22.16.0`；Server CLI 不依赖系统 Node 或 Electron Node |
 | 崩溃策略 | 5 次/5 分钟预算，退避 1、2、4、8、16 秒；超出后进入 `crash-loop-stopped` |
 | Task 恢复 | Core 崩溃或更新后，运行中的 Task 中断，不自动恢复或重放输入 |
@@ -224,7 +224,7 @@ Supervisor ── SIGKILL/crash ──X IPC ──disconnect──> Core
 
 `/api/server-info.serverId` 使用 `install.json.installationId` 作为安装级稳定身份。只有直接调用
 Core HTTP 工厂且未提供 server root 的测试/嵌入场景才回退到 hostname；真实 Supervisor 启动的
-Core 必须通过 `ZCODE_SERVER_ROOT` 校验 ownership marker 后注入 installationId。
+Core 必须通过 `ZODY_SERVER_ROOT` 校验 ownership marker 后注入 installationId。
 
 现有 `packages/server` 中的 `/api/server-info`、`/api/rpc-host-capability`、`/ws`、`/ws/host` 等行为作为兼容性参考；新 Core 不直接导入旧入口，而是通过合同测试决定需要保留的边界。
 
@@ -326,14 +326,14 @@ staging 由 `packages/zody-server-cli/src/packaging/stage.ts` 实现，
   `node_modules/.cache/zcode-server-cli/tools/<target>`（内网依赖源已配置时下载，未配置时解包仓库归档），
   不复用 mock-cdn 或 bundled-tools 目录（远端 macOS 固定为 rg13）；每个工具目录同时携带
   `THIRD-PARTY-NOTICES.txt` 与 `SOURCES.json`。运行时通过
-  `ZCODE_SERVER_RUNTIME_ROOT` 解析；`runtime/packages` 包含当前官方插件定义中需要 seed 的七个
+  `ZODY_SERVER_RUNTIME_ROOT` 解析；`runtime/packages` 包含当前官方插件定义中需要 seed 的七个
   plugin（browser-use、document-skills、skill-creator、zcode-guide、android-emulator、
   ios-simulator、restore-legacy-sessions）。
 
 Agent 接线约定：发行包内 Core 不在 monorepo、也没有 Electron runtime。Supervisor 每次启动 Core
 时必须根据该 Core 所属 release 的 `runtime/` 重新计算接线（`runtime/node zody.cjs app-server
 --stdio`），不得由旧 `server-cli.js` 把自动推导结果永久写入全局 `process.env`。显式配置的
-`ZCODE_AGENT_SERVER_COMMAND` 仍永远优先；开发态没有 release runtime 时不注入。
+`ZODY_AGENT_SERVER_COMMAND` 仍永远优先；开发态没有 release runtime 时不注入。
 
 安装后的程序和数据分离：
 
@@ -423,7 +423,7 @@ unit name、Windows task name 和 descriptor 文件名。兼容清理旧固定 s
 
 `--server-root` 是 service/fallback daemon 使用的内部全局参数，值必须是绝对路径。CLI 的 control
 endpoint、status、release、service descriptor 和 uninstall 均从该参数解析同一个 layout；Core/Agent
-同时获得对应的 `ZCODE_DATA_BASE_DIR`。因此自定义 data root 的 daemon 不得在默认 root 创建第二份
+同时获得对应的 `ZODY_DATA_BASE_DIR`。因此自定义 data root 的 daemon 不得在默认 root 创建第二份
 status、lock、Core 或 SQLite。
 
 组件增量组装先从旧 release 复制，再删除所有已变化或已移除组件声明的旧路径，之后解压新组件并

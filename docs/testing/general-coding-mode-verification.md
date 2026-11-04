@@ -123,8 +123,8 @@
 首次从干净构建运行（需仓库依赖已安装）：
 
 ```bash
-ZCODE_E2E_MANUAL_REVIEW=1 \
-ZCODE_BUILTIN_PROVIDER_CONFIG_FILE="$PWD/config/provider/zcode-builtin.json" \
+ZODY_E2E_MANUAL_REVIEW=1 \
+ZODY_BUILTIN_PROVIDER_CONFIG_FILE="$PWD/config/provider/zcode-builtin.json" \
   mise exec -- pnpm --filter @zcode/desktop test:e2e -- \
   --spec './test/e2e/ui-shell/manual-review/pending/general-coding-mode.test.ts'
 ```

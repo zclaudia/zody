@@ -10,7 +10,7 @@ import {
 import { createStoredCredentialCipher } from "../../../../../packages/services/src/credential/providers/credentialKeyStore.js";
 
 const TEST_ENV = {
-  ZCODE_CREDENTIAL_SECRET: "test-secret",
+  ZODY_CREDENTIAL_SECRET: "test-secret",
 };
 
 // fork（F4.9）：账号登录键与 OAuth 客户端已随 CLI 登录链删除；

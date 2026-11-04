@@ -9,7 +9,7 @@ async function loadSettingsPageConfig(env: "test" | "production") {
     const actual = await vi.importActual<typeof import("@zody/shared")>("@zody/shared");
     return {
       ...actual,
-      ZCODE_ENV: env,
+      ZODY_ENV: env,
     };
   });
 

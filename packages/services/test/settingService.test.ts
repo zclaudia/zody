@@ -14,11 +14,11 @@ import type { AppSettings } from "@zody/shared";
 import type { ISettingService } from "../src/setting/setting.js";
 
 const originalHome = process.env.HOME;
-const originalDesktopHome = process.env.ZCODE_DESKTOP_HOME_DIR;
-const originalZCodeEnv = process.env.ZCODE_ENV;
-const originalFsFaults = process.env.ZCODE_E2E_FS_FAULTS;
-const originalFsFaultsAllow = process.env.ZCODE_E2E_FS_FAULTS_ALLOW;
-const originalSettingWriteQueueTimeout = process.env.ZCODE_SETTING_WRITE_QUEUE_TIMEOUT_MS;
+const originalDesktopHome = process.env.ZODY_DESKTOP_HOME_DIR;
+const originalZCodeEnv = process.env.ZODY_ENV;
+const originalFsFaults = process.env.ZODY_E2E_FS_FAULTS;
+const originalFsFaultsAllow = process.env.ZODY_E2E_FS_FAULTS_ALLOW;
+const originalSettingWriteQueueTimeout = process.env.ZODY_SETTING_WRITE_QUEUE_TIMEOUT_MS;
 const tempHomes: string[] = [];
 
 function restoreEnvValue(key: string, value: string | undefined): void {
@@ -46,11 +46,11 @@ afterEach(() => {
   vi.doUnmock("node:fs/promises");
   vi.restoreAllMocks();
   restoreEnvValue("HOME", originalHome);
-  restoreEnvValue("ZCODE_DESKTOP_HOME_DIR", originalDesktopHome);
-  restoreEnvValue("ZCODE_ENV", originalZCodeEnv);
-  restoreEnvValue("ZCODE_E2E_FS_FAULTS", originalFsFaults);
-  restoreEnvValue("ZCODE_E2E_FS_FAULTS_ALLOW", originalFsFaultsAllow);
-  restoreEnvValue("ZCODE_SETTING_WRITE_QUEUE_TIMEOUT_MS", originalSettingWriteQueueTimeout);
+  restoreEnvValue("ZODY_DESKTOP_HOME_DIR", originalDesktopHome);
+  restoreEnvValue("ZODY_ENV", originalZCodeEnv);
+  restoreEnvValue("ZODY_E2E_FS_FAULTS", originalFsFaults);
+  restoreEnvValue("ZODY_E2E_FS_FAULTS_ALLOW", originalFsFaultsAllow);
+  restoreEnvValue("ZODY_SETTING_WRITE_QUEUE_TIMEOUT_MS", originalSettingWriteQueueTimeout);
 
   while (tempHomes.length > 0) {
     const home = tempHomes.pop();
@@ -64,8 +64,8 @@ describe("settingService", () => {
   it("显式桌面 home 覆盖只写隔离实例设置，不污染普通 home", async () => {
     const ordinaryHome = makeTempHome();
     const desktopHome = makeTempHome();
-    process.env.ZCODE_DESKTOP_HOME_DIR = desktopHome;
-    process.env.ZCODE_ENV = "production";
+    process.env.ZODY_DESKTOP_HOME_DIR = desktopHome;
+    process.env.ZODY_ENV = "production";
     const service = await createSettingServiceInHome(ordinaryHome);
     await service.update({ providerFamilyDomain: "bigmodel" });
     expect(existsSync(join(desktopHome, ".zody", "v2", "setting.json"))).toBe(true);
@@ -351,7 +351,7 @@ describe("settingService", () => {
     const firstSettingsRenameFinishedPromise = new Promise<void>((resolve) => {
       firstSettingsRenameFinished = resolve;
     });
-    process.env.ZCODE_SETTING_WRITE_QUEUE_TIMEOUT_MS = "100";
+    process.env.ZODY_SETTING_WRITE_QUEUE_TIMEOUT_MS = "100";
 
     vi.doMock("node:fs/promises", async () => {
       const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
@@ -399,7 +399,7 @@ describe("settingService", () => {
 
     // Bugfix: 100ms 超时只为证明 rename 提交阶段会压制超时；后续写继承同一超时的话，
     // 高负载下会在等待临界区收口时先超时导致偶发失败，这里放宽回默认量级。
-    process.env.ZCODE_SETTING_WRITE_QUEUE_TIMEOUT_MS = "30000";
+    process.env.ZODY_SETTING_WRITE_QUEUE_TIMEOUT_MS = "30000";
     const latestUpdate = service.update({
       locale: "zh-CN",
       localePreference: "system",
@@ -449,7 +449,7 @@ describe("settingService", () => {
     const firstSettingsWriteReleasePromise = new Promise<void>((resolve) => {
       releaseFirstSettingsWrite = resolve;
     });
-    process.env.ZCODE_SETTING_WRITE_QUEUE_TIMEOUT_MS = "50";
+    process.env.ZODY_SETTING_WRITE_QUEUE_TIMEOUT_MS = "50";
 
     vi.doMock("node:fs/promises", async () => {
       const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
@@ -497,7 +497,7 @@ describe("settingService", () => {
 
     // Bugfix: 后续写继承 50ms 超时的话，全量跑测试的高负载会让它在拿到文件锁前先超时，
     // 造成偶发失败；本用例只需第一笔写超时，第二笔写放宽到默认量级避免计时抖动。
-    process.env.ZCODE_SETTING_WRITE_QUEUE_TIMEOUT_MS = "30000";
+    process.env.ZODY_SETTING_WRITE_QUEUE_TIMEOUT_MS = "30000";
     const latestUpdate = service.update({
       locale: "zh-CN",
       localePreference: "system",
@@ -737,8 +737,8 @@ describe("settingService", () => {
   it("保存 setting.json 时可以注入磁盘/权限类写入错误", async () => {
     const home = makeTempHome();
     const settingsFile = join(home, ".zody", "v2", "setting.json");
-    process.env.ZCODE_ENV = "test";
-    process.env.ZCODE_E2E_FS_FAULTS = JSON.stringify([
+    process.env.ZODY_ENV = "test";
+    process.env.ZODY_E2E_FS_FAULTS = JSON.stringify([
       {
         code: "EACCES",
         id: "D03-setting-write-eacces",

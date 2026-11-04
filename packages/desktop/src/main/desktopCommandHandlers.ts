@@ -9,7 +9,7 @@ import {
   normalizeZodyEndpointOrigin,
   PlatformChannels,
   resolveZodyEndpointOrigin,
-  ZCODE_ENV,
+  ZODY_ENV,
   ZCODE_DATA_ROOT_DIR_NAME,
   type AppSettings,
   type DesktopCommandId,
@@ -328,7 +328,7 @@ async function setZodyEndpointOverride(options: {
   onZCodeEndpointChanged: () => Promise<void> | void;
   logger: { warn: (...args: unknown[]) => void };
 }) {
-  if (ZCODE_ENV === "production") {
+  if (ZODY_ENV === "production") {
     return;
   }
   const normalized = options.value ? normalizeZodyEndpointOrigin(options.value) : undefined;
@@ -397,7 +397,7 @@ async function resolveCurrentZodyEndpointOrigin(settingService: {
 }): Promise<string> {
   const settings = await settingService.get();
   return resolveZodyEndpointOrigin({
-    env: ZCODE_ENV,
+    env: ZODY_ENV,
     envBaseOrigin: settingService.envBaseOrigin,
     overrideOrigin: settings.zodyEndpointOrigin,
   });

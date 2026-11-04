@@ -505,7 +505,7 @@ sequenceDiagram
    - 首次 `connect()` 失败可以重试；
    - 凭证判定：首次 `connect()` 被 `UNAUTHORIZED` 拒绝、以及关闭后 `discoverBackends()` 返回 401/403 时才进终态；只出现 close 1008 而复核成功时按可恢复处理；
    - 新失败原因映射正确。
-7. **真实 gateway 集成测试**：通过 `ZCODE_GATEWAY_IT_URL`、`ZCODE_GATEWAY_IT_ADMIN_TOKEN` 显式开启，环境缺失时跳过并说明原因。用真实 SDK 驱动桌面和手机两端的 transport，覆盖：
+7. **真实 gateway 集成测试**：通过 `ZODY_GATEWAY_IT_URL`、`ZODY_GATEWAY_IT_ADMIN_TOKEN` 显式开启，环境缺失时跳过并说明原因。用真实 SDK 驱动桌面和手机两端的 transport，覆盖：
    - bootstrap；
    - 超过 1 MiB 的逻辑消息切片；
    - 杀掉手机控制连接后靠重放补齐；

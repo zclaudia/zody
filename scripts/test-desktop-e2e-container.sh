@@ -73,7 +73,7 @@ DEFAULT_DRIVER_CACHE_VOLUME="zcode-desktop-e2e-driver-cache-${DOCKER_PLATFORM//\
 DRIVER_CACHE_VOLUME="${DRIVER_CACHE_VOLUME:-$DEFAULT_DRIVER_CACHE_VOLUME}"
 DRIVER_CACHE_DIR="${DRIVER_CACHE_DIR:-/workspace/.cache/wdio-browser-drivers}"
 DRIVER_PREFETCH_TIMEOUT="${DRIVER_PREFETCH_TIMEOUT:-300}"
-E2E_RUN_ID="${ZCODE_E2E_RUN_ID:-desktop-e2e-$(date -u +%Y%m%d-%H%M%S)-$$}"
+E2E_RUN_ID="${ZODY_E2E_RUN_ID:-desktop-e2e-$(date -u +%Y%m%d-%H%M%S)-$$}"
 E2E_ARTIFACT_ROOT="${E2E_ARTIFACT_ROOT:-$PWD/packages/desktop/.e2e-artifacts}"
 HOST_ARTIFACT_DIR="${E2E_ARTIFACT_DIR:-$E2E_ARTIFACT_ROOT/$E2E_RUN_ID}"
 CONTAINER_ARTIFACT_DIR="/workspace/packages/desktop/.e2e-artifacts/$E2E_RUN_ID"
@@ -171,11 +171,11 @@ docker_run_args=(
   --platform "$DOCKER_PLATFORM"
   --shm-size "$SHM_SIZE"
   -e CI=1
-  -e ZCODE_E2E_CONTAINER=1
-  -e "ZCODE_E2E_RUN_ID=${E2E_RUN_ID}"
-  -e "ZCODE_E2E_ARTIFACT_DIR=${CONTAINER_ARTIFACT_DIR}"
-  -e "ZCODE_E2E_NETWORK_CAPTURE_DIR=${CONTAINER_NETWORK_CAPTURE_DIR}"
-  -e "ZCODE_E2E_SPEC=${E2E_SPEC}"
+  -e ZODY_E2E_CONTAINER=1
+  -e "ZODY_E2E_RUN_ID=${E2E_RUN_ID}"
+  -e "ZODY_E2E_ARTIFACT_DIR=${CONTAINER_ARTIFACT_DIR}"
+  -e "ZODY_E2E_NETWORK_CAPTURE_DIR=${CONTAINER_NETWORK_CAPTURE_DIR}"
+  -e "ZODY_E2E_SPEC=${E2E_SPEC}"
   -v "${DRIVER_CACHE_VOLUME}:${DRIVER_CACHE_DIR}"
   -v "${HOST_ARTIFACT_DIR}:${CONTAINER_ARTIFACT_DIR}"
 )
@@ -212,7 +212,7 @@ done
 # F2.11：本机/CI 在模拟环境（如 arm64 宿主机跑 amd64 容器）里 Electron renderer 冷启动
 # 可能超过 wdio.conf.ts 的默认 WebDriver 请求超时（会话创建 POST 30s 即超时）。转发
 # wdio.conf.ts 已支持的请求限流旋钮，让慢环境显式调大而不是改默认值。
-for webdriver_limit_env_name in ZCODE_E2E_WEBDRIVER_REQUEST_TIMEOUT_MS ZCODE_E2E_WEBDRIVER_REQUEST_RETRY_COUNT; do
+for webdriver_limit_env_name in ZODY_E2E_WEBDRIVER_REQUEST_TIMEOUT_MS ZODY_E2E_WEBDRIVER_REQUEST_RETRY_COUNT; do
   if [ -n "${!webdriver_limit_env_name:-}" ]; then
     docker_run_args+=(-e "${webdriver_limit_env_name}=${!webdriver_limit_env_name}")
   fi

@@ -8,13 +8,13 @@ if(NOT MSVC)
 endif()
 
 foreach(source_name UGREP PCRE2 ZLIB BZIP2 ZSTD BROTLI)
-  if(NOT DEFINED ZCODE_${source_name}_SOURCE_DIR)
-    message(FATAL_ERROR "Missing ZCODE_${source_name}_SOURCE_DIR")
+  if(NOT DEFINED ZODY_${source_name}_SOURCE_DIR)
+    message(FATAL_ERROR "Missing ZODY_${source_name}_SOURCE_DIR")
   endif()
 endforeach()
 
-if(NOT DEFINED ZCODE_UGREP_OUTPUT_DIR)
-  message(FATAL_ERROR "Missing ZCODE_UGREP_OUTPUT_DIR")
+if(NOT DEFINED ZODY_UGREP_OUTPUT_DIR)
+  message(FATAL_ERROR "Missing ZODY_UGREP_OUTPUT_DIR")
 endif()
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -22,8 +22,8 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
 # 随机构建目录不能进入最终 PE，否则同版本工具无法跨 CLI 复用同一份 runtime cache。
-if(DEFINED ZCODE_BUILD_PATH)
-  add_compile_options("/pathmap:${ZCODE_BUILD_PATH}=zcode-native-search")
+if(DEFINED ZODY_BUILD_PATH)
+  add_compile_options("/pathmap:${ZODY_BUILD_PATH}=zcode-native-search")
 endif()
 
 set(BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
@@ -35,22 +35,22 @@ set(PCRE2_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(PCRE2_SHOW_REPORT OFF CACHE BOOL "" FORCE)
 set(PCRE2_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
 set(PCRE2_SUPPORT_JIT ON CACHE BOOL "" FORCE)
-add_subdirectory("${ZCODE_PCRE2_SOURCE_DIR}" pcre2 EXCLUDE_FROM_ALL)
+add_subdirectory("${ZODY_PCRE2_SOURCE_DIR}" pcre2 EXCLUDE_FROM_ALL)
 
 set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
-add_subdirectory("${ZCODE_ZLIB_SOURCE_DIR}" zlib EXCLUDE_FROM_ALL)
+add_subdirectory("${ZODY_ZLIB_SOURCE_DIR}" zlib EXCLUDE_FROM_ALL)
 
 add_library(zcode_bzip2 STATIC
-  "${ZCODE_BZIP2_SOURCE_DIR}/blocksort.c"
-  "${ZCODE_BZIP2_SOURCE_DIR}/huffman.c"
-  "${ZCODE_BZIP2_SOURCE_DIR}/crctable.c"
-  "${ZCODE_BZIP2_SOURCE_DIR}/randtable.c"
-  "${ZCODE_BZIP2_SOURCE_DIR}/compress.c"
-  "${ZCODE_BZIP2_SOURCE_DIR}/decompress.c"
-  "${ZCODE_BZIP2_SOURCE_DIR}/bzlib.c"
+  "${ZODY_BZIP2_SOURCE_DIR}/blocksort.c"
+  "${ZODY_BZIP2_SOURCE_DIR}/huffman.c"
+  "${ZODY_BZIP2_SOURCE_DIR}/crctable.c"
+  "${ZODY_BZIP2_SOURCE_DIR}/randtable.c"
+  "${ZODY_BZIP2_SOURCE_DIR}/compress.c"
+  "${ZODY_BZIP2_SOURCE_DIR}/decompress.c"
+  "${ZODY_BZIP2_SOURCE_DIR}/bzlib.c"
 )
 target_compile_definitions(zcode_bzip2 PRIVATE _CRT_SECURE_NO_WARNINGS)
-target_include_directories(zcode_bzip2 PUBLIC "${ZCODE_BZIP2_SOURCE_DIR}")
+target_include_directories(zcode_bzip2 PUBLIC "${ZODY_BZIP2_SOURCE_DIR}")
 
 set(ZSTD_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
@@ -58,33 +58,33 @@ set(ZSTD_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_STATIC ON CACHE BOOL "" FORCE)
 set(ZSTD_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ZSTD_USE_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
-add_subdirectory("${ZCODE_ZSTD_SOURCE_DIR}/build/cmake" zstd EXCLUDE_FROM_ALL)
+add_subdirectory("${ZODY_ZSTD_SOURCE_DIR}/build/cmake" zstd EXCLUDE_FROM_ALL)
 
 set(BROTLI_BUNDLED_MODE ON CACHE BOOL "" FORCE)
-add_subdirectory("${ZCODE_BROTLI_SOURCE_DIR}" brotli EXCLUDE_FROM_ALL)
+add_subdirectory("${ZODY_BROTLI_SOURCE_DIR}" brotli EXCLUDE_FROM_ALL)
 
-set(ZCODE_VIIZ_SOURCE_DIR "${ZCODE_UGREP_SOURCE_DIR}/lzma/C")
+set(ZODY_VIIZ_SOURCE_DIR "${ZODY_UGREP_SOURCE_DIR}/lzma/C")
 add_library(zcode_viiz STATIC
-  "${ZCODE_VIIZ_SOURCE_DIR}/viizip.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zAlloc.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zArcIn.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zBuf.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zBuf2.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zCrc.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zCrcOpt.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zDec.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zFile.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/7zStream.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/Bcj2.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/Bra.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/Bra86.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/BraIA64.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/CpuArch.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/Delta.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/Lzma2Dec.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/LzmaDec.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/Ppmd7.c"
-  "${ZCODE_VIIZ_SOURCE_DIR}/Ppmd7Dec.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/viizip.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zAlloc.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zArcIn.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zBuf.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zBuf2.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zCrc.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zCrcOpt.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zDec.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zFile.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/7zStream.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/Bcj2.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/Bra.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/Bra86.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/BraIA64.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/CpuArch.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/Delta.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/Lzma2Dec.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/LzmaDec.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/Ppmd7.c"
+  "${ZODY_VIIZ_SOURCE_DIR}/Ppmd7Dec.c"
 )
 target_compile_definitions(zcode_viiz PRIVATE
   Z7_PPMD_SUPPORT
@@ -92,39 +92,39 @@ target_compile_definitions(zcode_viiz PRIVATE
   NDEBUG
   _CRT_SECURE_NO_WARNINGS
 )
-target_include_directories(zcode_viiz PUBLIC "${ZCODE_VIIZ_SOURCE_DIR}")
+target_include_directories(zcode_viiz PUBLIC "${ZODY_VIIZ_SOURCE_DIR}")
 
-set(ZCODE_REFLEX_SOURCES
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/block_scripts.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/composer.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/convert.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/debug.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/error.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/input.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/language_scripts.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/letter_case.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/letter_scripts.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/matcher.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/pattern.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/posix.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/simd.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/unicode.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/lib/utf8.cpp"
+set(ZODY_REFLEX_SOURCES
+  "${ZODY_UGREP_SOURCE_DIR}/lib/block_scripts.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/composer.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/convert.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/debug.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/error.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/input.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/language_scripts.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/letter_case.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/letter_scripts.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/matcher.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/pattern.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/posix.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/simd.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/unicode.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/lib/utf8.cpp"
 )
 
-add_library(zcode_reflex STATIC ${ZCODE_REFLEX_SOURCES})
+add_library(zcode_reflex STATIC ${ZODY_REFLEX_SOURCES})
 target_compile_definitions(zcode_reflex PRIVATE WITH_NO_CODEGEN)
 
 add_executable(ugrep
-  "${ZCODE_UGREP_SOURCE_DIR}/src/ugrep.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/cnf.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/glob.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/output.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/query.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/screen.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/stats.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/vkey.cpp"
-  "${ZCODE_UGREP_SOURCE_DIR}/src/zopen.c"
+  "${ZODY_UGREP_SOURCE_DIR}/src/ugrep.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/cnf.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/glob.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/output.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/query.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/screen.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/stats.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/vkey.cpp"
+  "${ZODY_UGREP_SOURCE_DIR}/src/zopen.c"
 )
 
 add_library(zcode_ugrep_contract INTERFACE)
@@ -154,9 +154,9 @@ target_compile_options(zcode_ugrep_contract INTERFACE
   $<$<COMPILE_LANGUAGE:CXX>:/EHsc>
 )
 target_include_directories(zcode_ugrep_contract INTERFACE
-  "${ZCODE_UGREP_SOURCE_DIR}/include"
-  "${ZCODE_UGREP_SOURCE_DIR}/src"
-  "${ZCODE_VIIZ_SOURCE_DIR}"
+  "${ZODY_UGREP_SOURCE_DIR}/include"
+  "${ZODY_UGREP_SOURCE_DIR}/src"
+  "${ZODY_VIIZ_SOURCE_DIR}"
 )
 
 target_link_libraries(zcode_reflex PRIVATE zcode_ugrep_contract pcre2-8-static)
@@ -174,6 +174,6 @@ target_link_libraries(ugrep PRIVATE
 )
 target_link_options(ugrep PRIVATE /Brepro)
 set_target_properties(ugrep PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${ZCODE_UGREP_OUTPUT_DIR}"
-  RUNTIME_OUTPUT_DIRECTORY_RELEASE "${ZCODE_UGREP_OUTPUT_DIR}"
+  RUNTIME_OUTPUT_DIRECTORY "${ZODY_UGREP_OUTPUT_DIR}"
+  RUNTIME_OUTPUT_DIRECTORY_RELEASE "${ZODY_UGREP_OUTPUT_DIR}"
 )

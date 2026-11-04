@@ -19,7 +19,7 @@ terminal character logo placeholder with a subtle terminal-text shimmer.
 
 ## Non-Goals
 
-- Do not add a new `ZCODE_` environment variable or configuration setting.
+- Do not add a new `ZODY_` environment variable or configuration setting.
 - Do not change the session event contract.
 - Do not make startup rendering depend on model/provider availability.
 - Do not render the placeholder after the first message appears in the transcript.

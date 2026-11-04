@@ -56,7 +56,7 @@ avoid maintaining a parallel parser in the TUI.
 ## Non-Goals
 
 - Do not parse or normalize markdown in core runtime.
-- Do not add a `ZCODE_` environment variable or feature flag for the first
+- Do not add a `ZODY_` environment variable or feature flag for the first
   version.
 - Do not render arbitrary HTML, remote images, inline SVG, or embedded media.
 - Do not make terminal links open external programs in the first slice.

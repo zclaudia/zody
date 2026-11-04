@@ -141,10 +141,10 @@ ZCode app-server `session/new` 至少记录：
 
 ## 环境变量
 
-所有自有环境变量使用 `ZCODE_` 前缀：
+所有自有环境变量使用 `ZODY_` 前缀：
 
-- `ZCODE_LOG_DIR`：覆盖默认日志目录。
-- `ZCODE_LOG_CONSOLE`：为 `1` 时同时向 stderr 写诊断日志。
+- `ZODY_LOG_DIR`：覆盖默认日志目录。
+- `ZODY_LOG_CONSOLE`：为 `1` 时同时向 stderr 写诊断日志。
 
 日志级别不通过环境变量配置。调用方可以显式传入 logger `minLevel` 或通过 logger factory 的运行时接口调整级别；未显式传入时，开发环境默认 `debug`，以便本地 debug app 能看到 `context.built` 和 `context_usage_snapshot`；普通运行默认 `info`。开发环境由 `ZCODE_RUNTIME_ENV=development` 或本地源码/tsx CLI 入口识别；`ZCODE_RUNTIME_ENV=production` 和 `ZCODE_RUNTIME_ENV=test` 明确使用普通默认值。`NODE_ENV` 不参与 ZCode 运行时判定，避免用户 shell 或包管理器变量影响 agent 行为。`ZCODE_LOG_LEVEL` 不属于受支持的环境变量 surface，设置后必须被忽略。
 
@@ -158,7 +158,7 @@ ZCode app-server `session/new` 至少记录：
 
 清理边界按文件名里的本地日期判断，不依赖 mtime。以本地日期 `2026-05-08` 为例，保留 `2026-05-02` 至 `2026-05-08` 的日志，删除 `2026-05-01` 及更早的匹配日志。不存在的日志目录、并发删除、权限错误或单文件删除失败都不得影响 agent 主流程；失败只写结构化 warn，并包含目录、文件名、retentionDays、cutoffDate 和安全错误摘要。
 
-该能力不新增环境变量。未来如果要开放保留天数或延迟配置，必须先在本 spec 定义配置层级、优先级、错误行为和测试覆盖；能用配置文件、CLI 参数或 session 配置表达的能力，优先不要做成 `ZCODE_` 环境变量。
+该能力不新增环境变量。未来如果要开放保留天数或延迟配置，必须先在本 spec 定义配置层级、优先级、错误行为和测试覆盖；能用配置文件、CLI 参数或 session 配置表达的能力，优先不要做成 `ZODY_` 环境变量。
 
 ## 默认日志载荷边界
 

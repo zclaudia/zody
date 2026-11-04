@@ -42,10 +42,10 @@ import {
 import { createNodeCustomCommandAdapter } from "../src/commands/index.js";
 import { createNodeSkillAdapter } from "../src/skills/index.js";
 import {
-  ZCODE_AGENT_CA_CERT_ENV_KEY,
-  ZCODE_HTTP_PROXY_ENV_KEY,
-  ZCODE_NO_PROXY_ENV_KEY,
-  ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
+  ZODY_AGENT_CA_CERT_ENV_KEY,
+  ZODY_HTTP_PROXY_ENV_KEY,
+  ZODY_NO_PROXY_ENV_KEY,
+  ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY,
 } from "@zody/shared";
 
 const execFileAsync = promisify(execFile);
@@ -116,9 +116,9 @@ describe("NodePluginAdapter", () => {
           pluginCount: 0,
         },
       ]);
-      vi.stubEnv("ZCODE_HTTP_PROXY", "");
+      vi.stubEnv("ZODY_HTTP_PROXY", "");
       vi.stubEnv(
-        ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
+        ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY,
         JSON.stringify({ HTTP_PROXY: await listenServer(proxy) }),
       );
 
@@ -155,9 +155,9 @@ describe("NodePluginAdapter", () => {
 
   it("injects explicit ZCode proxy env into marketplace Git commands", () => {
     const env = buildMarketplaceGitEnv({
-      [ZCODE_AGENT_CA_CERT_ENV_KEY]: "/tmp/root-ca.pem",
-      [ZCODE_HTTP_PROXY_ENV_KEY]: "127.0.0.1:7890",
-      [ZCODE_NO_PROXY_ENV_KEY]: "localhost,127.0.0.1",
+      [ZODY_AGENT_CA_CERT_ENV_KEY]: "/tmp/root-ca.pem",
+      [ZODY_HTTP_PROXY_ENV_KEY]: "127.0.0.1:7890",
+      [ZODY_NO_PROXY_ENV_KEY]: "localhost,127.0.0.1",
       PATH: "/usr/bin:/bin",
       http_proxy: "http://ambient-proxy:8080",
     });
@@ -1738,9 +1738,9 @@ describe("NodePluginAdapter", () => {
 
     try {
       const proxyBaseUrl = await listenLoopbackServer(proxy);
-      vi.stubEnv(ZCODE_HTTP_PROXY_ENV_KEY, "");
-      vi.stubEnv(ZCODE_NO_PROXY_ENV_KEY, "");
-      vi.stubEnv(ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY, JSON.stringify({ HTTP_PROXY: proxyBaseUrl }));
+      vi.stubEnv(ZODY_HTTP_PROXY_ENV_KEY, "");
+      vi.stubEnv(ZODY_NO_PROXY_ENV_KEY, "");
+      vi.stubEnv(ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY, JSON.stringify({ HTTP_PROXY: proxyBaseUrl }));
 
       const sourceUrl = "http://127.0.0.2/captured-proxy.zip";
       resolved = await resolveZipPluginSource({
@@ -1784,7 +1784,7 @@ describe("NodePluginAdapter", () => {
         response.end();
       });
       const originBaseUrl = await listenLoopbackServer(origin);
-      vi.stubEnv(ZCODE_NO_PROXY_ENV_KEY, "127.0.0.1");
+      vi.stubEnv(ZODY_NO_PROXY_ENV_KEY, "127.0.0.1");
 
       resolved = await resolveZipPluginSource({
         headers: { "x-zcode-channel": "internal" },
@@ -1809,7 +1809,7 @@ describe("NodePluginAdapter", () => {
 
     try {
       const originBaseUrl = await listenLoopbackServer(origin);
-      vi.stubEnv(ZCODE_NO_PROXY_ENV_KEY, "127.0.0.1");
+      vi.stubEnv(ZODY_NO_PROXY_ENV_KEY, "127.0.0.1");
 
       await expect(
         resolveZipPluginSource({
@@ -2287,7 +2287,7 @@ describe("NodePluginAdapter", () => {
           pluginCount: 0,
         },
       ]);
-      vi.stubEnv("ZCODE_GIT_BINARY", join(dir, "missing-git"));
+      vi.stubEnv("ZODY_GIT_BINARY", join(dir, "missing-git"));
 
       expect(await updateMarketplace({ marketplace: "credential-market", storageRoot })).toEqual(
         [],
@@ -2540,19 +2540,19 @@ describe("NodePluginAdapter", () => {
         },
       ]);
       for (const key of [
-        ZCODE_HTTP_PROXY_ENV_KEY,
+        ZODY_HTTP_PROXY_ENV_KEY,
         "HTTP_PROXY",
         "HTTPS_PROXY",
         "ALL_PROXY",
         "http_proxy",
         "https_proxy",
         "all_proxy",
-        ZCODE_AGENT_CA_CERT_ENV_KEY,
+        ZODY_AGENT_CA_CERT_ENV_KEY,
         "NODE_EXTRA_CA_CERTS",
       ]) {
         vi.stubEnv(key, "");
       }
-      vi.stubEnv(ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY, "{}");
+      vi.stubEnv(ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY, "{}");
       vi.stubGlobal(
         "fetch",
         vi.fn(async () => new Response("[]", { status: 200 })),
@@ -2724,19 +2724,19 @@ describe("NodePluginAdapter", () => {
         },
       ]);
       for (const key of [
-        ZCODE_HTTP_PROXY_ENV_KEY,
+        ZODY_HTTP_PROXY_ENV_KEY,
         "HTTP_PROXY",
         "HTTPS_PROXY",
         "ALL_PROXY",
         "http_proxy",
         "https_proxy",
         "all_proxy",
-        ZCODE_AGENT_CA_CERT_ENV_KEY,
+        ZODY_AGENT_CA_CERT_ENV_KEY,
         "NODE_EXTRA_CA_CERTS",
       ]) {
         vi.stubEnv(key, "");
       }
-      vi.stubEnv(ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY, "{}");
+      vi.stubEnv(ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY, "{}");
       vi.stubGlobal(
         "fetch",
         vi.fn(async () => new Response("[]", { status: 200 })),

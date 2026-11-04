@@ -65,7 +65,7 @@ export async function ensureSeaRuntimeTools(
   }
 
   const env = options.env ?? process.env;
-  const configuredStorageRoot = options.storageRoot ?? env.ZCODE_STORAGE_DIR?.trim();
+  const configuredStorageRoot = options.storageRoot ?? env.ZODY_STORAGE_DIR?.trim();
   // 插件宿主在此阶段尚未加载 Agent，路径工具须走独立入口，避免求值 shared 总入口。
   const storageRoot = configuredStorageRoot || getUserZodyRoot();
   const runtimeEnv: CliEnv = {};

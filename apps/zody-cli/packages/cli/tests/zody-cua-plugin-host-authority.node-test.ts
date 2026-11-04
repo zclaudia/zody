@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
-  ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+  ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-  ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
   ZCODE_PLUGIN_ID_ENV_KEY,
   resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
@@ -38,11 +38,11 @@ function createContext(argv: string[]): RunContext {
 }
 
 const ENV_KEYS = [
-  "ZCODE_CUA_PERMISSION_BROKER_SOCKET",
+  "ZODY_CUA_PERMISSION_BROKER_SOCKET",
   "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
   ZCODE_PLUGIN_ID_ENV_KEY,
-  ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  ZCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+  ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
+  ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
 ] as const;
 
 test("control-only plugin host does not restore captured broker credentials", async () => {
@@ -58,16 +58,16 @@ test("control-only plugin host does not restore captured broker credentials", as
 export async function main() {
   await writeFile(process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT, JSON.stringify({
     argv: process.argv.slice(2),
-    brokerSocket: process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET ?? null,
+    brokerSocket: process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET ?? null,
   }));
 }
 `,
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
     process.env[ZCODE_PLUGIN_ID_ENV_KEY] = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
-    process.env.ZCODE_CUA_PERMISSION_BROKER_SOCKET = "/tmp/captured-control-broker.sock";
-    process.env[ZCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-control-authority";
-    process.env[ZCODE_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
+    process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/captured-control-broker.sock";
+    process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-control-authority";
+    process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 

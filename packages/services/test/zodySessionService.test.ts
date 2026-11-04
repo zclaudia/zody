@@ -77,7 +77,7 @@ describe("createZodySessionService", () => {
           env: [
             { name: "ZCODE_PLUGIN_ID", value: "computer-use@zcode-plugins-official" },
             {
-              name: "ZCODE_CUA_PLUGIN_AUTHORITY",
+              name: "ZODY_CUA_PLUGIN_AUTHORITY",
               value: "dev.zcode.cua-helper/dev",
             },
           ],

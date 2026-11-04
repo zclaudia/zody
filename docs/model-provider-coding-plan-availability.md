@@ -7,8 +7,8 @@ Coding Plan provider 的模型菜单可见性由 `model-providers.json` 内的 p
 - `systemDisabledReason` 表示系统自动关闭原因；`enabled=false` 且该字段为空时表示用户手动关闭。
 - Z.AI / BigModel Coding Plan 的可用性只校验 provider apiKey 是否能成功访问 `/api/biz/subscription/list`。
 - 是否已有 Coding Plan 套餐不再用于系统禁用 provider；无套餐、非 Coding Plan 套餐、套餐过期等状态由详情页套餐列表和升级入口处理。
-- Z.AI Start Plan 仍单独校验 `/api/v1/zcode-plan/billing/balance?app_version=<ZCODE_VERSION>` 返回的 `data.plans` 是否存在 active Start Plan。
-- BigModel Start Plan 登录后使用已落盘的 ZCode JWT 校验 `/api/v1/zcode-plan/billing/balance?app_version=<ZCODE_VERSION>`；只要 JWT 鉴权成功即启用入口。用户仍可在设置页手动禁用。
+- Z.AI Start Plan 仍单独校验 `/api/v1/zcode-plan/billing/balance?app_version=<ZODY_VERSION>` 返回的 `data.plans` 是否存在 active Start Plan。
+- BigModel Start Plan 登录后使用已落盘的 ZCode JWT 校验 `/api/v1/zcode-plan/billing/balance?app_version=<ZODY_VERSION>`；只要 JWT 鉴权成功即启用入口。用户仍可在设置页手动禁用。
 
 ## 系统关闭原因
 
@@ -31,11 +31,11 @@ Model Providers 左侧入口状态会写入 `~/.zcode/v2/coding-plan-cache.json`
 
 缓存的数据源：
 
-- Z.AI Start Plan：`https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZCODE_VERSION>`，`Authorization: Bearer <zcodejwttoken>`，从 `data.plans` 判定入口可用性，从 `data.balances` 展示余额。
+- Z.AI Start Plan：`https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZODY_VERSION>`，`Authorization: Bearer <zcodejwttoken>`，从 `data.plans` 判定入口可用性，从 `data.balances` 展示余额。
 - Start Plan balance 请求必须同时携带 `X-Device-Mid`（来自 `telemetry-state.json` 的 `deviceMid`）；服务端把它当必填，缺失时返回 `400 {"code":3001,"msg":"parameter error"}`，客户端会判成 `unknown` 并隐藏 Start Plan 入口。桌面 host、远端 `zcode-server`、CLI 都要在首次查询前确保所在主机的 `deviceMid` 已存在，见 `docs/zcode-endpoint-device-mid-header.md`。
-- BigModel Start Plan：BigModel OAuth callback 阶段不再调用 `tokenByAuthCode`，直接用一次性 callback `code/state/redirect_uri` 和 `provider: "bigmodel"` 调用 `https://zcode.z.ai/api/v1/oauth/token` 落盘 ZCode JWT；启用校验和余额查询只读取 `zcodejwttoken`，访问 `https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZCODE_VERSION>`，`Authorization: Bearer <zcodejwttoken>`。
+- BigModel Start Plan：BigModel OAuth callback 阶段不再调用 `tokenByAuthCode`，直接用一次性 callback `code/state/redirect_uri` 和 `provider: "bigmodel"` 调用 `https://zcode.z.ai/api/v1/oauth/token` 落盘 ZCode JWT；启用校验和余额查询只读取 `zcodejwttoken`，访问 `https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZODY_VERSION>`，`Authorization: Bearer <zcodejwttoken>`。
 - Z.AI Coding Plan：`https://api.z.ai/api/biz/subscription/list`
-- BigModel Coding Plan：当前环境 BigModel API 主域名 + `/api/biz/subscription/list`；生产为 `https://bigmodel.cn`，`ZCODE_ENV=test` 为 `https://bigmodel.cn`
+- BigModel Coding Plan：当前环境 BigModel API 主域名 + `/api/biz/subscription/list`；生产为 `https://bigmodel.cn`，`ZODY_ENV=test` 为 `https://bigmodel.cn`
 
 自动刷新时机：
 
@@ -55,7 +55,7 @@ model 与本地状态。
 
 状态卡片详情保持现状，不写入该持久缓存：
 
-- Z.AI / BigModel Start Plan balance：`https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZCODE_VERSION>`；同一次响应同时承载 `plans` 与 `balances`，不得先请求已废弃的 `billing/current`。
+- Z.AI / BigModel Start Plan balance：`https://zcode.z.ai/api/v1/zcode-plan/billing/balance?app_version=<ZODY_VERSION>`；同一次响应同时承载 `plans` 与 `balances`，不得先请求已废弃的 `billing/current`。
 - Z.AI / BigModel quota：`/api/monitor/usage/quota/limit`
 
 ## Z.AI / BigModel 双入口展示

@@ -22,7 +22,7 @@ export interface ServerLayout {
 }
 
 export function getDefaultServerDataRoot(): string {
-  const configured = process.env.ZCODE_DATA_BASE_DIR?.trim();
+  const configured = process.env.ZODY_DATA_BASE_DIR?.trim();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
   return join(configured || homedir(), ZCODE_DATA_ROOT_DIR_NAME, "server");
 }

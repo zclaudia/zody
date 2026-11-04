@@ -6,7 +6,7 @@ import { createUuid, ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
 const LOCK_RETRY_DELAY_MS = 10;
 const LOCK_RETRY_COUNT = 200;
 const LOCK_STALE_MS = 5 * 60 * 1000;
-const ZCODE_DATA_BASE_DIR_ENV_KEY = "ZCODE_DATA_BASE_DIR";
+const ZODY_DATA_BASE_DIR_ENV_KEY = "ZODY_DATA_BASE_DIR";
 
 interface TelemetryState {
   deviceMid?: unknown;
@@ -55,7 +55,7 @@ export function ensureCliDeviceMid(options: EnsureCliDeviceMidOptions = {}): Pro
 function resolveCliTelemetryStateFile(options: EnsureCliDeviceMidOptions): string {
   const env = options.env ?? process.env;
   const configuredBaseDir =
-    options.baseDir ?? env[ZCODE_DATA_BASE_DIR_ENV_KEY]?.trim() ?? homedir();
+    options.baseDir ?? env[ZODY_DATA_BASE_DIR_ENV_KEY]?.trim() ?? homedir();
   const baseDir = configuredBaseDir.length > 0 ? configuredBaseDir : homedir();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   return join(resolveUserPath(baseDir), ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");

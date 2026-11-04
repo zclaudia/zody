@@ -71,7 +71,7 @@ async function renderTriggerWithEnv(
   },
 ) {
   vi.resetModules();
-  vi.doMock("@zody/shared", () => ({ ZCODE_ENV: env }));
+  vi.doMock("@zody/shared", () => ({ ZODY_ENV: env }));
 
   const { WorkspaceWebRemoteControlTrigger } =
     await import("../src/WorkspaceWebRemoteControlTrigger.js");

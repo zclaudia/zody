@@ -30,7 +30,7 @@ vi.mock("electron", () => ({
 }));
 
 // Bugfix: 这个用例只验证菜单模板，不能通过 importActual 拉完整 shared/services/main 依赖。
-// 全量 pre-push 并发时真实依赖加载会撞 5s 超时，并让 ZCODE_ENV 的模块缓存污染后续断言。
+// 全量 pre-push 并发时真实依赖加载会撞 5s 超时，并让 ZODY_ENV 的模块缓存污染后续断言。
 vi.mock("@zody/shared", () => ({
   DesktopCommandIds: {
     NewTask: "newTask",
@@ -97,11 +97,11 @@ vi.mock("@zody/shared", () => ({
     helpExportLogs: "titleBar.menu.help.exportLogs",
     helpClearAllData: "titleBar.menu.help.clearAllData",
   },
-  get ZCODE_ENV() {
+  get ZODY_ENV() {
     return envMock.value;
   },
   // 身份跟随后端环境的旧单轴语义：test → preview，production → production。
-  get ZCODE_PRODUCT_FLAVOR() {
+  get ZODY_PRODUCT_FLAVOR() {
     return envMock.value === "production" ? "production" : "preview";
   },
   isDesktopAutoUpdateActive: () => envMock.autoUpdateActive,
@@ -232,7 +232,7 @@ describe("desktopApplicationMenu endpoint submenu", () => {
   it("自动更新未生效时隐藏更新入口，生效时显示（production 身份但 fork 关闭更新也不显示）", async () => {
     const { rebuildApplicationMenu } = await import("../src/main/desktopApplicationMenu.js");
 
-    // 判定关闭：即使 ZCODE_ENV 为 production（旧实现会显示）也不显示入口。
+    // 判定关闭：即使 ZODY_ENV 为 production（旧实现会显示）也不显示入口。
     envMock.value = "production";
     envMock.autoUpdateActive = false;
     rebuildApplicationMenu({

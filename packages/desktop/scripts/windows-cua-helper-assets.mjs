@@ -722,8 +722,8 @@ export async function resolveWindowsCuaHelperSourceRoot({
   if (explicitRoot) {
     if (!isAbsolute(explicitRoot)) {
       const variableName = explicitRuntimePackageDir
-        ? "ZCODE_CUA_HELPER_RUNTIME_PACKAGE_DIR"
-        : "ZCODE_CUA_DEV_ROOT";
+        ? "ZODY_CUA_HELPER_RUNTIME_PACKAGE_DIR"
+        : "ZODY_CUA_DEV_ROOT";
       throw new Error(`[windows-cua-helper-assets] ${variableName} must be absolute`);
     }
     return realpath(explicitRoot);

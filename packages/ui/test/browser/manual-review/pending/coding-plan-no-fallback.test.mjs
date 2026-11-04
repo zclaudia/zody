@@ -6,7 +6,7 @@ import { chromium } from "playwright-core";
 // 连接真实 App 验证完整 hook/RPC/渲染链路，不注入套餐数据或修改登录态。
 test("未登录缺少静态套餐时隐藏购买横幅并保留外层卡片", async () => {
   const browser = await chromium.connectOverCDP(
-    process.env.ZCODE_E2E_CDP_URL ?? "http://localhost:9229",
+    process.env.ZODY_E2E_CDP_URL ?? "http://localhost:9229",
   );
   const page = browser
     .contexts()[0]

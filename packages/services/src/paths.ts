@@ -11,10 +11,10 @@ import {
 } from "@zody/shared";
 
 let _dataBaseDir: string | null = null;
-export const ZCODE_WINDOWS_APP_INSTALL_DIR_ENV = "ZCODE_WINDOWS_APP_INSTALL_DIR";
+export const ZODY_WINDOWS_APP_INSTALL_DIR_ENV = "ZODY_WINDOWS_APP_INSTALL_DIR";
 /** Windows 安装器按产品名生成的默认安装目录名（正式版 / Preview）。 */
 const WINDOWS_APP_INSTALL_DIR_NAMES = ["Zody", "Zody Preview"] as const;
-const envDataBaseDir = process.env.ZCODE_DATA_BASE_DIR?.trim() || null;
+const envDataBaseDir = process.env.ZODY_DATA_BASE_DIR?.trim() || null;
 const defaultDataBaseDir = process.env.HOME?.trim() || homedir();
 
 export interface DataBaseDirTargetValidationOptions {
@@ -36,7 +36,7 @@ export function setDataBaseDir(dir: string | null): void {
   _dataBaseDir = dir?.trim() || null;
 }
 
-/** Get the current base directory. Priority: setDataBaseDir() > env ZCODE_DATA_BASE_DIR > homedir(). */
+/** Get the current base directory. Priority: setDataBaseDir() > env ZODY_DATA_BASE_DIR > homedir(). */
 export function getDataBaseDir(): string {
   if (_dataBaseDir) return _dataBaseDir;
   if (envDataBaseDir) return envDataBaseDir;
@@ -122,7 +122,7 @@ function collectWindowsForbiddenAppInstallDirs(
   // 未显式传 appInstallDir 时保护失效，数据目录可被选进安装目录、随卸载/升级被清除。
   const candidates = [
     options.appInstallDir,
-    readEnvValue(env, ZCODE_WINDOWS_APP_INSTALL_DIR_ENV),
+    readEnvValue(env, ZODY_WINDOWS_APP_INSTALL_DIR_ENV),
     ...WINDOWS_APP_INSTALL_DIR_NAMES.flatMap((name) => [
       programFiles ? win32.join(programFiles, name) : null,
       programFilesX86 ? win32.join(programFilesX86, name) : null,

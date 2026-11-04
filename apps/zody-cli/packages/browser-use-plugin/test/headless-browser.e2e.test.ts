@@ -18,7 +18,7 @@ import {
 } from "../../bootstrap/src/app/node-repl-browser-broker.js";
 import type { NodeReplMcpRuntime } from "@zody/node-repl-host";
 
-const required = process.env.ZCODE_HEADLESS_BROWSER_E2E_REQUIRED === "1";
+const required = process.env.ZODY_HEADLESS_BROWSER_E2E_REQUIRED === "1";
 const executablePath = discoverBrowserExecutable();
 const realBrowserTest = executablePath || required ? it : it.skip;
 
@@ -164,7 +164,7 @@ function discoverBrowserExecutable(): string | undefined {
   try {
     const resolved = resolveInstalledBrowserExecutable(
       { chromium },
-      { executablePath: process.env.ZCODE_HEADLESS_BROWSER_E2E_EXECUTABLE },
+      { executablePath: process.env.ZODY_HEADLESS_BROWSER_E2E_EXECUTABLE },
     );
     if (process.platform !== "win32") accessSync(resolved, constants.X_OK);
     return resolved;

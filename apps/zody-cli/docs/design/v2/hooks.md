@@ -33,7 +33,7 @@ Hooks 的目标不是把业务逻辑散落到用户脚本里，而是在 agent l
 4. hook 自身的副作用通过 `HookExecutionPort`、`HttpClient`、`ExecutionPort` 等 adapter 收敛。
 5. hook 结果可以影响 agent 行为，但必须通过显式 `HookDecision`，不能直接修改 core 内部状态。
 6. hook 进度、结果、失败和阻断都进入 session event stream，UI 只消费 projection。
-7. 第一版避免新增 `ZCODE_` 环境变量。配置走 config file、CLI/session override 或 SDK 注入。
+7. 第一版避免新增 `ZODY_` 环境变量。配置走 config file、CLI/session override 或 SDK 注入。
 
 ## 非目标
 

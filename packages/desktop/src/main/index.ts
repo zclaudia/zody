@@ -67,15 +67,15 @@ import {
   type Locale,
   type AppSettings,
   PlatformChannels,
-  ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
-  ZCODE_AUTO_UPDATE_ENABLED,
+  ZODY_ENV,
+  ZODY_PRODUCT_FLAVOR,
+  ZODY_AUTO_UPDATE_ENABLED,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DISABLED_RENDERER_ACTION_TRACE_CONFIG,
   DEFAULT_LOCALE,
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   TEST_ZCODE_ENDPOINT_ORIGIN,
-  ZCODE_VERSION,
+  ZODY_VERSION,
   ZCODE_DATA_ROOT_DIR_NAME,
   resolveZodyEndpointOrigin,
   shouldEnableE2ETestBridge,
@@ -288,7 +288,7 @@ const localMediaPreviewPathRegistry = createLocalMediaPreviewPathRegistry();
 // e2e 由 Chromedriver 管理远程调试端口；如果这里继续固定到 9229，
 // 会和开发态已打开的 ZCode Dev 抢端口，导致 WebDriver session 创建前白屏超时。
 // 仅本地开发运行默认开启远程调试端口，并允许 e2e 通过环境变量交给 Chromedriver 接管。
-if (!app.isPackaged && process.env.ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT !== "1") {
+if (!app.isPackaged && process.env.ZODY_DISABLE_FIXED_REMOTE_DEBUGGING_PORT !== "1") {
   app.commandLine.appendSwitch("remote-debugging-port", "9229");
 }
 
@@ -758,7 +758,7 @@ async function reloadRemoteGatewayBackendConfig(): Promise<void> {
  */
 const gatewayDeviceTransport = createGatewayDeviceTransport({
   logger,
-  desktopAppVersion: ZCODE_VERSION || app.getVersion(),
+  desktopAppVersion: ZODY_VERSION || app.getVersion(),
 });
 const remoteGatewayBackend = createRemoteGatewayBackend({
   loadConfig: async () => {
@@ -812,7 +812,7 @@ const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
 async function resolveCurrentZodyEndpointOrigin() {
   return resolveZodyEndpointOrigin({
-    env: ZCODE_ENV,
+    env: ZODY_ENV,
     envBaseOrigin: resolveZodyEndpointEnvBaseOrigin(hostProcessLocalEnv),
     overrideOrigin: (await mainSettingService.get()).zodyEndpointOrigin,
   });
@@ -892,7 +892,7 @@ const readHelpConfig = createDesktopHelpConfigReader();
 // fork（F2.6a，spec D1b）：渲染端动作追踪属于遥测，fork 无自有 OTLP 端点，固定禁用。
 // 不再构造 /api/v1/client/configs 的 fetchConfig，也不经 singleFeatureRollout 读远端；
 // 保留 rollout 形状以复用 registerRendererActionTraceIpc 的装配与本地 env 调试覆盖
-// （ZCODE_RENDERER_ACTION_TRACE_ENABLED / ZCODE_LOCAL_TTFT_ENABLED）。
+// （ZODY_RENDERER_ACTION_TRACE_ENABLED / ZODY_LOCAL_TTFT_ENABLED）。
 const rendererActionTraceRollout: RendererActionTraceRollout = {
   getSnapshot: () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
   refresh: async () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
@@ -900,7 +900,7 @@ const rendererActionTraceRollout: RendererActionTraceRollout = {
 };
 const localTtftExporter = createLocalTtftExporter({
   env: { ...hostProcessLocalEnv, ...process.env },
-  version: ZCODE_VERSION || app.getVersion(),
+  version: ZODY_VERSION || app.getVersion(),
   logger,
 });
 ipcMain.on(PlatformChannels.ReportLocalTtftBatch, (_event, batch: unknown) =>
@@ -948,7 +948,7 @@ const remoteWorkspaceDirectory = createRemoteWorkspaceDirectory({
 });
 
 const webRemoteControlManager = createWebRemoteControlManager({
-  appVersion: ZCODE_VERSION || app.getVersion(),
+  appVersion: ZODY_VERSION || app.getVersion(),
   // T2.3：启动恢复只看 App 级开关；旧的 webRemoteControlLastEnabledContext 已随 relay
   // 体系删除，只在设置迁移时读取原始 JSON。
   remoteAccessSettings,
@@ -1281,7 +1281,7 @@ async function prepareAppQuit(reason: string, kind: AppShutdownKind = "normal"):
 
 function exitPreparedApp(reason: string): never | void {
   logger.info(`[app-quit] exiting prepared app (${reason})`);
-  if (process.env.ZCODE_E2E_RUN_ID?.trim()) {
+  if (process.env.ZODY_E2E_RUN_ID?.trim()) {
     flushMainE2ECoverage((error) => {
       logger.warn("[e2e-coverage] main coverage flush failed", error);
     });
@@ -1490,12 +1490,12 @@ async function prepareWindowsProcessesForUpdateInstall() {
 
 function shouldConfirmAppQuit() {
   // 开发环境里的普通会话经常需要重启 Electron，只在 production 下拦截，避免打断调试。
-  return ZCODE_ENV === "production" && getRunningAgentSessionCount() > 0;
+  return ZODY_ENV === "production" && getRunningAgentSessionCount() > 0;
 }
 
 function confirmAppQuit(originWindow?: BrowserWindow | null) {
   if (!shouldConfirmAppQuit()) {
-    logger.info(`[app-quit] quit confirmation skipped in ${ZCODE_ENV}`);
+    logger.info(`[app-quit] quit confirmation skipped in ${ZODY_ENV}`);
     return true;
   }
 
@@ -1560,7 +1560,7 @@ async function executeDesktopCommandForApp(
 }
 
 async function resolveZodyEndpointSelection(): Promise<"production" | "test" | "custom"> {
-  if (ZCODE_ENV === "production") {
+  if (ZODY_ENV === "production") {
     return "production";
   }
   const origin = await resolveCurrentZodyEndpointOrigin();
@@ -2096,10 +2096,10 @@ app.whenReady().then(async () => {
       : {}),
     logger: console,
     // e2e L05（配额）：只在 e2e run 里允许缩小注册表容量。
-    ...(process.env.ZCODE_E2E_RUN_ID?.trim() &&
-    Number.isInteger(Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES)) &&
-    Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) > 0
-      ? { registryMaxEntries: Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) }
+    ...(process.env.ZODY_E2E_RUN_ID?.trim() &&
+    Number.isInteger(Number(process.env.ZODY_E2E_PLUGIN_SANDBOX_MAX_ENTRIES)) &&
+    Number(process.env.ZODY_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) > 0
+      ? { registryMaxEntries: Number(process.env.ZODY_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) }
       : {}),
   });
   installBrowserRestoreBootstrapProtocol(
@@ -2182,7 +2182,7 @@ app.whenReady().then(async () => {
     // 打包态必须与 NSIS 快捷方式使用同一 AUMID，否则 Shell 把它们当成不同应用。
     // 使用构建期产品身份，不依赖用户机器环境；开发态继续保持独立身份。
     app.setAppUserModelId(
-      resolveWindowsAppUserModelIdForFlavor(ZCODE_PRODUCT_FLAVOR, { isPackaged: app.isPackaged }),
+      resolveWindowsAppUserModelIdForFlavor(ZODY_PRODUCT_FLAVOR, { isPackaged: app.isPackaged }),
     );
   }
 
@@ -2239,7 +2239,7 @@ app.whenReady().then(async () => {
   // 不向 Preview 渠道提供更新。构建期未启用自动更新时同样不更新
   // （见 docs/desktop/build-time-optional-capabilities.md）。
   void initAutoUpdater({
-    enabled: ZCODE_PRODUCT_FLAVOR === "production" && ZCODE_AUTO_UPDATE_ENABLED,
+    enabled: ZODY_PRODUCT_FLAVOR === "production" && ZODY_AUTO_UPDATE_ENABLED,
     onBeforeQuitAndInstall: async () => {
       notifyStabilityLifecycle("update_install");
       await prepareAppQuit("auto-update quitAndInstall", "update-install");
@@ -2449,7 +2449,7 @@ app.whenReady().then(async () => {
     armsCustomContext: {
       deviceMid,
       platform: process.platform,
-      appVersion: ZCODE_VERSION,
+      appVersion: ZODY_VERSION,
       armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
     },
     finalArmsCustomEventE2EEnabled: shouldEnableE2ETestBridge(process.env),
@@ -2492,24 +2492,24 @@ app.whenReady().then(async () => {
   configureDesktopStabilityTelemetry({
     deviceMid,
     platform: process.platform,
-    appVersion: ZCODE_VERSION,
+    appVersion: ZODY_VERSION,
     armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopResourceTelemetry({
     deviceMid,
     platform: process.platform,
-    appVersion: ZCODE_VERSION,
+    appVersion: ZODY_VERSION,
     armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopMcpTelemetry({
     deviceMid,
-    appVersion: ZCODE_VERSION,
+    appVersion: ZODY_VERSION,
     armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopNetworkTelemetry({
     deviceMid,
     platform: process.platform,
-    appVersion: ZCODE_VERSION,
+    appVersion: ZODY_VERSION,
     armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   registerDesktopStabilityMonitors(logger, crashCapturePaths);
@@ -2519,7 +2519,7 @@ app.whenReady().then(async () => {
   const defaultDataBaseDir = process.env.HOME?.trim() || homedir();
   registerDesktopZodyDataSizeTelemetry({
     context: {
-      appVersion: ZCODE_VERSION,
+      appVersion: ZODY_VERSION,
       armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
       dataRootKind:
         resolve(getDataBaseDir()) === resolve(defaultDataBaseDir) ? "default" : "custom",

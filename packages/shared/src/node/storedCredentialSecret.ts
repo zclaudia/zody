@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { atomicWritePrivateTextFile, withFileLock } from "./privateFilePersistence.js";
 
-const SECRET_ENV_KEY = "ZCODE_CREDENTIAL_SECRET";
+const SECRET_ENV_KEY = "ZODY_CREDENTIAL_SECRET";
 
 /** Resolve the shared credential secret, creating one only while holding its cross-process lock. */
 export async function resolveStoredCredentialSecret(

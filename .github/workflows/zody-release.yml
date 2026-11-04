@@ -85,8 +85,8 @@ jobs:
       - name: Build unsigned Desktop artifacts
         shell: bash
         env:
-          ZCODE_ENV: production
-          ZCODE_ENABLE_MAC_SIGN: "0"
+          ZODY_ENV: production
+          ZODY_ENABLE_MAC_SIGN: "0"
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: pnpm --dir packages/desktop run bundle --os "${{ matrix.os }}" --arch "${{ matrix.arch }}"
       - name: Collect Desktop artifacts
@@ -132,7 +132,7 @@ jobs:
       - name: Build self-contained CLI and Web archive
         shell: bash
         env:
-          ZCODE_ENV: production
+          ZODY_ENV: production
         run: pnpm run build:zody --target "${{ matrix.target }}" --out-dir "$RUNNER_TEMP/zody"
       - name: Smoke extracted archive without Node on PATH
         shell: bash

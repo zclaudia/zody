@@ -13,7 +13,7 @@ import type {
   RemoteUploadOptions,
   StdioStream,
 } from "@zody/server/remote/backend.js";
-import { ZCODE_VERSION } from "@zody/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import {
   LocalUploadAssetInstaller,
@@ -141,7 +141,7 @@ function stubManifestAndHeadFetch(manifest: unknown, contentLength: number): voi
 
 const validManifest = {
   schemaVersion: 1,
-  appVersion: ZCODE_VERSION,
+  appVersion: ZODY_VERSION,
   platformArch: "linux-x64",
   components: [
     {
@@ -623,7 +623,7 @@ describe("LocalUploadAssetInstaller", () => {
       join(releaseDir, "manifest-linux-x64.json"),
       JSON.stringify({
         schemaVersion: 1,
-        appVersion: ZCODE_VERSION,
+        appVersion: ZODY_VERSION,
         platformArch: "linux-x64",
         components: [
           {
@@ -744,7 +744,7 @@ describe("LocalUploadAssetInstaller", () => {
       {
         releaseDir: staleReleaseDir,
         platformArch: "linux-x64",
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         remoteCacheDir: rootDir,
         remoteCdnBaseUrl: "https://cdn.example.test/releases",
       },
@@ -783,7 +783,7 @@ describe("LocalUploadAssetInstaller", () => {
       {
         releaseDir,
         platformArch: "linux-x64",
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         remoteCacheDir: join(releaseDir, "cache"),
         remoteCdnBaseUrl: "https://cdn.example.test/releases",
         manifestRequestTimeoutMs: 25,
@@ -810,7 +810,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
         signal: controller.signal,
@@ -847,7 +847,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
         remoteAssetNetwork: { fetch: remoteAssetFetch },
@@ -894,7 +894,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
         signal: controller.signal,
@@ -928,7 +928,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -969,7 +969,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -999,7 +999,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -1040,7 +1040,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -1094,7 +1094,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -1132,7 +1132,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       new InstallerBackend(),
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },

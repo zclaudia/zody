@@ -12,11 +12,11 @@ const desktop = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const root = resolve(desktop, "../..");
 const output = await mkdtemp(join(tmpdir(), "zcode-mcp-host-e2e-"));
 const fixture = join(desktop, "scripts/mcp-apps-host-fixture");
-const showcaseServer = process.env.ZCODE_SHOWCASE_SERVER;
+const showcaseServer = process.env.ZODY_SHOWCASE_SERVER;
 if (process.argv.includes("--showcase-only")) {
   if (!showcaseServer)
     throw new Error(
-      "Set ZCODE_SHOWCASE_SERVER to the built Showcase dist/server.mjs from zcode-plugins",
+      "Set ZODY_SHOWCASE_SERVER to the built Showcase dist/server.mjs from zcode-plugins",
     );
   await access(showcaseServer);
 }

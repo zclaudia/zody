@@ -14,22 +14,22 @@ import {
 } from "./builtin-provider-config.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const useTurboBuild = process.env.ZCODE_DESKTOP_AGENT_BUILD_MODE === "turbo";
-const useBootstrapWithRemoteBuild = process.env.ZCODE_BOOTSTRAP_WITH_REMOTE === "1";
+const useTurboBuild = process.env.ZODY_DESKTOP_AGENT_BUILD_MODE === "turbo";
+const useBootstrapWithRemoteBuild = process.env.ZODY_BOOTSTRAP_WITH_REMOTE === "1";
 const pnpmRunEnv = {
   ...process.env,
-  ZCODE_ENV: await resolveBuiltinProviderBuildEnvironment({ root: repoRoot }),
+  ZODY_ENV: await resolveBuiltinProviderBuildEnvironment({ root: repoRoot }),
   // 历史上 pnpm 11 在嵌套 workspace 的 run 前自动安装并无法解析根包。
   // 现在根 workspace 统一安装；保留此设置，避免构建时触发隐式安装。
   PNPM_CONFIG_VERIFY_DEPS_BEFORE_RUN: "false",
 };
 // Bug 根因：filesystem plugin seed 若缺少 Sharp closure，会一直到 screenshot/zoom 才报错。
 // 此脚本同时服务本地 Dev、prebuild、server CLI 和 packaged desktop agent；三条构建分支
-// 都必须补齐同一份可复制 runtime。ZCODE_CUA_DEV_MODE 只传给 staging helper，不进入最终
+// 都必须补齐同一份可复制 runtime。ZODY_CUA_DEV_MODE 只传给 staging helper，不进入最终
 // product/runtime 环境，因此这里描述的是 staging 输入，而不是产品运行模式。
 const cuaPluginRuntimeStagingEnv = {
   ...process.env,
-  ZCODE_CUA_DEV_MODE: "1",
+  ZODY_CUA_DEV_MODE: "1",
 };
 // 修复原因：桌面 Agent 构建有普通 pnpm 和 bootstrap:with-remote 直跑 tsc 两条路径。
 // 过去两条路径分别维护依赖顺序，新增 @zcode/telemetry 后只更新了 bootstrap 依赖，

@@ -1,5 +1,5 @@
 import type { HelloMessage, HelloAckMessage } from "@zody/shared";
-import { ZCODE_VERSION, formatZodError, helloMessageSchema } from "@zody/shared";
+import { ZODY_VERSION, formatZodError, helloMessageSchema } from "@zody/shared";
 import type { StdioStream } from "./backend.js";
 
 const MAX_HANDSHAKE_DIAGNOSTIC_CHARS = 2048;
@@ -77,7 +77,7 @@ export function performHandshake(
               // Send ack
               const ack: HelloAckMessage = {
                 type: "zcode-hello-ack",
-                version: ZCODE_VERSION,
+                version: ZODY_VERSION,
                 clientId,
               };
               stream.stdin.write(JSON.stringify(ack) + "\n");

@@ -2418,7 +2418,7 @@ source of the offer is recorded as `default`. The key that used to decide this �
 values `"disabled" | "onDemand" | "alwaysOn"` — is gone. Where the feature is offered, the
 user can pick any of the three modes in Settings (see "The user's choice"). The Host
 offers; the user picks among what is offered. Development and operations can still override
-the offer with `ZCODE_DYNAMIC_WORKFLOW_MODE` (three values, rules unchanged below).
+the offer with `ZODY_DYNAMIC_WORKFLOW_MODE` (three values, rules unchanged below).
 
 ### What each mode means
 
@@ -2435,7 +2435,7 @@ Under the fork there is no remote key to be absent, malformed, or failed: the Ho
 offer (`packages/services/src/client-config/localClientConfig.ts`) is the only source, so
 the old fail-closed fallback to `disabled` is gone and the default offer is `onDemand`
 (`DEFAULT_DYNAMIC_WORKFLOW_MODE` in `packages/shared/src/dynamic-workflow-feature.ts`). A
-`ZCODE_DYNAMIC_WORKFLOW_MODE` override with a legal value still wins over the default and is
+`ZODY_DYNAMIC_WORKFLOW_MODE` override with a legal value still wins over the default and is
 recorded as source `override`. The terminal UI and headless `-p` runs never consult the
 offer: the standalone CLI does not read the Host's client config. Its mode comes from the
 `--workflow-mode` flag and is `disabled` when the flag is absent (see "The standalone CLI:
@@ -2447,7 +2447,7 @@ offer: the standalone CLI does not read the Host's client config. Its mode comes
 Host (packages/services)
   localClientConfig.resolveLocalDynamicWorkflowClientConfig()   (fork F2.6b owner)
     ← the local fixed offer: onDemand, source "default"   (no remote, nothing latched from a network)
-    ← ZCODE_DYNAMIC_WORKFLOW_MODE (local override, see below)
+    ← ZODY_DYNAMIC_WORKFLOW_MODE (local override, see below)
     → the offer: { offeredMode, source }
   settings.dynamicWorkflowMode (the user's choice, absent = follow the offer)
     ← local and standalone-server Hosts: their own settings file, read at each use
@@ -2477,7 +2477,7 @@ The Host is the single owner of the decision. Under the fork the offer is comput
 local facts only, so nothing waits on a network: the first workspace client start resolves
 the offer synchronously from the environment and the Host latches it, and every later
 policy sync, session create and resume in that process reuses it. The user's choice is not
-latched: it is applied to the latched offer at every use. A `ZCODE_DYNAMIC_WORKFLOW_MODE`
+latched: it is applied to the latched offer at every use. A `ZODY_DYNAMIC_WORKFLOW_MODE`
 change therefore takes effect at the next app start, the same rule the server flip used to
 follow. The renderer's `IClientConfigService.getDynamicWorkflowClientConfig` reads the same
 local offer (with a `forceRefresh` option kept for its contract; the local value has no
@@ -2586,7 +2586,7 @@ file, holds the user's choice. Absent means "follow the offer". It holds one of 
 modes otherwise.
 
 **Precedence.** The Host decides the *offer* — under the fork from local facts alone: the
-fixed `onDemand` default, or a legal `ZCODE_DYNAMIC_WORKFLOW_MODE` override (source
+fixed `onDemand` default, or a legal `ZODY_DYNAMIC_WORKFLOW_MODE` override (source
 `override`) — and that settles whether the feature is available (`offeredMode` is a known
 mode other than `disabled`, `isDynamicWorkflowOffered`) and which mode is the default. A
 snapshot without a readable `offeredMode` counts as not
@@ -2603,7 +2603,7 @@ Host calls it, and the renderer only reads its result.
 value (the patch carries the empty string, which the settings patch normalizer turns into a
 delete, since `undefined` does not survive the RPC hop). An untouched install therefore
 follows the current offer — `onDemand` under the fork — and picks up any later change to
-the default or to a deployed `ZCODE_DYNAMIC_WORKFLOW_MODE` override.
+the default or to a deployed `ZODY_DYNAMIC_WORKFLOW_MODE` override.
 
 **Where it is shown.** Settings › 常规, in the card that holds 交互行为, directly below
 提问自动继续: label 「动态工作流」, description
@@ -2662,7 +2662,7 @@ the same automations page.
 
 ### The local override
 
-One environment variable, `ZCODE_DYNAMIC_WORKFLOW_MODE`, read by the Host resolver before any
+One environment variable, `ZODY_DYNAMIC_WORKFLOW_MODE`, read by the Host resolver before any
 network call. When it holds one of the three values the resolver returns it with
 `source: "override"` and skips the fetch, so there is no TTL and no first-Host race. Desktop
 Main is the gatekeeper: in `buildHostProcessEnv` it always writes or deletes the key before
@@ -2687,7 +2687,7 @@ key. **When the flag is absent the mode is `disabled`**: workflows in the standa
 opt-in. The value is read with the Host's normalizer (`normalizeDynamicWorkflowMode`: the
 exact spelling, surrounding whitespace ignored); anything else fails at the CLI entry with an
 error that names the three values, exit code 1, before any app or session exists. There is no
-environment variable and no config key; `ZCODE_DYNAMIC_WORKFLOW_MODE` stays Host-only.
+environment variable and no config key; `ZODY_DYNAMIC_WORKFLOW_MODE` stays Host-only.
 
 **Where the flag is accepted.** With `-p`/`--prompt`, with `--target`, and for the TUI (no
 command, or `tui`). Anywhere else it is an error with exit code 1: on `app-server` and

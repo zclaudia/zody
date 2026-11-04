@@ -25,10 +25,10 @@ CLI 默认输出 `dist/zody/releases/<version>/zody-cli-<version>-<target>.tar.g
 
 实际进程环境优先于本地 `.env`/`.env.local`。`.env.example` 仅提供公开的中性示例；凭据和内部地址不得提交。
 
-- 正式候选显式使用 `ZCODE_ENV=production`。
+- 正式候选显式使用 `ZODY_ENV=production`。
 - `ZCODE_DOWNLOAD_PAGE_URL` / `ZCODE_FEEDBACK_ISSUE_URL` 可覆盖下载和问题入口；默认使用 Zody GitHub Releases / Issues。
 - 自动更新、ARMS、遥测和打包 Agent OTEL 固定关闭；配置上报 endpoint 或启用自动更新会报错。不要配置 `ZCODE_AUTO_UPDATE` 真值、`ZCODE_ARMS_RUM_ENDPOINT`、`ZCODE_TELEMETRY_REPORT_ENDPOINT` 或 `ZCODE_PACKAGED_AGENT_OTEL_*` 上报值。详见 [可选能力构建护栏](../desktop/build-time-optional-capabilities.md)。
-- `ZCODE_DATA_BASE_DIR` 是运行时数据父目录，不是构建资源下载地址。模型和 gateway 由用户运行时配置。
+- `ZODY_DATA_BASE_DIR` 是运行时数据父目录，不是构建资源下载地址。模型和 gateway 由用户运行时配置。
 
 ## 许可证门禁
 

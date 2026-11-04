@@ -4,7 +4,7 @@ import type { RuntimeConfigPatch, SupportedLocale, UiLocale } from "@zody/contra
 import type { ZodyAppOptions } from "./types.js";
 
 export function isMessageEnabled(env: NodeJS.ProcessEnv): boolean {
-  return env.ZCODE_MESSAGE_ENABLED === "1" || env.ZCODE_MESSAGE_ENABLED === "true";
+  return env.ZODY_MESSAGE_ENABLED === "1" || env.ZODY_MESSAGE_ENABLED === "true";
 }
 
 export function createConfigCliOverrides(options: ZodyAppOptions): RuntimeConfigPatch | undefined {

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { delimiter, dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
+  ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY,
   readZodyToolEnvPassthroughEnv,
 } from "@zody/shared";
 import {
@@ -40,7 +40,7 @@ describe("runtimeCommandEnv", () => {
     expect(patch.HTTP_PROXY).toBeUndefined();
     expect(patch.NODE_ENV).toBeUndefined();
     expect(patch.NODE_EXTRA_CA_CERTS).toBeUndefined();
-    expect(patch[ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY]).toBeDefined();
+    expect(patch[ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY]).toBeDefined();
     expect(readZodyToolEnvPassthroughEnv(patch)).toMatchObject({
       HTTP_PROXY: "http://shell-proxy:8080",
       NODE_EXTRA_CA_CERTS: "/tmp/shell-ca.pem",
@@ -71,9 +71,9 @@ describe("runtimeCommandEnv", () => {
     const systemBin = join(root, "system-bin");
     const binarySuffix = process.platform === "win32" ? ".exe" : "";
     const runtimeBinaries = {
-      ZCODE_BFS_BINARY: join(root, "runtime", "bfs", `bfs${binarySuffix}`),
-      ZCODE_RG_BINARY: join(root, "runtime", "ripgrep", `rg${binarySuffix}`),
-      ZCODE_UGREP_BINARY: join(root, "runtime", "ugrep", `ugrep${binarySuffix}`),
+      ZODY_BFS_BINARY: join(root, "runtime", "bfs", `bfs${binarySuffix}`),
+      ZODY_RG_BINARY: join(root, "runtime", "ripgrep", `rg${binarySuffix}`),
+      ZODY_UGREP_BINARY: join(root, "runtime", "ugrep", `ugrep${binarySuffix}`),
     } as const;
 
     try {

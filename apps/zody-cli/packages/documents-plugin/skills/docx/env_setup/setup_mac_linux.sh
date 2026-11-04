@@ -185,11 +185,11 @@ echo ""
 echo "--- [6/7] Font Installation ---"
 # fork（F6.4）：不再从官方 CDN 下载字体。来源优先级：
 #   1. 随技能分发的 env_setup/fonts/（相对路径与 font_list.txt 一致）；
-#   2. ZCODE_OFFICE_FONTS_BASE_URL 指向的 fork 托管镜像；
+#   2. ZODY_OFFICE_FONTS_BASE_URL 指向的 fork 托管镜像；
 #   3. 本地缓存与上述来源都不足时明确报错并提示手动放置，不静默回退官方 CDN。
 FONT_LIST="$SCRIPT_DIR/font_list.txt"
 FONT_BUNDLED_DIR="$SCRIPT_DIR/fonts"
-FONT_REMOTE_BASE="${ZCODE_OFFICE_FONTS_BASE_URL:-}"
+FONT_REMOTE_BASE="${ZODY_OFFICE_FONTS_BASE_URL:-}"
 FONT_REMOTE_BASE="${FONT_REMOTE_BASE%/}"
 
 if [ "$PLATFORM" = "mac" ]; then
@@ -234,10 +234,10 @@ else
                 ok "All $TOTAL fonts already present in $USER_FONT_DIR (no download source needed)"
             else
                 # 明确失败而不是静默跳过：用户需要知道字体从哪来，且不能落到官方 CDN。
-                fail "No bundled fonts and ZCODE_OFFICE_FONTS_BASE_URL is not set — $LOCAL_MISSING/$TOTAL fonts missing."
+                fail "No bundled fonts and ZODY_OFFICE_FONTS_BASE_URL is not set — $LOCAL_MISSING/$TOTAL fonts missing."
                 info "This fork does not download fonts from the upstream CDN. Choose one source:"
                 info "  1) bundle fonts under $FONT_BUNDLED_DIR (same relative paths as font_list.txt)"
-                info "  2) set ZCODE_OFFICE_FONTS_BASE_URL to a fork-hosted mirror of the same layout"
+                info "  2) set ZODY_OFFICE_FONTS_BASE_URL to a fork-hosted mirror of the same layout"
                 info "  3) copy the fonts listed in font_list.txt into $USER_FONT_DIR manually"
                 ERRORS=$((ERRORS + 1))
             fi

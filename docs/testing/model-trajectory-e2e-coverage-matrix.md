@@ -46,7 +46,7 @@
 
 ## 95% 审计规则
 
-1. 运行 trajectory E2E 时设置 `ZCODE_E2E_COVERAGE=1`。
+1. 运行 trajectory E2E 时设置 `ZODY_E2E_COVERAGE=1`。
 2. 合并 Renderer Istanbul 与 Node V8 报告后，仅筛选固定区间内、且由上述 trajectory commits 引入的相关可执行变更行；以目标 revision 的 blame 归因，Babel/Istanbul statement 起始行确定 TS/TSX 可执行行。
 3. 每个 case 必须具备 setup、action、assertion；仅路过代码不计作语义覆盖。
 4. 若聚合低于 95%，先补有产品意义的 case/断言；不可用无断言调用伪造覆盖率。

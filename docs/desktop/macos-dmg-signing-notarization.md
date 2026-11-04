@@ -18,7 +18,7 @@ macOS release DMG 是用户从浏览器下载后直接交给 Gatekeeper 评估�
 2. `electron-builder` 打包并签 `ZCode.app`，产出 `ZCode-<version>-mac-<arch>.dmg`。
 3. `ci-collect-artifacts` 将 DMG 收集为 `*.unnotarized.dmg`。
 4. `scripts/notarize-macos.sh` 对 `*.unnotarized.dmg` 执行 DMG 签名、公证、staple、重命名和验收。
-5. `scripts/notarize-macos.sh` 在严格 release 中还会通过 `ZCODE_MACOS_RELEASE_APP_PATH` 或 `ZCODE_DESKTOP_DIST_DIR` 定位打包出的 `ZCode.app`，复用 `scripts/doctor-macos-release-app.sh` 验收主 app；找不到 app 路径时 fail-closed。CUA/Helper release gate 额外设置 `ZCODE_CUA_REQUIRE_HELPER=1`，并显式验收最终 app 内 `Contents/Resources/cua-helper/ZCode Computer Use.app`；缺失时 fail-closed。
+5. `scripts/notarize-macos.sh` 在严格 release 中还会通过 `ZODY_MACOS_RELEASE_APP_PATH` 或 `ZODY_DESKTOP_DIST_DIR` 定位打包出的 `ZCode.app`，复用 `scripts/doctor-macos-release-app.sh` 验收主 app；找不到 app 路径时 fail-closed。CUA/Helper release gate 额外设置 `ZCODE_CUA_REQUIRE_HELPER=1`，并显式验收最终 app 内 `Contents/Resources/cua-helper/ZCode Computer Use.app`；缺失时 fail-closed。
 6. `scripts/upload-oss.sh` 正式发布时只接受已完成上述流程的 `*.dmg`。
 
 ## Computer Use Helper 的独立签名与架构约束
@@ -29,14 +29,14 @@ Screen Recording 授权条目。相关约束：
 
 - **Helper 随 ZCode.app 交付，但作为独立 bundle 运行。** 发布包中的来源固定为
   `ZCode.app/Contents/Resources/cua-helper/ZCode Computer Use.app`；产品安装器校验后把它复制到
-  `${ZCODE_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app`。不接受网络下载、`/Applications`、
+  `${ZODY_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app`。不接受网络下载、`/Applications`、
   `~/Applications` 或 `ZCode.app/Contents/Library/Helpers` 作为产品兜底；来源缺失必须 fail-closed。
 - **Helper 是独立 bundle，但复用 ZCode 的发布身份。** 独立 Helper 发布链路必须用
   `build/entitlements.helper.plist` + hardened runtime 签成 `dev.zcode.cua-helper`；签名身份仍使用与
   `ZCode.app` 相同的 Developer ID Application team/identity，不需要额外证书或额外 Apple 账号成本。同一
   release payload 内的 `ZCode.app` 与 `ZCode Computer Use.app` 必须走同一次 notarization/staple 验收链路；
   验收通过后，Helper 可以作为独立 `.app` 被安装器/脚本拷贝到
-  `${ZCODE_HOME:-$HOME/.zcode}/computer-use/`。ZCode.app 只负责发现、LaunchServices 启动、health check，
+  `${ZODY_HOME:-$HOME/.zcode}/computer-use/`。ZCode.app 只负责发现、LaunchServices 启动、health check，
   以及给 MCP 子进程注入随机 socket/token。
 - **helper 主可执行必须是 SEA Mach-O。** `scripts/build-cua-helper-app.mjs` 用 Node SEA 把 helper 入口
   注入到一份拷贝的 Node 可执行里（替换旧的 shell wrapper），签名/公证前必须已是 Mach-O。
@@ -56,7 +56,7 @@ Screen Recording 授权条目。相关约束：
 Helper-owned CUA 链路，但必须显式标记为本地 dev，不得当作 release 证据：
 
 1. 本地构建 `ZCode Computer Use Dev.app`，并安装到
-   `${ZCODE_HOME:-$HOME/.zcode}/computer-use/dev/ZCode Computer Use Dev.app`。
+   `${ZODY_HOME:-$HOME/.zcode}/computer-use/dev/ZCode Computer Use Dev.app`。
 2. 从终端启动 ZCode App，并只在该进程环境里设置：
    `ZCODE_CUA_HELPER_ALLOW_UNSIGNED_LOCAL=1`。产品 Helper resolver 正式版与本地/dist 构建默认启用；
    仅显式设置 `ZCODE_CUA_PRODUCT_HELPER=0|false|off` 才关闭。

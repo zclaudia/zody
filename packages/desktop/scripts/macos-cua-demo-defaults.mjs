@@ -16,7 +16,7 @@ import {
 import { validateNarrowManifest } from "./macos-cua-narrow-resources-validate.mjs";
 import { createNormalHostNarrowProfile } from "./lib/normal-host-candidate-profile.mjs";
 
-export const NARROW_AGENT_ENV = "ZCODE_CUA_NARROW_AGENT_JSON";
+export const NARROW_AGENT_ENV = "ZODY_CUA_NARROW_AGENT_JSON";
 
 export const CUA_DEMO_DEFAULT_PUBLIC_FACTS = Object.freeze({
   testedTarget: Object.freeze({ os: "darwin", arch: "arm64", macOSVersion: "26.6.2" }),
@@ -224,8 +224,8 @@ export async function resolveMacosCuaDemoBuildSelection({
   repoRoot = REPO_ROOT,
   validateManifest = validateNarrowManifest,
 } = {}) {
-  const observedTargetOs = targetOs ?? env.ZCODE_TARGET_OS ?? process.platform;
-  const observedTargetArch = targetArch ?? env.ZCODE_TARGET_ARCH ?? process.arch;
+  const observedTargetOs = targetOs ?? env.ZODY_TARGET_OS ?? process.platform;
+  const observedTargetArch = targetArch ?? env.ZODY_TARGET_ARCH ?? process.arch;
   const normalizedOs = normalizeTargetOs(observedTargetOs);
   const normalizedArch = normalizeTargetArch(observedTargetArch);
   const targetPlatform = { os: normalizedOs, arch: normalizedArch };

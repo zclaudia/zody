@@ -259,7 +259,7 @@ Run `pnpm build` before testing pages. Browser tests require Chrome, or Chromium
 
 ```sh
 cd "$ZCODE_REPO"
-ZCODE_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
+ZODY_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
   node packages/desktop/scripts/mcp-apps-host-e2e.mjs --showcase-only
 ```
 

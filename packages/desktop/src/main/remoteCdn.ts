@@ -1,6 +1,6 @@
-import { ZCODE_VERSION, type ZodyEnv } from "@zody/shared";
+import { ZODY_VERSION, type ZodyEnv } from "@zody/shared";
 
-declare const __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: readonly string[] | undefined;
+declare const __ZODY_REMOTE_CDN_RELEASE_ROOTS__: readonly string[] | undefined;
 
 const TEST_REMOTE_CDN_RELEASE_ROOT = "http://intranet.example.invalid:12345/ssh-remote-assets";
 
@@ -27,16 +27,16 @@ export function resolveRemoteCdnBaseUrls(options: ResolveRemoteCdnOptions = {}):
     return [normalizeBaseUrl(overrideBaseUrl)];
   }
 
-  const version = options.version ?? ZCODE_VERSION;
+  const version = options.version ?? ZODY_VERSION;
 
   if (options.env === "test") {
     return [`${TEST_REMOTE_CDN_RELEASE_ROOT}/${version}`];
   }
 
   const configuredReleaseRoots =
-    typeof __ZCODE_REMOTE_CDN_RELEASE_ROOTS__ === "undefined"
+    typeof __ZODY_REMOTE_CDN_RELEASE_ROOTS__ === "undefined"
       ? []
-      : __ZCODE_REMOTE_CDN_RELEASE_ROOTS__;
+      : __ZODY_REMOTE_CDN_RELEASE_ROOTS__;
   // 构建期按 CI 的 CDN_DOMAIN/OSS_PATH_PREFIX 注入有序列表，切换时只改 CI 变量。
   return configuredReleaseRoots.map((releaseRoot) => `${normalizeBaseUrl(releaseRoot)}/${version}`);
 }

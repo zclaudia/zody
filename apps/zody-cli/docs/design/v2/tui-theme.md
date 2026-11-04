@@ -42,7 +42,7 @@ terminal-palette themes, and a theme picker are later extensions.
 - No custom theme JSON files in P0.
 - No `/theme` command or theme picker in P0.
 - No plugin-provided themes in P0.
-- No `ZCODE_` environment variable for theme selection.
+- No `ZODY_` environment variable for theme selection.
 - No model, runtime, tool, MCP, ZCode app-server, or session-store schema changes.
 - No direct terminal escape handling outside the OpenTUI renderer.
 

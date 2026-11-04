@@ -4,7 +4,7 @@ const ENCRYPTED_VALUE_PREFIX = "enc:v1:";
 const CREDENTIAL_CIPHER_ALGORITHM = "aes-256-gcm";
 const CREDENTIAL_CIPHER_IV_BYTES = 12;
 const CREDENTIAL_CIPHER_AUTH_TAG_BYTES = 16;
-const CREDENTIAL_SECRET_ENV_KEY = "ZCODE_CREDENTIAL_SECRET";
+const CREDENTIAL_SECRET_ENV_KEY = "ZODY_CREDENTIAL_SECRET";
 
 export interface ZodyCredentialCipher {
   decrypt(value: string): string;

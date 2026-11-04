@@ -258,7 +258,7 @@ describe("createLocalServices remote authority", () => {
 
   it("复用 Host 注入的网络 transport 并由 ServiceCollection 释放", async () => {
     // 无 endpoint 时 scenes 已按规格关闭；transport 验证须显式配置测试服务。
-    vi.stubEnv("ZCODE_BASE_URL", "https://scenes.example.test");
+    vi.stubEnv("ZODY_BASE_URL", "https://scenes.example.test");
     vi.resetModules();
     const home = makeTempHome();
     process.env.HOME = home;

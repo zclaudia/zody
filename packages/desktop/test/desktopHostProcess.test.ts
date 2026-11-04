@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HostMessageTypes,
   HostResponseTypes,
-  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
 } from "@zody/shared";
 import {
   disposeHostProcess,
@@ -99,7 +99,7 @@ describe("desktopHostProcess loadWindow", () => {
 });
 
 describe("desktopHostProcess fork Host env（fork 灰度本地值 F2.6a / D1b）", () => {
-  it("Host env 恒注入 ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1，不再依赖 Main 的灰度装配依赖", () => {
+  it("Host env 恒注入 ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED=1，不再依赖 Main 的灰度装配依赖", () => {
     // fork（F2.6a）：桌面上下文提示按 D1b 固定开启，desktopContextPromptEnabled
     // 灰度依赖已删除；这里验证 spawnHostProcess 无需任何灰度输入即下发 env=1。
     const child = new MockUtilityProcess();
@@ -121,7 +121,7 @@ describe("desktopHostProcess fork Host env（fork 灰度本地值 F2.6a / D1b）
     const forkOptions = electronMock.fork.mock.calls[0]?.[2] as {
       env: Record<string, string | undefined>;
     };
-    expect(forkOptions.env[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]).toBe("1");
+    expect(forkOptions.env[ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]).toBe("1");
     const init = child.postMessage.mock.calls[0]?.[0] as {
       hostId?: string;
       deliveryKind?: string;

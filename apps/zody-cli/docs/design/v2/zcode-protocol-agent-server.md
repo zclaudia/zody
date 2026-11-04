@@ -100,10 +100,10 @@ stateDiagram-v2
 
 ### 桌面字节码试验的启动约定
 
-- `ZCODE_DESKTOP_AGENT_BYTECODE=1` 是 Dev desktop 启动器传给 Host 的实验开关，默认关闭；
+- `ZODY_DESKTOP_AGENT_BYTECODE=1` 是 Dev desktop 启动器传给 Host 的实验开关，默认关闭；
   普通 Dev 启动显式关闭，`pnpm dev:desktop:bytecode` 显式开启。不开启时忽略残留字节码。
 - 仅 Electron 的工作区 dist 解析路径选择同目录 `zcode.bytecode.cjs`；显式
-  `ZCODE_AGENT_SERVER_COMMAND` 保持最高优先级，非 Electron/远端保持原入口。
+  `ZODY_AGENT_SERVER_COMMAND` 保持最高优先级，非 Electron/远端保持原入口。
 - 开启后字节码入口缺失直接报错；禁止回退到 JS，避免 A/B 数据失真。
 - `app-server --stdio`、`--surface`、cwd、stdin EOF、stdout 帧以及 stderr 诊断契约不变。
   `storagePreparationEntry` 仍指向普通 `zcode.cjs`，不改变 Host Worker 的准备协议。

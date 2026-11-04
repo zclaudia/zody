@@ -110,14 +110,14 @@ core recovery 的可观测性要求：
 
 ## 环境变量覆盖
 
-模型 adapter 的重试策略默认值可以通过 `ZCODE_` 环境变量覆盖，入口只存在于 bootstrap/adapter 层，core 不读取 `process.env`。
+模型 adapter 的重试策略默认值可以通过 `ZODY_` 环境变量覆盖，入口只存在于 bootstrap/adapter 层，core 不读取 `process.env`。
 
 | 环境变量 | 默认值 | 语义 |
 | --- | --- | --- |
-| `ZCODE_MODEL_RETRY_MAX_RETRIES` | `10` | 可重试失败最多重试次数，不包含第一次请求；运行时事件中的 `maxAttempts` 等于该值加一。 |
-| `ZCODE_MODEL_RETRY_BASE_DELAY_MS` | `2000` | 指数退避的初始延迟毫秒数，允许为 `0`。 |
-| `ZCODE_MODEL_RETRY_BACKOFF_FACTOR` | `2` | 每次重试延迟的指数退避倍率，必须大于 `0`。 |
-| `ZCODE_MODEL_RETRY_MAX_DELAY_MS` | `60000` | 普通指数退避延迟上限毫秒数，允许为 `0`；provider `retry-after` 提示在 `x-should-retry` 未显式为 `false`，且不超过 5 分钟或短于当前指数退避时仍优先。 |
+| `ZODY_MODEL_RETRY_MAX_RETRIES` | `10` | 可重试失败最多重试次数，不包含第一次请求；运行时事件中的 `maxAttempts` 等于该值加一。 |
+| `ZODY_MODEL_RETRY_BASE_DELAY_MS` | `2000` | 指数退避的初始延迟毫秒数，允许为 `0`。 |
+| `ZODY_MODEL_RETRY_BACKOFF_FACTOR` | `2` | 每次重试延迟的指数退避倍率，必须大于 `0`。 |
+| `ZODY_MODEL_RETRY_MAX_DELAY_MS` | `60000` | 普通指数退避延迟上限毫秒数，允许为 `0`；provider `retry-after` 提示在 `x-should-retry` 未显式为 `false`，且不超过 5 分钟或短于当前指数退避时仍优先。 |
 
 优先级：显式传入 adapter 的 `retry` 选项 > `ZCODE_MODEL_RETRY_*` 环境变量 > 内置默认值。非法环境变量值不会让启动失败；adapter 忽略该变量并回退到下一层默认值，避免一个错误的调试变量让 CLI 完全不可用。日志和状态事件不得输出完整环境变量集合，只能暴露归一化后的 retry budget。
 
@@ -149,7 +149,7 @@ core recovery 的可观测性要求：
 - `modelStream.idleTimeoutMs` 配置应从 `~/.zcode/cli/config.json` 进入 runtime config，并传入 `AiSdkModelAdapter`。
 - iterator 在已经产出 `text_delta` 或 `tool_call` 后发生可重试网络错误时，不应自动重试。
 - core recovery 的 `model_request_started` 即使 adapter `attempt=1`，只要携带 `streamRecovery.retryNumber/maxRetries`，ZCode UI、service runtime snapshot 和 protocol `_meta.zcode.apiRetry` 都应展示对应的重试次数。
-- `ZCODE_MODEL_RETRY_MAX_RETRIES` 覆盖默认 retry budget，且 `maxAttempts` 仍按“首次请求 + 重试次数”上报。
+- `ZODY_MODEL_RETRY_MAX_RETRIES` 覆盖默认 retry budget，且 `maxAttempts` 仍按“首次请求 + 重试次数”上报。
 - `modelRetryBudget = single-attempt` 时，429 等瞬态失败不得发布 `model_retry_scheduled`，首次失败即抛出 adapter error，状态事件 `maxAttempts` 为 1；流式与非流式同样适用。
-- `ZCODE_MODEL_RETRY_BASE_DELAY_MS`、`ZCODE_MODEL_RETRY_BACKOFF_FACTOR`、`ZCODE_MODEL_RETRY_MAX_DELAY_MS` 覆盖指数退避默认值。
+- `ZODY_MODEL_RETRY_BASE_DELAY_MS`、`ZODY_MODEL_RETRY_BACKOFF_FACTOR`、`ZODY_MODEL_RETRY_MAX_DELAY_MS` 覆盖指数退避默认值。
 - 显式 adapter `retry` 选项优先于环境变量；非法环境变量值回退默认值。

@@ -256,17 +256,17 @@ async function waitForProvisioningRecordCountGreaterThan(
 }
 
 function readSSHRuntimeConfig(): SSHRuntimeConfig {
-  const host = requireSecretEnv("ZCODE_E2E_SSH_HOST");
-  const username = requireSecretEnv("ZCODE_E2E_SSH_USERNAME");
-  const password = requireSecretEnv("ZCODE_E2E_SSH_PASSWORD");
-  const portText = process.env.ZCODE_E2E_SSH_PORT?.trim() || "22";
+  const host = requireSecretEnv("ZODY_E2E_SSH_HOST");
+  const username = requireSecretEnv("ZODY_E2E_SSH_USERNAME");
+  const password = requireSecretEnv("ZODY_E2E_SSH_PASSWORD");
+  const portText = process.env.ZODY_E2E_SSH_PORT?.trim() || "22";
   const port = Number.parseInt(portText, 10);
   if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) {
-    throw new Error(`${CASE_MARKER}: ZCODE_E2E_SSH_PORT 必须是 1..65535 的整数`);
+    throw new Error(`${CASE_MARKER}: ZODY_E2E_SSH_PORT 必须是 1..65535 的整数`);
   }
 
   const workspacePaths = (
-    process.env.ZCODE_E2E_SSH_WORKSPACE_PATHS?.split(",") ?? ["/root", "/home"]
+    process.env.ZODY_E2E_SSH_WORKSPACE_PATHS?.split(",") ?? ["/root", "/home"]
   )
     .map((value) => value.trim())
     .filter(Boolean);
@@ -275,7 +275,7 @@ function readSSHRuntimeConfig(): SSHRuntimeConfig {
     workspacePaths.some((value) => !value.startsWith("/")) ||
     workspacePaths[0] === workspacePaths[1]
   ) {
-    throw new Error(`${CASE_MARKER}: ZCODE_E2E_SSH_WORKSPACE_PATHS 必须是两个不同的绝对路径`);
+    throw new Error(`${CASE_MARKER}: ZODY_E2E_SSH_WORKSPACE_PATHS 必须是两个不同的绝对路径`);
   }
 
   return {

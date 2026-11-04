@@ -85,7 +85,7 @@ describe("resolvePluginRuntimeFeatures", () => {
       workingDirectory: "/workspace",
     });
     expect(servers.node_repl).toMatchObject({
-      env: { ZCODE_CUA_PLUGIN_ROOT: "/tmp/cua-plugin" },
+      env: { ZODY_CUA_PLUGIN_ROOT: "/tmp/cua-plugin" },
       type: "stdio",
     });
     // browser-use 不在时不注入它的 root，宿主据此知道浏览器那半边不可用。
@@ -129,7 +129,7 @@ describe("resolvePluginRuntimeFeatures", () => {
 
     // browser-use 已停用：只注入 CUA 的 root，两个领域各自独立。
     expect(servers.node_repl).toMatchObject({
-      env: { ZCODE_CUA_PLUGIN_ROOT: "/tmp/cua-plugin" },
+      env: { ZODY_CUA_PLUGIN_ROOT: "/tmp/cua-plugin" },
       type: "stdio",
     });
     expect(

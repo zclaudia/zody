@@ -196,7 +196,7 @@ test("desktop agent builds minify the app-facing JS bundle", () => {
     minify: true,
     sourcemap: false,
   });
-  assert.deepEqual(resolveBuildOptions(["--desktop-agent"], { ZCODE_E2E_COVERAGE: "1" }), {
+  assert.deepEqual(resolveBuildOptions(["--desktop-agent"], { ZODY_E2E_COVERAGE: "1" }), {
     minify: false,
     sourcemap: true,
   });

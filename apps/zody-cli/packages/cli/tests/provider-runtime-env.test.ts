@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import test from "node:test";
 import {
-  ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
-  ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
+  ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
 } from "@zody/provider-node";
 import {
   SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY,
@@ -26,14 +26,14 @@ test("preserves explicitly injected provider runtime paths", async () => {
   const prepared = await prepareCliProviderRuntimeEnv({
     argv: ["--prompt", "hello"],
     env: {
-      [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zody-builtin.json",
-      [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/injected/personal.json",
+      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zody-builtin.json",
+      [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/injected/personal.json",
     },
   });
 
   assert.deepEqual(prepared, {
-    [ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zody-builtin.json",
-    [ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/injected/personal.json",
+    [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: "/injected/zody-builtin.json",
+    [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: "/injected/personal.json",
   });
 });
 
@@ -56,12 +56,12 @@ test("resolves the development ZCode Built-in Config and shared Personal Config"
     platform: "test-platform",
   });
 
-  assertActiveConfigPath(prepared[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV], join(root, "home"));
+  assertActiveConfigPath(prepared[ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV], join(root, "home"));
   assert.equal(
-    prepared[ZCODE_PERSONAL_PROVIDER_CONFIG_FILE_ENV],
+    prepared[ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV],
     join(root, "home/.zody/v2/provider_config.json"),
   );
-  const activeFilePath = prepared[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV];
+  const activeFilePath = prepared[ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV];
 
   const loginPrepared = await prepareCliProviderRuntimeEnv({
     argv: ["login"],
@@ -85,7 +85,7 @@ test("resolves the development ZCode Built-in Config and shared Personal Config"
   assert.deepEqual(logoutPrepared, {});
   // 临时目录本身可能经过软链接（macOS 的 /tmp、/var），随包配置报告的是真实路径。
   assert.equal(
-    prepared.ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE,
+    prepared.ZODY_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE,
     await realpath(zcodeBuiltinFilePath),
   );
   await assert.rejects(access(join(dirname(activeFilePath!), "zcode-builtin-refresh.json")));
@@ -112,7 +112,7 @@ test("materializes the SEA config in the fixed environment resource path, separa
     platform: "test-platform",
   });
 
-  const zcodeBuiltinFilePath = prepared[ZCODE_BUILTIN_PROVIDER_CONFIG_FILE_ENV];
+  const zcodeBuiltinFilePath = prepared[ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV];
   assert.ok(zcodeBuiltinFilePath);
   assertActiveConfigPath(zcodeBuiltinFilePath, root);
   assert.deepEqual(
@@ -131,7 +131,7 @@ test("materializes the SEA config in the fixed environment resource path, separa
   );
   assert.notEqual(resource, zcodeBuiltinFilePath);
   assert.deepEqual(JSON.parse(await readFile(resource, "utf8")), JSON.parse(zcodeBuiltinContent));
-  assert.equal(prepared.ZCODE_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE, resource);
+  assert.equal(prepared.ZODY_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE, resource);
   await assert.rejects(access(join(dirname(zcodeBuiltinFilePath), "zcode-builtin-refresh.json")));
 });
 
@@ -167,7 +167,7 @@ function assertActiveConfigPath(filePath: string | undefined, dataBaseDir: strin
     dirname(dirname(filePath)),
     join(dataBaseDir, ".zody", "v2", "runtime", "provider", "test-platform", "test-version"),
   );
-  // fork（F3.1）：这些用例没有配置 ZCODE_BASE_URL，Endpoint 为「未配置」，
+  // fork（F3.1）：这些用例没有配置 ZODY_BASE_URL，Endpoint 为「未配置」，
   // 使用固定本地目录而不是伪造/回落官方 Endpoint。
   assert.equal(basename(dirname(filePath)), "endpoint-unconfigured");
   assert.equal(basename(filePath), "zody-builtin.json");

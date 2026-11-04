@@ -45,7 +45,7 @@ import {
 } from "./remoteWorkspaceServicePortBridge.js";
 
 type DesktopRendererImportMetaEnv = {
-  VITE_ZCODE_E2E_STORE_BRIDGE?: string;
+  VITE_ZODY_E2E_STORE_BRIDGE?: string;
 };
 
 startPerformanceTimelineCleanup();
@@ -68,7 +68,7 @@ registerE2EStoreBridgesIfEnabled();
 function registerE2EStoreBridgesIfEnabled() {
   const env = ((import.meta as ImportMeta & { env?: DesktopRendererImportMetaEnv }).env ??
     {}) as DesktopRendererImportMetaEnv;
-  if (env.VITE_ZCODE_E2E_STORE_BRIDGE !== "1") {
+  if (env.VITE_ZODY_E2E_STORE_BRIDGE !== "1") {
     return;
   }
 
@@ -116,8 +116,8 @@ document.documentElement.classList.toggle("platform-windows-desktop", isWindowsD
 // 会把标题栏点击区一起拦截。给桌面 Linux 根节点打平台标记，让 UI overlay 能只在 Linux 避开标题栏。
 document.documentElement.classList.toggle("platform-linux-desktop", isLinuxDesktop);
 const isLocalDevelopmentRuntime =
-  (globalThis as typeof globalThis & { __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__?: boolean })
-    .__ZCODE_LOCAL_DEVELOPMENT_RUNTIME__ === true;
+  (globalThis as typeof globalThis & { __ZODY_LOCAL_DEVELOPMENT_RUNTIME__?: boolean })
+    .__ZODY_LOCAL_DEVELOPMENT_RUNTIME__ === true;
 
 function readBooleanFlag(name: string, defaultValue: boolean): boolean {
   const value = new URLSearchParams(window.location.search).get(name);

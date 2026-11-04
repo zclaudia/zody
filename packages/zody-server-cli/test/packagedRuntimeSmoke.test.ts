@@ -22,7 +22,7 @@ function isolatedEnv(home: string, source: NodeJS.ProcessEnv): NodeJS.ProcessEnv
     XDG_CACHE_HOME: home,
     XDG_DATA_HOME: home,
     PATH: source.PATH ?? "",
-    ZCODE_ENV: "production",
+    ZODY_ENV: "production",
   };
   for (const key of ["SystemRoot", "WINDIR", "ComSpec", "PATHEXT"]) {
     if (source[key]) env[key] = source[key];
@@ -151,13 +151,13 @@ describe("independent server production ESM bundles", () => {
   it("does not inherit provider or secret overrides into the build environment", () => {
     const env = isolatedEnv(temp, {
       PATH: "/controlled/bin",
-      ZCODE_ENV: "test",
-      ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: "/user/provider.json",
+      ZODY_ENV: "test",
+      ZODY_BUILTIN_PROVIDER_CONFIG_FILE: "/user/provider.json",
       OPENAI_API_KEY: "not-a-real-key",
       SystemRoot: "C:\\Windows",
     });
-    expect(env.ZCODE_ENV).toBe("production");
-    expect(env.ZCODE_BUILTIN_PROVIDER_CONFIG_FILE).toBeUndefined();
+    expect(env.ZODY_ENV).toBe("production");
+    expect(env.ZODY_BUILTIN_PROVIDER_CONFIG_FILE).toBeUndefined();
     expect(env.OPENAI_API_KEY).toBeUndefined();
     expect(env.HOME).toBe(temp);
     expect(env.SystemRoot).toBe("C:\\Windows");

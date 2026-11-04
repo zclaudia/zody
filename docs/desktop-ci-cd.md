@@ -131,7 +131,7 @@ glab ci list --ref "${CI_BRANCH}" --sha "$(git rev-parse HEAD)"
 release 的产物验收（`scripts/notarize-macos.sh` → `doctor-macos-release-app.sh`，`ZCODE_CUA_REQUIRE_HELPER=1`）
 会定位最终 `ZCode.app/Contents/Resources/cua-helper/ZCode Computer Use.app` 并设
 `ZCODE_CUA_HELPER_APP_PATH`，因此校验的是实际随 DMG 交付的内嵌副本，而不是中间 artifact 或 runner 上
-`${ZCODE_HOME:-$HOME/.zcode}` 的残留状态。包内 Helper 缺失会 fail-closed。
+`${ZODY_HOME:-$HOME/.zcode}` 的残留状态。包内 Helper 缺失会 fail-closed。
 
 成功后固定下载入口如下，其中 `<slug>` 是 GitLab 的 `$CI_COMMIT_REF_SLUG`：
 
@@ -174,7 +174,7 @@ glab api 'projects/:fullpath/jobs/<helper-job-id>/trace' \
 ```
 
 For release-quality CUA validation, do not stop at package production. Install the
-standalone Helper under `${ZCODE_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app`,
+standalone Helper under `${ZODY_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app`,
 launch the matching ZCode.app, and run the zcode-cua consumer gates. Product broker
 sockets are minted as random `broker-<hex>.sock` files; do not hard-code
 `broker.sock` in new validation scripts.

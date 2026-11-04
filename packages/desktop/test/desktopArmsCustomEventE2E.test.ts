@@ -18,18 +18,18 @@ describe("desktop final ARMS custom E2E bridge", () => {
     expect(shouldEnableE2ETestBridge({})).toBe(false);
     expect(
       shouldEnableE2ETestBridge({
-        VITE_ZCODE_E2E_STORE_BRIDGE: "1",
+        VITE_ZODY_E2E_STORE_BRIDGE: "1",
       }),
     ).toBe(false);
     expect(
       shouldEnableE2ETestBridge({
-        ZCODE_E2E_RUN_ID: "run-1",
+        ZODY_E2E_RUN_ID: "run-1",
       }),
     ).toBe(false);
     expect(
       shouldEnableE2ETestBridge({
-        VITE_ZCODE_E2E_STORE_BRIDGE: "1",
-        ZCODE_E2E_RUN_ID: "run-1",
+        VITE_ZODY_E2E_STORE_BRIDGE: "1",
+        ZODY_E2E_RUN_ID: "run-1",
       }),
     ).toBe(true);
   });

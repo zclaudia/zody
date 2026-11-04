@@ -66,7 +66,7 @@ describe("inspectZCodeSkill", () => {
 
     try {
       const outcome = await listZodySkills({
-        env: { ZCODE_STORAGE_DIR: join(dir, "storage") },
+        env: { ZODY_STORAGE_DIR: join(dir, "storage") },
         skipUserConfig: true,
         workingDirectory: dir,
       });
@@ -87,7 +87,7 @@ describe("inspectZCodeSkill", () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-bootstrap-document-skills-"));
 
     try {
-      const env = { ZCODE_STORAGE_DIR: join(dir, "storage") };
+      const env = { ZODY_STORAGE_DIR: join(dir, "storage") };
       const outcome = await listZodySkills({
         env,
         skipUserConfig: true,

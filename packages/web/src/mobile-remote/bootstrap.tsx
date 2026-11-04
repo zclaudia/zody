@@ -18,7 +18,7 @@ import {
 } from "@zody/client";
 import {
   WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS,
-  ZCODE_VERSION,
+  ZODY_VERSION,
   resolveWebRemoteControlInitialWorkspaceSelection,
   resolveWebRemoteControlWorkspaceKey,
   sessionCreateTelemetrySchema,
@@ -727,7 +727,7 @@ async function startGatewaySession(
     backendId: gatewayConfig.backendId,
     clientInstanceId,
     clientName: "Zody Mobile",
-    appVersion: ZCODE_VERSION,
+    appVersion: ZODY_VERSION,
     onRawTransportPayload: (payload) =>
       activeRelayProtocol?.acceptPayload(payload) ?? false,
     onRawTransportFault: (reasonCode) => {
@@ -1040,7 +1040,7 @@ async function startGatewaySession(
         updatedAt: Date.now(),
       },
       deviceInfo: collectWebRemoteControlMobileDeviceInfo({
-        appVersion: ZCODE_VERSION,
+        appVersion: ZODY_VERSION,
       }),
     });
   };

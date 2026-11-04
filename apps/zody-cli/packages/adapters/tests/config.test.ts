@@ -337,13 +337,13 @@ describe("config adapters", () => {
 
   it("parses the supported ZCODE environment surface", () => {
     const config = parseEnvConfig({
-      ZCODE_STORAGE_DIR: "/tmp/zcode",
-      ZCODE_HTTP_PROXY: "http://127.0.0.1:7890",
-      ZCODE_NO_PROXY: "localhost,127.0.0.1",
-      ZCODE_AGENT_CA_CERT: "/tmp/zcode-ca.pem",
-      ZCODE_HTTP_TIMEOUT: "1234",
-      ZCODE_LOCALE: "zh-CN",
-      ZCODE_LOG_FORMAT: "json",
+      ZODY_STORAGE_DIR: "/tmp/zcode",
+      ZODY_HTTP_PROXY: "http://127.0.0.1:7890",
+      ZODY_NO_PROXY: "localhost,127.0.0.1",
+      ZODY_AGENT_CA_CERT: "/tmp/zcode-ca.pem",
+      ZODY_HTTP_TIMEOUT: "1234",
+      ZODY_LOCALE: "zh-CN",
+      ZODY_LOG_FORMAT: "json",
     });
 
     expect(config.model).toBeUndefined();
@@ -413,12 +413,12 @@ describe("config adapters", () => {
   it("parses session database path environment overrides", () => {
     expect(
       parseEnvConfig({
-        ZCODE_SESSION_DB_PATH: "/tmp/zcode/db/db.sqlite",
+        ZODY_SESSION_DB_PATH: "/tmp/zcode/db/db.sqlite",
       }).storage?.sessionDbPath,
     ).toBe("/tmp/zcode/db/db.sqlite");
     expect(
       parseEnvConfig({
-        ZCODE_SESSION_DB: "/tmp/zcode/legacy.sqlite",
+        ZODY_SESSION_DB: "/tmp/zcode/legacy.sqlite",
       }).storage?.sessionDbPath,
     ).toBe("/tmp/zcode/legacy.sqlite");
   });
@@ -1199,7 +1199,7 @@ describe("config adapters", () => {
 
       const result = loadFileConfig(path);
       const merged = createConfig({
-        env: { ZCODE_LOG_DIR: logDir },
+        env: { ZODY_LOG_DIR: logDir },
         userConfigPath: path,
       });
 
@@ -1259,7 +1259,7 @@ describe("config adapters", () => {
       );
 
       const result = createConfig({
-        env: { ZCODE_LOG_DIR: logDir },
+        env: { ZODY_LOG_DIR: logDir },
         skipUserConfig: true,
         workingDirectory: root,
       });
@@ -1916,3 +1916,24 @@ async function readLogEntries(logDir: string): Promise<Array<Record<string, unkn
   const content = await readFile(join(logDir, files[0]!), "utf8");
   return content.trim().split("\n").map(JSON.parse) as Array<Record<string, unknown>>;
 }
+
+describe("R30 default environment prefix", () => {
+  it.each([
+    { name: "only new", env: { ZODY_STORAGE_DIR: "/synthetic/new" }, expected: "/synthetic/new" },
+    { name: "only old", env: { ZCODE_STORAGE_DIR: "/synthetic/old" }, expected: undefined },
+    {
+      name: "both",
+      env: { ZODY_STORAGE_DIR: "/synthetic/new", ZCODE_STORAGE_DIR: "/synthetic/old" },
+      expected: "/synthetic/new",
+    },
+    { name: "neither", env: {}, expected: undefined },
+  ])("uses the new storage key with $name", ({ env, expected }) => {
+    expect(parseEnvConfig(env).storage?.dir).toBe(expected);
+  });
+
+  it("continues to honor an explicitly supplied custom prefix", () => {
+    expect(parseEnvConfig({ CUSTOM_STORAGE_DIR: "/synthetic/custom" }, { prefix: "CUSTOM_" }).storage?.dir).toBe(
+      "/synthetic/custom",
+    );
+  });
+});

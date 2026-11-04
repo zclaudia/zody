@@ -141,8 +141,8 @@ describe("mcp protocol contracts", () => {
 describe("mcp/list connection revalidation", () => {
   it("asks the pool to revalidate on the default connect mode and skips it for status mode", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-mcp-list-revalidate-"));
-    const previousStorageDir = process.env.ZCODE_STORAGE_DIR;
-    process.env.ZCODE_STORAGE_DIR = join(root, "cli");
+    const previousStorageDir = process.env.ZODY_STORAGE_DIR;
+    process.env.ZODY_STORAGE_DIR = join(root, "cli");
     const connectConfiguredServers = vi.fn(async () => ({ statuses: {}, tools: [] }));
     const status = vi.fn(async () => ({}));
     const mcpPort = {
@@ -173,8 +173,8 @@ describe("mcp/list connection revalidation", () => {
       await listMcpServers(context, { ...params, mode: "status" });
       expect(connectConfiguredServers).not.toHaveBeenCalled();
     } finally {
-      if (previousStorageDir === undefined) delete process.env.ZCODE_STORAGE_DIR;
-      else process.env.ZCODE_STORAGE_DIR = previousStorageDir;
+      if (previousStorageDir === undefined) delete process.env.ZODY_STORAGE_DIR;
+      else process.env.ZODY_STORAGE_DIR = previousStorageDir;
       await rm(root, { force: true, recursive: true });
     }
   });

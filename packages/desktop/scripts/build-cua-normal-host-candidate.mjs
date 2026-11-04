@@ -64,7 +64,7 @@ async function assemble(options) {
     ...getBuildMetadata(),
   };
   const { environment } = await loadBuiltinProviderConfig({ root: resolve(DESKTOP_ROOT, "../..") });
-  const productFlavor = resolveDesktopProductFlavor({ ...process.env, ZCODE_ENV: environment });
+  const productFlavor = resolveDesktopProductFlavor({ ...process.env, ZODY_ENV: environment });
   const buildTimeDefines = createBuildTimeConfigDefines(await resolveBuildTimeConfig(process.env));
   const manifestPath = requirePreparedNarrowManifestPath(options.narrowManifest);
   const outputParent = dirname(options.output);
@@ -161,8 +161,8 @@ async function assemble(options) {
       outDir: appDir,
       defines: {
         ...sharedDefines,
-        __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__: "undefined",
-        __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__: JSON.stringify(NORMAL_HOST_CANDIDATE_DISPLAY_NAME),
+        __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__: "undefined",
+        __ZODY_NORMAL_CUA_CANDIDATE_UI_NAME__: JSON.stringify(NORMAL_HOST_CANDIDATE_DISPLAY_NAME),
       },
       minify: options.minify,
     });
@@ -172,7 +172,7 @@ async function assemble(options) {
       outDir: appDir,
       defines: {
         ...sharedDefines,
-        __ZCODE_CUA_NARROW_AGENT__: JSON.stringify(prepared.profile),
+        __ZODY_CUA_NARROW_AGENT__: JSON.stringify(prepared.profile),
       },
       minify: options.minify,
     });

@@ -16,7 +16,7 @@ describe("custom OpenAI Provider E2E seed", () => {
       cliConfigFile,
       JSON.stringify({ mcp: { example: { command: "example" } } }),
     );
-    vi.stubEnv("ZCODE_E2E_HOME_DIR", homeDir);
+    vi.stubEnv("ZODY_E2E_HOME_DIR", homeDir);
     vi.stubEnv("E2E_PROVIDER_RUNTIME_BASE_URL", "http://127.0.0.1:43123");
 
     const { seedCustomOpenAIChatCompletionsProvider } =
@@ -106,7 +106,7 @@ describe("custom OpenAI Provider E2E seed", () => {
         },
       ]),
     );
-    vi.stubEnv("ZCODE_E2E_HOME_DIR", homeDir);
+    vi.stubEnv("ZODY_E2E_HOME_DIR", homeDir);
 
     const { readModelProviders } = await import("./e2e/helpers/desktop-app.js");
     expect(await readModelProviders()).toEqual([]);

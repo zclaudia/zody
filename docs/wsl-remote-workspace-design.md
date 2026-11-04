@@ -232,10 +232,10 @@ WSL 有两种访问方式：
 与 SSH 完全相同：
 ```bash
 # SSH
-ssh user@host "ZCODE_SERVER_RUNTIME_ROOT=~/.zcode/server ~/.zcode/server/node ..."
+ssh user@host "ZODY_SERVER_RUNTIME_ROOT=~/.zcode/server ~/.zcode/server/node ..."
 
 # WSL
-wsl.exe --exec bash -c "ZCODE_SERVER_RUNTIME_ROOT=~/.zcode/server ~/.zcode/server/node ..."
+wsl.exe --exec bash -c "ZODY_SERVER_RUNTIME_ROOT=~/.zcode/server ~/.zcode/server/node ..."
 ```
 
 ### 4. 检测可用 WSL 分发版

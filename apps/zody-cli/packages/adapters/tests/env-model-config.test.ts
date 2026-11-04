@@ -7,9 +7,9 @@ import { createConfig, parseEnvConfig } from "../src/config/index.js";
 describe("env model config", () => {
   it("ignores legacy model environment variables", () => {
     const config = parseEnvConfig({
-      ZCODE_API_KEY: "secret",
-      ZCODE_BASE_URL: "https://api.example.test/anthropic",
-      ZCODE_MODEL: "glm-5.1",
+      ZODY_API_KEY: "secret",
+      ZODY_BASE_URL: "https://api.example.test/anthropic",
+      ZODY_MODEL: "glm-5.1",
     });
 
     expect(config).not.toHaveProperty("model");
@@ -17,8 +17,8 @@ describe("env model config", () => {
 
   it("does not validate legacy model environment variables", () => {
     const config = parseEnvConfig({
-      ZCODE_BASE_URL: "https://api.z.ai/api/anthropic",
-      ZCODE_MODEL: "zai/",
+      ZODY_BASE_URL: "https://api.z.ai/api/anthropic",
+      ZODY_MODEL: "zai/",
     });
 
     expect(config).not.toHaveProperty("model");
@@ -54,8 +54,8 @@ describe("env model config", () => {
 
       const result = createConfig({
         env: {
-          ZCODE_BASE_URL: "https://api.env.example/anthropic",
-          ZCODE_MODEL: "env-model",
+          ZODY_BASE_URL: "https://api.env.example/anthropic",
+          ZODY_MODEL: "env-model",
         },
         userConfigPath: path,
       });

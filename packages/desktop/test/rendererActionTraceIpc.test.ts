@@ -111,7 +111,7 @@ describe("renderer action trace IPC", () => {
     const dispose = registerRendererActionTraceIpc({
       rollout: disabledRollout,
       broker: { enqueue: vi.fn(), flush: vi.fn(), shutdown: vi.fn() },
-      // env 为空：排除 ZCODE_RENDERER_ACTION_TRACE_ENABLED / ZCODE_LOCAL_TTFT_ENABLED 调试覆盖。
+      // env 为空：排除 ZODY_RENDERER_ACTION_TRACE_ENABLED / ZODY_LOCAL_TTFT_ENABLED 调试覆盖。
       env: {},
       logger: { debug: vi.fn(), warn: vi.fn() },
     });
