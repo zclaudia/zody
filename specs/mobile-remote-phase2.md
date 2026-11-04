@@ -123,7 +123,7 @@ sequenceDiagram
 | 目录列表 bounded 读取                                  | `packages/desktop/src/main/remote-access/mobileDirectoryListing.ts`（Main 侧 opendir，不走 host fileService） |
 | `workspace-open-path` 受理                             | `packages/desktop/src/main/webRemoteControlManager.ts`（与最近项目打开共用 pending 判定） |
 | options → actions 派生                                 | `packages/desktop/src/host/mobileNotificationEventBridge.ts` + `mobileNotificationDeliveryBridge.ts` |
-| 通知按钮渲染 / receiver / pending 槽 / cancel          | `packages/android`：`MobileNotificationRenderService.kt`、新 `NotificationActionReceiver.kt`、`ZcodeMobileBridge.kt`、`MobileBridgeEventDispatcher` |
+| 通知按钮渲染 / receiver / pending 槽 / cancel          | `packages/android`：`MobileNotificationRenderService.kt`、新 `NotificationActionReceiver.kt`、`ZodyRemoteBridge.kt`、`MobileBridgeEventDispatcher` |
 | 手机快速路径（action 队列 + 提交 + 反馈）              | `packages/web/src/mobile-remote/bootstrap.tsx` + 新 action 队列模块 |
 | 目录选择器 UI                                          | `packages/ui`：改造 `DirectoryBrowser.tsx`（注入式 readdir + initialPath，保持 services 兼容）、新 `MobileWorkspacePicker` |
 

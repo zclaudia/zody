@@ -1,6 +1,6 @@
 # 移动端主 UI 随桌面交付：Sub-agent 实施编排
 
-状态：仅完成任务拆解，尚未开始实现。
+状态：M1、M2、M3 与 M4-T1/T2/T3 已完成；M4-T4（删除旧实现与同步规范/发布文档）与 M4-T5 最终验证已完成。Gate M4 在已验证范围内通过，未覆盖平台与环境见 [最终验证记录](../../testing/evidence/mobile-ui-desktop-delivery-final.md)。
 
 唯一产品与技术基准：[移动端主 UI 随桌面交付切换方案](../../../specs/mobile-remote-ui-desktop-delivery.md)。本目录是执行计划，不替代 spec；任务实施发现规则冲突时，停止扩张实现并交回主 agent 对齐，不能自行增加兜底分支。
 

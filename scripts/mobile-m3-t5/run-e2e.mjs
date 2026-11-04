@@ -213,22 +213,97 @@ async function remotePage() {
 }
 
 async function returnShellIfRemote() {
-  const target = (await listTargets()).find(remotePredicate);
-  if (!target) return;
-  const page = await remotePage();
-  const envelope = JSON.parse(await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"));
-  try {
-    await page.evaluate(
-      `void window.ZodyRemoteBridge.returnShell('m3-t5-reset', ${JSON.stringify(
-        envelope.context.sessionId,
-      )}); true`,
-      { awaitPromise: false },
-    );
-  } catch {
-    // 导航会中断 evaluate。
+  // 原因：Activity 重建或 reload 后 CDP 目标列表可能同时保留旧文档，旧 sessionId 已失效；
+  // 固定拿第一次找到的 target 会得到 stale-session 且永远等不到 Shell，导致后续场景级联超时。
+  // 每轮重新选择当前可见 target 读取会话并重试，直到 Shell 出现。
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const targets = (await listTargets())
+      .filter(remotePredicate)
+      .sort((left, right) => Number(isVisibleTarget(right)) - Number(isVisibleTarget(left)));
+    if (targets.length === 0) return;
+    let page;
+    try {
+      page = await remotePage();
+      const envelope = JSON.parse(
+        await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"),
+      );
+      if (!envelope.ok) throw new Error("session context unavailable");
+      await page.evaluate(
+        `void window.ZodyRemoteBridge.returnShell('m3-t5-reset', ${JSON.stringify(
+          envelope.context.sessionId,
+        )}); true`,
+        { awaitPromise: false },
+      );
+    } catch {
+      // 导航会中断 evaluate；stale-session 或正在销毁的 target 都进入下一轮重试。
+    } finally {
+      try {
+        page?.close();
+      } catch {
+        // best-effort
+      }
+    }
+    try {
+      await waitForTarget(shellPredicate, 10000, "shell after return");
+      return;
+    } catch {
+      await sleep(500);
+    }
   }
-  page.close();
   await waitForTarget(shellPredicate, 30000, "shell after return");
+}
+
+/**
+ * 关闭页面层的阻塞 dialog（例如未确认通知失败后的 “Could not open notification”）。
+ *
+ * 原因：失败的通知点击按设计保留 pending、不 ack；页面会再次弹出 dialog。它会覆盖
+ * 后续场景的点击目标（elementFromPoint 命中 DIALOG），导致设置入口等操作全部失效。
+ * 这里只关闭展示层，不调用 notificationAcknowledge，保留原生 pending。
+ */
+async function dismissBlockingWebDialogs(page) {
+  return page
+    .evaluate(`(() => {
+      const dialog = document.querySelector('dialog[open]');
+      if (!dialog) return false;
+      const close = [...dialog.querySelectorAll('button')].find(
+        (button) => button.innerText.trim() === 'Close',
+      );
+      if (close) close.click();
+      else dialog.close();
+      return true;
+    })()`)
+    .catch(() => false);
+}
+
+/**
+ * 场景之间显式复位。
+ *
+ * 原因：M3 场景会按 HOME、打开系统文件选择器/通知权限弹窗，并把 provider 根目录切到 B。
+ * 任一场景失败后若直接进入下一场景，后续场景会在后台文档或旧 session 上等待 veto/blocker，
+ * 表现为级联超时（完整运行已复现）。这里统一恢复前台、关闭系统栏与页面 dialog、
+ * 恢复 A 与 release 状态，并回到 Shell；调用方随后再按各自需要打开 StartPage / Root。
+ */
+async function resetScenarioState() {
+  try {
+    adbShell("input keyevent 224");
+    adbShell("wm dismiss-keyguard");
+    adbShell("cmd statusbar collapse");
+    adbShell(`am start -W -n ${appId}/.MainActivity`);
+  } catch {
+    // 模拟器可能不支持某个开关；继续复位 provider 和 Shell。
+  }
+  const current = await remotePage().catch(() => null);
+  if (current) {
+    await dismissBlockingWebDialogs(current);
+    current.close();
+  }
+  await control("/workspaces?value=none").catch(() => {});
+  await setRoot("a").catch(() => {});
+  await control("/release-status?value=0").catch(() => {});
+  await returnShellIfRemote().catch(async () => {
+    await bringAppToForeground().catch(() => {});
+    await returnShellIfRemote().catch(() => {});
+  });
 }
 
 async function ensureConfigured() {
@@ -462,6 +537,23 @@ async function mouseClick(page, selector) {
   });
 }
 
+async function clickPoint(page, point) {
+  await page.send("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x: point.x,
+    y: point.y,
+    button: "left",
+    clickCount: 1,
+  });
+  await page.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x: point.x,
+    y: point.y,
+    button: "left",
+    clickCount: 1,
+  });
+}
+
 async function skipOnboarding(page) {
   for (let step = 0; step < 6; step += 1) {
     const action = await page.evaluate(`(() => {
@@ -532,26 +624,129 @@ async function openRootWithDisconnectedWorkspace() {
   return page;
 }
 
+/** 设置页导航超时时附带只读 DOM 快照，便于区分“没打开设置”与“打开了其他视图”。 */
+async function settingsDiagnostics(page) {
+  return page.evaluate(`(() => ({
+    href: location.href,
+    visibility: document.visibilityState,
+    mobileSettings: document.querySelector('[data-mobile-settings]')?.getAttribute('data-mobile-settings') ?? null,
+    mobileSettingsView: document.querySelector('[data-mobile-settings-view]')?.getAttribute('data-mobile-settings-view') ?? null,
+    settingsIndex: Boolean(document.querySelector('[data-mobile-settings-index="true"]')),
+    bodyText: document.body.innerText.slice(0, 400),
+    buttons: [...document.querySelectorAll('button')].slice(0, 30).map((button) => ({
+      label: button.getAttribute('aria-label'),
+      text: button.innerText.trim().slice(0, 40),
+      testid: button.getAttribute('data-testid'),
+    })),
+    menuItems: [...document.querySelectorAll('[role="menuitem"]')].map((item) => item.innerText.trim()),
+  }))()`);
+}
+
 async function openConnectionSettings(page) {
-  await mouseClick(page, 'button[aria-label="Settings"]');
-  await page.waitFor(
-    `[...document.querySelectorAll('[role="menuitem"]')].some((el) => el.innerText.trim() === 'Settings')`,
-    10000,
-    "settings menu",
+  // 未确认通知失败留下的 dialog 会覆盖设置入口；先只关闭展示层，不 ack pending。
+  await dismissBlockingWebDialogs(page);
+  // 原因：根页可能同时存在移动端 TaskHome 的设置下拉触发器与桌面侧栏的设置按钮。
+  // 旧实现只取第一个匹配项，完整运行时可能点到直接跳转设置页的侧栏按钮，随后一直等不到
+  // [role=menuitem]（单独运行不触发，已在修复前复现）。这里优先 TaskHome 内的触发器，
+  // 并兼容“触发器直接打开设置页”的路径。
+  const triggers = await page.evaluate(`(() => [
+    ...document.querySelectorAll('button[aria-label="Settings"]'),
+  ]
+    .map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        x: r.left + r.width / 2,
+        y: r.top + r.height / 2,
+        width: r.width,
+        height: r.height,
+        preferred: Boolean(el.closest('[data-mobile-remote-page="start"]')),
+      };
+    })
+    .filter((trigger) => trigger.width > 0 && trigger.height > 0)
+    .sort((left, right) => Number(right.preferred) - Number(left.preferred)))()`);
+  assert(triggers.length > 0, "settings trigger missing");
+  const menuReady = `[...document.querySelectorAll('[role="menuitem"]')].some((el) => el.innerText.trim() === 'Settings')`;
+  const settingsReady =
+    `document.querySelector('[data-mobile-settings="true"]') !== null || ` +
+    `document.querySelector('[data-testid="settings-back-button"]') !== null`;
+  let settingsOpened = false;
+  for (const trigger of triggers) {
+    await clickPoint(page, trigger);
+    // 该触发器可能直接打开设置页，也可能先展开下拉菜单；两种都接受。
+    if (
+      await page
+        .waitFor(settingsReady, 1500)
+        .then(() => true)
+        .catch(() => false)
+    ) {
+      settingsOpened = true;
+      break;
+    }
+    if (
+      !(await page
+        .waitFor(menuReady, 3000)
+        .then(() => true)
+        .catch(() => false))
+    ) {
+      continue;
+    }
+    // Radix 菜单项通过 click 触发 onSelect；单独运行已验证该路径可打开设置页。
+    const clicked = await page.evaluate(`(() => {
+      const item = [...document.querySelectorAll('[role="menuitem"]')].find((el) => el.innerText.trim() === 'Settings');
+      if (!item) return false;
+      item.click();
+      return true;
+    })()`);
+    if (!clicked) continue;
+    settingsOpened = await page
+      .waitFor(settingsReady, 8000)
+      .then(() => true)
+      .catch(() => false);
+    if (settingsOpened) break;
+    // 该下拉项没有打开设置（例如 disconnected Root 下 onOpenAppSettings 不产生页面），
+    // 关闭菜单后尝试下一个触发器（桌面侧栏按钮会直接进入设置页）。
+    await clickPoint(page, { x: 5, y: 5 });
+    await sleep(300);
+  }
+  if (!settingsOpened) {
+    const diagnostics = await settingsDiagnostics(page).catch(() => null);
+    throw new Error(
+      `settings page did not open from any trigger; diagnostics=${JSON.stringify(diagnostics)}`,
+    );
+  }
+  // 设置 tab 可能是桌面持久状态：若上次停在某个分区，打开设置会直接进入 section 而不是
+  // index。先显式回到 mobile settings index，再选择 Connection；已经处于连接分区时直接复用。
+  const alreadyInConnectionSection = await page.evaluate(
+    `document.querySelector('[data-mobile-connection-settings-section]') !== null`,
   );
-  const clicked = await page.evaluate(`(() => {
-    const item = [...document.querySelectorAll('[role="menuitem"]')].find((el) => el.innerText.trim() === 'Settings');
-    if (!item) return false;
-    item.click();
-    return true;
-  })()`);
-  assert(clicked, "settings menu item missing");
-  await page.waitFor(
-    `document.querySelector('[data-testid="mobile-settings-section-connection"]') !== null`,
-    15000,
-    "mobile settings nav",
-  );
-  await mouseClick(page, '[data-testid="mobile-settings-section-connection"]');
+  if (!alreadyInConnectionSection) {
+    const atIndex = await page.evaluate(
+      `document.querySelector('[data-mobile-settings-index="true"]') !== null`,
+    );
+    if (!atIndex) {
+      const backed = await page.evaluate(`(() => {
+        const button = [...document.querySelectorAll('button')].find(
+          (el) => el.getAttribute('aria-label') === 'Back to workspace',
+        );
+        if (!button) return false;
+        button.click();
+        return true;
+      })()`);
+      if (backed) {
+        await page.waitFor(
+          `document.querySelector('[data-mobile-settings-index="true"]') !== null`,
+          10000,
+          "mobile settings index",
+        );
+      }
+    }
+    await page.waitFor(
+      `document.querySelector('[data-testid="mobile-settings-section-connection"]') !== null`,
+      15000,
+      "mobile settings nav",
+    );
+    await mouseClick(page, '[data-testid="mobile-settings-section-connection"]');
+  }
   await page.waitFor(
     `document.querySelector('[data-mobile-connection-settings-section]') !== null`,
     15000,
@@ -587,6 +782,7 @@ async function cancelConnectionSettings(page) {
 // ---------------------------------------------------------------------------
 
 async function runReleaseUpgradeThrottleRollback() {
+  await resetScenarioState();
   await setRoot("a");
   await control("/release-status?value=0");
   let page = await openRemoteStartPage();
@@ -672,6 +868,7 @@ async function runReleaseUpgradeThrottleRollback() {
 }
 
 async function runFailureKeepsDocument() {
+  await resetScenarioState();
   await setRoot("a");
   await control("/release-status?value=0");
   const page = await openRemoteStartPage();
@@ -746,6 +943,7 @@ async function runFailureKeepsDocument() {
 }
 
 async function runBridgeIncompatible() {
+  await resetScenarioState();
   const fixtures = JSON.parse(await readFile(`${fixturesDir}/fixtures.json`, "utf8"));
   await setRoot("a");
   await control("/release-status?value=0");
@@ -835,45 +1033,69 @@ async function runBridgeIncompatible() {
 }
 
 async function runBackgroundNoRefresh() {
-  await setRoot("a");
-  await control("/release-status?value=0");
-  const page = await openRemoteStartPage();
-  await installReloadCounter(page, { reset: true });
-  await clearThrottle(page);
-  const baseline = await readState(page);
-  adbShell("input keyevent 3");
-  // 等 HOME 引发的在途检查结束，再取基线；后台稳定后不得继续轮询。
-  await sleep(2500);
-  const fetchesBefore = (await providerStatus()).releaseFetchCount;
-  await setRoot("b");
-  await triggerReleaseCheck(page).catch(() => {});
-  await sleep(8000);
-  const backgroundState = await readState(page).catch(() => null);
-  const fetchesAfter = (await providerStatus()).releaseFetchCount;
-  assert(!backgroundState || backgroundState.meta === baseline.meta, "background page reloaded");
-  assert(!backgroundState || backgroundState.count === 0, "background page reload count changed");
-  assert(
-    fetchesAfter === fetchesBefore,
-    `background page polled release: ${fetchesBefore} -> ${fetchesAfter}`,
-  );
+  let page = null;
+  try {
+    // 场景开始显式复位：确保应用在前台、回到 Shell，且 workspace/release 不继承上一场景残留。
+    await resetScenarioState();
+    page = await openRemoteStartPage();
+    await installReloadCounter(page, { reset: true });
+    await clearThrottle(page);
+    const baseline = await readState(page);
+    adbShell("input keyevent 3");
+    // 等 HOME 引发的在途检查结束，再取基线；后台稳定后不得继续轮询。
+    await sleep(2500);
+    const fetchesBefore = (await providerStatus()).releaseFetchCount;
+    await setRoot("b");
+    await triggerReleaseCheck(page).catch(() => {});
+    await sleep(8000);
+    const backgroundState = await readState(page).catch(() => null);
+    const fetchesAfter = (await providerStatus()).releaseFetchCount;
+    assert(!backgroundState || backgroundState.meta === baseline.meta, "background page reloaded");
+    assert(!backgroundState || backgroundState.count === 0, "background page reload count changed");
+    assert(
+      fetchesAfter === fetchesBefore,
+      `background page polled release: ${fetchesBefore} -> ${fetchesAfter}`,
+    );
 
-  await bringAppToForeground();
-  await sleep(1000);
-  const foreground = await waitForState(
-    (state) => state.visible === "visible" && state.meta !== baseline.meta,
-    "foreground release reload",
-    25000,
-  );
-  record("background-no-refresh", "pass", {
-    backgroundMeta: backgroundState?.meta ?? baseline.meta,
-    backgroundReloads: backgroundState?.count ?? 0,
-    backgroundReleaseFetches: fetchesAfter - fetchesBefore,
-    foregroundReleaseId: foreground.state.meta,
-    foregroundReloads: foreground.state.count,
-  });
-  await installReloadCounter(foreground.page, { reset: false });
-  foreground.page.close();
-  await setRoot("a");
+    await bringAppToForeground();
+    await sleep(1000);
+    const foreground = await waitForState(
+      (state) => state.visible === "visible" && state.meta !== baseline.meta,
+      "foreground release reload",
+      25000,
+    );
+    record("background-no-refresh", "pass", {
+      backgroundMeta: backgroundState?.meta ?? baseline.meta,
+      backgroundReloads: backgroundState?.count ?? 0,
+      backgroundReleaseFetches: fetchesAfter - fetchesBefore,
+      foregroundReleaseId: foreground.state.meta,
+      foregroundReloads: foreground.state.count,
+    });
+    await installReloadCounter(foreground.page, { reset: false });
+    foreground.page.close();
+  } finally {
+    // 原因：本场景按 HOME 把应用放到后台；断言失败时若不恢复前台，后续场景会在 hidden
+    // 文档上等待 veto/blocker 并级联超时（完整运行已复现）。因此无论成功失败都恢复前台、
+    // 复位制品根目录和 release 状态，并等待当前 Remote 文档重新可见。
+    try {
+      await bringAppToForeground();
+    } catch {
+      // 恢复前台失败时仍继续复位 provider，避免把失败扩散到后续场景。
+    }
+    await setRoot("a").catch(() => {});
+    await control("/release-status?value=0").catch(() => {});
+    const restored = await waitForState(
+      (state) => state.visible === "visible" && state.href.includes("remote.zody.local"),
+      "foreground remote after background scenario",
+      15000,
+    ).catch(() => null);
+    restored?.page.close();
+    try {
+      page?.close();
+    } catch {
+      // 页面可能已被 reload 替换。
+    }
+  }
 }
 
 async function restoreToBaselineA() {
@@ -902,6 +1124,7 @@ async function restoreToBaselineA() {
 
 async function runActiveOverlayGuard() {
   // 不依赖上一场景的页面状态：从 Shell 重新进入 A 的 StartPage。
+  await resetScenarioState();
   await setRoot("a");
   await control("/release-status?value=0");
   let page = await openRemoteStartPage();
@@ -951,6 +1174,8 @@ async function runActiveOverlayGuard() {
 
 async function runUnsavedSettingsGuard() {
   // 先让服务端 release 与即将加载的文档一致，避免 onboarding 期间被自动刷新打断。
+  // 本场景的 openRootWithDisconnectedWorkspace 已显式设置 workspaces 并回 Shell，
+  // 额外的 resetScenarioState 会多一次导航，反而改变 Root 的设置页入口行为。
   await setRoot("a");
   await control("/release-status?value=0");
   const page = await openRootWithDisconnectedWorkspace();
@@ -990,6 +1215,7 @@ async function runUnsavedSettingsGuard() {
 }
 
 async function runNativeBusyGuards() {
+  await resetScenarioState();
   await setRoot("a");
   await control("/release-status?value=0");
   let page = await openRemoteStartPage();
@@ -1152,6 +1378,7 @@ async function ensureNotificationPermissionRequestable() {
 }
 
 async function runNotificationPermissionVeto() {
+  await resetScenarioState();
   await ensureNotificationPermissionRequestable();
   const page = await openRemoteStartPage();
   await installReloadCounter(page, { reset: true });
@@ -1197,6 +1424,7 @@ async function runNotificationPermissionVeto() {
 
 async function runActivityRecreateNotPermanentlyBusy() {
   // 上一场景可能留下未授权通知权限；Activity 重建会再次触发系统弹窗，先授权以隔离 busy 来源。
+  await resetScenarioState();
   await dismissPermissionDialogIfPresent();
   await grantNotificationPermission();
   await setRoot("a");

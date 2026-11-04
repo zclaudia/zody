@@ -1,5 +1,10 @@
 # 手机远控设置：信息架构、导航与连接分区
 
+> 2026-11-03 更新：连接配置、首次配对和选电脑已移到轻 Shell（`packages/web/mobile-shell.html`）；
+> Remote 页面不再显示连接分区，修改连接或切换电脑统一经 `ZodyRemoteBridge.returnShell` 返回
+> Shell。本文其余设置信息架构仍适用于 Remote 页面，涉及“连接”分区的段落保留为历史设计，
+> 不再代表当前实现。见 [移动端主 UI 随桌面交付切换方案](../../specs/mobile-remote-ui-desktop-delivery.md)。
+
 范围：`packages/web/mobile.html` 已连接手机首页、聊天页、共享应用设置 `SettingsPage`，以及 `SettingsPage` 内仅手机 Web Remote Control 可见的连接分区。首次配置、Root 外 StartPage、桌面设置和现有设置持久化不在重写范围内。
 
 关联规格：[手机视口、输入与触控](mobile-viewport-input-and-touch.md)、[设置页侧栏布局](../ui/settings-sidebar-layout.md)。

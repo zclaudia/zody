@@ -7,11 +7,11 @@ import {
 const SESSION_ID = "session-1";
 
 interface InstalledHost {
-  onNotificationClick(sessionId: unknown, value: unknown): void;
-  onNotificationAction(sessionId: unknown, value: unknown): void;
-  onNotificationPermissionChanged(sessionId: unknown, value: unknown): void;
-  onAppLifecycle(sessionId: unknown, state: unknown): void;
-  onBackPressed(sessionId: unknown): boolean;
+  onNotificationClick(value: unknown): void;
+  onNotificationAction(value: unknown): void;
+  onNotificationPermissionChanged(value: unknown): void;
+  onAppLifecycle(state: unknown): void;
+  onBackPressed(): boolean;
 }
 
 function createTarget(withBridge = true): Record<string, unknown> {
@@ -41,7 +41,7 @@ describe("mobile remote native host (T6.2 / M2-T2)", () => {
     expect(target[MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY]).toBeUndefined();
   });
 
-  it("installs the page host object and forwards lifecycle events with sessionId", () => {
+  it("installs the page host object and forwards lifecycle events", () => {
     const target = createTarget();
     const binding = install(target);
     expect(binding).toBeDefined();
@@ -49,17 +49,15 @@ describe("mobile remote native host (T6.2 / M2-T2)", () => {
     const handler = vi.fn();
     const dispose = binding!.onAppLifecycleChange(handler);
 
-    installedHost(target).onAppLifecycle(SESSION_ID, "background");
-    installedHost(target).onAppLifecycle(SESSION_ID, "foreground");
+    installedHost(target).onAppLifecycle("background");
+    installedHost(target).onAppLifecycle("foreground");
     // 宿主传入未知状态时不能转发给页面。
-    installedHost(target).onAppLifecycle(SESSION_ID, "bogus");
-    // 旧 session 的迟到事件直接丢弃。
-    installedHost(target).onAppLifecycle("stale-session", "background");
+    installedHost(target).onAppLifecycle("bogus");
 
     expect(handler.mock.calls).toEqual([["background"], ["foreground"]]);
 
     dispose();
-    installedHost(target).onAppLifecycle(SESSION_ID, "background");
+    installedHost(target).onAppLifecycle("background");
     expect(handler).toHaveBeenCalledTimes(2);
   });
 
@@ -72,15 +70,13 @@ describe("mobile remote native host (T6.2 / M2-T2)", () => {
     const disposeFallback = binding.onBackPressed(fallback);
     const disposeOverlay = binding.onBackPressed(overlay);
 
-    expect(installedHost(target).onBackPressed(SESSION_ID)).toBe(true);
+    expect(installedHost(target).onBackPressed()).toBe(true);
     // 后注册的 UI 优先，并且命中后不再询问启动流程。
     expect(overlay).toHaveBeenCalledTimes(1);
     expect(fallback).not.toHaveBeenCalled();
-    // stale session 不消费返回键。
-    expect(installedHost(target).onBackPressed("stale-session")).toBe(false);
 
     disposeOverlay();
-    expect(installedHost(target).onBackPressed(SESSION_ID)).toBe(false);
+    expect(installedHost(target).onBackPressed()).toBe(false);
     expect(fallback).toHaveBeenCalledTimes(1);
 
     disposeFallback();
@@ -97,7 +93,7 @@ describe("mobile remote native host (T6.2 / M2-T2)", () => {
     binding.onBackPressed(broken);
     binding.onBackPressed(handled);
 
-    expect(installedHost(target).onBackPressed(SESSION_ID)).toBe(true);
+    expect(installedHost(target).onBackPressed()).toBe(true);
     expect(handled).toHaveBeenCalledTimes(1);
   });
 
@@ -111,6 +107,23 @@ describe("mobile remote native host (T6.2 / M2-T2)", () => {
     expect(target[MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY]).toBe(host);
   });
 
+  it("replaces the host object on a new session so old subscribers do not receive events", () => {
+    const target = createTarget();
+    const first = install(target, "session-1")!;
+    const firstLifecycle = vi.fn();
+    first.onAppLifecycleChange(firstLifecycle);
+    const firstHost = installedHost(target);
+
+    const second = install(target, "session-2")!;
+    const secondLifecycle = vi.fn();
+    second.onAppLifecycleChange(secondLifecycle);
+
+    expect(installedHost(target)).not.toBe(firstHost);
+    installedHost(target).onAppLifecycle("foreground");
+    expect(firstLifecycle).not.toHaveBeenCalled();
+    expect(secondLifecycle).toHaveBeenCalledExactlyOnceWith("foreground");
+  });
+
   it("forwards validated warm clicks and permission results without replaying disposed listeners", () => {
     const target = createTarget();
     const binding = install(target)!;
@@ -118,31 +131,25 @@ describe("mobile remote native host (T6.2 / M2-T2)", () => {
     const permission = vi.fn();
     const disposeClick = binding.onNotificationClick(click);
     const disposePermission = binding.onNotificationPermissionChanged(permission);
-    installedHost(target).onNotificationClick(SESSION_ID, {
+    installedHost(target).onNotificationClick({
       backendId: "backend",
       notificationId: "notification",
     });
-    installedHost(target).onNotificationClick(SESSION_ID, {
+    installedHost(target).onNotificationClick({
       backendId: "backend",
       notificationId: "",
     });
-    // stale session 的 pending 通知不能进入新文档。
-    installedHost(target).onNotificationClick("stale-session", {
-      backendId: "backend",
-      notificationId: "notification",
-    });
-    installedHost(target).onNotificationPermissionChanged(SESSION_ID, true);
-    installedHost(target).onNotificationPermissionChanged(SESSION_ID, "true");
-    installedHost(target).onNotificationPermissionChanged("stale-session", true);
+    installedHost(target).onNotificationPermissionChanged(true);
+    installedHost(target).onNotificationPermissionChanged("true");
     expect(click).toHaveBeenCalledTimes(1);
     expect(permission).toHaveBeenCalledExactlyOnceWith(true);
     disposeClick();
     disposePermission();
-    installedHost(target).onNotificationClick(SESSION_ID, {
+    installedHost(target).onNotificationClick({
       backendId: "b",
       notificationId: "n",
     });
-    installedHost(target).onNotificationPermissionChanged(SESSION_ID, false);
+    installedHost(target).onNotificationPermissionChanged(false);
     expect(click).toHaveBeenCalledTimes(1);
     expect(permission).toHaveBeenCalledTimes(1);
   });
@@ -184,29 +191,23 @@ describe("mobile remote native host notification action (E4)", () => {
     binding.onNotificationAction(handler);
 
     const host = installedHost(target);
-    host.onNotificationAction(SESSION_ID, {
+    host.onNotificationAction({
       backendId: "b",
       notificationId: "n",
       optionId: "opt",
       optionKind: "deny",
     });
-    host.onNotificationAction(SESSION_ID, {
+    host.onNotificationAction({
       backendId: "b",
       notificationId: "n",
       optionId: "opt",
     });
-    host.onNotificationAction(SESSION_ID, {
+    host.onNotificationAction({
       backendId: "b",
       notificationId: "n",
       optionKind: "deny",
     });
-    host.onNotificationAction(SESSION_ID, "bogus");
-    host.onNotificationAction("stale-session", {
-      backendId: "b",
-      notificationId: "n",
-      optionId: "opt",
-      optionKind: "deny",
-    });
+    host.onNotificationAction("bogus");
 
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler).toHaveBeenCalledWith({

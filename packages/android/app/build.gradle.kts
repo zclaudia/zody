@@ -11,8 +11,7 @@ plugins {
 // 新版 APK 只内置轻 Shell：Gradle 构建时先跑根目录的 pnpm build:mobile-shell，
 // 再把 packages/web/dist-mobile-shell 同步到 app/src/main/assets/shell/
 // （WebViewAssetLoader 固定服务 /assets/shell/）。完整 Remote 制品随桌面交付，
-// 不再进入 APK；生成目录不进入提交，可用 -PmobileShellPnpm=<path>
-// （兼容旧的 -PmobileWebPnpm）覆盖 pnpm 可执行文件。
+// 不再进入 APK；生成目录不进入提交，可用 -PmobileShellPnpm=<path> 覆盖 pnpm 可执行文件。
 val repoRootDir: File = rootProject.projectDir.parentFile.parentFile
 val releaseVersion = (JsonSlurper().parse(repoRootDir.resolve("package.json")) as Map<*, *>)["version"]
     as? String ?: throw GradleException("Root package.json must define the Zody version.")
@@ -37,9 +36,7 @@ val validateZodyReleaseSigning = tasks.register("validateZodyReleaseSigning") {
 val mobileShellDistDir = layout.projectDirectory.dir("../../web/dist-mobile-shell")
 val mobileShellAssetsDir = layout.projectDirectory.dir("src/main/assets/shell")
 val legacyRemoteAssetsDir = layout.projectDirectory.dir("src/main/assets/remote")
-val mobileShellPnpm = providers.gradleProperty("mobileShellPnpm")
-    .orElse(providers.gradleProperty("mobileWebPnpm"))
-    .getOrElse("pnpm")
+val mobileShellPnpm = providers.gradleProperty("mobileShellPnpm").getOrElse("pnpm")
 
 val buildMobileShell = tasks.register<Exec>("buildMobileShell") {
     group = "mobile web"

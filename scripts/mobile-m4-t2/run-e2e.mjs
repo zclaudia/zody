@@ -89,6 +89,24 @@ function readPending() {
   return { click: read("pending_click"), action: read("pending_notification_action_v1") };
 }
 
+/**
+ * 轮询 pending 槽而不是固定 sleep 后只读一次。
+ *
+ * 原因：MainActivity 用 SharedPreferences.apply() 异步落盘；实测在模拟器负载下从点击到
+ * 文件可读需要 1.0–1.25s，旧的固定 1200ms 会稳定竞态。这里按 150ms 间隔轮询，最多 10s，
+ * 超时返回最后一次快照，让原断言给出真实的失败内容。
+ */
+async function waitForPending(predicate, timeoutMs = 10000, intervalMs = 150) {
+  const deadline = Date.now() + timeoutMs;
+  let snapshot = readPending();
+  while (Date.now() < deadline) {
+    if (predicate(snapshot)) return snapshot;
+    await sleep(intervalMs);
+    snapshot = readPending();
+  }
+  return snapshot;
+}
+
 function clearPendingPrefs() {
   adbShell("am", "force-stop", appId);
   try {
@@ -145,7 +163,9 @@ async function expandShade() {
  * 反复点最上方的 Expand，直到目标文本可见，最多 4 层。
  */
 async function reveal(text) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  // 通知卡片由 Service 异步发布；固定 900ms 后只重试 5 次在模拟器负载下可能还没出现在
+  // 通知栏（曾出现一次 “Allow once” 未找到）。扩大到 12 次有界轮询，仍保留超时失败。
+  for (let attempt = 0; attempt < 12; attempt += 1) {
     const nodes = dumpUi();
     const target = nodes.find((node) => node.text === text);
     if (target) return target;
@@ -220,8 +240,13 @@ async function main() {
   await expandShade();
   const allowButton = await reveal("Allow once");
   tap(allowButton);
-  await sleep(1200);
-  const afterAction = readPending();
+  // 同上的落盘竞态：轮询等待动作槽出现，超时仍交给下面的断言报出真实快照。
+  const afterAction = await waitForPending(
+    (pending) =>
+      pending.action?.notificationId === permissionId &&
+      pending.action?.optionId === "opt-allow" &&
+      pending.action?.optionKind === "allowOnce",
+  );
   assert(
     afterAction.action?.notificationId === permissionId &&
       afterAction.action?.optionId === "opt-allow" &&
@@ -251,8 +276,12 @@ async function main() {
     const body = nodes.find((node) => node.text === "A task has finished.");
     if (body) {
       tap(body);
-      await sleep(900);
-      if (readPending().click?.notificationId === clickId) break;
+      // 点击后同样等待异步落盘；一次点击没有命中时再尝试展开组。
+      const clicked = await waitForPending(
+        (pending) => pending.click?.notificationId === clickId,
+        5000,
+      );
+      if (clicked.click?.notificationId === clickId) break;
     }
     const expand = nodes
       .filter((node) => node["content-desc"] === "Expand" || node.text === "Expand")
@@ -262,7 +291,10 @@ async function main() {
       await sleep(700);
     }
   }
-  const afterClick = readPending();
+  const afterClick = await waitForPending(
+    (pending) => pending.click?.notificationId === clickId,
+    5000,
+  );
   assert(
     afterClick.click?.notificationId === clickId && afterClick.click?.backendId === "e2e-backend",
     `system card click did not persist expected pending click: ${JSON.stringify(afterClick.click)}`,
@@ -279,11 +311,15 @@ async function main() {
   await sendDeepLink(
     `zody://notification/v1?backendId=e2e-backend&notificationId=${encodeURIComponent(coldId)}`,
   );
-  const afterColdStart = readPending();
+  // 冷启动 Activity 与 SharedPreferences 写入也是异步的，先轮询到 pending 出现。
+  const afterColdStart = await waitForPending(
+    (pending) => pending.click?.notificationId === coldId,
+  );
   assert(
     afterColdStart.click?.notificationId === coldId,
     "cold start deep link was not persisted before Remote ready",
   );
+  // 这里是“等待 3 秒确认没有被 ack”，使用固定窗口符合断言语义。
   await sleep(3000);
   const retained = readPending();
   assert(
@@ -305,6 +341,8 @@ async function main() {
     `am start -W -a android.intent.action.VIEW -n ${activity} \\`,
     `  -d 'zody://notification/v1?backendId=e2e-backend&notificationId=${"a".repeat(268)}'`,
   ]);
+  // 非法 intent 的断言是“不改变已有槽”，等一个短稳定窗口后再读，避免把尚未落盘的旧值当失败。
+  await sleep(500);
   const afterInvalid = readPending();
   assert(
     afterInvalid.click?.notificationId === coldId &&

@@ -15,15 +15,17 @@ runtime；手机只 attach 桌面已有的 Host attachment，不启动独立 Age
   看到它所有窗口的 workspace 和任务。
 - 传输层从官方 relay 改为自建的 **zclaudia-gateway**（Gateway Protocol v4）。gateway 只做鉴权、
   配对、心跳和帧级转发，不保存任务队列、快照等业务状态。
-- 手机页面不再从官方域名加载，而是打进 Android APK 的 assets（PC 浏览器开发模式除外）。
+- 手机主 UI 不再从官方域名加载：APK 只内置轻 Shell，完整 Remote UI 由当前选中的桌面经
+  Gateway 提供，页面 origin 固定为 `https://remote.zody.local`（PC 浏览器开发模式除外）。
 
 ### 使用流程与页面
 
 1. 桌面设置 → 「远程访问」：填写 gateway 地址、namespace 和 backend 凭证（`zgb_`），打开总开关。
-2. 手机首次使用：填写 gateway 地址、namespace 和设备凭证（`zgd_`），从 `discoverBackends` 列表
-   里选择电脑并保存。
+2. 手机 Shell 首次使用：在配对页填写 gateway 地址、namespace 和设备凭证（`zgd_`），从
+   `discoverBackends` 列表里选择同时支持 `zcode-remote-control` 与 `zcode-remote-ui-v1` 的
+   电脑并保存；随后 `openRemote` 进入该桌面提供的 Remote。
 3. 进入手机任务首页：按工作区分组浏览所有已打开的 workspace 和任务，点击进入聊天；权限审批、
-   交互请求、附件和工作区切换复用现有 V4 会话组件。
+   交互请求、附件和工作区切换复用现有 V4 会话组件。修改连接或切换电脑时返回 Shell。
 4. 首页「最近项目」区列出桌面 `recentProjects`（最多 10 条，仅本地）中尚未打开的项目。点击后
    请求桌面在主窗口新开标签页，之后手机正常进入。
 5. 桌面没有窗口时（例如 macOS 关窗后驻留托盘），手机显示空态并提供「在电脑上打开窗口」。
@@ -87,8 +89,8 @@ zclaudia-gateway（鉴权、配对、心跳、帧级转发；无业务状态）
 | 桌面窗口目录                    | `packages/desktop/src/main/remote-access/remoteWorkspaceDirectory.ts`、`packages/desktop/src/main/remote-access/recentProjects.ts`                                                                                                  |
 | 桌面 App 级 runtime             | `packages/desktop/src/main/webRemoteControlManager.ts`                                                                                                                                                                              |
 | 桌面 IPC 与设置                 | `packages/desktop/src/main/desktopRemoteAccessIpc.ts`、`packages/ui/src/settings/RemoteAccessSection.tsx`、`packages/ui/src/WebRemoteControlDialog.tsx`                                                                             |
-| 手机页面与 transport            | `packages/web/src/mobile-remote/bootstrap.tsx`、`packages/web/src/mobile-remote/gatewayTerminalTransport.ts`、`packages/web/src/mobile-remote/mobileRemoteSetup.tsx`、`packages/web/src/mobile-remote/mobileRemoteConfigStore.ts`   |
-| 手机入口                        | `packages/web/mobile.html`（Vite 独立 entry，构建到 `packages/web/dist-mobile-remote/`）                                                                                                                                            |
+| 手机 Shell                      | `packages/web/mobile-shell.html`、`packages/web/src/mobile-shell/`（配对、设置、discovery、选电脑；构建到 `packages/web/dist-mobile-shell/`）                                                                                       |
+| 手机 Remote 与 transport        | `packages/web/mobile.html`、`packages/web/src/mobile-remote/bootstrap.tsx`、`packages/web/src/mobile-remote/gatewayTerminalTransport.ts`（主 UI；构建到 `packages/web/dist-mobile-remote/`，随桌面打包）                              |
 | Android 壳                      | `packages/android`（详见 [Android 远程控制壳](../mobile-remote-control-android.md)）                                                                                                                                                |
 
 依赖方向保持 `desktop/web/ui → shared`；`ui` 不直接 import gateway SDK。
@@ -156,9 +158,10 @@ disabled | connecting | online{backendId, epoch} | error(unconfigured | credenti
   `channel_reject`。
 - 桌面在 `peer_hello.backend.capabilities` 里自报 `zcode-remote-control`。手机在开 channel 前
   先查 registry：电脑在线但没有这个能力位时进入 `backend-unsupported`，不发起 channel。
-- namespace 默认 `zcode`；设备凭证的 discovery 接口不返回 namespace，所以手机设置页可编辑。
-- 手机页面来自 APK 内置的 origin `https://appassets.androidplatform.net`。如果 gateway 设置了
-  `GATEWAY_ALLOWED_ORIGINS`，必须包含这个 origin，否则 `discoverBackends` 会被拦截。
+- namespace 默认 `zcode`；设备凭证的 discovery 接口不返回 namespace，所以手机 Shell 配对页可编辑。
+- 手机有两个应用内 origin：Shell 为 `https://appassets.androidplatform.net`，Remote 主 UI 为
+  `https://remote.zody.local`。如果 gateway 设置了 `GATEWAY_ALLOWED_ORIGINS`，必须同时包含两者，
+  否则 Shell 的 `discoverBackends` 或 Remote 的 WSS/fetch 会被拦截。
 
 ## Channel 帧协议
 
@@ -208,11 +211,14 @@ gateway 下发的 `channel_closed.reason` 取值是 `closed`、`rejected`、`tim
 
 ## 版本兼容
 
-手机页面打进 APK 内置 assets 后，APK 与桌面各自升级、不再配套，因此有两层版本：
+新版 APK 只内置轻 Shell，Remote 主 UI 与桌面同版；Shell、Remote 页面和桌面仍可能处于不同
+版本，因此保留三层协商：
 
 - **`protocolVersion`**：channel 帧格式版本，当前为 `1`。不相等直接 `close{incompatible-version}`。
 - **`appProtocol`**：应用 payload 版本，整数区间 `[min, max]`。当前为 `min = 1`、`max = 2`
   （v2 增加了最近项目、打开项目、打开窗口 payload 和 `bootstrap-response` 的新字段）。
+- **UI `bridgeVersion`**：Remote 的 `release.json` 通过 `supportedBridgeVersions` 声明兼容的
+  原生桥版本；Shell 也校验自身 `bridgeVersion`。不兼容时只提示升级对应一端，不启动业务连接。
 
 协商规则：
 
@@ -356,11 +362,11 @@ sequenceDiagram
 | 原因                                                                                                                     | 触发                                                                                                                     | 恢复                                                 |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
 | `gateway-unreachable`                                                                                                    | 控制连接持续失败超过 30 秒                                                                                               | 可恢复：SDK 退避重连，成功后自动回到首页             |
-| `gateway-credential-invalid`                                                                                             | 首次 `connect()` 被 `UNAUTHORIZED` 拒绝，或关闭后 `discoverBackends()` 复核得到 401/403                                  | 终态，跳转设置页                                     |
+| `gateway-credential-invalid`                                                                                             | 首次 `connect()` 被 `UNAUTHORIZED` 拒绝，或关闭后 `discoverBackends()` 复核得到 401/403                                  | 终态，返回 Shell 重新配对                            |
 | `desktop-disconnected`                                                                                                   | 电脑离线、收到 `close{desktop-stopping}`，或 channel 以 `backend_offline`/`epoch_changed`/`timeout` 关闭且超过 60 秒宽限 | 可恢复：registry 显示在线后自动重连                  |
 | `session-conflict`                                                                                                       | 收到 `close{superseded}`（先回 `close_ack`）                                                                             | 终态，提供「重新连接」；此状态下禁止自动重开 channel |
 | `incompatible-version`                                                                                                   | 收到 `close{incompatible-version}`                                                                                       | 终态，按 `upgrade` 提示升级 App 或电脑端             |
-| `backend-unsupported`                                                                                                    | 选中的电脑在线，但 registry 能力位里没有 `zcode-remote-control`                                                          | 终态，提示这台电脑不支持 ZCode 远控，不再自动重试    |
+| `backend-unsupported`                                                                                                    | 选中的电脑在线，但 registry 能力位里缺少 `zcode-remote-control` 或 `zcode-remote-ui-v1`                                  | 终态，提示不支持远控或升级桌面，不再自动重试         |
 | `desktop-bootstrap-timeout`、`connection-recovery-timeout`、`workspace-closed`、`unsupported-action`、`unexpected-error` | 语义不变                                                                                                                 | 现有逻辑                                             |
 
 判定终态需要比 close code 更具体的证据：
@@ -406,7 +412,7 @@ CLI runtime restart 会改变 `logEpoch` 并触发 snapshot。上一进程已 ad
 #    默认使用 ../zclaudia-gateway 的 docker-compose；凭证写入 .env.gateway.local
 pnpm dev:gateway
 
-# 2. 起桌面开发进程 + 手机页面 Vite dev server（http://localhost:5173/mobile.html）
+# 2. 起桌面开发进程 + 轻 Shell / Remote 的 Vite dev server
 pnpm dev:mobile-remote
 ```
 
@@ -414,16 +420,20 @@ pnpm dev:mobile-remote
 执行，仍有效的凭证会复用。已有 gateway 实例时用 `ZCODE_GATEWAY_IT_URL` 和
 `ZCODE_GATEWAY_IT_ADMIN_TOKEN` 跳过 docker。
 
-手机浏览器开发模式在设置页手动填写本地 gateway 地址、namespace 和 `zgd_` 凭证；页面在
-`http://localhost:5173/mobile.html`，桌面进程用 `pnpm dev:desktop` 另起也可以。
+手机浏览器开发模式从 Shell 入口 `http://localhost:5173/mobile-shell.html` 开始，在配对页填写
+本地 gateway 地址、namespace 和 `zgd_` 凭证；`openRemote` 后开发 handoff 进入
+`http://localhost:5173/mobile.html`，凭证不进入 URL。桌面进程用 `pnpm dev:desktop` 另起也可以。
 
 ### 构建与隔离检查
 
 ```bash
-# 手机页面（Vite mobile entry，产物在 packages/web/dist-mobile-remote）
+# 轻 Shell（Vite mobile-shell entry，产物在 packages/web/dist-mobile-shell）
+pnpm build:mobile-shell
+
+# Remote 主 UI（Vite mobile entry，产物在 packages/web/dist-mobile-remote，随桌面打包）
 pnpm build:mobile-web
 
-# 校验普通 Web 客户端产物不含 @zclaudia/gateway-client，手机产物存在
+# 校验普通 Web 客户端产物不含 @zclaudia/gateway-client，Remote 产物存在
 pnpm check:mobile-web-isolation
 ```
 
@@ -475,7 +485,9 @@ sha256 的前 8 位。
 - 手机不能传入任意路径：打开项目只接受桌面下发的最近项目 id；channel 的 `kind` 和首帧内容都是
   客户端自报的，必须严格校验。
 - 手机凭证只存 Android 原生安全存储；release 构建禁止 localStorage 降级。
-- Android `allowBackup=false`，WebView 调试只在 debug 构建开启，且只加载 APK 内置页面 origin。
+- Android `allowBackup=false`，WebView 调试只在 debug 构建开启；主框架只允许两个固定 origin
+  （Shell `https://appassets.androidplatform.net`、Remote `https://remote.zody.local`），
+  两个页面均禁止第三方 iframe，外部导航交给系统浏览器。
 - 远控相关代码中不出现任何官方域名或默认地址；gateway 地址只来自用户配置，没有回落值。
 
 ## 清理与遗留

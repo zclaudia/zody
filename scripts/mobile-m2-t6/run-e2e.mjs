@@ -73,7 +73,9 @@ async function waitForProviderOnline(timeoutMs = 30000) {
 const report = { device: serial, namespace, publicGatewayUrl, scenarios: {} };
 
 function record(name, status, details) {
-  report.scenarios[name] = { status, ...details };
+  // 原因：details 可能带业务字段 `status`（例如通知 envelope）；若先写 status 再展开 details，
+  // pass/fail 会被覆盖，runner 的失败检测和证据都会失真。状态必须最后写入，不可被 details 覆盖。
+  report.scenarios[name] = { ...details, status };
   console.log(`[m2-t6] ${name}: ${status}`);
 }
 
@@ -170,21 +172,47 @@ async function remotePage() {
 }
 
 async function returnShellIfRemote() {
-  const target = (await listTargets()).find(remotePredicate);
-  if (!target) return;
-  const page = await remotePage();
-  const envelope = JSON.parse(await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"));
-  try {
-    await page.evaluate(
-      `void window.ZodyRemoteBridge.returnShell('m2-t6-reset', ${JSON.stringify(
-        envelope.context.sessionId,
-      )}); true`,
-      { awaitPromise: false },
-    );
-  } catch {
-    // 导航会中断 evaluate。
+  // 原因：Activity 重建后 CDP 目标列表可能同时保留旧文档，旧 sessionId 已失效；
+  // 固定拿第一次找到的 target 会得到 stale-session 且永远等不到 Shell（M2 阶段已有记录）。
+  // 每轮重新选择当前可见 target 读取会话并重试，直到 Shell 出现。
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const targets = (await listTargets())
+      .filter(remotePredicate)
+      .sort((left, right) => Number(isVisibleTarget(right)) - Number(isVisibleTarget(left)));
+    if (targets.length === 0) return;
+    let page;
+    try {
+      page = await connectWithExpression(
+        remotePredicate,
+        "typeof window.ZodyRemoteBridge === 'object' && window.ZodyRemoteBridge !== null",
+        "remote page",
+      );
+      const envelope = JSON.parse(
+        await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"),
+      );
+      if (!envelope.ok) throw new Error("session context unavailable");
+      await page.evaluate(
+        `void window.ZodyRemoteBridge.returnShell('m2-t6-reset', ${JSON.stringify(
+          envelope.context.sessionId,
+        )}); true`,
+        { awaitPromise: false },
+      );
+    } catch {
+      // 导航会中断 evaluate；stale-session 或正在销毁的 target 都进入下一轮重试。
+    } finally {
+      try {
+        page?.close();
+      } catch {
+        // best-effort
+      }
+    }
+    try {
+      await waitForTarget(shellPredicate, 10000, "shell after return");
+      return;
+    } catch {
+      await sleep(500);
+    }
   }
-  page.close();
   await waitForTarget(shellPredicate, 30000, "shell after return");
 }
 
@@ -434,7 +462,8 @@ async function runFileAndNotificationContract() {
       finish: { ok: finish.ok, displayPath: finish.file?.displayPath, hasUri: Boolean(finish.file?.uri) },
       pendingClick: JSON.parse(bridge.notificationGetPendingClick(sessionId)),
       pendingAction: JSON.parse(bridge.notificationGetPendingAction(sessionId)),
-      status: JSON.parse(bridge.notificationGetStatus(sessionId)),
+      // 命名避免与 record 的 pass/fail 字段冲突（历史 bug：展开后覆盖了场景状态）。
+      bridgeStatus: JSON.parse(bridge.notificationGetStatus(sessionId)),
     };
   })()`);
   page.close();
@@ -452,7 +481,7 @@ async function runFileAndNotificationContract() {
     result.finish.ok &&
     result.pendingClick.ok &&
     result.pendingAction.ok &&
-    result.status.ok &&
+    result.bridgeStatus.ok &&
     savedFileMatches;
   record("file-notification-contract", pass ? "pass" : "fail", {
     ...result,
@@ -671,6 +700,14 @@ async function runActivityRecreate() {
   const secondContext = await remoteContext(second);
   second.close();
   adbShell("settings put system user_rotation 0");
+  // 旋转回正会再次重建 Activity；等待新的可见 Remote target 出现后再回 Shell，
+  // 避免 returnShellIfRemote 读到正在销毁的旧文档。
+  await sleep(1500);
+  await waitForTarget(
+    (target) => remotePredicate(target) && isVisibleTarget(target),
+    15000,
+    "visible remote after rotation reset",
+  ).catch(() => {});
   const pass =
     firstContext.backendId === secondContext.backendId &&
     firstContext.sessionId !== secondContext.sessionId &&

@@ -1,5 +1,12 @@
 # 手机远控：App 级远程访问，改走 zclaudia-gateway
 
+> 2026-11-03 修订：手机主 UI 的交付方式改由
+> [移动端主 UI 随桌面交付切换方案](mobile-remote-ui-desktop-delivery.md) 定义：APK 只内置轻
+> Shell，完整 Remote UI 由当前选中的桌面经 Gateway 提供。本文关于 Gateway 连接、Channel
+> 帧协议、快照/恢复、owner/lease 和两种流式语义的规则继续有效；凡涉及“APK 内置完整页面”、
+> “单一 `ZcodeMobileBridge`”或单一 appassets origin 的段落，均以新方案和
+> `docs/mobile-remote-control-android.md` 的现行描述为准。
+
 2026-10-24 后续规划：[手机第二批打开任意本地目录、通知权限批准](mobile-remote-phase2.md)。本文「手机不能传入任意路径」的安全边界与「打开项目」payload 语义由该 spec 修订（受桌面开关控制）；新规划的外部依赖、状态所有者和验收以该 spec 为准。
 
 2026-10-23 后续规划：[手机第一批通知、历史搜索与文件浏览](mobile-remote-phase1.md)。本文下述“推送通知/手机后台本地通知不在范围”仍是本次 Gateway 迁移的范围，不代表后续能力已实施；新规划的外部依赖、状态所有者和验收以该 spec 为准。
@@ -227,7 +234,7 @@ Channel 是 gateway 的帧级中继：保序、区分 text 和 binary，gateway 
   - backend SDK 有 `lastError`（`REPLACED`、`AUTH_FAILED`、`GATEWAY_UNREACHABLE` 等）可以直接读，桌面侧的错误映射不要自己解析 socket 状态。
 - **运行环境前置校验**：SDK 默认用 `globalThis.WebSocket` 和 `globalThis.fetch`，桌面 Main 依赖 Electron 41 的 Node 运行时提供这两个全局对象。实施顺序第 3 步要先跑一个最小连通性验证，再写适配层。
 - **地址归一化**：gateway 地址去掉尾部斜杠；`https` 推导出 `wss`，`http` 推导出 `ws`。release 构建要求 `https`。
-- **CORS**：手机页面来自 APK 内置的 origin（见 Android 一节）。如果 gateway 设置了 `GATEWAY_ALLOWED_ORIGINS`，要把这个 origin 加进去，否则 `discoverBackends` 会被拦截。部署文档要写明这一点。
+- **CORS**：手机有 Shell 与 Remote 两个应用内 origin（见 Android 一节）。如果 gateway 设置了 `GATEWAY_ALLOWED_ORIGINS`，要同时加入 `https://appassets.androidplatform.net` 和 `https://remote.zody.local`，否则 `discoverBackends` 或 Remote 的 WSS/fetch 会被拦截。部署文档要写明这一点。
 
 ## 配置变更时序（桌面）
 
@@ -384,14 +391,22 @@ sequenceDiagram
 
 保留现有的 Kotlin + Compose + WebView 壳，不迁移到 Tauri 或 Capacitor：
 
-- **现状**：壳用 `BuildConfig.REMOTE_CONTROL_DEFAULT_URL`（`https://zcode.z.ai/remote`，debug 和 release 同值）加载官方托管的页面，`RemoteControlUrlPolicy` 在生产包只放行 `zcode.z.ai/remote*`、debug 包额外放行局域网 `/remote`。改造后壳里不再有任何远端页面地址。
-- **内置页面**：Gradle 构建时把 `pnpm build:mobile-web` 的产物拷入 `app/src/main/assets/remote/`，用 `WebViewAssetLoader` 以 `https://appassets.androidplatform.net/assets/remote/index.html` 加载。不再需要托管 `/remote` 页面，WebView 只允许加载这个 origin；连接 gateway 走跨 origin 的 WSS 和 fetch。手机入口单独一个 Vite entry（不复用桌面 Web 客户端的入口），`--base` 与 `/assets/remote/` 对齐，并确认 `@zclaudia/gateway-client` 不会被打进普通 Web 客户端构建。
-- **原生桥**：通过 `@JavascriptInterface` 注入 `ZcodeMobileBridge`，提供：
-  - `secureStore.get/set/remove`（Android Keystore + `EncryptedSharedPreferences`）；
-  - 前后台事件，用来触发页面的 `suspend`/`recoverInBackground`；
-  - 返回键分发。
-
-  页面通过 `IPlatformService` 的可选能力访问这个桥，不直接调用 `window.*`。
+- **页面来源（2026-11-03 修订）**：Gradle 构建时执行 `pnpm build:mobile-shell`，把
+  `packages/web/dist-mobile-shell/` 同步到 `app/src/main/assets/shell/`，由 `WebViewAssetLoader`
+  以 `https://appassets.androidplatform.net/assets/shell/index.html` 提供轻 Shell。Shell 只包含
+  配对、设置、discovery、选电脑、错误/升级和 `openRemote`。
+- **Remote 主 UI（2026-11-03 修订）**：完整 Remote 制品随桌面打包，不再拷入 APK。Android 以
+  `https://remote.zody.local/assets/remote/index.html` 作为应用内固定 origin，经 `RemoteUiProxy`
+  从当前桌面的 Gateway `/api/proxy/<backendId>/...` 只读 GET/HEAD 获取 HTML、静态资源和
+  `release.json`；业务仍走 `zcode-remote` Channel。桌面离线时手机停留在 Shell，不能冷启动
+  主 UI。
+- **原生桥（2026-11-03 修订）**：新旧页面不再共用单个 `ZcodeMobileBridge`。Shell 只安装
+  `ZodyShellBridge`（配置、`configRevision`、按 backend 的 `clientInstanceId`、`openRemote`、
+  诊断），Remote 只安装 `ZodyRemoteBridge`（只读 `getSessionContext()`、文件、通知、lifecycle、
+  返回 Shell、刷新 veto）。除只读会话上下文外，状态变更都携带 `sessionId` 并由原生校验代次；
+  页面通过 `IPlatformService` 访问能力，不直接调用 `window.*`。
+- **CORS/Origin（2026-11-03 修订）**：Gateway 的 CORS/WebSocket Origin 配置必须同时包含
+  `https://appassets.androidplatform.net` 与 `https://remote.zody.local`；release 仍只允许 HTTPS。
 
 - **文件能力**：现有壳没有实现 `WebChromeClient.onShowFileChooser`，也没有 `DownloadListener`，所以手机上选附件没有反应，文件也无法保存。需要补齐：
   - **选择文件**：实现 `onShowFileChooser`，支持系统文件选择器和拍照（拍照用 `ACTION_IMAGE_CAPTURE` 加 `FileProvider` 临时文件）。页面侧对应 `IPlatformService.selectFiles?`。选中的文件走现有 `platform-request` 的临时附件路径上传到桌面。单个附件受单条逻辑消息 16 MiB 的上限约束，超限时在页面上提示，不发送。
@@ -424,7 +439,7 @@ sequenceDiagram
 
    gateway 端需同时设置 `GATEWAY_TRUST_PROXY=true`，否则所有客户端共用反代的 IP，会撞上「每 IP 10 条 WS、每分钟 10 次认证失败」的限额。
 
-3. **CORS**：如果设置了 `GATEWAY_ALLOWED_ORIGINS`，要包含 `https://appassets.androidplatform.net`。
+3. **CORS**：如果设置了 `GATEWAY_ALLOWED_ORIGINS`，要同时包含 `https://appassets.androidplatform.net` 和 `https://remote.zody.local`。
 4. **签发凭证**（`/admin` 或 `scripts/gateway-admin.sh`）：
    - 每台电脑签发一张 `issue-backend <namespace> <name>`（namespace 为 `zcode`），填入桌面设置页；
    - 每部手机签发一张 `issue-device <namespace> <name> [ttl-days] [backend-id,...]`，末位参数就是设备的后端范围，可限定只能访问哪几台电脑；不填则整个 namespace 可见。填入手机设置页；
