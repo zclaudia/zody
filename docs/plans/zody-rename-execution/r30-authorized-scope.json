@@ -1,6 +1,6 @@
 {
   "task": "R30",
-  "status": "verified-scoped; independent implementation acceptance; phase cleanup pending",
+  "status": "verified-scoped; phase cleanup complete",
   "baselineCommit": "7089ad3e095ec10727772107100d3e019b78d456",
   "ownership": "one Terra product writer for the entire atomic R30 change; listed file groups are serial review checkpoints, not parallel grants",
   "occurrenceManifest": "output/zody-rename-r30/implementation-v2/R30-merged-writeset-v3.json",
@@ -4106,5 +4106,7 @@
   "authority": "Final semantic patch, not raw occurrence replacements, defines authorized candidate behavior after independent approval.",
   "implementationReview": "docs/plans/zody-rename-execution/reports/R30-implementation-acceptance.md",
   "reviewFollowup": "Remove legacy ZCODE_TOOL_ENV_PASSTHROUGH_JSON at actual sanitizer/egress boundaries; preserve active new envelope behavior; add regression tests. No legacy config fallback.",
-  "finalSourceSnapshot": "output/zody-rename-r30/post-apply-validation-ca64-a1f53f/source-hashes-repack.json"
+  "finalSourceSnapshot": "output/zody-rename-r30/post-apply-validation-ca64-a1f53f/source-hashes-repack.json",
+  "acceptedCommit": "be2f33cd1353cdbf57daf2e9d755b53e4952c4bb",
+  "phaseCleanupResult": "docs/plans/zody-rename-execution/reports/R30-cleanup.md"
 }

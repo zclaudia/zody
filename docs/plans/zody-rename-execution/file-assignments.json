@@ -16018,8 +16018,8 @@
       "packages/services/test/zodyRenameEnv.test.ts",
       "packages/zody-server-cli/test/zodyRenameEnv.test.ts"
     ],
-    "scopeStatus": "verified-scoped; independent implementation acceptance; phase cleanup pending",
-    "gate": "Implementation independently accepted within R30 scope; phase cleanup before R40; all recorded release/Windows/full-suite limitations retained.",
+    "scopeStatus": "verified-scoped; phase cleanup complete",
+    "gate": "R30 implementation accepted and phase cleanup complete; retained release/Windows/full-suite limitations remain.",
     "structureScope": [
       "环境变量及 define 的生产者和消费者，排除插件身份双变量"
     ],
