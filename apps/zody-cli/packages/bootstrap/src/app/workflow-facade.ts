@@ -291,7 +291,7 @@ function createWorkflowChildRuntime(
     options.childSessionId,
     {
       ...deps.runtimeConfig,
-      agentName: options.workflowKind === "expert" ? "zcode-expert" : "zcode-workflow",
+      agentName: options.workflowKind === "expert" ? "zcode-expert" : "zody-workflow",
       // workflow child 不在 Guarded 合同内；只隔离父任务模式，不继承审批。
       mode: "yolo",
       modelSelection: deps.runtime.getSessionModelSelection(),
@@ -354,7 +354,7 @@ function createWorkflowChildRuntime(
       // 客户端找不到的 session 上、response 永不回来。
       ...deps.runtime.createChildClientPorts({
         agentId: options.childSessionId,
-        agentType: options.workflowKind === "expert" ? "zcode-expert" : "zcode-workflow",
+        agentType: options.workflowKind === "expert" ? "zcode-expert" : "zody-workflow",
         childSessionId: options.childSessionId,
         description: `${options.workflowKind} workflow agent`,
         ...(options.childTraceContext.turnId === undefined

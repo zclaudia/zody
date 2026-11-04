@@ -20,3 +20,7 @@ sequenceDiagram
 ```
 
 模型网络 interface 从 `zcode_agent.model.*` 切换为 `zody_agent.model.*`，保留 provider、transport 和规范化 endpoint 后缀，真实 producer 与接收端同批。
+
+### Workflow child default identity
+
+New first-party workflow child defaults are `zody-workflow` for agent name and permission origin agent type. An explicit caller-provided agent type, including an empty string or the historical `zcode-workflow`, remains byte-exact; `zcode-expert`, dynamic agent types and existing history remain unchanged. This is a producer default cut, not an alias or a database migration. Existing hook/usage/message carriers continue to use their existing owners.

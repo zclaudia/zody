@@ -21,7 +21,8 @@ import {
   createSqliteSessionStore,
 } from "@zody/adapters/storage";
 import { createNodeWorkflowStore } from "@zody/adapters/workflow";
-import { DEFAULT_EXPERT_WORKFLOW_STRATEGY } from "@zody/core";
+import { AgentRuntime, DEFAULT_EXPERT_WORKFLOW_STRATEGY } from "@zody/core";
+import * as bundledPlugins from "../src/app/bundled-plugins.js";
 import { createNodeProviderRuntimePathEnv } from "@zody/provider-node";
 import {
   LogLevel,
@@ -1187,11 +1188,96 @@ describe("session persistence", () => {
     }
   });
 
+  it("persists the actual nonexpert facade child default identity", async () => {
+    const tempRoot = await mkdtemp(join(tmpdir(), "zody-workflow-identity-"));
+    const store = createSqliteSessionStore({ dbPath: join(tempRoot, "session.sqlite") });
+    const ports = vi.spyOn(AgentRuntime.prototype, "createChildClientPorts");
+    const pluginRoots = vi.spyOn(bundledPlugins, "resolveOfficialPluginRoots").mockReturnValue([]);
+    try {
+      const definitions = join(tempRoot, "cli", "workflows", "definitions");
+      await mkdir(definitions, { recursive: true });
+      await writeFile(
+        join(definitions, "audit.json"),
+        JSON.stringify({
+          definitionId: "audit",
+          definitionVersion: "1",
+          kind: "audit",
+          title: "Audit Workflow",
+          description: "Synthetic non-expert workflow",
+          phaseOrder: ["inspect", "complete"],
+          phases: [
+            {
+              phase: "inspect",
+              behavior: "agent",
+              title: "Inspect",
+              description: "Inspect the target.",
+            },
+            {
+              phase: "complete",
+              behavior: "complete",
+              title: "Complete",
+              description: "Complete the run.",
+            },
+          ],
+          strategy: DEFAULT_EXPERT_WORKFLOW_STRATEGY,
+        }),
+      );
+      const app = await createZodyApp({
+        configuredDefaultModelSelection: { providerId: "zai", modelId: "glm-main" },
+        env: { ZODY_STORAGE_DIR: tempRoot },
+        sessionStore: store,
+        sessionId: createSessionId("facade-parent"),
+        skipUserConfig: true,
+        providerRegistry: createTestProviderRegistry([{ providerId: "zai", modelId: "glm-main" }]),
+        runtimeConfig: { workingDirectory: tempRoot, mcp: { enabled: false } },
+        modelExecutor: {
+          setModelIoFullRetentionEnabled() {},
+          async generateText() {
+            return {
+              finishReason: "stop",
+              text: "ok",
+              usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 },
+            };
+          },
+        } as never,
+      });
+      const result = await app.runWorkflow!({
+        definitionId: "audit",
+        workflowKind: "audit",
+        task: "verify default identity",
+      });
+      expect(result, JSON.stringify(result)).toMatchObject({ status: "completed" });
+      expect(pluginRoots).toHaveBeenCalled();
+      await expect(stat(join(tempRoot, "cli", "plugins"))).rejects.toMatchObject({
+        code: "ENOENT",
+      });
+      const ids = result.snapshot?.sessionLinks.map((link) => link.sessionId).filter(Boolean) ?? [];
+      expect(ids.length).toBeGreaterThan(0);
+      const calls = ports.mock.calls
+        .map(([input]) => input)
+        .filter((input) => ids.includes(input.childSessionId));
+      expect(calls.some((input) => input.agentType === "zody-workflow")).toBe(true);
+      const messages = (
+        await Promise.all(
+          ids.map((id) => store.messages({ sessionID: id as ReturnType<typeof createSessionId> })),
+        )
+      ).flat();
+      expect(messages.length).toBeGreaterThan(0);
+      expect(messages.some((message) => message.info.agent === "zody-workflow")).toBe(true);
+    } finally {
+      ports.mockRestore();
+      pluginRoots.mockRestore();
+      store.close();
+      await rm(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it("uses the current model for new expert workflow child sessions after a model switch", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-bootstrap-workflow-model-switch-"));
     const dbPath = join(tempRoot, "session.sqlite");
     const store = createSqliteSessionStore({ dbPath });
     const requestModels: string[] = [];
+    const pluginRoots = vi.spyOn(bundledPlugins, "resolveOfficialPluginRoots").mockReturnValue([]);
 
     try {
       let switched = false;
@@ -1254,6 +1340,7 @@ describe("session persistence", () => {
         "deepseek/deepseek-v4-pro",
       );
     } finally {
+      pluginRoots.mockRestore();
       store.close();
       await rm(tempRoot, { recursive: true, force: true });
     }

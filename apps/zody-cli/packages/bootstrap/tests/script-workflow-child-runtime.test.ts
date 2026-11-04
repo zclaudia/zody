@@ -645,11 +645,13 @@ describe("script workflow child runtime — 子代理经父 broker 请求权限�
   let execute: ReturnType<typeof vi.fn>;
   /** actor 第一次模型请求发出的工具调用；默认一条危险 Bash。 */
   let firstToolCall: { id: string; name: string; input: Record<string, unknown> };
+  let childStore: ReturnType<typeof createSqliteSessionStore>;
 
   beforeEach(async () => {
     tempRoot = await mkdtemp(join(tmpdir(), "zcode-actor-guarded-"));
     requests = [];
     modelRequests = [];
+    childStore = createSqliteSessionStore({ dbPath: ":memory:" });
     firstToolCall = {
       id: "actor-guarded-rm",
       name: "Bash",
@@ -684,6 +686,7 @@ describe("script workflow child runtime — 子代理经父 broker 请求权限�
   });
 
   afterEach(async () => {
+    childStore.close();
     await rm(tempRoot, { force: true, recursive: true });
   });
 
@@ -706,6 +709,7 @@ describe("script workflow child runtime — 子代理经父 broker 请求权限�
 
   function makeActorRuntime(
     subagentPermissionMode: WorkflowSubagentPermissionMode | undefined,
+    agentType?: string,
   ): AgentRuntime {
     const deps = {
       agentTelemetry: createModelTelemetry().agentExecution,
@@ -728,7 +732,7 @@ describe("script workflow child runtime — 子代理经父 broker 请求权限�
       runtime: parentRuntime,
       runtimeConfig: { workingDirectory: tempRoot, mcp: { enabled: false } },
       sessionId: parentSessionId,
-      sessionStore: createSqliteSessionStore({ dbPath: ":memory:" }),
+      sessionStore: childStore,
       storageRoot: tempRoot,
       workingDirectory: tempRoot,
     } as unknown as ScriptWorkflowAgentRuntimeDeps;
@@ -744,10 +748,21 @@ describe("script workflow child runtime — 子代理经父 broker 请求权限�
         actor: { siteId: "agent#1", ordinal: 0 },
         persona: { name: "reviewer" },
       }),
-      request: { opts: {} } as never,
+      request: { opts: agentType === undefined ? {} : { agentType } } as never,
       traceContext: createRootTraceContext({ sessionId: parentSessionId }),
     });
   }
+
+  it.each([[undefined, "zody-workflow"], ["reviewer", "reviewer"], ["zcode-workflow", "zcode-workflow"], ["", ""]] as const)("persists child identity and routes one denied permission for %s", async (agentType, expected) => {
+    const runtime = makeActorRuntime("guarded", agentType);
+    await runtime.executeTurn("go");
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({ sessionId: parentSessionId, origin: { agentType: expected, childSessionId: actorSessionId, parentSessionId } });
+    expect(execute).not.toHaveBeenCalled();
+    const messages = await childStore.messages({ sessionID: actorSessionId });
+    expect(messages.length).toBeGreaterThan(0);
+    expect(messages.some((message) => message.info.agent === expected)).toBe(true);
+  });
 
   it("guarded：一次 user-once 请求，父会话路由、子代理 origin；拒绝后不执行且结果回到子代理", async () => {
     const actorRuntime = makeActorRuntime("guarded");

@@ -17565,5 +17565,35 @@
     "gate": "Scoped DeepSeek acceptance, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
     "acceptanceReport": "docs/plans/zody-rename-execution/reports/R40-workflow-sentinel-independent-review.md",
     "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-workflow-sentinel-controller-verification.md"
+  },
+  "R20_WORKFLOW_AGENT_DEFAULT": {
+    "baselineCommit": "56deb506be13ba249b5dd8ea8587eee45f1b95d2",
+    "controllerGrant": "output/zody-rename-r20-workflow-agent/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "apps/zody-cli/packages/bootstrap/src/app/workflow-facade.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/script-workflow-child-runtime.ts",
+      "apps/zody-cli/packages/bootstrap/tests/script-workflow-child-runtime.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/session-persistence.test.ts",
+      "packages/ui/test/permissionDialog.test.ts",
+      "specs/zody-rename-telemetry.md",
+      "docs/plans/zody-rename-execution/reports/R20-workflow-agent-identity.md"
+    ],
+    "readSet": [
+      "apps/zody-cli/packages/bootstrap/tests/script-workflow.test.ts",
+      "apps/zody-cli/packages/core/tests/hooks-seven-events.test.ts",
+      "apps/zody-cli/packages/core/tests/runtime-persistence.test.ts",
+      "apps/zody-cli/packages/adapters/tests/session-store.test.ts",
+      "apps/zody-cli/packages/core/tests/subagent-interaction-broker.test.ts",
+      "apps/zody-cli/docs/design/v2/hooks.md",
+      "apps/zody-cli/docs/design/v2/tool/07-subagent.md",
+      "apps/zody-cli/packages/core/src/hooks/configured-runner-input.ts",
+      "apps/zody-cli/packages/core/src/runtime/methods/message-persistence.ts",
+      "apps/zody-cli/packages/core/src/runtime/methods/usage-observability.ts"
+    ],
+    "scopeStatus": "bounded-source-accepted-cleaned",
+    "gate": "Scoped DeepSeek acceptance, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R20-workflow-agent-identity-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R20-workflow-agent-identity-controller-verification.md"
   }
 }

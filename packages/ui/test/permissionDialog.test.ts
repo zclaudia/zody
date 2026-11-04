@@ -323,6 +323,22 @@ describe("PermissionDialog", () => {
     expect(html).toContain("来自子智能体：zcode-workflow · reviewer (agent#1@0)");
   });
 
+  it("shows the current workflow default in the subagent source tag", () => {
+    const html = renderPermissionDialog({
+      type: "permission_request",
+      taskId: "task-1",
+      traceId: "trace-1",
+      requestId: "request-1",
+      description: "Run command",
+      kind: "Bash",
+      title: "Bash",
+      options: [{ optionId: "allow", kind: "allow", name: "Allow" }],
+      raw: { toolName: "Bash" },
+      origin: { ...SUBAGENT_ORIGIN, agentType: "zody-workflow" },
+    });
+    expect(html).toContain("来自子智能体：zody-workflow");
+  });
+
   it("renders a compact implementation plan placeholder for switch mode requests", () => {
     const html = renderPermissionDialog({
       type: "permission_request",

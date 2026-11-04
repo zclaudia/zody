@@ -142,7 +142,7 @@ export function createScriptWorkflowAgentRuntime(input: {
     {
       ...inheritedConfig,
       ...(systemPrompt === undefined ? {} : { systemPrompt }),
-      agentName: input.request.opts?.agentType ?? "zcode-workflow",
+      agentName: input.request.opts?.agentType ?? "zody-workflow",
       maxTurns: input.request.opts?.maxTurns ?? input.deps.runtimeConfig.maxTurns,
       // 基线 YOLO，父任务仍保留自己的 Guarded。legacy script workflow child 就停在这里；dwf actor
       // 经 configOverrides 覆盖成 run 记下的模式（docs/dynamic-workflow/launch.md
@@ -167,7 +167,7 @@ export function createScriptWorkflowAgentRuntime(input: {
         // `deps.permissionBroker`，于是 actor 带着 `sess_dwf-…` 去问桌面，桌面
         // `requireSession` 抛错、response 永不发出，子代理在首个模型请求前挂死。
         agentId: input.childSessionId,
-        agentType: input.request.opts?.agentType ?? "zcode-workflow",
+        agentType: input.request.opts?.agentType ?? "zody-workflow",
         childSessionId: input.childSessionId,
         description:
           input.interactionDescription ??
