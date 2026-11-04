@@ -11,18 +11,18 @@ import { scanZodyDataDirectoryInWorker } from "./zodyDataSizeWorkerClient.js";
 
 export type { ZodyDataSizeTelemetryState } from "./zodyDataSizeTelemetryState.js";
 
-export const ZCODE_DATA_SIZE_SCAN_MAX_DURATION_MS = 30_000;
-export const ZCODE_DATA_SIZE_SCAN_MAX_FILES = 200_000;
-export const ZCODE_DATA_SIZE_DAILY_INTERVAL_MS = 24 * 60 * 60 * 1000;
-export const ZCODE_DATA_SIZE_IDLE_POLL_MS = 5 * 60 * 1000;
-export const ZCODE_DATA_SIZE_IDLE_WAIT_FALLBACK_MS = 6 * 60 * 60 * 1000;
-export const ZCODE_DATA_SIZE_MINIMUM_IDLE_SECONDS = 5 * 60;
-export const ZCODE_DATA_SIZE_STARTUP_MIN_DELAY_MS = 2 * 60 * 1000;
-export const ZCODE_DATA_SIZE_STARTUP_JITTER_MAX_MS = 8 * 60 * 1000;
-export const ZCODE_DATA_SIZE_DAILY_JITTER_MAX_MS = 60 * 60 * 1000;
-export const ZCODE_DATA_SIZE_ABORTED_RETRY_MS = 30 * 60 * 1000;
-export const ZCODE_DATA_SIZE_FAILURE_RETRY_MS = 6 * 60 * 60 * 1000;
-export const ZCODE_DATA_SIZE_ACTIVITY_POLL_MS = 1_000;
+export const ZODY_DATA_SIZE_SCAN_MAX_DURATION_MS = 30_000;
+export const ZODY_DATA_SIZE_SCAN_MAX_FILES = 200_000;
+export const ZODY_DATA_SIZE_DAILY_INTERVAL_MS = 24 * 60 * 60 * 1000;
+export const ZODY_DATA_SIZE_IDLE_POLL_MS = 5 * 60 * 1000;
+export const ZODY_DATA_SIZE_IDLE_WAIT_FALLBACK_MS = 6 * 60 * 60 * 1000;
+export const ZODY_DATA_SIZE_MINIMUM_IDLE_SECONDS = 5 * 60;
+export const ZODY_DATA_SIZE_STARTUP_MIN_DELAY_MS = 2 * 60 * 1000;
+export const ZODY_DATA_SIZE_STARTUP_JITTER_MAX_MS = 8 * 60 * 1000;
+export const ZODY_DATA_SIZE_DAILY_JITTER_MAX_MS = 60 * 60 * 1000;
+export const ZODY_DATA_SIZE_ABORTED_RETRY_MS = 30 * 60 * 1000;
+export const ZODY_DATA_SIZE_FAILURE_RETRY_MS = 6 * 60 * 60 * 1000;
+export const ZODY_DATA_SIZE_ACTIVITY_POLL_MS = 1_000;
 
 interface ZodyDataSizeTelemetryTiming {
   abortedRetryMs: number;
@@ -38,16 +38,16 @@ interface ZodyDataSizeTelemetryTiming {
 }
 
 const DEFAULT_TIMING: ZodyDataSizeTelemetryTiming = {
-  abortedRetryMs: ZCODE_DATA_SIZE_ABORTED_RETRY_MS,
-  activityPollMs: ZCODE_DATA_SIZE_ACTIVITY_POLL_MS,
-  dailyIntervalMs: ZCODE_DATA_SIZE_DAILY_INTERVAL_MS,
-  dailyJitterMaxMs: ZCODE_DATA_SIZE_DAILY_JITTER_MAX_MS,
-  failureRetryMs: ZCODE_DATA_SIZE_FAILURE_RETRY_MS,
-  idlePollMs: ZCODE_DATA_SIZE_IDLE_POLL_MS,
-  idleWaitFallbackMs: ZCODE_DATA_SIZE_IDLE_WAIT_FALLBACK_MS,
-  minimumIdleSeconds: ZCODE_DATA_SIZE_MINIMUM_IDLE_SECONDS,
-  startupJitterMaxMs: ZCODE_DATA_SIZE_STARTUP_JITTER_MAX_MS,
-  startupMinDelayMs: ZCODE_DATA_SIZE_STARTUP_MIN_DELAY_MS,
+  abortedRetryMs: ZODY_DATA_SIZE_ABORTED_RETRY_MS,
+  activityPollMs: ZODY_DATA_SIZE_ACTIVITY_POLL_MS,
+  dailyIntervalMs: ZODY_DATA_SIZE_DAILY_INTERVAL_MS,
+  dailyJitterMaxMs: ZODY_DATA_SIZE_DAILY_JITTER_MAX_MS,
+  failureRetryMs: ZODY_DATA_SIZE_FAILURE_RETRY_MS,
+  idlePollMs: ZODY_DATA_SIZE_IDLE_POLL_MS,
+  idleWaitFallbackMs: ZODY_DATA_SIZE_IDLE_WAIT_FALLBACK_MS,
+  minimumIdleSeconds: ZODY_DATA_SIZE_MINIMUM_IDLE_SECONDS,
+  startupJitterMaxMs: ZODY_DATA_SIZE_STARTUP_JITTER_MAX_MS,
+  startupMinDelayMs: ZODY_DATA_SIZE_STARTUP_MIN_DELAY_MS,
 };
 
 interface ZodyDataSizeTelemetryLogger {
@@ -130,7 +130,7 @@ function stableJitterMs(deviceMid: string, bucketAt: number, maxMs: number): num
   if (maxMs <= 0) {
     return 0;
   }
-  const key = `${deviceMid}:${Math.floor(bucketAt / ZCODE_DATA_SIZE_DAILY_INTERVAL_MS)}`;
+  const key = `${deviceMid}:${Math.floor(bucketAt / ZODY_DATA_SIZE_DAILY_INTERVAL_MS)}`;
   let hash = 2_166_136_261;
   for (let index = 0; index < key.length; index += 1) {
     hash ^= key.charCodeAt(index);
@@ -422,8 +422,8 @@ export function registerDesktopZodyDataSizeTelemetry(options: {
     scan: ({ signal }) =>
       scanZodyDataDirectoryInWorker(
         {
-          maxDurationMs: ZCODE_DATA_SIZE_SCAN_MAX_DURATION_MS,
-          maxFiles: ZCODE_DATA_SIZE_SCAN_MAX_FILES,
+          maxDurationMs: ZODY_DATA_SIZE_SCAN_MAX_DURATION_MS,
+          maxFiles: ZODY_DATA_SIZE_SCAN_MAX_FILES,
           rootPath: options.rootPath,
         },
         signal,

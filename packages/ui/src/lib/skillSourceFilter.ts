@@ -1,4 +1,4 @@
-import { ZCODE_DATA_ROOT_DIR_NAME, type ZodyProvider } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME, type ZodyProvider } from "@zody/shared";
 
 type SkillSourceType = "glm" | "unknown";
 
@@ -8,11 +8,11 @@ export function resolveSkillSourceType(skillPath: string): SkillSourceType {
   // workspace 级技能仍在 `/.zcode/skills/`，因此两个前缀都算原生来源。
   if (
     normalized.includes("/.zcode/skills/") ||
-    normalized.includes(`/${ZCODE_DATA_ROOT_DIR_NAME}/skills/`)
+    normalized.includes(`/${ZODY_DATA_ROOT_DIR_NAME}/skills/`)
   ) {
     return "glm";
   }
-  if (normalized.includes(`/${ZCODE_DATA_ROOT_DIR_NAME}/cli/plugins/cache/`)) {
+  if (normalized.includes(`/${ZODY_DATA_ROOT_DIR_NAME}/cli/plugins/cache/`)) {
     return "glm";
   }
   return "unknown";

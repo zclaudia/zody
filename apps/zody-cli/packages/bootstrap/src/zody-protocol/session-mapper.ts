@@ -1,6 +1,6 @@
 import {
-  ZCODE_PROTOCOL_NAME,
-  ZCODE_PROTOCOL_VERSION,
+  ZODY_PROTOCOL_NAME,
+  ZODY_PROTOCOL_VERSION,
   getZodyGoalActiveIterationCount,
   zodyApiRetryFromModelNetworkStatusPayload,
   zodyApiRetryFromStreamRecoveryPayload,
@@ -101,8 +101,8 @@ export async function buildSessionSnapshot(input: {
     messages,
     projection: mapSessionProjection(projection),
     protocol: {
-      name: ZCODE_PROTOCOL_NAME,
-      version: ZCODE_PROTOCOL_VERSION,
+      name: ZODY_PROTOCOL_NAME,
+      version: ZODY_PROTOCOL_VERSION,
     },
     runtime: mapRuntimeState({
       activeTurn,

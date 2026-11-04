@@ -15,7 +15,7 @@ import {
 import { homedir, tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import {
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   type PluginSyncCandidate,
   type PluginSyncComponentType,
   type PluginSyncImportResult,
@@ -219,11 +219,11 @@ function resolveUserHomeDir(): string {
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 function getUserZodyConfigPath(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json");
 }
 
 function getUserZodyPluginRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "plugins");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "plugins");
 }
 
 async function collectLocalUserPluginCandidates(): Promise<PluginSyncCandidate[]> {

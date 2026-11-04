@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { appendFile, mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, extname, isAbsolute, join, normalize, parse } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type {
   WorkflowDefinition,
   WorkflowDefinitionStorePort,
@@ -34,7 +34,7 @@ interface WorkflowIndexFile {
 }
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-const DEFAULT_WORKFLOW_ROOT = join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "workflows");
+const DEFAULT_WORKFLOW_ROOT = join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "workflows");
 const WORKFLOW_DEFINITION_FILE_EXTENSION = ".json";
 
 export class NodeWorkflowStore implements WorkflowStorePort {

@@ -1,4 +1,4 @@
-const ZCODE_PROCESS_PREFIX = "zody";
+const ZODY_PROCESS_PREFIX = "zody";
 // 主窗口标题随产品名（Zody）；Preview/Dev 构建若以带渠道后缀的产品名作标题也视为主窗口。
 const MAIN_WINDOW_TITLE_PATTERN = /^Zody(?: Preview| Dev)?$/;
 const REMOTE_WINDOW_TITLE_PATTERN = /^Zody(?: Preview| Dev)? - /;
@@ -25,7 +25,7 @@ function joinZodyProcessName(...segments: Array<string | null | undefined>): str
   const sanitizedSegments = segments
     .map((segment) => sanitizeProcessNameSegment(segment))
     .filter((segment): segment is string => Boolean(segment));
-  return [ZCODE_PROCESS_PREFIX, ...sanitizedSegments].join("-");
+  return [ZODY_PROCESS_PREFIX, ...sanitizedSegments].join("-");
 }
 
 function pickWorkspaceTag(workspacePath: string | null | undefined): string | undefined {

@@ -8,7 +8,7 @@
 // 各自演化，症状是「刚保存的 workflow 列不出来」，而那是最难被单侧测试抓住的一类分叉。
 
 import { z } from "zod";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { LEGACY_ZCODE_DIRECTORY_NAME, ZODY_DIRECTORY_NAME } from "@zody/shared/zody-paths";
 
 /**
@@ -34,7 +34,7 @@ export const WORKFLOW_DRAFTS_DIR = `${ZODY_DIRECTORY_NAME}/workflow-drafts`;
  *
  * 项目写入路径固定为 `.zody`；旧项目定义通过 store 的只读兼容根读取。
  */
-export const SAVED_WORKFLOW_GLOBAL_DIR = `${ZCODE_DATA_ROOT_DIR_NAME}/workflows`;
+export const SAVED_WORKFLOW_GLOBAL_DIR = `${ZODY_DATA_ROOT_DIR_NAME}/workflows`;
 
 /**
  * 名字的合法形状。与旧 `Workflow` 工具的解析器同一条模式（script-workflow-tool-port.ts）——

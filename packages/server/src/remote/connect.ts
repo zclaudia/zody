@@ -11,7 +11,7 @@ import {
   ZODY_REMOTE_HTTP_PROXY_ENV_KEY,
   ZODY_REMOTE_NO_PROXY_ENV_KEY,
   ZODY_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 import type { IRemoteBackend } from "./backend.js";
 import { wrapStdioStream } from "./stdio-socket.js";
@@ -377,7 +377,7 @@ function buildRemoteServerCommand(
   const envParts = [
     `${SERVICE_AUTHORITY_MODE_ENV}="desktop-attached-remote"`,
     // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-    `ZODY_SERVER_RUNTIME_ROOT="$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server"`,
+    `ZODY_SERVER_RUNTIME_ROOT="$HOME/${ZODY_DATA_ROOT_DIR_NAME}/server"`,
   ];
   for (const [key, value] of Object.entries(
     pickRemoteRuntimeEnv(options?.remoteRuntimeEnv ?? {}),
@@ -403,5 +403,5 @@ function buildRemoteServerCommand(
       );
     }
   }
-  return `${envParts.join(" ")} ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/node ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/zody-server.cjs`;
+  return `${envParts.join(" ")} ~/${ZODY_DATA_ROOT_DIR_NAME}/server/node ~/${ZODY_DATA_ROOT_DIR_NAME}/server/zody-server.cjs`;
 }

@@ -1,7 +1,7 @@
 import { realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 export interface ServerLayout {
   readonly dataBaseDir: string;
@@ -24,7 +24,7 @@ export interface ServerLayout {
 export function getDefaultServerDataRoot(): string {
   const configured = process.env.ZODY_DATA_BASE_DIR?.trim();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-  return join(configured || homedir(), ZCODE_DATA_ROOT_DIR_NAME, "server");
+  return join(configured || homedir(), ZODY_DATA_ROOT_DIR_NAME, "server");
 }
 
 export function resolveServerLayout(serverRoot = getDefaultServerDataRoot()): ServerLayout {
@@ -77,7 +77,7 @@ export async function resolveCanonicalServerLayout(serverRoot = getDefaultServer
 
 function inferDataBaseDir(serverRoot: string): string {
   const parent = dirname(serverRoot);
-  if (basename(serverRoot) === "server" && basename(parent) === ZCODE_DATA_ROOT_DIR_NAME) {
+  if (basename(serverRoot) === "server" && basename(parent) === ZODY_DATA_ROOT_DIR_NAME) {
     return dirname(parent);
   }
   // 非标准的显式 server root 仍保持隔离，不向其父目录扩散 Agent/SQLite 数据。
@@ -136,5 +136,5 @@ export function assertServerDataRoot(serverRoot: string): string {
 }
 
 export function serverDataRootFromBase(baseDir: string): string {
-  return join(resolve(baseDir), ZCODE_DATA_ROOT_DIR_NAME, "server");
+  return join(resolve(baseDir), ZODY_DATA_ROOT_DIR_NAME, "server");
 }

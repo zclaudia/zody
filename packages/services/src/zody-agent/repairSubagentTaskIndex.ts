@@ -1,4 +1,4 @@
-import { resolveWorkspaceKey, ZCODE_AGENT_PROVIDER } from "@zody/shared";
+import { resolveWorkspaceKey, ZODY_AGENT_PROVIDER } from "@zody/shared";
 import type { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 import type { IZodyAgentService, ZodyAgentWorkspaceTarget } from "#src/zody-agent/zodyAgent.js";
 
@@ -14,7 +14,7 @@ export async function repairSubagentTaskIndex(params: {
   onRemoved: () => void;
 }): Promise<void> {
   const { target, taskIndexRepo, agentService, isCurrent } = params;
-  const rows = await taskIndexRepo.listTaskMetas({ ...target, provider: ZCODE_AGENT_PROVIDER });
+  const rows = await taskIndexRepo.listTaskMetas({ ...target, provider: ZODY_AGENT_PROVIDER });
   const ids = rows
     .filter((row) => !params.visibleSessionIds.has(row.taskId))
     .map((row) => row.taskId);

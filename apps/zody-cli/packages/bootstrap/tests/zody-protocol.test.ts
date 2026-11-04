@@ -6,7 +6,7 @@ import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
 import { createSqliteSessionStore } from "@zody/adapters/storage";
 import {
-  ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+  ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
   zodyProtocolMethods,
   zodyMessagePartSchema,
   zodySessionCancelBackgroundTaskResultSchema,
@@ -4019,13 +4019,13 @@ describe("ZodyProtocolAgentServer", () => {
         params: { workspace },
       });
 
-      await vi.advanceTimersByTimeAsync(ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS);
+      await vi.advanceTimersByTimeAsync(ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS);
 
       await expect(resultPromise).resolves.toMatchObject({
         error: {
           code: -32022,
           data: {
-            timeoutMs: ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+            timeoutMs: ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
           },
         },
       });

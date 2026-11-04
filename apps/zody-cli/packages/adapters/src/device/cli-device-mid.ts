@@ -1,7 +1,7 @@
 import { mkdir, open, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
-import { createUuid, ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { createUuid, ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 const LOCK_RETRY_DELAY_MS = 10;
 const LOCK_RETRY_COUNT = 200;
@@ -58,7 +58,7 @@ function resolveCliTelemetryStateFile(options: EnsureCliDeviceMidOptions): strin
     options.baseDir ?? env[ZODY_DATA_BASE_DIR_ENV_KEY]?.trim() ?? homedir();
   const baseDir = configuredBaseDir.length > 0 ? configuredBaseDir : homedir();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  return join(resolveUserPath(baseDir), ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
+  return join(resolveUserPath(baseDir), ZODY_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
 }
 
 async function ensurePersistedDeviceMid(input: {

@@ -2,7 +2,7 @@
 // docs/dynamic-workflow/launch.md「Data path」）。
 import { describe, expect, it } from "vitest";
 import {
-  ZCODE_WORKFLOWS_RUNS_MAX_LIMIT,
+  ZODY_WORKFLOWS_RUNS_MAX_LIMIT,
   zodyProtocolMethods,
   zodySavedWorkflowMetaSchema,
   zodySavedWorkflowScopeSchema,
@@ -18,7 +18,7 @@ import {
   zodyWorkflowsRunsResultSchema,
   zodyWorkflowsUpdateMetaParamsSchema,
   zodyWorkflowsUpdateMetaResultSchema,
-  ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES,
+  ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES,
   zodyWorkflowsForRunParamsSchema,
   zodyWorkflowsForRunResultSchema,
   zodyWorkflowsSaveParamsSchema,
@@ -168,14 +168,14 @@ describe("zcode-protocol saved workflows", () => {
       zodyWorkflowsRunsParamsSchema.parse({
         workspace,
         name: "x",
-        limit: ZCODE_WORKFLOWS_RUNS_MAX_LIMIT,
+        limit: ZODY_WORKFLOWS_RUNS_MAX_LIMIT,
       }).name,
     ).toBe("x");
     expect(() => zodyWorkflowsRunsParamsSchema.parse({ workspace, limit: 0 })).toThrow();
     expect(() =>
       zodyWorkflowsRunsParamsSchema.parse({
         workspace,
-        limit: ZCODE_WORKFLOWS_RUNS_MAX_LIMIT + 1,
+        limit: ZODY_WORKFLOWS_RUNS_MAX_LIMIT + 1,
       }),
     ).toThrow();
     expect(() => zodyWorkflowsRunsParamsSchema.parse({ workspace, limit: 1.5 })).toThrow();
@@ -363,12 +363,12 @@ describe("zcode-protocol saving a run", () => {
   });
 
   it("forRun：候选有上界；结果三个字段全可缺（全缺即「没保存、也不知道实参」）", () => {
-    const candidates = Array.from({ length: ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES }, (_, i) => ({
+    const candidates = Array.from({ length: ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES }, (_, i) => ({
       name: `w${i}`,
     }));
     expect(
       zodyWorkflowsForRunParamsSchema.parse({ workspace, runId: "r", candidates }).candidates,
-    ).toHaveLength(ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES);
+    ).toHaveLength(ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES);
     expect(() =>
       zodyWorkflowsForRunParamsSchema.parse({
         workspace,

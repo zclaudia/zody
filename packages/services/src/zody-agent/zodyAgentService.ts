@@ -30,17 +30,17 @@ import {
   subagentRuntimeConfigSchema,
   zodySubagentsReadRuntimeConfigParamsSchema,
   type SubagentRuntimeConfig,
-  ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+  ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
   formatLogPrefix,
   resolveWorkspaceKey,
   type TraceId,
-  ZCODE_AGENT_PROVIDER,
-  ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
-  ZCODE_AGENT_PROVIDER_NOT_READY_REASON,
-  ZCODE_MODEL_REASONING_SEPARATOR,
+  ZODY_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER_NOT_READY_CODE,
+  ZODY_AGENT_PROVIDER_NOT_READY_REASON,
+  ZODY_MODEL_REASONING_SEPARATOR,
   isRemoteWorkspaceIdentity,
-  ZCODE_PROTOCOL_NAME,
-  ZCODE_PROTOCOL_VERSION,
+  ZODY_PROTOCOL_NAME,
+  ZODY_PROTOCOL_VERSION,
   zodyMcpListResultSchema,
   zodyPermissionRequestParamsSchema,
   zodyBrowserListParamsSchema,
@@ -137,7 +137,7 @@ import {
   type ZodyToolExecResource,
   type ZodyPluginOperationProgressNotification,
   type ZodyTaskMode,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 // fork（F4.6）：官方 MCP 发放审计随官方 MCP 删除。
@@ -146,7 +146,7 @@ import {
   mergeAutomationMutationToolDenylist,
   // fork（F4.3）：mergeOffPeakMutationToolDenylist 随闲时任务全链路删除。
 } from "#src/zody-agent/automationToolPolicy.js";
-import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zodyAgent.js";
+import { ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zodyAgent.js";
 import type {
   ZodyProtocolRequestId,
   ModelSelection,
@@ -314,7 +314,7 @@ import {
   workspaceConfigTopic,
   workspaceConfigTopicWireCandidateSchema,
   utf8JsonByteLength,
-  ZCODE_ATTACHMENT_FAULT_CODES,
+  ZODY_ATTACHMENT_FAULT_CODES,
   ZodyAttachmentFaultError,
   type CommandAck,
   type ConversationTopicWireCandidate,
@@ -501,7 +501,7 @@ function ensurePluginManagementWorkspacePath(): string {
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const workspacePath = join(
     getDataBaseDir(),
-    ZCODE_DATA_ROOT_DIR_NAME,
+    ZODY_DATA_ROOT_DIR_NAME,
     PLUGIN_MANAGEMENT_WORKSPACE_DIR_NAME,
   );
   // 插件管理是控制面能力，不能复用可能因真实 workspace 被删而 EPIPE 的会话进程。
@@ -792,7 +792,7 @@ function formatModelSelectionForLog(ref: ModelSelection | undefined): string | n
 
   const base = `${ref.providerId}/${ref.modelId}`;
   const reasoningLevel = ref.options?.reasoningLevel;
-  return reasoningLevel ? `${base}${ZCODE_MODEL_REASONING_SEPARATOR}${reasoningLevel}` : base;
+  return reasoningLevel ? `${base}${ZODY_MODEL_REASONING_SEPARATOR}${reasoningLevel}` : base;
 }
 
 function sessionEventKey(params: ZodyAgentSessionTarget): string {
@@ -896,14 +896,14 @@ interface ActiveWorkspaceClient {
 }
 
 function createRuntimeUnavailableError(params: ZodyAgentWorkspaceTarget): Error & {
-  code: typeof ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE;
+  code: typeof ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE;
   workspaceKey: string;
 } {
   const error = new Error("Zody Agent runtime is not running.") as Error & {
-    code: typeof ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE;
+    code: typeof ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE;
     workspaceKey: string;
   };
-  error.code = ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE;
+  error.code = ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE;
   error.workspaceKey = resolveWorkspaceKey(params);
   return error;
 }
@@ -1265,7 +1265,7 @@ export function createZodyAgentService(
       requestId,
       scope: pending.request.scope,
       sessionId: pending.request.sessionId,
-      timeoutMs: ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+      timeoutMs: ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
       workspaceKey: pending.workspaceKey,
     });
     void pending.client
@@ -1273,7 +1273,7 @@ export function createZodyAgentService(
         code: -32022,
         message: "Session runtime preferences request timed out",
         data: {
-          timeoutMs: ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+          timeoutMs: ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
         },
       })
       .catch((error: unknown) => {
@@ -2155,7 +2155,7 @@ export function createZodyAgentService(
             request: dynamicRequest,
             timeout: setTimeout(
               () => expireSessionRuntimePreferencesRequest(requestId),
-              ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+              ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
             ),
             workspaceKey: resolveWorkspaceKey(workspace),
           });
@@ -2619,10 +2619,10 @@ export function createZodyAgentService(
     snapshot?: ZodyAgentProviderReadinessSnapshot;
     workspace: ZodyAgentWorkspaceTarget;
   }): Error & {
-    code: typeof ZCODE_AGENT_PROVIDER_NOT_READY_CODE;
+    code: typeof ZODY_AGENT_PROVIDER_NOT_READY_CODE;
     data: {
       providerCount: number;
-      reason: typeof ZCODE_AGENT_PROVIDER_NOT_READY_REASON;
+      reason: typeof ZODY_AGENT_PROVIDER_NOT_READY_REASON;
       revision: string | null;
       workspaceKey: string;
       workspacePath: string;
@@ -2630,19 +2630,19 @@ export function createZodyAgentService(
   } {
     const workspaceKey = resolveWorkspaceKey(params.workspace);
     const error = new Error("当前没有可用的模型供应商和模型，请先登录或配置 API Key。") as Error & {
-      code: typeof ZCODE_AGENT_PROVIDER_NOT_READY_CODE;
+      code: typeof ZODY_AGENT_PROVIDER_NOT_READY_CODE;
       data: {
         providerCount: number;
-        reason: typeof ZCODE_AGENT_PROVIDER_NOT_READY_REASON;
+        reason: typeof ZODY_AGENT_PROVIDER_NOT_READY_REASON;
         revision: string | null;
         workspaceKey: string;
         workspacePath: string;
       };
     };
-    error.code = ZCODE_AGENT_PROVIDER_NOT_READY_CODE;
+    error.code = ZODY_AGENT_PROVIDER_NOT_READY_CODE;
     error.data = {
       providerCount: params.snapshot?.providerCount ?? 0,
-      reason: ZCODE_AGENT_PROVIDER_NOT_READY_REASON,
+      reason: ZODY_AGENT_PROVIDER_NOT_READY_REASON,
       revision: params.snapshot?.revision ?? null,
       workspaceKey,
       workspacePath: params.workspace.workspacePath,
@@ -2652,10 +2652,10 @@ export function createZodyAgentService(
 
   function isProviderNotReadyError(
     error: unknown,
-  ): error is Error & { code: typeof ZCODE_AGENT_PROVIDER_NOT_READY_CODE } {
+  ): error is Error & { code: typeof ZODY_AGENT_PROVIDER_NOT_READY_CODE } {
     return (
       error instanceof Error &&
-      (error as { code?: unknown }).code === ZCODE_AGENT_PROVIDER_NOT_READY_CODE
+      (error as { code?: unknown }).code === ZODY_AGENT_PROVIDER_NOT_READY_CODE
     );
   }
 
@@ -3181,8 +3181,8 @@ export function createZodyAgentService(
         return {
           available: true,
           workspaceKey,
-          protocolName: ZCODE_PROTOCOL_NAME,
-          protocolVersion: ZCODE_PROTOCOL_VERSION,
+          protocolName: ZODY_PROTOCOL_NAME,
+          protocolVersion: ZODY_PROTOCOL_VERSION,
           transportKind: client.transportKind === "websocket" ? "websocket" : "stdio",
         };
       } catch (error) {
@@ -3202,10 +3202,10 @@ export function createZodyAgentService(
         return {
           available: false,
           workspaceKey,
-          protocolName: ZCODE_PROTOCOL_NAME,
-          protocolVersion: ZCODE_PROTOCOL_VERSION,
+          protocolName: ZODY_PROTOCOL_NAME,
+          protocolVersion: ZODY_PROTOCOL_VERSION,
           reason: error instanceof Error ? error.message : String(error),
-          ...(providerNotReady ? { reasonCode: ZCODE_AGENT_PROVIDER_NOT_READY_REASON } : {}),
+          ...(providerNotReady ? { reasonCode: ZODY_AGENT_PROVIDER_NOT_READY_REASON } : {}),
         };
       }
     },
@@ -4207,7 +4207,7 @@ export function createZodyAgentService(
           }
           return {
             pid: runtime.pid,
-            provider: ZCODE_AGENT_PROVIDER,
+            provider: ZODY_AGENT_PROVIDER,
             workspacePath: runtime.workspacePath,
             ...(runtime.lane ? { lane: runtime.lane } : {}),
             children,
@@ -5495,7 +5495,7 @@ export function createZodyAgentService(
     async conversationAttachmentReadV4(params: ZodyAgentConversationAttachmentReadParams) {
       if (!readTrustedZodyAgentV4Connection(params)) {
         throw new ZodyAttachmentFaultError(
-          ZCODE_ATTACHMENT_FAULT_CODES.shareReadConnectionUntrusted,
+          ZODY_ATTACHMENT_FAULT_CODES.shareReadConnectionUntrusted,
         );
       }
       const wireParams = v4ConversationAttachmentReadParamsSchema.parse({
@@ -5517,7 +5517,7 @@ export function createZodyAgentService(
     async conversationAttachmentStatV4(params: ZodyAgentConversationAttachmentStatParams) {
       if (!readTrustedZodyAgentV4Connection(params)) {
         throw new ZodyAttachmentFaultError(
-          ZCODE_ATTACHMENT_FAULT_CODES.shareStatConnectionUntrusted,
+          ZODY_ATTACHMENT_FAULT_CODES.shareStatConnectionUntrusted,
         );
       }
       const wireParams = v4ConversationAttachmentStatParamsSchema.parse({
@@ -5725,7 +5725,7 @@ export function createZodyAgentService(
         if (
           error instanceof Error &&
           "code" in error &&
-          error.code === ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE
+          error.code === ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE
         ) {
           return { kind: "unavailable", workId: params.workId };
         }

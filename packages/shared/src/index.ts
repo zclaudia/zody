@@ -4,7 +4,7 @@ export * from "./networkCapture.js";
 export * from "./mobile-remote-phase1.js";
 export * from "./mobile-notification-delivery.js";
 export * from "./mobile-history-search.js";
-export { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
+export { ZODY_DATA_ROOT_DIR_NAME } from "./dataDir.js";
 export {
   DESKTOP_ZOOM_MAX_LEVEL,
   DESKTOP_ZOOM_MIN_LEVEL,

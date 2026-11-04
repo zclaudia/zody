@@ -25,7 +25,7 @@ import type {
   SkillsListResult,
   SkillsCapability,
 } from "@zody/shared";
-import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { ISkillsService } from "./skills.js";
 import { SKILL_FILE_NAME, walkSkillMarkdownPaths } from "./skillDiscoveryWalk.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
@@ -53,14 +53,14 @@ interface ParsedFrontmatter {
 
 const SKILL_META_FILE_NAME = "_meta.json";
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-const SKILL_SETTINGS_DIR = join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "v2");
-const SKILL_CLI_SETTINGS_DIR = join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli");
+const SKILL_SETTINGS_DIR = join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "v2");
+const SKILL_CLI_SETTINGS_DIR = join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "cli");
 const SKILL_CLI_CONFIG_FILE = join(SKILL_CLI_SETTINGS_DIR, "config.json");
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
-const ZCODE_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
-const ZCODE_INLINE_PLUGIN_MARKETPLACE = "inline";
-const ZCODE_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
+const ZODY_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
+const ZODY_INLINE_PLUGIN_MARKETPLACE = "inline";
+const ZODY_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_PLUGIN_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_PLUGIN_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
 
@@ -87,7 +87,7 @@ function getWorkspaceAgentsSkillRoot(workspacePath: string): string {
 
 /** ZCode Agent 用户级技能目录。 */
 function getUserZodySkillRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "skills");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "skills");
 }
 
 /** 兼容目录: 用户级 `~/.agents/skills`。 */
@@ -650,7 +650,7 @@ function readStorageDirFromConfig(config: Record<string, unknown>): string {
   const storage = isObjectRecord(config.storage) ? config.storage : {};
   return typeof storage.dir === "string" && storage.dir.trim().length > 0
     ? storage.dir
-    : `~/${ZCODE_DATA_ROOT_DIR_NAME}`;
+    : `~/${ZODY_DATA_ROOT_DIR_NAME}`;
 }
 
 function resolveConfigPath(path: string): string {
@@ -692,7 +692,7 @@ function resolveInside(rootPath: string, rawPath: string): string | null {
 }
 
 async function scanOfficialPluginCacheRoots(pluginStorageRoot: string): Promise<string[]> {
-  const cacheRoot = join(pluginStorageRoot, "cache", ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
+  const cacheRoot = join(pluginStorageRoot, "cache", ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
   let pluginEntries: Dirent[] = [];
   try {
     pluginEntries = await readdir(cacheRoot, { withFileTypes: true });
@@ -749,7 +749,7 @@ async function readPluginManifest(rootPath: string): Promise<PluginManifestSumma
 
 async function findPluginManifestPath(rootPath: string): Promise<string | null> {
   for (const manifestPath of [
-    join(rootPath, ZCODE_PLUGIN_MANIFEST_PATH),
+    join(rootPath, ZODY_PLUGIN_MANIFEST_PATH),
     join(rootPath, CLAUDE_PLUGIN_MANIFEST_PATH),
     join(rootPath, CODEX_PLUGIN_MANIFEST_PATH),
   ]) {
@@ -792,12 +792,12 @@ async function resolvePluginSkillRootDescriptors(): Promise<SkillRootDescriptor[
   const candidates: PluginRootCandidate[] = [
     ...config.dirs.map((dir) => ({
       defaultEnabled: true,
-      marketplace: ZCODE_INLINE_PLUGIN_MARKETPLACE,
+      marketplace: ZODY_INLINE_PLUGIN_MARKETPLACE,
       rootPath: resolveConfigPath(dir),
     })),
     ...officialCacheRoots.map((rootPath) => ({
       defaultEnabled: false,
-      marketplace: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+      marketplace: ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
       rootPath,
     })),
     ...installedRoots,
@@ -815,7 +815,7 @@ async function resolvePluginSkillRootDescriptors(): Promise<SkillRootDescriptor[
     // 官方 cache 时不经过 CLI resolve 的过滤，需要在这里同样跳过，否则被卸载的内置插件
     // 仍会从 cache 贡献技能。
     if (
-      candidate.marketplace === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE &&
+      candidate.marketplace === ZODY_OFFICIAL_PLUGIN_MARKETPLACE &&
       config.suppressedBuiltins.includes(pluginId)
     ) {
       continue;

@@ -2,7 +2,7 @@ import { open } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { getDataBaseDir } from "#src/paths.js";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 // 32 MiB 足以覆盖常规最近调用，同时避免 64/256 MiB 诊断文件造成 Host 内存峰值。
 const MAX_TRAJECTORY_READ_BYTES = 32 * 1024 * 1024;
@@ -17,8 +17,8 @@ export interface TrajectoryFileTail {
 export function resolveModelIODirs(): string[] {
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const roots = new Set<string>([
-    join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli"),
-    join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli"),
+    join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli"),
+    join(getDataBaseDir(), ZODY_DATA_ROOT_DIR_NAME, "cli"),
   ]);
   return [...roots].flatMap((root) => [join(root, "debug"), join(root, "rollout")]);
 }

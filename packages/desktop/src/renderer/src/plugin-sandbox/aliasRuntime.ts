@@ -70,7 +70,7 @@ export interface AliasAppLike {
   downloadFile(params: { contents: McpAppsDownloadFileItem[] }): Promise<{ isError?: boolean }>;
 }
 
-export const ZCODE_GLOBALS_EVENT = "zcode:globals";
+export const ZODY_GLOBALS_EVENT = "zcode:globals";
 
 export interface PluginSandboxAliasRuntime {
   zcode: ZodyAliasApi;

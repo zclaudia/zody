@@ -1,7 +1,7 @@
 /** MCP 每个上报窗口只交一份合计；瞬时读数不进入会话、队列或持久化。 */
 import {
   zodyMcpResourceSamplesSchema,
-  ZCODE_MCP_RESOURCE_SAMPLE_INTERVAL_MS,
+  ZODY_MCP_RESOURCE_SAMPLE_INTERVAL_MS,
   type ZodyMcpResourceSample,
   type ProcessResourceRuntimeSurface,
 } from "@zody/shared";
@@ -29,7 +29,7 @@ const latest = new Map<string, StoredSample>();
 
 function purgeExpired(now: number): void {
   for (const [key, entry] of latest) {
-    if (now - entry.receivedAt > ZCODE_MCP_RESOURCE_SAMPLE_INTERVAL_MS * 2) latest.delete(key);
+    if (now - entry.receivedAt > ZODY_MCP_RESOURCE_SAMPLE_INTERVAL_MS * 2) latest.delete(key);
   }
 }
 
@@ -123,7 +123,7 @@ export const mcpProcessResourceSampleSource: ProcessResourceSampleSource = {
         cpuPercent: group.role.cpuPercent,
         rssKbTotal: group.role.rssKbTotal,
         processCount: group.role.processCount,
-        intervalMs: ZCODE_MCP_RESOURCE_SAMPLE_INTERVAL_MS,
+        intervalMs: ZODY_MCP_RESOURCE_SAMPLE_INTERVAL_MS,
         receivedAt: group.receivedAt,
       });
     }

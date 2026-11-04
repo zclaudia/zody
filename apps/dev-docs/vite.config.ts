@@ -8,7 +8,7 @@ import { parse as parseYaml } from "yaml";
 import { normalizeFeatureBoundaryGraph } from "./src/data/featureBoundaryGraphSource.js";
 
 const STDIO_TRAFFIC_API_PATH = "/api/dev/stdio-traffic";
-// 修改原因：用户级数据根已改为 ~/.zody（packages/shared/src/dataDir.ts 的 ZCODE_DATA_ROOT_DIR_NAME），
+// 修改原因：用户级数据根已改为 ~/.zody（packages/shared/src/dataDir.ts 的 ZODY_DATA_ROOT_DIR_NAME），
 // stdio tap 日志位于 {数据根}/v2/dev/stdio-traffic；旧的 ~/.zcode 不再写入。
 const STDIO_TRAFFIC_LOG_DIR = join(homedir(), ".zody", "v2", "dev", "stdio-traffic");
 const MAX_TAIL_BYTES = 2 * 1024 * 1024;

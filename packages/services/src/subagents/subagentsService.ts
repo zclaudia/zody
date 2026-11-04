@@ -6,8 +6,8 @@ import {
   createPluginAgentStateId,
   parsePluginSubagentModelSelectionOverrides,
   DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS,
-  ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID,
+  ZODY_DATA_ROOT_DIR_NAME,
   modelSelectionSchema,
   type SubagentRuntimeConfig,
   type AgentCreateParams,
@@ -420,7 +420,7 @@ async function readPluginConfig(options?: SubagentStorageOptions): Promise<Plugi
     // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
     const configPath = join(
       resolveUserHomeDir(options),
-      ZCODE_DATA_ROOT_DIR_NAME,
+      ZODY_DATA_ROOT_DIR_NAME,
       "cli",
       "config.json",
     );
@@ -455,13 +455,13 @@ async function readEnabledPluginRecords(
       config.enabledPlugins[record.id] === true &&
       // 卸载抑制优先于遗留的安装/启用记录，不能只在缓存兜底时检查而复活官方插件。
       !(
-        record.id.endsWith(`@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID}`) &&
+        record.id.endsWith(`@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID}`) &&
         config.suppressedBuiltins.includes(record.id)
       ),
   );
   const seenIds = new Set(installed.map((record) => record.id));
   for (const cacheRoot of await scanOfficialPluginCacheRoots(pluginStorageRoot)) {
-    const id = `${cacheRoot.name}@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID}`;
+    const id = `${cacheRoot.name}@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID}`;
     if (seenIds.has(id) || config.suppressedBuiltins.includes(id)) continue;
     const enabled = config.enabledPlugins[id] ?? DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS.has(id);
     if (!enabled) continue;

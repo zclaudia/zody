@@ -42,10 +42,10 @@ import {
 import {
   isRemoteWorkspaceIdentity,
   resolveZodyRuntimeEnv,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 import {
-  ZCODE_ATTACHMENT_FAULT_CODES,
+  ZODY_ATTACHMENT_FAULT_CODES,
   ZodyAttachmentFaultError,
 } from "@zody/shared/zody-protocol-v4";
 
@@ -403,7 +403,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
             rootDir: resolvePath(
               (options.env ?? process.env).ZODY_MAILBOX_ROOT ??
                 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-                `~/${ZCODE_DATA_ROOT_DIR_NAME}/mailbox`,
+                `~/${ZODY_DATA_ROOT_DIR_NAME}/mailbox`,
             ),
           })
         : undefined);
@@ -1276,7 +1276,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
         const { ref, mediaType, artifactUri } = await resolvePromptAttachment(input);
         if (artifactUri) {
           if (!artifactStore.statToolResultArtifact) {
-            throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.statUnsupported);
+            throw new ZodyAttachmentFaultError(ZODY_ATTACHMENT_FAULT_CODES.statUnsupported);
           }
           const result = await artifactStore.statToolResultArtifact({
             uri: artifactUri,
@@ -1292,7 +1292,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
         if (result.kind !== "file") {
           // 目录/符号链接/已消失都意味着「这个附件不再是可分享的文件」，用稳定码上抛，
           // 让 share 预检按确定分类处理，而不是靠错误文本猜。
-          throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.statNotFile);
+          throw new ZodyAttachmentFaultError(ZODY_ATTACHMENT_FAULT_CODES.statNotFile);
         }
         return {
           totalBytes: result.sizeBytes,

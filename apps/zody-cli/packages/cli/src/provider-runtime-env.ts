@@ -14,7 +14,7 @@ import {
 } from "@zody/provider-node";
 import {
   resolveRuntimeZodyEndpointOrigin,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   ZODY_VERSION,
 } from "@zody/shared";
 import type { CliEnv } from "./env.js";
@@ -79,12 +79,12 @@ export async function prepareCliProviderRuntimeEnv(
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const personalFilePath =
     explicitPersonal ??
-    join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", PERSONAL_PROVIDER_CONFIG_FILE_NAME);
+    join(dataBaseDir, ZODY_DATA_ROOT_DIR_NAME, "v2", PERSONAL_PROVIDER_CONFIG_FILE_NAME);
   const appVersion = options.appVersion ?? ZODY_VERSION;
   const platform = options.platform ?? resolveZodyBuiltinClientPlatform();
   const zodyEndpointOrigin = resolveRuntimeZodyEndpointOrigin(options.env);
   const cachePaths = resolveZodyBuiltinCachePaths({
-    environmentConfigRoot: join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2"),
+    environmentConfigRoot: join(dataBaseDir, ZODY_DATA_ROOT_DIR_NAME, "v2"),
     platform,
     appVersion,
     zodyEndpointOrigin: zodyEndpointOrigin,
@@ -137,7 +137,7 @@ async function resolveBundledZodyBuiltinProviderConfig(input: {
   if (input.sea?.isSea()) {
     const content = input.sea.getAsset(SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY, "utf8");
     return materializeZodyBuiltinProviderConfig({
-      environmentConfigRoot: join(input.dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2"),
+      environmentConfigRoot: join(input.dataBaseDir, ZODY_DATA_ROOT_DIR_NAME, "v2"),
       content,
     });
   }

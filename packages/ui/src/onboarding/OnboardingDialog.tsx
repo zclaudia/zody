@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- onboarding 弹窗集中编排欢迎页、会话迁移、外部导入和最终执行状态，拆开会增加跨步骤状态传递复杂度 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog.js";
 import { useClaudeSessionMigration } from "@/hooks/useClaudeSessionMigration.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
@@ -324,7 +324,7 @@ export function OnboardingDialog(props: {
             // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
             target:
               agentsFileMigration.status?.targetPath ??
-              `~/${ZCODE_DATA_ROOT_DIR_NAME}/AGENTS.md`,
+              `~/${ZODY_DATA_ROOT_DIR_NAME}/AGENTS.md`,
           },
         ),
         confirmLabel: intl.formatMessage({ id: "onboarding.agentsFile.confirmAction" }),

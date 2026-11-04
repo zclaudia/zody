@@ -5,7 +5,7 @@ import {
   BUILTIN_PROVIDER_TEMPLATE_IDS,
   TID_CHAT_MODEL_SELECT_TRIGGER,
   TID_V4_MODEL_CONFIG,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   encodeCustomModelValue,
   type ProviderFamilyConnectionSelection,
 } from "@zody/shared";
@@ -149,7 +149,7 @@ export async function seedPersistedModelSelection(params: {
     paths.workspace,
     MODEL_SELECTION_RECENT_KEY_PREFIX,
     params,
-    ZCODE_AGENT_PROVIDER,
+    ZODY_AGENT_PROVIDER,
   );
 }
 

@@ -3,7 +3,7 @@ import { connectViaProtocol } from "@zody/client";
 import { Emitter, SocketProtocol, VSBuffer, type ISocket } from "@zody/rpc";
 import type { IServiceAccessor } from "@zody/services";
 import {
-  ZCODE_RPC_HOST_CAPABILITY_HEADER,
+  ZODY_RPC_HOST_CAPABILITY_HEADER,
   ZODY_RENAME_GENERATION,
   ZODY_RENAME_GENERATION_HEADER,
   checkRenameGeneration,
@@ -216,7 +216,7 @@ function connectNodeWebSocket(
     const socket = new WebSocket(authenticatedUrl(wsUrl, target), {
       headers: {
         ...(token ? { authorization: `Bearer ${token}` } : {}),
-        [ZCODE_RPC_HOST_CAPABILITY_HEADER]: capability,
+        [ZODY_RPC_HOST_CAPABILITY_HEADER]: capability,
         [ZODY_RENAME_GENERATION_HEADER]: String(ZODY_RENAME_GENERATION),
       },
     });

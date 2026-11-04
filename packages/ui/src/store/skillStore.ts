@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import {
   normalizeAgentProviderToZodyAgent,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   type ZodyProvider,
   type SkillSummary,
   type SkillsCapability,
@@ -79,7 +79,7 @@ export const useSkillStore = create<SkillStoreState>((set, get) => ({
   workspaceIdentity: null,
   loadedWorkspacePath: null,
   loadedWorkspaceIdentity: null,
-  provider: ZCODE_AGENT_PROVIDER,
+  provider: ZODY_AGENT_PROVIDER,
   loadedProvider: null,
   skills: [],
   capability: null,
@@ -94,7 +94,7 @@ export const useSkillStore = create<SkillStoreState>((set, get) => ({
     const currentState = get();
     const hasProvider = typeof providerOrSkillsService === "string";
     const provider = normalizeAgentProviderToZodyAgent(
-      hasProvider ? providerOrSkillsService : ZCODE_AGENT_PROVIDER,
+      hasProvider ? providerOrSkillsService : ZODY_AGENT_PROVIDER,
     );
     const skillsService = hasProvider ? maybeSkillsService : providerOrSkillsService;
     const normalizedWorkspaceIdentity = workspaceIdentity?.trim() || null;

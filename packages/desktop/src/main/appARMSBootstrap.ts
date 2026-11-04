@@ -2,7 +2,7 @@ import { wrapStartupReporterRequest } from "./startupTelemetryDelivery.js";
 import { randomUUID } from "node:crypto";
 import { basename } from "node:path";
 import armsRum from "@arms/rum-electron";
-import { ZCODE_AGENT_LIFECYCLE_LOG_MARKER } from "@zody/shared/process-diagnostic";
+import { ZODY_AGENT_LIFECYCLE_LOG_MARKER } from "@zody/shared/process-diagnostic";
 import { ZODY_ARMS_RUM_ENDPOINT, ZODY_VERSION, mapZodyEnvToArmsRumEnv } from "@zody/shared";
 import { ARMS_BROWSER_COLLECTORS, parseArmsViewName } from "../shared/armsRumShared.js";
 import { redactArmsEventBatch } from "./armsEventRedaction.js";
@@ -214,7 +214,7 @@ export const armsInitPromise = armsRum
               event.type === "error" &&
               event.source === "console.error" &&
               typeof event.message === "string" &&
-              event.message.includes(ZCODE_AGENT_LIFECYCLE_LOG_MARKER)
+              event.message.includes(ZODY_AGENT_LIFECYCLE_LOG_MARKER)
             ),
         ),
         runtimeApplicationName,

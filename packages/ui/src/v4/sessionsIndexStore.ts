@@ -11,7 +11,7 @@ import {
   type TopicFrameDeliveryKind,
 } from "@zody/shared/zody-protocol-v4";
 import { isZodyFileLockTimeoutError } from "@zody/shared";
-import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE } from "@zody/services";
+import { ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE } from "@zody/services";
 import { logger } from "@/logger.js";
 import type { SessionsIndexTransport } from "@/v4/agentSessionsIndexTransport.js";
 
@@ -63,7 +63,7 @@ function isRuntimeUnavailableError(error: unknown): boolean {
     typeof error === "object" &&
     error !== null &&
     "code" in error &&
-    (error as { code?: unknown }).code === ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE
+    (error as { code?: unknown }).code === ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE
   );
 }
 

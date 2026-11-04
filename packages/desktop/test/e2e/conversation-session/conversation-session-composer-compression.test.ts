@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { NodePersonalProviderConfigRepository } from "@zody/provider-node";
 import {
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
   TID_LOGIN_USE_API_KEY_BUTTON,
   TID_TASK_SETTINGS_BUTTON,
   TID_CHAT_MODEL_SELECT_TRIGGER,
@@ -214,7 +214,7 @@ describe("Composer 七档压缩", () => {
               enabled: true,
               enabledPlugins: {
                 ...config.plugins?.enabledPlugins,
-                [ZCODE_CUA_OFFICIAL_PLUGIN_ID]: true,
+                [ZODY_CUA_OFFICIAL_PLUGIN_ID]: true,
               },
             },
           }),

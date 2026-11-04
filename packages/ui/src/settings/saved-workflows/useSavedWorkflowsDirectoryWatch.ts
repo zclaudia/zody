@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { IFileWatcherService } from "@zody/services";
 import { logger } from "@/logger.js";
 
@@ -9,7 +9,7 @@ const WATCH_DEBOUNCE_MS = 300;
 function projectDirectories(workspacePath: string): string[] {
   const separator = workspacePath.includes("\\") && !workspacePath.includes("/") ? "\\" : "/";
   const trimmed = workspacePath.replace(/[\\/]+$/u, "");
-  return [ZCODE_DATA_ROOT_DIR_NAME, ".zcode"].map(
+  return [ZODY_DATA_ROOT_DIR_NAME, ".zcode"].map(
     (root) => `${trimmed}${separator}${root}${separator}workflows`,
   );
 }

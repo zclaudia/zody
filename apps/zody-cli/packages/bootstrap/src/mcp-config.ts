@@ -10,13 +10,13 @@ import {
   isZodyCuaMcpPackageArg,
   ZODY_CUA_BROKER_SOCKET_ENV_KEY,
   ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
   ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  ZCODE_PLUGIN_ID_ENV_KEY,
+  ZODY_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 
 export {
-  ZODY_CUA_BROKER_SOCKET_ENV_KEY as ZCODE_CUA_BROKER_SOCKET_ENV,
+  ZODY_CUA_BROKER_SOCKET_ENV_KEY as ZODY_CUA_BROKER_SOCKET_ENV,
 } from "@zody/shared";
 // 保留环境变量名供旧诊断脚本读取；迁移后的配置路径不会据此启动独立 CUA MCP。
 export const ZODY_CUA_BROKER_UNAVAILABLE_ENV = "ZODY_CUA_PERMISSION_BROKER_UNAVAILABLE";
@@ -54,8 +54,8 @@ export function resolveTrustedOfficialCuaServerNames(
         ([name, config]) =>
           configuredServers[name] === config &&
           config.type === "stdio" &&
-          config.env?.[ZCODE_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() ===
-            ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+          config.env?.[ZODY_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() ===
+            ZODY_CUA_OFFICIAL_PLUGIN_ID,
       )
       .map(([name]) => name),
   );
@@ -168,7 +168,7 @@ function injectCuaCredentialsIntoNodeRepl(
       ...(refreshMarker ? { [REFRESH_MARKER_ENV]: refreshMarker } : {}),
       ...(pluginAuthority ? { [ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]: pluginAuthority } : {}),
       [ZODY_CUA_NODE_REPL_HOST_ENV_KEY]: "1",
-      [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+      [ZODY_PLUGIN_ID_ENV_KEY]: ZODY_CUA_OFFICIAL_PLUGIN_ID,
     },
   };
 }
@@ -184,7 +184,7 @@ function isZodyCuaStdioServer(
   // 上面的 name/command/args 三条都匹配不到。_plugin id 由 adapters resolver 权威写入 env
   // （manifest/user env 不可覆盖），用它识别 official plugin server。
   if (
-    config.env?.[ZCODE_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() === ZCODE_CUA_OFFICIAL_PLUGIN_ID
+    config.env?.[ZODY_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() === ZODY_CUA_OFFICIAL_PLUGIN_ID
   ) {
     return true;
   }

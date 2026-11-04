@@ -7,8 +7,8 @@ import { z } from "zod";
  * 避免各处内联 z.enum([...]) 副本随新增/删除 provider 漂移。
  * 本模块只依赖 zod(叶子),可被 validation / zody-protocol 等无环引用。
  */
-export const ZCODE_PROVIDERS = ["glm"] as const;
+export const ZODY_PROVIDERS = ["glm"] as const;
 
-export const zodyProviderSchema = z.enum(ZCODE_PROVIDERS);
+export const zodyProviderSchema = z.enum(ZODY_PROVIDERS);
 
-export type ZodyProvider = (typeof ZCODE_PROVIDERS)[number];
+export type ZodyProvider = (typeof ZODY_PROVIDERS)[number];

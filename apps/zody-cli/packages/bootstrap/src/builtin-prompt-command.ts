@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { resolveProjectResourceRoots } from "@zody/shared/zody-paths";
 import {
   BUILTIN_WORKFLOW_COMMAND_NAME,
@@ -106,7 +106,7 @@ function buildInitAgentsPrompt(params: {
     `- Existing hidden instruction candidates: ${hiddenInstructionCandidates.join(", ")}`,
     "- File name must be exactly AGENTS.md.",
     // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-    `- This command targets the current workspace only. Do not write ~/${ZCODE_DATA_ROOT_DIR_NAME}/AGENTS.md.`,
+    `- This command targets the current workspace only. Do not write ~/${ZODY_DATA_ROOT_DIR_NAME}/AGENTS.md.`,
     additionalInstructions,
     "",
     "Process:",

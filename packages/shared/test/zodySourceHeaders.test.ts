@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   buildZodySourceHeadersFromContext,
-  ZCODE_SOURCE_HEADERS,
+  ZODY_SOURCE_HEADERS,
   ZODY_SOURCE_REFERER_URL,
   ZODY_SOURCE_TITLE,
 } from "../src/zody-source-headers.js";
@@ -20,7 +20,7 @@ describe("buildZodySourceHeadersFromContext", () => {
         sourceTitle: "cli",
       }),
     ).toEqual({
-      ...ZCODE_SOURCE_HEADERS,
+      ...ZODY_SOURCE_HEADERS,
       "User-Agent": "Zody/2.14.0",
       "X-Zody-App-Version": "2.14.0",
       "X-Platform": "darwin-arm64",
@@ -54,7 +54,7 @@ describe("buildZodySourceHeadersFromContext", () => {
   });
 
   it("未注入构建期 define 时来源标识常量为空，即默认不发", () => {
-    expect(ZCODE_SOURCE_HEADERS).toEqual({ "User-Agent": "Zody/unknown" });
+    expect(ZODY_SOURCE_HEADERS).toEqual({ "User-Agent": "Zody/unknown" });
     expect(ZODY_SOURCE_REFERER_URL).toBe("");
     expect(ZODY_SOURCE_TITLE).toBe("");
   });

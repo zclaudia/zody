@@ -1,4 +1,4 @@
-import { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
+import { ZODY_DATA_ROOT_DIR_NAME } from "./dataDir.js";
 
 export type BuiltinZodySlashCommandHelpEntry = {
   aliases?: readonly string[];
@@ -30,7 +30,7 @@ export const BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES: readonly BuiltinZodySlash
         "Runs a normal agent turn that inspects the current workspace and creates or updates AGENTS.md.",
         "Existing AGENTS.md files should be edited rather than overwritten.",
         // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-        `This command targets the workspace root, not the user default ~/${ZCODE_DATA_ROOT_DIR_NAME}/AGENTS.md.`,
+        `This command targets the workspace root, not the user default ~/${ZODY_DATA_ROOT_DIR_NAME}/AGENTS.md.`,
       ],
       name: "init",
       summary: "Create or update workspace AGENTS.md instructions.",

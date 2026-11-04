@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
-  ZCODE_PROTOCOL_NAME,
-  ZCODE_PROTOCOL_VERSION,
+  ZODY_PROTOCOL_NAME,
+  ZODY_PROTOCOL_VERSION,
   zodyComputerUseOperationEventSchema,
   zodyProviderRuntimeHeadersRequestParamsSchema,
   zodyProviderRuntimeHeadersResponseSchema,
@@ -1189,8 +1189,8 @@ describe("ZCode Protocol", () => {
   it("parses a server-authoritative session state snapshot", () => {
     const snapshot = zodySessionStateSnapshotSchema.parse({
       protocol: {
-        name: ZCODE_PROTOCOL_NAME,
-        version: ZCODE_PROTOCOL_VERSION,
+        name: ZODY_PROTOCOL_NAME,
+        version: ZODY_PROTOCOL_VERSION,
       },
       session: {
         sessionId: "sess_1",

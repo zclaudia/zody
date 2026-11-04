@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { TuiClipboardImage, TuiImageMediaType, TuiReadClipboardImage } from "@zody/tui";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 const DEFAULT_MAX_CLIPBOARD_IMAGE_BYTES = 20 * 1024 * 1024;
 
@@ -33,7 +33,7 @@ type NodeClipboardImageReaderOptions = {
 function resolveDefaultClipboardDirectory(processEnv: NodeJS.ProcessEnv = process.env): string {
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
   const storageRoot =
-    processEnv.ZODY_STORAGE_DIR?.trim() || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME);
+    processEnv.ZODY_STORAGE_DIR?.trim() || join(homedir(), ZODY_DATA_ROOT_DIR_NAME);
   return join(storageRoot, "clipboard");
 }
 

@@ -1,12 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { availableParallelism, totalmem } from "node:os";
 import {
-  ZCODE_CLI_RESOURCE_SAMPLE_INTERVAL_MS,
+  ZODY_CLI_RESOURCE_SAMPLE_INTERVAL_MS,
   type ZodyProcessResourceSample,
 } from "@zody/shared";
 
 /** 采样周期与 app 侧聚合共用 shared 的同一个常量，避免两侧节拍各自漂移。 */
-export const ZCODE_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS = ZCODE_CLI_RESOURCE_SAMPLE_INTERVAL_MS;
+export const ZODY_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS = ZODY_CLI_RESOURCE_SAMPLE_INTERVAL_MS;
 
 let processInstanceToken: string | undefined;
 
@@ -185,7 +185,7 @@ export function createZodyProcessResourceSampler(
         baseline = undefined;
       }
       try {
-        timerHandle = timer.setInterval(sample, ZCODE_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS);
+        timerHandle = timer.setInterval(sample, ZODY_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS);
       } catch {
         timerHandle = undefined;
         return;

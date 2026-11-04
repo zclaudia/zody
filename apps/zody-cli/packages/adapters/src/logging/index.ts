@@ -9,7 +9,7 @@ import type { LogContext, LogEntry, Logger, LoggerFactory, LogRedactor } from "@
 import { LogLevel, LogLevelName } from "@zody/contracts";
 import {
   ZODY_RUNTIME_ENV_KEY,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   normalizeZodyRuntimeEnv,
 } from "@zody/shared";
 import {
@@ -225,7 +225,7 @@ export function createNodeLoggerFactory(options: NodeLoggerFactoryOptions = {}):
 
 export function getDefaultLogDir(): string {
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
+  return join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "log");
 }
 
 function getDefaultMinLevel(env: NodeJS.ProcessEnv | undefined): LogLevel {

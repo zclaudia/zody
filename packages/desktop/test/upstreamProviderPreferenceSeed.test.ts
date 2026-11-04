@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
+import { ZODY_AGENT_PROVIDER } from "@zody/shared";
 import {
   UPSTREAM_MODEL,
   UPSTREAM_PROVIDER_ID,
@@ -66,6 +66,6 @@ describe("Upstream E2E 工具栏偏好种子", () => {
           : {}),
       }),
     );
-    expect(storage.getItem("zody-last-agent-provider")).toBe(ZCODE_AGENT_PROVIDER);
+    expect(storage.getItem("zody-last-agent-provider")).toBe(ZODY_AGENT_PROVIDER);
   });
 });

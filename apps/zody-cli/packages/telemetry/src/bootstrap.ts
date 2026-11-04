@@ -11,7 +11,7 @@ import type {
   TelemetryResourceContext,
 } from "@zody/contracts/telemetry";
 import type { ModelStatusSink } from "@zody/contracts/model";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/contracts";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/contracts";
 import { NoopAgentExecutionTelemetry } from "./agent-trace-runtime.js";
 
 type EnvRecord = Record<string, string | undefined>;
@@ -227,7 +227,7 @@ async function resolveStandaloneDeviceMid(
   const stateFile = zcodeHome
     ? join(zcodeHome, "v2", "telemetry-state.json")
     : // fork 数据隔离：家目录级数据根为 .zody，与上游 ZCode 的数据目录分开。
-      join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
+      join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
   const pending = pendingStandaloneDeviceMidByStateFile.get(stateFile);
   if (pending) return pending;
   const resolution = resolveStandaloneDeviceMidFromFile(stateFile);

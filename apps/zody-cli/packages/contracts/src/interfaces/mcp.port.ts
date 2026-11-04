@@ -100,10 +100,10 @@ export interface McpToolAnnotations {
   openWorldHint?: boolean;
 }
 
-export const ZCODE_MCP_ERROR_PRESENTATION_META_KEY = "zcode/errorPresentation";
-export const ZCODE_MCP_ERROR_PRESENTATION_MESSAGE_ONLY = "message-only";
+export const ZODY_MCP_ERROR_PRESENTATION_META_KEY = "zcode/errorPresentation";
+export const ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY = "message-only";
 /** MCP content 中来自模型显式 tab.screenshot() 的 image block 索引。 */
-export const ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY =
+export const ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY =
   "zcode/browserScreenshotContentIndices";
 /**
  * 本次 node_repl cell 操作的目标应用身份，供工具卡显示 App 图标。
@@ -112,9 +112,9 @@ export const ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY =
  * `zcode.cua/app-associations-v1`，投影成这里的最小形态。producer 那个键本身经
  * `nodeRepl.setResponseMeta` / `nodeRepl.emitStructuredResult` 也能到达 `_meta`，而这两个
  * API 挂在模型可见的 sandbox globals 上，因此不可信、必须在宿主侧丢弃（同
- * `ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY` 的处置）。
+ * `ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY` 的处置）。
  */
-export const ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY = "zcode/nodeReplCuaApp";
+export const ZODY_MCP_NODE_REPL_CUA_APP_META_KEY = "zcode/nodeReplCuaApp";
 // fork（F4.6）：ZCODE_MCP_SERVER_REQUEST_ID_META_KEY 只由官方 MCP 响应头写入，随链删除。
 
 export interface McpToolDescriptor {

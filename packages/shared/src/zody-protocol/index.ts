@@ -114,10 +114,10 @@ export {
   type HookInvocationRow,
 } from "../zody-protocol-v4/rows.js";
 
-export const ZCODE_PROTOCOL_NAME = "Zody Protocol" as const;
-export const ZCODE_PROTOCOL_VERSION = 1 as const;
+export const ZODY_PROTOCOL_NAME = "Zody Protocol" as const;
+export const ZODY_PROTOCOL_VERSION = 1 as const;
 // V4 wire 与 legacy 主协议并存；禁止为了 V4 physical framing 改写 legacy 版本。
-export const ZCODE_PROTOCOL_V4_WIRE_VERSION = 3 as const;
+export const ZODY_PROTOCOL_V4_WIRE_VERSION = 3 as const;
 export const zodyRuntimeCapabilitiesSchema = z.object({
   independentPlanState: z.boolean().optional(),
 });
@@ -563,7 +563,7 @@ export const zodyMcpTelemetryEventSchema = z.discriminatedUnion("kind", [
 export type ZodyMcpTelemetryEvent = z.infer<typeof zodyMcpTelemetryEventSchema>;
 
 /** MCP 每五分钟只探测一次，周期由生产者与设备总量过期判据共用。 */
-export const ZCODE_MCP_RESOURCE_SAMPLE_INTERVAL_MS = 5 * 60_000;
+export const ZODY_MCP_RESOURCE_SAMPLE_INTERVAL_MS = 5 * 60_000;
 
 export const zodyMcpResourceSampleSchema = z
   .object({
@@ -1319,8 +1319,8 @@ export const zodySessionStateSnapshotSchema = z
   .object({
     protocol: z
       .object({
-        name: z.literal(ZCODE_PROTOCOL_NAME),
-        version: z.literal(ZCODE_PROTOCOL_VERSION),
+        name: z.literal(ZODY_PROTOCOL_NAME),
+        version: z.literal(ZODY_PROTOCOL_VERSION),
       })
       .strict(),
     session: zodySessionInfoSchema,
@@ -2005,7 +2005,7 @@ export const zodySubagentsReadRuntimeConfigParamsSchema = z
   .object({ sessionId: nonEmptyString })
   .strict();
 
-export const ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS = 15_000;
+export const ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS = 15_000;
 
 export const zodySessionRequestRuntimePreferencesParamsSchema = z
   .object({
@@ -3133,13 +3133,13 @@ export const zodyWorkflowsDeleteResultSchema = z.union([
 ]);
 export type ZodyWorkflowsDeleteResult = z.infer<typeof zodyWorkflowsDeleteResultSchema>;
 
-export const ZCODE_WORKFLOWS_RUNS_MAX_LIMIT = 50;
+export const ZODY_WORKFLOWS_RUNS_MAX_LIMIT = 50;
 export const zodyWorkflowsRunsParamsSchema = z
   .object({
     workspace: zodyWorkspaceRefSchema,
     /** 只要这个名字的 run（`dwf_run.name` 字面等值）；缺省即本项目全部 run。 */
     name: nonEmptyString.optional(),
-    limit: z.number().int().min(1).max(ZCODE_WORKFLOWS_RUNS_MAX_LIMIT),
+    limit: z.number().int().min(1).max(ZODY_WORKFLOWS_RUNS_MAX_LIMIT),
     // 缺省 `project`：只查 `dwf_run.cwd === workspacePath` 的 run。`global` 时**不**按 cwd 过滤，
     // 跨所有项目取该名字的运行历史（全局工作流在任何项目里跑，历史因此跨 cwd）；结果行带 `cwd`
     // 供 GUI 标项目。`workspace` 语义同 list（全局档只当载体）。
@@ -3314,14 +3314,14 @@ export const zodyWorkflowsForRunCandidateSchema = z
   .strict();
 export type ZodyWorkflowsForRunCandidate = z.infer<typeof zodyWorkflowsForRunCandidateSchema>;
 /** 候选上界：一次 run 在一段对话里被存过的次数远小于它。 */
-export const ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES = 8;
+export const ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES = 8;
 export const zodyWorkflowsForRunParamsSchema = z
   .object({
     workspace: zodyWorkspaceRefSchema,
     runId: nonEmptyString,
     candidates: z
       .array(zodyWorkflowsForRunCandidateSchema)
-      .max(ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES)
+      .max(ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES)
       .optional(),
   })
   .strict();

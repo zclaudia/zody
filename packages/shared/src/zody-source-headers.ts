@@ -12,7 +12,7 @@ export const ZODY_SOURCE_TITLE: string =
   typeof __ZODY_SOURCE_TITLE__ !== "undefined" ? __ZODY_SOURCE_TITLE__ : "";
 
 // fork（F2.10）：设备标识 X-Device-Mid 与官方来源标识不再进入默认基础头。
-export const ZCODE_SOURCE_HEADERS = {
+export const ZODY_SOURCE_HEADERS = {
   "User-Agent": "Zody/unknown",
 } as const;
 
@@ -51,7 +51,7 @@ export function buildZodySourceHeadersFromContext(
   const sourceTitleBase = normalizeZodySourceHeaderValue(ZODY_SOURCE_TITLE);
 
   return {
-    ...ZCODE_SOURCE_HEADERS,
+    ...ZODY_SOURCE_HEADERS,
     "User-Agent": `Zody/${appVersion ?? "unknown"}`,
     ...(appVersion ? { "X-Zody-App-Version": appVersion } : {}),
     ...(sourceRefererUrl ? { "HTTP-Referer": sourceRefererUrl } : {}),

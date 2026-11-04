@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  ZCODE_PROTOCOL_NAME,
-  ZCODE_PROTOCOL_VERSION,
+  ZODY_PROTOCOL_NAME,
+  ZODY_PROTOCOL_VERSION,
   type ZodyMessageWithParts,
   type ZodySessionStateSnapshot,
   type ZodyTaskSnapshot,
@@ -25,8 +25,8 @@ function createSnapshot(params: {
 } = {}): ZodySessionStateSnapshot {
   return {
     protocol: {
-      name: ZCODE_PROTOCOL_NAME,
-      version: ZCODE_PROTOCOL_VERSION,
+      name: ZODY_PROTOCOL_NAME,
+      version: ZODY_PROTOCOL_VERSION,
     },
     session: {
       sessionId: "sess_1",

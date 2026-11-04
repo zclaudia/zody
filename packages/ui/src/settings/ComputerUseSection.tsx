@@ -10,7 +10,7 @@ import type { CuaOsSupport, RemoteTarget } from "@zody/shared";
 import {
   DesktopCommandIds,
   isRemoteWorkspaceIdentity,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
 } from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
 import { Switch } from "@/components/ui/switch.js";
@@ -104,9 +104,9 @@ export function ComputerUseSection({
   const setPluginEnabled = usePluginManagementStore((state) => state.setEnabled);
   const initializePlugins = usePluginManagementStore((state) => state.initialize);
   const togglingPluginId = usePluginManagementStore((state) => state.togglingPluginId);
-  const cuaPlugin = plugins.find((plugin) => plugin.id === ZCODE_CUA_OFFICIAL_PLUGIN_ID);
+  const cuaPlugin = plugins.find((plugin) => plugin.id === ZODY_CUA_OFFICIAL_PLUGIN_ID);
   const cuaEnabled = cuaPlugin?.enabled ?? false;
-  const cuaToggling = togglingPluginId === ZCODE_CUA_OFFICIAL_PLUGIN_ID;
+  const cuaToggling = togglingPluginId === ZODY_CUA_OFFICIAL_PLUGIN_ID;
 
   const initRef = useRef(false);
   useEffect(() => {
@@ -160,7 +160,7 @@ export function ComputerUseSection({
       const operationContextKey = pluginToggleContextKey;
       // 切换 zcode-cua 插件 = 同步其 MCP server + skill 一起启用/禁用。
       const completed = await runAfterSuccessfulPluginEnabledChange({
-        submit: () => setPluginEnabled(ZCODE_CUA_OFFICIAL_PLUGIN_ID, next, pluginManagementService),
+        submit: () => setPluginEnabled(ZODY_CUA_OFFICIAL_PLUGIN_ID, next, pluginManagementService),
         isCurrent: () =>
           mountedRef.current &&
           pluginToggleGenerationRef.current === operationGeneration &&

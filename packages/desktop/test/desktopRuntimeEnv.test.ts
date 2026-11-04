@@ -29,7 +29,7 @@ vi.mock("@zody/shared", () => ({
   ZODY_BUILD_COMMIT_ID_ENV: "ZODY_BUILD_COMMIT_ID",
   ZODY_RUNTIME_ENV_KEY: "ZODY_RUNTIME_ENV",
   ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY: "ZODY_TOOL_ENV_PASSTHROUGH_JSON",
-  ZCODE_AGENT_RUNTIME: {
+  ZODY_AGENT_RUNTIME: {
     binaryKind: "native-binary",
     binaryEnvVar: "GLM_BINARY_PATH",
     bundledResourceDir: "glm",
@@ -43,7 +43,7 @@ vi.mock("@zody/shared", () => ({
     ],
   },
   ZODY_ENV: "test",
-  ZCODE_DATA_ROOT_DIR_NAME: ".zody",
+  ZODY_DATA_ROOT_DIR_NAME: ".zody",
   get ZODY_PRODUCT_FLAVOR() {
     return productFlavorMock.value;
   },

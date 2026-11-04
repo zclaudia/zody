@@ -1,6 +1,6 @@
 import {
   parseToolResultDisplayPayload,
-  ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY,
+  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
 } from "@zody/contracts";
 import { toolCallGetWorkflowRunDisplaySchema } from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it } from "vitest";
@@ -149,7 +149,7 @@ describe("tool result display", () => {
     const display = createToolResultDisplay("mcp__node_repl__js", {
       content: [{ type: "text", text: "clicked" }],
       _meta: {
-        [ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY]: {
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: {
           appKey: "darwin:com.apple.notes",
           displayName: "Notes",
         },
@@ -167,7 +167,7 @@ describe("tool result display", () => {
     const display = createToolResultDisplay("mcp__node_repl__js", {
       content: [{ type: "image", data: "AAAA", mimeType: "image/png" }],
       _meta: {
-        [ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY]: {
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: {
           appKey: "windows-aumid:Microsoft.WindowsCalculator",
         },
       },
@@ -184,7 +184,7 @@ describe("tool result display", () => {
   it("ignores a malformed node_repl app identity instead of dropping the whole display", () => {
     const display = createToolResultDisplay("mcp__node_repl__js", {
       content: [{ type: "image", data: "AAAA", mimeType: "image/png" }],
-      _meta: { [ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY]: { appKey: "" } },
+      _meta: { [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: { appKey: "" } },
     });
 
     expect(display).toEqual({

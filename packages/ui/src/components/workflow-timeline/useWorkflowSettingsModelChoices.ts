@@ -9,7 +9,7 @@
 
 import { useCallback, useMemo } from "react";
 import { completeNewModelSelection } from "@zody/provider";
-import { ZCODE_AGENT_PROVIDER, type ZodyConfigOption } from "@zody/shared";
+import { ZODY_AGENT_PROVIDER, type ZodyConfigOption } from "@zody/shared";
 import { useModelSelectionView } from "@/hooks/useModelSelectionView.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { buildRegistryModelSelectGroups } from "@/lib/modelSelectionGroups.js";
@@ -64,7 +64,7 @@ export function useWorkflowSettingsModelChoices(scope: WorkflowSettingsModelScop
     () =>
       view === null
         ? []
-        : buildRegistryModelSelectGroups(ZCODE_AGENT_PROVIDER, view, {
+        : buildRegistryModelSelectGroups(ZODY_AGENT_PROVIDER, view, {
             apiKeyLabel: format("settings.modelProvider.apiKey"),
             apiKeyBadgeLabel: format("settings.modelProvider.connectionMode.apiKeyBadge"),
             codingPlanLabel: format("settings.modelProvider.connectionMode.codingPlan"),

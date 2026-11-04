@@ -8,13 +8,13 @@ import { createRegistryBackedTestApp as createZodyApp } from "./helpers/registry
 import {
   resetCapturedZodyCuaBrokerCredentialsForTest,
   sanitizeZodyRuntimeEnvInPlace,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
   ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  ZCODE_PLUGIN_ID_ENV_KEY,
+  ZODY_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 import {
   ZODY_CUA_BROKER_UNAVAILABLE_ENV,
-  ZCODE_CUA_BROKER_SOCKET_ENV,
+  ZODY_CUA_BROKER_SOCKET_ENV,
   injectZodyCuaBrokerMcpServers,
   omitMcpServers,
   resolveTrustedOfficialCuaServerNames,
@@ -148,14 +148,14 @@ describe("project MCP config", () => {
       type: "stdio",
       command: "/Applications/ZCode Computer Use.app/Contents/MacOS/server",
       env: {
-        [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+        [ZODY_PLUGIN_ID_ENV_KEY]: ZODY_CUA_OFFICIAL_PLUGIN_ID,
       },
     };
     const projectSpoof: McpServerConfig = {
       type: "stdio",
       command: "/tmp/attacker-command",
       env: {
-        [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+        [ZODY_PLUGIN_ID_ENV_KEY]: ZODY_CUA_OFFICIAL_PLUGIN_ID,
       },
     };
     const pluginServers = { "plugin:official-cua:computer-use": officialPluginConfig };
@@ -182,7 +182,7 @@ describe("project MCP config", () => {
       type: "stdio",
       command: "/Applications/ZCode Computer Use.app/Contents/MacOS/server",
       env: {
-        [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+        [ZODY_PLUGIN_ID_ENV_KEY]: ZODY_CUA_OFFICIAL_PLUGIN_ID,
       },
     };
     const pluginServers = { "plugin:official-cua:computer-use": officialPluginConfig };
@@ -278,11 +278,11 @@ describe("project MCP config", () => {
     const connectedConfigs: Record<string, McpServerConfig>[] = [];
     const connectedServerSets: string[][] = [];
     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
-    const previousSocketPath = process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+    const previousSocketPath = process.env[ZODY_CUA_BROKER_SOCKET_ENV];
     const previousToken = process.env[LEGACY_BROKER_TOKEN_ENV];
 
     try {
-      process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = socketPath;
+      process.env[ZODY_CUA_BROKER_SOCKET_ENV] = socketPath;
       process.env[LEGACY_BROKER_TOKEN_ENV] = token;
       await mkdir(cwd, { recursive: true });
       await writeFile(
@@ -339,9 +339,9 @@ describe("project MCP config", () => {
       await app.close();
     } finally {
       if (previousSocketPath === undefined) {
-        delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+        delete process.env[ZODY_CUA_BROKER_SOCKET_ENV];
       } else {
-        process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocketPath;
+        process.env[ZODY_CUA_BROKER_SOCKET_ENV] = previousSocketPath;
       }
       if (previousToken === undefined) {
         delete process.env[LEGACY_BROKER_TOKEN_ENV];
@@ -360,12 +360,12 @@ describe("project MCP config", () => {
     const connectedConfigs: Record<string, McpServerConfig>[] = [];
     const connectedServerSets: string[][] = [];
     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
-    const previousSocketPath = process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+    const previousSocketPath = process.env[ZODY_CUA_BROKER_SOCKET_ENV];
     const previousToken = process.env[LEGACY_BROKER_TOKEN_ENV];
     const previousUnavailable = process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV];
 
     try {
-      delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+      delete process.env[ZODY_CUA_BROKER_SOCKET_ENV];
       delete process.env[LEGACY_BROKER_TOKEN_ENV];
       process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV] = "broker_unavailable: health_timeout";
       await mkdir(cwd, { recursive: true });
@@ -424,9 +424,9 @@ describe("project MCP config", () => {
       await app.close();
     } finally {
       if (previousSocketPath === undefined) {
-        delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+        delete process.env[ZODY_CUA_BROKER_SOCKET_ENV];
       } else {
-        process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocketPath;
+        process.env[ZODY_CUA_BROKER_SOCKET_ENV] = previousSocketPath;
       }
       if (previousToken === undefined) {
         delete process.env[LEGACY_BROKER_TOKEN_ENV];
@@ -537,14 +537,14 @@ describe("project MCP config", () => {
     // Python/uvx 成为 TCC 主体。修复后 sanitize 前的凭据被捕获到进程内私有存储并仍能定向注入。
     const socketPath = "/tmp/zcode-cua-broker.sock";
     const token = "broker-token-abc";
-    const previousSocket = process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+    const previousSocket = process.env[ZODY_CUA_BROKER_SOCKET_ENV];
     const previousToken = process.env[LEGACY_BROKER_TOKEN_ENV];
     const previousAuthority = process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY];
     const previousRefreshMarker = process.env["ZODY_CUA_PERMISSION_BROKER_REFRESH_MARKER"];
     const previousUnavailable = process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV];
     resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
-      process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = socketPath;
+      process.env[ZODY_CUA_BROKER_SOCKET_ENV] = socketPath;
       process.env[LEGACY_BROKER_TOKEN_ENV] = token;
       process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "dev.zcode.cua-helper/dev";
       process.env["ZODY_CUA_PERMISSION_BROKER_REFRESH_MARKER"] =
@@ -553,7 +553,7 @@ describe("project MCP config", () => {
 
       // 模拟真实 CLI 入口：sanitize 剔除凭据（剔除前捕获到进程内私有存储）。
       sanitizeZodyRuntimeEnvInPlace(process.env);
-      expect(process.env[ZCODE_CUA_BROKER_SOCKET_ENV]).toBeUndefined();
+      expect(process.env[ZODY_CUA_BROKER_SOCKET_ENV]).toBeUndefined();
       expect(process.env[LEGACY_BROKER_TOKEN_ENV]).toBeUndefined();
 
       const result = omitMcpServers(
@@ -565,7 +565,7 @@ describe("project MCP config", () => {
       const env = nodeRepl?.type === "stdio" ? (nodeRepl.env ?? {}) : {};
 
       expect(nodeRepl?.type === "stdio" ? nodeRepl.args : undefined).toEqual(["server.js"]);
-      expect(env[ZCODE_CUA_BROKER_SOCKET_ENV]).toBe(socketPath);
+      expect(env[ZODY_CUA_BROKER_SOCKET_ENV]).toBe(socketPath);
       // identity 模式：凭据只有 socket + authority(+ refresh marker)。遗留 token 即使存在于
       // process.env 也必须止步于 sanitize，不得被重新注入给 node_repl —— 否则等于把一个
       // 旧 Helper 认的口令又发给了子进程。
@@ -576,8 +576,8 @@ describe("project MCP config", () => {
       );
     } finally {
       resetCapturedZodyCuaBrokerCredentialsForTest();
-      if (previousSocket === undefined) delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
-      else process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocket;
+      if (previousSocket === undefined) delete process.env[ZODY_CUA_BROKER_SOCKET_ENV];
+      else process.env[ZODY_CUA_BROKER_SOCKET_ENV] = previousSocket;
       if (previousToken === undefined) delete process.env[LEGACY_BROKER_TOKEN_ENV];
       else process.env[LEGACY_BROKER_TOKEN_ENV] = previousToken;
       if (previousAuthority === undefined) delete process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY];
@@ -594,7 +594,7 @@ describe("project MCP config", () => {
     resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
       const partialEnv: Record<string, string | undefined> = {
-        [ZCODE_CUA_BROKER_SOCKET_ENV]: "/tmp/partial.sock",
+        [ZODY_CUA_BROKER_SOCKET_ENV]: "/tmp/partial.sock",
         [LEGACY_BROKER_TOKEN_ENV]: "partial-token",
       };
       sanitizeZodyRuntimeEnvInPlace(partialEnv);
@@ -610,7 +610,7 @@ describe("project MCP config", () => {
       const env = cua?.type === "stdio" ? (cua.env ?? {}) : {};
 
       expect(args).not.toContain("/tmp/partial.sock");
-      expect(env[ZCODE_CUA_BROKER_SOCKET_ENV]).toBeUndefined();
+      expect(env[ZODY_CUA_BROKER_SOCKET_ENV]).toBeUndefined();
       expect(env[LEGACY_BROKER_TOKEN_ENV]).toBeUndefined();
       expect(env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]).toBeUndefined();
       if (process.platform === "darwin") expect(cua).toBeUndefined();
@@ -620,12 +620,12 @@ describe("project MCP config", () => {
   });
 
   it("fails closed by omitting the global zcode-cua when the broker is unavailable after sanitization", () => {
-    const previousSocket = process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+    const previousSocket = process.env[ZODY_CUA_BROKER_SOCKET_ENV];
     const previousToken = process.env[LEGACY_BROKER_TOKEN_ENV];
     const previousUnavailable = process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV];
     resetCapturedZodyCuaBrokerCredentialsForTest();
     try {
-      delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+      delete process.env[ZODY_CUA_BROKER_SOCKET_ENV];
       delete process.env[LEGACY_BROKER_TOKEN_ENV];
       process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV] = "broker_unavailable: health_timeout";
 
@@ -640,8 +640,8 @@ describe("project MCP config", () => {
       expect(result["zcode-cua"]).toBeUndefined();
     } finally {
       resetCapturedZodyCuaBrokerCredentialsForTest();
-      if (previousSocket === undefined) delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
-      else process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocket;
+      if (previousSocket === undefined) delete process.env[ZODY_CUA_BROKER_SOCKET_ENV];
+      else process.env[ZODY_CUA_BROKER_SOCKET_ENV] = previousSocket;
       if (previousToken === undefined) delete process.env[LEGACY_BROKER_TOKEN_ENV];
       else process.env[LEGACY_BROKER_TOKEN_ENV] = previousToken;
       if (previousUnavailable === undefined) delete process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV];
@@ -650,7 +650,7 @@ describe("project MCP config", () => {
   });
 
   it("prefers captured broker credentials over stale/injected process.env values", () => {
-    const previousSocket = process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
+    const previousSocket = process.env[ZODY_CUA_BROKER_SOCKET_ENV];
     const previousToken = process.env[LEGACY_BROKER_TOKEN_ENV];
     const previousAuthority = process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY];
     const previousUnavailable = process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV];
@@ -658,13 +658,13 @@ describe("project MCP config", () => {
     try {
       // 捕获可信凭据（模拟 CLI 入口 sanitize 从 ZCode 下发的 spawn env 捕获）。
       const spawnEnv: Record<string, string | undefined> = {
-        [ZCODE_CUA_BROKER_SOCKET_ENV]: "/tmp/captured.sock",
+        [ZODY_CUA_BROKER_SOCKET_ENV]: "/tmp/captured.sock",
         [LEGACY_BROKER_TOKEN_ENV]: "captured-token",
         [ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]: "dev.zcode.cua-helper/captured",
       };
       sanitizeZodyRuntimeEnvInPlace(spawnEnv);
       // 运行时 env 里残留/被注入了不同的 broker 值：绝不能覆盖 captured。
-      process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = "/tmp/stale.sock";
+      process.env[ZODY_CUA_BROKER_SOCKET_ENV] = "/tmp/stale.sock";
       process.env[LEGACY_BROKER_TOKEN_ENV] = "stale-token";
       delete process.env[ZODY_CUA_BROKER_UNAVAILABLE_ENV];
 
@@ -677,14 +677,14 @@ describe("project MCP config", () => {
       const env = nodeRepl?.type === "stdio" ? (nodeRepl.env ?? {}) : {};
 
       expect(nodeRepl?.type === "stdio" ? nodeRepl.args : undefined).toEqual(["server.js"]);
-      expect(env[ZCODE_CUA_BROKER_SOCKET_ENV]).toBe("/tmp/captured.sock");
+      expect(env[ZODY_CUA_BROKER_SOCKET_ENV]).toBe("/tmp/captured.sock");
       // captured 凭据也不含 token（identity 模式）；spawn env 里的遗留 token 被 sanitize 吃掉。
       expect(env[LEGACY_BROKER_TOKEN_ENV]).toBeUndefined();
       expect(env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]).toBe("dev.zcode.cua-helper/captured");
     } finally {
       resetCapturedZodyCuaBrokerCredentialsForTest();
-      if (previousSocket === undefined) delete process.env[ZCODE_CUA_BROKER_SOCKET_ENV];
-      else process.env[ZCODE_CUA_BROKER_SOCKET_ENV] = previousSocket;
+      if (previousSocket === undefined) delete process.env[ZODY_CUA_BROKER_SOCKET_ENV];
+      else process.env[ZODY_CUA_BROKER_SOCKET_ENV] = previousSocket;
       if (previousToken === undefined) delete process.env[LEGACY_BROKER_TOKEN_ENV];
       else process.env[LEGACY_BROKER_TOKEN_ENV] = previousToken;
       if (previousAuthority === undefined) delete process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY];
@@ -702,7 +702,7 @@ describe("project MCP config", () => {
       }
     };
     const KEYS = [
-      ZCODE_CUA_BROKER_SOCKET_ENV,
+      ZODY_CUA_BROKER_SOCKET_ENV,
       LEGACY_BROKER_TOKEN_ENV,
       ZODY_CUA_BROKER_UNAVAILABLE_ENV,
       "ZODY_CUA_HELPER_ALLOW_UNAUTHENTICATED_LOCAL",
@@ -745,7 +745,7 @@ describe("project MCP config", () => {
             command: "uvx",
             args: ["zcode-cua"],
             env: {
-              [ZCODE_CUA_BROKER_SOCKET_ENV]: "/tmp/desktop-injected.sock",
+              [ZODY_CUA_BROKER_SOCKET_ENV]: "/tmp/desktop-injected.sock",
             },
           },
         };

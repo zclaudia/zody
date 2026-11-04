@@ -1,6 +1,6 @@
 import type { ZodyConfigOption, ZodyProvider, ZodyTaskMode } from "@zody/shared";
 
-const ZCODE_TASK_MODE_VALUES: readonly ZodyTaskMode[] = [
+const ZODY_TASK_MODE_VALUES: readonly ZodyTaskMode[] = [
   "default",
   "yolo",
   "guarded",
@@ -14,13 +14,13 @@ const ZCODE_TASK_MODE_VALUES: readonly ZodyTaskMode[] = [
   "build",
 ];
 
-const ZCODE_TASK_MODE_SET = new Set<string>(ZCODE_TASK_MODE_VALUES);
+const ZODY_TASK_MODE_SET = new Set<string>(ZODY_TASK_MODE_VALUES);
 
 function normalizeZodyModeForTaskCreation(
   modeId: string,
   _provider?: ZodyProvider,
 ): ZodyTaskMode | undefined {
-  if (ZCODE_TASK_MODE_SET.has(modeId)) {
+  if (ZODY_TASK_MODE_SET.has(modeId)) {
     return modeId as ZodyTaskMode;
   }
 

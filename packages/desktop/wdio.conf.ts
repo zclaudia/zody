@@ -140,7 +140,7 @@ const E2E_LOCAL_ENV_FILES = [
 // 代理、证书和缓存配置。所有读取 process.env 的 runner 初始化都必须位于该调用之后。
 loadE2ELocalEnv();
 const BUILD_DESKTOP_AGENT_SCRIPT = resolve(REPO_ROOT, "scripts/build-desktop-agent-cli.mjs");
-const ZCODE_CLI_ENTRYPOINT = resolve(REPO_ROOT, "apps/zody-cli/packages/cli/dist/zody.cjs");
+const ZODY_CLI_ENTRYPOINT = resolve(REPO_ROOT, "apps/zody-cli/packages/cli/dist/zody.cjs");
 const E2E_HOME_DIR = resolve(
   process.env.ZODY_E2E_HOME_DIR?.trim() ||
     // 修复原因：多个 WDIO 本地并发时会互相清理默认 .e2e-home，导致窗口白屏、
@@ -957,8 +957,8 @@ function prepareZodyAgentServer() {
     // 修复原因：Windows 全量 E2E 分片由父 runner 统一构建一次 agent；子 WDIO 若再次构建，
     // 会并发覆盖同一 dist 目录。跳过时仍校验入口，避免旧或缺失产物静默启动。
     console.log("[e2e] ZODY_E2E_SKIP_AGENT_BUILD=1, skipping agent build");
-    if (!existsSync(ZCODE_CLI_ENTRYPOINT)) {
-      throw new Error(`ZCode CLI entrypoint not found: ${ZCODE_CLI_ENTRYPOINT}`);
+    if (!existsSync(ZODY_CLI_ENTRYPOINT)) {
+      throw new Error(`ZCode CLI entrypoint not found: ${ZODY_CLI_ENTRYPOINT}`);
     }
     configureZodyAgentServerEnv();
     return;
@@ -973,8 +973,8 @@ function prepareZodyAgentServer() {
     stdio: "inherit",
   });
 
-  if (!existsSync(ZCODE_CLI_ENTRYPOINT)) {
-    throw new Error(`ZCode CLI entrypoint not found: ${ZCODE_CLI_ENTRYPOINT}`);
+  if (!existsSync(ZODY_CLI_ENTRYPOINT)) {
+    throw new Error(`ZCode CLI entrypoint not found: ${ZODY_CLI_ENTRYPOINT}`);
   }
 
   configureZodyAgentServerEnv();
@@ -1678,7 +1678,7 @@ async function resetE2EHome(specs: string[] = []) {
     // TSL27 / SP13 必须在 Host 打开 tasks-index 前同时预置真实 task row 与可打开的
     // CLI session；测试内临时注入会绕过 Header 与 status panel 的真实 task/service 解析链路。
     seedProviderReadinessHistoryFixture({
-      cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
+      cliEntryPoint: ZODY_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
       workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
       ...(usesMobileRemoteHistorySearchFixture(specs)
@@ -1690,14 +1690,14 @@ async function resetE2EHome(specs: string[] = []) {
     // Bug 根因：TSL23 必须在 Host 打开 tasks-index 前制造“持久行多于 session 摘要”的冷启动状态；
     // spec 的 before hook 已经太晚，因此只对该 case 在 beforeSession 的隔离 HOME 中落盘。
     seedTaskIndexRowAuthorityFixture({
-      cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
+      cliEntryPoint: ZODY_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
       workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
   }
   if (workerSpecsContain(specs, "conversation-session-delete-all-archived-tasks.test.ts")) {
     seedDeleteAllArchivedTasksFixture({
-      cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
+      cliEntryPoint: ZODY_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
       workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
@@ -1709,14 +1709,14 @@ async function resetE2EHome(specs: string[] = []) {
     )
   ) {
     seedTaskTitleMarqueeFixture({
-      cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
+      cliEntryPoint: ZODY_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
       workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });
   }
   if (specs.some((spec) => spec.includes("usage-stats-app-usage.test.ts"))) {
     seedAppUsageE2EFixture({
-      cliEntryPoint: ZCODE_CLI_ENTRYPOINT,
+      cliEntryPoint: ZODY_CLI_ENTRYPOINT,
       e2eHomeDir: E2E_HOME_DIR,
       workspacePath: resolve(E2E_HOME_DIR, "ZodyProject"),
     });

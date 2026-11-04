@@ -11,7 +11,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ModelTextResult } from "@zody/contracts";
 import {
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   ZODY_RUNTIME_ENV_KEY,
   normalizeZodyRuntimeEnv,
 } from "@zody/shared";
@@ -589,7 +589,7 @@ function sanitizeFileSegment(value?: string): string {
 }
 
 function getModelIOBaseDir(isDev: boolean): string {
-  return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", isDev ? "debug" : "rollout");
+  return join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli", isDev ? "debug" : "rollout");
 }
 
 function stringifyDebugRecord(record: Record<string, unknown>): string {

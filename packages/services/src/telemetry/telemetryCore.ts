@@ -6,7 +6,7 @@ import {
   ZODY_TELEMETRY_REPORT_ENDPOINT,
   buildZodySourceHeadersFromContext,
   rewriteZodyEndpointUrl,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   sanitizeTelemetryEventDetail,
   type TelemetryEventPayload,
   type TelemetryRendererContext,
@@ -137,14 +137,14 @@ function toLocalDateKey(timestamp: number, timeZone: string): string {
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 function resolveTelemetryStateFile(homeDir?: string): string {
   if (homeDir) {
-    return join(homeDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
+    return join(homeDir, ZODY_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
   }
   return join(getAppConfigDir(), "telemetry-state.json");
 }
 
 function resolveTelemetryLockFile(homeDir?: string): string {
   if (homeDir) {
-    return join(homeDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.lock");
+    return join(homeDir, ZODY_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.lock");
   }
   return join(getAppConfigDir(), "telemetry-state.lock");
 }

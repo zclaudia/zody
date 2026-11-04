@@ -125,11 +125,11 @@ export type {
 export {
   IZodyAgentService,
   type ZodyAgentLocalRuntimeChildProcesses,
-  ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE,
+  ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE,
 } from "./zody-agent/zodyAgent.js";
 export {
   isZodyAgentMcpStatusModeUnsupportedError,
-  ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
+  ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
   ZodyAgentMcpStatusModeUnsupportedError,
 } from "./zody-agent/zodyAgentErrors.js";
 export {

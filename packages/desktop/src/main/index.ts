@@ -76,7 +76,7 @@ import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   TEST_ZCODE_ENDPOINT_ORIGIN,
   ZODY_VERSION,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   resolveZodyEndpointOrigin,
   shouldEnableE2ETestBridge,
   type UpdateStatePayload,
@@ -574,7 +574,7 @@ let currentDesktopZoomLevel = 0;
 let currentDesktopWindowSize: DesktopWindowSize | undefined;
 const preloadPath = join(import.meta.dirname, "../preload/index.cjs");
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-const settingsFile = join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "v2", "setting.json");
+const settingsFile = join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "v2", "setting.json");
 let activeAppShutdownPolicy = resolveAppShutdownPolicy("normal", process.platform);
 let activeAppShutdownKind: AppShutdownKind | null = null;
 const WINDOWS_AGENT_FORCE_KILL_TIMEOUT_MS = 2_000;

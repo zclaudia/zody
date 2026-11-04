@@ -11,7 +11,7 @@ import { zodyProviderUpdateAccountConfigParamsSchema } from "@zody/shared";
 import {
   ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV,
   ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV,
-  ZCODE_BUILTIN_RELEASE_SCHEMA_VERSION,
+  ZODY_BUILTIN_RELEASE_SCHEMA_VERSION,
   createNodeModelSelectionFacade,
 } from "@zody/provider-node";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -694,7 +694,7 @@ function zcodeBuiltinRelease(input: {
   readonly models: readonly unknown[];
 }): object {
   return {
-    schemaVersion: ZCODE_BUILTIN_RELEASE_SCHEMA_VERSION,
+    schemaVersion: ZODY_BUILTIN_RELEASE_SCHEMA_VERSION,
     revision: 1,
     config: {
       providerConfigRules: {

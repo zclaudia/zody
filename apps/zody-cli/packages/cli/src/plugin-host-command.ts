@@ -7,7 +7,7 @@ import {
   ZODY_CUA_BROKER_SOCKET_ENV_KEY,
   ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
 } from "@zody/shared/runtime-env";
-import { ZCODE_CUA_OFFICIAL_PLUGIN_ID, ZCODE_PLUGIN_ID_ENV_KEY } from "@zody/shared/mcp";
+import { ZODY_CUA_OFFICIAL_PLUGIN_ID, ZODY_PLUGIN_ID_ENV_KEY } from "@zody/shared/mcp";
 import type { RunContext } from "@zody/shared-types";
 
 const HOST_USAGE = `${ZCODE_PLUGIN_HOST_COMMAND} <server-path> [-- <server-arg>...]`;
@@ -103,7 +103,7 @@ function assertCapturedBrokerLaunchIsAuthorized(credentials: CapturedBrokerCrede
   const hasCapturedCredentials = Boolean(credentials.socket || credentials.pluginAuthority);
   if (!hasCapturedCredentials) return;
 
-  const pluginId = process.env[ZCODE_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase();
+  const pluginId = process.env[ZODY_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase();
   // 凭据组里已经没有 token 了：broker 全平台改为身份模式（Helper 按对端代码签名裁决连接），
   // shared/runtimeEnv.ts 的 CapturedCuaBrokerCredentials 只有 socket + pluginAuthority
   // (+ refreshMarker)。这里不能再读 `credentials.token`；token 已从凭据组移除，
@@ -115,7 +115,7 @@ function assertCapturedBrokerLaunchIsAuthorized(credentials: CapturedBrokerCrede
   if (
     credentials.socket === undefined ||
     credentials.pluginAuthority === undefined ||
-    pluginId !== ZCODE_CUA_OFFICIAL_PLUGIN_ID ||
+    pluginId !== ZODY_CUA_OFFICIAL_PLUGIN_ID ||
     process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] !== "1"
   ) {
     throw new Error(

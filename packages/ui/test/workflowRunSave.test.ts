@@ -3,7 +3,7 @@
 // 转写里的候选联接、「再次运行」实参预填，以及「这次 run 存成了哪个工作流」的读缓存。
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ConversationRow } from "@zody/shared/zody-protocol-v4";
-import { ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES } from "@zody/shared";
+import { ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES } from "@zody/shared";
 
 vi.mock("@/logger.js", () => ({ logger: { debug: vi.fn(), warn: vi.fn(), info: vi.fn() } }));
 
@@ -149,11 +149,11 @@ describe("buildWorkflowSaveCandidatesByRunId", () => {
   });
 
   it("守住协议的候选上界：超出部分留最早的那几个", () => {
-    const rows = Array.from({ length: ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES + 2 }, (_, i) =>
+    const rows = Array.from({ length: ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES + 2 }, (_, i) =>
       saveRow(i + 1, { run_id: "r", name: `w${i}` }),
     );
     const list = buildWorkflowSaveCandidatesByRunId(rows).get("r") ?? [];
-    expect(list).toHaveLength(ZCODE_WORKFLOWS_FOR_RUN_MAX_CANDIDATES);
+    expect(list).toHaveLength(ZODY_WORKFLOWS_FOR_RUN_MAX_CANDIDATES);
     expect(list[0]?.name).toBe("w0");
   });
 });

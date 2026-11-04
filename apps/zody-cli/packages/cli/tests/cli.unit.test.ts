@@ -8,12 +8,12 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE, ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts";
+import { ZODY_OFFICIAL_PLUGIN_MARKETPLACE, ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts";
 import {
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
   ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  ZCODE_PLUGIN_ID_ENV_KEY,
+  ZODY_PLUGIN_ID_ENV_KEY,
   ZODY_RUNTIME_ENV_KEY,
   ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY,
   readZodyToolEnvPassthroughEnv,
@@ -3790,7 +3790,7 @@ test("official plugin host runs a seeded official plugin server main", async () 
   const pluginRoot = join(
     root,
     "cache",
-    ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+    ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
     "ios-simulator",
     "0.1.0",
   );
@@ -3803,7 +3803,7 @@ test("official plugin host runs a seeded official plugin server main", async () 
     await writeFile(
       join(pluginRoot, ".zody-plugin-seed.json"),
       JSON.stringify({
-        marketplace: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+        marketplace: ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
         plugin: "ios-simulator",
         pluginVersion: "0.1.0",
         version: 1,
@@ -3847,7 +3847,7 @@ test("retired argv-based CUA host fails closed without the shared node_repl mark
     "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
-    ZCODE_PLUGIN_ID_ENV_KEY,
+    ZODY_PLUGIN_ID_ENV_KEY,
     ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
     ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
@@ -3866,7 +3866,7 @@ export async function main() {
 `,
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
-    process.env[ZCODE_PLUGIN_ID_ENV_KEY] = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
+    process.env[ZODY_PLUGIN_ID_ENV_KEY] = ZODY_CUA_OFFICIAL_PLUGIN_ID;
     process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
     process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "official-authority";
@@ -3906,7 +3906,7 @@ test("shared node_repl host restores the captured CUA broker credentials", async
     "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
-    ZCODE_PLUGIN_ID_ENV_KEY,
+    ZODY_PLUGIN_ID_ENV_KEY,
     ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
     ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
@@ -3926,7 +3926,7 @@ export async function main() {
 `,
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
-    process.env[ZCODE_PLUGIN_ID_ENV_KEY] = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
+    process.env[ZODY_PLUGIN_ID_ENV_KEY] = ZODY_CUA_OFFICIAL_PLUGIN_ID;
     process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
     process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "scoped-secret-token";
@@ -3970,7 +3970,7 @@ test("shared node_repl host launches with identity-mode credentials (socket + au
     "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
-    ZCODE_PLUGIN_ID_ENV_KEY,
+    ZODY_PLUGIN_ID_ENV_KEY,
     ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
     ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
@@ -3990,7 +3990,7 @@ export async function main() {
 `,
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
-    process.env[ZCODE_PLUGIN_ID_ENV_KEY] = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
+    process.env[ZODY_PLUGIN_ID_ENV_KEY] = ZODY_CUA_OFFICIAL_PLUGIN_ID;
     process.env[ZODY_CUA_NODE_REPL_HOST_ENV_KEY] = "1";
     process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     delete process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN;
@@ -4023,7 +4023,7 @@ test("plugin host refuses non-official code while product broker credentials are
     "ZODY_CUA_PERMISSION_BROKER_SOCKET",
     "ZCODE_CUA_PERMISSION_BROKER_TOKEN",
     "ZCODE_PLUGIN_HOST_TEST_OUTPUT",
-    ZCODE_PLUGIN_ID_ENV_KEY,
+    ZODY_PLUGIN_ID_ENV_KEY,
     ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
     ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
   ] as const;
@@ -4040,7 +4040,7 @@ export async function main() {
 `,
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
-    process.env[ZCODE_PLUGIN_ID_ENV_KEY] = "zcode-cua@third-party";
+    process.env[ZODY_PLUGIN_ID_ENV_KEY] = "zcode-cua@third-party";
     process.env.ZODY_CUA_PERMISSION_BROKER_SOCKET = "/tmp/cua-broker.sock";
     process.env.ZCODE_CUA_PERMISSION_BROKER_TOKEN = "must-not-leak";
     process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY] = "captured-authority";

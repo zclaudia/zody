@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ModelSelectionView } from "@zody/services";
 import { useModelSelectionServiceView } from "@/hooks/useModelSelectionView.js";
 import {
-  ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
+  ZODY_AGENT_PROVIDER_NOT_READY_CODE,
   type ZCodeWorkspaceStateSnapshot,
 } from "@zody/shared";
 import type {
@@ -779,7 +779,7 @@ describe("SessionPane draft provider readiness", () => {
       discard: vi.fn(),
     };
     const providerNotReady = Object.assign(new Error("当前没有可用的模型供应商和模型"), {
-      code: ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
+      code: ZODY_AGENT_PROVIDER_NOT_READY_CODE,
     });
     mocks.sendCommand.mockRejectedValue(providerNotReady);
 

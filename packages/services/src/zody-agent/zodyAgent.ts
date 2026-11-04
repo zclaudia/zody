@@ -206,7 +206,7 @@ export interface ZodyAgentWorkspaceRuntimeIdentity {
   workspaceKey: string;
 }
 
-export const ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE = "ZCODE_AGENT_RUNTIME_UNAVAILABLE";
+export const ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE = "ZCODE_AGENT_RUNTIME_UNAVAILABLE";
 
 export type ZodyAgentRuntimePolicy = "start-if-needed" | "existing-only";
 

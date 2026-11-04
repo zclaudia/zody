@@ -4,7 +4,7 @@ import { SessionEventType, type SessionEvent } from "@zody/contracts";
 import { getZodyCopy } from "@zody/i18n";
 import { LoginRequiredPanel } from "../src/app-components.js";
 import { ContentPane, MessageRow } from "../src/app-transcript-components.js";
-import { EmptyTranscriptLogo, ZCODE_LOGO_LINES } from "../src/app-empty-transcript.js";
+import { EmptyTranscriptLogo, ZODY_LOGO_LINES } from "../src/app-empty-transcript.js";
 import { SHIMMER_SWEEP_PERIOD_MS, shimmerTextSegments } from "../src/app-motion.js";
 import { ShikiDiffView, buildDiffRows, buildSplitDiffRows } from "../src/app-shiki-diff-view.js";
 import {
@@ -74,7 +74,7 @@ test("renders a ZODY logo placeholder for an empty transcript", () => {
     "███████╗ ╚██████╔╝ ██████╔╝    ██║   ",
     "╚══════╝  ╚═════╝  ╚═════╝     ╚═╝   ",
   ]);
-  assert.deepEqual(lines, [...ZCODE_LOGO_LINES]);
+  assert.deepEqual(lines, [...ZODY_LOGO_LINES]);
 });
 
 test("centers the empty transcript logo within the available viewport", () => {
@@ -82,11 +82,11 @@ test("centers the empty transcript logo within the available viewport", () => {
 
   assert.equal(style.flexGrow, 1);
   assert.equal(style.justifyContent, "center");
-  assert.equal(style.minHeight, ZCODE_LOGO_LINES.length);
+  assert.equal(style.minHeight, ZODY_LOGO_LINES.length);
 });
 
 test("projects logo shimmer without changing the source text", () => {
-  const sourceText = ZCODE_LOGO_LINES[0];
+  const sourceText = ZODY_LOGO_LINES[0];
   const segments = shimmerTextSegments(sourceText, SHIMMER_SWEEP_PERIOD_MS / 2, {
     baseColor: "#000000",
     highlightColor: "#ffffff",
@@ -114,7 +114,7 @@ test("hides the empty transcript logo when messages are present", () => {
 
   assert.equal(child?.type, MessageRow);
   assert.notEqual(child?.type, EmptyTranscriptLogo);
-  assert.equal(lines.includes(ZCODE_LOGO_LINES[0]), false);
+  assert.equal(lines.includes(ZODY_LOGO_LINES[0]), false);
   assert.ok(lines.some((line) => line.includes("hello")));
   assert.equal(
     lines.some((line) => line.includes("User:")),

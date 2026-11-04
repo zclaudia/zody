@@ -3,10 +3,10 @@ import { access } from "node:fs/promises";
 import type { StdioStream } from "@zody/server/remote/backend.js";
 import { quotePosixPathArg } from "@zody/server/remote/posixShell.js";
 import type { RemoteAssetNetworkPort } from "@zody/server/remote/remoteAssetNetwork.js";
-import { ZCODE_DATA_ROOT_DIR_NAME, type RemoteAssetSource } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME, type RemoteAssetSource } from "@zody/shared";
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-export const REMOTE_BASE = `~/${ZCODE_DATA_ROOT_DIR_NAME}/server`;
+export const REMOTE_BASE = `~/${ZODY_DATA_ROOT_DIR_NAME}/server`;
 
 export interface RemoteAssetDeployOptions {
   assetSource?: RemoteAssetSource;

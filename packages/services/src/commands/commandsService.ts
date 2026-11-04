@@ -4,8 +4,8 @@ import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import {
-  ZCODE_COMMAND_AGENT_SOURCE,
-  ZCODE_COMMAND_AGENT_SOURCES,
+  ZODY_COMMAND_AGENT_SOURCE,
+  ZODY_COMMAND_AGENT_SOURCES,
   type CommandAgentSource,
   type CommandCreateParams,
   type CommandDeleteParams,
@@ -19,7 +19,7 @@ import {
   type UserCommand,
   type ZodyCommand,
 } from "@zody/shared";
-import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { ICommandsService } from "./commands.js";
 import { CommandFileParser, type CommandFileFormat } from "./commandFileParser.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
@@ -41,19 +41,19 @@ interface CommandAgentSourceDescriptor {
   supportsArgumentHint: boolean;
 }
 
-const DEFAULT_COMMAND_AGENT_SOURCE: CommandAgentSource = ZCODE_COMMAND_AGENT_SOURCE;
-const COMMAND_AGENT_SOURCE_ORDER: readonly CommandAgentSource[] = ZCODE_COMMAND_AGENT_SOURCES;
+const DEFAULT_COMMAND_AGENT_SOURCE: CommandAgentSource = ZODY_COMMAND_AGENT_SOURCE;
+const COMMAND_AGENT_SOURCE_ORDER: readonly CommandAgentSource[] = ZODY_COMMAND_AGENT_SOURCES;
 const ENABLE_OVERRIDE_KEY = "enable";
 const HOME_PREFIX = "~/";
-const ZCODE_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
-const ZCODE_INLINE_PLUGIN_MARKETPLACE = "inline";
-const ZCODE_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
+const ZODY_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
+const ZODY_INLINE_PLUGIN_MARKETPLACE = "inline";
+const ZODY_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_PLUGIN_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_PLUGIN_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
-const ZCODE_COMMAND_DESCRIPTOR: CommandAgentSourceDescriptor = {
+const ZODY_COMMAND_DESCRIPTOR: CommandAgentSourceDescriptor = {
   agentSource: "zcodeAgent",
   directorySource: "zcode",
-  userDirectorySegments: [ZCODE_DATA_ROOT_DIR_NAME, "commands"],
+  userDirectorySegments: [ZODY_DATA_ROOT_DIR_NAME, "commands"],
   workspaceDirectorySegments: [ZODY_DIRECTORY_NAME, "commands"],
   fileExtension: ".md",
   format: "markdown",
@@ -62,13 +62,13 @@ const ZCODE_COMMAND_DESCRIPTOR: CommandAgentSourceDescriptor = {
 };
 
 const COMMAND_AGENT_SOURCE_DESCRIPTORS: Record<CommandAgentSource, CommandAgentSourceDescriptor> = {
-  zcodeAgent: ZCODE_COMMAND_DESCRIPTOR,
+  zcodeAgent: ZODY_COMMAND_DESCRIPTOR,
 };
 
 const COMMAND_DIRECTORY_SOURCE_DESCRIPTORS: readonly CommandAgentSourceDescriptor[] = [
-  ZCODE_COMMAND_DESCRIPTOR,
+  ZODY_COMMAND_DESCRIPTOR,
   {
-    ...ZCODE_COMMAND_DESCRIPTOR,
+    ...ZODY_COMMAND_DESCRIPTOR,
     directorySource: "agents",
     userDirectorySegments: [".agents", "commands"],
     workspaceDirectorySegments: [".agents", "commands"],
@@ -87,7 +87,7 @@ function getUserCommandsRoot(agentSource?: CommandAgentSource): string {
 }
 
 function getUserCliConfigPath(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -204,7 +204,7 @@ function readStorageDirFromConfig(config: Record<string, unknown>): string {
   const storage = isRecord(config.storage) ? config.storage : {};
   return typeof storage.dir === "string" && storage.dir.trim().length > 0
     ? storage.dir
-    : `~/${ZCODE_DATA_ROOT_DIR_NAME}`;
+    : `~/${ZODY_DATA_ROOT_DIR_NAME}`;
 }
 
 function readPluginConfigFromConfig(config: Record<string, unknown>): PluginConfigSummary {
@@ -257,7 +257,7 @@ function resolveInside(rootPath: string, rawPath: string): string | null {
 }
 
 async function scanOfficialPluginCacheRoots(pluginStorageRoot: string): Promise<string[]> {
-  const cacheRoot = join(pluginStorageRoot, "cache", ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
+  const cacheRoot = join(pluginStorageRoot, "cache", ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
   let pluginEntries: string[] = [];
   try {
     pluginEntries = await readdir(cacheRoot);
@@ -317,7 +317,7 @@ async function readPluginManifest(rootPath: string): Promise<PluginManifestSumma
 
 async function findPluginManifestPath(rootPath: string): Promise<string | null> {
   for (const manifestPath of [
-    join(rootPath, ZCODE_PLUGIN_MANIFEST_PATH),
+    join(rootPath, ZODY_PLUGIN_MANIFEST_PATH),
     join(rootPath, CLAUDE_PLUGIN_MANIFEST_PATH),
     join(rootPath, CODEX_PLUGIN_MANIFEST_PATH),
   ]) {
@@ -360,12 +360,12 @@ async function resolvePluginCommandRootDescriptors(): Promise<PluginCommandRootD
   const candidates: PluginRootCandidate[] = [
     ...config.dirs.map((dir) => ({
       defaultEnabled: true,
-      marketplace: ZCODE_INLINE_PLUGIN_MARKETPLACE,
+      marketplace: ZODY_INLINE_PLUGIN_MARKETPLACE,
       rootPath: resolveConfigPath(dir),
     })),
     ...officialCacheRoots.map((rootPath) => ({
       defaultEnabled: false,
-      marketplace: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+      marketplace: ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
       rootPath,
     })),
     ...installedRoots,
@@ -383,7 +383,7 @@ async function resolvePluginCommandRootDescriptors(): Promise<PluginCommandRootD
     // 官方 cache 时不经过 CLI resolve 的过滤，需要在这里同样跳过，否则被卸载的内置插件
     // 仍会从 cache 贡献命令。
     if (
-      candidate.marketplace === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE &&
+      candidate.marketplace === ZODY_OFFICIAL_PLUGIN_MARKETPLACE &&
       config.suppressedBuiltins.includes(pluginId)
     ) {
       continue;
@@ -528,7 +528,7 @@ export function createCommandsService(_options?: CommandsServiceOptions): IComma
     // 按每个目录交错读取 project/user 会让 user .zcode 抢在 workspace .agents 前面。
     for (const agentSource of agentSources) {
       const descriptors =
-        agentSource === ZCODE_COMMAND_AGENT_SOURCE
+        agentSource === ZODY_COMMAND_AGENT_SOURCE
           ? COMMAND_DIRECTORY_SOURCE_DESCRIPTORS
           : [getCommandSourceDescriptor(agentSource)];
 
@@ -556,7 +556,7 @@ export function createCommandsService(_options?: CommandsServiceOptions): IComma
 
     const dedupedUserCommands = dedupeCommandsByName(userCommands);
     const pluginCommands =
-      !params.agentSource || params.agentSource === ZCODE_COMMAND_AGENT_SOURCE
+      !params.agentSource || params.agentSource === ZODY_COMMAND_AGENT_SOURCE
         ? await discoverPluginCommands(enabledOverrides)
         : [];
 
@@ -835,7 +835,7 @@ async function discoverPluginCommandsRecursive(
       continue;
     }
 
-    if (!entry.toLowerCase().endsWith(ZCODE_COMMAND_DESCRIPTOR.fileExtension)) {
+    if (!entry.toLowerCase().endsWith(ZODY_COMMAND_DESCRIPTOR.fileExtension)) {
       continue;
     }
 
@@ -844,12 +844,12 @@ async function discoverPluginCommandsRecursive(
       const parsed = CommandFileParser.parseCommandFile(
         content,
         fullPath,
-        ZCODE_COMMAND_DESCRIPTOR.format,
+        ZODY_COMMAND_DESCRIPTOR.format,
       );
       if (!parsed) {
         continue;
       }
-      const name = getCommandName(rootDir, fullPath, ZCODE_COMMAND_DESCRIPTOR);
+      const name = getCommandName(rootDir, fullPath, ZODY_COMMAND_DESCRIPTOR);
       const commandKey = fullPath.replaceAll("\\", "/").toLowerCase();
       if (options.seenFilePaths.has(commandKey)) {
         continue;

@@ -49,8 +49,8 @@ import type {
   PluginMetadata,
   PluginStoreListing,
 } from "@zody/contracts";
-import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE, isOfficialMarketplaceId } from "@zody/contracts";
-import { ZCODE_CUA_OFFICIAL_PLUGIN_ID, isZodyCuaInternalFeatureEnabled } from "@zody/shared";
+import { ZODY_OFFICIAL_PLUGIN_MARKETPLACE, isOfficialMarketplaceId } from "@zody/contracts";
+import { ZODY_CUA_OFFICIAL_PLUGIN_ID, isZodyCuaInternalFeatureEnabled } from "@zody/shared";
 import { resolveOfficialPluginRoots } from "./app/bundled-plugins.js";
 import {
   DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS,
@@ -244,7 +244,7 @@ function countVisibleMarketplacePlugins(
   plugins: readonly { name: string }[] | undefined,
 ): number | undefined {
   if (!plugins) return undefined;
-  if (marketplaceId !== ZCODE_OFFICIAL_PLUGIN_MARKETPLACE) return plugins.length;
+  if (marketplaceId !== ZODY_OFFICIAL_PLUGIN_MARKETPLACE) return plugins.length;
   return plugins.filter((entry) => entry.name !== OFFICIAL_NODE_REPL_HOST_PLUGIN_NAME).length;
 }
 
@@ -342,7 +342,7 @@ export function getZodyPluginsOverview(
   const suppressed = new Set(configResult.config.plugins.suppressedBuiltins);
   const restorableBuiltins: ZodyAvailablePluginData[] = OFFICIAL_PLUGIN_DEFINITIONS.filter(
     (def) =>
-      suppressed.has(`${def.name}@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE}`) &&
+      suppressed.has(`${def.name}@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE}`) &&
       // computer-use 的恢复入口需要 internal 特性开启（与 restoreBuiltinPluginCore 同口径）。
       (def.name !== "computer-use" || isZodyCuaInternalFeatureEnabled(options.env ?? process.env)),
   ).map((def) => {
@@ -350,9 +350,9 @@ export function getZodyPluginsOverview(
       ? parseEntryStoreListing({ name: def.name, ...def.listing })
       : undefined;
     return {
-      id: `${def.name}@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE}`,
+      id: `${def.name}@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE}`,
       name: def.name,
-      marketplace: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+      marketplace: ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
       version: def.version,
       installed: false,
       ...(listing ? { listing } : {}),
@@ -422,7 +422,7 @@ function loadPluginListingsById(storageRoot: string): Record<string, PluginStore
     if (!definition.listing) continue;
     const listing = parseEntryStoreListing({ name: definition.name, ...definition.listing });
     if (listing) {
-      listings.set(`${definition.name}@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE}`, listing);
+      listings.set(`${definition.name}@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE}`, listing);
     }
   }
 
@@ -643,7 +643,7 @@ export async function installZodyMarketplacePlugin(
     options.marketplace,
   )?.plugins.find((entry) => entry.name === options.pluginName);
   const isSuppressedBundledOfficial =
-    options.marketplace === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE &&
+    options.marketplace === ZODY_OFFICIAL_PLUGIN_MARKETPLACE &&
     configResult.config.plugins.suppressedBuiltins.includes(pluginId) &&
     (bundledEntry?.source === "filesystem" || bundledEntry?.source === "sea");
   if (isSuppressedBundledOfficial) {
@@ -724,7 +724,7 @@ export async function installZodyMarketplacePlugin(
       ],
     };
   }
-  if (options.marketplace === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE) {
+  if (options.marketplace === ZODY_OFFICIAL_PLUGIN_MARKETPLACE) {
     // 官方 marketplace 复用内置插件的 id 空间。若同名 CDN 插件重新安装，
     // 清掉历史内置 suppression，否则 Runtime 仍会把已拥有的安装误判为 suppressed。
     for (const record of installed.installed) {
@@ -890,7 +890,7 @@ function applySparsePaths(
  * 因此核心不能再次获取 promise-chain lock；公开入口再负责提供锁保护。
  */
 async function restoreBuiltinPluginCore(options: RestoreBuiltinPluginOptions): Promise<void> {
-  const zodyCuaPluginId = ZCODE_CUA_OFFICIAL_PLUGIN_ID;
+  const zodyCuaPluginId = ZODY_CUA_OFFICIAL_PLUGIN_ID;
   if (
     options.pluginId === zodyCuaPluginId &&
     !isZodyCuaInternalFeatureEnabled(options.env ?? process.env)

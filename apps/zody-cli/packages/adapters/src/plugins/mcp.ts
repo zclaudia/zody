@@ -8,8 +8,8 @@ import type {
   PluginManifest,
   PluginOptionValues,
 } from "@zody/contracts";
-import { ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zody/contracts";
-import { ZCODE_PLUGIN_ID_ENV_KEY } from "@zody/shared";
+import { ZODY_OFFICIAL_PLUGIN_MARKETPLACE } from "@zody/contracts";
+import { ZODY_PLUGIN_ID_ENV_KEY } from "@zody/shared";
 import type { LoadedPlugin } from "./types.js";
 import { isNotFoundError, isPluginOptionValue, isRecord, resolveInside } from "./helpers.js";
 
@@ -175,7 +175,7 @@ function resolveMcpServerConfig(server: unknown, context: VariableContext): McpS
   // ZCode 官方市场同时包含随应用装载的 Builtin Plugin 与按需安装的 CDN Plugin；后者运行时
   // source 为 `cache`，因此必须按 marketplace 身份归类，不能只看 loader source。
   const source: McpServerRuntimeSource = {
-    kind: context.loaded.marketplace === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE ? "builtin" : "plugin",
+    kind: context.loaded.marketplace === ZODY_OFFICIAL_PLUGIN_MARKETPLACE ? "builtin" : "plugin",
   };
 
   // fork（F4.6）：`auth: { type: "zcode_official" }` 解析与 `official` provenance 随
@@ -199,7 +199,7 @@ function resolveMcpServerConfig(server: unknown, context: VariableContext): McpS
     // 插件 manifest 可自定义 env，但插件身份必须由 resolver 权威写入（loaded.id 来自本地 plugin
     // registry，不是可序列化配置），不能让第三方伪造 official zcode-cua 身份后获得只应定向注入给
     // 内置插件的 broker 凭据。manifest env spread 之后覆写，确保 user/manifest 无法覆盖。
-    env[ZCODE_PLUGIN_ID_ENV_KEY] = context.loaded.id;
+    env[ZODY_PLUGIN_ID_ENV_KEY] = context.loaded.id;
     return {
       type: "stdio",
       command: resolveTemplate(command, context, { allowSensitive: false }),

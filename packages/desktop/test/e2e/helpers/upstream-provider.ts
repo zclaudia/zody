@@ -15,7 +15,7 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   TID_V4_MODEL_CONFIG,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   encodeCustomModelValue,
   testId,
 } from "@zody/shared";
@@ -251,7 +251,7 @@ async function seedUpstreamToolbarPreferences() {
     UPSTREAM_PROVIDER_ID,
     UPSTREAM_MODEL,
     UPSTREAM_THOUGHT_LEVEL,
-    ZCODE_AGENT_PROVIDER,
+    ZODY_AGENT_PROVIDER,
   );
 }
 

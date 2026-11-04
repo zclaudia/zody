@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import {
-  ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+  ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
   ZCODE_PLUGIN_HOST_COMMAND,
   type McpServerConfig,
 } from "@zody/contracts";
-import { ZCODE_PLUGIN_ID_ENV_KEY } from "@zody/shared";
+import { ZODY_PLUGIN_ID_ENV_KEY } from "@zody/shared";
 import {
   createOfficialPluginCacheRetryBudget,
   type OfficialPluginCacheRetryBudget,
@@ -110,7 +110,7 @@ function renderOfficialPluginRuntimeManifest(
       // 权威写入插件身份（pluginName@marketplace，来自本地 plugin registry，manifest/user env 不可覆盖）。
       // 其他 official plugin 仍带上不可伪造的 plugin identity；CUA broker 凭据由 shared
       // node_repl 的可信配置注入，不再写入独立 server。
-      [ZCODE_PLUGIN_ID_ENV_KEY]: `${input.pluginName}@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE}`,
+      [ZODY_PLUGIN_ID_ENV_KEY]: `${input.pluginName}@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE}`,
     };
     mcpServers[serverKey] = mcpServer;
   }

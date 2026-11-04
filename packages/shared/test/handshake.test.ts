@@ -51,14 +51,14 @@ it("exposes the new internal wire identities without changing the plugin sandbox
     PluginSandboxChannels,
     EmbeddedBrowserWebviewChannels,
     CodingPlanWebviewChannels,
-    ZCODE_RPC_HOST_CAPABILITY_HEADER,
-    ZCODE_PROTOCOL_NAME,
+    ZODY_RPC_HOST_CAPABILITY_HEADER,
+    ZODY_PROTOCOL_NAME,
   } = await import("../src/index.js");
   expect(Object.values(PlatformChannels).every((value) => value.startsWith("zody:"))).toBe(true);
   expect(Object.values(InternalChannels).every((value) => value.startsWith("zody:"))).toBe(true);
   expect(EmbeddedBrowserWebviewChannels.WheelBoundary).toBe("zody:embedded-browser-wheel-boundary");
   expect(CodingPlanWebviewChannels.PurchaseComplete).toBe("zcode:coding-plan-purchase-complete");
   expect(PluginSandboxChannels.Init).toBe("zcode:plugin-sandbox-init");
-  expect(ZCODE_RPC_HOST_CAPABILITY_HEADER).toBe("x-zody-rpc-host-capability");
-  expect(ZCODE_PROTOCOL_NAME).toBe("Zody Protocol");
+  expect(ZODY_RPC_HOST_CAPABILITY_HEADER).toBe("x-zody-rpc-host-capability");
+  expect(ZODY_PROTOCOL_NAME).toBe("Zody Protocol");
 });

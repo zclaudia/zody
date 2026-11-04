@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE } from "@zody/shared";
+import { ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE } from "@zody/shared";
 import type {
   SessionSummary,
   SessionsIndexTopicFrame,
@@ -790,7 +790,7 @@ describe("SessionsIndexStore", () => {
           attempts += 1;
           if (attempts === 1) {
             throw Object.assign(new Error("lock timeout without a path"), {
-              code: ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE,
+              code: ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE,
             });
           }
           return {

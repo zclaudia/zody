@@ -13,7 +13,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { PluginDiagnostic, PluginManifest, PluginStoreListing } from "@zody/contracts";
-import { isOfficialMarketplaceId, ZCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@zody/contracts";
+import { isOfficialMarketplaceId, ZODY_OFFICIAL_PLUGIN_MARKETPLACE } from "@zody/contracts";
 import { DEFAULT_PLUGIN_MARKETPLACES, sanitizeZodyRuntimeEnv } from "@zody/shared";
 import { loadPluginMcpServerDefinitions, resolvePluginMcpServers } from "./mcp.js";
 import {
@@ -60,7 +60,7 @@ const MARKETPLACE_JSON_MAX_BYTES = 10 * 1024 * 1024;
 const MARKETPLACE_JSON_MAX_REDIRECTS = 5;
 const MARKETPLACE_JSON_TIMEOUT_MS = 180_000;
 const CLAUDE_MARKETPLACE_FILE = join(".claude-plugin", "marketplace.json");
-const ZCODE_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
+const ZODY_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
 const DEFAULT_VERSION = "0.0.0";
@@ -378,8 +378,8 @@ export function isDefaultPluginMarketplacesInitialized(storageRoot: string): boo
   if (DEFAULT_PLUGIN_MARKETPLACES.some((marketplace) => !existingIds.has(marketplace.id))) {
     return false;
   }
-  const manifestPath = getMarketplaceManifestPath(storageRoot, ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
-  const official = known.find((record) => record.id === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
+  const manifestPath = getMarketplaceManifestPath(storageRoot, ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
+  const official = known.find((record) => record.id === ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
   if (!existsSync(manifestPath)) {
     // manifest 缺失且没有官方记录时，ensureBundledOfficialMarketplaceRecordSync 不写盘。
     return official === undefined;
@@ -405,16 +405,16 @@ export function ensureBundledOfficialMarketplaceRecordSync(
 ): KnownMarketplaceRecord[] {
   const known = loadKnownMarketplacesSync(storageRoot);
   const index = known.findIndex(
-    (record) => record.id === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+    (record) => record.id === ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
   );
   const manifestPath = getMarketplaceManifestPath(
     storageRoot,
-    ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+    ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
   );
   if (!existsSync(manifestPath)) {
     if (index < 0) return known;
     const next = known.filter(
-      (record) => record.id !== ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+      (record) => record.id !== ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
     );
     writeKnownMarketplacesSync(storageRoot, next);
     return next;
@@ -425,9 +425,9 @@ export function ensureBundledOfficialMarketplaceRecordSync(
     const next = [
       ...known,
       {
-        id: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+        id: ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
         source: localSource,
-        name: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+        name: ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
         addedAt: new Date().toISOString(),
         pluginCount: 0,
       },
@@ -524,11 +524,11 @@ export async function addMarketplace(input: {
       );
     }
     if (
-      input.trustedId === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE &&
-      loaded.manifest.name !== ZCODE_OFFICIAL_PLUGIN_MARKETPLACE
+      input.trustedId === ZODY_OFFICIAL_PLUGIN_MARKETPLACE &&
+      loaded.manifest.name !== ZODY_OFFICIAL_PLUGIN_MARKETPLACE
     ) {
       throw new Error(
-        `Official marketplace source must provide ${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE}, received ${loaded.manifest.name}`,
+        `Official marketplace source must provide ${ZODY_OFFICIAL_PLUGIN_MARKETPLACE}, received ${loaded.manifest.name}`,
       );
     }
     // fork（F6.2）：官方市场只读本地 seed 合并文件（source 为 file），不再写 CDN 分片。
@@ -543,7 +543,7 @@ export async function addMarketplace(input: {
         persistedManifest.raw,
         operationSignal,
       );
-    } else if (loaded.manifest.name !== ZCODE_OFFICIAL_PLUGIN_MARKETPLACE) {
+    } else if (loaded.manifest.name !== ZODY_OFFICIAL_PLUGIN_MARKETPLACE) {
       marketplaceActivation = await stageMarketplaceManifest(
         input.storageRoot,
         loaded.manifest.name,
@@ -2320,7 +2320,7 @@ function findMarketplaceManifestPath(rootPath: string, explicitPath?: string): s
 }
 
 function findPluginManifestPath(rootPath: string): string | null {
-  for (const candidate of [ZCODE_MANIFEST_PATH, CLAUDE_MANIFEST_PATH, CODEX_MANIFEST_PATH]) {
+  for (const candidate of [ZODY_MANIFEST_PATH, CLAUDE_MANIFEST_PATH, CODEX_MANIFEST_PATH]) {
     const path = join(rootPath, candidate);
     if (fileExists(path)) return path;
   }

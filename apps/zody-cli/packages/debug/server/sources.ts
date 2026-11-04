@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { DatabaseSync } from "node:sqlite";
 import type {
   DbMessageRecord,
@@ -17,11 +17,11 @@ import type {
 } from "./types.js";
 
 export function defaultLogDir(): string {
-  return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
+  return join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "log");
 }
 
 export function defaultDbPath(): string {
-  return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "db", "db.sqlite");
+  return join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "db", "db.sqlite");
 }
 
 export async function loadLogs(options: ObservationOptions): Promise<SourceLoadResult<LogRecord>> {

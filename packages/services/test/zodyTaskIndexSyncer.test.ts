@@ -18,7 +18,7 @@ import type {
   ZodyTaskMeta,
   ZodyWorkspaceEvent,
 } from "@zody/shared";
-import { elideSessionSnapshotForIndex, ZCODE_AGENT_PROVIDER_NOT_READY_CODE } from "@zody/shared";
+import { elideSessionSnapshotForIndex, ZODY_AGENT_PROVIDER_NOT_READY_CODE } from "@zody/shared";
 import type {
   SessionSummary,
   ErrorAttribution,
@@ -2967,7 +2967,7 @@ describe("createZodyTaskIndexSyncer", () => {
     const env = setupEnv();
     const providerNotReadyError = Object.assign(
       new Error("当前没有可用的模型供应商和模型，请先登录或配置 API Key。"),
-      { code: ZCODE_AGENT_PROVIDER_NOT_READY_CODE },
+      { code: ZODY_AGENT_PROVIDER_NOT_READY_CODE },
     );
     vi.mocked(env.agent.subscribeSessionsIndexV4).mockRejectedValueOnce(providerNotReadyError);
     vi.mocked(env.agent.subscribeWorkspaceConfigV4).mockRejectedValueOnce(providerNotReadyError);

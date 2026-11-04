@@ -7,7 +7,7 @@ export interface DefaultPluginMarketplace {
   lastUpdated?: string;
 }
 
-export const ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID = "zcode-plugins-official";
+export const ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID = "zcode-plugins-official";
 
 /**
  * Claude Code 官方市场（GitHub git 源）。它不是 ZCode 的强依赖：GitHub 不可达时刷新必然失败，
@@ -56,7 +56,7 @@ export const DEFAULT_PLUGIN_MARKETPLACES: DefaultPluginMarketplace[] = [
 ];
 
 // 商店「公开」分段只有一个 ZCode 官方市场 id；fork（F6.2）后该目录只由本地 seed 提供。
-export const PUBLIC_STORE_MARKETPLACE_IDS = [ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID] as const;
+export const PUBLIC_STORE_MARKETPLACE_IDS = [ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID] as const;
 
 export function isPublicStoreMarketplaceId(id: string): boolean {
   return (PUBLIC_STORE_MARKETPLACE_IDS as readonly string[]).includes(id);

@@ -16,7 +16,7 @@ import {
 import { getAppConfigDir as resolveAppConfigDir } from "./paths.js";
 import {
   buildLocalMediaPreviewUrl,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   type DynamicWorkflowMode,
   type ProviderProvisioningTrigger,
 } from "@zody/shared";
@@ -941,7 +941,7 @@ export { isOfficialCuaPluginEnabledForWorkspace };
 export function hasGlobalCliZodyCuaServer(env: NodeJS.ProcessEnv = process.env): boolean {
   const home = env.HOME?.trim() || homedir();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  const configPath = join(home, ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
+  const configPath = join(home, ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json");
   let parsed: unknown;
   try {
     parsed = JSON.parse(readFileSync(configPath, "utf8"));

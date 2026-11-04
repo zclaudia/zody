@@ -15,8 +15,8 @@ import {
   isPublicStoreMarketplaceId,
   resolveLocalizedText,
   resolvePluginDisplayName,
-  ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
 } from "@zody/shared";
 import { DEFAULT_MARKETPLACE_ID } from "@/settings/recommendedPlugins.js";
 import { pluginSearchMatches } from "@/settings/pluginSearch.js";
@@ -162,7 +162,7 @@ export interface PersonalMarketplaceGroup {
 }
 
 const OFFICIAL_MARKETPLACE_ORDER = [
-  ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID,
+  ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID,
   DEFAULT_MARKETPLACE_ID,
 ] as const;
 
@@ -234,7 +234,7 @@ export function buildStoreItems(input: {
   const items = new Map<string, StorePluginItem>();
 
   for (const summary of input.availablePlugins) {
-    if (summary.id === ZCODE_CUA_OFFICIAL_PLUGIN_ID) continue;
+    if (summary.id === ZODY_CUA_OFFICIAL_PLUGIN_ID) continue;
     const info = infoById.get(summary.id);
     items.set(summary.id, {
       id: summary.id,
@@ -251,7 +251,7 @@ export function buildStoreItems(input: {
     });
   }
   for (const summary of input.restorableBuiltins) {
-    if (summary.id === ZCODE_CUA_OFFICIAL_PLUGIN_ID) continue;
+    if (summary.id === ZODY_CUA_OFFICIAL_PLUGIN_ID) continue;
     const existing = items.get(summary.id);
     if (existing) {
       // 内置卸载态同时存在于完整 Catalog 和 restorable 列表：只有没有实际
@@ -284,7 +284,7 @@ export function buildStoreItems(input: {
   }
   // 运行时发现、但不在任何目录里的插件（inline、被移除市场的遗留安装）也要可见/可搜索。
   for (const info of input.plugins) {
-    if (info.id === ZCODE_CUA_OFFICIAL_PLUGIN_ID) continue;
+    if (info.id === ZODY_CUA_OFFICIAL_PLUGIN_ID) continue;
     if (items.has(info.id)) continue;
     // 旧插件拆分/下架后，配置仍会生成缺包诊断；它不是可安装目录来源。
     // 保留原 plugins 给设置页诊断，但不凭此生成商店安装入口；有目录/恢复来源的条目已在上面保留。

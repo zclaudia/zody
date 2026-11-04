@@ -68,7 +68,7 @@ const BROWSER_USE_PLUGIN_ID = "browser-use@zcode-plugins-official";
 const DOCUMENTS_PLUGIN_ID = "documents@zcode-plugins-official";
 const RESTORE_LEGACY_SESSIONS_PLUGIN_ID = "restore-legacy-sessions@zcode-plugins-official";
 const SKILL_CREATOR_PLUGIN_ID = "skill-creator@zcode-plugins-official";
-const ZCODE_GUIDE_PLUGIN_ID = "zcode-guide@zcode-plugins-official";
+const ZODY_GUIDE_PLUGIN_ID = "zcode-guide@zcode-plugins-official";
 const OFFICIAL_COMPUTER_USE_PLUGIN_CACHE_PATH = join(
   "cache",
   "zcode-plugins-official",

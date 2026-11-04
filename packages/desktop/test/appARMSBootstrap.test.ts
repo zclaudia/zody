@@ -6,7 +6,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_AGENT_LIFECYCLE_LOG_MARKER } from "@zody/shared/process-diagnostic";
+import { ZODY_AGENT_LIFECYCLE_LOG_MARKER } from "@zody/shared/process-diagnostic";
 
 const init = vi.fn((_config: unknown) => Promise.resolve());
 
@@ -161,8 +161,8 @@ describe("appARMSBootstrap beforeReport", () => {
     try {
       await manager.getClient({ workspacePath });
       await vi.waitFor(() => expect(reporter.onExit).toHaveBeenCalledTimes(1));
-      await vi.waitFor(() => expect(log.mock.calls.some((args) => String(args[1]).includes(ZCODE_AGENT_LIFECYCLE_LOG_MARKER))).toBe(true));
-      const message = String(log.mock.calls.find((args) => String(args[1]).includes(ZCODE_AGENT_LIFECYCLE_LOG_MARKER))?.[1]);
+      await vi.waitFor(() => expect(log.mock.calls.some((args) => String(args[1]).includes(ZODY_AGENT_LIFECYCLE_LOG_MARKER))).toBe(true));
+      const message = String(log.mock.calls.find((args) => String(args[1]).includes(ZODY_AGENT_LIFECYCLE_LOG_MARKER))?.[1]);
       const payload = { events: [{ event_type: "custom", name: "perf_agent_crash" }, { event_type: "exception", type: "error", source: "console.error", message }] };
       const beforeReport = await getBeforeReport();
       const filtered = beforeReport(payload) as { events: Array<Record<string, unknown>> };
@@ -179,7 +179,7 @@ describe("appARMSBootstrap beforeReport", () => {
       event_type: "exception",
       type: "error",
       source: "console.error",
-      message: `[host-log] process exited ${ZCODE_AGENT_LIFECYCLE_LOG_MARKER}`,
+      message: `[host-log] process exited ${ZODY_AGENT_LIFECYCLE_LOG_MARKER}`,
     };
     const realError = { ...wrapper, source: "uncaughtException" };
     const normalConsoleError = { ...wrapper, message: "a real main error" };

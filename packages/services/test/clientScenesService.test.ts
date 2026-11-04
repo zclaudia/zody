@@ -13,7 +13,7 @@ describe("ClientScenesService", () => {
     vi.stubEnv("ZODY_ENV", "test");
     vi.stubEnv("ZODY_BASE_URL", TEST_ZCODE_ORIGIN);
     vi.resetModules();
-    const { ZCODE_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
+    const { ZODY_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
     const { createClientScenesService } =
       await import("../src/client-scenes/clientScenesService.js");
     const request = vi.fn(
@@ -74,7 +74,7 @@ describe("ClientScenesService", () => {
       ],
     });
     expect(request).toHaveBeenCalledOnce();
-    expect(request).toHaveBeenCalledWith(ZCODE_CLIENT_SCENES_URL, {
+    expect(request).toHaveBeenCalledWith(ZODY_CLIENT_SCENES_URL, {
       method: "GET",
     });
   });

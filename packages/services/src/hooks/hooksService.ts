@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type {
   Hook,
   HookEvent,
@@ -34,7 +34,7 @@ import {
 } from "./workspaceHookSettingsModel.js";
 
 const SETTINGS_FILE = "settings.json";
-const ZCODE_CONFIG_FILE = "config.json";
+const ZODY_CONFIG_FILE = "config.json";
 const HOOK_EVENTS: readonly HookEvent[] = [
   "SessionStart",
   "UserPromptSubmit",
@@ -59,7 +59,7 @@ function getRootDir(source: SettingsDirectorySource, workspacePath?: string): st
   const baseDir = workspacePath ?? resolveUserHomeDir();
   if (source === "zcode") {
     // Project writes use .zody; discovery separately keeps the legacy .zcode read path.
-    return workspacePath ? join(baseDir, ".zody") : join(baseDir, ZCODE_DATA_ROOT_DIR_NAME, "cli");
+    return workspacePath ? join(baseDir, ".zody") : join(baseDir, ZODY_DATA_ROOT_DIR_NAME, "cli");
   }
   return join(baseDir, source === "agents" ? ".agents" : ".claude");
 }
@@ -67,7 +67,7 @@ function getRootDir(source: SettingsDirectorySource, workspacePath?: string): st
 function getConfigPath(source: SettingsDirectorySource, workspacePath?: string): string {
   return join(
     getRootDir(source, workspacePath),
-    source === "zcode" ? ZCODE_CONFIG_FILE : SETTINGS_FILE,
+    source === "zcode" ? ZODY_CONFIG_FILE : SETTINGS_FILE,
   );
 }
 
@@ -168,7 +168,7 @@ async function readPersistentWorkspaceHookTrustDigests(
       : isAbsolute(configured)
         ? resolve(configured)
         : resolve(home, configured)
-    : join(home, ZCODE_DATA_ROOT_DIR_NAME);
+    : join(home, ZODY_DATA_ROOT_DIR_NAME);
   const trustFilePath = join(storageRoot, "security", "workspace-hook-trust-v1.json");
 
   // 异步读取 + ENOENT 区分：不用 existsSync 预检——同步调用会阻塞服务
@@ -275,10 +275,10 @@ async function writeZodyHooksConfig(
   hooks: Hook[],
 ): Promise<void> {
   const configPath = workspacePath
-    ? resolveProjectResourcePaths(workspacePath, ZCODE_CONFIG_FILE).writePath
+    ? resolveProjectResourcePaths(workspacePath, ZODY_CONFIG_FILE).writePath
     : getConfigPath("zcode");
   const effectivePath = workspacePath
-    ? resolveProjectResourcePaths(workspacePath, ZCODE_CONFIG_FILE).readPath
+    ? resolveProjectResourcePaths(workspacePath, ZODY_CONFIG_FILE).readPath
     : configPath;
   const existingConfig = (await readJsonFile<ZodyConfigFile>(effectivePath)) ?? {};
   const enabled = resolveNextRootEnabled(existingConfig.hooks?.enabled, hooks);
@@ -298,7 +298,7 @@ async function saveHooksImpl(params: {
   hooks: Hook[];
 }): Promise<void> {
   const currentProjectConfigPath = resolve(
-    resolveProjectResourcePaths(params.workspacePath, ZCODE_CONFIG_FILE).readPath,
+    resolveProjectResourcePaths(params.workspacePath, ZODY_CONFIG_FILE).readPath,
   );
   const userHooks = params.hooks.filter(
     (hook) =>

@@ -1,9 +1,9 @@
 import {
   normalizeAgentProviderToZodyAgent,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   type ZodyProvider,
 } from "@zody/shared";
-import { ZCODE_AGENT_PROVIDERS } from "./zodyProviders.js";
+import { ZODY_AGENT_PROVIDERS } from "./zodyProviders.js";
 
 interface StorageLike {
   getItem(key: string): string | null;
@@ -25,13 +25,13 @@ function getBrowserStorage(): StorageLike | null {
 }
 
 function isAgentProvider(value: unknown): value is ZodyProvider {
-  return typeof value === "string" && ZCODE_AGENT_PROVIDERS.includes(value as ZodyProvider);
+  return typeof value === "string" && ZODY_AGENT_PROVIDERS.includes(value as ZodyProvider);
 }
 
 export function readLastSelectedAgentProvider(storage: StorageLike | null = getBrowserStorage()): ZodyProvider | null {
   const rawValue = storage?.getItem(LAST_SELECTED_AGENT_PROVIDER_STORAGE_KEY);
   if (!isAgentProvider(rawValue)) {
-    return ZCODE_AGENT_PROVIDER;
+    return ZODY_AGENT_PROVIDER;
   }
 
   // Bugfix: 单 ZCode Agent 迁移后，旧本地存储里已移除的第三方 provider 值不能再参与首屏预热。

@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { ZCODE_AGENT_RUNTIME } from "@zody/shared";
+import { ZODY_AGENT_RUNTIME } from "@zody/shared";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 
 type RestoreReusableReleaseAssets = (options: {
@@ -42,7 +42,7 @@ let prepareRemoteComponentArtifact: (options: {
   previousComponents?: Map<string, Record<string, unknown>>;
 }) => Record<string, unknown>;
 
-const currentGlmManifestVersion = `v${ZCODE_AGENT_RUNTIME.version}`;
+const currentGlmManifestVersion = `v${ZODY_AGENT_RUNTIME.version}`;
 
 beforeAll(async () => {
   const moduleUrl = pathToFileURL(

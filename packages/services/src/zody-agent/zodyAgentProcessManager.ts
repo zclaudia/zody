@@ -12,14 +12,14 @@ import { GEN_UI_OUTPUT_DIRECTORY, GEN_UI_OUTPUT_ROOT_ENV } from "@zody/shared/no
 import { getAppConfigDir } from "../paths.js";
 import {
   parseZodyProcessDiagnostic,
-  ZCODE_AGENT_LIFECYCLE_LOG_MARKER,
-  ZCODE_PROCESS_DIAGNOSTIC_NAME_MAX_CHARS,
-  ZCODE_PROCESS_DIAGNOSTIC_MESSAGE_MAX_CHARS,
-  ZCODE_PROCESS_DIAGNOSTIC_STACK_MAX_CHARS,
+  ZODY_AGENT_LIFECYCLE_LOG_MARKER,
+  ZODY_PROCESS_DIAGNOSTIC_NAME_MAX_CHARS,
+  ZODY_PROCESS_DIAGNOSTIC_MESSAGE_MAX_CHARS,
+  ZODY_PROCESS_DIAGNOSTIC_STACK_MAX_CHARS,
 } from "@zody/shared/process-diagnostic";
 import {
-  ZCODE_AGENT_RUNTIME,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_RUNTIME,
+  ZODY_AGENT_PROVIDER,
   ZODY_RUNTIME_ENV_KEY,
   resolveWorkspaceKey,
   resolveZodyRuntimeEnv,
@@ -499,7 +499,7 @@ function resolveDeployedZodyAgentBinaryCommand(
   }
   return {
     command: binaryPath,
-    args: ZCODE_AGENT_RUNTIME.spawnArgs,
+    args: ZODY_AGENT_RUNTIME.spawnArgs,
     cwd: context.workspacePath,
   };
 }
@@ -522,7 +522,7 @@ function resolveElectronRuntimeZodyAgentCommand(
   }
   return {
     command: process.execPath,
-    args: [bundlePath, ...ZCODE_AGENT_RUNTIME.spawnArgs],
+    args: [bundlePath, ...ZODY_AGENT_RUNTIME.spawnArgs],
     storagePreparationEntry: bundlePath,
     cwd: context.workspacePath,
     // 关键：必须以纯 Node 模式启动，否则子进程会被当成 Electron/Chromium 子进程卡在 GPU 初始化。
@@ -1073,7 +1073,7 @@ export class ZodyAgentProcessManager {
     this.reportProcessLifecycle((reporter) =>
       reporter.onReady?.({
         pid: managed.child.pid!,
-        provider: ZCODE_AGENT_PROVIDER,
+        provider: ZODY_AGENT_PROVIDER,
         ...(this.lane ? { lane: this.lane } : {}),
         workspacePath: managed.workspace.workspacePath,
         readyAt: managed.readyAt!,
@@ -1426,7 +1426,7 @@ export class ZodyAgentProcessManager {
           this.reportProcessLifecycle((reporter) =>
             reporter.onException?.({
               pid: child.pid!,
-              provider: ZCODE_AGENT_PROVIDER,
+              provider: ZODY_AGENT_PROVIDER,
               ...(this.lane ? { lane: this.lane } : {}),
               workspacePath: params.workspacePath,
               runtimeGeneration,
@@ -1436,17 +1436,17 @@ export class ZodyAgentProcessManager {
                 // 脱敏占位符可能比原文长，必须再次限长，避免 IPC schema 拒绝合法异常。
                 name: redactAgentDiagnostic(diagnostic.name).slice(
                   0,
-                  ZCODE_PROCESS_DIAGNOSTIC_NAME_MAX_CHARS,
+                  ZODY_PROCESS_DIAGNOSTIC_NAME_MAX_CHARS,
                 ),
                 message: redactAgentDiagnostic(diagnostic.message).slice(
                   0,
-                  ZCODE_PROCESS_DIAGNOSTIC_MESSAGE_MAX_CHARS,
+                  ZODY_PROCESS_DIAGNOSTIC_MESSAGE_MAX_CHARS,
                 ),
                 ...(diagnostic.stack !== undefined
                   ? {
                       stack: redactAgentDiagnostic(diagnostic.stack).slice(
                         0,
-                        ZCODE_PROCESS_DIAGNOSTIC_STACK_MAX_CHARS,
+                        ZODY_PROCESS_DIAGNOSTIC_STACK_MAX_CHARS,
                       ),
                     }
                   : {}),
@@ -1542,7 +1542,7 @@ export class ZodyAgentProcessManager {
         this.reportProcessLifecycle((reporter) =>
           reporter.onSpawn({
             pid: child.pid!,
-            provider: ZCODE_AGENT_PROVIDER,
+            provider: ZODY_AGENT_PROVIDER,
             ...(this.lane ? { lane: this.lane } : {}),
             workspacePath: params.workspacePath,
             command: effectiveCommand.command,
@@ -1564,7 +1564,7 @@ export class ZodyAgentProcessManager {
     });
     child.once("error", (error) => {
       errorLog(
-        `ZCode agent process error${this.processLifecycleReporter?.onError ? ` ${ZCODE_AGENT_LIFECYCLE_LOG_MARKER}` : ""}`,
+        `ZCode agent process error${this.processLifecycleReporter?.onError ? ` ${ZODY_AGENT_LIFECYCLE_LOG_MARKER}` : ""}`,
         {
           workspaceKey,
           pid: child.pid,
@@ -1579,7 +1579,7 @@ export class ZodyAgentProcessManager {
       this.reportProcessLifecycle((reporter) =>
         reporter.onError?.({
           pid: typeof child.pid === "number" ? child.pid : null,
-          provider: ZCODE_AGENT_PROVIDER,
+          provider: ZODY_AGENT_PROVIDER,
           ...(this.lane ? { lane: this.lane } : {}),
           workspacePath: params.workspacePath,
           command: effectiveCommand.command,
@@ -1627,7 +1627,7 @@ export class ZodyAgentProcessManager {
         // 和长期运行的 Agent 自行 exit 0 同样是非预期退出。
         // 已有独立生命周期事件，显式标记包装日志，避免 Electron 将其再计为 JS 异常。
         errorLog(
-          `ZCode agent process exited unexpectedly${this.processLifecycleReporter ? ` ${ZCODE_AGENT_LIFECYCLE_LOG_MARKER}` : ""}`,
+          `ZCode agent process exited unexpectedly${this.processLifecycleReporter ? ` ${ZODY_AGENT_LIFECYCLE_LOG_MARKER}` : ""}`,
           {
             ...exitContext,
             stderr,
@@ -1638,7 +1638,7 @@ export class ZodyAgentProcessManager {
         this.reportProcessLifecycle((reporter) =>
           reporter.onExit({
             pid: child.pid!,
-            provider: ZCODE_AGENT_PROVIDER,
+            provider: ZODY_AGENT_PROVIDER,
             ...(this.lane ? { lane: this.lane } : {}),
             workspacePath: params.workspacePath,
             exitCode: code,

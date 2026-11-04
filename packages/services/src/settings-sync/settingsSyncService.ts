@@ -21,7 +21,7 @@ import type {
   SettingsSyncSourceRootSummary,
   SettingsSyncTaskImportResult,
 } from "@zody/shared";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { resolveProjectResourcePaths } from "@zody/shared/zody-paths";
 import {
   copyFile,
@@ -413,7 +413,7 @@ const SUPPORTED_MCP_AGENT_SOURCES: ExternalAgentMcpPathSource[] = [
   },
 ];
 
-const ZCODE_PLUGIN_MANIFEST_PATH = [".zcode-plugin", "plugin.json"] as const;
+const ZODY_PLUGIN_MANIFEST_PATH = [".zcode-plugin", "plugin.json"] as const;
 const CLAUDE_PLUGIN_MANIFEST_PATH = [".claude-plugin", "plugin.json"] as const;
 const CODEX_PLUGIN_MANIFEST_PATH = [".codex-plugin", "plugin.json"] as const;
 const INLINE_PLUGIN_MARKETPLACE = "inline";
@@ -428,7 +428,7 @@ function getWorkspaceZodySkillRoot(workspacePath: string): string {
 }
 
 function getUserZodySkillRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "skills");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "skills");
 }
 
 function getWorkspaceZodyCommandRoot(workspacePath: string): string {
@@ -436,7 +436,7 @@ function getWorkspaceZodyCommandRoot(workspacePath: string): string {
 }
 
 function getUserZodyCommandRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "commands");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "commands");
 }
 
 function getWorkspaceZodyPluginRoot(workspacePath: string): string {
@@ -444,11 +444,11 @@ function getWorkspaceZodyPluginRoot(workspacePath: string): string {
 }
 
 function getUserZodyPluginRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "plugins");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "plugins");
 }
 
 function getUserZodyCliConfigPath(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json");
 }
 
 function getWorkspaceZodyConfigPath(workspacePath: string): string {
@@ -460,7 +460,7 @@ function getClaudeUserAgentsFileSourcePath(): string {
 }
 
 function getUserZodyAgentsFilePath(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "AGENTS.md");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "AGENTS.md");
 }
 
 function resolveTargetRootForScope(
@@ -780,7 +780,7 @@ async function collectCommandMarkdownPaths(rootPath: string): Promise<string[]> 
 }
 
 async function findPluginManifestPath(pluginPath: string): Promise<string | null> {
-  const zodyManifestPath = join(pluginPath, ...ZCODE_PLUGIN_MANIFEST_PATH);
+  const zodyManifestPath = join(pluginPath, ...ZODY_PLUGIN_MANIFEST_PATH);
   if (await pathExists(zodyManifestPath)) {
     return zodyManifestPath;
   }

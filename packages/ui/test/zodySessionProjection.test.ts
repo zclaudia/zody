@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   encodeCustomModelValue,
   formatModelPickerValue as formatSharedModelSelection,
-  ZCODE_PROTOCOL_NAME,
-  ZCODE_PROTOCOL_VERSION,
+  ZODY_PROTOCOL_NAME,
+  ZODY_PROTOCOL_VERSION,
   type ZodySessionEvent,
   type ZodyMessagePart,
   type ZodyMessageWithParts,
@@ -72,8 +72,8 @@ const settingsWithDefaultThoughtLevel = {
 function createSnapshot(): ZodySessionStateSnapshot {
   return {
     protocol: {
-      name: ZCODE_PROTOCOL_NAME,
-      version: ZCODE_PROTOCOL_VERSION,
+      name: ZODY_PROTOCOL_NAME,
+      version: ZODY_PROTOCOL_VERSION,
     },
     session: {
       sessionId: "sess_1",

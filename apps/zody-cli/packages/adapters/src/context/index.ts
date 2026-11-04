@@ -6,7 +6,7 @@ import { readFile, stat } from "node:fs/promises";
 import { arch, homedir, release } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { formatLocalIsoDate } from "@zody/contracts";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type {
   ContextSourceDiagnostic,
   ContextSourcePort,
@@ -236,7 +236,7 @@ async function findDefaultUserInstructionFile(
   }
 
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  const filePath = join(resolveUserHomeDir(env), ZCODE_DATA_ROOT_DIR_NAME, "AGENTS.md");
+  const filePath = join(resolveUserHomeDir(env), ZODY_DATA_ROOT_DIR_NAME, "AGENTS.md");
   if (await isFile(filePath)) {
     return { filePath, fileName: "AGENTS.md" };
   }

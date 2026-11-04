@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 interface ChromiumHardwareAccelerationApp {
   disableHardwareAcceleration(): void;
@@ -11,7 +11,7 @@ export function resolveChromiumHardwareAccelerationSettingsFile(
   homePath: string = homedir(),
 ): string {
   // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-  return join(homePath, ZCODE_DATA_ROOT_DIR_NAME, "v2", "setting.json");
+  return join(homePath, ZODY_DATA_ROOT_DIR_NAME, "v2", "setting.json");
 }
 
 export function extractBootstrapChromiumHardwareAccelerationEnabled(rawValue: unknown): boolean {

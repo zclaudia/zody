@@ -5,7 +5,7 @@ import { mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import type { RuntimeConfigPatch, UiLocale } from "@zody/contracts";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { LEGACY_ZCODE_DIRECTORY_NAME, ZODY_DIRECTORY_NAME } from "@zody/shared/zody-paths";
 import { z } from "zod";
 import {
@@ -55,7 +55,7 @@ export interface PluginRemovePatchResult {
 }
 
 const DEFAULT_CONFIG_FILE = "config.json";
-const DEFAULT_BASE_DIR = `~/${ZCODE_DATA_ROOT_DIR_NAME}/cli`;
+const DEFAULT_BASE_DIR = `~/${ZODY_DATA_ROOT_DIR_NAME}/cli`;
 
 /**
  * Resolve path with ~ expansion

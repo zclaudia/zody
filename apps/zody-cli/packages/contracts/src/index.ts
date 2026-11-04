@@ -102,7 +102,7 @@ export {
   MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE_ERROR_CODE,
   VIDEO_INPUT_MAX_BYTES,
   // fork 数据隔离：家目录级数据根常量统一从 shared 转出，供 CLI 各包引用。
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 
 export * from "./tracing/local-turn-preparation.js";

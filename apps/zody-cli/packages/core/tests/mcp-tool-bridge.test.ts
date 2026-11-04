@@ -3,20 +3,20 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createRootTraceContext,
   createSessionId,
-  ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
-  ZCODE_MCP_ERROR_PRESENTATION_MESSAGE_ONLY,
-  ZCODE_MCP_ERROR_PRESENTATION_META_KEY,
+  ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY,
+  ZODY_MCP_ERROR_PRESENTATION_META_KEY,
   type ImageProcessorPort,
   type McpPort,
   type ToolArtifactStorePort,
 } from "@zody/contracts";
 import {
   resetCapturedZodyCuaBrokerCredentialsForTest,
-  ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME as ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+  ZODY_CUA_OFFICIAL_MCP_NAMESPACE_NAME as ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
   sanitizeZodyRuntimeEnv,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
   ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  ZCODE_PLUGIN_ID_ENV_KEY,
+  ZODY_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 import {
   HOST_NODE_REPL_IMAGE_MAX_DIMENSION,
@@ -142,7 +142,7 @@ describe("MCP tool bridge", () => {
         statuses: {},
         tools: [
           {
-            serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+            serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
             toolName: "open_application",
             // adapter 会先按 namespaced serverName 生成这个内部描述符名；core 再把可信官方
             // CUA 投影成模型约定的 computer-use 主名，调用路由仍保留原 serverName。
@@ -156,16 +156,16 @@ describe("MCP tool bridge", () => {
       {
         mcp: {
           servers: {
-            [ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]: {
+            [ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]: {
               type: "stdio",
               command: "zcode-cua",
               env: {
-                [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+                [ZODY_PLUGIN_ID_ENV_KEY]: ZODY_CUA_OFFICIAL_PLUGIN_ID,
                 [ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]: TEST_PLUGIN_AUTHORITY,
               },
             },
           },
-          trustedOfficialCuaServerNames: [ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME],
+          trustedOfficialCuaServerNames: [ZODY_CUA_OFFICIAL_MCP_SERVER_NAME],
         },
       },
       {
@@ -192,7 +192,7 @@ describe("MCP tool bridge", () => {
     await alias?.handler({ app: { name: "notepad.exe" } }, createToolContext());
     expect(callTool).toHaveBeenCalledWith(
       expect.objectContaining({
-        serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+        serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
         toolName: "open_application",
       }),
       expect.anything(),
@@ -208,12 +208,12 @@ describe("MCP tool bridge", () => {
       {
         mcp: {
           servers: {
-            [ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]: {
+            [ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]: {
               type: "stdio",
               command: "zcode-cua",
             },
           },
-          trustedOfficialCuaServerNames: [ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME],
+          trustedOfficialCuaServerNames: [ZODY_CUA_OFFICIAL_MCP_SERVER_NAME],
         },
       },
       {
@@ -223,7 +223,7 @@ describe("MCP tool bridge", () => {
             statuses: {},
             tools: [
               {
-                serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+                serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
                 toolName: "open_application",
                 name: "mcp__plugin_zcode-cua_computer-use__open_application",
               },
@@ -288,13 +288,13 @@ describe("MCP tool bridge", () => {
       mcpPort,
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "open_application",
           name: "mcp__computer-use__open_application",
         },
       ],
       {
-        officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]),
+        officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]),
       },
     );
 
@@ -309,7 +309,7 @@ describe("MCP tool bridge", () => {
     await alias?.handler({ app: { name: "notepad.exe" } }, createToolContext());
     expect(calls).toEqual([
       {
-        serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+        serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
         toolName: "open_application",
       },
     ]);
@@ -339,14 +339,14 @@ describe("MCP tool bridge", () => {
       createMockMcpPort(),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "open_application",
           name: namespacedName,
         },
       ],
       {
         disallowedTools: [namespacedName],
-        officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]),
+        officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]),
       },
     );
 
@@ -364,14 +364,14 @@ describe("MCP tool bridge", () => {
       createMockMcpPort(),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "open_application",
           name: namespacedName,
         },
       ],
       {
         allowedTools: [namespacedName],
-        officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]),
+        officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]),
       },
     );
 
@@ -735,7 +735,7 @@ describe("MCP tool bridge", () => {
       ],
       isError: true,
       _meta: {
-        [ZCODE_MCP_ERROR_PRESENTATION_META_KEY]: ZCODE_MCP_ERROR_PRESENTATION_MESSAGE_ONLY,
+        [ZODY_MCP_ERROR_PRESENTATION_META_KEY]: ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY,
       },
     });
 
@@ -782,7 +782,7 @@ describe("MCP tool bridge", () => {
       ],
       isError: true,
       _meta: {
-        [ZCODE_MCP_ERROR_PRESENTATION_META_KEY]: ZCODE_MCP_ERROR_PRESENTATION_MESSAGE_ONLY,
+        [ZODY_MCP_ERROR_PRESENTATION_META_KEY]: ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY,
       },
     });
 
@@ -879,12 +879,12 @@ describe("MCP tool bridge", () => {
       createMockMcpPort({ callTool }),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "get_app_state",
           inputSchema: { type: "object", properties: {} },
         },
       ],
-      { officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]) },
+      { officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]) },
     );
 
     const entry = registry.get("mcp__computer-use__get_app_state");
@@ -934,12 +934,12 @@ describe("MCP tool bridge", () => {
       createMockMcpPort({ callTool: async () => result }),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "perform_action",
           inputSchema: { type: "object", properties: {} },
         },
       ],
-      { officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]) },
+      { officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]) },
     );
 
     const entry = registry.get("mcp__computer-use__perform_action");
@@ -966,12 +966,12 @@ describe("MCP tool bridge", () => {
       }),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "perform_action",
           inputSchema: { type: "object", properties: {} },
         },
       ],
-      { officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]) },
+      { officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]) },
     );
 
     const output = await registry
@@ -1002,12 +1002,12 @@ describe("MCP tool bridge", () => {
       }),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "perform_action",
           inputSchema: { type: "object", properties: {} },
         },
       ],
-      { officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]) },
+      { officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]) },
     );
 
     const output = await registry
@@ -1034,12 +1034,12 @@ describe("MCP tool bridge", () => {
       }),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "perform_action",
           inputSchema: { type: "object", properties: {} },
         },
       ],
-      { officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]) },
+      { officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]) },
     );
 
     const output = await registry
@@ -1077,12 +1077,12 @@ describe("MCP tool bridge", () => {
       createMockMcpPort({ callTool: async () => result }),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "perform_action",
           inputSchema: { type: "object", properties: {} },
         },
       ],
-      { officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]) },
+      { officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]) },
     );
 
     const entry = registry.get("mcp__computer-use__perform_action");
@@ -1130,12 +1130,12 @@ describe("MCP tool bridge", () => {
       createMockMcpPort({ callTool: async () => result }),
       [
         {
-          serverName: ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME,
+          serverName: ZODY_CUA_OFFICIAL_MCP_SERVER_NAME,
           toolName: "list_apps",
           inputSchema: { type: "object", properties: {} },
         },
       ],
-      { officialCuaServerNames: new Set([ZCODE_CUA_OFFICIAL_MCP_SERVER_NAME]) },
+      { officialCuaServerNames: new Set([ZODY_CUA_OFFICIAL_MCP_SERVER_NAME]) },
     );
 
     const output = await registry
@@ -1164,7 +1164,7 @@ describe("MCP tool bridge", () => {
           { type: "text", text: "(no output)" },
         ],
         _meta: {
-          [ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [0],
+          [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [0],
         },
       }),
     });

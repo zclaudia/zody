@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ISkillsService } from "@zody/services";
 import {
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   type SkillSummary,
   type SkillsListResult,
 } from "@zody/shared";
@@ -44,8 +44,8 @@ function setLoadedSkillStore(params: {
     workspaceIdentity: params.workspaceIdentity,
     loadedWorkspacePath: params.workspacePath,
     loadedWorkspaceIdentity: params.workspaceIdentity,
-    provider: ZCODE_AGENT_PROVIDER,
-    loadedProvider: ZCODE_AGENT_PROVIDER,
+    provider: ZODY_AGENT_PROVIDER,
+    loadedProvider: ZODY_AGENT_PROVIDER,
     skills: params.skills ?? [createSkill("old-skill")],
     capability: { userScopeAvailable: true },
     loading: false,
@@ -60,7 +60,7 @@ describe("refreshSharedSkillStoreForWorkspace", () => {
       workspaceIdentity: null,
       loadedWorkspacePath: null,
       loadedWorkspaceIdentity: null,
-      provider: ZCODE_AGENT_PROVIDER,
+      provider: ZODY_AGENT_PROVIDER,
       loadedProvider: null,
       skills: [],
       capability: null,
@@ -93,7 +93,7 @@ describe("refreshSharedSkillStoreForWorkspace", () => {
     expect(skillsService.list).toHaveBeenCalledWith({
       workspacePath,
       workspaceIdentity,
-      provider: ZCODE_AGENT_PROVIDER,
+      provider: ZODY_AGENT_PROVIDER,
     });
     expect(useSkillStore.getState().skills).toEqual([newSkill]);
   });

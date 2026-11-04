@@ -2,7 +2,7 @@
  * MCP 用户目录模块 - 类型和常量定义
  */
 
-import { ZCODE_DATA_ROOT_DIR_NAME, type CliMcpSource, type McpFileFormat } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME, type CliMcpSource, type McpFileFormat } from "@zody/shared";
 
 /**
  * MCP 配置键名类型
@@ -38,7 +38,7 @@ export const MCP_SOURCE_DESCRIPTORS: McpSourceDescriptor[] = [
   {
     source: "zcodeagentmcp",
     // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-    configDirSegments: [ZCODE_DATA_ROOT_DIR_NAME, "cli"],
+    configDirSegments: [ZODY_DATA_ROOT_DIR_NAME, "cli"],
     fileName: "config.json",
     format: "json",
     configKeyName: "mcp.servers",

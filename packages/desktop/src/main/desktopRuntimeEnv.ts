@@ -8,14 +8,14 @@ import { DEV_HELPER_APP_NAME, HELPER_APP_NAME } from "@zody/zody-cua/broker/help
 import {
   ZODY_APP_VERSION_ENV,
   ZODY_BUILD_COMMIT_ID_ENV,
-  ZCODE_AGENT_RUNTIME,
+  ZODY_AGENT_RUNTIME,
   ZODY_COMMIT,
   ZODY_DYNAMIC_WORKFLOW_MODE_ENV,
   ZODY_ENV,
   ZODY_PRODUCT_FLAVOR,
   ZODY_RUNTIME_ENV_KEY,
   ZODY_VERSION,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   buildZodyToolEnvPassthroughEnv,
   resolveRuntimeZodyEndpointOrigin,
   normalizeDynamicWorkflowMode,
@@ -93,14 +93,14 @@ export function resolveNormalCuaCandidateUiName(
 
 const candidateProfileRoot =
   candidateApplicationName !== undefined
-    ? join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "desktop", candidateApplicationName)
+    ? join(getDataBaseDir(), ZODY_DATA_ROOT_DIR_NAME, "desktop", candidateApplicationName)
     : undefined;
 export const runtimeUserDataPath =
   (candidateProfileRoot ? join(candidateProfileRoot, "user-data") : undefined) ??
   readRuntimeEnvOverride("ZODY_DESKTOP_USER_DATA_DIR") ??
   (shouldUseElectronDefaultUserDataPath
     ? undefined
-    : join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "desktop", runtimeApplicationName));
+    : join(getDataBaseDir(), ZODY_DATA_ROOT_DIR_NAME, "desktop", runtimeApplicationName));
 export const runtimeSessionDataPath =
   (candidateProfileRoot ? join(candidateProfileRoot, "session-data") : undefined) ??
   readRuntimeEnvOverride("ZODY_DESKTOP_SESSION_DATA_DIR") ??
@@ -338,7 +338,7 @@ export function resolveRemoteAssetDirs(
 }
 
 function resolveBundledZodyAgentBinaryPath(): string | undefined {
-  const runtime = ZCODE_AGENT_RUNTIME;
+  const runtime = ZODY_AGENT_RUNTIME;
   const entrySegments = runtime.resolveEntrySegments(process.platform);
   const platformKey = resolvePlatformKeyForPackagedApp();
   const candidates = [
@@ -502,7 +502,7 @@ export function buildHostProcessEnv(hostProcessLocalEnv: Record<string, string>)
             )
           ? rawInheritedEnv.ZODY_CUA_BUNDLED_HELPER_APP_PATH?.trim() ||
             join(
-              rawInheritedEnv.ZODY_HOME?.trim() || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME),
+              rawInheritedEnv.ZODY_HOME?.trim() || join(homedir(), ZODY_DATA_ROOT_DIR_NAME),
               "computer-use",
               "dev",
               DEV_HELPER_APP_NAME,

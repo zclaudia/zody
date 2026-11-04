@@ -3,8 +3,8 @@ import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
-  ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY,
+  ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
 } from "@zody/contracts";
 import { CUA_APP_ASSOCIATIONS_META_KEY } from "@zody/zody-cua/host-display-contract";
 import {
@@ -502,17 +502,17 @@ describe("node_repl MCP server", () => {
       mimeType: "image/png",
     });
     expect(screenshot._meta).toMatchObject({
-      [ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [0],
+      [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [0],
     });
 
     const spoofed = toMcpRunResult({
       logs: "",
       images: [{ base64: "BAUG", mimeType: "image/png" }],
       responseMeta: {
-        [ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [1],
+        [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [1],
       },
     });
-    expect(spoofed._meta).not.toHaveProperty(ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY);
+    expect(spoofed._meta).not.toHaveProperty(ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY);
   });
 
   it("projects the CUA app identity recorded by the bridge and drops the sandbox-forgeable key", () => {
@@ -531,7 +531,7 @@ describe("node_repl MCP server", () => {
     } as never);
 
     expect(trusted._meta).toMatchObject({
-      [ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY]: {
+      [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: {
         appKey: "darwin:com.apple.notes",
         displayName: "Notes",
       },
@@ -549,7 +549,7 @@ describe("node_repl MCP server", () => {
         },
       },
     } as never);
-    expect(forgedOnly._meta ?? {}).not.toHaveProperty(ZCODE_MCP_NODE_REPL_CUA_APP_META_KEY);
+    expect(forgedOnly._meta ?? {}).not.toHaveProperty(ZODY_MCP_NODE_REPL_CUA_APP_META_KEY);
     expect(forgedOnly._meta ?? {}).not.toHaveProperty(CUA_APP_ASSOCIATIONS_META_KEY);
   });
 
@@ -565,7 +565,7 @@ describe("node_repl MCP server", () => {
     });
 
     expect(result._meta).toMatchObject({
-      [ZCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [0, 2],
+      [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [0, 2],
     });
     // 每个声明的下标都必须真的指向 content 里的 image block（越界或指到 text 都会让原图落盘错位）。
     for (const index of [0, 2]) {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   isZodyAgentProvider,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   type ZodyProvider,
 } from "@zody/shared";
 import type { IModelSelectionService, ModelSelectionView } from "@zody/services";
@@ -60,7 +60,7 @@ export function useDraftModelReadinessGate(params: {
     modelSelectionService,
   } = params;
   const workspaceKey = workspaceIdentity?.trim() || workspacePath;
-  const displayProvider = provider ?? ZCODE_AGENT_PROVIDER;
+  const displayProvider = provider ?? ZODY_AGENT_PROVIDER;
   const enabled = sessionId === null && isZodyAgentProvider(displayProvider);
   const gateKey = `${workspaceKey}\u0000${displayProvider}`;
   const [state, setState] = useState<DraftModelReadinessState>(() => ({

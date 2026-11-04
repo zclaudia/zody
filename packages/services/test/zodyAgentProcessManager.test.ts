@@ -11,13 +11,13 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  ZCODE_AGENT_RUNTIME,
+  ZODY_AGENT_RUNTIME,
   ZODY_RUNTIME_ENV_KEY,
   hostResponseMessageSchema,
 } from "@zody/shared";
 import {
-  ZCODE_PROCESS_DIAGNOSTIC_PREFIX,
-  ZCODE_AGENT_LIFECYCLE_LOG_MARKER,
+  ZODY_PROCESS_DIAGNOSTIC_PREFIX,
+  ZODY_AGENT_LIFECYCLE_LOG_MARKER,
 } from "@zody/shared/process-diagnostic";
 import {
   buildE2EAgentCoverageEnv,
@@ -420,7 +420,7 @@ describe("resolveDefaultZodyAgentCommand", () => {
   const originalCommand = process.env.ZODY_AGENT_SERVER_COMMAND;
   const originalArgsJson = process.env.ZODY_AGENT_SERVER_ARGS_JSON;
   const originalCwdEnv = process.env.ZODY_AGENT_SERVER_CWD;
-  const originalBinaryEnv = process.env[ZCODE_AGENT_RUNTIME.binaryEnvVar];
+  const originalBinaryEnv = process.env[ZODY_AGENT_RUNTIME.binaryEnvVar];
   const originalNodeEnv = process.env.NODE_ENV;
   const originalRuntimeEnv = process.env[ZODY_RUNTIME_ENV_KEY];
   const originalBytecodeEnv = process.env.ZODY_DESKTOP_AGENT_BYTECODE;
@@ -449,7 +449,7 @@ describe("resolveDefaultZodyAgentCommand", () => {
     restoreEnv("ZODY_AGENT_SERVER_COMMAND", originalCommand);
     restoreEnv("ZODY_AGENT_SERVER_ARGS_JSON", originalArgsJson);
     restoreEnv("ZODY_AGENT_SERVER_CWD", originalCwdEnv);
-    restoreEnv(ZCODE_AGENT_RUNTIME.binaryEnvVar, originalBinaryEnv);
+    restoreEnv(ZODY_AGENT_RUNTIME.binaryEnvVar, originalBinaryEnv);
     restoreEnv("NODE_ENV", originalNodeEnv);
     restoreEnv(ZODY_RUNTIME_ENV_KEY, originalRuntimeEnv);
     restoreEnv("ZODY_DESKTOP_AGENT_BYTECODE", originalBytecodeEnv);
@@ -637,7 +637,7 @@ describe("resolveDefaultZodyAgentCommand", () => {
     const binaryPath = join(sandboxRoot, "zcode-agent");
     writeFileSync(binaryPath, "#!/bin/sh\necho zcode-agent\n");
 
-    process.env[ZCODE_AGENT_RUNTIME.binaryEnvVar] = binaryPath;
+    process.env[ZODY_AGENT_RUNTIME.binaryEnvVar] = binaryPath;
     process.chdir(sandboxRoot);
 
     const command = resolveDefaultZodyAgentCommand({
@@ -647,7 +647,7 @@ describe("resolveDefaultZodyAgentCommand", () => {
 
     expect(command).toEqual({
       command: binaryPath,
-      args: ZCODE_AGENT_RUNTIME.spawnArgs,
+      args: ZODY_AGENT_RUNTIME.spawnArgs,
       cwd: "/repo/workspace",
     });
   });
@@ -1826,7 +1826,7 @@ setInterval(() => {}, 1000);
       await vi.waitFor(() =>
         expect(errorSpy).toHaveBeenCalledWith(
           expect.any(String),
-          `ZCode agent process exited unexpectedly ${ZCODE_AGENT_LIFECYCLE_LOG_MARKER}`,
+          `ZCode agent process exited unexpectedly ${ZODY_AGENT_LIFECYCLE_LOG_MARKER}`,
           expect.objectContaining({
             workspaceKey: workspacePath,
             code: 1,
@@ -1939,7 +1939,7 @@ setInterval(() => {}, 1000);
         stack: "Error: boom\n    at run (C:\\repo\\cli.js:1:2)",
         occurredAt: Date.now(),
       };
-      const frame = ZCODE_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(diagnostic) + "\n";
+      const frame = ZODY_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(diagnostic) + "\n";
       const reporter = {
         onSpawn: vi.fn(),
         onExit: vi.fn(),

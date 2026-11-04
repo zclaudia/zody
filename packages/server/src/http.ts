@@ -35,7 +35,7 @@ import {
   ZODY_RENAME_GENERATION_HEADER,
   ZODY_RENAME_WEBSOCKET_PROTOCOL,
   checkRenameGeneration,
-  ZCODE_RPC_HOST_CAPABILITY_HEADER,
+  ZODY_RPC_HOST_CAPABILITY_HEADER,
   ZODY_VERSION,
   type ServerRemoteInfo,
   type ServerRemoteWorkspaceInfo,
@@ -402,7 +402,7 @@ export function createHttpServer(
     },
   }));
   app.use("/ws/host", async (c, next) => {
-    const capability = c.req.header(ZCODE_RPC_HOST_CAPABILITY_HEADER);
+    const capability = c.req.header(ZODY_RPC_HOST_CAPABILITY_HEADER);
     if (!hostCapabilities.consume(capability)) {
       return c.json({ error: "Invalid or expired host capability" }, 401);
     }

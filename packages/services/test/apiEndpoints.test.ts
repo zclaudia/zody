@@ -14,7 +14,7 @@ describe("ZCode API endpoints", () => {
     vi.stubEnv("ZODY_ENV", "test");
     vi.stubEnv("ZODY_BASE_URL", TEST_ZCODE_ORIGIN);
     vi.resetModules();
-    const { ZCODE_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
+    const { ZODY_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
     const { createNodeApiClient } = await import("../src/providers/api/nodeApiClient.js");
 
     const requests: Array<{ headers: Headers; method: string; url: string }> = [];
@@ -30,7 +30,7 @@ describe("ZCode API endpoints", () => {
       resolveZodyEndpointOrigin: () => TEST_ZCODE_ORIGIN,
     });
 
-    await client.request(ZCODE_CLIENT_SCENES_URL, { method: "GET" });
+    await client.request(ZODY_CLIENT_SCENES_URL, { method: "GET" });
 
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({
@@ -49,8 +49,8 @@ describe("ZCode API endpoints", () => {
     vi.stubEnv("ZODY_PRODUCTION_BASE_URL", "");
     vi.stubEnv("ZODY_TEST_BASE_URL", "");
     vi.resetModules();
-    const { ZCODE_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
+    const { ZODY_CLIENT_SCENES_URL } = await import("../src/providers/api/apiEndpoints.js");
 
-    expect(ZCODE_CLIENT_SCENES_URL).toBe("");
+    expect(ZODY_CLIENT_SCENES_URL).toBe("");
   });
 });

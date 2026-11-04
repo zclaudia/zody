@@ -6,8 +6,8 @@ import { basename, join, win32 } from "node:path";
 import { homedir } from "node:os";
 import {
   DATA_BASE_DIR_FORBIDDEN_WINDOWS_INSTALL_DIR_ERROR_CODE,
-  ZCODE_AGENT_RUNTIME,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_AGENT_RUNTIME,
+  ZODY_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 
 let _dataBaseDir: string | null = null;
@@ -48,7 +48,7 @@ export function getDataBaseDir(): string {
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 /** {dataBaseDir}/.zody */
 export function getZodyDataRootDir(): string {
-  return join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME);
+  return join(getDataBaseDir(), ZODY_DATA_ROOT_DIR_NAME);
 }
 
 /** 非项目对话共享的真实工作目录；默认 ~/.zody/workspace/default。 */
@@ -241,9 +241,9 @@ export function getLegacyDeletedTaskSessionSnapshotPath(
  * 避免同机不同工作区配置漂移。
  */
 export function getProviderWorkspaceConfigDir(): string {
-  return ZCODE_AGENT_RUNTIME.nativeConfigDir
-    ? join(getDataBaseDir(), ZCODE_AGENT_RUNTIME.nativeConfigDir)
-    : join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli");
+  return ZODY_AGENT_RUNTIME.nativeConfigDir
+    ? join(getDataBaseDir(), ZODY_AGENT_RUNTIME.nativeConfigDir)
+    : join(getDataBaseDir(), ZODY_DATA_ROOT_DIR_NAME, "cli");
 }
 
 /**
@@ -252,8 +252,8 @@ export function getProviderWorkspaceConfigDir(): string {
  * state must only live at the default homedir location.
  */
 export async function copyDataDirectory(oldBaseDir: string, newBaseDir: string): Promise<void> {
-  const oldDir = join(oldBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2");
-  const newDir = join(newBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2");
+  const oldDir = join(oldBaseDir, ZODY_DATA_ROOT_DIR_NAME, "v2");
+  const newDir = join(newBaseDir, ZODY_DATA_ROOT_DIR_NAME, "v2");
   await cp(oldDir, newDir, {
     recursive: true,
     force: false,

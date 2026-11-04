@@ -6,7 +6,7 @@
  */
 import {
   buildNativeSupplierKey,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   type ZodyApiRetryStatus,
   type ModelSelectionGhostReason,
   type ModelSelectionResolution,
@@ -482,7 +482,7 @@ export const DEFAULT_WORKSPACE_INIT_STATE: WorkspaceInitState = {
   attempts: 0,
 };
 
-export const FALLBACK_PROVIDER: ZodyProvider = ZCODE_AGENT_PROVIDER;
+export const FALLBACK_PROVIDER: ZodyProvider = ZODY_AGENT_PROVIDER;
 
 export const DEFAULT_TASK_UI_STATE: TaskUiState = {
   permissionRequest: null,

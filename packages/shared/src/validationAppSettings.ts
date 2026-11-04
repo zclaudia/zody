@@ -3,7 +3,7 @@ import { z } from "zod";
 import { REMOTE_ASSET_INSTALL_MODES } from "./remoteAssetInstallMode.js";
 import { isKnownRemoteResourcePackageId } from "./remoteResourcePackages.js";
 import { wslUserSchema } from "./wslUserValidation.js";
-import { ZCODE_ENABLED_AGENT_PROVIDERS } from "./zody-agent-policy.js";
+import { ZODY_ENABLED_AGENT_PROVIDERS } from "./zody-agent-policy.js";
 import { DYNAMIC_WORKFLOW_MODES } from "./dynamic-workflow-feature.js";
 import { normalizeZodyEndpointOrigin } from "./zodyEndpoint.js";
 import {
@@ -66,7 +66,7 @@ export const integratedTerminalShellSelectionSchema = z.discriminatedUnion("mode
 const enabledBuiltinAgentCliProvidersSchema = z
   // 兼容旧 settings：历史列表可能残留三方 CLI provider，解析后统一归一为 ZCode Agent。
   .array(z.enum(["claude", "opencode", "gemini", "codex", "glm"]))
-  .transform(() => [...ZCODE_ENABLED_AGENT_PROVIDERS]);
+  .transform(() => [...ZODY_ENABLED_AGENT_PROVIDERS]);
 const providerFamilyDomainSchema = z.enum(["zai", "bigmodel"]);
 
 export const postUpdateReleaseNotesPayloadSchema = z.object({
@@ -298,7 +298,7 @@ function migrateLegacyBuiltinAgentCliProviders(value: unknown): unknown {
   // 这里在 schema 入口统一归一到 ZCode Agent，让核心 provider 状态只有一个事实源。
   return {
     ...raw,
-    enabledBuiltinAgentCliProviders: [...ZCODE_ENABLED_AGENT_PROVIDERS],
+    enabledBuiltinAgentCliProviders: [...ZODY_ENABLED_AGENT_PROVIDERS],
   };
 }
 
@@ -535,7 +535,7 @@ const appSettingsObjectSchema = z.object({
   modelIoFullRetentionEnabled: z.boolean().default(false),
   dynamicWorkflowMode: dynamicWorkflowModeSettingSchema,
   enabledBuiltinAgentCliProviders: enabledBuiltinAgentCliProvidersSchema.default([
-    ...ZCODE_ENABLED_AGENT_PROVIDERS,
+    ...ZODY_ENABLED_AGENT_PROVIDERS,
   ]),
   startPlanRecommendationDismissed: z.boolean().default(false),
   // fork（F4.11）：providerFamily* 是官方账号时代的存量设置；官方账号链路删除后运行时不读取，

@@ -1,8 +1,8 @@
 import {
   getCapturedZodyCuaBrokerCredentials,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
   ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  ZCODE_PLUGIN_ID_ENV_KEY,
+  ZODY_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 import { registerMcpTools, traceContextToLogContext } from "../deps.js";
 import type { McpConnectionSnapshot, McpServerConfig, TraceContext } from "../deps.js";
@@ -27,8 +27,8 @@ export function computeOfficialCuaServerNames(
     if (!trustedServerNames.has(name)) continue;
     if (config.type !== "stdio") continue;
     if (
-      config.env?.[ZCODE_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() !==
-        ZCODE_CUA_OFFICIAL_PLUGIN_ID ||
+      config.env?.[ZODY_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() !==
+        ZODY_CUA_OFFICIAL_PLUGIN_ID ||
       config.env?.[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY]?.trim() !== expectedAuthority
     ) {
       continue;

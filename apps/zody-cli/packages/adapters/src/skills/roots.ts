@@ -2,14 +2,14 @@ import { stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import type { SkillRoot, SkillSource } from "@zody/contracts";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { resolveProjectResourceRoots } from "@zody/shared/zody-paths";
 
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
 const PRIORITY_STEP = 10;
 const SKILLS_DIR = "skills";
-const ZCODE_HOME_DIR = ZCODE_DATA_ROOT_DIR_NAME;
+const ZODY_HOME_DIR = ZODY_DATA_ROOT_DIR_NAME;
 const AGENTS_DIR = ".agents";
 
 export interface SkillRootResolutionOptions {
@@ -102,7 +102,7 @@ function skillRootsForBase(
   // 同一级别仍保持原生目录优先，后续同名按 root 顺序解析。
   const nativeRoots =
     scope === "user"
-      ? [join(baseDirectory, ZCODE_HOME_DIR, SKILLS_DIR)]
+      ? [join(baseDirectory, ZODY_HOME_DIR, SKILLS_DIR)]
       : resolveProjectResourceRoots(baseDirectory, SKILLS_DIR).readPaths;
   return [
     ...nativeRoots.map((path) => root(path, scope, "zcode", nextPriority())),

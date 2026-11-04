@@ -2,14 +2,14 @@ import { stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import type { CustomCommandRoot, CustomCommandSource } from "@zody/contracts";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { resolveProjectResourceRoots } from "@zody/shared/zody-paths";
 
 const COMMANDS_DIR = "commands";
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
 const PRIORITY_STEP = 10;
-const ZCODE_HOME_DIR = ZCODE_DATA_ROOT_DIR_NAME;
+const ZODY_HOME_DIR = ZODY_DATA_ROOT_DIR_NAME;
 const AGENTS_DIR = ".agents";
 
 export interface CustomCommandRootResolutionOptions {
@@ -102,7 +102,7 @@ function commandRootsForBase(
   // 同一级别原生目录先扫描，命令同名时仍按“先到先赢”处理。
   const nativeRoots =
     scope === "user"
-      ? [join(baseDirectory, ZCODE_HOME_DIR, COMMANDS_DIR)]
+      ? [join(baseDirectory, ZODY_HOME_DIR, COMMANDS_DIR)]
       : resolveProjectResourceRoots(baseDirectory, COMMANDS_DIR).readPaths;
   return [
     ...nativeRoots.map((path) => root(path, scope, "zcode", nextPriority())),

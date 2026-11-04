@@ -1,7 +1,7 @@
 import { zodyProcessResourceSampleSchema } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import {
-  ZCODE_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS,
+  ZODY_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS,
   createZodyProcessResourceSampler,
   type ProcessMemoryUsageSnapshot,
 } from "../src/process-resource-sampler.js";
@@ -38,7 +38,7 @@ describe("createZodyProcessResourceSampler", () => {
       timer: {
         clearInterval: vi.fn(),
         setInterval(callback, intervalMs) {
-          expect(intervalMs).toBe(ZCODE_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS);
+          expect(intervalMs).toBe(ZODY_PROCESS_RESOURCE_SAMPLE_INTERVAL_MS);
           scheduled = callback;
           return { unref };
         },

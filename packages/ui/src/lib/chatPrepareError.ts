@@ -1,6 +1,6 @@
 import {
   normalizeUnknownError,
-  ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
+  ZODY_AGENT_PROVIDER_NOT_READY_CODE,
   type ZodyProvider,
   type ZodyError,
 } from "@zody/shared";
@@ -23,7 +23,7 @@ export function buildModelConfigMissingUiError(): ModelConfigMissingUiError {
 
 export function isProviderNotReadyError(error: unknown): boolean {
   return (
-    normalizeUnknownError(error).code === ZCODE_AGENT_PROVIDER_NOT_READY_CODE
+    normalizeUnknownError(error).code === ZODY_AGENT_PROVIDER_NOT_READY_CODE
   );
 }
 

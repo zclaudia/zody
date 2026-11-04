@@ -31,7 +31,7 @@ import {
   resolveWorkspaceKey,
   resolveZodyVisibleSessionTitle,
   textFromZodyMessageParts,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   zodyBackgroundTaskNotificationToolUpdateStatus,
   appendZodyStreamingToolInputDelta,
   buildZodyStreamingToolInputPreview,
@@ -111,7 +111,7 @@ import {
   type ZodyUserInputRequestParams,
   type ZodyUserInputResponse,
   type ZodyAgentMcpServer,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
 } from "@zody/shared";
 import type {
   ZodyTaskListQuery,
@@ -211,7 +211,7 @@ type ZodyTerminalStreamEvent =
   | Extract<ZodyStreamEvent, { type: "task_complete" }>
   | Extract<ZodyStreamEvent, { type: "task_error" }>;
 
-const GLM_PROVIDER: ZodyProvider = ZCODE_AGENT_PROVIDER;
+const GLM_PROVIDER: ZodyProvider = ZODY_AGENT_PROVIDER;
 const EMPTY_SLASH_COMMANDS: ZodySlashCommand[] = [];
 const logger = createServiceLogger("zody-task-service");
 const ASK_USER_QUESTION_TOOL_NAME = "AskUserQuestion";
@@ -250,7 +250,7 @@ function formatZodyAgentLogDate(now: Date): string {
 function resolveZodyAgentCurrentLogFilePath(now = new Date()): string {
   const configuredLogDir = process.env.ZODY_LOG_DIR?.trim();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  const logDir = configuredLogDir || join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "log");
+  const logDir = configuredLogDir || join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "log");
   return join(logDir, `zody-${formatZodyAgentLogDate(now)}.jsonl`);
 }
 

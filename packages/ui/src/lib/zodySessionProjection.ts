@@ -24,7 +24,7 @@ import {
   formatModelPickerValue as formatSharedModelSelection,
   resolveZodyVisibleSessionTitle,
   textFromZodyMessageParts,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   zodyBackgroundTaskNotificationToolUpdateStatus,
   appendZodyStreamingToolInputDelta,
   buildZodyStreamingToolInputPreview,
@@ -99,7 +99,7 @@ const STREAMING_TOOL_INPUT_INFO_LOG_LINE_BUCKET = 50;
 const streamingToolInputProjectionLogBuckets = new Map<string, number>();
 const COMPACTION_PROJECTION_DIAG_LIMIT = 200;
 const compactionProjectionDiagSignatures = new Set<string>();
-const ZCODE_AGENT_MODE_OPTIONS = getSharedAgentAvailableModes();
+const ZODY_AGENT_MODE_OPTIONS = getSharedAgentAvailableModes();
 
 export interface ZodySessionEventProjectionState extends ZodyToolProjectionMemory {
   activePromptInputIdBySession?: Map<string, InputId>;
@@ -796,7 +796,7 @@ export function zodySessionSnapshotToTaskMeta(snapshot: ZodySessionStateSnapshot
     mode: fromZodyMode(snapshot.session.mode),
     model: formatModelPickerValue(resolveTaskMetaModelSelectionFromSnapshot(snapshot)),
     thoughtLevel: snapshot.settings.thoughtLevel.current,
-    provider: ZCODE_AGENT_PROVIDER,
+    provider: ZODY_AGENT_PROVIDER,
     status: deriveZodyTaskStatusFromSessionSnapshot(snapshot),
     lastError: snapshot.projection.lastError
       ? {
@@ -3327,7 +3327,7 @@ function fromZodyMode(mode: ZodySessionMode): ZodyTaskMode {
 }
 
 function getZodyAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"]> {
-  return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({
+  return ZODY_AGENT_MODE_OPTIONS.map((mode) => ({
     value: mode.id,
     name: mode.name,
     description: mode.description,
@@ -3335,7 +3335,7 @@ function getZodyAgentModeSelectOptions(): NonNullable<ZodyConfigOption["options"
 }
 
 function getZodyAgentAvailableModes(): ZodyTaskModeInfo[] {
-  return ZCODE_AGENT_MODE_OPTIONS.map((mode) => ({ ...mode }));
+  return ZODY_AGENT_MODE_OPTIONS.map((mode) => ({ ...mode }));
 }
 
 function fromZodyGoal(goal: unknown): ZodyTaskGoal {

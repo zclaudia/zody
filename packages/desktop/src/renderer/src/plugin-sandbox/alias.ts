@@ -1,5 +1,5 @@
 import { App, LATEST_PROTOCOL_VERSION, PostMessageTransport } from "@modelcontextprotocol/ext-apps";
-import { ZCODE_GLOBALS_EVENT, createPluginSandboxAliasRuntime } from "./aliasRuntime.js";
+import { ZODY_GLOBALS_EVENT, createPluginSandboxAliasRuntime } from "./aliasRuntime.js";
 import { OPENAI_SET_GLOBALS_EVENT } from "./openaiAlias.js";
 
 /**
@@ -23,7 +23,7 @@ const runtime = createPluginSandboxAliasRuntime({
   transport: new PostMessageTransport(window.parent, window.parent),
   protocolVersion: LATEST_PROTOCOL_VERSION,
   onChange: (globals) => {
-    window.dispatchEvent(new CustomEvent(ZCODE_GLOBALS_EVENT));
+    window.dispatchEvent(new CustomEvent(ZODY_GLOBALS_EVENT));
     window.dispatchEvent(new CustomEvent(OPENAI_SET_GLOBALS_EVENT, { detail: { globals } }));
   },
 });

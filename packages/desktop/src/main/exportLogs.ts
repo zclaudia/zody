@@ -25,7 +25,7 @@ import {
   getExportLogStageDir as getDefaultExportLogStageDir,
   getFeedbackLogArchiveDir as getDefaultFeedbackLogArchiveDir,
 } from "@zody/services/node";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { createAboutSnapshot, formatAboutDetail, readBuildMetadata } from "./about.js";
 import { logger } from "./logger.js";
 
@@ -35,7 +35,7 @@ function getZodyDataDir() {
 
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
 function getZodyCliDir() {
-  return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli");
+  return join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli");
 }
 
 function getZodyCliLogDir() {
@@ -48,7 +48,7 @@ function getZodyCliLogDir() {
  * helperExitLogPathFor）。同目录下还有 `.tokens` broker 凭据，收集时必须按文件名白名单。
  */
 function getCuaHelperRunDir() {
-  return join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "computer-use", "run");
+  return join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "computer-use", "run");
 }
 
 function isCuaHelperDiagnosticFileName(fileName: string): boolean {
@@ -766,7 +766,7 @@ function shouldApplyLogExportRetention(archivePath: string): boolean {
   const normalizedArchivePath = normalizeArchivePath(archivePath);
   if (
     normalizedArchivePath.startsWith("logs/") ||
-    normalizedArchivePath.startsWith(`${ZCODE_DATA_ROOT_DIR_NAME}/cli/log/`)
+    normalizedArchivePath.startsWith(`${ZODY_DATA_ROOT_DIR_NAME}/cli/log/`)
   ) {
     return true;
   }
@@ -967,7 +967,7 @@ export async function createLogArchiveArtifacts(
   // 如果导出日志只扫描 v2，定位 agent CLI 启动、协议或崩溃问题时会缺少最关键的原生侧日志。
   await collectLogArchiveFilesFromDirectory(
     zodyCliLogDir,
-    posix.join(ZCODE_DATA_ROOT_DIR_NAME, "cli", "log"),
+    posix.join(ZODY_DATA_ROOT_DIR_NAME, "cli", "log"),
     visitedDirs,
     files,
   );
@@ -978,12 +978,12 @@ export async function createLogArchiveArtifacts(
   // 二者都不在 ~/.zody/cli/log 下，需要额外收集才能完整还原现场。
   await collectLogArchiveFile(
     join(zodyCliDir, "config.json"),
-    posix.join(ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json"),
+    posix.join(ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json"),
     files,
   );
   await collectLogArchiveFilesFromDirectory(
     join(zodyCliDir, "rollout"),
-    posix.join(ZCODE_DATA_ROOT_DIR_NAME, "cli", "rollout"),
+    posix.join(ZODY_DATA_ROOT_DIR_NAME, "cli", "rollout"),
     visitedDirs,
     files,
   );
@@ -995,7 +995,7 @@ export async function createLogArchiveArtifacts(
   // 同目录下有 .tokens broker 凭据，因此按文件名白名单只收 *.exit.log，不递归该目录。
   await collectLogArchiveFilesByName(
     getCuaHelperRunDir(),
-    posix.join(ZCODE_DATA_ROOT_DIR_NAME, "computer-use", "run"),
+    posix.join(ZODY_DATA_ROOT_DIR_NAME, "computer-use", "run"),
     isCuaHelperDiagnosticFileName,
     files,
   );
@@ -1148,22 +1148,22 @@ export async function createFeedbackLogArchiveFromExportLogs(
       { directory: join(sourceDir, "logs"), archivePrefix: "logs" },
       {
         directory: getZodyCliLogDir(),
-        archivePrefix: `${ZCODE_DATA_ROOT_DIR_NAME}/cli/log`,
+        archivePrefix: `${ZODY_DATA_ROOT_DIR_NAME}/cli/log`,
       },
       {
         directory: getZodyCliDir(),
-        archivePrefix: `${ZCODE_DATA_ROOT_DIR_NAME}/cli`,
+        archivePrefix: `${ZODY_DATA_ROOT_DIR_NAME}/cli`,
         includeFileNames: ["config.json"],
         onlyCurrentDay: false,
         contentPolicy: "cli-config",
       },
       {
         directory: join(getZodyCliDir(), "rollout"),
-        archivePrefix: `${ZCODE_DATA_ROOT_DIR_NAME}/cli/rollout`,
+        archivePrefix: `${ZODY_DATA_ROOT_DIR_NAME}/cli/rollout`,
       },
       {
         directory: getCuaHelperRunDir(),
-        archivePrefix: `${ZCODE_DATA_ROOT_DIR_NAME}/computer-use/run`,
+        archivePrefix: `${ZODY_DATA_ROOT_DIR_NAME}/computer-use/run`,
         exitLogsOnly: true,
       },
     ],

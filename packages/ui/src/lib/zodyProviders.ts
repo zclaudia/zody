@@ -1,13 +1,13 @@
 import {
-  ZCODE_AGENT_PROVIDER,
-  ZCODE_AGENT_PROVIDER_LABEL,
+  ZODY_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER_LABEL,
   type ZodyProvider,
 } from "@zody/shared";
 
-export const ZCODE_AGENT_PROVIDERS: ZodyProvider[] = [ZCODE_AGENT_PROVIDER];
+export const ZODY_AGENT_PROVIDERS: ZodyProvider[] = [ZODY_AGENT_PROVIDER];
 
-export const ZCODE_AGENT_PROVIDER_LABELS: Record<ZodyProvider, string> = {
-  glm: ZCODE_AGENT_PROVIDER_LABEL,
+export const ZODY_AGENT_PROVIDER_LABELS: Record<ZodyProvider, string> = {
+  glm: ZODY_AGENT_PROVIDER_LABEL,
 };
 
 export function supportsZodySessionFork(provider: ZodyProvider): boolean {

@@ -1,7 +1,7 @@
 /* eslint-disable max-lines -- 开发态 agent 部署包含本地打包、远端 owner staging 与 wrapper 安装，后续独立拆分上传事务。 */
 import {
-  ZCODE_AGENT_PROVIDER,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_AGENT_PROVIDER,
+  ZODY_DATA_ROOT_DIR_NAME,
   resolveZodyRuntimeEnv,
 } from "@zody/shared";
 import { createHash, randomUUID } from "node:crypto";
@@ -256,18 +256,18 @@ async function shouldSkipDevelopmentZodyAgentDeploy(params: {
     await waitForClose(
       await params.backend.exec(
         // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-        `"\${ZODY_SERVER_RUNTIME_ROOT:-$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server}/node" -e ${quotePosixShellArg(verifyBundleScript)} ${quotePosixPathArg(params.remoteBundlePath)} ${quotePosixShellArg(params.localBundleSha256)}`,
+        `"\${ZODY_SERVER_RUNTIME_ROOT:-$HOME/${ZODY_DATA_ROOT_DIR_NAME}/server}/node" -e ${quotePosixShellArg(verifyBundleScript)} ${quotePosixPathArg(params.remoteBundlePath)} ${quotePosixShellArg(params.localBundleSha256)}`,
       ),
     );
   } catch {
     params.loggers.logWarn(
-      `[zcode-agent-deploy] ${ZCODE_AGENT_PROVIDER}: 远端 bundle SHA 不匹配或无法校验，重新上传`,
+      `[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 远端 bundle SHA 不匹配或无法校验，重新上传`,
     );
     return false;
   }
 
   params.loggers.log(
-    `[zcode-agent-deploy] ${ZCODE_AGENT_PROVIDER}: 开发态 zody.cjs 未变化，跳过`,
+    `[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 开发态 zody.cjs 未变化，跳过`,
   );
   return true;
 }
@@ -333,11 +333,11 @@ async function uploadDevelopmentOfficialPluginPackages(params: {
         await waitForClose(cleanupStream);
       } catch (error) {
         params.loggers.logWarn(
-          `[zcode-agent-deploy] ${ZCODE_AGENT_PROVIDER}: 清理 owner staging 失败 (${ownerSuffix}): ${String(error)}`,
+          `[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 清理 owner staging 失败 (${ownerSuffix}): ${String(error)}`,
         );
       }
     };
-    params.loggers.log(`[zcode-agent-deploy] ${ZCODE_AGENT_PROVIDER}: 开发态上传官方插件资源`);
+    params.loggers.log(`[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 开发态上传官方插件资源`);
     try {
       await params.backend.upload(archivePath, remoteArchivePath);
       await repairLegacyRemoteOfficialPluginDirectoryPermissions({
@@ -420,7 +420,7 @@ export async function deployDevelopmentZodyAgentRuntime(
   // 本地修改 apps/zody-cli 后，远端测试仍运行滞后的发布包。这里改为上传 dev 启动时刚构建的
   // dist/zody.cjs，并用远端已部署的 node 包一层 wrapper 启动，保证 agent 仍运行在目标机器内。
   loggers.log(
-    `[zcode-agent-deploy] ${ZCODE_AGENT_PROVIDER}: 开发态上传本地 zody.cjs ${devVersion.slice(0, 12)}`,
+    `[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 开发态上传本地 zody.cjs ${devVersion.slice(0, 12)}`,
   );
   const mkdirStream = await backend.exec(`mkdir -p ${quotePosixPathArg(params.remoteProviderDir)}`);
   await waitForClose(mkdirStream);
@@ -463,7 +463,7 @@ export async function deployDevelopmentZodyAgentRuntime(
   }
   await waitForClose(markerStream);
   loggers.log(
-    `[zcode-agent-deploy] ${ZCODE_AGENT_PROVIDER}: 开发态部署完成 ${devVersion.slice(0, 12)}`,
+    `[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 开发态部署完成 ${devVersion.slice(0, 12)}`,
   );
   return true;
 }

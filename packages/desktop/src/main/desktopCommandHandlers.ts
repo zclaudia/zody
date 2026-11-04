@@ -10,7 +10,7 @@ import {
   PlatformChannels,
   resolveZodyEndpointOrigin,
   ZODY_ENV,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   type AppSettings,
   type DesktopCommandId,
   type HelpAppConfig,
@@ -37,8 +37,8 @@ import { openResourceManager } from "./resourceManagerWindow.js";
 
 export const HELP_TOGGLE_DEV_TOOLS_MENU_ID = "help.toggle-dev-tools";
 export const HELP_TOGGLE_ZCODE_STDIO_TAP_MENU_ID = "help.toggle-zcode-stdio-tap";
-const ZCODE_ENDPOINT_PROMPT_WIDTH = 460;
-const ZCODE_ENDPOINT_PROMPT_HEIGHT = 210;
+const ZODY_ENDPOINT_PROMPT_WIDTH = 460;
+const ZODY_ENDPOINT_PROMPT_HEIGHT = 210;
 
 function resolveTargetWindow(senderWindow?: BrowserWindow | null) {
   if (senderWindow && !senderWindow.isDestroyed()) {
@@ -90,7 +90,7 @@ async function clearAllDataAndRelaunch(options: {
     title: "Clear All Data",
     message: "确定要清除所有数据吗？",
     // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-    detail: `将删除 ~/${ZCODE_DATA_ROOT_DIR_NAME}/v2（配置、凭据、日志）和浏览器缓存（localStorage）。操作不可恢复，清除后应用将自动重启。`,
+    detail: `将删除 ~/${ZODY_DATA_ROOT_DIR_NAME}/v2（配置、凭据、日志）和浏览器缓存（localStorage）。操作不可恢复，清除后应用将自动重启。`,
   });
   if (response !== 1) {
     return;
@@ -100,10 +100,10 @@ async function clearAllDataAndRelaunch(options: {
   const { rm } = await import("node:fs/promises");
   try {
     await rm(options.credentialsDir, { recursive: true, force: true });
-    options.logger.info(`[clear-all-data] deleted ~/${ZCODE_DATA_ROOT_DIR_NAME}/v2`);
+    options.logger.info(`[clear-all-data] deleted ~/${ZODY_DATA_ROOT_DIR_NAME}/v2`);
   } catch (error) {
     options.logger.error(
-      `[clear-all-data] failed to delete ~/${ZCODE_DATA_ROOT_DIR_NAME}/v2:`,
+      `[clear-all-data] failed to delete ~/${ZODY_DATA_ROOT_DIR_NAME}/v2:`,
       error,
     );
   }
@@ -272,8 +272,8 @@ function showZodyEndpointPromptWindow(options: {
   return new Promise((resolve) => {
     let settled = false;
     const promptWindow = new BrowserWindow({
-      width: ZCODE_ENDPOINT_PROMPT_WIDTH,
-      height: ZCODE_ENDPOINT_PROMPT_HEIGHT,
+      width: ZODY_ENDPOINT_PROMPT_WIDTH,
+      height: ZODY_ENDPOINT_PROMPT_HEIGHT,
       parent: options.parentWindow,
       modal: Boolean(options.parentWindow),
       resizable: false,

@@ -3,7 +3,7 @@ import {
   isOpenCodeRuntimeCrashError,
   isZodyFileLockTimeoutError,
   normalizeUnknownError,
-  ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE,
+  ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE,
 } from "../src/errors.js";
 
 describe("normalizeUnknownError", () => {
@@ -48,10 +48,10 @@ describe("isOpenCodeRuntimeCrashError", () => {
 
 describe("isZodyFileLockTimeoutError", () => {
   it("matches direct and RPC-wrapped timeout codes", () => {
-    expect(isZodyFileLockTimeoutError({ code: ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE })).toBe(true);
+    expect(isZodyFileLockTimeoutError({ code: ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE })).toBe(true);
     expect(
       isZodyFileLockTimeoutError({
-        error: { code: ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE, message: "lock timeout" },
+        error: { code: ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE, message: "lock timeout" },
       }),
     ).toBe(true);
   });

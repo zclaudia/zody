@@ -1,11 +1,11 @@
 import type { IRemoteBackend, RemoteUploadOptions } from "@zody/server/remote";
 import { quotePosixPathArg } from "@zody/server/remote/posixShell.js";
-import { ZCODE_DATA_ROOT_DIR_NAME, type TraceId, type ZodyPromptAttachment } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME, type TraceId, type ZodyPromptAttachment } from "@zody/shared";
 import { randomUUID } from "node:crypto";
 
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-export const REMOTE_PROMPT_ATTACHMENT_ROOT = `~/${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
-const REMOTE_PROMPT_ATTACHMENT_RELATIVE_ROOT = `${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
+export const REMOTE_PROMPT_ATTACHMENT_ROOT = `~/${ZODY_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
+const REMOTE_PROMPT_ATTACHMENT_RELATIVE_ROOT = `${ZODY_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
 
 export interface RemotePromptAttachmentMaterializeInput {
   taskId?: string;

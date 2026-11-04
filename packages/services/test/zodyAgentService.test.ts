@@ -11,13 +11,13 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+  ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
   type ZodySessionRuntimePreferencesScope,
 } from "@zody/shared";
 import { createZodyAgentService } from "../src/zody-agent/zodyAgentService.js";
 import { ZodyAgentProcessManager } from "../src/zody-agent/zodyAgentProcessManager.js";
 import type { ZodyProtocolClient } from "../src/zody-agent/zodyProtocolClient.js";
-import { ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zodyAgentErrors.js";
+import { ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE } from "../src/zody-agent/zodyAgentErrors.js";
 import type { ZodyAgentServiceEvent } from "../src/zody-agent/zodyAgent.js";
 import { getTasksIndexDatabasePath, setDataBaseDir } from "../src/paths.js";
 
@@ -2249,7 +2249,7 @@ describe("createZodyAgentService", () => {
       const createPromise = service.createSession({ workspacePath });
       await requestSeen;
 
-      await vi.advanceTimersByTimeAsync(ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS);
+      await vi.advanceTimersByTimeAsync(ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS);
       await createPromise;
 
       const response = readFileSync(logPath, "utf8")
@@ -2266,7 +2266,7 @@ describe("createZodyAgentService", () => {
       expect(response?.error).toEqual({
         code: -32022,
         data: {
-          timeoutMs: ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+          timeoutMs: ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
         },
         message: "Session runtime preferences request timed out",
       });
@@ -2963,7 +2963,7 @@ describe("createZodyAgentService", () => {
           ],
         }),
       ).rejects.toMatchObject({
-        code: ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
+        code: ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
         name: "ZCodeAgentMcpStatusModeUnsupportedError",
       });
     } finally {

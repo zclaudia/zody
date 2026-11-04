@@ -581,9 +581,9 @@ export const InternalChannels = {
 } as const;
 
 /** @deprecated `/ws` 已忽略该头；保留常量仅供旧客户端兼容。 */
-export const ZCODE_RPC_CLIENT_MODE_HEADER = "x-zody-rpc-client-mode";
+export const ZODY_RPC_CLIENT_MODE_HEADER = "x-zody-rpc-client-mode";
 /** desktop 先经受保护 HTTP endpoint 申请，再在 `/ws/host` 握手时一次性消费。 */
-export const ZCODE_RPC_HOST_CAPABILITY_HEADER = "x-zody-rpc-host-capability";
+export const ZODY_RPC_HOST_CAPABILITY_HEADER = "x-zody-rpc-host-capability";
 
 // ============================================================================
 // 进程间消息类型 —— main ↔ host process 之间的 postMessage

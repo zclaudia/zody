@@ -17,7 +17,7 @@ import {
   type WorkflowTaskSnapshot,
   type WorkflowTaskStatus,
 } from "@zody/contracts";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { resolveProjectResourceRoots } from "@zody/shared/zody-paths";
 import { readWorkflowScriptDocument } from "./script-workflow-meta.js";
 import type { ScriptWorkflowRuntime } from "./script-workflow-runtime.js";
@@ -323,7 +323,7 @@ async function resolveNamedWorkflowPath(
     ...resolveProjectResourceRoots(deps.workingDirectory, "workflows").readPaths.map((root) =>
       join(root, fileName),
     ),
-    join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "workflows", fileName),
+    join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "workflows", fileName),
   ];
   const builtIn = BUILTIN_WORKFLOW_ALLOWLIST.get(name);
   if (builtIn) candidates.push(builtIn);

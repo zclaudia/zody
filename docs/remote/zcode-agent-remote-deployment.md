@@ -54,7 +54,7 @@ Remote server base path:
         └── ugrep
 ```
 
-The root is `~/<ZCODE_DATA_ROOT_DIR_NAME>/server`, currently `~/.zody/server/` (`REMOTE_BASE` in
+The root is `~/<ZODY_DATA_ROOT_DIR_NAME>/server`, currently `~/.zody/server/` (`REMOTE_BASE` in
 `packages/server/src/remote/deployShared.ts`). File names inside it (`zody-server.cjs`, `zody.cjs`,
 `zcode-agent`) are internal artifact names and stay unchanged.
 

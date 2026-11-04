@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ZCODE_AGENT_PROVIDER } from "@zody/shared";
+import { ZODY_AGENT_PROVIDER } from "@zody/shared";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
@@ -80,7 +80,7 @@ export function usePluginCreator(
           resolution.services.skillsService.list({
             workspacePath: target.workspacePath,
             workspaceIdentity: target.workspaceIdentity,
-            provider: ZCODE_AGENT_PROVIDER,
+            provider: ZODY_AGENT_PROVIDER,
           }),
         isCurrent,
       );

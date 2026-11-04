@@ -1,13 +1,13 @@
 import {
-  ZCODE_AGENT_PROVIDER,
-  ZCODE_COMMAND_AGENT_SOURCES,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_AGENT_PROVIDER,
+  ZODY_COMMAND_AGENT_SOURCES,
+  ZODY_DATA_ROOT_DIR_NAME,
   type ZodyProvider,
   type CommandAgentSource,
 } from "@zody/shared";
 
 export const COMMAND_AGENT_SOURCES = [
-  ...ZCODE_COMMAND_AGENT_SOURCES,
+  ...ZODY_COMMAND_AGENT_SOURCES,
 ] as const satisfies readonly CommandAgentSource[];
 
 export const COMMAND_AGENT_SOURCE_META: Record<
@@ -21,7 +21,7 @@ export const COMMAND_AGENT_SOURCE_META: Record<
   zcodeAgent: {
     labelId: "settings.commands.source.zcodeAgent",
     // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-    pathHint: `~/${ZCODE_DATA_ROOT_DIR_NAME}/commands`,
-    provider: ZCODE_AGENT_PROVIDER,
+    pathHint: `~/${ZODY_DATA_ROOT_DIR_NAME}/commands`,
+    provider: ZODY_AGENT_PROVIDER,
   },
 };

@@ -1,4 +1,4 @@
-import { ZCODE_DATA_ROOT_DIR_NAME } from "./dataDir.js";
+import { ZODY_DATA_ROOT_DIR_NAME } from "./dataDir.js";
 
 export type ZodyAgentBinaryKind = "native-binary";
 
@@ -25,14 +25,14 @@ export function resolvePlatformBinaryName(binaryName: string, platform: string):
   return platform === "win32" ? `${binaryName}.exe` : binaryName;
 }
 
-export const ZCODE_AGENT_RUNTIME: ZodyAgentRuntimeDescriptor = {
+export const ZODY_AGENT_RUNTIME: ZodyAgentRuntimeDescriptor = {
   binaryKind: "native-binary",
   binaryEnvVar: "GLM_BINARY_PATH",
   bundledResourceDir: "glm",
   version: "0.13.3",
   spawnArgs: ["app-server", "--stdio"],
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  nativeConfigDir: `${ZCODE_DATA_ROOT_DIR_NAME}/cli`,
+  nativeConfigDir: `${ZODY_DATA_ROOT_DIR_NAME}/cli`,
   nativeConfigFileName: "config.json",
   missingBinaryMessage:
     "[Zody Agent] glm binary 未找到，请设置 ZODY_AGENT_WORKDIR、GLM_BINARY_PATH 或先准备 GLM 运行时资源",
@@ -44,5 +44,5 @@ export const ZCODE_AGENT_RUNTIME: ZodyAgentRuntimeDescriptor = {
 };
 
 export function getZodyAgentRuntime(): ZodyAgentRuntimeDescriptor {
-  return ZCODE_AGENT_RUNTIME;
+  return ZODY_AGENT_RUNTIME;
 }

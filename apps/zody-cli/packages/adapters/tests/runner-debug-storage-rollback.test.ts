@@ -6,6 +6,6 @@ describe("runner debug storage rollback", () => {
     const source = await readFile(new URL("../src/model/runner-debug.ts", import.meta.url), "utf8");
 
     expect(source).not.toContain("zcode-storage-root");
-    expect(source).toContain('join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "cli"');
+    expect(source).toContain('join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "cli"');
   });
 });

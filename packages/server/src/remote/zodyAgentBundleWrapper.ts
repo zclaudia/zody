@@ -6,7 +6,7 @@
 // 这样 provider runtime resolver 不需要区分原生/JS，照旧找 zcode-agent 这个可执行文件即可。
 // 开发态与生产态共用同一份 wrapper 语义。
 
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 
 export const REMOTE_AGENT_BUNDLE_NAME = "zody.cjs";
 
@@ -15,8 +15,8 @@ export function buildRemoteAgentBundleWrapper(runtimeResourceDir: string): strin
     "#!/bin/sh",
     "set -eu",
     // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-    `runtime_root="\${ZODY_SERVER_RUNTIME_ROOT:-$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server}"`,
-    `exec "$runtime_root/node" "$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server/agents/${runtimeResourceDir}/${REMOTE_AGENT_BUNDLE_NAME}" "$@"`,
+    `runtime_root="\${ZODY_SERVER_RUNTIME_ROOT:-$HOME/${ZODY_DATA_ROOT_DIR_NAME}/server}"`,
+    `exec "$runtime_root/node" "$HOME/${ZODY_DATA_ROOT_DIR_NAME}/server/agents/${runtimeResourceDir}/${REMOTE_AGENT_BUNDLE_NAME}" "$@"`,
     "",
   ].join("\n");
 }

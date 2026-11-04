@@ -35,10 +35,10 @@ import type {
 } from "@zody/shared";
 import {
   resolveWorkspaceKey,
-  ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+  ZODY_CUA_OFFICIAL_MCP_NAMESPACE_NAME,
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
   ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY,
-  ZCODE_PLUGIN_ID_ENV_KEY,
+  ZODY_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 
 const tempDirs: string[] = [];
@@ -947,11 +947,11 @@ describe("ZCode legacy task compat task index", () => {
       provider: "glm",
       mcpServers: [
         {
-          name: ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME,
+          name: ZODY_CUA_OFFICIAL_MCP_NAMESPACE_NAME,
           command: "uvx",
           args: ["zcode-cua"],
           env: [
-            { name: ZCODE_PLUGIN_ID_ENV_KEY, value: ZCODE_CUA_OFFICIAL_PLUGIN_ID },
+            { name: ZODY_PLUGIN_ID_ENV_KEY, value: ZODY_CUA_OFFICIAL_PLUGIN_ID },
             { name: ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY, value: "test-authority" },
           ],
         },

@@ -7,7 +7,7 @@ import type {
 } from "@zody/contracts";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { resolveProjectResourceRoots } from "@zody/shared/zody-paths";
 
 const STRUCTURED_OUTPUT_PROMPT =
@@ -178,7 +178,7 @@ export function inferScriptWorkflowScope(
     )
   )
     return "project";
-  if (isWithin(scriptPath, join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "workflows"))) return "user";
+  if (isWithin(scriptPath, join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "workflows"))) return "user";
   return "explicit";
 }
 

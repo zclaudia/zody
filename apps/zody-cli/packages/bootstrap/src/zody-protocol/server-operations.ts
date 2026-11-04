@@ -43,7 +43,7 @@ import {
 import {
   subagentRuntimeConfigSchema,
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY,
-  ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+  ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
   zodyProtocolErrorCodes,
   zodyProtocolMethods,
   zodySessionCancelBackgroundTaskParamsSchema,
@@ -3170,7 +3170,7 @@ async function requestSessionRuntimePreferences(
       { sessionId, scope },
       zodySessionRuntimePreferencesResultSchema,
       {
-        timeoutMs: ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+        timeoutMs: ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
         ...(trace ? { trace } : {}),
       },
     );
@@ -3387,7 +3387,7 @@ async function createRecord(
               subagentRuntimeConfigSchema,
               {
                 signal,
-                timeoutMs: ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
+                timeoutMs: ZODY_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS,
                 trace: { traceId: traceContext.traceId },
               },
             );

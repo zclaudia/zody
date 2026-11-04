@@ -8,8 +8,8 @@ import {
   isZodyModelOnlySyntheticUserMessage,
   resolveWorkspaceKey,
   resolveZodyVisibleSessionTitle,
-  ZCODE_AGENT_PROVIDER_NOT_READY_CODE,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER_NOT_READY_CODE,
+  ZODY_AGENT_PROVIDER,
   type ZodyTaskGoal,
   type ZodyTaskMode,
   type ZodyTaskMeta,
@@ -44,7 +44,7 @@ import type {
   ZodyAgentSessionTarget,
   ZodyAgentWorkspaceTarget,
 } from "./zodyAgent.js";
-import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zodyAgent.js";
+import { ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zodyAgent.js";
 import { formatTaskMetaModelSelectionFromSnapshot } from "./zodyConfigOptions.js";
 
 const logger = createServiceLogger("zody-task-index-syncer");
@@ -226,7 +226,7 @@ function buildBaselineMetaFromSummary(
     createdAt: summary.createdAt,
     updatedAt: summary.lastActivityAt,
     mode: "default",
-    provider: ZCODE_AGENT_PROVIDER,
+    provider: ZODY_AGENT_PROVIDER,
     ...(summary.parentSessionId ? { forkedFromTaskId: summary.parentSessionId } : {}),
     ...(status ? { status } : {}),
   };
@@ -322,11 +322,11 @@ export function createZodyTaskIndexSyncer(
   const isProviderNotReadyError = (error: unknown): boolean =>
     typeof error === "object" &&
     error !== null &&
-    (error as { code?: unknown }).code === ZCODE_AGENT_PROVIDER_NOT_READY_CODE;
+    (error as { code?: unknown }).code === ZODY_AGENT_PROVIDER_NOT_READY_CODE;
   const isRuntimeUnavailableError = (error: unknown): boolean =>
     typeof error === "object" &&
     error !== null &&
-    (error as { code?: unknown }).code === ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE;
+    (error as { code?: unknown }).code === ZODY_AGENT_RUNTIME_UNAVAILABLE_CODE;
   const logTopicSubscribeFailure = (
     state: WorkspaceIngestState,
     topic: TaskIndexTopicKind,
@@ -1845,7 +1845,7 @@ function buildMetaFromSnapshot(
     // 历史 task 恢复时 snapshot.settings.thoughtLevel 可能仍是同 workspace 草稿态的最新值。
     // 当恢复入口已经带上 task-local thoughtLevel 时，sqlite 必须写入入口值，避免下次打开继续被污染。
     thoughtLevel: thoughtLevelOverride || snapshot.settings.thoughtLevel.current,
-    provider: ZCODE_AGENT_PROVIDER,
+    provider: ZODY_AGENT_PROVIDER,
     status: deriveZodyTaskStatusFromSessionSnapshot(snapshot),
     lastError: snapshot.projection.lastError
       ? {

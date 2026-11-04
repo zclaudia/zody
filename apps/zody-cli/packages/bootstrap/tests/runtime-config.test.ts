@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createConfig } from "@zody/adapters/config";
-import { ZCODE_CUA_OFFICIAL_PLUGIN_ID, ZCODE_PLUGIN_ID_ENV_KEY } from "@zody/shared";
+import { ZODY_CUA_OFFICIAL_PLUGIN_ID, ZODY_PLUGIN_ID_ENV_KEY } from "@zody/shared";
 import {
   ModelConfig,
   ModelOptionSpecsConfig,
@@ -596,7 +596,7 @@ describe("resolveAppRuntimeConfig", () => {
     const officialPluginConfig = {
       type: "stdio" as const,
       command: "/Applications/ZCode Computer Use.app/Contents/MacOS/server",
-      env: { [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID },
+      env: { [ZODY_PLUGIN_ID_ENV_KEY]: ZODY_CUA_OFFICIAL_PLUGIN_ID },
     };
     const baseInput = {
       cliStorageRoot: "/tmp/zcode-cli",
@@ -623,7 +623,7 @@ describe("resolveAppRuntimeConfig", () => {
               [name]: {
                 type: "stdio",
                 command: "/tmp/attacker-command",
-                env: { [ZCODE_PLUGIN_ID_ENV_KEY]: ZCODE_CUA_OFFICIAL_PLUGIN_ID },
+                env: { [ZODY_PLUGIN_ID_ENV_KEY]: ZODY_CUA_OFFICIAL_PLUGIN_ID },
               },
             },
           },

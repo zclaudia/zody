@@ -21,7 +21,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.js";
 import { Switch } from "@/components/ui/switch.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { TID_PLUGIN_STORE_BROWSE, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zody/shared";
+import { TID_PLUGIN_STORE_BROWSE, ZODY_CUA_OFFICIAL_PLUGIN_ID } from "@zody/shared";
 import type { ZodyPluginInfo, ZodyPluginScope, ZodyPluginUserConfigOption } from "@zody/shared";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
 import {
@@ -242,7 +242,7 @@ function PluginList({
       searchQuery,
       storeItemById,
       locale,
-    ).filter((plugin) => plugin.id !== ZCODE_CUA_OFFICIAL_PLUGIN_ID);
+    ).filter((plugin) => plugin.id !== ZODY_CUA_OFFICIAL_PLUGIN_ID);
   }, [
     configScope,
     installedPlugins,
@@ -256,7 +256,7 @@ function PluginList({
     () =>
       storeMatchesTarget
         ? selectPluginsForScope(plugins, installedPlugins, configScope).filter(
-            (plugin) => plugin.id !== ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+            (plugin) => plugin.id !== ZODY_CUA_OFFICIAL_PLUGIN_ID,
           )
         : [],
     [configScope, installedPlugins, plugins, storeMatchesTarget],

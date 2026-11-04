@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   parseZodyProcessDiagnostic,
-  ZCODE_PROCESS_DIAGNOSTIC_PREFIX,
-  ZCODE_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS,
+  ZODY_PROCESS_DIAGNOSTIC_PREFIX,
+  ZODY_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS,
 } from "@zody/shared/process-diagnostic";
 import { hostResponseMessageSchema } from "@zody/shared";
 
@@ -19,7 +19,7 @@ const diagnostic = {
 
 describe("CLI process diagnostic contract", () => {
   it("preserves multiline stack in one stderr frame and validates Host IPC", () => {
-    const line = ZCODE_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(diagnostic);
+    const line = ZODY_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(diagnostic);
     expect(line.split("\n")).toHaveLength(1);
     expect(parseZodyProcessDiagnostic(line)).toEqual(diagnostic);
     expect(
@@ -43,13 +43,13 @@ describe("CLI process diagnostic contract", () => {
       { ...diagnostic, message: "x".repeat(4001) },
     ]) {
       expect(
-        parseZodyProcessDiagnostic(ZCODE_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(value)),
+        parseZodyProcessDiagnostic(ZODY_PROCESS_DIAGNOSTIC_PREFIX + JSON.stringify(value)),
       ).toBeUndefined();
     }
     for (const line of [
       "Error: ordinary stderr",
-      ZCODE_PROCESS_DIAGNOSTIC_PREFIX + "{",
-      ZCODE_PROCESS_DIAGNOSTIC_PREFIX + "x".repeat(ZCODE_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS),
+      ZODY_PROCESS_DIAGNOSTIC_PREFIX + "{",
+      ZODY_PROCESS_DIAGNOSTIC_PREFIX + "x".repeat(ZODY_PROCESS_DIAGNOSTIC_MAX_LINE_CHARS),
     ]) {
       expect(parseZodyProcessDiagnostic(line)).toBeUndefined();
     }

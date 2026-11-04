@@ -9,7 +9,7 @@ import {
   resolveStoredCredentialSecret,
   withFileLock,
 } from "@zody/shared/node";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import {
   createZodyCredentialCipher,
   isEncryptedZodyCredentialValue,
@@ -258,7 +258,7 @@ export function resolveSharedZodyCredentialsPath(
   const env = options.env ?? process.env;
   const baseDir = options.baseDir ?? env[ZODY_DATA_BASE_DIR_ENV_KEY] ?? homedir();
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  return join(resolveUserPath(baseDir), ZCODE_DATA_ROOT_DIR_NAME, "v2", "credentials.json");
+  return join(resolveUserPath(baseDir), ZODY_DATA_ROOT_DIR_NAME, "v2", "credentials.json");
 }
 
 async function readRawCredentialRecord(filePath: string): Promise<Record<string, string>> {

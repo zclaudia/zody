@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { IDisposable, Event } from "@zody/rpc";
 import {
   getRemoteRuntimeToolsForPlatform,
-  ZCODE_AGENT_RUNTIME,
+  ZODY_AGENT_RUNTIME,
   ZODY_RUNTIME_ENV_KEY,
   ZODY_VERSION,
 } from "@zody/shared";
@@ -111,7 +111,7 @@ const LEGACY_REMOTE_TEST_AGENT_RUNTIME: Record<
   glm: {
     binaryKind: "native-binary",
     bundledResourceDir: "glm",
-    version: ZCODE_AGENT_RUNTIME.version,
+    version: ZODY_AGENT_RUNTIME.version,
     resolveEntrySegments: (platform) => [resolveTestPlatformBinaryName("zcode-agent", platform)],
   },
 };
@@ -1972,7 +1972,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const remoteFiles = createFullyDeployedRemoteFiles("linux-arm64");
     remoteFiles["~/.zody/server/.asset-components/glm.json"] = JSON.stringify({
       id: "glm",
-      version: ZCODE_AGENT_RUNTIME.version,
+      version: ZODY_AGENT_RUNTIME.version,
       sha256: "b".repeat(64),
       platformArch: "linux-arm64",
     });
@@ -2298,7 +2298,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       const devVersion = await computeDevelopmentAgentAssetsSha256ForTest(repoDir, cliBundlePath);
       const backend = new FakeRemoteBackend(
         {
-          "~/.zody/server/agents/glm/.version": `${ZCODE_AGENT_RUNTIME.version}\n`,
+          "~/.zody/server/agents/glm/.version": `${ZODY_AGENT_RUNTIME.version}\n`,
           "~/.zody/server/agents/glm/.dev-version": `${devVersion}\n`,
           "~/.zody/server/agents/glm/zcode-agent": "dev wrapper",
           "~/.zody/server/agents/glm/zody.cjs": bundleMatches
