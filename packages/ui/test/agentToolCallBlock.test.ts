@@ -1389,6 +1389,8 @@ describe("AgentToolCallBlock", () => {
                         backgroundAgent: {
                           runInBackground: true,
                         },
+                      },
+                      zody: {
                         taskNotification: {
                           outputFile: "/tmp/background-agent.output",
                           result: "All files are created and the project builds successfully.",
@@ -2052,5 +2054,35 @@ describe("ToolCallBody inline image preview", () => {
     expect(screen.getByRole("img", { name: "写入 logo.png" }).getAttribute("src")).toBe(
       "data:image/png;base64,Qg==",
     );
+  });
+});
+
+describe("Agent metadata namespace boundary", () => {
+  it("ignores old notification content, retains old background output and prefers new notification", async () => {
+    const { getAgentActivityContent, readBackgroundAgentInfo } =
+      await import("../src/ToolCallBlocks/renderers/agentHelpers.js");
+    const raw = {
+      _meta: {
+        zcode: {
+          taskNotification: { result: "old", outputFile: "/old-result" },
+          backgroundAgent: { outputFile: "/legacy-output" },
+        },
+      },
+    };
+    const tool = { raw, input: {}, content: "fallback" } as never;
+    expect(getAgentActivityContent(tool)).toBe("fallback");
+    expect(readBackgroundAgentInfo(tool)).toEqual({ outputFile: "/legacy-output" });
+    const mixed = {
+      raw: {
+        _meta: {
+          ...raw._meta,
+          zody: { taskNotification: { result: "new", outputFile: "/new-output" } },
+        },
+      },
+      input: {},
+      content: "fallback",
+    } as never;
+    expect(getAgentActivityContent(mixed)).toBe("new");
+    expect(readBackgroundAgentInfo(mixed)).toEqual({ outputFile: "/new-output" });
   });
 });

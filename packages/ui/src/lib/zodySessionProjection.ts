@@ -3119,7 +3119,7 @@ function apiRetryFromSessionInfoPayload(
     return runtimeRetry;
   }
 
-  const metaRetry = normalizeZodyApiRetryStatus(asRecord(asRecord(payload._meta).zcode).apiRetry);
+  const metaRetry = normalizeZodyApiRetryStatus(asRecord(asRecord(payload._meta).zody).apiRetry);
   if (metaRetry !== undefined) {
     return metaRetry;
   }

@@ -3026,7 +3026,7 @@ describe("ZodyProtocolAgentServer", () => {
     ]);
     expect(liveEvents[1]?.payload).toMatchObject({
       _meta: {
-        zcode: {
+        zody: {
           apiRetry: {
             attempt: 2,
             errorStatus: 502,
@@ -3118,7 +3118,7 @@ describe("ZodyProtocolAgentServer", () => {
       .map((notification) => zodySessionEventSchema.parse(notification.params));
     expect(liveEvents.at(-1)?.payload).toMatchObject({
       _meta: {
-        zcode: {
+        zody: {
           apiRetry: {
             attempt: 3,
             errorStatus: null,
@@ -3161,7 +3161,7 @@ describe("ZodyProtocolAgentServer", () => {
       type: "streamRecovery.updated",
       payload: {
         _meta: {
-          zcode: {
+          zody: {
             apiRetry: {
               attempt: 4,
               errorStatus: null,

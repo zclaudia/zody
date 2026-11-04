@@ -678,7 +678,7 @@ describe("zcodeSessionProjection", () => {
     expect(snapshot.messages).toHaveLength(2);
     expect(snapshot.messages[1]?.tools?.[0]?.raw).toMatchObject({
       _meta: {
-        zcode: {
+        zody: {
           taskNotification: {
             outputFile: "/tmp/background-agent.output",
             result: "Background agent result & summary",
@@ -791,7 +791,7 @@ describe("zcodeSessionProjection", () => {
         output: "Async agent launched successfully.\noutput_file: /tmp/background-agent.output",
         raw: {
           _meta: {
-            zcode: {
+            zody: {
               taskNotification: {
                 status: notificationStatus,
                 summary: `Agent general-purpose task "Review" ${notificationStatus}.`,
@@ -3362,6 +3362,40 @@ describe("zcodeSessionProjection", () => {
     ]);
   });
 
+  it("projects only current retry metadata when old and new coexist", () => {
+    const retry = {
+      kind: "api_retry",
+      attempt: 2,
+      maxRetries: 4,
+      retryDelayMs: 1000,
+      errorStatus: 502,
+      error: "synthetic",
+    };
+    const map = (payload: unknown) =>
+      zodySessionEventToZodyStreamEvents({
+        taskId: "sess_1",
+        event: {
+          eventId: "evt_meta",
+          sessionId: "sess_1",
+          seq: 1,
+          timestamp: 1,
+          traceId: "trace_meta",
+          type: "session.updated",
+          payload,
+        },
+      });
+    expect(
+      map({ _meta: { zcode: { apiRetry: retry } } }).filter(
+        (event) => event.type === "session_info_update",
+      ),
+    ).toEqual([]);
+    expect(
+      map({
+        _meta: { zcode: { apiRetry: { ...retry, attempt: 9 } }, zody: { apiRetry: retry } },
+      }).filter((event) => event.type === "session_info_update"),
+    ).toEqual([expect.objectContaining({ apiRetry: retry })]);
+  });
+
   it("maps ZCode model retry status updates to apiRetry events", () => {
     const events = zodySessionEventToZodyStreamEvents({
       event: {
@@ -3625,7 +3659,7 @@ describe("zcodeSessionProjection", () => {
           type: "session.updated",
           payload: {
             _meta: {
-              zcode: {
+              zody: {
                 apiRetry: {
                   kind: "api_retry",
                   attempt: 2,
@@ -3859,7 +3893,7 @@ describe("zcodeSessionProjection", () => {
         content: "Background Agent live result",
         raw: expect.objectContaining({
           _meta: expect.objectContaining({
-            zcode: expect.objectContaining({
+            zody: expect.objectContaining({
               taskNotification: {
                 outputFile: "/tmp/background-agent.output",
                 result: "Background Agent live result",
@@ -3917,7 +3951,7 @@ describe("zcodeSessionProjection", () => {
         error: backgroundAgentProviderError,
         raw: expect.objectContaining({
           _meta: expect.objectContaining({
-            zcode: expect.objectContaining({
+            zody: expect.objectContaining({
               taskNotification: expect.objectContaining({
                 error: backgroundAgentProviderError,
                 status: "failed",
@@ -3972,7 +4006,7 @@ describe("zcodeSessionProjection", () => {
         content: "Agent task was stopped.",
         raw: expect.objectContaining({
           _meta: expect.objectContaining({
-            zcode: expect.objectContaining({
+            zody: expect.objectContaining({
               taskNotification: expect.objectContaining({
                 status: "killed",
                 summary: "Agent task was stopped.",

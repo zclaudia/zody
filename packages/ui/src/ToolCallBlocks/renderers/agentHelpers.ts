@@ -195,8 +195,11 @@ export function readBackgroundAgentInfo(toolCall: AgentToolCall) {
   const zody = meta && isPlainRecord(meta.zcode) ? meta.zcode : null;
   const zodyBackgroundAgent =
     zody && isPlainRecord(zody.backgroundAgent) ? zody.backgroundAgent : null;
+  const currentMeta = meta && isPlainRecord(meta.zody) ? meta.zody : null;
   const taskNotification =
-    zody && isPlainRecord(zody.taskNotification) ? zody.taskNotification : null;
+    currentMeta && isPlainRecord(currentMeta.taskNotification)
+      ? currentMeta.taskNotification
+      : null;
   const backgroundAgent = zodyBackgroundAgent;
   const input = isPlainRecord(toolCall.input) ? toolCall.input : null;
   const outputText = readTextFromUnknown(toolCall.output);
@@ -214,8 +217,8 @@ export function readBackgroundAgentInfo(toolCall: AgentToolCall) {
 
 export function getAgentActivityContent(toolCall: AgentToolCall) {
   const taskNotificationResult =
-    readStringFromNestedRecord(toolCall.raw, ["_meta", "zcode", "taskNotification", "result"]) ??
-    readStringFromNestedRecord(toolCall.raw, ["_meta", "zcode", "taskNotification", "summary"]);
+    readStringFromNestedRecord(toolCall.raw, ["_meta", "zody", "taskNotification", "result"]) ??
+    readStringFromNestedRecord(toolCall.raw, ["_meta", "zody", "taskNotification", "summary"]);
   if (taskNotificationResult) {
     // background Agent 的 output_file 是完整 sidechain transcript，
     // task-notification result 才是适合用户阅读的完成摘要。优先展示摘要，避免展开后被 JSONL 淹没。

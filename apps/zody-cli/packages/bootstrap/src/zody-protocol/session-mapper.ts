@@ -502,12 +502,12 @@ function mapModelNetworkStatusPayload(payload: unknown): Record<string, unknown>
     return record;
   }
   const meta = asRecord(record._meta);
-  const zodyMeta = asRecord(meta.zcode);
+  const zodyMeta = asRecord(meta.zody);
   return {
     ...record,
     _meta: {
       ...meta,
-      zcode: {
+      zody: {
         ...zodyMeta,
         // 网络重试是模型请求运行态，不属于可持久化消息内容。
         // 这里通过 app 私有 meta 暴露给旧 task 投影，app 再写入 host runtime snapshot。
@@ -524,12 +524,12 @@ function mapStreamRecoveryPayload(payload: unknown): Record<string, unknown> {
     return record;
   }
   const meta = asRecord(record._meta);
-  const zodyMeta = asRecord(meta.zcode);
+  const zodyMeta = asRecord(meta.zody);
   return {
     ...record,
     _meta: {
       ...meta,
-      zcode: {
+      zody: {
         ...zodyMeta,
         // streamRecovery.updated 才是 SSE 断流恢复的核心进度事件。
         // 之前只在后续 model_request_started 上补 meta，UI 错过该事件时不会显示重试次数。

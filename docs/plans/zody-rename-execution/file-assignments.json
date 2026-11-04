@@ -17407,9 +17407,60 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R42-phone-field.md"
     ],
-    "scopeStatus": "bounded-code-accepted-cleaned-ready-to-commit",
+    "scopeStatus": "bounded-code-accepted-cleaned-committed",
     "gate": "Independent scoped acceptance and exact cleanup complete; post-cleanup audit PASS 0 errors. Ready for commit and non-overlapping handoff. Full R42/R48/release not accepted; 7 real gateway skips and baseline format failures retained.",
     "acceptanceReport": "docs/plans/zody-rename-execution/reports/R42-phone-field-independent-review.md",
-    "controllerVerification": "docs/plans/zody-rename-execution/reports/R42-phone-field-controller-verification.md"
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R42-phone-field-controller-verification.md",
+    "acceptedCommit": "fe99c9a4531aaeead982826c2be6c5cf3f929c89"
+  },
+  "R40_AGENT_META": {
+    "title": "Confirmed private Agent apiRetry/taskNotification metadata cutover",
+    "baselineCommit": "fe99c9a4531aaeead982826c2be6c5cf3f929c89",
+    "controllerGrant": "output/zody-rename-r40-agent-meta/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "scopeStatus": "bounded-code-accepted-cleaned-ready-to-commit",
+    "writeSet": [
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/session-mapper.ts",
+      "packages/shared/src/background-task-notifications.ts",
+      "packages/services/src/zody-agent/zodyTaskServiceAdapter.ts",
+      "packages/services/src/zody-session/zodySessionApiRetry.ts",
+      "packages/ui/src/lib/zodySessionProjection.ts",
+      "packages/ui/src/ToolCallBlocks/renderers/agentHelpers.ts",
+      "apps/zody-cli/packages/bootstrap/tests/zody-protocol.test.ts",
+      "packages/shared/test/backgroundTaskNotifications.test.ts",
+      "packages/services/test/zodyLegacyTaskCompatTaskIndex.test.ts",
+      "packages/ui/test/zodySessionProjection.test.ts",
+      "packages/ui/test/agentToolCallBlock.test.ts",
+      "packages/ui/test/zodySessionRestore.test.ts",
+      "specs/zody-rename-runtime-contract.md",
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "apps/zody-cli/packages/bootstrap/tests/zody-agent-meta-wire.integration.test.ts",
+      "packages/services/test/zodyAgentMetaRpc.integration.test.ts",
+      "docs/plans/zody-rename-execution/reports/R40-agent-meta.md",
+      "packages/services/test/zodyAgentService.v4.test.ts"
+    ],
+    "readSet": [
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/server-operations.ts",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/conversation-telemetry-facts.ts",
+      "packages/shared/src/zody-task-types-core.ts",
+      "apps/zody-cli/packages/core/src/subagent/runner.ts",
+      "packages/ui/src/lib/zodySessionRestore.ts",
+      "packages/ui/src/lib/toolIdentity.ts"
+    ],
+    "gate": "Independent source-level scoped acceptance, exact cleanup and post-audit PASS 0 errors complete. Ready to commit. Unknown metadata contract, R47 and ready repair scopes pending; full rename/R48/release not accepted.",
+    "addenda": [
+      "output/zody-rename-r40-agent-meta/controller/addendum-1-test-placement.json",
+      "output/zody-rename-r40-agent-meta/controller/addendum-2-existing-normalizer.json",
+      "output/zody-rename-r40-agent-meta/controller/addendum-3-reconnect-owner-test.json"
+    ],
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R40-agent-meta-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-agent-meta-controller-verification.md"
+  },
+  "R40_UNRESOLVED_META": {
+    "title": "Unproven metadata producer ownership and legacy reader policy",
+    "scopeStatus": "awaiting-user-contract-decision",
+    "proposal": "output/zody-rename-w5-preflight/R40-unresolved-meta-decision-proposal.md",
+    "writeSet": [],
+    "gate": "No new scope until user defines treatment of named unknown-provenance fields; preserve current readers and opaque historical bytes. Do not classify unknown as third-party or claim full rename complete."
   }
 }

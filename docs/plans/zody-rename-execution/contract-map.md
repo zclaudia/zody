@@ -69,3 +69,5 @@ R54 同步 bootstrap seed/official runtime、打包及安装升级的调用者�
 各 manifest key 以新前缀加 `manifest.json` 构造。实际 provider key 已是 `zody-provider/zody-builtin.json`，保持其字节；`SEA_ZCODE_BUILTIN_PROVIDER_CONFIG_ASSET_KEY` 的精确局部绑定可归 R20.4 同批更名，须核对所有绑定引用。`createRequire` 的合成基准名 `zcode-playwright-loader.cjs` 归本机内部命名闭包，可改为 zody，验证解析结果不变。精确前置清单位于 `output/zody-rename-r22/sea-key-closure/`；它是取证材料，正式写集由本节和派发记录限定。
 
 验收使用真实 collector 结果与严格按 key 匹配的模拟 SEA 消费者，覆盖文件/manifest、缺失 key 和缓存复用，避免插件/skill fallback 把错配掩盖成成功；根分发脚本仍读取完全相同的第三方许可原文字节。随后固定候选实际构建并执行可运行目标 smoke；静态 grep 或 mock 不能替代该最终步骤。
+
+For Agent live metadata, the confirmed private fields `apiRetry` and `taskNotification` use `_meta.zody`; legacy `_meta.zcode` is opaque for these fields. Existing unrelated metadata and history bytes retain their owners and contracts. See `specs/zody-rename-runtime-contract.md` for retry precedence and body-derived restore.

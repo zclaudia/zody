@@ -1,3 +1,8 @@
+import { createHash } from "node:crypto";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { describe, expect, it, vi } from "vitest";
 import {
   ZODY_PROTOCOL_NAME,
@@ -6,6 +11,7 @@ import {
   type ZodySessionStateSnapshot,
   type ZodyTaskSnapshot,
 } from "@zody/shared";
+import { zodySessionSnapshotToZodyTaskSnapshot } from "../src/lib/zodySessionProjection.js";
 import {
   readDesktopContinuousSessionRestoreSnapshot,
   readWebRemoteReplayableSessionConfigOptions,
@@ -99,6 +105,137 @@ function createLegacyTaskSnapshot(): ZodyTaskSnapshot {
 }
 
 describe("readDesktopContinuousSessionRestoreSnapshot", () => {
+  it("rederives notification from reopened opaque history without rewriting old bytes", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "zody-meta-history-"));
+    const dbPath = join(dir, "history.sqlite");
+    const oldMeta = {
+      zcode: {
+        backgroundAgent: { outputFile: "/synthetic/old" },
+        taskNotification: { result: "opaque old" },
+      },
+    };
+    const messages = [
+      {
+        info: {
+          messageId: "assistant",
+          sessionId: "sess_1",
+          role: "assistant",
+          time: { created: 1 },
+          agent: "zcode-agent",
+          model,
+        },
+        parts: [
+          {
+            partId: "tool",
+            sessionId: "sess_1",
+            messageId: "assistant",
+            type: "tool",
+            callId: "toolu_1",
+            tool: "Agent",
+            state: {
+              status: "completed",
+              input: { run_in_background: true },
+              output: "",
+              title: "Agent",
+              metadata: { _meta: oldMeta },
+              startedAt: 1,
+              completedAt: 2,
+            },
+          },
+        ],
+      },
+      {
+        info: {
+          messageId: "notification",
+          sessionId: "sess_1",
+          role: "user",
+          time: { created: 3 },
+          agent: "zcode-agent",
+          model,
+          visibility: "model-only",
+        },
+        parts: [
+          {
+            partId: "text",
+            sessionId: "sess_1",
+            messageId: "notification",
+            type: "text",
+            text: "<task-notification><task-id>agent_1</task-id><tool-use-id>toolu_1</tool-use-id><status>completed</status><result>from body</result></task-notification>",
+          },
+        ],
+      },
+    ] as unknown as ZodyMessageWithParts[];
+    const repeated = structuredClone(messages[1]!);
+    repeated.info.messageId = "notification-duplicate";
+    repeated.parts[0]!.messageId = "notification-duplicate";
+    repeated.parts[0]!.partId = "text-duplicate";
+    messages.push(repeated);
+    const bytes = JSON.stringify(messages);
+    const digest = (value: string) => createHash("sha256").update(value).digest("hex");
+    try {
+      let db = new DatabaseSync(dbPath);
+      db.exec("create table history (raw text not null)");
+      db.prepare("insert into history values (?)").run(bytes);
+      db.close();
+      db = new DatabaseSync(dbPath);
+      const row = db.prepare("select raw from history").get() as { raw: string };
+      db.close();
+      expect(digest(row.raw)).toBe(digest(bytes));
+      const saved = createSnapshot({ messages: JSON.parse(row.raw) });
+      const zodySessionService = {
+        resumeSession: vi.fn(async () => saved),
+        readSession: vi.fn(async () => saved),
+      };
+      const restored = await readDesktopContinuousSessionRestoreSnapshot({
+        zodySessionService,
+        workspacePath: workspace.workspacePath,
+        workspaceIdentity: workspace.workspaceIdentity,
+        sessionId: "sess_1",
+      });
+      expect(restored.snapshot.messages[0]?.tools?.[0]?.raw).toMatchObject({
+        _meta: { zcode: oldMeta.zcode, zody: { taskNotification: { result: "from body" } } },
+      });
+      const again = await readDesktopContinuousSessionRestoreSnapshot({
+        zodySessionService,
+        workspacePath: workspace.workspacePath,
+        workspaceIdentity: workspace.workspaceIdentity,
+        sessionId: "sess_1",
+      });
+      expect(again.snapshot.messages).toEqual(restored.snapshot.messages);
+      for (const deliveryKind of ["desktop-continuous", "web-remote-replayable"] as const) {
+        const projection = zodySessionSnapshotToZodyTaskSnapshot({
+          ...saved,
+          runtime: { ...saved.runtime, deliveryKind },
+        });
+        expect(projection.messages.flatMap((message) => message.tools ?? [])).toHaveLength(1);
+        expect(projection.messages[0]?.tools?.[0]?.raw).toMatchObject({
+          _meta: { zody: { taskNotification: { result: "from body" } } },
+        });
+      }
+      expect(digest(row.raw)).toBe(digest(bytes));
+      const withoutBody = createSnapshot({ messages: [messages[0]!] });
+      const oldOnly = await readDesktopContinuousSessionRestoreSnapshot({
+        zodySessionService: {
+          resumeSession: vi.fn(async () => withoutBody),
+          readSession: vi.fn(async () => withoutBody),
+        },
+        workspacePath: workspace.workspacePath,
+        workspaceIdentity: workspace.workspaceIdentity,
+        sessionId: "sess_1",
+      });
+      const oldRaw = oldOnly.snapshot.messages[0]?.tools?.[0]?.raw as {
+        _meta: { zcode: unknown; zody?: unknown };
+      };
+      expect(oldRaw._meta.zcode).toEqual(oldMeta.zcode);
+      expect(oldRaw._meta.zody).toBeUndefined();
+      db = new DatabaseSync(dbPath);
+      expect((db.prepare("select raw from history").get() as { raw: string }).raw).toBe(bytes);
+      db.close();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("resumes historical desktop session before reading the limited snapshot", async () => {
     const calls: string[] = [];
     let active = false;
@@ -146,6 +283,35 @@ describe("readDesktopContinuousSessionRestoreSnapshot", () => {
     });
     expect(result.resumedSessionSnapshot?.session.title).toBe("Resumed session");
     expect(result.snapshot.meta.title).toBe("Read session");
+  });
+
+  it("leaves legacy direct-return old metadata opaque without reprojection", async () => {
+    const legacy = createLegacyTaskSnapshot();
+    const oldRaw = {
+      _meta: {
+        zcode: {
+          backgroundAgent: { outputFile: "/synthetic/old" },
+          taskNotification: { result: "old" },
+        },
+      },
+    };
+    legacy.messages[0]!.tools = [{ id: "toolu_1", name: "Agent", raw: oldRaw } as never];
+    const original = JSON.stringify(legacy);
+    const result = await readDesktopContinuousSessionRestoreSnapshot({
+      zodySessionService: {
+        resumeSession: vi.fn(async () => {
+          throw new Error("Session not found: sess_1");
+        }),
+        readSession: vi.fn(async () => createSnapshot()),
+      },
+      zodyTaskService: { getTaskSnapshot: vi.fn(async () => legacy) },
+      workspacePath: workspace.workspacePath,
+      workspaceIdentity: workspace.workspaceIdentity,
+      sessionId: "sess_1",
+    });
+    expect(result.usedLegacySnapshot).toBe(true);
+    expect(JSON.stringify(result.snapshot)).toBe(original);
+    expect(result.snapshot.messages[0]?.tools?.[0]?.raw).toEqual(oldRaw);
   });
 
   it("falls back to legacy task snapshot when the protocol session is missing", async () => {

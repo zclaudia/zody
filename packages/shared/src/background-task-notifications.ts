@@ -79,12 +79,12 @@ export function attachZodyBackgroundTaskNotificationToRaw(
   }
   const record = asPlainRecord(raw);
   const meta = asPlainRecord(record._meta);
-  const zody = asPlainRecord(meta.zcode);
+  const zody = asPlainRecord(meta.zody);
   return {
     ...record,
     _meta: {
       ...meta,
-      zcode: {
+      zody: {
         ...zody,
         taskNotification: notification,
       },

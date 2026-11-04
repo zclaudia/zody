@@ -74,6 +74,11 @@ process.stdin.on("data", (chunk) => {
       }
       continue;
     }
+    if (msg.method === "session/subscribe" && msg.id !== undefined && msg.params.sessionId === "r40-meta") {
+      const event = { type: "session.updated", eventId: "evt-r40-meta", sessionId: msg.params.sessionId, seq: 1, timestamp: 1700000000000, payload: { _meta: { zody: { originPid: process.pid, apiRetry: { kind: "api_retry", attempt: 2, maxRetries: 4, retryDelayMs: 1000, errorStatus: 502, error: "synthetic" } } } } };
+      send({ id: msg.id, result: { sessionId: msg.params.sessionId, eventSeq: 1, events: [event, event] } });
+      continue;
+    }
     if (msg.method === "session/debug" && msg.id !== undefined) {
       send({ id: msg.id, result: { sessionId: msg.params.sessionId, rounds: [], networkEntries: [], cache: null } });
       continue;
@@ -1727,6 +1732,75 @@ describe("zodyAgentService v4 conversation channel", () => {
       expect(replacement.ack.subscriptionId).toBe(first.ack.subscriptionId);
       await expect(staleResync).rejects.toThrow("fault.subscription.notOwned");
     } finally {
+      await service.disposeAllAndWait();
+    }
+  });
+
+  it("routes replayed metadata across distinct workspace owners after reconnect", async () => {
+    const { service, workspacePath, logPath } = setupService();
+    const a = {
+      workspacePath,
+      workspaceIdentity: "remote:ssh:host-a:/same",
+      remoteSessionId: "remote-a",
+    };
+    const b = {
+      workspacePath,
+      workspaceIdentity: "remote:ssh:host-b:/same",
+      remoteSessionId: "remote-b",
+    };
+    const receivedA: unknown[] = [],
+      receivedB: unknown[] = [];
+    const sub = (target: typeof a, sink: unknown[]) =>
+      service.onDynamicSessionEvent({
+        ...target,
+        sessionId: "r40-meta",
+        deliveryKind: "web-remote-replayable",
+        includeSnapshot: true,
+      })((event) => sink.push(event));
+    let sa = sub(a, receivedA);
+    const sb = sub(b, receivedB);
+    try {
+      await Promise.all([
+        service.subscribeConversationV4({ ...a, sessionId: "r40-meta" }),
+        service.subscribeConversationV4({ ...b, sessionId: "r40-meta" }),
+      ]);
+      await vi.waitFor(() => {
+        expect(receivedA.length).toBeGreaterThan(0);
+        expect(receivedB.length).toBeGreaterThan(0);
+      });
+      const meta = (event: unknown) => JSON.stringify(event).includes('"apiRetry"');
+      expect(receivedA.filter(meta)).toHaveLength(1);
+      expect(receivedB.filter(meta)).toHaveLength(1);
+      const pidA = JSON.stringify(receivedA.find(meta)).match(/"originPid":(\d+)/)?.[1];
+      const pidB = JSON.stringify(receivedB.find(meta)).match(/"originPid":(\d+)/)?.[1];
+      expect(pidA).toBeTruthy();
+      expect(pidB).toBeTruthy();
+      expect(pidA).not.toBe(pidB);
+      const beforeB = receivedB.length;
+      sa.dispose();
+      sa = sub(a, receivedA);
+      await vi.waitFor(() => expect(receivedA.filter(meta)).toHaveLength(2));
+      expect(receivedB).toHaveLength(beforeB);
+      await service.subscribeConversationV4({ ...a, sessionId: "r40-meta" });
+      const subscribeWorkspaces = readRequests(logPath)
+        .filter((entry) => entry.method === "v4/conversation/subscribe")
+        .map((entry) => entry.params.workspace);
+      expect(subscribeWorkspaces).toHaveLength(3);
+      expect(
+        subscribeWorkspaces.filter(
+          (workspace) =>
+            (workspace as { workspaceIdentity?: string }).workspaceIdentity === a.workspaceIdentity,
+        ),
+      ).toEqual([expect.objectContaining(a), expect.objectContaining(a)]);
+      expect(
+        subscribeWorkspaces.filter(
+          (workspace) =>
+            (workspace as { workspaceIdentity?: string }).workspaceIdentity === b.workspaceIdentity,
+        ),
+      ).toEqual([expect.objectContaining(b)]);
+    } finally {
+      sa.dispose();
+      sb.dispose();
       await service.disposeAllAndWait();
     }
   });

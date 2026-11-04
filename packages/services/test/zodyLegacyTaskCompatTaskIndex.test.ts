@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Emitter, setNetworkTelemetrySink } from "@zody/rpc";
+import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel, setNetworkTelemetrySink } from "@zody/rpc";
 import type {
   SessionSummary,
   SessionsIndexTopicFrame,
@@ -3223,7 +3223,7 @@ describe("ZCode legacy task compat task index", () => {
     expect(snapshot?.messages).toHaveLength(2);
     expect(snapshot?.messages[1]?.tools?.[0]?.raw).toMatchObject({
       _meta: {
-        zcode: {
+        zody: {
           taskNotification: {
             outputFile: "/tmp/background-agent.output",
             result: "Background Agent restored result",
@@ -3334,7 +3334,7 @@ describe("ZCode legacy task compat task index", () => {
         status: expectedStatus,
         raw: {
           _meta: {
-            zcode: {
+            zody: {
               taskNotification: {
                 status: notificationStatus,
                 summary: notificationSummary,
@@ -3396,7 +3396,7 @@ describe("ZCode legacy task compat task index", () => {
           content: "Background Agent live result",
           raw: expect.objectContaining({
             _meta: expect.objectContaining({
-              zcode: expect.objectContaining({
+              zody: expect.objectContaining({
                 taskNotification: {
                   outputFile: "/tmp/background-agent.output",
                   result: "Background Agent live result",
@@ -3469,7 +3469,7 @@ describe("ZCode legacy task compat task index", () => {
       error: BACKGROUND_AGENT_PROVIDER_ERROR,
       raw: {
         _meta: {
-          zcode: {
+          zody: {
             taskNotification: {
               error: BACKGROUND_AGENT_PROVIDER_ERROR,
               status: "failed",
@@ -5377,6 +5377,160 @@ describe("ZCode legacy task compat task index", () => {
       },
     });
   });
+
+  it("projects the new retry metadata through the actual task adapter and RPC channel", async () => {
+    const { eventEmitter, service } = createService();
+    const task = await service.createTask({ workspacePath: "/repo", provider: "glm" });
+    const [serverProtocol, clientProtocol] = createQueuePair();
+    const server = new ChannelServer(serverProtocol, "test");
+    const client = new ChannelClient(clientProtocol);
+    server.registerChannel("task", ProxyChannel.fromService(service));
+    const remote = ProxyChannel.toService<typeof service>(client.getChannel("task"));
+    const received: ZodyStreamEvent[] = [];
+    const subscription = remote.onDynamicTaskEvent({
+      workspacePath: "/repo",
+      taskId: task.taskId,
+      deliveryKind: "continuous",
+    })((event) => received.push(event));
+    const retry = {
+      kind: "api_retry" as const,
+      attempt: 2,
+      maxRetries: 4,
+      retryDelayMs: 1000,
+      errorStatus: 502,
+      error: "synthetic",
+    };
+    const fire = (seq: number, payload: unknown) =>
+      eventEmitter.fire({
+        type: "session.event",
+        event: {
+          eventId: `evt_meta_${seq}`,
+          sessionId: task.taskId,
+          seq,
+          timestamp: seq,
+          traceId: "trace_meta",
+          type: "session.updated",
+          payload,
+        },
+      } as ZodyAgentServiceEvent);
+    try {
+      await remote.getTaskSnapshot({ workspacePath: "/repo", taskId: task.taskId });
+      fire(1, { _meta: { zcode: { apiRetry: retry } } });
+      await flushMicrotasks();
+      expect(received.filter((event) => event.type === "session_info_update")).toHaveLength(0);
+      fire(2, {
+        _meta: { zody: { apiRetry: retry }, zcode: { apiRetry: { ...retry, attempt: 9 } } },
+      });
+      await vi.waitFor(() =>
+        expect(received.filter((event) => event.type === "session_info_update")).toHaveLength(1),
+      );
+      expect(received).toContainEqual(
+        expect.objectContaining({ type: "session_info_update", apiRetry: retry }),
+      );
+      fire(3, { _meta: { zody: { apiRetry: null }, zcode: { apiRetry: retry } } });
+      await vi.waitFor(() =>
+        expect(received.filter((event) => event.type === "session_info_update")).toHaveLength(2),
+      );
+      expect(received.at(-1)).toMatchObject({ type: "session_info_update", apiRetry: null });
+    } finally {
+      subscription.dispose();
+      client.dispose();
+      server.dispose();
+    }
+  });
+
+  it.each(["continuous", "replayable"] as const)(
+    "RPC resubscribes %s to one adapter owner with identity",
+    async (deliveryKind) => {
+      const { agent, eventEmitter, service } = createService();
+      const workspaceIdentity = "remote:ssh:host-a:/repo";
+      const task = await service.createTask({
+        workspacePath: "/repo",
+        workspaceIdentity,
+        provider: "glm",
+      });
+      const [a, b] = createQueuePair();
+      const server = new ChannelServer(a, "test");
+      const client = new ChannelClient(b);
+      server.registerChannel("task", ProxyChannel.fromService(service));
+      const remote = ProxyChannel.toService<typeof service>(client.getChannel("task"));
+      const target = {
+        workspacePath: "/repo",
+        workspaceIdentity,
+        taskId: task.taskId,
+        deliveryKind,
+      };
+      const observed: ZodyStreamEvent[] = [];
+      const subscribe = () => remote.onDynamicTaskEvent(target)((event) => observed.push(event));
+      let subscription = subscribe();
+      const fire = (seq: number) =>
+        eventEmitter.fire({
+          type: "session.event",
+          event: {
+            eventId: `evt_reconnect_${seq}`,
+            sessionId: task.taskId,
+            seq,
+            timestamp: seq,
+            traceId: "trace_reconnect",
+            type: "session.updated",
+            payload: {
+              _meta: {
+                zody: {
+                  apiRetry: {
+                    kind: "api_retry",
+                    attempt: seq,
+                    maxRetries: 4,
+                    retryDelayMs: 10,
+                    errorStatus: 502,
+                    error: "synthetic",
+                  },
+                },
+              },
+            },
+          },
+        } as ZodyAgentServiceEvent);
+      try {
+        await remote.getTaskSnapshot({
+          workspacePath: "/repo",
+          workspaceIdentity,
+          taskId: task.taskId,
+        });
+        fire(1);
+        await vi.waitFor(() =>
+          expect(observed.filter((event) => event.type === "session_info_update")).toHaveLength(1),
+        );
+        subscription.dispose();
+        await remote.getTaskSnapshot({
+          workspacePath: "/repo",
+          workspaceIdentity,
+          taskId: task.taskId,
+        });
+        subscription = subscribe();
+        await remote.getTaskSnapshot({
+          workspacePath: "/repo",
+          workspaceIdentity,
+          taskId: task.taskId,
+        });
+        fire(2);
+        await vi.waitFor(() =>
+          expect(observed.filter((event) => event.type === "session_info_update")).toHaveLength(2),
+        );
+        expect(vi.mocked(agent.onDynamicSessionEvent)).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            workspaceIdentity,
+            sessionId: task.taskId,
+            deliveryKind:
+              deliveryKind === "continuous" ? "desktop-continuous" : "web-remote-replayable",
+            includeSnapshot: deliveryKind === "replayable",
+          }),
+        );
+      } finally {
+        subscription.dispose();
+        client.dispose();
+        server.dispose();
+      }
+    },
+  );
 
   it("keeps pinned state in sqlite without resuming the agent session", async () => {
     const { agent, service } = createService();

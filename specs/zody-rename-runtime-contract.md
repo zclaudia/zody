@@ -61,3 +61,15 @@ sequenceDiagram
 验收使用真实构建和 staging 产物，在隔离 HOME/TMP 与不能回落仓库 node_modules 的独立目录验证 CLI help/version、Supervisor fork 的 core ready、localhost server-info、停止及进程/socket 清理；确认同一发行目录内资源和依赖完整，记录平台、工具链、hash 和真实失败。mock 或构建成功本身不能替代真实入口验证；未运行的平台保持 pending。
 
 The live phone application payload hard cut uses `zody_type` and app protocol `[5,5]` on channel protocol 2. Top-level old or mixed discriminators are rejected before dispatch or non-strict parsing; nested user and historical data remain opaque. Older peers are rejected before attachment activation, business RPC, replacement or replay as specified in `mobile-remote-control-via-gateway.md`.
+
+### Agent retry and background notification metadata
+
+Only the confirmed live fields `_meta.zody.apiRetry` and `_meta.zody.taskNotification` use the new namespace. Direct and runtime retry values retain their existing precedence; old `_meta.zcode` values are opaque and never serve as aliases. Other metadata namespaces and unclassified nested fields remain unchanged. New metadata is merged only with existing `_meta.zody`, never by copying the old object.
+
+```text
+model/recovery → session mapper → LF Agent stream → service retry owner → UI projection
+persisted user body → task-notification collector (toolUseId) → restored tool projection
+                    ↘ stored raw remains unchanged and opaque
+```
+
+Desktop continuous and mobile replayable consumers retain their existing session and attachment owners, identity, sequence, and replay rules; no second state owner is introduced. Normal restore independently derives notifications from persisted body, keyed by toolUseId. Old raw alone does not synthesize a new field; legacy direct-return snapshots stay opaque. Existing `_meta.zcode.backgroundAgent.outputFile` remains its established display fallback. SQLite and historical raw bytes are never rewritten for this cut.
