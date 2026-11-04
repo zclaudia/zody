@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { Emitter, type IDisposable, type Event } from "@zody/rpc";
 import { ZODY_VERSION } from "@zody/shared";
 import { connectRemote, pickRemoteRuntimeEnv } from "../src/remote/connect.js";
+import * as deployModule from "../src/remote/deploy.js";
 import type { IRemoteBackend, RemoteDisconnectEvent, StdioStream } from "../src/remote/backend.js";
 
 class FakeConnectBackend implements IRemoteBackend {
@@ -19,6 +20,7 @@ class FakeConnectBackend implements IRemoteBackend {
       code: number;
       stderr: string;
     },
+    private readonly helloVersion = ZODY_VERSION,
   ) {}
 
   dispose(): void {
@@ -60,7 +62,7 @@ class FakeConnectBackend implements IRemoteBackend {
           `${JSON.stringify({
             type: "zody-hello",
             generation: 2,
-            version: ZODY_VERSION,
+            version: this.helloVersion,
             platform: "linux",
             arch: "arm64",
             pid: 123,
@@ -124,6 +126,30 @@ describe("connectRemote", () => {
     });
     // Main 在 production 包里已经删掉这个键，远端因此什么也收不到。
     expect(pickRemoteRuntimeEnv({})).toEqual({});
+  });
+
+  it("部署完成后运行实例版本变化仍在 ack 前拒绝", async () => {
+    const backend = new FakeConnectBackend(undefined, "synthetic-post-install-old");
+    const deploy = vi.spyOn(deployModule, "deployServer").mockResolvedValueOnce(true);
+    try {
+      await expect(connectRemote(backend, { clientId: "test-client" })).rejects.toThrow(
+        /version mismatch/i,
+      );
+      expect(deploy).toHaveBeenCalledOnce();
+      expect(backend.disposeCount).toBe(1);
+      expect((backend.stream!.stdin as PassThrough).read()).toBeNull();
+    } finally {
+      deploy.mockRestore();
+    }
+  });
+
+  it("skipDeploy 拒绝运行实例版本不符且不发送 ack", async () => {
+    const backend = new FakeConnectBackend(undefined, "synthetic-old-version");
+    await expect(
+      connectRemote(backend, { clientId: "test-client", skipDeploy: true }),
+    ).rejects.toThrow(/version mismatch/i);
+    expect(backend.disposeCount).toBe(1);
+    expect((backend.stream!.stdin as PassThrough).read()).toBeNull();
   });
 
   it("连接初始化失败时释放 backend", async () => {

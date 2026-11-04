@@ -3,6 +3,7 @@ import type { IServiceAccessor } from "@zody/services";
 import { RemoteServiceAccess } from "@zody/client";
 import {
   SERVICE_AUTHORITY_MODE_ENV,
+  ZODY_VERSION,
   ZODY_APP_VERSION_ENV,
   ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   ZODY_DYNAMIC_WORKFLOW_MODE_ENV,
@@ -210,6 +211,7 @@ async function connectRemoteUnchecked(
     clientId,
     options?.handshakeTimeout,
     options?.signal,
+    ZODY_VERSION,
   );
   throwIfRemoteConnectAborted(options?.signal);
   log("handshake done, server version:", hello.version);

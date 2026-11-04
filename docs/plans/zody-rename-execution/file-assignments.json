@@ -16211,17 +16211,18 @@
       "packages/server/test/remoteConnect.test.ts"
     ],
     "writeSet": [
-      "specs/zody-rename-remote-deploy.md",
+      "docs/plans/zody-rename-execution/reports/R43-release-runbook.md",
+      "docs/plans/zody-rename-execution/reports/R43.md",
       "packages/server/src/remote/connect.ts",
       "packages/server/src/remote/deploy.ts",
+      "packages/server/src/remote/handshake.ts",
+      "packages/server/src/remote/remoteDeployLock.ts",
       "packages/server/src/remote/serverBundleDeployCheck.ts",
+      "packages/server/test/remoteConnect.test.ts",
       "packages/server/test/remoteDeploy.test.ts",
       "packages/server/test/remoteDeployLock.test.ts",
-      "packages/server/test/remoteConnect.test.ts",
-      "docs/plans/zody-rename-execution/reports/R43.md",
-      "docs/plans/zody-rename-execution/reports/R43-release-runbook.md",
-      "packages/server/src/remote/handshake.ts",
-      "packages/server/test/stdioHandshake.test.ts"
+      "packages/server/test/stdioHandshake.test.ts",
+      "specs/zody-rename-remote-deploy.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -16232,8 +16233,8 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R43.md"
     ],
-    "scopeStatus": "prepared-await-W4-checkpoint",
-    "gate": "R41/R42 independently accepted and cleaned. Dispatch after current W4 source checkpoint and sole Desktop build lock release; freeze actual HEAD. No real remote deployment.",
+    "scopeStatus": "independently-accepted-scoped",
+    "gate": "DeepSeek scoped acceptance; full142 tests, controller39 tests, root G pass; stage cleanup checked. R48 retains actual mixed artifacts/transports/rollback, cancellation during installation after lock, and marker/version probe lack of independent deadline.",
     "structureScope": [],
     "writer": "/root/terra_r30_dispatch",
     "contractCases": [
@@ -16258,8 +16259,10 @@
     ],
     "narrowHandoffs": {
       "packages/server/src/remote/handshake.ts": "R41 accepted. Add expected running version validation before ack, preserving strict generation, raw-byte handoff and lifecycle. No check after ack claiming zero server initialization.",
-      "packages/server/test/stdioHandshake.test.ts": "R41 accepted. Controlled real child mismatched-version test must observe no ack/no initialization marker; retain byte/lifecycle tests."
-    }
+      "packages/server/test/stdioHandshake.test.ts": "R41 accepted. Controlled real child mismatched-version test must observe no ack/no initialization marker; retain byte/lifecycle tests.",
+      "packages/server/src/remote/remoteDeployLock.ts": "Controlled real-shell test confirms heartbeat child holds stdio after release. Fix only owned heartbeat/sleep lifecycle and pipe cleanup, preserve lock owner/token/atomicity/stale policy and caller-serialized boundary. No timeout increases or broad process killing."
+    },
+    "baselineCommit": "8d953d3cb304d1a9b33b4b8792b79dfbc2228662"
   },
   "R44": {
     "title": "主应用桥、IPC 与内部 builtin 属性",

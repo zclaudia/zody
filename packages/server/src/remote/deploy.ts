@@ -100,6 +100,14 @@ export async function deployServer(
   env: RemoteEnvironment,
   options?: DeployOptions,
 ): Promise<boolean> {
+  const throwIfCanceled = () => {
+    if (!options?.signal?.aborted) return;
+    // 获锁期间取消后不能继续安装；仍由外层持锁 owner 负责释放锁。
+    throw options.signal.reason instanceof Error
+      ? options.signal.reason
+      : Object.assign(new Error("Remote deployment canceled"), { name: "AbortError" });
+  };
+  throwIfCanceled();
   const platformArch = `${env.platform}-${env.arch}`;
   assertSupportedRemoteEnvironment(env);
   // 修复依据：本机上传曾在 manifest/缺件路径回退 CDN；本地策略必须在部署入口剥离全部网络来源。
@@ -432,6 +440,7 @@ export async function deployServer(
   };
 
   const deployUsingCurrentRemoteState = async (): Promise<boolean> => {
+    throwIfCanceled();
     const expectedServerBundleSha256 = await getComponentSha256(SERVER_BUNDLE_COMPONENT_ID);
     const decision = options?.force
       ? {
@@ -442,6 +451,7 @@ export async function deployServer(
           platformArch,
           expectedSha256: expectedServerBundleSha256,
         });
+    throwIfCanceled();
     return deployWithDecision(decision, expectedServerBundleSha256);
   };
 
@@ -463,6 +473,7 @@ export async function deployServer(
   }
   const deployLock = await acquireRemoteDeployLock(backend, {
     acquireTimeoutMs: options?.deployLockAcquireTimeoutMs,
+    signal: options?.signal,
   });
   let deployOutcome: { ok: true; value: boolean } | { ok: false; error: unknown };
   try {

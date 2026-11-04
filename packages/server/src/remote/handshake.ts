@@ -28,6 +28,7 @@ export function performHandshake(
   clientId: string,
   timeoutMs = 10_000,
   signal?: AbortSignal,
+  expectedVersion?: string,
 ): Promise<HandshakeResult> {
   return new Promise((resolve, reject) => {
     let buffer: Buffer = Buffer.alloc(0);
@@ -79,6 +80,13 @@ export function performHandshake(
         const result = helloMessageSchema.safeParse(raw);
         if (!result.success) {
           fail(`Invalid hello: ${formatZodError(result.error)}`);
+          return;
+        }
+        // 运行版本必须在 ack 前验证；否则远端已开始初始化服务，无法撤销。
+        if (expectedVersion !== undefined && result.data.version !== expectedVersion) {
+          fail(
+            `Remote server version mismatch: expected ${JSON.stringify(expectedVersion)}, received ${JSON.stringify(result.data.version)}`,
+          );
           return;
         }
         // 先暂停，确保在消费者重新装配 RPC 前不会丢失随后的字节。

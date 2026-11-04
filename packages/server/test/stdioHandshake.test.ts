@@ -59,14 +59,17 @@ describe("RemoteServer client handshake", () => {
     expect(f.stdin.read()).toBeNull();
     expect(f.callbacks.size).toBe(0);
   });
-  it.each([null, [], "synthetic", 17, false])("rejects JSON value %s instead of treating it as a banner", async (value) => {
-    const f = fixture();
-    const pending = performHandshake(f.stream, "synthetic", 1000);
-    f.stdout.write(JSON.stringify(value) + "\n");
-    await expect(pending).rejects.toThrow("Invalid hello");
-    expect(f.stdin.read()).toBeNull();
-    expect(f.callbacks.size).toBe(0);
-  });
+  it.each([null, [], "synthetic", 17, false])(
+    "rejects JSON value %s instead of treating it as a banner",
+    async (value) => {
+      const f = fixture();
+      const pending = performHandshake(f.stream, "synthetic", 1000);
+      f.stdout.write(JSON.stringify(value) + "\n");
+      await expect(pending).rejects.toThrow("Invalid hello");
+      expect(f.stdin.read()).toBeNull();
+      expect(f.callbacks.size).toBe(0);
+    },
+  );
   it("rejects EOF and releases listeners", async () => {
     const f = fixture();
     const pending = performHandshake(f.stream, "synthetic", 1000);
@@ -288,4 +291,70 @@ it("rejects an ack write failure without leaking handshake listeners", async () 
   await expect(pending).rejects.toThrow("synthetic write failure");
   expect(f.stdout.listenerCount("data")).toBe(0);
   expect(f.callbacks.size).toBe(0);
+});
+
+describe("running version admission", () => {
+  it("rejects mismatched live version before sending ack", async () => {
+    const f = fixture();
+    const pending = performHandshake(f.stream, "synthetic", 1000, undefined, "expected-version");
+    f.stdout.write(JSON.stringify(hello) + "\n");
+    await expect(pending).rejects.toThrow(/version/i);
+    expect(f.stdin.read()).toBeNull();
+    expect(f.callbacks.size).toBe(0);
+  });
+  it("accepts a matching live version", async () => {
+    const f = fixture();
+    const pending = performHandshake(f.stream, "synthetic", 1000, undefined, "test");
+    f.stdout.write(JSON.stringify(hello) + "\n");
+    expect((await pending).hello.version).toBe("test");
+    expect(JSON.parse(f.stdin.read().toString()).type).toBe("zody-hello-ack");
+  });
+});
+
+it("does not initialize a controlled child when its running version differs", async () => {
+  const { spawn } = await import("node:child_process");
+  const { once } = await import("node:events");
+  const code = `process.stdout.write(JSON.stringify(${JSON.stringify(hello)}) + "\\n"); process.stdin.once("data", () => process.stdout.write("INITIALIZED\\n")); process.stdin.once("end", () => process.exit(0));`;
+  const child = spawn(process.execPath, ["-e", code], {
+    env: {
+      HOME: process.env.HOME,
+      USERPROFILE: process.env.USERPROFILE,
+      TMPDIR: process.env.TMPDIR,
+      PATH: process.env.PATH,
+    },
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  const closed: Array<(code: number) => void> = [];
+  const stream: StdioStream = {
+    stdin: child.stdin,
+    stdout: child.stdout,
+    stderr: child.stderr,
+    onClose(fn) {
+      closed.push(fn);
+      return {
+        dispose: () => {
+          const index = closed.indexOf(fn);
+          if (index >= 0) closed.splice(index, 1);
+        },
+      };
+    },
+  };
+  child.once("close", (code) => closed.slice().forEach((fn) => fn(code ?? -1)));
+  let initialized = false;
+  child.stdout.on("data", (chunk: Buffer) => {
+    if (chunk.toString().includes("INITIALIZED")) initialized = true;
+  });
+  try {
+    await expect(
+      performHandshake(stream, "synthetic", 1000, undefined, "mismatch"),
+    ).rejects.toThrow(/version/i);
+    expect(initialized).toBe(false);
+    child.stdin.end();
+    await once(child, "close");
+    expect(initialized).toBe(false);
+    expect(closed).toHaveLength(0);
+  } finally {
+    if (child.exitCode === null) child.kill();
+    child.stdin.destroy();
+  }
 });

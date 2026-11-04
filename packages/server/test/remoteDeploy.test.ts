@@ -1056,14 +1056,7 @@ const tempDirs: string[] = [];
 const originalCwd = process.cwd();
 const originalRemoteDevAgentBundleEnv = process.env.ZODY_REMOTE_DEV_AGENT_BUNDLE;
 const originalZCodeRuntimeEnv = process.env[ZODY_RUNTIME_ENV_KEY];
-const DEV_CLI_BUNDLE_TEST_SUFFIX = join(
-  "apps",
-  "zody-cli",
-  "packages",
-  "cli",
-  "dist",
-  "zody.cjs",
-);
+const DEV_CLI_BUNDLE_TEST_SUFFIX = join("apps", "zody-cli", "packages", "cli", "dist", "zody.cjs");
 
 afterEach(async () => {
   vi.unstubAllGlobals();
@@ -1245,6 +1238,28 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     }
   });
 
+  it("aborting while waiting for deploy lock releases it without starting installs", async () => {
+    let unlock!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      unlock = resolve;
+    });
+    const backend = new FakeRemoteBackend({}, { lockAcquireGate: gate });
+    const controller = new AbortController();
+    const pending = deployServer(
+      backend,
+      { platform: "linux", arch: "arm64" },
+      { force: true, signal: controller.signal },
+    );
+    await vi.waitFor(() =>
+      expect(backend.commands.some((command) => command.includes(".deploy.lock"))).toBe(true),
+    );
+    controller.abort();
+    unlock();
+    await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+    expect(backend.lockReleaseMarkers).toHaveLength(0);
+    expect(backend.uploads).toHaveLength(0);
+  });
+
   it("部署与 lock release 同时失败时应保留两个错误", async () => {
     const rootDir = await mkdtemp(join(tmpdir(), "zcode-remote-deploy-"));
     tempDirs.push(rootDir);
@@ -1319,9 +1334,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
 
     expect(deployed).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
-      true,
-    );
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(true);
     expect(
       backend.uploads.some(
         (upload) => upload.remotePath === `~/.zody/server/${retiredProxyRuntimeId}.tar.gz`,
@@ -1384,7 +1397,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     expect(backend.commands.join("\n")).toContain("plugin-sync");
     expect(backend.commands.join("\n")).toContain("exportMarketplaceSourceArchive");
     expect(backend.commands.join("\n")).toContain("importMarketplaceSourceArchive");
-    expect(backend.commands.join("\n")).toContain("__zcode_rpc_nested_uint8array_v1");
+    expect(backend.commands.join("\n")).toContain("__zody_rpc_nested_uint8array_v1");
   });
 
   it("忽略历史资源包选择并部署完整默认远端资源", async () => {
@@ -1408,9 +1421,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     );
 
     expect(deployed).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
-      true,
-    );
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(true);
     expect(
       backend.uploads.some((upload) =>
         upload.remotePath.includes(`/${retiredProtocolPrefix}/codex`),
@@ -1493,9 +1504,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     expect(
       backend.uploads.some((upload) => upload.remotePath === "~/.zody/server/agents/codex.tar.gz"),
     ).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
-      true,
-    );
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(true);
     expect(hasUploadForStagingTarget(backend, "~/.zody/server/tools/ripgrep/rg.new")).toBe(true);
   });
 
@@ -1688,9 +1697,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         (upload) => upload.remotePath === `~/.zody/server/agents/${retiredProtocolPrefix}.tar.gz`,
       ),
     ).toBe(false);
-    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(
-      true,
-    );
+    expect(hasUploadForStagingTarget(backend, "~/.zody/server/agents/glm/zody.cjs.new")).toBe(true);
   });
 
   it("默认部署只处理 ZCode Agent，旧 node-script meta 不再阻断", async () => {
@@ -2142,15 +2149,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const rootDir = await mkdtemp(join(tmpdir(), "zcode-remote-dev-agent-missing-browser-client-"));
     tempDirs.push(rootDir);
     const repoDir = join(rootDir, "z-code");
-    const cliBundlePath = join(
-      repoDir,
-      "apps",
-      "zody-cli",
-      "packages",
-      "cli",
-      "dist",
-      "zody.cjs",
-    );
+    const cliBundlePath = join(repoDir, "apps", "zody-cli", "packages", "cli", "dist", "zody.cjs");
     await mkdir(dirname(cliBundlePath), { recursive: true });
     await writeFile(cliBundlePath, "console.log('dev zcode agent');\n", "utf8");
     await writeTestOfficialPluginPackages(repoDir);
@@ -2199,15 +2198,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
     const rootDir = await mkdtemp(join(tmpdir(), "zcode-remote-dev-agent-"));
     tempDirs.push(rootDir);
     const repoDir = join(rootDir, "z-code");
-    const cliBundlePath = join(
-      repoDir,
-      "apps",
-      "zody-cli",
-      "packages",
-      "cli",
-      "dist",
-      "zody.cjs",
-    );
+    const cliBundlePath = join(repoDir, "apps", "zody-cli", "packages", "cli", "dist", "zody.cjs");
     await mkdir(dirname(cliBundlePath), { recursive: true });
     await writeFile(cliBundlePath, "console.log('dev zcode agent');\n", "utf8");
     await writeTestOfficialPluginPackages(repoDir);
@@ -2701,9 +2692,9 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(deployed).toBe(true);
       expect(nodeUpload?.localPath).toContain(remoteCacheDir);
       expect(nodeUpload?.localPath).not.toContain(mockCdnDir);
-      expect(
-        cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-x64.json`),
-      ).toBeGreaterThan(0);
+      expect(cdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-x64.json`)).toBeGreaterThan(
+        0,
+      );
     } finally {
       await cdnServer.close();
     }
@@ -3443,9 +3434,7 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
       expect(primaryCdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(
         1,
       );
-      expect(backupCdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(
-        0,
-      );
+      expect(backupCdnServer.getRequestCount(`/${ZODY_VERSION}/manifest-linux-arm64.json`)).toBe(0);
       expect(
         primaryCdnServer.getRequestCount(
           toVersionedArtifactRequestPath(ripgrepBundle.artifactPath),
@@ -5241,5 +5230,51 @@ describe("deployServer legacy agent node-script bundle deployment", () => {
         },
       ),
     ).rejects.toThrow(/暂不支持 Windows 原生远程主机/);
+  });
+});
+
+describe("remote bundle marker execution", () => {
+  it("requires the new nested byte marker on the actual inspected file", async () => {
+    const { spawn } = await import("node:child_process");
+    const { Emitter } = await import("@zody/rpc");
+    const { checkServerBundleRequiredMarkers } =
+      await import("../src/remote/serverBundleDeployCheck.js");
+    const dir = await mkdtemp(join(tmpdir(), "zody-r43-marker-"));
+    tempDirs.push(dir);
+    const bundle = join(dir, "synthetic.cjs");
+    const common =
+      "skill-sync mcp-sync plugin-sync exportMarketplaceSourceArchive importMarketplaceSourceArchive";
+    const backend = {
+      async exec(command: string): Promise<StdioStream> {
+        const close = new Emitter<number>();
+        const child = spawn("/bin/sh", ["-c", command], {
+          env: {
+            HOME: process.env.HOME,
+            USERPROFILE: process.env.USERPROFILE,
+            TMPDIR: process.env.TMPDIR,
+            PATH: process.env.PATH,
+          },
+          stdio: ["pipe", "pipe", "pipe"],
+        });
+        child.once("close", (code) => {
+          close.fire(code ?? 1);
+          close.dispose();
+        });
+        return {
+          stdin: child.stdin,
+          stdout: child.stdout,
+          stderr: child.stderr,
+          onClose: close.event,
+        };
+      },
+    } as IRemoteBackend;
+    await writeFile(bundle, `${common} __zcode_rpc_nested_uint8array_v1`);
+    expect(await checkServerBundleRequiredMarkers(backend, process.execPath, bundle)).toMatchObject(
+      { shouldDeploy: true },
+    );
+    await writeFile(bundle, `${common} __zody_rpc_nested_uint8array_v1`);
+    expect(await checkServerBundleRequiredMarkers(backend, process.execPath, bundle)).toEqual({
+      shouldDeploy: false,
+    });
   });
 });

@@ -20,6 +20,7 @@ export interface AcquireRemoteDeployLockOptions {
   ownerToken?: string;
   acquireTimeoutMs?: number;
   releaseTimeoutMs?: number;
+  signal?: AbortSignal;
 }
 
 function destroyStreamBestEffort(stream: NodeJS.ReadableStream | NodeJS.WritableStream): void {
@@ -63,7 +64,9 @@ function buildRemoteDeployLockScript(lockDir: string, ownerToken: string): strin
     '  if [ "$current_owner" = "$owner_token" ]; then rm -rf "$lock_dir"; fi',
     "}",
     "trap cleanup_deploy_lock EXIT HUP INT TERM",
-    `(while [ "$(cat "$owner_file" 2>/dev/null || true)" = "$owner_token" ]; do touch "$owner_file" 2>/dev/null || exit 0; sleep ${DEPLOY_LOCK_HEARTBEAT_SECONDS}; done) &`,
+    // 后台 sleep 曾继承握手管道并在父 shell 退出后存活，导致 lock release 超时；
+    // 只终止本 heartbeat 自己创建的 sleep，等待它退出后再让 holder 结束。
+    `(heartbeat_sleep_pid=; trap 'if [ -n "$heartbeat_sleep_pid" ]; then kill "$heartbeat_sleep_pid" 2>/dev/null || true; wait "$heartbeat_sleep_pid" 2>/dev/null || true; fi; exit 0' TERM HUP INT; while [ "$(cat "$owner_file" 2>/dev/null || true)" = "$owner_token" ]; do touch "$owner_file" 2>/dev/null || exit 0; sleep ${DEPLOY_LOCK_HEARTBEAT_SECONDS} & heartbeat_sleep_pid=$!; wait "$heartbeat_sleep_pid" || true; heartbeat_sleep_pid=; done) </dev/null >/dev/null 2>&1 &`,
     "lock_heartbeat_pid=$!",
     `printf '%s\n' ${quotePosixShellArg(acquiredMarker)}`,
     "release_marker=",
@@ -141,6 +144,7 @@ export async function acquireRemoteDeployLock(
       let timeout: ReturnType<typeof setTimeout> | undefined;
       const cleanup = () => {
         stream.stdout.off("data", onStdout);
+        options.signal?.removeEventListener("abort", onAbort);
         if (timeout) {
           clearTimeout(timeout);
         }
@@ -169,10 +173,26 @@ export async function acquireRemoteDeployLock(
           ),
         );
       };
+      const onAbort = () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        // 取消只关闭本 waiter 的 channel，既有锁 owner 不受影响。
+        destroyLockStreamBestEffort(stream);
+        reject(
+          options.signal?.reason instanceof Error
+            ? options.signal.reason
+            : Object.assign(new Error("Remote deployment canceled"), { name: "AbortError" }),
+        );
+      };
       // 先安装 deadline 再订阅 stdout；某些 stream 在注册 data listener 时会同步吐出缓冲 marker。
       // 若顺序相反，marker 已 resolve 后才创建的 timer 会残留到 deadline。
       timeout = setTimeout(onTimeout, acquireTimeoutMs);
       stream.stdout.on("data", onStdout);
+      if (!settled) {
+        options.signal?.addEventListener("abort", onAbort, { once: true });
+        if (options.signal?.aborted) onAbort();
+      }
       void close.promise.then((code) => {
         if (settled) {
           return;
