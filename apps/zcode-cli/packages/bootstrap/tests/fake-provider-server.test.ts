@@ -244,7 +244,9 @@ describe.each(FORMATS)("fake provider server — %s", (apiFormat) => {
         event.type === "model_retry_scheduled",
     );
     expect(scheduled).toHaveLength(1);
-    expect(scheduled[0]?.delayMs).toBe(20);
+    // F03 抖动（来源 a60ba6a7）：默认开 jitter 时 retry-after 之上最多往后加 20%、绝不提前，断言改为区间。
+    expect(scheduled[0]?.delayMs).toBeGreaterThanOrEqual(20);
+    expect(scheduled[0]?.delayMs).toBeLessThanOrEqual(24);
     expect(scheduled[0]?.reason).toBe("rate_limited");
     expect(server.requests.map((entry) => entry.servedStatus)).toEqual([429, 200]);
   });
