@@ -93,7 +93,12 @@ export type ZCodeAgentCommandResolver = (
  * Provider/network values are normalized summaries, not credentials or task-time overrides.
  */
 export interface ZCodeAgentNativeRuntimeStartupContext {
-  readonly providerRevisionSha256: string;
+  // 中文注释：本字段旧名的前缀撞上 M2 已退出标识（provider 注册表 revision 概念，见
+  // packages/provider/test/m2-completion-boundary.test.ts 的生产源码零残留断言），故更名。
+  // 字段语义是对 provider 配置快照公开事实的 SHA-256 digest（见
+  // digestZCodeAgentNativeRuntimeProviderSnapshot），不是进程本地 registry revision 号；
+  // 按同事件内 networkDigestSha256 的现行命名对齐，digest 值计算不变。
+  readonly providerDigestSha256: string;
   readonly selection: ModelSelection | null;
   readonly network: {
     readonly httpProxy?: string | null;

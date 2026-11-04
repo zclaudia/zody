@@ -33,13 +33,16 @@ export const CUA_DEMO_DEFAULT_PUBLIC_FACTS = Object.freeze({
   // plist/资源清单；签名身份沿用 round11 冻结 pins，未做任何改动。
   manifestRelativePath: "output/cua-app-icon/controller-prepared/manifest.json",
   // 中文注释：用户在本轮开工前修改了 provider 注册表（新增/调整条目），默认选择
-  // （deepseek/deepseek-flash max）与网络摘要未变，但 providerRevisionSha256 变为
+  // （deepseek/deepseek-flash max）与网络摘要未变，但 provider 配置快照 digest 变为
   // 545008f5…，旧 snapshot pin 触发了设计内的 provider-revision-mismatch 回退。
   // 这里按同一测量语义重新固定 Host 于 2026-10-31 18:12 实测记录的当前配置快照。
+  // 2026-11-05：startup snapshot 的 provider digest 字段更名（旧名前缀撞 M2 退出标识，
+  // 详见 ZCodeAgentNativeRuntimeStartupContext 处注释），snapshot 文件 key 同步改名、
+  // 实测 digest 值不变，startupSnapshotSha256 按新文件字节重新计算。
   startupSnapshotRelativePath: "output/cua-inapp-confirm/startup-snapshot-current.json",
   manifestSha256: "48a657bb2883ed18801dd52e13425c360e03c90ae2f66f1f6f77231108af1a10",
-  startupSnapshotSha256: "754d672286692bea5933d8a3ae33935fbb94b05f0ca56ff78995fe31e8ded2e9",
-  providerRevisionSha256: "545008f54fef4247ffcaaa7772eebba31d475cca2b0abc7d869a18fcf142a4a2",
+  startupSnapshotSha256: "c3e96129516c7d7c17303e2ee070118076cc98806bb63bd3109f8136c4646b27",
+  providerDigestSha256: "545008f54fef4247ffcaaa7772eebba31d475cca2b0abc7d869a18fcf142a4a2",
   providerSelection: Object.freeze({
     providerId: "deepseek",
     modelId: "deepseek-flash",
@@ -193,7 +196,7 @@ async function resolveDefaultSelection({ env, repoRoot, targetPlatform, validate
   if (
     profile.resourceManifest.sha256 !== CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256 ||
     profile.provider.revisionSha256 !==
-      CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerRevisionSha256 ||
+      CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerDigestSha256 ||
     observedSelection.providerId !== expectedSelection.providerId ||
     observedSelection.modelId !== expectedSelection.modelId ||
     observedSelection.options?.reasoningLevel !== expectedSelection.options.reasoningLevel ||

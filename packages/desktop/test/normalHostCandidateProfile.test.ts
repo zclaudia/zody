@@ -191,7 +191,7 @@ describe("normal Host candidate startup profile", () => {
     const snapshot = {
       kind: "narrow-runtime-startup-snapshot",
       reason: "read-before-eligibility-compare",
-      providerRevisionSha256: "a".repeat(64),
+      providerDigestSha256: "a".repeat(64),
       selection: {
         providerId: "deepseek-anthropic",
         modelId: "deepseek-v3.2",
@@ -211,7 +211,7 @@ describe("normal Host candidate startup profile", () => {
     });
     expect(profileSource).toBe("host-startup-snapshot");
     expect(profile.provider).toEqual({
-      revisionSha256: snapshot.providerRevisionSha256,
+      revisionSha256: snapshot.providerDigestSha256,
       selection: snapshot.selection,
     });
     expect(profile.network).toEqual({ digestSha256: snapshot.networkDigestSha256 });

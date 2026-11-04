@@ -58,7 +58,7 @@ describe("macOS CUA self-use build defaults", () => {
         sha256: CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256,
       },
       provider: {
-        revisionSha256: CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerRevisionSha256,
+        revisionSha256: CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerDigestSha256,
         selection: {
           providerId: "deepseek",
           modelId: "deepseek-flash",

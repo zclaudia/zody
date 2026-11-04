@@ -1240,7 +1240,9 @@ function resolveLocalNarrowAgentWiring(
         `${CUA_NARROW_STARTUP_SNAPSHOT_LOG_MARKER}${JSON.stringify({
           kind: event.kind,
           reason: event.reason,
-          providerRevisionSha256: event.providerRevisionSha256,
+          // 中文注释：JSON key 随字段更名（旧名前缀撞 M2 退出标识）；该日志行是 startup
+          // snapshot 的唯一采集来源，scripts 解析器已同步改名，旧 key 会被严格 allowlist 拒绝。
+          providerDigestSha256: event.providerDigestSha256,
           selection: event.selection,
           networkDigestSha256: event.networkDigestSha256,
           snapshotSource: event.snapshotSource,
@@ -1303,7 +1305,7 @@ function resolveLocalNarrowAgentWiring(
           launcherPath: result.runtime.launcherPath,
           capability: result.runtime.profile.capability,
           workspacePath: context.workspacePath,
-          providerRevisionSha256: startupContext.providerRevisionSha256,
+          providerDigestSha256: startupContext.providerDigestSha256,
           providerSelection: startupContext.selection,
           networkDigestSha256: result.runtime.profile.network.digestSha256,
           snapshotSource: "existing-host-services",

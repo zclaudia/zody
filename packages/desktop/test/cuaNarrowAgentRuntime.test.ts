@@ -71,7 +71,7 @@ function createWorkspace(name = "workspace") {
 }
 
 const startupContext: ZCodeAgentNativeRuntimeStartupContext = {
-  providerRevisionSha256: "a".repeat(64),
+  providerDigestSha256: "a".repeat(64),
   selection: {
     providerId: "deepseek-anthropic",
     modelId: "deepseek-v3.2",
@@ -100,7 +100,7 @@ function createProfile(
       launcherSha256: resources.launcherSha256,
     },
     provider: {
-      revisionSha256: startupContext.providerRevisionSha256,
+      revisionSha256: startupContext.providerDigestSha256,
       selection: startupContext.selection,
     },
     network: { digestSha256: digestCuaNarrowNetworkConfig(startupContext.network) },
@@ -170,7 +170,7 @@ describe("cua narrow agent runtime", () => {
       capability: CUA_NARROW_CAPABILITY,
       workspaceAllowlist: [workspace],
       provider: {
-        revisionSha256: startupContext.providerRevisionSha256,
+        revisionSha256: startupContext.providerDigestSha256,
         selection: startupContext.selection,
       },
       network: { digestSha256: digestCuaNarrowNetworkConfig(startupContext.network) },
@@ -231,7 +231,7 @@ describe("cua narrow agent runtime", () => {
 
     await expect(
       prepare(profile, resources, [workspace], {
-        startupContext: { ...startupContext, providerRevisionSha256: "c".repeat(64) },
+        startupContext: { ...startupContext, providerDigestSha256: "c".repeat(64) },
       }),
     ).resolves.toMatchObject({ status: "unsupported", reason: "provider-revision-mismatch" });
     await expect(
@@ -278,7 +278,7 @@ describe("cua narrow agent runtime", () => {
     expect(snapshot).toEqual({
       kind: "narrow-runtime-startup-snapshot",
       reason: "read-before-eligibility-compare",
-      providerRevisionSha256: startupContext.providerRevisionSha256,
+      providerDigestSha256: startupContext.providerDigestSha256,
       selection: startupContext.selection,
       networkDigestSha256: digestZCodeAgentNativeRuntimeNetwork(startupContext.network),
       snapshotSource: "existing-host-services",
@@ -328,7 +328,7 @@ describe("cua narrow agent runtime", () => {
     const readStartupContext = vi
       .fn<() => Promise<ZCodeAgentNativeRuntimeStartupContext>>()
       .mockResolvedValueOnce(startupContext)
-      .mockResolvedValueOnce({ ...startupContext, providerRevisionSha256: "c".repeat(64) })
+      .mockResolvedValueOnce({ ...startupContext, providerDigestSha256: "c".repeat(64) })
       .mockRejectedValueOnce(new Error("provider service unavailable"))
       .mockResolvedValueOnce(startupContext);
     const context = resolverContext(workspace, readStartupContext);

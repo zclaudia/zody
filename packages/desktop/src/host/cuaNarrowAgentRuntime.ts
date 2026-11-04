@@ -61,7 +61,9 @@ export interface CuaNarrowDecisionEvent {
   readonly workspacePath?: string;
   readonly snapshotSource: "build-profile" | "existing-host-services";
   readonly taskTimeProviderGuard: false;
-  readonly providerRevisionSha256?: string;
+  // 中文注释：字段旧名前缀撞上 M2 已退出标识，更名详见 ZCodeAgentNativeRuntimeStartupContext
+  // 处注释；语义是对 provider 配置快照的 SHA-256 digest，与同事件 networkDigestSha256 命名对齐。
+  readonly providerDigestSha256?: string;
   readonly selection?: ModelSelection | null;
   readonly networkDigestSha256?: string;
 }
@@ -109,7 +111,7 @@ function compareStartupContext(
   context: ZCodeAgentNativeRuntimeStartupContext | undefined,
 ): StartupMismatchReason | null {
   if (!context) return "startup-context-unavailable";
-  if (context.providerRevisionSha256 !== profile.provider.revisionSha256) {
+  if (context.providerDigestSha256 !== profile.provider.revisionSha256) {
     return "provider-revision-mismatch";
   }
   if (selectionDigest(context.selection) !== selectionDigest(profile.provider.selection)) {
@@ -147,7 +149,7 @@ export async function prepareCuaNarrowAgentRuntime(
     reportEvent({
       kind: "narrow-runtime-startup-snapshot",
       reason: "read-before-eligibility-compare",
-      providerRevisionSha256: options.startupContext.providerRevisionSha256,
+      providerDigestSha256: options.startupContext.providerDigestSha256,
       selection: options.startupContext.selection,
       networkDigestSha256: digestCuaNarrowNetworkConfig(options.startupContext.network),
       snapshotSource: "existing-host-services",

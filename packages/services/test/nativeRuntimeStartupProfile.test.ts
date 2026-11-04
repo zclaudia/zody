@@ -157,7 +157,7 @@ describe("native runtime startup profile", () => {
     });
 
     expect(context).toEqual({
-      providerRevisionSha256: digestZCodeAgentNativeRuntimeProviderSnapshot(providerView()),
+      providerDigestSha256: digestZCodeAgentNativeRuntimeProviderSnapshot(providerView()),
       selection: {
         providerId: "deepseek-anthropic",
         modelId: "deepseek-v3.2",
