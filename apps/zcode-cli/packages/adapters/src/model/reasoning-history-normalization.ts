@@ -17,11 +17,7 @@ const REJECTED_REASONING_FALLBACK = "[Thinking removed]";
 // fork（F4.11）：官方账号 Provider 已删除，这里的 account:* 字面量仅为存量 transcript 的
 // reasoning 回放兼容保留（同步友好原则），不产生新身份。
 const REASONING_PROVIDER_GROUPS: readonly (readonly string[])[] = [
-  [
-    "builtin:zai-coding-plan",
-    "account:zai-individual-coding-plan",
-    "account:zai-team-coding-plan",
-  ],
+  ["builtin:zai-coding-plan", "account:zai-individual-coding-plan", "account:zai-team-coding-plan"],
   [
     "builtin:bigmodel-coding-plan",
     "account:bigmodel-individual-coding-plan",
@@ -34,9 +30,15 @@ export function normalizeReasoningHistory(
   targetModel?: { modelId: ModelId; providerId: ModelProviderId },
 ): ModelInputMessage[] {
   const compatibleHistory = removeCrossModelReasoning(messages, targetModel);
-  const withoutOrphans = removeReasoningOnlyAssistants(compatibleHistory);
+  const withoutOrphans = removeAssistantsMergingNeighbors(
+    compatibleHistory,
+    isReasoningOnlyAssistant,
+  );
   const withoutTrailingReasoning = removeTrailingReasoning(withoutOrphans);
-  const withoutWhitespaceOnlyAssistants = removeWhitespaceOnlyAssistants(withoutTrailingReasoning);
+  const withoutWhitespaceOnlyAssistants = removeAssistantsMergingNeighbors(
+    withoutTrailingReasoning,
+    isWhitespaceOnlyAssistant,
+  );
   return repairEmptyAssistantContent(withoutWhitespaceOnlyAssistants);
 }
 
@@ -143,13 +145,38 @@ function filterReasoningBlocks(
   return result ?? messages;
 }
 
-function removeReasoningOnlyAssistants(messages: ModelInputMessage[]): ModelInputMessage[] {
-  const result = messages.filter((message) => {
-    if (message.role !== "assistant" || hasToolCalls(message)) return true;
-    if (!Array.isArray(message.content) || message.content.length === 0) return true;
-    return !message.content.every((block) => block.type === "reasoning");
-  });
+// 修复依据（upstream a60ba6a7, v3.17.1）：删除纯 reasoning/空白 assistant 后只合并删除点两侧
+// 的一对相邻 user。此前本仓 removeWhitespaceOnlyAssistants 走 mergeAdjacentUserMessages
+// 全量重合并，会给请求层已拼好的每对相邻 user 多补一个 "\n"；
+// removeReasoningOnlyAssistants 则完全不合并，删除点两侧 user 缺少拼接分隔。
+function removeAssistantsMergingNeighbors(
+  messages: ModelInputMessage[],
+  shouldRemove: (message: ModelInputMessage) => boolean,
+): ModelInputMessage[] {
+  const result: ModelInputMessage[] = [];
+  let removedBefore = false;
+  for (const message of messages) {
+    if (shouldRemove(message)) {
+      removedBefore = true;
+      continue;
+    }
+    const previous = result.at(-1);
+    // 删除后两侧的 user 由下游直接拼接，前一条文本末尾会缺少 "\n"，所以在这里合并。
+    // 只合并删除点两侧的一对；其他相邻 user 已由请求层拼好，不再整段重新合并。
+    if (removedBefore && canMergeAdjacentUserMessages(previous, message)) {
+      result[result.length - 1] = mergeUserMessagePair(previous, message);
+    } else {
+      result.push(message);
+    }
+    removedBefore = false;
+  }
   return result.length === messages.length ? messages : result;
+}
+
+function isReasoningOnlyAssistant(message: ModelInputMessage): boolean {
+  if (message.role !== "assistant" || hasToolCalls(message)) return false;
+  if (!Array.isArray(message.content) || message.content.length === 0) return false;
+  return message.content.every((block) => block.type === "reasoning");
 }
 
 function removeTrailingReasoning(messages: ModelInputMessage[]): ModelInputMessage[] {
@@ -170,18 +197,14 @@ function removeTrailingReasoning(messages: ModelInputMessage[]): ModelInputMessa
   return result;
 }
 
-function removeWhitespaceOnlyAssistants(messages: ModelInputMessage[]): ModelInputMessage[] {
-  const filtered = messages.filter((message) => {
-    if (message.role !== "assistant" || hasToolCalls(message)) return true;
-    if (!Array.isArray(message.content) || message.content.length === 0) return true;
-    return !message.content.every(
-      (block) =>
-        block.type === "text" &&
-        (block.text.trim().length === 0 || block.text.trim() === EMPTY_ASSISTANT_CONTENT_FALLBACK),
-    );
-  });
-  if (filtered.length === messages.length) return messages;
-  return mergeAdjacentUserMessages(filtered);
+function isWhitespaceOnlyAssistant(message: ModelInputMessage): boolean {
+  if (message.role !== "assistant" || hasToolCalls(message)) return false;
+  if (!Array.isArray(message.content) || message.content.length === 0) return false;
+  return message.content.every(
+    (block) =>
+      block.type === "text" &&
+      (block.text.trim().length === 0 || block.text.trim() === EMPTY_ASSISTANT_CONTENT_FALLBACK),
+  );
 }
 
 function repairEmptyAssistantContent(messages: ModelInputMessage[]): ModelInputMessage[] {
@@ -208,26 +231,17 @@ function repairEmptyAssistantContent(messages: ModelInputMessage[]): ModelInputM
   return result ?? messages;
 }
 
-function mergeAdjacentUserMessages(messages: ModelInputMessage[]): ModelInputMessage[] {
-  const result: ModelInputMessage[] = [];
-
-  for (const message of messages) {
-    const previous = result.at(-1);
-    if (!canMergeAdjacentUserMessages(previous, message)) {
-      result.push(message);
-      continue;
-    }
-
-    const merged: ModelInputMessage = {
-      role: "user",
-      content: mergeUserContent(previous.content, message.content),
-    };
-    const cacheControl = message.cacheControl ?? previous.cacheControl;
-    if (cacheControl) merged.cacheControl = { ...cacheControl };
-    result[result.length - 1] = merged;
-  }
-
-  return result;
+function mergeUserMessagePair(
+  previous: ModelInputMessage,
+  message: ModelInputMessage,
+): ModelInputMessage {
+  const merged: ModelInputMessage = {
+    role: "user",
+    content: mergeUserContent(previous.content, message.content),
+  };
+  const cacheControl = message.cacheControl ?? previous.cacheControl;
+  if (cacheControl) merged.cacheControl = { ...cacheControl };
+  return merged;
 }
 
 function canMergeAdjacentUserMessages(
