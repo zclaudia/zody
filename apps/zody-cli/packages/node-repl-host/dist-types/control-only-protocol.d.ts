@@ -3,7 +3,7 @@ import { Duplex } from "node:stream";
 import type { ControlChannelAckResult, ControlChannelRequest } from "@zody/zody-cua/control-channel";
 import type { ControlBinding } from "@zody/zody-cua/control-protocol";
 import type { ProducerControlOwner } from "@zody/zody-cua/producer-control";
-export declare const ZCODE_NODE_REPL_CONTROL_FLAG = "--zcode-node-repl-control";
+export declare const ZODY_NODE_REPL_CONTROL_FLAG = "--zody-node-repl-control";
 export declare const CONTROL_ONLY_BOOTSTRAP_MAX_BYTES: number;
 export type ControlOnlyErrorCode = "invalid_arguments" | "bootstrap_fd_unavailable" | "bootstrap_invalid" | "control_fd_unavailable" | "ready_write_failed" | "channel_failed";
 export declare class ControlOnlyEntryError extends Error {

@@ -174,7 +174,7 @@ sequenceDiagram
   避免缺少 launcher 时误关该编号下的 libuv 资源。完整 frame 只表示有界单行读取完成，不构成
   身份证明；信任来自受信 launcher 直接建立的私有通道，再以 ready/channel 验签验证启动绑定。
 - 启动必须使用真实 `child_process.spawn` 和继承 pipe。调用方必须在 ready 验签成功后才能发送请求；不采用端口、路径或首包 TOFU。
-- 非秘密 mode flag `--zcode-node-repl-control` 是唯一 argv 开关；携带额外参数、缺少 fd3/fd4/fd5/fd6 或 bootstrap 非法时明确失败。
+- 非秘密 mode flag `--zody-node-repl-control` 是唯一 argv 开关；携带额外参数、缺少 fd3/fd4/fd5/fd6 或 bootstrap 非法时明确失败。
 - control-only 分支在普通 `serveStdio`、MCP 注册、模型输入、cell/Worker 之前返回。
 - child 环境使用白名单；清除 `NODE_OPTIONS`、`NODE_PATH`、inspector、`ZCODE_*`、Helper/broker/token 和云凭据。
 - 该路径不 spawn 后代；不把额外 control fd 传给任何子孙。直接子进程退出是 dispose 完成的必要条件。

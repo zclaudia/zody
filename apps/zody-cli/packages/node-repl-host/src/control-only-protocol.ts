@@ -10,7 +10,8 @@ import type {
 import type { ControlBinding } from "@zody/zody-cua/control-protocol";
 import type { ProducerControlOwner } from "@zody/zody-cua/producer-control";
 
-export const ZCODE_NODE_REPL_CONTROL_FLAG = "--zcode-node-repl-control";
+// 只用当前标记激活控制入口，避免旧参数意外获得控制能力。
+export const ZODY_NODE_REPL_CONTROL_FLAG = "--zody-node-repl-control";
 export const CONTROL_ONLY_BOOTSTRAP_MAX_BYTES = 16 * 1024;
 const CONTROL_ONLY_READY_MAX_BYTES = 8 * 1024;
 const PRODUCER_KEY_ID = "producer";
@@ -66,14 +67,14 @@ export interface ValidatedBootstrap {
 }
 
 export function isControlOnlyInvocation(argv: readonly string[]): boolean {
-  return argv.includes(ZCODE_NODE_REPL_CONTROL_FLAG);
+  return argv.includes(ZODY_NODE_REPL_CONTROL_FLAG);
 }
 
 export function hasExactControlArguments(argv: readonly string[]): boolean {
   return (
     argv.length === 3 &&
-    argv[2] === ZCODE_NODE_REPL_CONTROL_FLAG &&
-    argv.filter((value) => value === ZCODE_NODE_REPL_CONTROL_FLAG).length === 1
+    argv[2] === ZODY_NODE_REPL_CONTROL_FLAG &&
+    argv.filter((value) => value === ZODY_NODE_REPL_CONTROL_FLAG).length === 1
   );
 }
 

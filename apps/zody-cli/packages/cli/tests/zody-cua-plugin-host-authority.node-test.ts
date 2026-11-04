@@ -12,7 +12,7 @@ import {
   sanitizeZodyRuntimeEnvInPlace,
 } from "@zody/shared";
 import type { RunContext } from "@zody/shared-types";
-import { runPluginHostCommand, ZCODE_NODE_REPL_CONTROL_FLAG } from "../src/plugin-host-command.js";
+import { runPluginHostCommand, ZODY_NODE_REPL_CONTROL_FLAG } from "../src/plugin-host-command.js";
 
 type CapturedWriteStream = NodeJS.WriteStream & { output: () => string };
 
@@ -71,13 +71,13 @@ export async function main() {
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
-    const ctx = createContext([ZCODE_NODE_REPL_CONTROL_FLAG]);
-    const exitCode = await runPluginHostCommand(ctx, [serverPath, ZCODE_NODE_REPL_CONTROL_FLAG]);
+    const ctx = createContext([ZODY_NODE_REPL_CONTROL_FLAG]);
+    const exitCode = await runPluginHostCommand(ctx, [serverPath, ZODY_NODE_REPL_CONTROL_FLAG]);
 
     assert.equal(exitCode, 0);
     assert.equal(ctx.stderr.output(), "");
     assert.deepEqual(JSON.parse(await readFile(outputPath, "utf8")), {
-      argv: [ZCODE_NODE_REPL_CONTROL_FLAG],
+      argv: [ZODY_NODE_REPL_CONTROL_FLAG],
       brokerSocket: null,
     });
   } finally {
@@ -106,10 +106,10 @@ export async function main() {}
 `,
     );
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
-    const ctx = createContext([ZCODE_NODE_REPL_CONTROL_FLAG, "--script"]);
+    const ctx = createContext([ZODY_NODE_REPL_CONTROL_FLAG, "--script"]);
     const exitCode = await runPluginHostCommand(ctx, [
       serverPath,
-      ZCODE_NODE_REPL_CONTROL_FLAG,
+      ZODY_NODE_REPL_CONTROL_FLAG,
       "--script",
     ]);
 

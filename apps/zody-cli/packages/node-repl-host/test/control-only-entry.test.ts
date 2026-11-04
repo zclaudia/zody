@@ -14,7 +14,14 @@ import {
 } from "@zody/zody-cua/control-channel";
 import type { ControlBinding } from "@zody/zody-cua/control-protocol";
 import { buildNodeReplHostBundle } from "../scripts/build.mjs";
-import { ZCODE_NODE_REPL_CONTROL_FLAG } from "../src/control-only.js";
+import { ZODY_NODE_REPL_CONTROL_FLAG, isControlOnlyInvocation } from "../src/control-only.js";
+
+describe("control-only marker", () => {
+  it("activates only the new flag", () => {
+    expect(isControlOnlyInvocation(["node", "server", "--zody-node-repl-control"])).toBe(true);
+    expect(isControlOnlyInvocation(["node", "server", "--zcode-node-repl-control"])).toBe(false);
+  });
+});
 
 const buildTimeoutMs = 120_000;
 const waitTimeoutMs = 10_000;
@@ -138,7 +145,7 @@ function spawnChild(
       : ["ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"];
   const child = spawn(
     process.execPath,
-    [serverPath, ZCODE_NODE_REPL_CONTROL_FLAG, ...(options.extraArgs ?? [])],
+    [serverPath, ZODY_NODE_REPL_CONTROL_FLAG, ...(options.extraArgs ?? [])],
     { env: process.env, stdio },
   );
   if (options.bootstrap !== undefined) {
@@ -163,11 +170,33 @@ describe("control-only node_repl entry", () => {
     if (directory) await rm(directory, { force: true, recursive: true });
   });
 
+  it.each([3, 4, 5, 6])("fails closed when fd %i is unavailable", async (missingFd) => {
+    const fixture = fileURLToPath(new URL("./fixtures/control-only-fd-reuse.ts", import.meta.url));
+    const child = spawn(process.execPath, ["--import", "tsx", fixture], {
+      env: { ...process.env, ZCONTROL_MISSING_FD: String(missingFd) },
+      stdio: ["ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"],
+    });
+    let stdout = "";
+    child.stdout?.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
+    child.stderr?.resume();
+    (child.stdio[3] as Writable).end(createBootstrap(createKeys(), "challenge-missing-fd"));
+    try {
+      const exit = await withTimeout(waitForExit(child), "child did not exit with unavailable fd");
+      expect(exit).toEqual({ code: 1, signal: null });
+      expect(JSON.parse(stdout)).toEqual({ code: 1, selected: missingFd, verified: "EBADF" });
+    } finally {
+      if (child.exitCode === null && child.signalCode === null) {
+        child.kill("SIGKILL");
+        await waitForExit(child).catch(() => undefined);
+      }
+    }
+  }, buildTimeoutMs);
+
   it(
     "fails closed when the private bootstrap fd is not a private pipe",
     async () => {
       const bogusFd = openSync(join(directory, "not-a-private-pipe"), "w");
-      const child = spawn(process.execPath, [serverPath, ZCODE_NODE_REPL_CONTROL_FLAG], {
+      const child = spawn(process.execPath, [serverPath, ZODY_NODE_REPL_CONTROL_FLAG], {
         env: process.env,
         stdio: ["ignore", "pipe", "pipe", bogusFd, "ignore", "ignore", "ignore"],
       });
@@ -343,7 +372,7 @@ describe("control-only node_repl entry", () => {
       const tsxLoaderPath = fileURLToPath(import.meta.resolve("tsx"));
       const child = spawn(
         process.execPath,
-        ["--import", tsxLoaderPath, fixturePath, ZCODE_NODE_REPL_CONTROL_FLAG],
+        ["--import", tsxLoaderPath, fixturePath, ZODY_NODE_REPL_CONTROL_FLAG],
         {
           env: { ...process.env, ZCONTROL_FD_REUSE_FILE: filePath },
           stdio: ["ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"],

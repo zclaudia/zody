@@ -10,7 +10,7 @@ import {
   buildControlOnlyChildEnvironment,
   resolveOfficialControlOnlyLauncher,
   startControlOnlyDiagnosticLauncher,
-  ZCODE_NODE_REPL_CONTROL_FLAG,
+  ZODY_NODE_REPL_CONTROL_FLAG,
   type ControlOnlyDiagnosticLauncher,
   type ControlOnlyLauncherClosedEvent,
   type ControlOnlyLauncherInvalidatedEvent,
@@ -135,7 +135,7 @@ describe("control-only diagnostic launcher", () => {
       cliEntryPath,
       "__zcode-plugin-host",
       serverPath,
-      ZCODE_NODE_REPL_CONTROL_FLAG,
+      ZODY_NODE_REPL_CONTROL_FLAG,
     ]);
   });
 

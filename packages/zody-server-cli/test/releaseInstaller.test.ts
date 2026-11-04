@@ -99,7 +99,8 @@ describe("release installer", () => {
     // 本机无 PowerShell，无法执行该入口，至少钉住生成文本中的关键分支防止被回退。
     expect(launcher).toContain('set "RELEASE_DIR="');
     expect(launcher).toContain("ResolveLinkTarget");
-    expect(launcher).toContain("ZCODE_INVALID_RELEASE");
+    expect(launcher).toContain("ZODY_INVALID_RELEASE");
+    expect(launcher).not.toContain("ZCODE_INVALID_RELEASE");
   });
 
   // Bugfix: 该用例验证 POSIX shell 版 stable launcher 的 fail-closed 输出，靠 shebang

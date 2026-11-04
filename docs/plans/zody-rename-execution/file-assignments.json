@@ -17277,9 +17277,76 @@
       "docs/plans/zody-rename-execution/reports/R40-error-values.md",
       "specs/zody-rename-error-values.md"
     ],
-    "scopeStatus": "scoped-accepted-cleaned-awaiting-commit",
+    "scopeStatus": "scoped-accepted-cleaned-committed",
     "gate": "Independent DeepSeek scoped PASS; root typecheck/lint/architecture pass; 33 source and 32 raw logs retained; journaled cleanup and independent post-audit complete. No release or full E2E acceptance.",
     "acceptanceReport": "docs/plans/zody-rename-execution/reports/R40-error-values-independent-review.md",
-    "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-error-values-controller-verification.md"
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-error-values-controller-verification.md",
+    "acceptedCommit": "69b5a1dae1105012c5c3d9f9ff6e9e30eb914624"
+  },
+  "R20_PROCESS_MARKERS": {
+    "title": "Paired same-version process markers",
+    "baselineCommit": "69b5a1dae1105012c5c3d9f9ff6e9e30eb914624",
+    "controllerGrant": "output/zody-rename-r20-process/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "apps/zody-cli/packages/adapters/src/mcp/control-only-contract.ts",
+      "apps/zody-cli/packages/adapters/src/mcp/control-only-launcher.ts",
+      "apps/zody-cli/packages/adapters/tests/control-only-launcher.test.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/dynamic-workflow-run-launch.ts",
+      "apps/zody-cli/packages/bootstrap/tests/dynamic-workflow-child-spawn.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/embedded-search-native.e2e.test.ts",
+      "apps/zody-cli/packages/cli/src/dwf-child-command.ts",
+      "apps/zody-cli/packages/cli/src/plugin-host-command.ts",
+      "apps/zody-cli/packages/cli/tests/dwf-child-command.test.ts",
+      "apps/zody-cli/packages/cli/tests/zody-cua-plugin-host-authority.node-test.ts",
+      "apps/zody-cli/packages/contracts/src/plugins/index.ts",
+      "apps/zody-cli/packages/dynamic-workflow-runtime/src/child-source.ts",
+      "apps/zody-cli/packages/dynamic-workflow-runtime/src/index.ts",
+      "apps/zody-cli/packages/dynamic-workflow-runtime/tests/child-spawn-args.test.ts",
+      "apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md",
+      "apps/zody-cli/packages/node-repl-host/CONTRACT.md",
+      "apps/zody-cli/packages/node-repl-host/dist-types/control-only-protocol.d.ts",
+      "apps/zody-cli/packages/node-repl-host/dist-types/control-only-protocol.d.ts.map",
+      "apps/zody-cli/packages/node-repl-host/src/control-only-protocol.ts",
+      "apps/zody-cli/packages/node-repl-host/src/control-only.ts",
+      "apps/zody-cli/packages/node-repl-host/test/control-only-entry.test.ts",
+      "apps/zody-cli/packages/node-repl-host/test/fixtures/control-only-fd-reuse.ts",
+      "packages/services/src/runtime-tools/runtimeLoginShellEnvCapture.ts",
+      "packages/services/test/runtimeCommandEnv.test.ts",
+      "packages/ui/src/lib/patchDiffPreview.ts",
+      "packages/ui/test/patchDiffPreview.test.ts",
+      "packages/zody-server-cli/src/runtime/stableLauncher.ts",
+      "packages/zody-server-cli/test/releaseInstaller.test.ts",
+      "specs/zody-rename-process-markers.md",
+      "docs/plans/zody-rename-execution/reports/R20-process-markers.md",
+      "apps/zody-cli/packages/node-repl-host/dist-types/control-only.d.ts",
+      "apps/zody-cli/packages/node-repl-host/dist-types/control-only.d.ts.map",
+      "docs/dynamic-workflow/launch.md"
+    ],
+    "plannedPaths": [
+      "specs/zody-rename-process-markers.md",
+      "docs/plans/zody-rename-execution/reports/R20-process-markers.md"
+    ],
+    "scopeStatus": "bounded-code-accepted-cleaned-awaiting-commit",
+    "gate": "Independent marker-code delivery accepted; actual macOS SEA parent/child passed; exact cleanup and post-audit complete. Full R20/R48/release gates remain unmet: existing ready-FD failure pending user repair scope and Windows execution unexecuted.",
+    "addenda": [
+      "output/zody-rename-r20-process/controller/addendum-1-generated-reexport.json",
+      "output/zody-rename-r20-process/controller/addendum-2-launch-doc.json"
+    ],
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R20-process-markers-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R20-process-markers-controller-verification.md",
+    "knownGaps": [
+      "Existing ready high-EBADF resource-lifecycle test 9/10, one failure; user repair scope pending",
+      "Windows actual execution unexecuted",
+      "Current launch-document references outside authorized paragraph remain a separate documentation tail"
+    ]
+  },
+  "R20_CONTROL_READY_LIFECYCLE": {
+    "title": "Existing control-channel ready failure exit lifecycle",
+    "scopeStatus": "awaiting-user-scope-decision",
+    "proposal": "output/zody-rename-r20-process/diagnostics/fix-proposal.md",
+    "evidence": "output/zody-rename-r20-process/diagnostics/ready-pipe-node2414/",
+    "writeSet": [],
+    "gate": "No production repair authorization yet. Existing channel disposal completes but underlying read remains live until parent peer closes. Do not mask with timeouts or claim resolved."
   }
 }

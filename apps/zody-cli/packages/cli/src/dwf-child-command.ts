@@ -1,5 +1,5 @@
 /**
- * 隐藏子命令 `__zcode-dwf-child <entry path>`：dynamic workflow 的沙箱子进程入口。
+ * 隐藏子命令 `__zody-dwf-child <entry path>`：dynamic workflow 的沙箱子进程入口。
  *
  * 存在理由：SEA 单文件二进制**不解释 Node CLI 旗标**——harness 缺省的
  * `node --max-old-space-size=… <entry>` 里的旗标会原样落进 CLI 的严格 parseArgs，子进程立刻报错
@@ -18,11 +18,11 @@ import { resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { pathToFileURL } from "node:url";
 import { createContext, runInContext } from "node:vm";
-import { ZCODE_DWF_CHILD_COMMAND } from "@zody/contracts";
+import { ZODY_DWF_CHILD_COMMAND } from "@zody/contracts";
 import type { RunContext } from "@zody/shared-types";
 
 export function isDwfChildInvocation(argv: readonly string[]): boolean {
-  return argv[0] === ZCODE_DWF_CHILD_COMMAND;
+  return argv[0] === ZODY_DWF_CHILD_COMMAND;
 }
 
 /** 入口文件导出面（child-source.ts 的 `renderChildEntry` 生成）。 */
@@ -44,7 +44,7 @@ interface ChildEntryModule {
 export async function runDwfChildCommand(ctx: RunContext, argv: string[]): Promise<number> {
   const entryPath = argv[argv.length - 1];
   if (argv.length === 0 || entryPath === undefined) {
-    ctx.stderr.write(`Usage: ${ZCODE_DWF_CHILD_COMMAND} <entry path>\n`);
+    ctx.stderr.write(`Usage: ${ZODY_DWF_CHILD_COMMAND} <entry path>\n`);
     return 1;
   }
 

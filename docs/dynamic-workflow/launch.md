@@ -2088,12 +2088,12 @@ run is recorded as `stopped` (`interrupted`) and can be resumed.
 ### Single-executable builds
 
 A single-executable build cannot spawn `node --eval`, so the CLI has a hidden subcommand
-`__zcode-dwf-child <entry path>` dispatched before argument parsing, and the sandbox is
+`__zody-dwf-child <entry path>` dispatched before argument parsing, and the sandbox is
 started by re-executing the CLI itself with that subcommand. The child script is written
-to an entry file, `<cwd>/.zcode/workflow-runs/<runId>.mjs` (with a temp-directory fallback
+to an entry file, `<cwd>/.zody/workflow-runs/<runId>.mjs` (with a temp-directory fallback
 and a `.gitignore`), and the command line carries only its path, so a long script never
 exceeds the Windows command-line limit. The sandbox itself is the engine's:
-`apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md`.
+`apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md`.
 
 ## Run introspection tools
 

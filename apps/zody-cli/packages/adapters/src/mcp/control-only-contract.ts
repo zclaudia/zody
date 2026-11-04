@@ -8,7 +8,7 @@ import type {
 } from "@zody/zody-cua/control-channel";
 import type { ControlBinding } from "@zody/zody-cua/control-protocol";
 
-export const ZCODE_NODE_REPL_CONTROL_FLAG = "--zcode-node-repl-control";
+export const ZODY_NODE_REPL_CONTROL_FLAG = "--zody-node-repl-control";
 
 const MAX_IDENTIFIER_BYTES = 256;
 const DEFAULT_STARTUP_TIMEOUT_MS = 10_000;
@@ -259,7 +259,7 @@ export function resolveOfficialControlOnlyLauncher(
       ...(cliEntryPath === undefined ? [] : [cliEntryPath]),
       ZCODE_PLUGIN_HOST_COMMAND,
       serverPath,
-      ZCODE_NODE_REPL_CONTROL_FLAG,
+      ZODY_NODE_REPL_CONTROL_FLAG,
     ],
     command: execPath,
   };

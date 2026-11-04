@@ -33,7 +33,7 @@ const windowsGitBashPath =
 const nativeE2eEnabled = Boolean(
   rgPath && ugrepPath && (process.platform === "win32" ? windowsGitBashPath : bfsPath),
 );
-const outputSectionPattern = /^__ZCODE_[A-Z0-9_]+__$/u;
+const outputSectionPattern = /^__ZODY_[A-Z0-9_]+__$/u;
 
 if (process.env.ZODY_REQUIRE_NATIVE_SEARCH_E2E === "1" && !nativeE2eEnabled) {
   throw new Error(
@@ -114,49 +114,49 @@ describe.skipIf(!nativeE2eEnabled)("native embedded search E2E", () => {
 
     const result = await runBashToolCall(
       [
-        "printf '%s\\n' __ZCODE_VERSIONS__",
+        "printf '%s\\n' __ZODY_VERSIONS__",
         "find --version",
         "grep --version",
         "rg --version",
-        "printf '%s\\n' __ZCODE_BFS_NAME__",
+        "printf '%s\\n' __ZODY_BFS_NAME__",
         "find . -maxdepth 3 -type f -name '*.ts' | /usr/bin/sort",
-        "printf '%s\\n' __ZCODE_BFS_REGEX__",
+        "printf '%s\\n' __ZODY_BFS_REGEX__",
         "find . -type f -regex '.*\\(alpha\\|beta\\)\\.ts' | /usr/bin/sort",
-        "printf '%s\\n' __ZCODE_UGREP_RECURSIVE__",
+        "printf '%s\\n' __ZODY_UGREP_RECURSIVE__",
         "grep -Rni --include='*.ts' needle . | /usr/bin/sort",
-        "printf '%s\\n' __ZCODE_UGREP_STDIN__",
+        "printf '%s\\n' __ZODY_UGREP_STDIN__",
         "printf 'before\\nneedle from stdin\\nafter\\n' | grep needle",
-        "printf '%s\\n' __ZCODE_UGREP_MATCHERS__",
+        "printf '%s\\n' __ZODY_UGREP_MATCHERS__",
         "grep -E 'needle (alpha|beta)' src/alpha.ts",
         "grep -F 'needle alpha' src/alpha.ts",
         "grep -P '(?<=needle )alpha' src/alpha.ts",
-        "printf '%s\\n' __ZCODE_UGREP_BYPASS__",
+        "printf '%s\\n' __ZODY_UGREP_BYPASS__",
         // Bugfix：Git Bash 登录初始化会把 /usr/bin 放回 PATH 前部，绕过分支必须仍命中测试 grep。
         // Bugfix：GNU grep 的 -z/-Z、组合短参数和 null-data 长参数必须绕回 system grep；
         // 解压路径改用 ugrep 的显式 --decompress，避免与 GNU grep 的 -z 语义混淆。
         `(export PATH=${quoteShellValue(isolatedBinShellPath)}:"$PATH"; for _arg in --file-filter=stub --pager=stub --view=stub --format-open=stub --config=stub ---stub -@stub --save-config=stub -z -Z -Rz -nZ --null --null-data; do grep "$_arg"; done)`,
-        "printf '%s\\n' __ZCODE_UGREP_COMPRESSED__",
+        "printf '%s\\n' __ZODY_UGREP_COMPRESSED__",
         "for _file in compressed/sample.txt.gz compressed/sample.txt.bz2 compressed/sample.txt.zst compressed/sample.txt.br compressed/sample.zip compressed/sample.tar; do printf 'FILE:%s\\n' \"$_file\"; grep --decompress 'archive needle' \"$_file\"; done",
-        "printf '%s\\n' __ZCODE_UGREP_EARLY_CLOSE__",
+        "printf '%s\\n' __ZODY_UGREP_EARLY_CLOSE__",
         "grep needle many.txt | /usr/bin/head -n 5",
-        "printf '%s\\n' __ZCODE_UGREP_EXIT_CODES__",
+        "printf '%s\\n' __ZODY_UGREP_EXIT_CODES__",
         "grep absent src/alpha.ts >/dev/null; printf 'no-match=%s\\n' \"$?\"",
         "grep '[' src/alpha.ts >/dev/null 2>&1; printf 'invalid-regex=%s\\n' \"$?\"",
-        "printf '%s\\n' __ZCODE_RG_FILES__",
+        "printf '%s\\n' __ZODY_RG_FILES__",
         "rg -n -g '*.ts' needle src | /usr/bin/sort",
-        "printf '%s\\n' __ZCODE_RG_HIDDEN__",
+        "printf '%s\\n' __ZODY_RG_HIDDEN__",
         "rg --hidden -Hn needle .hidden.ts",
-        "printf '%s\\n' __ZCODE_RG_STDIN__",
+        "printf '%s\\n' __ZODY_RG_STDIN__",
         "printf 'before\\nneedle from rg stdin\\nafter\\n' | rg needle",
-        "printf '%s\\n' __ZCODE_RG_MATCHERS__",
+        "printf '%s\\n' __ZODY_RG_MATCHERS__",
         "rg -F 'needle alpha' src/alpha.ts",
         "rg -P '(?<=needle )alpha' src/alpha.ts",
-        "printf '%s\\n' __ZCODE_RG_EARLY_CLOSE__",
+        "printf '%s\\n' __ZODY_RG_EARLY_CLOSE__",
         "rg needle many.txt | /usr/bin/head -n 5",
-        "printf '%s\\n' __ZCODE_RG_EXIT_CODES__",
+        "printf '%s\\n' __ZODY_RG_EXIT_CODES__",
         "rg absent src/alpha.ts >/dev/null; printf 'no-match=%s\\n' \"$?\"",
         "rg '[' src/alpha.ts >/dev/null 2>&1; printf 'invalid-regex=%s\\n' \"$?\"",
-        "printf '%s\\n' __ZCODE_DONE__",
+        "printf '%s\\n' __ZODY_DONE__",
         "printf 'ok\\n'",
       ].join("\n"),
     );
@@ -413,7 +413,7 @@ function expectNativeFixtureCommand(result: ReturnType<typeof spawnSync>, label:
 
 function outputSection(output: string, name: string): string {
   const lines = output.trimEnd().split("\n");
-  const marker = `__ZCODE_${name}__`;
+  const marker = `__ZODY_${name}__`;
   const start = lines.indexOf(marker);
   if (start < 0) throw new Error(`missing output marker: ${marker}\n${output}`);
   const next = lines.findIndex((line, index) => index > start && outputSectionPattern.test(line));

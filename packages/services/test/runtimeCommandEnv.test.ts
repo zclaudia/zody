@@ -182,15 +182,28 @@ describe("runtimeCommandEnv", () => {
     expect(passthrough.NODE_OPTIONS).toBeUndefined();
   });
 
+  it.each([
+    "__ZCODE_LOGIN_ENV_START__\0PATH=/synthetic\0__ZCODE_LOGIN_ENV_END__\0",
+    "__ZODY_LOGIN_ENV_START__\0PATH=/synthetic\0",
+    "PATH=/synthetic\0__ZODY_LOGIN_ENV_END__\0",
+    "__ZODY_LOGIN_ENV_START__\0PATH=/synthetic\0__ZCODE_LOGIN_ENV_END__\0",
+  ])("does not parse old, missing or mismatched login frames", async (output) => {
+    const result = await captureLoginShellEnvSnapshot({
+      baseEnv: { PATH: "/usr/bin:/bin" }, platform: "darwin", shellPath: "/bin/zsh",
+      executeShell: vi.fn(async () => output),
+    });
+    expect(result).toBeNull();
+  });
+
   it("captures PATH and inherited fields with one asynchronous login shell call", async () => {
     const executeShell = vi.fn(async () =>
       [
         "shell startup chatter",
-        "__ZCODE_LOGIN_ENV_START__\0",
+        "__ZODY_LOGIN_ENV_START__\0",
         "PATH=/Users/dev/.local/bin:/usr/bin:/bin\0",
         "FNM_DIR=/Users/dev/.fnm\0",
         "HTTP_PROXY=http://shell-proxy:8080\0",
-        "__ZCODE_LOGIN_ENV_END__\0",
+        "__ZODY_LOGIN_ENV_END__\0",
       ].join(""),
     );
 

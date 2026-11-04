@@ -1,5 +1,5 @@
 /**
- * 隐藏子命令 `__zcode-dwf-child` 的分派与执行。
+ * 隐藏子命令 `__zody-dwf-child` 的分派与执行。
  *
  * Bug 根因（docs/dynamic-workflow/launch.md「Single-executable builds」）：SEA 单文件二进制不解释 Node
  * CLI 旗标，harness 缺省的 `node --max-old-space-size=… <entry>` 在 SEA 下会把旗标交给严格
@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
 import test from "node:test";
-import { ZCODE_DWF_CHILD_COMMAND } from "@zody/contracts";
+import { ZODY_DWF_CHILD_COMMAND } from "@zody/contracts";
 import { renderChildEntry } from "@zody/dynamic-workflow-runtime";
 import type { RunContext } from "@zody/shared-types";
 import { isDwfChildInvocation } from "../src/dwf-child-command.js";
@@ -74,18 +74,20 @@ const writeEntry = async (lowered: string): Promise<{ path: string; dispose: () 
 };
 
 test("recognises the dwf child subcommand only as argv[0]", () => {
-  assert.equal(isDwfChildInvocation([ZCODE_DWF_CHILD_COMMAND, "/tmp/run.mjs"]), true);
-  assert.equal(isDwfChildInvocation([ZCODE_DWF_CHILD_COMMAND]), true);
+  assert.equal(isDwfChildInvocation(["__zody-dwf-child"]), true);
+  assert.equal(isDwfChildInvocation(["__zcode-dwf-child"]), false);
+  assert.equal(isDwfChildInvocation([ZODY_DWF_CHILD_COMMAND, "/tmp/run.mjs"]), true);
+  assert.equal(isDwfChildInvocation([ZODY_DWF_CHILD_COMMAND]), true);
   assert.equal(isDwfChildInvocation([]), false);
   assert.equal(isDwfChildInvocation(["--help"]), false);
   // 出现在别处不算：否则一个普通 prompt 里提到这个词就能改变 CLI 的行为。
-  assert.equal(isDwfChildInvocation(["-p", ZCODE_DWF_CHILD_COMMAND]), false);
+  assert.equal(isDwfChildInvocation(["-p", ZODY_DWF_CHILD_COMMAND]), false);
 });
 
 test("runs the sandbox child from the entry file and writes the NDJSON completion to stdout", async () => {
   const entry = await writeEntry('__host.log("from the sandbox");\nreturn { ok: 42 };');
   try {
-    const { ctx, stdout, stderr } = createChildContext([ZCODE_DWF_CHILD_COMMAND, entry.path]);
+    const { ctx, stdout, stderr } = createChildContext([ZODY_DWF_CHILD_COMMAND, entry.path]);
 
     const exitCode = await run(ctx);
 
@@ -107,7 +109,7 @@ test("runs the sandbox child from the entry file and writes the NDJSON completio
 test("reports a lowered-body syntax error as an error completion, not a crash", async () => {
   const entry = await writeEntry("this is not javascript(");
   try {
-    const { ctx, stdout, stderr } = createChildContext([ZCODE_DWF_CHILD_COMMAND, entry.path]);
+    const { ctx, stdout, stderr } = createChildContext([ZODY_DWF_CHILD_COMMAND, entry.path]);
 
     const exitCode = await run(ctx);
 
@@ -123,19 +125,19 @@ test("reports a lowered-body syntax error as an error completion, not a crash", 
 });
 
 test("fails with usage when the entry path argument is missing", async () => {
-  const { ctx, stdout, stderr } = createChildContext([ZCODE_DWF_CHILD_COMMAND]);
+  const { ctx, stdout, stderr } = createChildContext([ZODY_DWF_CHILD_COMMAND]);
 
   const exitCode = await run(ctx);
 
   assert.equal(exitCode, 1);
   // stdout 是父进程的 NDJSON 通道，接线错误只许走 stderr。
   assert.equal(stdout(), "");
-  assert.match(stderr(), new RegExp(`Usage: ${ZCODE_DWF_CHILD_COMMAND}`));
+  assert.match(stderr(), new RegExp(`Usage: ${ZODY_DWF_CHILD_COMMAND}`));
 });
 
 test("fails on stderr when the entry file does not exist", async () => {
   const { ctx, stdout, stderr } = createChildContext([
-    ZCODE_DWF_CHILD_COMMAND,
+    ZODY_DWF_CHILD_COMMAND,
     join(tmpdir(), "dwf-child-cmd-missing", "nope.mjs"),
   ]);
 

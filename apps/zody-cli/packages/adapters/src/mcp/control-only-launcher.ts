@@ -48,7 +48,7 @@ interface LauncherState {
 
 export {
   ControlOnlyLauncherError,
-  ZCODE_NODE_REPL_CONTROL_FLAG,
+  ZODY_NODE_REPL_CONTROL_FLAG,
   buildControlOnlyChildEnvironment,
   resolveOfficialControlOnlyLauncher,
   type ControlOnlyDiagnosticLauncher,

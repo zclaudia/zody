@@ -12,7 +12,7 @@ import type { RunContext } from "@zody/shared-types";
 
 const HOST_USAGE = `${ZCODE_PLUGIN_HOST_COMMAND} <server-path> [-- <server-arg>...]`;
 
-export const ZCODE_NODE_REPL_CONTROL_FLAG = "--zcode-node-repl-control";
+export const ZODY_NODE_REPL_CONTROL_FLAG = "--zody-node-repl-control";
 
 type HostedPluginModule = {
   main?: unknown;
@@ -46,10 +46,10 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
     if (!existsSync(serverPath)) {
       throw new Error("Plugin server file does not exist.");
     }
-    const controlOnly = serverArgs.includes(ZCODE_NODE_REPL_CONTROL_FLAG);
+    const controlOnly = serverArgs.includes(ZODY_NODE_REPL_CONTROL_FLAG);
     if (
       controlOnly &&
-      (serverArgs.length !== 1 || serverArgs[0] !== ZCODE_NODE_REPL_CONTROL_FLAG)
+      (serverArgs.length !== 1 || serverArgs[0] !== ZODY_NODE_REPL_CONTROL_FLAG)
     ) {
       // control-only 只允许一个非秘密 mode flag；任何额外参数都不能被解释为脚本、路径或凭据。
       throw new Error("Control-only plugin host does not accept additional arguments.");
