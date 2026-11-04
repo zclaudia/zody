@@ -182,11 +182,35 @@ describe("readDesktopContinuousSessionRestoreSnapshot", () => {
     });
   });
 
+  it("does not treat the old live model code as the current restore special case", async () => {
+    const oldError = Object.assign(new Error("old code from live peer"), {
+      code: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
+    });
+    const zodySessionService = {
+      resumeSession: vi.fn(async () => {
+        throw oldError;
+      }),
+      readSession: vi.fn(async () => createSnapshot()),
+    };
+    const zodyTaskService = { getTaskSnapshot: vi.fn(async () => createLegacyTaskSnapshot()) };
+    await expect(
+      readDesktopContinuousSessionRestoreSnapshot({
+        zodySessionService,
+        zodyTaskService,
+        workspacePath: workspace.workspacePath,
+        workspaceIdentity: workspace.workspaceIdentity,
+        sessionId: "sess_1",
+        model: { providerId: "removed-provider", modelId: "removed-model" },
+      }),
+    ).rejects.toBe(oldError);
+    expect(zodyTaskService.getTaskSnapshot).not.toHaveBeenCalled();
+  });
+
   it("falls back to task snapshot when the historical runtime model is unavailable", async () => {
     const legacySnapshot = createLegacyTaskSnapshot();
     const unavailableModelError = Object.assign(
       new Error("历史任务使用的模型已不可用，请选择当前可用模型后继续。"),
-      { code: "ZCODE_RUNTIME_MODEL_UNAVAILABLE" },
+      { code: "ZODY_RUNTIME_MODEL_UNAVAILABLE" },
     );
     const zodySessionService = {
       resumeSession: vi.fn(async () => {
@@ -211,7 +235,7 @@ describe("readDesktopContinuousSessionRestoreSnapshot", () => {
     expect(result.usedLegacySnapshot).toBe(true);
     expect(result.resumedSessionSnapshot).toBeUndefined();
     expect(result.restoreWarning).toMatchObject({
-      code: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
+      code: "ZODY_RUNTIME_MODEL_UNAVAILABLE",
       message: "历史任务使用的模型已不可用，请选择当前可用模型后继续。",
       taskId: "sess_1",
     });

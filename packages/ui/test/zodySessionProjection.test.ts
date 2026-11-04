@@ -1147,7 +1147,7 @@ describe("zcodeSessionProjection", () => {
 
   it("preserves protocol projection error type as task error code", () => {
     const base = createSnapshot();
-    const snapshot = zodySessionSnapshotToZodyTaskSnapshot({
+    const historical = {
       ...base,
       projection: {
         ...base.projection,
@@ -1156,7 +1156,10 @@ describe("zcodeSessionProjection", () => {
           type: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
         },
       },
-    });
+    };
+    const before = JSON.stringify(historical);
+    const snapshot = zodySessionSnapshotToZodyTaskSnapshot(historical);
+    expect(JSON.stringify(historical)).toBe(before);
 
     expect(snapshot.meta.lastError).toEqual({
       code: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",

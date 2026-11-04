@@ -4,9 +4,15 @@ import {
   buildModelConfigMissingUiError,
   buildWorkspacePrepareUiError,
   getChatErrorMessage,
+  isProviderNotReadyError,
 } from "@/lib/chatPrepareError.js";
 
 describe("chatPrepareError", () => {
+  it("recognizes only the current live provider readiness code", () => {
+    expect(isProviderNotReadyError({ code: "ZODY_AGENT_PROVIDER_NOT_READY" })).toBe(true);
+    expect(isProviderNotReadyError({ code: "ZCODE_AGENT_PROVIDER_NOT_READY" })).toBe(false);
+  });
+
   it("provider 等待态投影为 modelConfigMissing 草稿横幅错误", () => {
     expect(buildModelConfigMissingUiError()).toEqual({
       code: "model_config_missing",

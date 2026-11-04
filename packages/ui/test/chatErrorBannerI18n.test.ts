@@ -3,7 +3,7 @@ import {
   MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE_ERROR_CODE,
   MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE_ERROR_CODE,
 } from "@zody/shared";
-import { resolveChatErrorBannerDisplayMessage } from "@/ChatErrorBanner.js";
+import { resolveChatErrorBannerDisplayMessage, shouldSuppressChatErrorBanner } from "@/ChatErrorBanner.js";
 import type { IntlInstance } from "@/i18n/IntlProvider.js";
 import enUS from "@/i18n/locales/en-US.js";
 import zhCN from "@/i18n/locales/zh-CN.js";
@@ -20,6 +20,32 @@ function createIntl(messages: Record<string, string>): IntlInstance {
 }
 
 describe("ChatErrorBanner i18n", () => {
+  it.each([zhCN, enUS])(
+    "localizes only the current live model code and leaves history readable",
+    (messages) => {
+      const intl = createIntl(messages);
+      const message = "saved historical message";
+      expect(
+        resolveChatErrorBannerDisplayMessage(
+          { code: "ZODY_RUNTIME_MODEL_UNAVAILABLE", message },
+          intl,
+        ),
+      ).not.toBe(message);
+      expect(
+        resolveChatErrorBannerDisplayMessage(
+          { code: "ZCODE_RUNTIME_MODEL_UNAVAILABLE", message },
+          intl,
+        ),
+      ).toBe(message);
+      expect(
+        shouldSuppressChatErrorBanner({
+          code: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
+          message: "历史任务使用的模型已不可用",
+        }),
+      ).toBe(false);
+    },
+  );
+
   it.each([
     [zhCN, "当前附件总量过大，请移除部分附件或压缩后重试。"],
     [

@@ -35,7 +35,7 @@ function isRuntimeModelUnavailableError(error: unknown): boolean {
     typeof error === "object" &&
     error !== null &&
     "code" in error &&
-    error.code === "ZCODE_RUNTIME_MODEL_UNAVAILABLE"
+    error.code === "ZODY_RUNTIME_MODEL_UNAVAILABLE"
   );
 }
 
@@ -157,7 +157,7 @@ export async function readDesktopContinuousSessionRestoreSnapshot(params: {
       ...(runtimeModelUnavailable
         ? {
             restoreWarning: normalizeZodyUiError(error, {
-              fallbackCode: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
+              fallbackCode: "ZODY_RUNTIME_MODEL_UNAVAILABLE",
               taskId: params.sessionId,
             }),
           }

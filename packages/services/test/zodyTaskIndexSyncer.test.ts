@@ -2963,6 +2963,33 @@ describe("createZodyTaskIndexSyncer", () => {
     }
   });
 
+  it.each(["ZCODE_AGENT_PROVIDER_NOT_READY", "ZCODE_AGENT_RUNTIME_UNAVAILABLE"])(
+    "does not classify old live code %s as a current readiness/runtime signal",
+    async (code) => {
+      const env = setupEnv();
+      const oldError = Object.assign(new Error("unclassified failure"), { code });
+      vi.mocked(env.agent.subscribeSessionsIndexV4).mockRejectedValueOnce(oldError);
+      vi.mocked(env.agent.subscribeWorkspaceConfigV4).mockRejectedValueOnce(oldError);
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const syncer = createZodyTaskIndexSyncer({
+        agentService: env.agent,
+        taskIndexRepo: env.repo,
+      });
+      vi.useFakeTimers();
+      try {
+        syncer.ensureWorkspaceSubscription({ workspacePath: "/repo" });
+        await vi.advanceTimersByTimeAsync(0);
+        expect(warnSpy).toHaveBeenCalledTimes(2);
+      } finally {
+        syncer.disposeAll();
+        vi.useRealTimers();
+        warnSpy.mockRestore();
+        env.indexEmitter.dispose();
+        env.configEmitter.dispose();
+      }
+    },
+  );
+
   it("provider/model 未就绪时不写 warn，低频探测后自动恢复两个 topic", async () => {
     const env = setupEnv();
     const providerNotReadyError = Object.assign(

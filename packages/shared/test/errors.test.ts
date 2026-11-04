@@ -56,6 +56,11 @@ describe("isZodyFileLockTimeoutError", () => {
     ).toBe(true);
   });
 
+  it("uses only the current branded timeout code", () => {
+    expect(ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE).toBe("ZODY_FILE_LOCK_TIMEOUT");
+    expect(isZodyFileLockTimeoutError({ code: "ZCODE_FILE_LOCK_TIMEOUT" })).toBe(false);
+  });
+
   it("does not classify legacy EEXIST as the explicit timeout code", () => {
     expect(isZodyFileLockTimeoutError({ code: "EEXIST" })).toBe(false);
   });

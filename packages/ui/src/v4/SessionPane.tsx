@@ -3149,7 +3149,7 @@ export function SessionPane({
         // Web remote replayable 的发送/恢复语义，草稿仍由 Composer 原路径保留。
         setSendSubmissionError({
           code: runtimeModelUnavailable
-            ? "ZCODE_RUNTIME_MODEL_UNAVAILABLE"
+            ? "ZODY_RUNTIME_MODEL_UNAVAILABLE"
             : "SEND_FAILED",
           message: runtimeModelUnavailable
             ? detail

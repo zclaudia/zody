@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createSharedZodyCredentialStore,
   type SharedZodyCredentialStore,
@@ -157,6 +157,33 @@ function createProvider(seeded: SeededCredentials) {
     serverUrl: seeded.mcpUrl,
   });
 }
+
+describe("OAuth refresh timeout code boundary", () => {
+  it.each([
+    ["ZODY_FILE_LOCK_TIMEOUT", true],
+    ["ZCODE_FILE_LOCK_TIMEOUT", false],
+  ])("only current code %s is handled as a lock timeout", async (code, handled) => {
+    const seeded = await seedCredentials({ authBaseUrl: "http://127.0.0.1:1", secret: "refresh-boundary" });
+    vi.resetModules();
+    const failure = Object.assign(new Error("unclassified lock failure"), { code });
+    vi.doMock("@zody/shared/node", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("@zody/shared/node")>()),
+      withFileLock: vi.fn(async () => { throw failure; }),
+    }));
+    try {
+      const { refreshMcpOAuthTokensUnderLock } = await import("../src/mcp/oauth-refresh.js");
+      const result = refreshMcpOAuthTokensUnderLock({
+        credentialStore: seeded.credentialStore, keyPrefix: seeded.keyPrefix,
+        serverName: "refresh-test", serverUrl: seeded.mcpUrl, reactive: true,
+      });
+      if (handled) await expect(result).rejects.toMatchObject({ code: MCP_OAUTH_TEMPORARY_REFRESH_FAILURE_ERROR_CODE });
+      else await expect(result).rejects.toBe(failure);
+    } finally {
+      vi.doUnmock("@zody/shared/node");
+      vi.resetModules();
+    }
+  });
+});
 
 describe("MCP OAuth refresh single-flight", () => {
   it("coalesces concurrent near-expiry refreshes into one token request", async () => {

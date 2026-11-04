@@ -829,7 +829,7 @@ describe("SessionPane send failure feedback", () => {
       await act(async () => flushMicrotasks());
 
       expect(captured.composerProps?.error).toMatchObject({
-        code: "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
+        code: "ZODY_RUNTIME_MODEL_UNAVAILABLE",
         detail: expect.stringContaining("provider.notInRegistry"),
       });
       await act(async () => {

@@ -8,6 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ChannelClient, ChannelServer, createQueuePair, ProxyChannel } from "@zody/rpc";
 import {
   TopicWireFrameAssembler,
   conversationTopicFrameSchema,
@@ -29,6 +30,25 @@ import { TaskIndexRepo } from "../src/session/taskIndexRepo.js";
 // - v4/conversation/unsubscribe → 返回 {}；
 // - v4/command → 返回 CommandAck accepted。
 // 所有入站请求写入 logPath 供断言转发参数。
+async function expectServiceFailureOverRpc(
+  call: () => Promise<unknown>,
+  expected: { code: string; data?: unknown },
+): Promise<void> {
+  const [serverProtocol, clientProtocol] = createQueuePair();
+  const server = new ChannelServer(serverProtocol, "test");
+  const client = new ChannelClient(clientProtocol);
+  server.registerChannel("actual-service-error", ProxyChannel.fromService({ fail: call }));
+  const proxy = ProxyChannel.toService<{ fail(): Promise<unknown> }>(
+    client.getChannel("actual-service-error"),
+  );
+  try {
+    await expect(proxy.fail()).rejects.toMatchObject(expected);
+  } finally {
+    client.dispose();
+    server.dispose();
+  }
+}
+
 const V4_FAKE_AGENT = `
 const fs = require("node:fs");
 const logPath = process.argv[2];
@@ -521,7 +541,12 @@ describe("zodyAgentService v4 conversation channel", () => {
       // 修复原因：只读 topic 已经登记 active client，旧 fast path 会直接返回它并绕过
       // provider/model 门禁。createSession 必须仍在写入协议前确定性拒绝。
       await expect(service.createSession({ workspacePath })).rejects.toMatchObject({
-        code: "ZCODE_AGENT_PROVIDER_NOT_READY",
+        code: "ZODY_AGENT_PROVIDER_NOT_READY",
+        data: expect.objectContaining({ reason: "provider_not_ready" }),
+      });
+
+      await expectServiceFailureOverRpc(() => service.createSession({ workspacePath }), {
+        code: "ZODY_AGENT_PROVIDER_NOT_READY",
         data: expect.objectContaining({ reason: "provider_not_ready" }),
       });
 
@@ -628,7 +653,11 @@ describe("zodyAgentService v4 conversation channel", () => {
           workspacePath,
           runtimePolicy: "existing-only",
         }),
-      ).rejects.toMatchObject({ code: "ZCODE_AGENT_RUNTIME_UNAVAILABLE" });
+      ).rejects.toMatchObject({ code: "ZODY_AGENT_RUNTIME_UNAVAILABLE" });
+      await expectServiceFailureOverRpc(
+        () => service.subscribeSessionsIndexV4({ workspacePath, runtimePolicy: "existing-only" }),
+        { code: "ZODY_AGENT_RUNTIME_UNAVAILABLE" },
+      );
       const replaySubscription = service.onDynamicSessionEvent({
         workspacePath,
         sessionId: "must-not-start",

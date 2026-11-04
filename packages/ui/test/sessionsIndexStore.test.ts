@@ -669,6 +669,28 @@ describe("SessionsIndexStore", () => {
     }
   });
 
+  it.each(["ZCODE_AGENT_RUNTIME_UNAVAILABLE", "ZCODE_FILE_LOCK_TIMEOUT"])(
+    "does not classify the old live code %s by itself",
+    async (code) => {
+      vi.useFakeTimers();
+      try {
+        const store = new SessionsIndexStore();
+        const { transport } = mockTransport({
+          subscribe: vi.fn(async () => {
+            throw Object.assign(new Error("unclassified"), { code });
+          }),
+        });
+        await store.connect(transport, { forceSnapshot: true });
+        expect(store.getStatus()).toBe("error");
+        await vi.advanceTimersByTimeAsync(1_000);
+        expect(transport.subscribe).toHaveBeenCalledTimes(1);
+        store.close();
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+
   it("runtime 缺失进入 dormant，不轮询；available 自动恢复，unavailable 清空 live 投影", async () => {
     vi.useFakeTimers();
     try {
@@ -681,7 +703,7 @@ describe("SessionsIndexStore", () => {
             attempts += 1;
             if (attempts === 1) {
               throw Object.assign(new Error("agent runtime is unavailable"), {
-                code: "ZCODE_AGENT_RUNTIME_UNAVAILABLE",
+                code: "ZODY_AGENT_RUNTIME_UNAVAILABLE",
               });
             }
             return {

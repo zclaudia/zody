@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createSharedZodyCredentialStore } from "../src/auth/shared-credentials.js";
 import {
   deletePendingAuthorizationIfOwned,
@@ -11,6 +11,29 @@ import {
   resolveAuthorizationLeasePath,
   tryAcquireAuthorizationLease,
 } from "../src/mcp/oauth-lease.js";
+
+describe("authorization lease timeout code boundary", () => {
+  it.each([
+    ["ZODY_FILE_LOCK_TIMEOUT", true],
+    ["ZCODE_FILE_LOCK_TIMEOUT", false],
+  ])("only current code %s enters follower mode", async (code, follower) => {
+    vi.resetModules();
+    const failure = Object.assign(new Error("unclassified lock failure"), { code });
+    vi.doMock("@zody/shared/node", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("@zody/shared/node")>()),
+      acquireFileLock: vi.fn(async () => { throw failure; }),
+    }));
+    try {
+      const { tryAcquireAuthorizationLease: isolatedAcquire } = await import("../src/mcp/oauth-lease.js");
+      const result = isolatedAcquire({ credentialsFilePath: "/isolated/credentials.json", keyPrefix: "mcp:test" });
+      if (follower) await expect(result).resolves.toBeUndefined();
+      else await expect(result).rejects.toBe(failure);
+    } finally {
+      vi.doUnmock("@zody/shared/node");
+      vi.resetModules();
+    }
+  });
+});
 
 const KEY_PREFIX = "mcp:oauth:c50fd1fa63fb88a233be0688";
 const temporaryDirectories: string[] = [];

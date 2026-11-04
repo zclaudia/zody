@@ -27,7 +27,8 @@ export interface NormalizedUnknownError {
   code?: string;
 }
 
-export const ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE = "ZCODE_FILE_LOCK_TIMEOUT" as const;
+// 旧品牌码不能命中当前进程的锁竞争分支；历史错误仍按原值读取。
+export const ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE = "ZODY_FILE_LOCK_TIMEOUT" as const;
 
 export function stringifyUnknownValue(value: unknown): string {
   if (typeof value === "string") {
