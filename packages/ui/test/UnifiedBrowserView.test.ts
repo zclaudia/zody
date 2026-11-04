@@ -58,6 +58,7 @@ const h = vi.hoisted(() => {
     }) => void
   >();
   const zoomListeners = new Set<(state: { zoomLevel: number }) => void>();
+  const downloadListeners = new Set<(payload: { webContentsId: number; urls: string[] }) => void>();
   const openExternal = vi.fn();
   const updateSettings = vi.fn().mockResolvedValue(undefined);
   const settingsState = {
@@ -89,10 +90,18 @@ const h = vi.hoisted(() => {
       viewportListeners.add(listener);
       return () => viewportListeners.delete(listener);
     },
+    // 来源 a60ba6a7 F13：main 的 will-download 转发桥，供下载与加载失败对账用例驱动。
+    onBrowserViewDownloadStarted: (
+      listener: (payload: { webContentsId: number; urls: string[] }) => void,
+    ) => {
+      downloadListeners.add(listener);
+      return () => downloadListeners.delete(listener);
+    },
   };
   return {
     attachGuest,
     detachGuest,
+    downloadListeners,
     openExternal,
     platform,
     reportResidency,
@@ -289,6 +298,13 @@ function fireRenderProcessGone(el: HTMLElement, reason: string, exitCode = 1) {
   });
 }
 
+/** 模拟 main 转发的 BrowserViewDownloadStarted（来源 a60ba6a7 F13 的 will-download 上报）。 */
+function notifyDownloadStarted(webContentsId: number, urls: string[]) {
+  act(() => {
+    for (const listener of h.downloadListeners) listener({ webContentsId, urls });
+  });
+}
+
 function dragResizeHandle(handle: HTMLElement, pointerId: number, delta: { x: number; y: number }) {
   fireEvent.pointerDown(handle, {
     button: 0,
@@ -335,6 +351,7 @@ beforeEach(() => {
   h.attachGuest.mockClear();
   h.detachGuest.mockReset();
   h.detachGuest.mockResolvedValue(true);
+  h.downloadListeners.clear();
   h.openExternal.mockClear();
   h.reportResidency.mockClear();
   h.screenshotSurfaceReady.mockClear();
@@ -900,6 +917,162 @@ describe("UnifiedBrowserView (<webview>)", () => {
 
     expect(screen.getByTestId(TID_BROWSER_LOAD_ERROR)).toBeTruthy();
     expect(screen.queryByTestId(TID_BROWSER_LOAD_ERROR_CERT_HINT)).toBeNull();
+  });
+
+  // 来源 a60ba6a7（upstream v3.17.1 F13）：下载响应以 ERR_FAILED 拒绝 loadURL /
+  // 触发 did-fail-load(-2)，必须与真实下载事件对账，不能误报网络失败。
+  it("下载响应的 ERR_FAILED 不显示加载失败，晚到的下载事件清除已显示的错误", async () => {
+    renderView("browser:download-reconcile", "task-a");
+    const attachmentUrl = "https://example.com/report.pdf";
+    const loadURL = vi.fn(() => Promise.reject(new Error("ERR_FAILED")));
+    const webview = stubWebview(screen.getByTestId(TID_BROWSER_WEBVIEW), { loadURL });
+    fireDomReady(webview);
+
+    // 路径 1：will-download 先到，loadURL 的 ERR_FAILED 拒绝被对账为下载。
+    notifyDownloadStarted(42, [attachmentUrl]);
+    const addressInput = screen.getByTestId(TID_BROWSER_ADDRESS_INPUT);
+    fireEvent.change(addressInput, { target: { value: attachmentUrl } });
+    await act(async () => {
+      fireEvent.submit(addressInput.closest("form")!);
+      await Promise.resolve();
+    });
+
+    expect(loadURL).toHaveBeenCalledWith(attachmentUrl);
+    expect(screen.queryByTestId(TID_BROWSER_LOAD_ERROR)).toBeNull();
+
+    // 路径 2：did-fail-load(-2) 且同 URL 已有下载事件 → 不是加载失败。
+    fireDidFailLoad(webview, {
+      errorCode: -2,
+      errorDescription: "ERR_FAILED",
+      validatedURL: attachmentUrl,
+    });
+    expect(screen.queryByTestId(TID_BROWSER_LOAD_ERROR)).toBeNull();
+  });
+
+  it("ERR_FAILED 先误报错误时，晚到的同 URL 下载事件清除加载失败态", async () => {
+    renderView("browser:download-late", "task-a");
+    const attachmentUrl = "https://example.com/late.bin";
+    const loadURL = vi.fn(() => Promise.reject(new Error("ERR_FAILED")));
+    const webview = stubWebview(screen.getByTestId(TID_BROWSER_WEBVIEW), { loadURL });
+    fireDomReady(webview);
+
+    const addressInput = screen.getByTestId(TID_BROWSER_ADDRESS_INPUT);
+    fireEvent.change(addressInput, { target: { value: attachmentUrl } });
+    await act(async () => {
+      fireEvent.submit(addressInput.closest("form")!);
+      await Promise.resolve();
+    });
+    // will-download 尚未到达：先按加载失败展示。
+    expect(screen.getByTestId(TID_BROWSER_LOAD_ERROR)).toBeTruthy();
+
+    notifyDownloadStarted(42, [attachmentUrl]);
+    expect(screen.queryByTestId(TID_BROWSER_LOAD_ERROR)).toBeNull();
+  });
+
+  // 来源 a60ba6a7 F13：恢复 URL 只记录主框架已提交 URL；
+  // 附件 URL（开始下载但不提交页面）不得进入恢复状态，否则每轮 rebind/恢复都重复下载。
+  it("附件导航不写入恢复状态：residency restoreUrl 不指向附件，rebind 后不重复下载", async () => {
+    const attachmentUrl = "https://example.com/report.pdf";
+    const onUrlChange = vi.fn();
+    const createAttachmentView = (initialUrl: string | null) =>
+      createElement(
+        TooltipProvider,
+        null,
+        createElement(UnifiedBrowserView, {
+          browserKey: "browser:attachment-restore",
+          initialUrl,
+          isVisible: true,
+          onUrlChange,
+          sessionId: "task-a",
+          workspacePath: "/repo",
+          workspaceIdentity: "/repo",
+        }),
+      );
+    const view = render(createAttachmentView(attachmentUrl));
+    const loadURL = vi.fn(() => Promise.reject(new Error("ERR_FAILED")));
+    const webview = stubWebview(screen.getByTestId(TID_BROWSER_WEBVIEW), { loadURL });
+    fireDomReady(webview);
+    // guest 开始下载该附件（页面未提交，getURL 仍为 about:blank）。
+    notifyDownloadStarted(42, [attachmentUrl]);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(loadURL).toHaveBeenCalledWith(attachmentUrl);
+    expect(screen.queryByTestId(TID_BROWSER_LOAD_ERROR)).toBeNull();
+    // 导航结束后回传父级的是已提交 URL（about:blank），不再是旧逻辑在导航前回传的附件 URL。
+    expect(onUrlChange).not.toHaveBeenCalledWith(attachmentUrl);
+    expect(onUrlChange).toHaveBeenCalledWith("about:blank");
+    // 父级（tab store）按回传更新 initialUrl，模拟真实链路。
+    view.rerender(createAttachmentView(null));
+
+    // residency 上报的 restoreUrl 不得指向附件。
+    const residencyCalls = h.reportResidency.mock.calls.filter(
+      (call) => (call[0] as { tabId: string }).tabId === "browser:attachment-restore",
+    );
+    expect(residencyCalls.length).toBeGreaterThan(0);
+    for (const call of residencyCalls) {
+      expect((call[0] as { restoreUrl: string | null }).restoreUrl).not.toBe(attachmentUrl);
+    }
+
+    // guest 被 killed 原位重建：恢复 URL 为空（无已提交页面），不再次 loadURL 附件。
+    fireRenderProcessGone(webview, "killed");
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    const recovered = screen.getByTestId(TID_BROWSER_WEBVIEW);
+    expect(recovered).not.toBe(webview);
+    const recoveredLoadURL = vi.fn(() => Promise.resolve());
+    stubWebview(recovered, {
+      loadURL: recoveredLoadURL,
+      getWebContentsId: vi.fn(() => 43),
+    });
+    fireDomReady(recovered);
+    expect(recoveredLoadURL).not.toHaveBeenCalledWith(attachmentUrl);
+  });
+
+  it("正常导航的恢复 URL 跟随已提交页面，killed 重建后恢复该页面", async () => {
+    render(
+      createElement(
+        TooltipProvider,
+        null,
+        createElement(UnifiedBrowserView, {
+          browserKey: "browser:normal-restorable",
+          isVisible: true,
+          sessionId: "task-a",
+          workspacePath: "/repo",
+          workspaceIdentity: "/repo",
+        }),
+      ),
+    );
+    const pageUrl = "https://example.com/docs";
+    const webview = stubWebview(screen.getByTestId(TID_BROWSER_WEBVIEW), {
+      getURL: vi.fn(() => pageUrl),
+    });
+    fireDomReady(webview);
+    act(() => {
+      webview.dispatchEvent(new Event("did-stop-loading"));
+    });
+
+    expect(h.reportResidency).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tabId: "browser:normal-restorable",
+        restoreUrl: pageUrl,
+      }),
+    );
+
+    fireRenderProcessGone(webview, "killed");
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    const recovered = stubWebview(screen.getByTestId(TID_BROWSER_WEBVIEW), {
+      getWebContentsId: vi.fn(() => 43),
+    });
+    fireDomReady(recovered);
+    const recoveredLoadURL = (recovered as unknown as { loadURL: ReturnType<typeof vi.fn> })
+      .loadURL;
+    expect(recoveredLoadURL).toHaveBeenCalledWith(pageUrl);
   });
 
   it("guest 启动或完整性失败时保留错误，不进入重建循环", () => {

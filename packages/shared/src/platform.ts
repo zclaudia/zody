@@ -1086,6 +1086,13 @@ export interface IPlatformService {
   resetEmbeddedBrowserSitePermission?(
     request: EmbeddedBrowserSitePermissionResetRequest,
   ): Promise<EmbeddedBrowserSitePermissionsSnapshot>;
+  /**
+   * 注册内置浏览器 guest 开始下载的回调（来源 a60ba6a7 F13），返回 disposer。
+   * 下载响应会让 loadURL 以 ERR_FAILED 拒绝；渲染层用该事件与加载失败对账，避免误报网络失败。
+   */
+  onBrowserViewDownloadStarted?(
+    handler: (payload: { webContentsId: number; urls: string[] }) => void,
+  ): () => void;
   /** 注册 agent 首次 browser 命令建好受控 view 的回调（自动开 browser-use tab），返回 disposer */
   onBrowserViewReady?(
     handler: (payload: {

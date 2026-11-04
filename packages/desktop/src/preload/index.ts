@@ -458,6 +458,17 @@ contextBridge.exposeInMainWorld("zcode", {
     request: EmbeddedBrowserSitePermissionResetRequest,
   ): Promise<EmbeddedBrowserSitePermissionsSnapshot> =>
     ipcRenderer.invoke(PlatformChannels.ResetEmbeddedBrowserSitePermission, request),
+  /** 注册内置浏览器 guest 开始下载的回调（来源 a60ba6a7 F13），返回 disposer */
+  onBrowserViewDownloadStarted: (
+    callback: (payload: { webContentsId: number; urls: string[] }) => void,
+  ): (() => void) => {
+    const handler = (_event: unknown, payload: { webContentsId: number; urls: string[] }) =>
+      callback(payload);
+    ipcRenderer.on(PlatformChannels.BrowserViewDownloadStarted, handler);
+    return () => {
+      ipcRenderer.removeListener(PlatformChannels.BrowserViewDownloadStarted, handler);
+    };
+  },
   /** 注册 agent 首次 browser 命令建好受控 view 的回调（自动开 browser-use tab），返回 disposer */
   onBrowserViewReady: (
     callback: (payload: {
@@ -782,9 +793,8 @@ contextBridge.exposeInMainWorld("zcode", {
   clearEmbeddedBrowserData: (mode: "cache" | "all") =>
     ipcRenderer.invoke(PlatformChannels.ClearEmbeddedBrowserData, mode),
   /** Chrome 扩展 bridge/配对/Profile 状态；只返回当前窗口可见范围。 */
-  getBrowserExtensionStatus: (): Promise<
-    import("@zcode/shared").BrowserExtensionBridgeStatus
-  > => ipcRenderer.invoke(PlatformChannels.GetBrowserExtensionStatus),
+  getBrowserExtensionStatus: (): Promise<import("@zcode/shared").BrowserExtensionBridgeStatus> =>
+    ipcRenderer.invoke(PlatformChannels.GetBrowserExtensionStatus),
   /** 只在发起窗口生成一次性配对码。 */
   beginBrowserExtensionPairing: (): Promise<
     import("@zcode/shared").BrowserExtensionPairingTicket | null

@@ -277,6 +277,11 @@ export const PlatformChannels = {
   EmbeddedBrowserPermissionPrompt: "zcode:embedded-browser-permission-prompt",
   /** Renderer → Main：用户对内置浏览器权限弹窗的决策回传 */
   EmbeddedBrowserPermissionResolve: "zcode:embedded-browser-permission-resolve",
+  /**
+   * Main → Renderer：内置浏览器 guest 开始下载（来源 a60ba6a7 F13）。
+   * 下载响应会让 loadURL 以 ERR_FAILED 拒绝；渲染层用真实下载事件与加载失败对账，避免误报网络失败。
+   */
+  BrowserViewDownloadStarted: "zcode:browser-view-download-started",
   /** Main → Renderer：agent 首次 browser 命令建好受控 view，通知 renderer 自动开 browser-use tab */
   BrowserViewReady: "zcode:browser-view-ready",
   /** Main → Renderer：agent 正在操作某个 browser-use tab，renderer 临时显示状态图标 */
@@ -963,6 +968,10 @@ export interface PlatformChannelMap {
   [PlatformChannels.ResetEmbeddedBrowserSitePermission]: {
     request: EmbeddedBrowserSitePermissionResetRequest;
     response: EmbeddedBrowserSitePermissionsSnapshot;
+  };
+  [PlatformChannels.BrowserViewDownloadStarted]: {
+    request: { webContentsId: number; urls: string[] };
+    response: void;
   };
   [PlatformChannels.BrowserViewReady]: {
     request: {

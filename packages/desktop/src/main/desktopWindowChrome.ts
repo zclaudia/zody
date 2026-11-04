@@ -3,6 +3,8 @@ import { app, BrowserWindow, Menu, nativeImage, nativeTheme, screen, shell } fro
 import { join } from "node:path";
 import type {
   ContextMenuParams,
+  DownloadItem,
+  Event,
   Input,
   MenuItemConstructorOptions,
   WebContents,
@@ -11,7 +13,12 @@ import type {
 import type { DesktopTitleBarTheme, Locale } from "@zcode/shared";
 // fork（F4.4）：isTrustedCodingPlanWebviewOrigin / isTrustedRewardsUrl 随购买 webview 与
 // Rewards webview 基础设施删除（shared 中函数的 UI 侧消费者由 F4.5 处理）。
-import { DEFAULT_LOCALE, desktopMenuMessageIds, getDesktopMenuMessage, PlatformChannels } from "@zcode/shared";
+import {
+  DEFAULT_LOCALE,
+  desktopMenuMessageIds,
+  getDesktopMenuMessage,
+  PlatformChannels,
+} from "@zcode/shared";
 import { loadWindow, type WindowBootstrapOptions } from "./desktopHostProcess.js";
 import {
   buildWindowsTitleBarOverlayForZoomLevel,
@@ -253,6 +260,20 @@ function attachEmbeddedBrowserWindowOpenHandler(options: {
     | undefined;
   logger: { warn: (...args: unknown[]) => void };
 }) {
+  // 来源 a60ba6a7（upstream v3.17.1 F13）：下载响应会让 loadURL 以 ERR_FAILED 拒绝；
+  // 用真实下载事件区分网络失败，渲染层据此与加载失败对账，避免下载进行中误报加载失败。
+  const downloadSession = options.guestWebContents.session;
+  const onDownload = (_event: Event, item: DownloadItem, contents: WebContents) => {
+    if (contents !== options.guestWebContents || options.hostWebContents.isDestroyed()) return;
+    options.hostWebContents.send(PlatformChannels.BrowserViewDownloadStarted, {
+      webContentsId: contents.id,
+      urls: item.getURLChain(),
+    });
+  };
+  downloadSession.on("will-download", onDownload);
+  options.guestWebContents.once("destroyed", () => {
+    downloadSession.removeListener("will-download", onDownload);
+  });
   let externalBrowserModifierActive = false;
 
   options.guestWebContents.on("before-input-event", (_event, input) => {

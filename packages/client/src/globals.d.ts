@@ -199,6 +199,10 @@ declare global {
       resetEmbeddedBrowserSitePermission?(
         request: EmbeddedBrowserSitePermissionResetRequest,
       ): Promise<EmbeddedBrowserSitePermissionsSnapshot>;
+      /** 注册内置浏览器 guest 开始下载的回调（来源 a60ba6a7 F13），返回 disposer；旧 preload 下为 undefined。 */
+      onBrowserViewDownloadStarted?(
+        handler: (payload: { webContentsId: number; urls: string[] }) => void,
+      ): () => void;
       onBrowserViewReady?(
         handler: (payload: {
           workspaceKey: string;
@@ -336,9 +340,7 @@ declare global {
       /** 清理内置浏览器缓存或全部站点数据。 */
       clearEmbeddedBrowserData?(mode: "cache" | "all"): Promise<EmbeddedBrowserDataClearResult>;
       /** 读取当前窗口可见的 Chrome 扩展 bridge/配对/Profile 状态。 */
-      getBrowserExtensionStatus?(): Promise<
-        import("@zcode/shared").BrowserExtensionBridgeStatus
-      >;
+      getBrowserExtensionStatus?(): Promise<import("@zcode/shared").BrowserExtensionBridgeStatus>;
       /** 在发起窗口生成一次性 Chrome 扩展配对码。 */
       beginBrowserExtensionPairing?(): Promise<
         import("@zcode/shared").BrowserExtensionPairingTicket | null

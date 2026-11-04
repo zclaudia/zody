@@ -484,7 +484,9 @@ describe("desktopWindowChrome", () => {
 
     const guestWebContents = {
       on: vi.fn(),
+      once: vi.fn(),
       setWindowOpenHandler: vi.fn(),
+      session: { on: vi.fn(), removeListener: vi.fn() },
     };
     const didAttach = getWebContentsHandler("did-attach-webview");
     didAttach({}, guestWebContents);
@@ -519,7 +521,9 @@ describe("desktopWindowChrome", () => {
 
     const guestWebContents = {
       on: vi.fn(),
+      once: vi.fn(),
       setWindowOpenHandler: vi.fn(),
+      session: { on: vi.fn(), removeListener: vi.fn() },
     };
     getWebContentsHandler("did-attach-webview")({}, guestWebContents);
 
@@ -582,6 +586,63 @@ describe("desktopWindowChrome", () => {
     );
   });
 
+  // 来源 a60ba6a7（upstream v3.17.1 F13）：guest 的 will-download 必须转发给渲染层，
+  // 否则下载响应导致的 loadURL ERR_FAILED 拒绝会被误报为页面加载失败。
+  it("forwards guest will-download events to the renderer with the download URL chain", async () => {
+    const { createBrowserWindow } = await import("../src/main/desktopWindowChrome.js");
+
+    createBrowserWindow({
+      iconPath: "icon.png",
+      preloadPath: "preload.js",
+      logger: { warn: vi.fn() },
+    });
+
+    const guestWebContents = {
+      id: 99,
+      on: vi.fn(),
+      once: vi.fn(),
+      setWindowOpenHandler: vi.fn(),
+      session: { on: vi.fn(), removeListener: vi.fn() },
+    };
+    getWebContentsHandler("did-attach-webview")({}, guestWebContents);
+
+    const willDownload = guestWebContents.session.on.mock.calls.find(
+      ([event]) => event === "will-download",
+    )?.[1];
+    expect(willDownload).toBeTypeOf("function");
+
+    const downloadItem = { getURLChain: () => ["https://example.com/file.bin"] };
+
+    // 其它 webContents（如第二个 guest）的下载不经过本 handler 转发。
+    willDownload({}, downloadItem, { id: 123 });
+    expect(electronMocks.browserWindowInstance.webContents.send).not.toHaveBeenCalledWith(
+      PlatformChannels.BrowserViewDownloadStarted,
+      expect.anything(),
+    );
+
+    willDownload({}, downloadItem, guestWebContents);
+    expect(electronMocks.browserWindowInstance.webContents.send).toHaveBeenCalledWith(
+      PlatformChannels.BrowserViewDownloadStarted,
+      { webContentsId: 99, urls: ["https://example.com/file.bin"] },
+    );
+
+    // 宿主窗口销毁后不再向 renderer 投递。
+    electronMocks.browserWindowInstance.webContents.send.mockClear();
+    electronMocks.browserWindowInstance.webContents.isDestroyed.mockReturnValueOnce(true);
+    willDownload({}, downloadItem, guestWebContents);
+    expect(electronMocks.browserWindowInstance.webContents.send).not.toHaveBeenCalled();
+    // guest 销毁时移除 session 监听，避免关 tab 后监听残留。
+    const destroyedHandler = guestWebContents.once.mock.calls.find(
+      ([event]) => event === "destroyed",
+    )?.[1];
+    expect(destroyedHandler).toBeTypeOf("function");
+    destroyedHandler();
+    expect(guestWebContents.session.removeListener).toHaveBeenCalledWith(
+      "will-download",
+      willDownload,
+    );
+  });
+
   it("blocks unsupported webview popup protocols", async () => {
     const logger = { warn: vi.fn() };
     const { createBrowserWindow } = await import("../src/main/desktopWindowChrome.js");
@@ -594,7 +655,9 @@ describe("desktopWindowChrome", () => {
 
     const guestWebContents = {
       on: vi.fn(),
+      once: vi.fn(),
       setWindowOpenHandler: vi.fn(),
+      session: { on: vi.fn(), removeListener: vi.fn() },
     };
     getWebContentsHandler("did-attach-webview")({}, guestWebContents);
 
