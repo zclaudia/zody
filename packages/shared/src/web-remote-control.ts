@@ -211,31 +211,31 @@ export type WebRemoteControlExternalWorkspaceBridge =
   | WebRemoteControlExternalRemoteWorkspaceBridge;
 
 export interface WebRemoteControlBootstrapRequestPayload {
-  zcode_type: "bootstrap-request";
+  zody_type: "bootstrap-request";
   requestId: string;
 }
 
 export interface WebRemoteControlBootstrapResponsePayload {
-  zcode_type: "bootstrap-response";
+  zody_type: "bootstrap-response";
   requestId: string;
   success: true;
   result: WebRemoteControlWindowBootstrapResult;
 }
 
 export interface WebRemoteControlWorkspaceListRequestPayload {
-  zcode_type: "workspace-list-request";
+  zody_type: "workspace-list-request";
   requestId: string;
 }
 
 export interface WebRemoteControlWorkspaceListResponsePayload {
-  zcode_type: "workspace-list-response";
+  zody_type: "workspace-list-response";
   requestId: string;
   success: true;
   result: WebRemoteControlWorkspaceListResult;
 }
 
 export interface WebRemoteControlWorkspaceListUpdatedPayload {
-  zcode_type: "workspace-list-updated";
+  zody_type: "workspace-list-updated";
   result: WebRemoteControlWorkspaceListResult;
 }
 
@@ -260,12 +260,12 @@ export interface WebRemoteControlRecentProjectsResult {
 }
 
 export interface WebRemoteControlRecentProjectsUpdatedPayload {
-  zcode_type: "recent-projects-updated";
+  zody_type: "recent-projects-updated";
   result: WebRemoteControlRecentProjectsResult;
 }
 
 export interface WebRemoteControlWorkspaceOpenRequestPayload {
-  zcode_type: "workspace-open-request";
+  zody_type: "workspace-open-request";
   requestId: string;
   /** 必须来自桌面最近一次下发的列表；手机不传路径。 */
   recentProjectId: string;
@@ -273,21 +273,21 @@ export interface WebRemoteControlWorkspaceOpenRequestPayload {
 
 export type WebRemoteControlWorkspaceOpenResponsePayload =
   | {
-      zcode_type: "workspace-open-response";
+      zody_type: "workspace-open-response";
       requestId: string;
       success: true;
       /** 打开成功后该 workspace 在聚合列表里的 key。 */
       workspaceKey: string;
     }
   | {
-      zcode_type: "workspace-open-response";
+      zody_type: "workspace-open-response";
       requestId: string;
       success: false;
       error: string;
     };
 
 export interface WebRemoteControlDesktopWindowOpenRequestPayload {
-  zcode_type: "desktop-window-open-request";
+  zody_type: "desktop-window-open-request";
   requestId: string;
 }
 
@@ -297,7 +297,7 @@ export interface WebRemoteControlDesktopWindowOpenRequestPayload {
  * `isValidLocalWorkspaceDirectory` 同一套路径校验，目录必须已存在，不创建目录。
  */
 export interface WebRemoteControlWorkspaceOpenPathRequestPayload {
-  zcode_type: "workspace-open-path-request";
+  zody_type: "workspace-open-path-request";
   requestId: string;
   /** 已存在的本地绝对目录路径；相对路径、UNC 网络路径一律拒绝。 */
   workspacePath: string;
@@ -305,14 +305,14 @@ export interface WebRemoteControlWorkspaceOpenPathRequestPayload {
 
 export type WebRemoteControlWorkspaceOpenPathResponsePayload =
   | {
-      zcode_type: "workspace-open-path-response";
+      zody_type: "workspace-open-path-response";
       requestId: string;
       success: true;
       /** 打开成功后该 workspace 在聚合列表里的 key。 */
       workspaceKey: string;
     }
   | {
-      zcode_type: "workspace-open-path-response";
+      zody_type: "workspace-open-path-response";
       requestId: string;
       success: false;
       /** 稳定错误码：arbitrary-path-disabled / path-invalid / open-failed / timeout。 */
@@ -340,7 +340,7 @@ export type WebRemoteControlMobileDirectoryListResult =
   | { ok: false; error: string };
 
 export interface WebRemoteControlMobileDirectoryListRequestPayload {
-  zcode_type: "mobile-directory-list-request";
+  zody_type: "mobile-directory-list-request";
   requestId: string;
   /** 省略时列出桌面 homedir；否则必须是绝对路径。 */
   path?: string;
@@ -348,7 +348,7 @@ export interface WebRemoteControlMobileDirectoryListRequestPayload {
 
 export type WebRemoteControlMobileDirectoryListResponsePayload =
   | {
-      zcode_type: "mobile-directory-list-response";
+      zody_type: "mobile-directory-list-response";
       requestId: string;
       success: true;
       /** 实际列出的目录（homedir 请求回填绝对路径）。 */
@@ -358,7 +358,7 @@ export type WebRemoteControlMobileDirectoryListResponsePayload =
       entries: WebRemoteControlMobileDirectoryEntry[];
     }
   | {
-      zcode_type: "mobile-directory-list-response";
+      zody_type: "mobile-directory-list-response";
       requestId: string;
       success: false;
       /** 稳定错误码：not-found / not-directory / unreadable / too-large / path-invalid。 */
@@ -367,19 +367,19 @@ export type WebRemoteControlMobileDirectoryListResponsePayload =
 
 export type WebRemoteControlDesktopWindowOpenResponsePayload =
   | {
-      zcode_type: "desktop-window-open-response";
+      zody_type: "desktop-window-open-response";
       requestId: string;
       success: true;
     }
   | {
-      zcode_type: "desktop-window-open-response";
+      zody_type: "desktop-window-open-response";
       requestId: string;
       success: false;
       error: string;
     };
 
 export interface WebRemoteControlWorkspaceBridgeOpenPayload {
-  zcode_type: "workspace-bridge-open";
+  zody_type: "workspace-bridge-open";
   requestId: string;
   bridgeSessionId: string;
   bridgeGeneration?: number;
@@ -389,7 +389,7 @@ export interface WebRemoteControlWorkspaceBridgeOpenPayload {
 }
 
 export interface WebRemoteControlWorkspaceBridgeReadyPayload {
-  zcode_type: "workspace-bridge-ready";
+  zody_type: "workspace-bridge-ready";
   requestId: string;
   bridgeSessionId: string;
   bridgeGeneration?: number;
@@ -398,7 +398,7 @@ export interface WebRemoteControlWorkspaceBridgeReadyPayload {
 }
 
 export interface WebRemoteControlWorkspaceBridgeErrorPayload {
-  zcode_type: "workspace-bridge-error";
+  zody_type: "workspace-bridge-error";
   requestId: string;
   bridgeSessionId?: string;
   bridgeGeneration?: number;
@@ -408,20 +408,20 @@ export interface WebRemoteControlWorkspaceBridgeErrorPayload {
 }
 
 export interface WebRemoteControlWorkspaceReconnectRequestPayload {
-  zcode_type: "workspace-reconnect-request";
+  zody_type: "workspace-reconnect-request";
   requestId: string;
   workspaceKey: string;
 }
 
 export type WebRemoteControlWorkspaceReconnectResponsePayload =
   | {
-      zcode_type: "workspace-reconnect-response";
+      zody_type: "workspace-reconnect-response";
       requestId: string;
       workspaceKey: string;
       success: true;
     }
   | {
-      zcode_type: "workspace-reconnect-response";
+      zody_type: "workspace-reconnect-response";
       requestId: string;
       workspaceKey: string;
       success: false;
@@ -429,14 +429,14 @@ export type WebRemoteControlWorkspaceReconnectResponsePayload =
     };
 
 export interface WebRemoteControlMobileViewStatePayload {
-  zcode_type: "mobile-view-state-update";
+  zody_type: "mobile-view-state-update";
   viewState: WebRemoteControlMobileViewState;
   deviceInfo?: WebRemoteControlMobileDeviceInfo;
 }
 
 export type WebRemoteControlPlatformRequestPayload = {
   [K in WebRemoteControlPlatformMethod]: {
-    zcode_type: "platform-request";
+    zody_type: "platform-request";
     requestId: string;
     method: K;
     args?: WebRemoteControlPlatformMethodArgsMap[K];
@@ -446,7 +446,7 @@ export type WebRemoteControlPlatformRequestPayload = {
 export type WebRemoteControlPlatformResponsePayload =
   | {
       [K in WebRemoteControlPlatformMethod]: {
-        zcode_type: "platform-response";
+        zody_type: "platform-response";
         requestId: string;
         method: K;
         success: true;
@@ -454,7 +454,7 @@ export type WebRemoteControlPlatformResponsePayload =
       };
     }[WebRemoteControlPlatformMethod]
   | {
-      zcode_type: "platform-response";
+      zody_type: "platform-response";
       requestId: string;
       method: WebRemoteControlPlatformMethod;
       success: false;
@@ -463,7 +463,7 @@ export type WebRemoteControlPlatformResponsePayload =
 
 /** @deprecated 仅供 legacy adapter 单测/迁移使用；production parser 自 04D-3 起拒绝。 */
 export interface WebRemoteControlRpcFramePayload {
-  zcode_type: "rpc-frame";
+  zody_type: "rpc-frame";
   bridgeSessionId: string;
   bridgeGeneration?: number;
   recoveryId?: string;
@@ -472,7 +472,7 @@ export interface WebRemoteControlRpcFramePayload {
 }
 
 export interface WebRemoteControlBridgeDegradedPayload {
-  zcode_type: "bridge-degraded";
+  zody_type: "bridge-degraded";
   bridgeSessionId: string;
   bridgeGeneration?: number;
   recoveryId?: string;
@@ -483,7 +483,7 @@ export interface WebRemoteControlBridgeDegradedPayload {
 }
 
 export interface WebRemoteControlAppErrorPayload {
-  zcode_type: "app-error";
+  zody_type: "app-error";
   requestId?: string;
   bridgeSessionId?: string;
   reason: WebRemoteControlFailureReason;
@@ -499,7 +499,7 @@ export type WebRemoteControlMobileDiagnosticEvent =
   | "failure";
 
 export interface WebRemoteControlMobileDiagnosticPayload {
-  zcode_type: "mobile-diagnostic";
+  zody_type: "mobile-diagnostic";
   event: WebRemoteControlMobileDiagnosticEvent;
   timestamp: number;
   state?: string;
@@ -518,7 +518,7 @@ export interface WebRemoteControlMobileDiagnosticPayload {
 export type WebRemoteControlAppPayload =
   | import("./mobile-history-search.js").MobileHistorySearchRequest
   | import("./mobile-history-search.js").MobileHistorySearchOutcome
-  | { zcode_type: "telemetry-report"; event: MobileSessionCreateTelemetry }
+  | { zody_type: "telemetry-report"; event: MobileSessionCreateTelemetry }
   | WebRemoteControlBootstrapRequestPayload
   | WebRemoteControlBootstrapResponsePayload
   | WebRemoteControlWorkspaceListRequestPayload

@@ -15,7 +15,7 @@ export function measureUtf8Bytes(value: string): number {
 
 export function isRawTransportCandidate(payload: unknown): boolean {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
-  const type = (payload as { zcode_type?: unknown }).zcode_type;
+  const type = (payload as { zody_type?: unknown }).zody_type;
   return type === "rpc-frame" || type === "rpc-frame-ack";
 }
 
@@ -63,14 +63,14 @@ export function prepareOutboundPayload(
   payload: WebRemoteControlAppPayload,
   negotiatedAppProtocol: number,
 ): WebRemoteControlAppPayload | null {
-  const typeVersion = resolveWebRemoteControlAppProtocolVersion(payload.zcode_type);
+  const typeVersion = resolveWebRemoteControlAppProtocolVersion(payload.zody_type);
   if (typeVersion === null || typeVersion > negotiatedAppProtocol) {
     return null;
   }
   const fieldsToDrop = WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES.filter(
     (feature) =>
       feature.field !== undefined &&
-      feature.zcodeType === payload.zcode_type &&
+      feature.zcodeType === payload.zody_type &&
       feature.introducedIn > negotiatedAppProtocol &&
       hasPayloadFieldPath(payload, feature.field),
   );

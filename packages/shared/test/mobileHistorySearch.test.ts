@@ -5,7 +5,7 @@ import {
 } from "../src/mobile-history-search.js";
 
 const request = {
-  zcode_type: "mobile-history-search-request" as const,
+  zody_type: "mobile-history-search-request" as const,
   requestId: "request-1",
   context: {
     backendId: "backend-1",
@@ -40,7 +40,7 @@ describe("mobile history search contract", () => {
   it("requires items only for successful outcomes", () => {
     expect(
       mobileHistorySearchOutcomeSchema.safeParse({
-        zcode_type: "mobile-history-search-outcome",
+        zody_type: "mobile-history-search-outcome",
         requestId: request.requestId,
         context: request.context,
         queryGeneration: request.queryGeneration,
@@ -51,7 +51,7 @@ describe("mobile history search contract", () => {
     ).toBe(true);
     expect(
       mobileHistorySearchOutcomeSchema.safeParse({
-        zcode_type: "mobile-history-search-outcome",
+        zody_type: "mobile-history-search-outcome",
         requestId: request.requestId,
         context: request.context,
         queryGeneration: request.queryGeneration,

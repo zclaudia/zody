@@ -152,7 +152,7 @@ export function useMobileHistorySearch(params: {
           const workspaceKey = resolveWebRemoteControlWorkspaceKey(workspace);
           const requestId = params.createRequestId();
           const request: MobileHistorySearchRequest = {
-            zcode_type: "mobile-history-search-request",
+            zody_type: "mobile-history-search-request",
             requestId,
             context: {
               backendId: params.connection.backendId,
@@ -183,7 +183,7 @@ export function useMobileHistorySearch(params: {
             }
           } catch {
             const outcome: MobileHistorySearchOutcome = {
-              zcode_type: "mobile-history-search-outcome",
+              zody_type: "mobile-history-search-outcome",
               requestId: request.requestId,
               context: request.context,
               queryGeneration: generation,
@@ -222,7 +222,7 @@ export function useMobileHistorySearch(params: {
       const generation = generationRef.current;
       const requestId = params.createRequestId();
       const request: MobileHistorySearchRequest = {
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId,
         context: {
           backendId: params.connection.backendId,
@@ -259,7 +259,7 @@ export function useMobileHistorySearch(params: {
         }
       } catch {
         const outcome: MobileHistorySearchOutcome = {
-          zcode_type: "mobile-history-search-outcome",
+          zody_type: "mobile-history-search-outcome",
           requestId,
           context: request.context,
           queryGeneration: generation,

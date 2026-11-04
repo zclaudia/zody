@@ -249,10 +249,10 @@ describe("P8 mobile multi-Host identity isolation", () => {
 
       const bootstrapPromise = phone.waitForPayload(
         (payload) =>
-          payload.zcode_type === "bootstrap-response" &&
+          payload.zody_type === "bootstrap-response" &&
           payload.requestId === "p8-identity-bootstrap",
       );
-      phone.sendPayload({ zcode_type: "bootstrap-request", requestId: "p8-identity-bootstrap" });
+      phone.sendPayload({ zody_type: "bootstrap-request", requestId: "p8-identity-bootstrap" });
       const bootstrap = await bootstrapPromise;
       expect(
         (bootstrap.result as { mobileCapabilities?: { historySearch?: number } })
@@ -262,10 +262,10 @@ describe("P8 mobile multi-Host identity isolation", () => {
       const workspaceListRequest = "p8-identity-workspaces";
       const workspaceListPromise = phone.waitForPayload(
         (payload) =>
-          payload.zcode_type === "workspace-list-response" &&
+          payload.zody_type === "workspace-list-response" &&
           payload.requestId === workspaceListRequest,
       );
-      phone.sendPayload({ zcode_type: "workspace-list-request", requestId: workspaceListRequest });
+      phone.sendPayload({ zody_type: "workspace-list-request", requestId: workspaceListRequest });
       const workspaceListResponse = await workspaceListPromise;
       const workspaces =
         (
@@ -292,11 +292,11 @@ describe("P8 mobile multi-Host identity isolation", () => {
           const requestId = `p8-identity-search-${index}`;
           const outcomePromise = phone!.waitForPayload(
             (payload) =>
-              payload.zcode_type === "mobile-history-search-outcome" &&
+              payload.zody_type === "mobile-history-search-outcome" &&
               payload.requestId === requestId,
           );
           phone!.sendPayload({
-            zcode_type: "mobile-history-search-request",
+            zody_type: "mobile-history-search-request",
             requestId,
             context: {
               backendId: phone!.backendId,
@@ -375,11 +375,11 @@ describe("P8 mobile multi-Host identity isolation", () => {
 
       const invalidBackendPromise = phone.waitForPayload(
         (payload) =>
-          payload.zcode_type === "mobile-history-search-outcome" &&
+          payload.zody_type === "mobile-history-search-outcome" &&
           payload.requestId === "p8-identity-forged-backend",
       );
       phone.sendPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId: "p8-identity-forged-backend",
         context: {
           backendId: "forged-backend",
@@ -397,11 +397,11 @@ describe("P8 mobile multi-Host identity isolation", () => {
 
       const invalidWorkspacePromise = phone.waitForPayload(
         (payload) =>
-          payload.zcode_type === "mobile-history-search-outcome" &&
+          payload.zody_type === "mobile-history-search-outcome" &&
           payload.requestId === "p8-identity-forged-workspace",
       );
       phone.sendPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId: "p8-identity-forged-workspace",
         context: {
           backendId: phone.backendId,

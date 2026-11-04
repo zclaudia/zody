@@ -63,7 +63,7 @@ const platform = {
 };
 const broadcastService = {onMessage: Event.None, send: async () => {}};
 function outcome(request, items) {
-  return {zcode_type: 'mobile-history-search-outcome', requestId: request.requestId, context: request.context,
+  return {zody_type: 'mobile-history-search-outcome', requestId: request.requestId, context: request.context,
     queryGeneration: request.queryGeneration, scopeSignature: request.scopeSignature, status: 'ok', items};
 }
 function makeItem(target, result) {

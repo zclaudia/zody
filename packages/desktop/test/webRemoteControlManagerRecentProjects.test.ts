@@ -122,13 +122,13 @@ async function startHarness(harness: ReturnType<typeof createHarness>): Promise<
   harness.sentPayloads.length = 0;
 }
 
-function findPayload<T extends WebRemoteControlAppPayload["zcode_type"]>(
+function findPayload<T extends WebRemoteControlAppPayload["zody_type"]>(
   payloads: WebRemoteControlAppPayload[],
   zcodeType: T,
-): Extract<WebRemoteControlAppPayload, { zcode_type: T }> | undefined {
+): Extract<WebRemoteControlAppPayload, { zody_type: T }> | undefined {
   return payloads.find(
-    (payload): payload is Extract<WebRemoteControlAppPayload, { zcode_type: T }> =>
-      payload.zcode_type === zcodeType,
+    (payload): payload is Extract<WebRemoteControlAppPayload, { zody_type: T }> =>
+      payload.zody_type === zcodeType,
   );
 }
 
@@ -188,7 +188,7 @@ describe("webRemoteControlManager recent projects", () => {
       { workspacePath: "/workspace/open", label: "open", kind: "local" },
     ]);
 
-    harness.deliver({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" });
+    harness.deliver({ zody_type: "bootstrap-request", requestId: "bootstrap-1" });
     const response = findPayload(harness.sentPayloads, "bootstrap-response");
     expect(response).toBeDefined();
     expect(response?.result.desktopWindowState).toBe("open");
@@ -205,24 +205,24 @@ describe("webRemoteControlManager recent projects", () => {
     const harness = createHarness({ recentProjects: ["/workspace/demo"] });
     await startHarness(harness);
 
-    harness.deliver({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" });
+    harness.deliver({ zody_type: "bootstrap-request", requestId: "bootstrap-1" });
     const response = findPayload(harness.sentPayloads, "bootstrap-response");
     const recentProject = response?.result.recentProjects?.[0];
     expect(recentProject).toBeDefined();
 
     harness.deliver({
-      zcode_type: "workspace-open-request",
+      zody_type: "workspace-open-request",
       requestId: "open-path",
       recentProjectId: "/workspace/demo",
     });
     harness.deliver({
-      zcode_type: "workspace-open-request",
+      zody_type: "workspace-open-request",
       requestId: "open-unknown",
       recentProjectId: "not-a-known-id",
     });
     await vi.waitFor(() => {
       const responses = harness.sentPayloads.filter(
-        (payload) => payload.zcode_type === "workspace-open-response",
+        (payload) => payload.zody_type === "workspace-open-response",
       );
       expect(responses).toHaveLength(2);
       for (const item of responses) {
@@ -232,7 +232,7 @@ describe("webRemoteControlManager recent projects", () => {
     expect(harness.openWorkspacePath).not.toHaveBeenCalled();
 
     harness.deliver({
-      zcode_type: "workspace-open-request",
+      zody_type: "workspace-open-request",
       requestId: "open-demo",
       recentProjectId: recentProject!.id,
     });
@@ -246,10 +246,10 @@ describe("webRemoteControlManager recent projects", () => {
       expect(
         harness.sentPayloads.find(
           (payload) =>
-            payload.zcode_type === "workspace-open-response" && payload.requestId === "open-demo",
+            payload.zody_type === "workspace-open-response" && payload.requestId === "open-demo",
         ),
       ).toEqual({
-        zcode_type: "workspace-open-response",
+        zody_type: "workspace-open-response",
         requestId: "open-demo",
         success: true,
         workspaceKey: "/workspace/demo",
@@ -261,13 +261,13 @@ describe("webRemoteControlManager recent projects", () => {
     vi.useFakeTimers();
     const harness = createHarness({ recentProjects: ["/workspace/demo"] });
     await startHarness(harness);
-    harness.deliver({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" });
+    harness.deliver({ zody_type: "bootstrap-request", requestId: "bootstrap-1" });
     const id = findPayload(harness.sentPayloads, "bootstrap-response")?.result.recentProjects?.[0]
       ?.id;
     expect(id).toBeDefined();
 
     harness.deliver({
-      zcode_type: "workspace-open-request",
+      zody_type: "workspace-open-request",
       requestId: "open-timeout",
       recentProjectId: id!,
     });
@@ -279,7 +279,7 @@ describe("webRemoteControlManager recent projects", () => {
     expect(
       harness.sentPayloads.find(
         (payload) =>
-          payload.zcode_type === "workspace-open-response" && payload.requestId === "open-timeout",
+          payload.zody_type === "workspace-open-response" && payload.requestId === "open-timeout",
       ),
     ).toMatchObject({ success: false, error: expect.stringContaining("10 seconds") });
     expect(harness.logger.warn).not.toHaveBeenCalled();
@@ -291,12 +291,12 @@ describe("webRemoteControlManager recent projects", () => {
       hasOpenWindow: false,
     });
     await startHarness(harness);
-    harness.deliver({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" });
+    harness.deliver({ zody_type: "bootstrap-request", requestId: "bootstrap-1" });
     const id = findPayload(harness.sentPayloads, "bootstrap-response")?.result.recentProjects?.[0]
       ?.id;
 
     harness.deliver({
-      zcode_type: "workspace-open-request",
+      zody_type: "workspace-open-request",
       requestId: "open-demo",
       recentProjectId: id!,
     });
@@ -310,7 +310,7 @@ describe("webRemoteControlManager recent projects", () => {
     harness.openWorkspacePath.mockClear();
     harness.canCreateWindow.mockReturnValue(false);
     harness.deliver({
-      zcode_type: "workspace-open-request",
+      zody_type: "workspace-open-request",
       requestId: "open-blocked",
       recentProjectId: id!,
     });
@@ -318,8 +318,7 @@ describe("webRemoteControlManager recent projects", () => {
       expect(
         harness.sentPayloads.find(
           (payload) =>
-            payload.zcode_type === "workspace-open-response" &&
-            payload.requestId === "open-blocked",
+            payload.zody_type === "workspace-open-response" && payload.requestId === "open-blocked",
         ),
       ).toMatchObject({ success: false });
     });
@@ -331,16 +330,16 @@ describe("webRemoteControlManager recent projects", () => {
     const harness = createHarness();
     await startHarness(harness);
 
-    harness.deliver({ zcode_type: "desktop-window-open-request", requestId: "window-1" });
+    harness.deliver({ zody_type: "desktop-window-open-request", requestId: "window-1" });
     await vi.waitFor(() => {
       expect(
         harness.sentPayloads.find(
           (payload) =>
-            payload.zcode_type === "desktop-window-open-response" &&
+            payload.zody_type === "desktop-window-open-response" &&
             payload.requestId === "window-1",
         ),
       ).toEqual({
-        zcode_type: "desktop-window-open-response",
+        zody_type: "desktop-window-open-response",
         requestId: "window-1",
         success: true,
       });
@@ -348,12 +347,12 @@ describe("webRemoteControlManager recent projects", () => {
     expect(harness.ensurePrimaryWindow).toHaveBeenCalledWith("remote-control");
 
     harness.canCreateWindow.mockReturnValue(false);
-    harness.deliver({ zcode_type: "desktop-window-open-request", requestId: "window-2" });
+    harness.deliver({ zody_type: "desktop-window-open-request", requestId: "window-2" });
     await vi.waitFor(() => {
       expect(
         harness.sentPayloads.find(
           (payload) =>
-            payload.zcode_type === "desktop-window-open-response" &&
+            payload.zody_type === "desktop-window-open-response" &&
             payload.requestId === "window-2",
         ),
       ).toMatchObject({ success: false });
@@ -388,7 +387,7 @@ describe("webRemoteControlManager recent projects", () => {
   it("窗口关闭导致 desktopWindowState 变为 none 时推送新快照", async () => {
     const harness = createHarness({ recentProjects: ["/workspace/demo"], hasOpenWindow: true });
     await startHarness(harness);
-    harness.deliver({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" });
+    harness.deliver({ zody_type: "bootstrap-request", requestId: "bootstrap-1" });
     expect(findPayload(harness.sentPayloads, "bootstrap-response")?.result.desktopWindowState).toBe(
       "open",
     );

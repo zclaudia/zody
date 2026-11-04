@@ -43,7 +43,7 @@ function response(
   items: MobileHistorySearchItem[] = [],
 ): MobileHistorySearchOutcome {
   return {
-    zcode_type: "mobile-history-search-outcome",
+    zody_type: "mobile-history-search-outcome",
     requestId: request.requestId,
     context: request.context,
     queryGeneration: request.queryGeneration,

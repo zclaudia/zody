@@ -33,7 +33,7 @@ const fixture = ${JSON.stringify(fixture)};
 const workspaces = fixture.workspaces;
 const calls = [];
 function makeOutcome(request, status, items = []) {
-  return { zcode_type: 'mobile-history-search-outcome', requestId: request.requestId,
+  return { zody_type: 'mobile-history-search-outcome', requestId: request.requestId,
     context: request.context, queryGeneration: request.queryGeneration,
     scopeSignature: request.scopeSignature, status, ...(status === 'ok' ? {items} : {errorCode: 'fixture-offline'}) };
 }

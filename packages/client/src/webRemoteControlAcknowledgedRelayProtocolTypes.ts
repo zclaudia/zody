@@ -1,6 +1,7 @@
 import type { ConnectionFlowControl, Event, IMessagePassingProtocol } from "@zody/rpc";
 import {
   WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS,
+  hasObsoleteWebRemoteControlDiscriminator,
   type WebRemoteControlRpcTransportFault,
   type WebRemoteControlRpcTransportFramePayload,
   type WebRemoteControlRpcTransportIdentity,
@@ -76,8 +77,13 @@ export function rawIdentityMatches(
 }
 
 export function isRawTransportCandidate(candidate: unknown): boolean {
-  if (typeof candidate !== "object" || candidate === null) return false;
-  const type = (candidate as { zcode_type?: unknown }).zcode_type;
+  if (
+    typeof candidate !== "object" ||
+    candidate === null ||
+    hasObsoleteWebRemoteControlDiscriminator(candidate)
+  )
+    return false;
+  const type = (candidate as { zody_type?: unknown }).zody_type;
   return type === "rpc-frame" || type === "rpc-frame-ack";
 }
 

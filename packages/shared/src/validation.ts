@@ -42,6 +42,7 @@ import {
 import { PROTOCOL_V4_LIMITS } from "./zody-protocol-v4/core.js";
 import { sessionWorkflowActivitySchema } from "./zody-protocol-v4/sessions-index-workflow-activity.js";
 import {
+  hasObsoleteWebRemoteControlDiscriminator,
   webRemoteControlRpcTransportAckSchema,
   webRemoteControlRpcTransportFrameSchema,
 } from "./web-remote-control-rpc-transport.js";
@@ -274,49 +275,49 @@ const webRemoteControlAppPayloadSchemas = [
   mobileHistorySearchRequestSchema,
   mobileHistorySearchOutcomeSchema,
   z
-    .object({ zcode_type: z.literal("telemetry-report"), event: sessionCreateTelemetrySchema })
+    .object({ zody_type: z.literal("telemetry-report"), event: sessionCreateTelemetrySchema })
     .strict(),
   z.object({
-    zcode_type: z.literal("bootstrap-request"),
+    zody_type: z.literal("bootstrap-request"),
     requestId: nonEmptyStringSchema,
   }),
   z.object({
-    zcode_type: z.literal("bootstrap-response"),
+    zody_type: z.literal("bootstrap-response"),
     requestId: nonEmptyStringSchema,
     success: z.literal(true),
     result: webRemoteControlWindowBootstrapResultSchema,
   }),
   z.object({
-    zcode_type: z.literal("workspace-list-request"),
+    zody_type: z.literal("workspace-list-request"),
     requestId: nonEmptyStringSchema,
   }),
   z.object({
-    zcode_type: z.literal("workspace-list-response"),
+    zody_type: z.literal("workspace-list-response"),
     requestId: nonEmptyStringSchema,
     success: z.literal(true),
     result: webRemoteControlWorkspaceListResultSchema,
   }),
   z.object({
-    zcode_type: z.literal("workspace-list-updated"),
+    zody_type: z.literal("workspace-list-updated"),
     result: webRemoteControlWorkspaceListResultSchema,
   }),
   z
     .object({
-      zcode_type: z.literal("recent-projects-updated"),
+      zody_type: z.literal("recent-projects-updated"),
       result: webRemoteControlRecentProjectsResultSchema,
     })
     .strict(),
   // strict：手机只能传最近一次列表里的 recentProjectId；带 workspacePath 等多余字段的整帧被丢弃。
   z
     .object({
-      zcode_type: z.literal("workspace-open-request"),
+      zody_type: z.literal("workspace-open-request"),
       requestId: nonEmptyStringSchema,
       recentProjectId: nonEmptyStringSchema,
     })
     .strict(),
   z
     .object({
-      zcode_type: z.literal("workspace-open-response"),
+      zody_type: z.literal("workspace-open-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(true),
       workspaceKey: nonEmptyStringSchema,
@@ -324,7 +325,7 @@ const webRemoteControlAppPayloadSchemas = [
     .strict(),
   z
     .object({
-      zcode_type: z.literal("workspace-open-response"),
+      zody_type: z.literal("workspace-open-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(false),
       error: z.string(),
@@ -332,20 +333,20 @@ const webRemoteControlAppPayloadSchemas = [
     .strict(),
   z
     .object({
-      zcode_type: z.literal("desktop-window-open-request"),
+      zody_type: z.literal("desktop-window-open-request"),
       requestId: nonEmptyStringSchema,
     })
     .strict(),
   z
     .object({
-      zcode_type: z.literal("desktop-window-open-response"),
+      zody_type: z.literal("desktop-window-open-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(true),
     })
     .strict(),
   z
     .object({
-      zcode_type: z.literal("desktop-window-open-response"),
+      zody_type: z.literal("desktop-window-open-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(false),
       error: z.string(),
@@ -354,14 +355,14 @@ const webRemoteControlAppPayloadSchemas = [
   // strict：打开任意目录只接受 workspacePath 一个路径字段（第二批 E1/E2）；夹带其他字段的整帧被丢弃。
   z
     .object({
-      zcode_type: z.literal("workspace-open-path-request"),
+      zody_type: z.literal("workspace-open-path-request"),
       requestId: nonEmptyStringSchema,
       workspacePath: nonEmptyStringSchema,
     })
     .strict(),
   z
     .object({
-      zcode_type: z.literal("workspace-open-path-response"),
+      zody_type: z.literal("workspace-open-path-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(true),
       workspaceKey: nonEmptyStringSchema,
@@ -369,7 +370,7 @@ const webRemoteControlAppPayloadSchemas = [
     .strict(),
   z
     .object({
-      zcode_type: z.literal("workspace-open-path-response"),
+      zody_type: z.literal("workspace-open-path-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(false),
       error: z.string(),
@@ -377,14 +378,14 @@ const webRemoteControlAppPayloadSchemas = [
     .strict(),
   z
     .object({
-      zcode_type: z.literal("mobile-directory-list-request"),
+      zody_type: z.literal("mobile-directory-list-request"),
       requestId: nonEmptyStringSchema,
       path: nonEmptyStringSchema.optional(),
     })
     .strict(),
   z
     .object({
-      zcode_type: z.literal("mobile-directory-list-response"),
+      zody_type: z.literal("mobile-directory-list-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(true),
       resolvedPath: nonEmptyStringSchema,
@@ -404,14 +405,14 @@ const webRemoteControlAppPayloadSchemas = [
     .strict(),
   z
     .object({
-      zcode_type: z.literal("mobile-directory-list-response"),
+      zody_type: z.literal("mobile-directory-list-response"),
       requestId: nonEmptyStringSchema,
       success: z.literal(false),
       error: z.string(),
     })
     .strict(),
   z.object({
-    zcode_type: z.literal("workspace-bridge-open"),
+    zody_type: z.literal("workspace-bridge-open"),
     requestId: nonEmptyStringSchema,
     bridgeSessionId: webRemoteControlTransportIdSchema,
     bridgeGeneration: z.number().int().nonnegative().optional(),
@@ -420,7 +421,7 @@ const webRemoteControlAppPayloadSchemas = [
     taskId: nonEmptyStringSchema.optional(),
   }),
   z.object({
-    zcode_type: z.literal("workspace-bridge-ready"),
+    zody_type: z.literal("workspace-bridge-ready"),
     requestId: nonEmptyStringSchema,
     bridgeSessionId: webRemoteControlTransportIdSchema,
     bridgeGeneration: z.number().int().nonnegative().optional(),
@@ -428,7 +429,7 @@ const webRemoteControlAppPayloadSchemas = [
     bridge: webRemoteControlExternalWorkspaceBridgeSchema,
   }),
   z.object({
-    zcode_type: z.literal("workspace-bridge-error"),
+    zody_type: z.literal("workspace-bridge-error"),
     requestId: nonEmptyStringSchema,
     bridgeSessionId: webRemoteControlTransportIdSchema.optional(),
     bridgeGeneration: z.number().int().nonnegative().optional(),
@@ -437,43 +438,43 @@ const webRemoteControlAppPayloadSchemas = [
     error: z.string(),
   }),
   z.object({
-    zcode_type: z.literal("workspace-reconnect-request"),
+    zody_type: z.literal("workspace-reconnect-request"),
     requestId: nonEmptyStringSchema,
     workspaceKey: nonEmptyStringSchema,
   }),
   z.object({
-    zcode_type: z.literal("workspace-reconnect-response"),
+    zody_type: z.literal("workspace-reconnect-response"),
     requestId: nonEmptyStringSchema,
     workspaceKey: nonEmptyStringSchema,
     success: z.literal(true),
   }),
   z.object({
-    zcode_type: z.literal("workspace-reconnect-response"),
+    zody_type: z.literal("workspace-reconnect-response"),
     requestId: nonEmptyStringSchema,
     workspaceKey: nonEmptyStringSchema,
     success: z.literal(false),
     error: z.string(),
   }),
   z.object({
-    zcode_type: z.literal("mobile-view-state-update"),
+    zody_type: z.literal("mobile-view-state-update"),
     viewState: webRemoteControlMobileViewStateSchema,
     deviceInfo: webRemoteControlMobileDeviceInfoSchema.optional(),
   }),
   z.object({
-    zcode_type: z.literal("platform-request"),
+    zody_type: z.literal("platform-request"),
     requestId: nonEmptyStringSchema,
     method: webRemoteControlPlatformMethodSchema,
     args: z.unknown().optional(),
   }),
   z.object({
-    zcode_type: z.literal("platform-response"),
+    zody_type: z.literal("platform-response"),
     requestId: nonEmptyStringSchema,
     method: webRemoteControlPlatformMethodSchema,
     success: z.literal(true),
     result: z.unknown(),
   }),
   z.object({
-    zcode_type: z.literal("platform-response"),
+    zody_type: z.literal("platform-response"),
     requestId: nonEmptyStringSchema,
     method: webRemoteControlPlatformMethodSchema,
     success: z.literal(false),
@@ -484,7 +485,7 @@ const webRemoteControlAppPayloadSchemas = [
   webRemoteControlRpcTransportFrameSchema,
   webRemoteControlRpcTransportAckSchema,
   z.object({
-    zcode_type: z.literal("bridge-degraded"),
+    zody_type: z.literal("bridge-degraded"),
     bridgeSessionId: webRemoteControlTransportIdSchema,
     bridgeGeneration: z.number().int().nonnegative().optional(),
     recoveryId: webRemoteControlTransportIdSchema.optional(),
@@ -494,14 +495,14 @@ const webRemoteControlAppPayloadSchemas = [
     droppedCount: z.number().int().nonnegative().optional(),
   }),
   z.object({
-    zcode_type: z.literal("app-error"),
+    zody_type: z.literal("app-error"),
     requestId: nonEmptyStringSchema.optional(),
     bridgeSessionId: webRemoteControlTransportIdSchema.optional(),
     reason: webRemoteControlFailureReasonSchema,
     error: z.string(),
   }),
   z.object({
-    zcode_type: z.literal("mobile-diagnostic"),
+    zody_type: z.literal("mobile-diagnostic"),
     event: z.enum([
       "state-transition",
       "socket-close",
@@ -525,8 +526,8 @@ const webRemoteControlAppPayloadSchemas = [
   }),
 ] as const;
 
-// Bugfix: app payload 里多个消息共享 zcode_type（例如 platform-response），
-// 不能直接用 z.discriminatedUnion("zcode_type")，否则 schema 初始化会因重复值失败。
+// Bugfix: app payload 里多个消息共享 zody_type（例如 platform-response），
+// 不能直接用 z.discriminatedUnion("zody_type")，否则 schema 初始化会因重复值失败。
 // 这里保留同一批运行时约束，改用普通 union，让 gateway 链路的不可信 payload
 // 在进入 desktop/web 路由前仍然先被机械校验。
 export const webRemoteControlAppPayloadSchema = z.union(webRemoteControlAppPayloadSchemas);
@@ -534,6 +535,7 @@ export const webRemoteControlAppPayloadSchema = z.union(webRemoteControlAppPaylo
 export function parseWebRemoteControlAppPayload(
   payload: unknown,
 ): WebRemoteControlAppPayload | null {
+  if (hasObsoleteWebRemoteControlDiscriminator(payload)) return null;
   const result = webRemoteControlAppPayloadSchema.safeParse(payload);
   return result.success ? (result.data as WebRemoteControlAppPayload) : null;
 }

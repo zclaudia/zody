@@ -27,18 +27,21 @@ describe("WebRemoteControlRelayPayloadSerializer", () => {
   it("distinguishes a permanent oversize envelope from a bounded payload", () => {
     const serializer = new WebRemoteControlRelayPayloadSerializer();
     const bounded: WebRemoteControlAppPayload = {
-      zcode_type: "app-error",
+      zody_type: "app-error",
       reason: "unexpected-error",
-      error: "中文🙂bounded",
+      error: "中文🙂 user text zcode_type: historical",
     };
     const oversize: WebRemoteControlAppPayload = {
-      zcode_type: "app-error",
+      zody_type: "app-error",
       reason: "unexpected-error",
       error: "x".repeat(WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS.maxPhysicalFrameBytes),
     };
 
     const preparedBounded = serializer.prepare(bounded, 1);
     expect(serializer.isOversize(preparedBounded)).toBe(false);
+    expect(JSON.parse(preparedBounded.json).payload.error).toBe(
+      "中文🙂 user text zcode_type: historical",
+    );
     expect(preparedBounded.bytes).toBe(new TextEncoder().encode(preparedBounded.json).byteLength);
     const preparedOversize = serializer.prepare(oversize, 1);
     expect(serializer.isOversize(preparedOversize)).toBe(true);

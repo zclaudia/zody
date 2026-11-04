@@ -532,12 +532,12 @@ describe("桌面设置页远程访问", () => {
       await waitForMobileConnected(true);
 
       phone.sendPayload({
-        zcode_type: "bootstrap-request",
+        zody_type: "bootstrap-request",
         requestId: "e2e-bootstrap",
       });
       const bootstrap = await phone.waitForPayload(
         (payload) =>
-          payload.zcode_type === "bootstrap-response" && payload.requestId === "e2e-bootstrap",
+          payload.zody_type === "bootstrap-response" && payload.requestId === "e2e-bootstrap",
       );
       const result = bootstrap.result as {
         mobileCapabilities?: {
@@ -564,13 +564,13 @@ describe("桌面设置页远程访问", () => {
       }
 
       phone.sendPayload({
-        zcode_type: "workspace-open-request",
+        zody_type: "workspace-open-request",
         requestId: "e2e-open-recent",
         recentProjectId: project.id,
       });
       const openResponse = await phone.waitForPayload(
         (payload) =>
-          payload.zcode_type === "workspace-open-response" &&
+          payload.zody_type === "workspace-open-response" &&
           payload.requestId === "e2e-open-recent",
       );
       expect(openResponse.success).toBe(true);
@@ -578,13 +578,12 @@ describe("桌面设置页远程访问", () => {
       // Search uses the same per-workspace index path as the phone UI. Query every workspace
       // in the freshly returned scope so this exercises Main -> owning Host routing end to end.
       phone.sendPayload({
-        zcode_type: "workspace-list-request",
+        zody_type: "workspace-list-request",
         requestId: "e2e-workspaces",
       });
       const workspaceResponse = await phone.waitForPayload(
         (payload) =>
-          payload.zcode_type === "workspace-list-response" &&
-          payload.requestId === "e2e-workspaces",
+          payload.zody_type === "workspace-list-response" && payload.requestId === "e2e-workspaces",
       );
       const workspaces =
         (
@@ -607,11 +606,11 @@ describe("桌面设置页远程访问", () => {
           const requestId = `e2e-search-${index}`;
           const outcomePromise = activePhone.waitForPayload(
             (payload) =>
-              payload.zcode_type === "mobile-history-search-outcome" &&
+              payload.zody_type === "mobile-history-search-outcome" &&
               payload.requestId === requestId,
           );
           activePhone.sendPayload({
-            zcode_type: "mobile-history-search-request",
+            zody_type: "mobile-history-search-request",
             requestId,
             context: {
               backendId: activePhone.backendId,

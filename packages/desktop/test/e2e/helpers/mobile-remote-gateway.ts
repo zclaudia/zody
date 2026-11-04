@@ -176,8 +176,8 @@ export async function connectFakePhone(
   channel.send(
     JSON.stringify({
       type: "hello",
-      protocolVersion: 1,
-      appProtocol: { min: 1, max: WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION },
+      protocolVersion: 2,
+      appProtocol: { min: 5, max: WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION },
       clientInstanceId: options.clientInstanceId,
       clientName: options.clientName ?? "ZCode E2E phone",
       appVersion: options.appVersion ?? "1.0.0",

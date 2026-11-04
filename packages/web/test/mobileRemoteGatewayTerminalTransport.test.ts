@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   GatewayClientOptions,
   GatewayClientState,
@@ -403,7 +403,7 @@ async function startReady(harness: Harness): Promise<FakeSocket> {
   harness.client.emitChannelMessage({
     type: "hello_ack",
     protocolVersion: 2,
-    appProtocol: 2,
+    appProtocol: 5,
     desktopAppVersion: "1.5.0",
   });
   await waitUntil(() => harness.states.includes("ready"), 2_000, "ready state");
@@ -432,7 +432,7 @@ describe("GatewayTerminalTransport", () => {
     harness.client.emitChannelMessage({
       type: "hello_ack",
       protocolVersion: version,
-      appProtocol: 2,
+      appProtocol: 5,
       desktopAppVersion: "test",
     });
     await waitUntil(() => harness.failures.length > 0, 2_000, "incompatible");
@@ -443,6 +443,19 @@ describe("GatewayTerminalTransport", () => {
       reason: "incompatible-version",
       upgrade,
     });
+  });
+
+  it.each(["rpc-frame", "rpc-frame-ack"])("rejects mixed raw %s before dispatch", async (type) => {
+    const raw = vi.fn(() => true);
+    const harness = createHarness({ onRawTransportPayload: raw });
+    await startReady(harness);
+    harness.client.emitChannelMessage({
+      type: "data",
+      payload: { zody_type: type, zcode_type: type },
+    });
+    harness.client.emitChannelMessage({ type: "data", payload: { zcode_type: type } });
+    expect(raw).not.toHaveBeenCalled();
+    expect(harness.payloads).toHaveLength(0);
   });
 
   it("先发 ready/paired 回调，再发协商回调并使旧版本检查失效", async () => {
@@ -506,7 +519,7 @@ describe("GatewayTerminalTransport", () => {
     expect(socket.frames()[0]).toEqual({
       type: "hello",
       protocolVersion: 2,
-      appProtocol: { min: 1, max: 4 },
+      appProtocol: { min: 5, max: 5 },
       clientInstanceId: "client-instance-1",
       clientName: "test-phone",
       appVersion: "1.0.0",
@@ -523,7 +536,7 @@ describe("GatewayTerminalTransport", () => {
     harness.client.emitChannelMessage({
       type: "hello_ack",
       protocolVersion: 2,
-      appProtocol: 2,
+      appProtocol: 5,
       desktopAppVersion: "1.5.0",
     });
     await waitUntil(() => harness.sendReadyCount === 2, 2_000, "second send-ready");
@@ -551,7 +564,7 @@ describe("GatewayTerminalTransport", () => {
       harness.client.emitChannelMessage({
         type: "hello_ack",
         protocolVersion: 2,
-        appProtocol: 2,
+        appProtocol: 5,
         desktopAppVersion: "1.5.0",
       });
       await waitUntil(() => harness.states.at(-1) === "ready", 2_000, "auto ready");
@@ -625,7 +638,7 @@ describe("GatewayTerminalTransport", () => {
     harness.client.emitChannelMessage({
       type: "hello_ack",
       protocolVersion: 2,
-      appProtocol: 2,
+      appProtocol: 5,
       desktopAppVersion: "1.5.0",
     });
     await recovery;
@@ -751,7 +764,7 @@ describe("GatewayTerminalTransport", () => {
     harness.client.emitChannelMessage({
       type: "hello_ack",
       protocolVersion: 2,
-      appProtocol: 2,
+      appProtocol: 5,
       desktopAppVersion: "1.5.0",
     });
     await recovery;
@@ -798,45 +811,28 @@ describe("GatewayTerminalTransport", () => {
     });
   });
 
-  it("按协商版本丢弃越界 payload 并回 protocol_error，不改变连接状态", async () => {
-    const harness = createHarness();
-    harness.client.registry.splice(0, harness.client.registry.length, presence());
-    harness.transport.start();
-    await waitUntil(() => harness.client.openChannelCalls.length === 1, 2_000, "first channel");
-    harness.client.emitChannelMessage({
-      type: "hello_ack",
-      protocolVersion: 2,
-      appProtocol: 1,
-      desktopAppVersion: "1.4.0",
-    });
-    await waitUntil(() => harness.states.includes("ready"), 2_000, "ready");
-
-    harness.client.emitChannelMessage({
-      type: "data",
-      payload: {
-        zcode_type: "recent-projects-updated",
-        result: { desktopWindowState: "open", recentProjects: [] },
-      },
-    });
-    await waitUntil(
-      () => harness.client.lastChannelFrames().some((frame) => frame.type === "protocol_error"),
-      2_000,
-      "protocol error",
-    );
-    expect(harness.payloads).toHaveLength(0);
-    expect(harness.states.at(-1)).toBe("ready");
-
-    harness.client.emitChannelMessage({
-      type: "data",
-      payload: {
-        zcode_type: "app-error",
-        reason: "unexpected-error",
-        error: "still delivered",
-      },
-    });
-    await waitUntil(() => harness.payloads.length === 1, 2_000, "v1 payload delivered");
-    expect(harness.states.at(-1)).toBe("ready");
-  });
+  it.each([1, 2, 3, 4])(
+    "rejects stale app protocol ack %i before ready or replay",
+    async (version) => {
+      const harness = createHarness();
+      harness.client.registry.splice(0, harness.client.registry.length, presence());
+      harness.transport.start();
+      await waitUntil(() => harness.client.openChannelCalls.length === 1, 2_000, "channel");
+      harness.client.emitChannelMessage({
+        type: "hello_ack",
+        protocolVersion: 2,
+        appProtocol: version,
+        desktopAppVersion: "old",
+      });
+      await waitUntil(() => harness.failures.length > 0, 2_000, "incompatible");
+      expect(harness.failures[0]).toMatchObject({
+        reason: "incompatible-version",
+        upgrade: "desktop",
+      });
+      expect(harness.sendReadyCount).toBe(0);
+      expect(harness.payloads).toHaveLength(0);
+    },
+  );
 
   it("心跳：没有入站帧超过 45 秒判定 channel 已死并进入可恢复分支", async () => {
     const harness = createHarness({
@@ -861,7 +857,7 @@ describe("GatewayTerminalTransport", () => {
   it("sendPayloadResult：未 ready、背压、超限和正常发送", async () => {
     const harness = createHarness();
     const payload: WebRemoteControlAppPayload = {
-      zcode_type: "app-error",
+      zody_type: "app-error",
       reason: "unexpected-error",
       error: "hello",
     };
@@ -888,7 +884,7 @@ describe("GatewayTerminalTransport", () => {
     expect(harness.transport.sendPayload(payload)).toBe(true);
 
     const oversize: WebRemoteControlAppPayload = {
-      zcode_type: "app-error",
+      zody_type: "app-error",
       reason: "unexpected-error",
       error: "x".repeat(2 * 1024 * 1024),
     };

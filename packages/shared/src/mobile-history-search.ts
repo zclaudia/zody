@@ -12,7 +12,7 @@ const resultLimitSchema = z.union([z.literal(50), z.literal(100), z.literal(200)
 /** A single-workspace request routed by Main to the owning Window Host. */
 export const mobileHistorySearchRequestSchema = z
   .object({
-    zcode_type: z.literal("mobile-history-search-request"),
+    zody_type: z.literal("mobile-history-search-request"),
     requestId: z.string().min(1).max(256),
     context: mobileRequestContextSchema,
     queryGeneration: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
@@ -82,7 +82,7 @@ export type MobileHistorySearchItem = z.infer<typeof mobileHistorySearchItemSche
 
 export const mobileHistorySearchOutcomeSchema = z
   .object({
-    zcode_type: z.literal("mobile-history-search-outcome"),
+    zody_type: z.literal("mobile-history-search-outcome"),
     requestId: z.string().min(1).max(256),
     context: mobileRequestContextSchema,
     queryGeneration: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),

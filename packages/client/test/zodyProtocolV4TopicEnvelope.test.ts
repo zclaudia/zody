@@ -47,7 +47,7 @@ function actualEnvelopeBytes(wire: ConversationTopicWireFrame) {
     JSON.stringify({
       type: "data",
       payload: {
-        zcode_type: "rpc-frame",
+        zody_type: "rpc-frame",
         bridgeSessionId: transportId,
         bridgeGeneration: Number.MAX_SAFE_INTEGER,
         recoveryId: transportId,

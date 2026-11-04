@@ -1,5 +1,6 @@
 import {
   gateWebRemoteControlAppPayloadVersion,
+  hasObsoleteWebRemoteControlDiscriminator,
   parseWebRemoteControlAppPayload,
   parseWebRemoteControlChannelFrameJson,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
@@ -38,7 +39,7 @@ export interface GatewayDeviceInboundHost {
 
 function readSafePayloadType(payload: unknown): string | undefined {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return undefined;
-  const zodyType = (payload as { zcode_type?: unknown }).zcode_type;
+  const zodyType = (payload as { zody_type?: unknown }).zody_type;
   return typeof zodyType === "string" ? zodyType : undefined;
 }
 
@@ -50,6 +51,8 @@ function handleDataFrame(
   if (!channel.ready || channel.appProtocol === undefined) {
     return;
   }
+  // raw 快路径早于 schema；旧键不能借此进入 RPC 或 ACK。
+  if (hasObsoleteWebRemoteControlDiscriminator(frame.payload)) return;
   const session = host.getSession();
   if (isRawTransportCandidate(frame.payload) && session?.onRawTransportPayload?.(frame.payload)) {
     return;

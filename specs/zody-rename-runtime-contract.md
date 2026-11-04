@@ -59,3 +59,5 @@ sequenceDiagram
 独立 server-cli 与 server-core 的生产 ESM bundle 共用显式 `createRequire(import.meta.url)` 兼容桥，以入口实际发行位置解析内联 CommonJS 所需模块；保持原有内联布局和依赖版本，不新增旧名兼容或改变握手协议。动态 require 目标必须经两份真实 bundle 核验：Node 内置模块可由该桥加载，其他字面目标或计算目标须明确来源、发行闭包与许可，未知目标不得静默视为安全。
 
 验收使用真实构建和 staging 产物，在隔离 HOME/TMP 与不能回落仓库 node_modules 的独立目录验证 CLI help/version、Supervisor fork 的 core ready、localhost server-info、停止及进程/socket 清理；确认同一发行目录内资源和依赖完整，记录平台、工具链、hash 和真实失败。mock 或构建成功本身不能替代真实入口验证；未运行的平台保持 pending。
+
+The live phone application payload hard cut uses `zody_type` and app protocol `[5,5]` on channel protocol 2. Top-level old or mixed discriminators are rejected before dispatch or non-strict parsing; nested user and historical data remain opaque. Older peers are rejected before attachment activation, business RPC, replacement or replay as specified in `mobile-remote-control-via-gateway.md`.

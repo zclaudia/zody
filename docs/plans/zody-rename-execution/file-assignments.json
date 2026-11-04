@@ -17327,7 +17327,7 @@
       "specs/zody-rename-process-markers.md",
       "docs/plans/zody-rename-execution/reports/R20-process-markers.md"
     ],
-    "scopeStatus": "bounded-code-accepted-cleaned-awaiting-commit",
+    "scopeStatus": "bounded-code-accepted-cleaned-committed",
     "gate": "Independent marker-code delivery accepted; actual macOS SEA parent/child passed; exact cleanup and post-audit complete. Full R20/R48/release gates remain unmet: existing ready-FD failure pending user repair scope and Windows execution unexecuted.",
     "addenda": [
       "output/zody-rename-r20-process/controller/addendum-1-generated-reexport.json",
@@ -17339,7 +17339,8 @@
       "Existing ready high-EBADF resource-lifecycle test 9/10, one failure; user repair scope pending",
       "Windows actual execution unexecuted",
       "Current launch-document references outside authorized paragraph remain a separate documentation tail"
-    ]
+    ],
+    "acceptedCommit": "c5c669b8375b04e13cb8ec81b42a7661a912adfc"
   },
   "R20_CONTROL_READY_LIFECYCLE": {
     "title": "Existing control-channel ready failure exit lifecycle",
@@ -17348,5 +17349,67 @@
     "evidence": "output/zody-rename-r20-process/diagnostics/ready-pipe-node2414/",
     "writeSet": [],
     "gate": "No production repair authorization yet. Existing channel disposal completes but underlying read remains live until parent peer closes. Do not mask with timeouts or claim resolved."
+  },
+  "R42_PHONE_FIELD": {
+    "title": "Phone live payload discriminator and appProtocol5 cutover",
+    "baselineCommit": "c5c669b8375b04e13cb8ec81b42a7661a912adfc",
+    "controllerGrant": "output/zody-rename-r42-phone-field/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "packages/desktop/src/main/remote-access/gatewayDeviceTransportInbound.ts",
+      "packages/desktop/src/main/remote-access/gatewayDeviceTransportSession.ts",
+      "packages/desktop/src/main/remote-access/gatewayDeviceTransportSupport.ts",
+      "packages/desktop/src/main/webRemoteControlManager.ts",
+      "packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-history-search.mjs",
+      "packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-host-identity-isolation.test.ts",
+      "packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-shell-routing.mjs",
+      "packages/desktop/test/e2e/settings/remote-access-settings.test.ts",
+      "packages/desktop/test/gatewayDeviceTransport.test.ts",
+      "packages/desktop/test/mobileRemoteGatewayIntegration.test.ts",
+      "packages/desktop/test/webRemoteControlManagerExternalRelay.test.ts",
+      "packages/desktop/test/webRemoteControlManagerRecentProjects.test.ts",
+      "packages/desktop/test/webRemoteControlManagerWorkspaceOpenPath.test.ts",
+      "packages/shared/src/mobile-history-search.ts",
+      "packages/shared/src/validation.ts",
+      "packages/shared/src/web-remote-control-channel.ts",
+      "packages/shared/src/web-remote-control-rpc-transport.ts",
+      "packages/shared/src/web-remote-control.ts",
+      "packages/shared/src/zody-protocol-v4/wire-codec.ts",
+      "packages/shared/test/mobileHistorySearch.test.ts",
+      "packages/shared/test/sessionCreateTelemetry.test.ts",
+      "packages/shared/test/webRemoteControl.test.ts",
+      "packages/shared/test/webRemoteControlChannel.test.ts",
+      "packages/shared/test/webRemoteControlRpcTransport.test.ts",
+      "packages/web/src/mobile-remote/bootstrap.tsx",
+      "packages/web/src/mobile-remote/gatewayTerminalTransport.ts",
+      "packages/web/src/mobile-remote/payloadRequester.ts",
+      "packages/web/test/externalRelayFrameGapRecovery.test.ts",
+      "packages/web/test/mobileRemoteGatewayTerminalTransport.test.ts",
+      "packages/web/test/mobileRemotePayloadRequester.test.ts",
+      "packages/desktop/src/main/remote-access/gatewayDeviceTransport.ts",
+      "specs/mobile-remote-control-via-gateway.md",
+      "specs/zody-rename-runtime-contract.md",
+      "specs/zody-rename-http-attachment.md",
+      "packages/shared/test/zodyProtocolV4Wire.test.ts",
+      "packages/shared/test/zodyProtocolV4PhysicalTopic.test.ts",
+      "packages/client/src/webRemoteControlAcknowledgedRelayProtocol.ts",
+      "packages/client/src/webRemoteControlAcknowledgedRelayProtocolTypes.ts",
+      "packages/client/test/webRemoteControlRelayPayloadSerializer.test.ts",
+      "packages/client/test/zodyProtocolV4TopicEnvelope.test.ts",
+      "packages/ui/src/hooks/useMobileHistorySearch.ts",
+      "packages/ui/test/useMobileHistorySearch.test.ts",
+      "packages/desktop/test/e2e/helpers/mobile-remote-gateway.ts",
+      "docs/plans/zody-rename-execution/reports/R42-phone-field.md"
+    ],
+    "readSet": [
+      "packages/desktop/src/main/remote-access/gatewayDeviceTransportHello.ts"
+    ],
+    "plannedPaths": [
+      "docs/plans/zody-rename-execution/reports/R42-phone-field.md"
+    ],
+    "scopeStatus": "bounded-code-accepted-cleaned-ready-to-commit",
+    "gate": "Independent scoped acceptance and exact cleanup complete; post-cleanup audit PASS 0 errors. Ready for commit and non-overlapping handoff. Full R42/R48/release not accepted; 7 real gateway skips and baseline format failures retained.",
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R42-phone-field-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R42-phone-field-controller-verification.md"
   }
 }

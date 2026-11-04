@@ -42,7 +42,7 @@ const VALID_FRAMES = {
   hello_ack: { type: "hello_ack", protocolVersion: 2, appProtocol: 1, desktopAppVersion: "3.15.1" },
   data: {
     type: "data",
-    payload: { zcode_type: "bootstrap-request", requestId: "request-1" },
+    payload: { zody_type: "bootstrap-request", requestId: "request-1" },
     client_ts: 1,
   },
   ping: { type: "ping", id: "1" },
@@ -94,10 +94,10 @@ function readShapeByZcodeType(): Map<string, Set<string>> {
   const shapeByType = new Map<string, Set<string>>();
   for (const option of union.options ?? []) {
     const shape = (option as ZodLikeIntrospection).shape ?? {};
-    const literal = shape.zcode_type as ZodLikeIntrospection | undefined;
+    const literal = shape.zody_type as ZodLikeIntrospection | undefined;
     for (const value of literal?.def?.values ?? []) {
       if (typeof value === "string") {
-        // 同一个 zcode_type 可能由多个 schema 成员表达（例如 platform-response），字段取并集。
+        // 同一个 zody_type 可能由多个 schema 成员表达（例如 platform-response），字段取并集。
         // 嵌套对象（例如 bootstrap-response.result）按点号路径登记，供字段引入版本清单校验。
         const fields = shapeByType.get(value) ?? new Set<string>();
         for (const fieldPath of collectFieldPaths({ shape })) {
@@ -114,9 +114,9 @@ describe("web remote control channel frames", () => {
   it("按 spec 固定常量：kind、版本、超时、1 MiB 帧上限", () => {
     expect(WEB_REMOTE_CONTROL_CHANNEL_KIND).toBe("zcode-remote");
     expect(WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION).toBe(2);
-    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION).toBe(1);
-    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION).toBe(4);
-    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE).toEqual({ min: 1, max: 4 });
+    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION).toBe(5);
+    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION).toBe(5);
+    expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE).toEqual({ min: 5, max: 5 });
     expect(WEB_REMOTE_CONTROL_CHANNEL_HELLO_TIMEOUT_MS).toBe(10_000);
     expect(WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_INTERVAL_MS).toBe(15_000);
     expect(WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_TIMEOUT_MS).toBe(45_000);
@@ -219,11 +219,11 @@ describe("web remote control channel frames", () => {
   it("data 帧只校验信封：payload 的校验 owner 仍是应用层 parser", () => {
     const frame = parseWebRemoteControlChannelFrame({
       type: "data",
-      payload: { zcode_type: "not-a-real-type" },
+      payload: { zody_type: "not-a-real-type" },
     });
     expect(frame).toMatchObject({ type: "data" });
     // 应用层 parser 才会拒绝它；channel 层不做重复校验（rpc-frame 不会二次解析 base64）。
-    expect(parseWebRemoteControlAppPayload({ zcode_type: "not-a-real-type" })).toBeNull();
+    expect(parseWebRemoteControlAppPayload({ zody_type: "not-a-real-type" })).toBeNull();
     expect(parseWebRemoteControlAppPayload((frame as { payload: unknown }).payload)).toBeNull();
   });
 });
@@ -245,7 +245,7 @@ describe("web remote control channel frame parsing", () => {
     // 多字节 payload（手机标题、路径等都可能是中文）：字节数要按 UTF-8 算，不是 code unit 数
     const dataFrame: WebRemoteControlChannelFrameOf<"data"> = {
       type: "data",
-      payload: { zcode_type: "app-error", reason: "unexpected-error", error: "打开项目失败" },
+      payload: { zody_type: "app-error", reason: "unexpected-error", error: "打开项目失败" },
     };
     const dataRaw = JSON.stringify(dataFrame);
     expect(new TextEncoder().encode(dataRaw).byteLength).toBeGreaterThan(dataRaw.length);
@@ -392,8 +392,8 @@ describe("appProtocol negotiation", () => {
     });
     expect(
       negotiateWebRemoteControlAppProtocol(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE, {
-        // 桌面 max 是 4（第二批）；手机从 5 起才支持，交集为空 → 升级桌面。
-        min: 5,
+        // 本地 5 与未来 peer 6 无交集。
+        min: 6,
         max: 6,
       }),
     ).toEqual({ ok: false, upgrade: "desktop" });
@@ -402,12 +402,12 @@ describe("appProtocol negotiation", () => {
         min: 1,
         max: 1,
       }),
-    ).toEqual({ ok: true, appProtocol: 1 });
+    ).toEqual({ ok: false, upgrade: "mobile" });
   });
 });
 
 describe("appProtocol manifest", () => {
-  it("类型清单与 app payload schema 的 zcode_type 完全一致", () => {
+  it("类型清单与 app payload schema 的 zody_type 完全一致", () => {
     const shapeByType = readShapeByZcodeType();
     const schemaTypes = [...shapeByType.keys()].sort();
     // 防呆：schema 结构变化导致 introspect 失败时，不能让这条用例静默通过。
@@ -427,9 +427,7 @@ describe("appProtocol manifest", () => {
     const shapeByType = readShapeByZcodeType();
     for (const feature of WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES) {
       expect(Number.isSafeInteger(feature.introducedIn)).toBe(true);
-      expect(feature.introducedIn).toBeGreaterThanOrEqual(
-        WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION,
-      );
+      expect(feature.introducedIn).toBeGreaterThanOrEqual(1);
       expect(feature.introducedIn).toBeLessThanOrEqual(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION);
       expect(shapeByType.has(feature.zcodeType)).toBe(true);
 
@@ -461,7 +459,7 @@ describe("appProtocol manifest", () => {
 
 describe("appProtocol version gate", () => {
   const bootstrapRequest = {
-    zcode_type: "bootstrap-request",
+    zody_type: "bootstrap-request",
     requestId: "request-1",
   } as WebRemoteControlAppPayload;
 
@@ -492,13 +490,13 @@ describe("appProtocol version gate", () => {
 
   it("协商版本之外的字段被丢弃，协商版本达到引入版本后通过", () => {
     const withField = {
-      zcode_type: "bootstrap-response",
+      zody_type: "bootstrap-response",
       requestId: "request-1",
       success: true,
       result: { recentProjects: [] },
     } as unknown as WebRemoteControlAppPayload;
     const withoutField = {
-      zcode_type: "bootstrap-response",
+      zody_type: "bootstrap-response",
       requestId: "request-1",
       success: true,
       result: {},
@@ -525,7 +523,7 @@ describe("appProtocol version gate", () => {
 
   it("未登记的类型由应用层 schema 丢弃，不属于版本闸门", () => {
     expect(
-      gateWebRemoteControlAppPayloadVersion({ zcode_type: "not-a-real-type" } as never, 1),
+      gateWebRemoteControlAppPayloadVersion({ zody_type: "not-a-real-type" } as never, 1),
     ).toEqual({ kind: "accepted" });
   });
 

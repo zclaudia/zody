@@ -227,7 +227,7 @@ function readChannelIdFromUrl(url: string): string | undefined {
 }
 
 function isRawTransportCandidate(payload: WebRemoteControlAppPayload): boolean {
-  return payload.zcode_type === "rpc-frame" || payload.zcode_type === "rpc-frame-ack";
+  return payload.zody_type === "rpc-frame" || payload.zody_type === "rpc-frame-ack";
 }
 
 function readErrorMessage(error: unknown): string {

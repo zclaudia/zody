@@ -57,7 +57,7 @@ export function measureTopicNotificationEnvelopeBytes(wire: TopicWireFrameCandid
   const mobileRelayFixedBytes = utf8JsonByteLength({
     type: "data",
     payload: {
-      zcode_type: "rpc-frame",
+      zody_type: "rpc-frame",
       bridgeSessionId: transportId,
       bridgeGeneration: Number.MAX_SAFE_INTEGER,
       recoveryId: transportId,

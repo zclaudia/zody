@@ -27,8 +27,8 @@ describe("session_create 手机合同", () => {
     },
   };
   it("只允许手机 session_create，保留手机 context", () => {
-    expect(parseWebRemoteControlAppPayload({ zcode_type: "telemetry-report", event })).toEqual({
-      zcode_type: "telemetry-report",
+    expect(parseWebRemoteControlAppPayload({ zody_type: "telemetry-report", event })).toEqual({
+      zody_type: "telemetry-report",
       event,
     });
     expect(

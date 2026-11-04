@@ -203,7 +203,7 @@ class AcknowledgedRelayProtocol implements AcknowledgedWebRemoteControlRelayProt
         if (this.pendingAckMessageSeq !== null) {
           const ackMessageSeq = this.pendingAckMessageSeq;
           const accepted = this.invokeSend({
-            zcode_type: "rpc-frame-ack",
+            zody_type: "rpc-frame-ack",
             ...this.identity,
             ackMessageSeq,
           });
@@ -272,7 +272,7 @@ class AcknowledgedRelayProtocol implements AcknowledgedWebRemoteControlRelayProt
       this.enterDegraded({ reasonCode: "remote.rpcFrame.invalidPayload", terminal: true });
       return;
     }
-    if (payload.zcode_type === "rpc-frame-ack") {
+    if (payload.zody_type === "rpc-frame-ack") {
       this.processAck(payload.ackMessageSeq);
       return;
     }

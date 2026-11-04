@@ -295,10 +295,10 @@ interface DesktopHarness {
   readonly sendReadyCount: number;
   waitOnline(): Promise<void>;
   onPayload(handler: (payload: WebRemoteControlAppPayload) => void): () => void;
-  waitPayload<T extends WebRemoteControlAppPayload["zcode_type"]>(
+  waitPayload<T extends WebRemoteControlAppPayload["zody_type"]>(
     type: T,
-    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zcode_type: T }>) => boolean,
-  ): Promise<Extract<WebRemoteControlAppPayload, { zcode_type: T }>>;
+    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zody_type: T }>) => boolean,
+  ): Promise<Extract<WebRemoteControlAppPayload, { zody_type: T }>>;
   dispose(): Promise<void>;
 }
 
@@ -400,8 +400,8 @@ function createDesktopHarness(options: DesktopHarnessOptions): DesktopHarness {
     waitPayload(type, predicate) {
       return waitFor(() => {
         for (const payload of payloads) {
-          if (payload.zcode_type !== type) continue;
-          const typed = payload as Extract<WebRemoteControlAppPayload, { zcode_type: typeof type }>;
+          if (payload.zody_type !== type) continue;
+          const typed = payload as Extract<WebRemoteControlAppPayload, { zody_type: typeof type }>;
           if (!predicate || predicate(typed)) return typed;
         }
         return undefined;
@@ -436,10 +436,10 @@ interface PhoneHarness {
   readonly version: { appProtocol: number; desktopAppVersion: string } | undefined;
   readonly state: GatewayTerminalTransportState;
   waitReady(): Promise<void>;
-  waitPayload<T extends WebRemoteControlAppPayload["zcode_type"]>(
+  waitPayload<T extends WebRemoteControlAppPayload["zody_type"]>(
     type: T,
-    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zcode_type: T }>) => boolean,
-  ): Promise<Extract<WebRemoteControlAppPayload, { zcode_type: T }>>;
+    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zody_type: T }>) => boolean,
+  ): Promise<Extract<WebRemoteControlAppPayload, { zody_type: T }>>;
   dispose(): void;
 }
 
@@ -520,8 +520,8 @@ function createPhoneHarness(options: PhoneHarnessOptions): PhoneHarness {
     waitPayload(type, predicate) {
       return waitFor(() => {
         for (const payload of payloads) {
-          if (payload.zcode_type !== type) continue;
-          const typed = payload as Extract<WebRemoteControlAppPayload, { zcode_type: typeof type }>;
+          if (payload.zody_type !== type) continue;
+          const typed = payload as Extract<WebRemoteControlAppPayload, { zody_type: typeof type }>;
           if (!predicate || predicate(typed)) return typed;
         }
         return undefined;
@@ -535,7 +535,7 @@ function createPhoneHarness(options: PhoneHarnessOptions): PhoneHarness {
 
 function buildBootstrapResponse(requestId: string): WebRemoteControlBootstrapResponsePayload {
   return {
-    zcode_type: "bootstrap-response",
+    zody_type: "bootstrap-response",
     requestId,
     success: true,
     result: {
@@ -657,7 +657,7 @@ describeIntegration(integrationName, () => {
     expect(desktop.stateEvents).toContain("paired");
 
     expect(
-      phone.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" }),
+      phone.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "bootstrap-1" }),
     ).toBe(true);
     await desktop.waitPayload(
       "bootstrap-request",
@@ -688,12 +688,12 @@ describeIntegration(integrationName, () => {
     const desktopEvents: WebRemoteControlRpcTransportAssemblyEvent[] = [];
     const context = await createIntegrationContext({
       phoneRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame") return false;
         phoneEvents.push(phoneAssembler.accept(payload));
         return true;
       },
       desktopRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame") return false;
         desktopEvents.push(desktopAssembler.accept(payload));
         return true;
       },
@@ -755,7 +755,7 @@ describeIntegration(integrationName, () => {
     const sendAck = (ackMessageSeq: number): void => {
       expect(
         phone.transport.sendPayload({
-          zcode_type: "rpc-frame-ack",
+          zody_type: "rpc-frame-ack",
           bridgeSessionId,
           ackMessageSeq,
         }),
@@ -764,10 +764,10 @@ describeIntegration(integrationName, () => {
 
     const context = await createIntegrationContext({
       phoneRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type === "rpc-frame-ack") {
+        if ((payload as { zody_type?: string }).zody_type === "rpc-frame-ack") {
           return false;
         }
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame") return false;
         const event = assembler.accept(payload);
         if (event.kind === "complete") {
           completed.push(event.messageSeq);
@@ -779,7 +779,7 @@ describeIntegration(integrationName, () => {
         return true;
       },
       desktopRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame-ack") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame-ack") return false;
         acks.push((payload as { ackMessageSeq: number }).ackMessageSeq);
         return true;
       },
@@ -849,13 +849,13 @@ describeIntegration(integrationName, () => {
 
     // 桌面收到 bootstrap-request 就回一份响应，用来证明哪部手机仍处于活跃通道。
     const unsubscribe = desktop.onPayload((payload) => {
-      if (payload.zcode_type !== "bootstrap-request") return;
+      if (payload.zody_type !== "bootstrap-request") return;
       desktop.session.sendPayloadResult(buildBootstrapResponse(payload.requestId));
     });
     cleanupTasks.push(() => unsubscribe());
 
     expect(
-      phoneA.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "from-a" }),
+      phoneA.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "from-a" }),
     ).toBe(true);
     await phoneA.waitPayload("bootstrap-response", (payload) => payload.requestId === "from-a");
 
@@ -873,7 +873,7 @@ describeIntegration(integrationName, () => {
 
     // 后到者仍可用；先到者已锁死，不再自动重开 channel（方案硬性规则）。
     expect(
-      phoneB.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "from-b" }),
+      phoneB.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "from-b" }),
     ).toBe(true);
     await phoneB.waitPayload("bootstrap-response", (payload) => payload.requestId === "from-b");
     const channelCountAfterReplace = desktop.channelIds.length;
@@ -919,7 +919,7 @@ describeIntegration(integrationName, () => {
 
     // 恢复后业务帧仍可往返。
     expect(
-      phone.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "after-epoch" }),
+      phone.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "after-epoch" }),
     ).toBe(true);
     await desktop.waitPayload(
       "bootstrap-request",
@@ -971,7 +971,7 @@ describeIntegration(integrationName, () => {
 
       expect(
         phone.transport.sendPayload({
-          zcode_type: "bootstrap-request",
+          zody_type: "bootstrap-request",
           requestId: "after-restart",
         }),
       ).toBe(true);

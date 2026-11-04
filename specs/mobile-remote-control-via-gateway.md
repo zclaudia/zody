@@ -601,3 +601,16 @@ sequenceDiagram
 ## 改名实施目标
 
 本文件描述的现有行为在全面改名时须遵守 [Zody 改名运行时契约](zody-rename-runtime-contract.md)；代际门禁、来源摘要和资源清理以该目标规格为准，尚未实现的行为不视为当前已发布。
+
+### Phone payload discriminator and admission (app protocol 5)
+
+The channel protocol remains 2; the only supported local app protocol range is `[5, 5]`. The phone application payload discriminator is `zody_type`. An own top-level `zcode_type` is invalid, including when both keys are present; nested user content and historical records are opaque and must retain their bytes. A non-array object is checked before raw dispatch or schema parsing, so a non-strict parser cannot silently strip the obsolete key.
+
+```text
+phone hello [5,5] → channel negotiation → admission → active attachment → RPC / replay
+                                  └─ incompatible → upgrade peer + close
+Desktop raw payload → own-key guard → schema → admitted business operation
+Web raw payload     → own-key guard → schema → admitted business operation
+```
+
+Peers advertising app protocol 1–4 are rejected with an actionable upgrade direction before ready, active-channel lookup or replacement, RPC, or replay. The phone also closes a malformed or stale hello acknowledgement before ready. Rejection and diagnostics may close the connection but cannot dispatch business work or replace an existing attachment. Desktop continuous delivery and phone replayable delivery retain the same existing Host attachment, identity, owner, sequence and replay rules. Existing feature introduction versions stay unchanged. Actual encoded UTF-8 bytes govern the existing physical and logical budgets; fragmentation, acknowledgement, reassembly and recovery limits are not increased.

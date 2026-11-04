@@ -421,7 +421,7 @@ async function startGatewaySession(
   let sendMobileDiagnosticPayload:
     | ((
         payload: WebRemoteControlAppPayload & {
-          zcode_type: "mobile-diagnostic";
+          zody_type: "mobile-diagnostic";
         },
       ) => void)
     | undefined;
@@ -496,7 +496,7 @@ async function startGatewaySession(
     diagnostic: GatewayTerminalTransportDiagnostic,
   ) => {
     const base = {
-      zcode_type: "mobile-diagnostic" as const,
+      zody_type: "mobile-diagnostic" as const,
       timestamp: diagnostic.timestamp,
       state: diagnostic.state,
       visibilityState: diagnostic.visibilityState,
@@ -540,7 +540,7 @@ async function startGatewaySession(
 
   const sendMobileFailureDiagnostic = (failure: WebRemoteControlFailure) => {
     sendMobileDiagnosticPayload?.({
-      zcode_type: "mobile-diagnostic",
+      zody_type: "mobile-diagnostic",
       event: "failure",
       timestamp: Date.now(),
       state: terminalTransportState,
@@ -738,8 +738,8 @@ async function startGatewaySession(
         return;
       }
       if (
-        payload.zcode_type === "rpc-frame" ||
-        payload.zcode_type === "rpc-frame-ack"
+        payload.zody_type === "rpc-frame" ||
+        payload.zody_type === "rpc-frame-ack"
       ) {
         activeRelayProtocol?.acceptPayload(payload);
         return;
@@ -747,15 +747,15 @@ async function startGatewaySession(
       if (requester.acceptPayload(payload)) {
         return;
       }
-      if (payload.zcode_type === "workspace-list-updated") {
+      if (payload.zody_type === "workspace-list-updated") {
         applyWorkspaceListUpdated(payload.result);
         return;
       }
-      if (payload.zcode_type === "recent-projects-updated") {
+      if (payload.zody_type === "recent-projects-updated") {
         applyRecentProjectsResult(payload.result);
         return;
       }
-      if (payload.zcode_type === "bridge-degraded") {
+      if (payload.zody_type === "bridge-degraded") {
         if (
           payload.bridgeSessionId === activeRelayProtocol?.getBridgeSessionId()
         ) {
@@ -764,7 +764,7 @@ async function startGatewaySession(
         }
         return;
       }
-      if (payload.zcode_type === "workspace-bridge-error") {
+      if (payload.zody_type === "workspace-bridge-error") {
         if (
           payload.bridgeSessionId === activeRelayProtocol?.getBridgeSessionId()
         ) {
@@ -775,7 +775,7 @@ async function startGatewaySession(
         }
         return;
       }
-      if (payload.zcode_type === "app-error") {
+      if (payload.zody_type === "app-error") {
         renderBootstrapFailure(
           toWebRemoteControlFailure(payload.reason, payload.error),
         );
@@ -896,14 +896,14 @@ async function startGatewaySession(
       const requestGeneration = connectionGeneration;
       const requestId = createWebRemoteControlRequestId("bootstrap");
       const response = await requestAppPayload(
-        { zcode_type: "bootstrap-request", requestId },
+        { zody_type: "bootstrap-request", requestId },
         (
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "bootstrap-response" }
+          { zody_type: "bootstrap-response" }
         > =>
-          payload.zcode_type === "bootstrap-response" &&
+          payload.zody_type === "bootstrap-response" &&
           payload.requestId === requestId,
       );
       if (requestGeneration === connectionGeneration && !terminated) {
@@ -953,7 +953,7 @@ async function startGatewaySession(
     const response = await requestWithRelayRecovery(() => {
       const requestId = createWebRemoteControlRequestId("platform");
       const request = {
-        zcode_type: "platform-request",
+        zody_type: "platform-request",
         requestId,
         method,
         args,
@@ -964,9 +964,9 @@ async function startGatewaySession(
           payload,
         ): payload is Extract<
           WebRemoteControlPlatformResponsePayload,
-          { zcode_type: "platform-response" }
+          { zody_type: "platform-response" }
         > =>
-          payload.zcode_type === "platform-response" &&
+          payload.zody_type === "platform-response" &&
           payload.requestId === requestId &&
           payload.method === method,
       );
@@ -983,14 +983,14 @@ async function startGatewaySession(
       const requestWorkspaceList = async () => {
         const requestId = createWebRemoteControlRequestId("workspace-list");
         return requestAppPayload(
-          { zcode_type: "workspace-list-request", requestId },
+          { zody_type: "workspace-list-request", requestId },
           (
             payload,
           ): payload is Extract<
             WebRemoteControlAppPayload,
-            { zcode_type: "workspace-list-response" }
+            { zody_type: "workspace-list-response" }
           > =>
-            payload.zcode_type === "workspace-list-response" &&
+            payload.zody_type === "workspace-list-response" &&
             payload.requestId === requestId,
         );
       };
@@ -1033,7 +1033,7 @@ async function startGatewaySession(
     }
     if (viewGeneration !== notificationViewGeneration || terminated) return;
     transport.sendPayload({
-      zcode_type: "mobile-view-state-update",
+      zody_type: "mobile-view-state-update",
       viewState: {
         activeWorkspaceKey: workspaceKey,
         ...(taskId ? { activeTaskId: taskId } : {}),
@@ -1050,7 +1050,7 @@ async function startGatewaySession(
       const requestId = createWebRemoteControlRequestId("workspace-reconnect");
       return requestAppPayload(
         {
-          zcode_type: "workspace-reconnect-request",
+          zody_type: "workspace-reconnect-request",
           requestId,
           workspaceKey,
         },
@@ -1058,9 +1058,9 @@ async function startGatewaySession(
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-reconnect-response" }
+          { zody_type: "workspace-reconnect-response" }
         > =>
-          payload.zcode_type === "workspace-reconnect-response" &&
+          payload.zody_type === "workspace-reconnect-response" &&
           payload.requestId === requestId &&
           payload.workspaceKey === workspaceKey,
         {
@@ -1081,14 +1081,14 @@ async function startGatewaySession(
     const requestId = createWebRemoteControlRequestId("workspace-open");
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
-        { zcode_type: "workspace-open-request", requestId, recentProjectId },
+        { zody_type: "workspace-open-request", requestId, recentProjectId },
         (
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-open-response" }
+          { zody_type: "workspace-open-response" }
         > =>
-          payload.zcode_type === "workspace-open-response" &&
+          payload.zody_type === "workspace-open-response" &&
           payload.requestId === requestId,
         {
           // 桌面侧以「workspace 出现在聚合列表」为成功标志，自身超时 10 秒；
@@ -1107,14 +1107,14 @@ async function startGatewaySession(
     const requestId = createWebRemoteControlRequestId("desktop-window-open");
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
-        { zcode_type: "desktop-window-open-request", requestId },
+        { zody_type: "desktop-window-open-request", requestId },
         (
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "desktop-window-open-response" }
+          { zody_type: "desktop-window-open-response" }
         > =>
-          payload.zcode_type === "desktop-window-open-response" &&
+          payload.zody_type === "desktop-window-open-response" &&
           payload.requestId === requestId,
         { timeoutMs: 15_000 },
       ),
@@ -1132,14 +1132,14 @@ async function startGatewaySession(
     const requestId = createWebRemoteControlRequestId("workspace-open-path");
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
-        { zcode_type: "workspace-open-path-request", requestId, workspacePath },
+        { zody_type: "workspace-open-path-request", requestId, workspacePath },
         (
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-open-path-response" }
+          { zody_type: "workspace-open-path-response" }
         > =>
-          payload.zcode_type === "workspace-open-path-response" &&
+          payload.zody_type === "workspace-open-path-response" &&
           payload.requestId === requestId,
         {
           // 与最近项目打开一致：桌面 10 秒 + 回传余量。
@@ -1159,14 +1159,14 @@ async function startGatewaySession(
   ): Promise<WebRemoteControlMobileDirectoryListResult> => {
     const requestId = createWebRemoteControlRequestId("mobile-directory-list");
     const response = await requestAppPayload(
-      { zcode_type: "mobile-directory-list-request", requestId, ...(path ? { path } : {}) },
+      { zody_type: "mobile-directory-list-request", requestId, ...(path ? { path } : {}) },
       (
         payload,
       ): payload is Extract<
         WebRemoteControlAppPayload,
-        { zcode_type: "mobile-directory-list-response" }
+        { zody_type: "mobile-directory-list-response" }
       > =>
-        payload.zcode_type === "mobile-directory-list-response" &&
+        payload.zody_type === "mobile-directory-list-response" &&
         payload.requestId === requestId,
       { timeoutMs: 10_000 },
     );
@@ -1502,7 +1502,7 @@ async function startGatewaySession(
         (
           payload,
         ): payload is import("@zody/shared").MobileHistorySearchOutcome =>
-          payload.zcode_type === "mobile-history-search-outcome" &&
+          payload.zody_type === "mobile-history-search-outcome" &&
           payload.context.requestId === request.context.requestId,
       );
       if (request.context.connectionGeneration !== connectionGeneration)
@@ -1542,7 +1542,7 @@ async function startGatewaySession(
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
         {
-          zcode_type: "workspace-bridge-open",
+          zody_type: "workspace-bridge-open",
           requestId: createWebRemoteControlRequestId("workspace-bridge"),
           bridgeSessionId,
           bridgeGeneration,
@@ -1554,9 +1554,9 @@ async function startGatewaySession(
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-bridge-ready" }
+          { zody_type: "workspace-bridge-ready" }
         > =>
-          payload.zcode_type === "workspace-bridge-ready" &&
+          payload.zody_type === "workspace-bridge-ready" &&
           payload.bridgeSessionId === bridgeSessionId,
       ),
     );
@@ -1682,7 +1682,7 @@ async function startGatewaySession(
                   const parsed = sessionCreateTelemetrySchema.safeParse(event);
                   if (parsed.success)
                     transport.sendPayload({
-                      zcode_type: "telemetry-report",
+                      zody_type: "telemetry-report",
                       event: parsed.data,
                     });
                 },
@@ -1802,7 +1802,7 @@ async function startGatewaySession(
                   const parsed = sessionCreateTelemetrySchema.safeParse(event);
                   if (parsed.success)
                     transport.sendPayload({
-                      zcode_type: "telemetry-report",
+                      zody_type: "telemetry-report",
                       event: parsed.data,
                     });
                 },

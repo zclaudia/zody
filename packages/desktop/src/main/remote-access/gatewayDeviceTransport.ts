@@ -4,7 +4,6 @@ import {
   WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_INTERVAL_MS,
   WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_TIMEOUT_MS,
   WEB_REMOTE_CONTROL_CHANNEL_HELLO_TIMEOUT_MS,
-  type WebRemoteControlAppProtocolRange,
   type WebRemoteControlAppProtocolUpgradeTarget,
   type WebRemoteControlChannelCloseReason,
 } from "@zody/shared";
@@ -57,8 +56,11 @@ export function createGatewayDeviceTransport(
     dependencies.closeAckTimeoutMs ?? WEB_REMOTE_CONTROL_CHANNEL_CLOSE_ACK_TIMEOUT_MS;
   const maxBufferedAmountBytes =
     dependencies.maxBufferedAmountBytes ?? WEB_REMOTE_CONTROL_CHANNEL_MAX_BUFFERED_BYTES;
-  const appProtocolRange: WebRemoteControlAppProtocolRange =
-    dependencies.appProtocolRange ?? WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE;
+  const appProtocolRange = dependencies.appProtocolRange ?? WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE;
+  // 本地端只能声明当前合同，旧 peer 由握手协商拒绝。
+  if (appProtocolRange.min !== 5 || appProtocolRange.max !== 5) {
+    throw new Error("Desktop app protocol range must be [5,5]");
+  }
   const sockets = createGatewayDeviceSocketRegistry(
     dependencies.createSocket ?? defaultGatewayDeviceSocketFactory,
   );
