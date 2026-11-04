@@ -42,7 +42,7 @@ import type {
 } from "../types.js";
 import { SAVE_WORKFLOW_TOOL_DESCRIPTION } from "./save-workflow-description.js";
 import {
-  SAVED_WORKFLOW_SENTINEL,
+  hasSavedWorkflowFrontmatter,
   findSavedWorkflowShadowing,
   savedWorkflowExists,
   savedWorkflowPath,
@@ -100,7 +100,7 @@ function validateSaveWorkflowInput(input: unknown): ToolInputValidationResult {
 
   // 自带 frontmatter 的检查只对**内联**正文成立：`script_path` 指的常常是一份从保存定义抄来的
   // 草稿，它本来就带着块，而 `resolveInput` 会把块丢掉。对它报错等于禁掉这条路径的主要用法。
-  if (parsed.data.script?.trimStart().startsWith(SAVED_WORKFLOW_SENTINEL) === true) {
+  if (parsed.data.script !== undefined && hasSavedWorkflowFrontmatter(parsed.data.script)) {
     return {
       result: false,
       errorCode: SAVE_WORKFLOW_FAILURE_CODE,

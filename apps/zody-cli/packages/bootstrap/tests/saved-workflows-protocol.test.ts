@@ -4,7 +4,8 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { promises as fsPromises } from "node:fs";
 import {
   zodyProtocolMethods,
   zodyWorkflowsDeleteResultSchema,
@@ -256,6 +257,72 @@ describe("workflows/* protocol methods", () => {
         reason: "invalid_name",
       });
     }
+  });
+
+  it("explicit legacy metadata update creates a canonical copy and leaves old bytes intact", async () => {
+    const legacyPath = join(cwd, ".zcode", "workflows", "legacy-update.dwf.ts");
+    const old = "/* zcode-workflow\ndescription: old\n*/\nreturn 42;\n";
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true });
+    await writeFile(legacyPath, old);
+    const result = await updateSavedWorkflowMetaOp(contextWith(), { workspace: workspace(), name: "legacy-update", meta: { description: "new" } });
+    expect(result).toEqual({ ok: true, path: join(projectDir(), "legacy-update.dwf.ts") });
+    expect(await readFile(legacyPath, "utf8")).toBe(old);
+    expect(await readFile(join(projectDir(), "legacy-update.dwf.ts"), "utf8")).toContain("/* zody-workflow\n");
+  });
+
+  it("prefers canonical and does not fall back when canonical is invalid", async () => {
+    const legacyPath = join(cwd, ".zcode", "workflows", "shadow.dwf.ts");
+    const old = "/* zcode-workflow\ndescription: old\n*/\nreturn 42;\n";
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true }); await writeFile(legacyPath, old);
+    await mkdir(projectDir(), { recursive: true });
+    const canonical = join(projectDir(), "shadow.dwf.ts");
+    await writeFile(canonical, "/* zody-workflow\ndescription: [\n*/\n");
+    expect(await updateSavedWorkflowMetaOp(contextWith(), { workspace: workspace(), name: "shadow", meta: { description: "new" } })).toMatchObject({ ok: false, reason: "parse_error" });
+    expect(await readFile(legacyPath, "utf8")).toBe(old);
+    await writeFile(canonical, "/* zody-workflow\ndescription: canonical\n*/\nreturn 1;\n");
+    expect(await updateSavedWorkflowMetaOp(contextWith(), { workspace: workspace(), name: "shadow", meta: { description: "new" } })).toEqual({ ok: true, path: canonical });
+    expect(await readFile(legacyPath, "utf8")).toBe(old);
+  });
+
+  it("does not overwrite a concurrent canonical creator at actual link", async () => {
+    const legacyPath = join(cwd, ".zcode", "workflows", "race.dwf.ts");
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true });
+    const old = "/* zcode-workflow\ndescription: old\n*/\nreturn 42;\n";
+    await writeFile(legacyPath, old);
+    const originalLink = fsPromises.link;
+    const spy = vi.spyOn(fsPromises, "link").mockImplementationOnce(async (stage, target) => {
+      await writeFile(target, "competitor", { flag: "wx" });
+      await originalLink(stage, target);
+    });
+    try {
+      await expect(updateSavedWorkflowMetaOp(contextWith(), { workspace: workspace(), name: "race", meta: { description: "new" } })).rejects.toMatchObject({ code: "EEXIST" });
+      expect(await readFile(join(projectDir(), "race.dwf.ts"), "utf8")).toBe("competitor");
+      expect(await readFile(legacyPath, "utf8")).toBe(old);
+      expect((await fsPromises.readdir(projectDir())).filter((x) => x.endsWith(".tmp"))).toEqual([]);
+    } finally { spy.mockRestore(); }
+  });
+
+  it.each(["before", "after"] as const)("reports %s publication cleanup failure truthfully", async (phase) => {
+    const legacyPath = join(cwd, ".zcode", "workflows", "cleanup.dwf.ts");
+    const old = "/* zcode-workflow\ndescription: old\n*/\nreturn 42;\n";
+    await mkdir(join(cwd, ".zcode", "workflows"), { recursive: true });
+    await writeFile(legacyPath, old);
+    const warn = vi.fn(); const ctx = { ...contextWith(), logger: { warn } } as unknown as ZodyProtocolAgentServerContext;
+    const linkSpy = phase === "before" ? vi.spyOn(fsPromises, "link").mockRejectedValueOnce(new Error("link failed")) : undefined;
+    const unlinkSpy = vi.spyOn(fsPromises, "unlink").mockRejectedValueOnce(new Error("cleanup failed"));
+    try {
+      const operation = updateSavedWorkflowMetaOp(ctx, { workspace: workspace(), name: "cleanup", meta: { description: "new" } });
+      if (phase === "before") await expect(operation).rejects.toThrow("Failed to publish workflow and clean staging");
+      else {
+        await expect(operation).resolves.toEqual({ ok: true, path: join(projectDir(), "cleanup.dwf.ts") });
+        expect(await readFile(join(projectDir(), "cleanup.dwf.ts"), "utf8")).toContain("/* zody-workflow");
+        expect(warn).toHaveBeenCalledOnce();
+      }
+      expect(await readFile(legacyPath, "utf8")).toBe(old);
+      expect((await fsPromises.readdir(projectDir())).some((name) => name.endsWith(".tmp"))).toBe(true);
+      const listing = await listSavedWorkflowsOp(contextWith(), { workspace: workspace() });
+      expect(JSON.stringify(listing)).not.toContain(".tmp");
+    } finally { linkSpy?.mockRestore(); unlinkSpy.mockRestore(); }
   });
 
   it("delete：legacy-only 工作流只读，不能删除或报告成功", async () => {

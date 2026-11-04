@@ -14,6 +14,14 @@ import {
 // 正是「诊断行号对不上文件」的标准产地。
 
 describe("parseSavedWorkflow — bodyLineOffset", () => {
+  it.each(["/* zody-workflow", "/* zcode-workflow"])("preserves offset and malformed errors for %s", (marker) => {
+    const parsed = parseSavedWorkflow(`\n${marker}\ndescription: test\n*/\nreturn 1;`);
+    expect(parsed).toMatchObject({ ok: true, bodyLineOffset: 4, script: "return 1;" });
+    expect(parseSavedWorkflow(`${marker}\ndescription: test`)).toMatchObject({ ok: false, reason: "unterminated_frontmatter" });
+    expect(parseSavedWorkflow(`${marker}\ndescription: [\n*/`)).toMatchObject({ ok: false, reason: "invalid_yaml" });
+    expect(parseSavedWorkflow(`${marker} suffix\ndescription: test\n*/`)).toMatchObject({ ok: false, reason: "missing_frontmatter" });
+  });
+
   it("正文之前的行数 = 起始标记 + YAML + 终止行", () => {
     const source = serializeSavedWorkflow({ description: "d" }, "return 1;\n");
     const parsed = parseSavedWorkflow(source);

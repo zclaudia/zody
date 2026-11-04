@@ -28,11 +28,25 @@ import {
   saveSavedWorkflow,
   serializeSavedWorkflow,
 } from "../src/tool/handlers/saved-workflows/index.js";
+import { readWorkflowScriptFile } from "../src/tool/handlers/workflow-path-source.js";
 import { createToolRegistry } from "../src/tool/registry.js";
 
 // docs/dynamic-workflow/launch.md「Script files」：每一段脚本都有个盘上的家，而那个文件就是
 // 模型两次提交之间的把手。这里端到端地钉四件事：草稿真的被写下来、诊断按文件行报、`path`
 // 回程真的能跑、以及「文件没改过」的修订被挡在任何窗口之前。
+
+describe("workflow path marker recognition", () => {
+  it.each(["/* zody-workflow", "/* zcode-workflow"])("reads or rejects malformed exact %s", async (marker) => {
+    const cwd = makeCwd();
+    const path = join(cwd, "source.ts");
+    writeFileSync(path, `\n${marker}\ndescription: test\n*/\nreturn 1;`);
+    expect(await readWorkflowScriptFile({ cwd, inputPath: path })).toMatchObject({ ok: true, file: { script: "return 1;", bodyLineOffset: 4 } });
+    writeFileSync(path, `${marker}\ndescription: test`);
+    expect(await readWorkflowScriptFile({ cwd, inputPath: path })).toMatchObject({ ok: false });
+    writeFileSync(path, `${marker} suffix\nreturn 1;`);
+    expect(await readWorkflowScriptFile({ cwd, inputPath: path })).toMatchObject({ ok: true, file: { bodyLineOffset: 0 } });
+  });
+});
 
 const cwds: string[] = [];
 
@@ -633,7 +647,7 @@ describe("SaveWorkflow — `script_path`", () => {
     const saved = readFileSync(output.path, "utf8");
     expect(saved).toBe(serializeSavedWorkflow({ description: "new words" }, body));
     // 块只出现一次：草稿里那一份被丢掉了，而不是被叠在新块后面。
-    expect(saved.split("/* zcode-workflow")).toHaveLength(2);
+    expect(saved.split("/* zody-workflow")).toHaveLength(2);
   });
 
   it("refuses a call that gives both sources, and one that gives neither", async () => {

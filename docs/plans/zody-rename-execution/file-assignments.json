@@ -17520,5 +17520,50 @@
     "gate": "Scoped DeepSeek acceptance, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
     "acceptanceReport": "docs/plans/zody-rename-execution/reports/R40-error-message-id-independent-review.md",
     "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-error-message-id-controller-verification.md"
+  },
+  "R40_WORKFLOW_SENTINEL": {
+    "baselineCommit": "a64d8843575e0df34cab0f2a2e356b2b615d8ab1",
+    "controllerGrant": "output/zody-rename-r40-workflow-sentinel/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "apps/zody-cli/packages/core/src/tool/handlers/saved-workflows/frontmatter.ts",
+      "apps/zody-cli/packages/core/src/tool/handlers/workflow-path-source.ts",
+      "apps/zody-cli/packages/core/src/tool/handlers/save-workflow.ts",
+      "apps/zody-cli/packages/core/src/tool/handlers/create-workflow-source.ts",
+      "apps/zody-cli/packages/core/src/tool/handlers/saved-workflows/index.ts",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/saved-workflows.ts",
+      "apps/zody-cli/packages/contracts/src/tools/amend-workflow.ts",
+      "apps/zody-cli/packages/contracts/src/tools/create-workflow.ts",
+      "apps/zody-cli/packages/contracts/src/tools/eval-workflow-snippet.ts",
+      "apps/zody-cli/packages/contracts/src/tools/save-workflow.ts",
+      "apps/zody-cli/packages/bundled-skills/skills/dynamic-workflows/SKILL.md",
+      "apps/zody-cli/packages/core/tests/saved-workflows-store.test.ts",
+      "apps/zody-cli/packages/core/tests/saved-workflow-tools.test.ts",
+      "apps/zody-cli/packages/core/tests/workflow-script-file-sources.test.ts",
+      "apps/zody-cli/packages/core/tests/saved-workflow-frontmatter-offset.test.ts",
+      "apps/zody-cli/packages/core/tests/eval-workflow-snippet-tool.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/saved-workflows-protocol.test.ts",
+      "packages/desktop/test/e2e/automations-workflows-hub.test.ts",
+      "docs/dynamic-workflow.md",
+      "docs/dynamic-workflow/launch.md",
+      "specs/zody-0.1.0-release.md",
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "specs/zody-rename-workflow-sentinel.md",
+      "docs/plans/zody-rename-execution/reports/R40-workflow-sentinel.md",
+      "packages/ui/test/savedWorkflowDetailView.test.ts",
+      "packages/ui/test/savedWorkflowProjectGroup.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/saved-workflows-rpc.integration.test.ts"
+    ],
+    "readSet": [
+      "apps/zody-cli/packages/core/src/index.ts",
+      "apps/zody-cli/packages/core/src/tool/handlers/saved-workflows/store.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/script-workflow-tool-port.ts",
+      "apps/zody-cli/packages/bootstrap/tests/saved-workflows-run-protocol.test.ts",
+      "packages/services/test/zodyAgentService.savedWorkflows.test.ts"
+    ],
+    "scopeStatus": "bounded-source-accepted-cleaned",
+    "gate": "Scoped DeepSeek acceptance, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R40-workflow-sentinel-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-workflow-sentinel-controller-verification.md"
   }
 }

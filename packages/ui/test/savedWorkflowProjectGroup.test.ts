@@ -23,7 +23,10 @@ import {
 } from "@zody/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
 import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
-import { resetSavedWorkflowStoreForTests } from "@/store/savedWorkflowStore.js";
+import {
+  useSavedWorkflowStore,
+  resetSavedWorkflowStoreForTests,
+} from "@/store/savedWorkflowStore.js";
 
 const confirmMock = vi.fn(async () => true);
 const toastMock = vi.fn();
@@ -167,15 +170,18 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowDetailView.js", () => ({
     name,
     projectLabel,
     onBack,
+    onMetaSaved,
   }: {
     name: string;
     projectLabel: string;
     onBack: () => void;
+    onMetaSaved: () => void;
   }) =>
     createElement(
       "div",
       { "data-testid": TID_WORKFLOW_DETAIL, "data-name": name, "data-project": projectLabel },
       createElement("button", { type: "button", onClick: onBack }, "back"),
+      createElement("button", { type: "button", onClick: onMetaSaved }, "meta saved"),
     ),
 }));
 
@@ -496,6 +502,27 @@ describe("SavedWorkflowProjectGroup", () => {
     await screen.findByTestId(testId(TID_WORKFLOW_CARD, "x"));
     fireEvent.click(screen.getByText("open"));
     expect(onOpenDetail).toHaveBeenCalledWith("x");
+  });
+
+  it("metadata saved refreshes the project list and picks up canonical path", async () => {
+    agentBeta.listResult.current = { workflows: [entry("x")], invalid: [] };
+    mount({ mode: { kind: "detail", name: "x" } });
+    await screen.findByTestId(TID_WORKFLOW_DETAIL);
+    await waitFor(() => expect(agentBeta.listSavedWorkflows).toHaveBeenCalled());
+    const count = agentBeta.listSavedWorkflows.mock.calls.length;
+    agentBeta.listResult.current = {
+      workflows: [entry("x", { path: "/beta/.zody/workflows/x.dwf.ts" })],
+      invalid: [],
+    };
+    fireEvent.click(screen.getByText("meta saved"));
+    await waitFor(() =>
+      expect(agentBeta.listSavedWorkflows.mock.calls.length).toBeGreaterThan(count),
+    );
+    await waitFor(() =>
+      expect(useSavedWorkflowStore.getState().byWorkspaceKey["/beta"]?.entries[0]?.path).toBe(
+        "/beta/.zody/workflows/x.dwf.ts",
+      ),
+    );
   });
 
   it("detail 模式渲染 SavedWorkflowDetailView 并把项目名传给面包屑", async () => {

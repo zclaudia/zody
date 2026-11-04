@@ -4,6 +4,7 @@
 
 export {
   SAVED_WORKFLOW_SENTINEL,
+  hasSavedWorkflowFrontmatter,
   parseSavedWorkflow,
   serializeSavedWorkflow,
   type SavedWorkflowParseErrorReason,

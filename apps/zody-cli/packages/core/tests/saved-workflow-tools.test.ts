@@ -205,7 +205,7 @@ describe("SaveWorkflow", () => {
     // 逐字节：脚本本体是 run 的 script_hash 的基准，序列化不许顺手规范化它。
     expect(readFileSync(output.path, "utf8")).toBe(
       [
-        "/* zcode-workflow",
+        "/* zody-workflow",
         "description: Review a pull request",
         "whenToUse: When the user asks for a PR review",
         "args:",
@@ -317,14 +317,14 @@ describe("SaveWorkflow", () => {
 
   // encode 的幂等性（文件里永远只有一个 frontmatter 块）靠这条守：不做「检测到就替换」的
   // 聪明合并，否则模型无从分辨自己传的元数据和文件里那个哪一个生效。
-  it("rejects a script that already carries a metadata block", async () => {
+  it.each(["/* zody-workflow", "/* zcode-workflow"])("rejects an inline metadata block %s", async (marker) => {
     const cwd = makeCwd();
 
     const outcome = await run({
       input: {
         name: "double",
         description: "already has frontmatter",
-        script: `/* zcode-workflow\ndescription: smuggled\n*/\n${cleanScript("save-sentinel")}`,
+        script: `${marker}\ndescription: smuggled\n*/\n${cleanScript("save-sentinel")}`,
         scope: "project",
       },
       name: "save-sentinel",

@@ -70,6 +70,16 @@ const SCRIPT = [
   "return r.done;",
 ].join("\n");
 
+describe("saved workflow marker migration", () => {
+  it("serializes the new marker and reads both exact historical forms", () => {
+    const serialized = serializeSavedWorkflow({ description: "review" }, "return 42;");
+    expect(serialized.startsWith("/* zody-workflow\n")).toBe(true);
+    for (const marker of ["/* zody-workflow", "/* zcode-workflow"]) {
+      expect(parseSavedWorkflow(`${marker}\ndescription: legacy\n*/\nreturn 42;`)).toMatchObject({ ok: true, script: "return 42;" });
+    }
+  });
+});
+
 describe("saved workflow frontmatter codec", () => {
   it("round-trips metadata and preserves the script byte-exactly", () => {
     const meta: SavedWorkflowMeta = {
@@ -310,7 +320,7 @@ describe("saved workflow store", () => {
     const legacyPath = writeRawInRoot(
       join(cwd, ".zcode/workflows"),
       "legacy.dwf.ts",
-      serializeSavedWorkflow({ description: "legacy value" }, SCRIPT),
+      `/* zcode-workflow\ndescription: legacy value\n*/\n${SCRIPT}`,
     );
     const legacyBytes = readFileSync(legacyPath, "utf8");
     const before = resolveSavedWorkflow({ cwd, name: "legacy" });
@@ -509,6 +519,17 @@ describe("findSavedWorkflowShadowing", () => {
 // 只有全局→项目一向（docs/dynamic-workflow/launch.md「Promote to global」）：项目→全局是模型的
 // 概括（「提升为全局」），不是搬文件。
 describe("moveSavedWorkflow (global → project)", () => {
+  it("preserves an explicitly moved legacy marker byte-for-byte", () => {
+    const cwd = makeCwd(), home = makeHome();
+    const roots = savedWorkflowRoots(cwd, { homeDir: home });
+    const old = `/* zcode-workflow\ndescription: old global\n*/\n${SCRIPT}`;
+    const source = writeRawInRoot(roots[2]!.dir, "old.dwf.ts", old);
+    const result = moveSavedWorkflow({ cwd, name: "old", homeDir: home });
+    expect(result).toMatchObject({ ok: true, from: source });
+    if (!result.ok) throw new Error("move failed");
+    expect(readFileSync(result.to, "utf8")).toBe(old);
+  });
+
   it("moves a global workflow to project byte-identically and removes the source", () => {
     const cwd = makeCwd();
     const home = makeHome();

@@ -4,7 +4,7 @@
 //
 // 文件形状：
 //
-//     /* zcode-workflow
+//     /* zody-workflow
 //     description: ...
 //     args:
 //       pr: { type: string, required: true }
@@ -21,8 +21,18 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { SavedWorkflowMetaSchema, type SavedWorkflowMeta } from "@zody/contracts";
 
-/** frontmatter 的开启标记。必须是文件的第一段非空白内容。 */
-export const SAVED_WORKFLOW_SENTINEL = "/* zcode-workflow";
+/** 新序列化文件的写入标记；读兼容由独立判据负责。 */
+export const SAVED_WORKFLOW_SENTINEL = "/* zody-workflow";
+const LEGACY_SAVED_WORKFLOW_SENTINEL = "/* zcode-workflow";
+
+/** 仅识别首个非空行的完整标记，旧头只用于持久文件读取。 */
+export function hasSavedWorkflowFrontmatter(source: string): boolean {
+  const first = source
+    .split("\n")
+    .find((line) => line.trim() !== "")
+    ?.trim();
+  return first === SAVED_WORKFLOW_SENTINEL || first === LEGACY_SAVED_WORKFLOW_SENTINEL;
+}
 
 /** frontmatter 的结束标记：一行只有块注释的收尾符。 */
 const SAVED_WORKFLOW_TERMINATOR = "*/";
@@ -76,7 +86,7 @@ export function parseSavedWorkflow(source: string): SavedWorkflowParseResult {
 
   let start = 0;
   while (start < lines.length && lines[start]!.trim() === "") start += 1;
-  if (start >= lines.length || lines[start]!.trim() !== SAVED_WORKFLOW_SENTINEL) {
+  if (start >= lines.length || !hasSavedWorkflowFrontmatter(source)) {
     return {
       ok: false,
       reason: "missing_frontmatter",

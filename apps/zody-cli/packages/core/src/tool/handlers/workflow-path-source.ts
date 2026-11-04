@@ -13,7 +13,11 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { SavedWorkflowMeta } from "@zody/contracts";
-import { SAVED_WORKFLOW_SENTINEL, parseSavedWorkflow } from "./saved-workflows/index.js";
+import {
+  SAVED_WORKFLOW_SENTINEL,
+  hasSavedWorkflowFrontmatter,
+  parseSavedWorkflow,
+} from "./saved-workflows/index.js";
 import { describeWorkflowScriptPath } from "./workflow-script-path.js";
 
 /** 读成功的脚本文件。 */
@@ -53,7 +57,7 @@ export function resolveWorkflowScriptFilePath(cwd: string, inputPath: string): s
  * 模型只会以为是自己刚写错了什么，然后原样重试一遍。
  *
  * `parseFrontmatter: false` 用于 `EvalWorkflowSnippet`：片段没有保存定义那套语义，整个文件
- * 就是代码，一段恰好以 `/* zcode-workflow` 开头的片段也不该被当成声明块吞掉。
+ * 就是代码，一段恰好以 `/* zody-workflow` 或旧 `/* zcode-workflow` 开头的片段也不该被当成声明块吞掉。
  */
 export async function readWorkflowScriptFile(options: {
   cwd: string;
@@ -74,7 +78,7 @@ export async function readWorkflowScriptFile(options: {
   }
 
   const base = { path: absolute, described, source };
-  if (options.parseFrontmatter === false || !startsWithSentinel(source)) {
+  if (options.parseFrontmatter === false || !hasSavedWorkflowFrontmatter(source)) {
     return { ok: true, file: { ...base, script: source, bodyLineOffset: 0 } };
   }
 
@@ -82,7 +86,7 @@ export async function readWorkflowScriptFile(options: {
   if (!parsed.ok) {
     return {
       ok: false,
-      message: `The workflow script file ${described} starts with a \`${SAVED_WORKFLOW_SENTINEL}\` metadata block that could not be read (${parsed.reason}): ${parsed.detail}. Fix the block in that file, or remove it and pass the script alone.`,
+      message: `The workflow script file ${described} starts with a saved-workflow metadata block (\`${SAVED_WORKFLOW_SENTINEL}\` or legacy \`/* zcode-workflow\`) that could not be read (${parsed.reason}): ${parsed.detail}. Fix the block in that file, or remove it and pass the script alone.`,
     };
   }
   return {
@@ -94,18 +98,6 @@ export async function readWorkflowScriptFile(options: {
       bodyLineOffset: parsed.bodyLineOffset,
     },
   };
-}
-
-/**
- * 首个非空行是不是起始标记。判据与 {@link parseSavedWorkflow} 自己的入口逐字一致——两处对
- * 「这是不是一个保存定义」给出不同答案，就会出现「工具说没有块、解析器说块坏了」的死角。
- */
-function startsWithSentinel(source: string): boolean {
-  for (const line of source.split("\n")) {
-    if (line.trim() === "") continue;
-    return line.trim() === SAVED_WORKFLOW_SENTINEL;
-  }
-  return false;
 }
 
 function describeError(error: unknown): string {

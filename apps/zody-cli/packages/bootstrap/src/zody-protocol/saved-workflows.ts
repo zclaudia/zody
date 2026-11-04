@@ -8,6 +8,9 @@
 // `project`）。`global` 时改按本机全局根（`~/.zody/workflows/`）操作，`workspace` 只是**载体**——
 // 处理器对全局档不读它的路径。`workflows/move` 把全局档搬回 `workspace` 项目（只此一向）。
 import { access, unlink, writeFile } from "node:fs/promises";
+import { promises as fs } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { dirname, join } from "node:path";
 import { SavedWorkflowMetaSchema, isValidSavedWorkflowName } from "@zody/contracts";
 import {
   listSavedWorkflows,
@@ -94,7 +97,7 @@ export async function getSavedWorkflowOp(
  * 读-改-写在同一次调用内完成；不做三方合并（文件小、单机、用户自己在改）。
  */
 export async function updateSavedWorkflowMetaOp(
-  _context: ZodyProtocolAgentServerContext,
+  context: ZodyProtocolAgentServerContext,
   rawParams: unknown,
 ): Promise<ZodyWorkflowsUpdateMetaResult> {
   const params = parseParams(zodyWorkflowsUpdateMetaParamsSchema, rawParams);
@@ -107,8 +110,59 @@ export async function updateSavedWorkflowMetaOp(
     scope: scopeOf(params),
   });
   if (!resolved.ok) return toFailure(resolved);
-  await writeFile(resolved.path, serializeSavedWorkflow(meta, resolved.script), "utf8");
-  return { ok: true, path: resolved.path };
+  const canonical = savedWorkflowPath(
+    savedWorkflowRoot(params.workspace.workspacePath, scopeOf(params)),
+    params.name,
+  );
+  const content = serializeSavedWorkflow(meta, resolved.script);
+  if (resolved.scope !== "project" || resolved.path === canonical) {
+    await writeFile(resolved.path, content, "utf8");
+    return { ok: true, path: resolved.path };
+  }
+  // 旧项目文件只读；在同目录先完整写入，再原子无覆盖发布，避免覆盖并发创建者。
+  await fs.mkdir(dirname(canonical), { recursive: true });
+  const stage = join(dirname(canonical), `.workflow-update-${randomUUID()}.tmp`);
+  let created = false;
+  let published = false;
+  try {
+    const handle = await fs.open(stage, "wx");
+    created = true;
+    try {
+      await handle.writeFile(content, "utf8");
+    } finally {
+      await handle.close();
+    }
+    await fs.link(stage, canonical);
+    published = true;
+  } catch (error) {
+    if (created) {
+      try {
+        await fs.unlink(stage);
+      } catch (cleanupError) {
+        throw new AggregateError(
+          [error, cleanupError],
+          `Failed to publish workflow and clean staging file ${stage}`,
+        );
+      }
+    }
+    throw error;
+  }
+  if (published) {
+    try {
+      await fs.unlink(stage);
+    } catch (error) {
+      // 发布已成功，清理失败不能回滚已提交的 canonical 文件。
+      try {
+        context.logger?.warn("Failed to remove published workflow staging file", {
+          stage,
+          error: String(error),
+        });
+      } catch {
+        /* best-effort diagnostic */
+      }
+    }
+  }
+  return { ok: true, path: canonical };
 }
 
 /**
