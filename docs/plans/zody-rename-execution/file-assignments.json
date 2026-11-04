@@ -17418,7 +17418,7 @@
     "baselineCommit": "fe99c9a4531aaeead982826c2be6c5cf3f929c89",
     "controllerGrant": "output/zody-rename-r40-agent-meta/controller/grant.json",
     "implementationAgent": "/root/terra_cleanup_audit",
-    "scopeStatus": "bounded-code-accepted-cleaned-ready-to-commit",
+    "scopeStatus": "bounded-code-accepted-cleaned-committed",
     "writeSet": [
       "apps/zody-cli/packages/bootstrap/src/zody-protocol/session-mapper.ts",
       "packages/shared/src/background-task-notifications.ts",
@@ -17454,7 +17454,8 @@
       "output/zody-rename-r40-agent-meta/controller/addendum-3-reconnect-owner-test.json"
     ],
     "acceptanceReport": "docs/plans/zody-rename-execution/reports/R40-agent-meta-independent-review.md",
-    "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-agent-meta-controller-verification.md"
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-agent-meta-controller-verification.md",
+    "acceptedCommit": "371acd17f4ffa49a3f6706668f177c10e8a4d60e"
   },
   "R40_UNRESOLVED_META": {
     "title": "Unproven metadata producer ownership and legacy reader policy",
@@ -17462,5 +17463,21 @@
     "proposal": "output/zody-rename-w5-preflight/R40-unresolved-meta-decision-proposal.md",
     "writeSet": [],
     "gate": "No new scope until user defines treatment of named unknown-provenance fields; preserve current readers and opaque historical bytes. Do not classify unknown as third-party or claim full rename complete."
+  },
+  "R20_LAUNCH_DOC_TAIL": {
+    "baselineCommit": "371acd17f4ffa49a3f6706668f177c10e8a4d60e",
+    "controllerGrant": "output/zody-rename-r20-launch-doc/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "docs/dynamic-workflow/launch.md",
+      "docs/plans/zody-rename-execution/reports/R20-launch-doc-tail.md"
+    ],
+    "scopeStatus": "bounded-doc-accepted-cleaned",
+    "gate": "Independent of pending product decisions; only verified obsolete current-source doc paths. No product behavior changes. Review and cleanup required.",
+    "addenda": [
+      "output/zody-rename-r20-launch-doc/controller/addendum-1-storage-prose.json",
+      "output/zody-rename-r20-launch-doc/controller/addendum-2-full-document-tail.json"
+    ],
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R20-launch-doc-tail-controller-verification.md"
   }
 }

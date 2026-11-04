@@ -2,7 +2,7 @@
 
 Status: implemented. This document covers every way a workflow gets started, saved, found,
 and inspected; `docs/dynamic-workflow/authoring.md` covers how the script is written, and
-`apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md` covers what happens to
+`apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md` covers what happens to
 the run after it starts.
 
 ## The ways a workflow starts
@@ -219,7 +219,7 @@ name fails with "This host cannot choose models; remove `model` from the persona
 The handler hands the bindings to the port as `modelBindings` (structured selections); the port
 records them once, as canonical strings, on the `run-launched` event beside `subagentModel`, and
 never infers one. When a subagent's session is created, the host looks up the persona's name in
-that table (`apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md`, "Subagent
+that table (`apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md`, "Subagent
 sessions"). A resume reads the table back from the event, so the names keep the models they
 were launched with, whatever the catalog says by then.
 
@@ -266,7 +266,7 @@ reported as compiled and not executed. The tool never pretends a run started.
 ## The `AmendWorkflow` tool
 
 Amending is how a run gets a revised script: a new run, with its own id, that imports the
-predecessor's finished work as a cache (`apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md`,
+predecessor's finished work as a cache (`apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md`,
 "Amend-resume"). It is a separate tool from `CreateWorkflow` because it is a different act
 with a different display: the model is not starting something, it is changing something the
 user is already watching, and the predecessor may still be running.
@@ -290,7 +290,7 @@ amendment, which is what every other call is.
 The amended run's token figure, on its completion card, in the run pane, in `GetWorkflowRun`
 and in the run history, is the cost of the whole lineage: it starts at the predecessor's total
 and adds only the revision's live turns, so a chain of amendments sums by construction. The
-predecessor keeps its own figure (`apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md`,
+predecessor keeps its own figure (`apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md`,
 "Usage across the lineage").
 
 ### Input and output
@@ -694,7 +694,7 @@ timeline").
 ### The fill file
 
 Every inline `script` fill is written, byte for byte, to
-`<cwd>/.zcode/workflow-drafts/<slug>.<hole-slug>.dwf.ts` before the compile result is read,
+`<cwd>/.zody/workflow-drafts/<slug>.<hole-slug>.dwf.ts` before the compile result is read,
 exactly as an inline script is written to a draft. `<slug>` is the run's draft slug and
 `<hole-slug>` the hole's name under the same slug rules; `-2`, `-3`, … is appended while the
 name is taken, so an inline resubmission mints a new file and never overwrites one behind the
@@ -1063,7 +1063,7 @@ session whose mode is still the legacy `plan` value passes on `build`.
 (`CreateWorkflow`, `AmendWorkflow`, 「运行」 on the hub, Apply in the Configure popover) reads
 the launching session's mode at that moment and records it as `subagentPermissionMode` on the
 run's `run-launched` journal event
-(`apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md`, "Events"). Resume reads the
+(`apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md`, "Events"). Resume reads the
 value back from that event, so a run keeps its mode across a cancel and resume, a desktop
 restart and a cold resume. Switching the session's mode while a run is in flight changes
 nothing for that run, in either direction; an amendment is a new run and takes the mode in
@@ -1167,10 +1167,11 @@ path-traversal defense.
 
 | Scope | Directory | Visible from |
 |---|---|---|
-| `project` | `<cwd>/.zcode/workflows/` | this project |
-| `global` | `~/.zcode/workflows/` (the agent process's home directory) | every project on this machine |
+| `project` | `<cwd>/.zody/workflows/` | this project |
+| `global` | `~/.zody/workflows/` (the agent process's home directory) | every project on this machine |
 
-Lookups run over the roots in that order and the first hit wins: a project workflow hides
+Lookups check the current project root first, then the legacy `<cwd>/.zcode/workflows/`
+project root, then the current global root; the first hit wins, so a project workflow hides
 a global one of the same name. A lookup or listing may instead be directed at one scope;
 a directed listing does no hiding, which is how the hub's global group shows a shadowed
 global workflow. The legacy `Workflow` tool's `.workflow.js` files share the directories
@@ -1309,7 +1310,7 @@ The two directions are different operations, because a project workflow usually 
 its repository and a global one by definition does not.
 
 - **Global to project** is a file move: `workflows/move` (see "Data path") renames
-  `~/.zcode/workflows/<name>.dwf.ts` into the project's directory, falling back to copy and
+  `~/.zody/workflows/<name>.dwf.ts` into the project's directory, falling back to copy and
   unlink across devices, byte for byte. It never overwrites; an existing target is rejected
   with `target_exists`. Overwriting is something only `SaveWorkflow` does, through its
   window.
@@ -1332,8 +1333,8 @@ regenerates the whole body instead of editing a line.
 
 ### The drafts directory
 
-`<cwd>/.zcode/workflow-drafts/`, a sibling of `.zcode/workflows/` (the definitions the user
-keeps) and `.zcode/workflow-runs/` (the compiled entry of every run). It is created on first
+`<cwd>/.zody/workflow-drafts/`, a sibling of `.zody/workflows/` (the definitions the user
+keeps) and `.zody/workflow-runs/` (the compiled entry of every run). It is created on first
 use with its own `.gitignore` containing `*`, written once and never rewritten, so drafts
 never appear in the project's git status and the project's own `.gitignore` is not touched.
 Nothing deletes a draft.
@@ -1358,7 +1359,7 @@ model's back.
 | `path` | nothing; the file is already the working copy | — |
 
 The write is best effort. A project directory that cannot be written (a read-only checkout,
-`.zcode` being a plain file) does not fail the call: the tool proceeds without a file, the
+`.zody` being a plain file) does not fail the call: the tool proceeds without a file, the
 response carries no path, and the old instruction, fix the script and resubmit inline, is
 what the model reads. There is no fallback to a temporary directory, because a draft the
 user cannot find in the project is not worth a path.
@@ -1442,7 +1443,7 @@ transcript shows the body. Without a file (a draft the tool could not write) the
 
 ### Editing a draft needs no approval
 
-An `Edit` or `Write` whose target resolves under `<cwd>/.zcode/workflow-drafts/` is allowed
+An `Edit` or `Write` whose target resolves under `<cwd>/.zody/workflow-drafts/` is allowed
 without a window (`PermissionService`, rule `tool.workflowDraft.preapproved`), at the same
 point in the decision order as the preapproved `WebFetch` URLs: after the project's deny and
 ask rules, after plan mode (which still blocks every write), before the mode defaults. The
@@ -1456,7 +1457,7 @@ Nothing new. The confirmation window, the tool row, the run card and the run pan
 show the path: those surfaces are already dense, and the path is the model's handle, not
 the user's. A `path` submission has no drafting pen, since nothing streams
 (`docs/dynamic-workflow/presentation.md`, "The draft and the pen"); the model's edits appear
-as ordinary `Edit` rows on a file under `.zcode/`.
+as ordinary `Edit` rows on a file under `.zody/`.
 
 ## The hub page
 
@@ -1539,9 +1540,9 @@ project, never the active one.
 | Header | the name, the description, a primary 「运行」 button and a ⋯ menu (revise, copy path, the scope item, delete) |
 | 「最近产物」 (latest artifacts) | the artifact chips of the newest completed run that published any, clickable into that run's session |
 | Tabs | 「定义」 (definition) and 「运行历史」 (run history, with the count); the file path with a copy button on the right |
-| Definition: 「基本信息」 | 「说明」 (description, required), 「使用时机」 (when to use, with the help 「给 ZCode 的路由提示：什么场景该选这个工作流。」), and a 「参数」 table (name, type, required, default, description) with add and remove. Row errors: 「参数需要名字」, 「参数名重复」, 「默认值与类型不符」. |
+| Definition: 「基本信息」 | 「说明」 (description, required), 「使用时机」 (when to use, with the help 「给 Zody 的路由提示：什么场景该选这个工作流。」), and a 「参数」 table (name, type, required, default, description) with add and remove. Row errors: 「参数需要名字」, 「参数名重复」, 「默认值与类型不符」. |
 | Save bar | appears only when the form differs from the file: 「放弃更改」 and 「保存元数据」. Saving rewrites the metadata block and leaves the script byte for byte (the note says so: 「只改写文件顶部的元数据，脚本正文保持原样。」). |
-| Definition: 「脚本」 | the script, read-only, with a copy button and the note 「脚本只读。要改脚本，在对话里让 ZCode 修订后另存一版。」 |
+| Definition: 「脚本」 | the script, read-only, with a copy button and the note 「脚本只读。要改脚本，在对话里让 Zody 修订后另存一版。」 |
 | Run history | one row per run of this name: status word, start time, a project column for global workflows, `duration · tokens`, `key=value` argument chips, artifact chips, and 「查看实例」 (open run) |
 
 「查看实例」 needs the run's parent session id and tool call id, and for a global workflow
@@ -1650,9 +1651,11 @@ directly".
 picks the first reusable local active runtime, else the plugin-management workspace's
 runtime; never a remote one, so `~` is this machine's home directory.
 
-**Freshness.** Each project group watches `<project>/.zcode/workflows` and the global group
-watches the `dir` it was told, non-recursively, and reloads 300 ms after a change; a save
-from a conversation therefore shows up on its own. Run records are not files: the hub
+**Freshness.** Each project group requests non-recursive watches on both
+`<project>/.zody/workflows` and the legacy `<project>/.zcode/workflows`; the global group
+requests a watch on its supplied `dir`. A missing or otherwise unavailable directory can
+cause its watch to fail, logged at debug, so both watches are not guaranteed to be active.
+A successful watch triggers a reload 300 ms after a change. Run records are not files: the hub
 re-reads them on load and refresh, and shows no live progress; the conversation and the
 task island do that.
 
@@ -1998,7 +2001,7 @@ questions.
 
 The card joins the tool call to its run by tool call id and reads a `workflowRuns` mirror
 that the TUI maintains with the same reducer the desktop projection uses
-(`@zcode/shared`'s `workflow-runs-reducer`), fed by `dynamic_workflow_run_progress` events
+(`@zody/shared`'s `workflow-runs-reducer`), fed by `dynamic_workflow_run_progress` events
 through a subscription that outlives turns. There is no second clock: no polling, no
 interval.
 
@@ -2067,7 +2070,7 @@ from the resumed session. Explicit tool disallowlists still take precedence when
 turns the tools on. For example:
 
 ```sh
-zcode --workflow-mode alwaysOn -p "/workflow review this change"
+zody --workflow-mode alwaysOn -p "/workflow review this change"
 ```
 
 A `-p` run that started a workflow does not exit when the turn ends. Once workflow activity
@@ -2454,7 +2457,7 @@ Host (packages/services)
     ← desktop-attached remote Hosts: pushed by the desktop (see "The user's choice")
     → applyDynamicWorkflowUserMode(offer, choice): { mode, enabled, offeredMode, userMode?, source }
       │
-      ├─► zcodeAgentService, at workspace client start and after every change of the choice:
+      ├─► zodyAgentService, at workspace client start and after every change of the choice:
       │      workspace/updateDynamicWorkflowPolicy { enabled, mode }   (CLI-wide fact)
       │   and on every session/create, session/resume, v4 createSession:
       │      dynamicWorkflowEnabled: true, dynamicWorkflowMode         (only when enabled)
@@ -2463,7 +2466,7 @@ Host (packages/services)
              → the automations page and the run pane read `enabled` (effective)
              → the Settings row reads `offeredMode` and `mode`
 
-CLI (apps/zcode-cli, protocol server mode)
+CLI (apps/zody-cli, protocol server mode)
   appRuntimePreferences.dynamicWorkflowEnabled / .dynamicWorkflowMode  (default false / absent = fail-closed)
   createRecord: enabled = params.dynamicWorkflowEnabled === true || preferences flag
                 mode    = params.dynamicWorkflowMode ?? preferences mode ?? (enabled ? "alwaysOn" : "disabled")
@@ -2636,7 +2639,7 @@ The renderer's availability snapshot is reloaded after the Host has re-synced, s
 
 **How a change travels.** The settings file is the single source of the choice. A write in
 any window reaches every window's renderer through the shared-settings broadcast; each
-window's root then calls `zcodeAgentService.syncDynamicWorkflowUserMode` on its own Host and,
+window's root then calls `zodyAgentService.syncDynamicWorkflowUserMode` on its own Host and,
 once that resolves, reloads its availability snapshot.
 
 - A Host with its own settings (desktop local, web and standalone server) reads the choice
@@ -2671,7 +2674,7 @@ the Host starts, never passes it through untouched, so the Host trusts whatever 
 | Build | What Main writes into the Host env | Effect |
 |---|---|---|
 | unpackaged dev (`pnpm dev:desktop`) | the developer's shell value, if it is one of the three | any mode, for hand testing |
-| packaged preview (`ZCODE_PRODUCT_FLAVOR === "preview"`, production backend) | the literal `alwaysOn` | preview users always have the feature; the server key is ignored |
+| packaged preview (`ZODY_PRODUCT_FLAVOR === "preview"`, production backend) | the literal `alwaysOn` | preview users always have the feature; the server key is ignored |
 | packaged production | nothing; an inherited value is removed | the override cannot work |
 
 Remote Hosts started over SSH, WSL and Docker receive the same value through
