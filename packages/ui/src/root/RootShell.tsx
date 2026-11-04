@@ -3,6 +3,7 @@ import { AlertDialogHost } from "@/AlertDialogHost.js";
 import { ConfirmDialogHost } from "@/ConfirmDialog.js";
 import { CuaPermissionObservationAttachment } from "@/cua-permission/CuaPermissionObservationAttachment.js";
 import { PluginUiFollowUpDialogHost } from "@/plugin-ui/index.js";
+import { MobileRemoteRefreshGuardHost } from "@/MobileRemoteRefreshGuardHost.js";
 
 export function RootShell({ children }: { children: ReactNode }) {
   // Web 远控在手机浏览器里不能用固定 100vh，
@@ -11,6 +12,7 @@ export function RootShell({ children }: { children: ReactNode }) {
     <div className="relative h-dvh">
       {children}
       <CuaPermissionObservationAttachment />
+      <MobileRemoteRefreshGuardHost />
       <AlertDialogHost />
       <ConfirmDialogHost />
       <PluginUiFollowUpDialogHost />

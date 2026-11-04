@@ -3,13 +3,12 @@ import {
   WebRemoteControlMobileBackendPicker,
   WebRemoteControlMobileSettingsScreen,
   type WebRemoteControlMobileSettingsDraft,
-} from "@zcode/ui";
+} from "@zcode/ui/mobile-shell";
 import {
   startMobileRemoteBackendDiscovery,
   type MobileRemoteBackendDiscoverySnapshot,
 } from "./mobileRemoteBackendDiscovery.js";
 import {
-  MobileRemoteConfigStore,
   validateMobileRemoteGatewayConfig,
   type MobileRemoteGatewayConfig,
 } from "./mobileRemoteConfigStore.js";
@@ -25,8 +24,18 @@ import { webEntryRoot } from "../webEntryRoot.js";
  * 本模块只负责在「没有配置」「没有选电脑」「用户主动重开设置」三种情况下把用户带回对应页面。
  */
 
+/**
+ * 配对/设置流程只依赖最小读写面，具体存储由 Shell 的 `MobileShellConfigClient`
+ * （生产 = 原生 `ZodyShellBridge`）或既有 `MobileRemoteConfigStore` 注入。
+ * 这里不持有第二份配置事实，也不生成 clientInstanceId。
+ */
+export interface MobileRemoteSetupStore {
+  load(): Promise<MobileRemoteGatewayConfig | null>;
+  save(config: MobileRemoteGatewayConfig): Promise<unknown>;
+}
+
 export interface ResolveMobileRemoteConnectionOptions {
-  store: MobileRemoteConfigStore;
+  store: MobileRemoteSetupStore;
   allowUrlConfig: boolean;
   allowInsecureTransport: boolean;
   /** 注入点：单测用 fake discovery，不启动真实 gateway 连接。 */

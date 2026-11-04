@@ -28,6 +28,17 @@ export {
   useAssistantCodeCommentFeatureEnabled,
 } from "./AssistantCodeCommentFeatureProvider.js";
 export { Root } from "./Root.js";
+export {
+  MOBILE_REMOTE_REFRESH_GUARD_REASONS,
+  getMobileRemoteRefreshGuardRegistry,
+  installMobileRemoteRefreshGuardRegistry,
+  useMobileRemoteRefreshGuard,
+} from "./mobileRemoteRefreshGuards.js";
+export type {
+  MobileRemoteRefreshGuard,
+  MobileRemoteRefreshGuardReason,
+  MobileRemoteRefreshGuardRegistryLike,
+} from "./mobileRemoteRefreshGuards.js";
 export { UpdateStatusWindowRoot } from "./UpdateStatusWindowRoot.js";
 export type { WebRemoteControlTerminalTransportState } from "./root/types.js";
 export { setWebRemoteControlTerminalTransportState } from "./webRemoteControlTerminalTransportState.js";

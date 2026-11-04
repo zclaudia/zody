@@ -2,7 +2,6 @@ import { sessionCreateTelemetrySchema, type RendererTelemetryEventPayload } from
 import { playTaskNotificationSound } from "@zcode/ui";
 import type {
   IPlatformService,
-  PlatformSecureStore,
   RemoteTarget,
   WebRemoteControlPlatformMethod,
   WebRemoteControlPlatformMethodArgsMap,
@@ -30,10 +29,9 @@ interface WebRemoteControlPlatformProxy {
 export function createWebPlatform(options?: {
   externalWebRemoteControlProxy?: WebRemoteControlPlatformProxy;
   /**
-   * 手机入口的安全存储能力（T4.2）。桌面 Web 客户端不传，`secureStore` 保持 undefined；
-   * 手机页面会显式检查能力是否存在，release 构建缺桥时拒绝保存凭证。
+   * M2-T2：Remote 页面不再注入安全存储。连接配置和凭证由 Android 原生配置 store
+   * 持有，Remote 只通过 `ZodyRemoteBridge.getSessionContext()` 读取当前会话。
    */
-  secureStore?: PlatformSecureStore;
   mobileNotifications?: IPlatformService["mobileNotifications"];
   /** 手机宿主的前后台事件（T6.2）；只有 Android 原生桥提供。 */
   onAppLifecycleChange?: IPlatformService["onAppLifecycleChange"];
@@ -45,14 +43,12 @@ export function createWebPlatform(options?: {
   maxAttachmentBytes?: number;
 }): IPlatformService {
   const platformProxy = options?.externalWebRemoteControlProxy;
-  const secureStore = options?.secureStore;
   const onAppLifecycleChange = options?.onAppLifecycleChange;
   const onBackPressed = options?.onBackPressed;
   const saveFile = options?.saveFile;
   const maxAttachmentBytes = options?.maxAttachmentBytes;
 
   return {
-    ...(secureStore ? { secureStore } : {}),
     ...(options?.mobileNotifications ? { mobileNotifications: options.mobileNotifications } : {}),
     ...(onAppLifecycleChange ? { onAppLifecycleChange } : {}),
     ...(onBackPressed ? { onBackPressed } : {}),

@@ -176,19 +176,20 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
     try {
       const snapshot = await source.read();
+      // F08（上游 v3.17.1 rev43）：各厂商主推模型列表前缀随上游更新。
       expect(
         snapshot.providerTemplates?.get("moonshot-kimi")?.config.builtinModelIds.slice(0, 3),
-      ).toEqual(["kimi-k3", "kimi-k2.7-code", "kimi-k2.6"]);
+      ).toEqual(["kimi-k3.1-pro", "kimi-k3.1-pro-highspeed", "kimi-k3"]);
       expect(
         snapshot.providerTemplates?.get("minimax")?.config.builtinModelIds.slice(0, 3),
-      ).toEqual(["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.7-highspeed"]);
+      ).toEqual(["MiniMax-M3.1-Flash", "MiniMax-M3", "MiniMax-M2.7"]);
       for (const providerId of ["qwen-alibaba-model-studio-cn", "qwen-alibaba-model-studio-intl"]) {
         expect(
           snapshot.providerTemplates?.get(providerId)?.config.builtinModelIds.slice(0, 2),
         ).toEqual(["qwen3.8-max", "qwen3.8-flash"]);
       }
       expect(snapshot.providerTemplates?.get("openai")?.config.builtinModelIds.slice(0, 4)).toEqual(
-        ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"],
+        ["gpt-6-astra", "gpt-5.6-terra", "gpt-6.1-sol", "gpt-6-luna"],
       );
 
       const resolve = (
@@ -710,6 +711,318 @@ describe("ZCode Built-in Provider Config 完整性", () => {
     expect(pickMiMoSubset(testConfig)).toEqual(pickMiMoSubset(release));
   });
 
+  // 上游 v3.17.1（a60ba6a7）内置配置 rev33 → rev43 的 13 个新 BYOK 模板。
+  const f08NewTemplateIds = [
+    "kimi-code-cn",
+    "kimi-code-intl",
+    "minimax-m-plan-cn",
+    "qwen-coding-plan-cn",
+    "qwen-token-plan-team-cn",
+    "tencent-tokenhub-cn",
+    "tencent-tokenhub-intl",
+    "volcengine-ark",
+    "volcengine-coding-plan",
+    "volcengine-agent-plan",
+    "stepfun",
+    "stepfun-step-plan",
+    "siliconflow-cn",
+  ] as const;
+
+  it("F08 rev43 新模板按上游全量收录，端点与成员独立声明", async () => {
+    const source = new NodeZCodeBuiltinProviderConfigSource({
+      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      watch: false,
+    });
+
+    try {
+      const snapshot = await source.read();
+      const expected: Readonly<
+        Record<string, { name: string; apiType: string; baseUrl: string; models: readonly string[] }>
+      > = {
+        "kimi-code-cn": {
+          name: "Kimi Code（国内）",
+          apiType: "openai-chat-completions",
+          baseUrl: "https://api.kimi.com/coding/v1",
+          models: [
+            "k3.1-pro",
+            "k3.1-pro-highspeed",
+            "k3",
+            "k3-256k",
+            "kimi-for-coding",
+            "kimi-for-coding-highspeed",
+          ],
+        },
+        "kimi-code-intl": {
+          name: "Kimi Code（国际）",
+          apiType: "openai-chat-completions",
+          baseUrl: "https://api.kimi.ai/coding/v1",
+          models: [
+            "k3.1-pro",
+            "k3.1-pro-highspeed",
+            "k3",
+            "k3-256k",
+            "kimi-for-coding",
+            "kimi-for-coding-highspeed",
+          ],
+        },
+        "minimax-m-plan-cn": {
+          name: "MiniMax M Plan（中国）",
+          apiType: "anthropic-messages",
+          baseUrl: "https://api.minimax.cn/anthropic",
+          models: ["MiniMax-M3.1-Flash", "MiniMax-M3.1-Flash-Preview"],
+        },
+        "qwen-coding-plan-cn": {
+          name: "阿里云百炼 Coding Plan（中国）",
+          apiType: "openai-chat-completions",
+          baseUrl: "https://coding.dashscope.aliyuncs.com/v1",
+          models: ["qwen3.7-plus"],
+        },
+        "qwen-token-plan-team-cn": {
+          name: "阿里云百炼 Token Plan 团队版（中国）",
+          apiType: "openai-chat-completions",
+          baseUrl: "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+          models: ["qwen3.8-max", "qwen3.8-flash"],
+        },
+        "tencent-tokenhub-cn": {
+          name: "腾讯 TokenHub 广州 API（中国站）",
+          apiType: "openai-chat-completions",
+          baseUrl: "https://tokenhub.tencentmaas.com/v1",
+          models: ["hy3", "hy4-preview"],
+        },
+        "tencent-tokenhub-intl": {
+          name: "腾讯 TokenHub 新加坡 API（中国站）",
+          apiType: "openai-chat-completions",
+          baseUrl: "https://tokenhub-intl.tencentmaas.com/v1",
+          models: ["hy3", "hy4-preview"],
+        },
+        "volcengine-ark": {
+          name: "火山方舟 API",
+          apiType: "anthropic-messages",
+          baseUrl: "https://ark.cn-beijing.volces.com/api/compatible",
+          models: [
+            "doubao-seed-evolving",
+            "doubao-seed-2-1-pro-260915",
+            "doubao-seed-2-1-lite-260915",
+            "doubao-seed-2-1-turbo-260628",
+          ],
+        },
+        "volcengine-coding-plan": {
+          name: "火山方舟 Coding Plan",
+          apiType: "anthropic-messages",
+          baseUrl: "https://ark.cn-beijing.volces.com/api/coding",
+          models: ["doubao-seed-2.1-pro", "doubao-seed-2.1-lite"],
+        },
+        "volcengine-agent-plan": {
+          name: "火山方舟 Agent Plan",
+          apiType: "anthropic-messages",
+          baseUrl: "https://ark.cn-beijing.volces.com/api/plan",
+          models: ["doubao-seed-2.1-pro", "doubao-seed-2.1-lite"],
+        },
+        stepfun: {
+          name: "阶跃星辰 API",
+          apiType: "anthropic-messages",
+          baseUrl: "https://api.stepfun.com",
+          models: ["step-5-preview", "step-3.7-flash"],
+        },
+        "stepfun-step-plan": {
+          name: "阶跃星辰 Step Plan",
+          apiType: "anthropic-messages",
+          baseUrl: "https://api.stepfun.com/step_plan",
+          models: ["step-5-preview", "step-3.7-flash"],
+        },
+        "siliconflow-cn": {
+          name: "硅基流动 API（中国）",
+          apiType: "openai-chat-completions",
+          baseUrl: "https://api.siliconflow.cn/v1",
+          models: ["zai-org/GLM-5.3", "deepseek-ai/DeepSeek-V4-Flash", "moonshotai/Kimi-K2.7-Code"],
+        },
+      };
+      const seenBaseUrls = new Set<string>();
+      for (const templateId of f08NewTemplateIds) {
+        const template = snapshot.providerTemplates?.get(templateId);
+        expect(template, `${templateId} 必须收录`).toBeDefined();
+        const want = expected[templateId]!;
+        expect(template?.templateNameMap["zh-CN"]).toBe(want.name);
+        expect(template?.config.access?.type).toBe("api-key");
+        expect(template?.config.api?.type).toBe(want.apiType);
+        expect(template?.config.api?.baseUrl).toBe(want.baseUrl);
+        expect(template?.config.builtinModelIds).toEqual(want.models);
+        // 同一厂商的多套餐模板端点必须互不相同，也不得复用其他模板端点。
+        expect(seenBaseUrls.has(want.baseUrl), `${templateId} 的 baseUrl 不得与其他模板重复`).toBe(
+          false,
+        );
+        seenBaseUrls.add(want.baseUrl);
+      }
+    } finally {
+      source.dispose();
+    }
+  });
+
+  it("F08 新模板成员能力可解析，且 templateModelRules 只按 templateId+modelId 精确命中", async () => {
+    const source = new NodeZCodeBuiltinProviderConfigSource({
+      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      watch: false,
+    });
+
+    try {
+      const snapshot = await source.read();
+      for (const templateId of f08NewTemplateIds) {
+        const template = snapshot.providerTemplates?.get(templateId)!;
+        for (const modelId of template.config.builtinModelIds ?? []) {
+          const model = snapshot.models.resolve({
+            providerId: `template:${templateId}`,
+            templateId,
+            modelId,
+            apiType: template.config.api?.type,
+            baseUrl: template.config.api?.baseUrl,
+          });
+          expect(model.validateComplete(["templates", templateId, "models", modelId])).toEqual([]);
+          // 新模板成员默认启用；Preview 型号按上游声明默认关闭，需要用户显式选择。
+          const expectedEnabled = modelId !== "MiniMax-M3.1-Flash-Preview";
+          expect(model.enabled, `${templateId}/${modelId}`).toBe(expectedEnabled);
+        }
+      }
+
+      // 代表型号能力断言（上游 rev43 声明值）。
+      const volcengine = snapshot.providerTemplates?.get("volcengine-ark")!;
+      const doubao = snapshot.models.resolve({
+        providerId: "template:volcengine-ark",
+        templateId: "volcengine-ark",
+        modelId: "doubao-seed-evolving",
+        apiType: volcengine.config.api?.type,
+        baseUrl: volcengine.config.api?.baseUrl,
+      });
+      expect(doubao.properties?.contextWindow).toBe(1_024_000);
+      expect(doubao.optionSpecs?.maxOutputTokens?.max).toBe(256_000);
+      expect(reasoningPatch(doubao.optionSpecs!.reasoningLevel!.map!, "low")).toEqual({
+        output_config: { effort: "low" },
+      });
+
+      const kimiCode = snapshot.providerTemplates?.get("kimi-code-cn")!;
+      const k31 = snapshot.models.resolve({
+        providerId: "template:kimi-code-cn",
+        templateId: "kimi-code-cn",
+        modelId: "k3.1-pro",
+        apiType: kimiCode.config.api?.type,
+        baseUrl: kimiCode.config.api?.baseUrl,
+      });
+      expect(k31.properties?.contextWindow).toBe(1_048_576);
+      expect(k31.optionSpecs?.reasoningLevel?.values).toEqual(["low", "high", "max"]);
+
+      // 串命中反例：templateModelRules 按 templateId+modelId 精确匹配。
+      // 同一 modelId 出现在其他模板下不得继承新模板的 enabled 或能力声明。
+      const exactEnabled = new Map(
+        snapshot.models
+          .rules()
+          .flatMap((rule) =>
+            rule.type === "template-model" && rule.config.enabled !== undefined
+              ? ([[`${rule.templateId}\0${rule.modelId}`, rule.config.enabled]] as const)
+              : [],
+          ),
+      );
+      expect(exactEnabled.get("kimi-code-cn\0kimi-for-coding")).toBe(true);
+      expect(exactEnabled.has("moonshot-kimi\0kimi-for-coding")).toBe(false);
+      expect(exactEnabled.get("volcengine-coding-plan\0doubao-seed-2.1-pro")).toBe(true);
+      // 火山方舟按量模板的成员是带日期后缀的 doubao-seed-2-1-*，与套餐模板的
+      // doubao-seed-2.1-* 是不同型号，互相不得串命中。
+      expect(exactEnabled.has("volcengine-ark\0doubao-seed-2.1-pro")).toBe(false);
+      expect(exactEnabled.has("volcengine-coding-plan\0doubao-seed-2-1-pro-260915")).toBe(false);
+
+      // 行为级反例：minimax-m-plan-cn 的 Preview 成员默认关闭（上游声明 false）；
+      // 它不是 minimax（按量）模板的成员，若 templateModelRules 按 modelId 全局串命中，
+      // minimax 下同名型号会被错误关闭。zody 的 `.*` 兜底规则声明 enabled:true，
+      // 非成员型号应保持默认启用。
+      const mPlan = snapshot.providerTemplates?.get("minimax-m-plan-cn")!;
+      const previewInMPlan = snapshot.models.resolve({
+        providerId: "template:minimax-m-plan-cn",
+        templateId: "minimax-m-plan-cn",
+        modelId: "MiniMax-M3.1-Flash-Preview",
+        apiType: mPlan.config.api?.type,
+        baseUrl: mPlan.config.api?.baseUrl,
+      });
+      expect(previewInMPlan.enabled).toBe(false);
+      const minimaxTemplate = snapshot.providerTemplates?.get("minimax")!;
+      const previewInMinimax = snapshot.models.resolve({
+        providerId: "template:minimax",
+        templateId: "minimax",
+        modelId: "MiniMax-M3.1-Flash-Preview",
+        apiType: minimaxTemplate.config.api?.type,
+        baseUrl: minimaxTemplate.config.api?.baseUrl,
+      });
+      expect(previewInMinimax.enabled, "minimax 模板不得继承 m-plan 模板的 disabled 声明").toBe(
+        true,
+      );
+    } finally {
+      source.dispose();
+    }
+  });
+
+  it("F08 生产与测试 Built-in 配置的新模板子集与站点规则保持一致", async () => {
+    // 与 MiMo parity 同理：测试配置由人工镜像维护，按 F08 子集做 parity 防漂移。
+    // providerSiteRules 在测试配置中允许出现重复条目（上游如此），比较时去重。
+    type BuiltinRaw = {
+      revision: number;
+      config: {
+        providerConfigRules: { templateRules: readonly { templateId: string }[] };
+        modelConfigRules: {
+          templateModelRules: readonly { templateId: string }[];
+          providerSiteRules: readonly unknown[];
+        };
+      };
+    };
+    const readRaw = async (fileName: string): Promise<BuiltinRaw> =>
+      JSON.parse(
+        await readFile(new URL(`../../../config/provider/${fileName}`, import.meta.url), "utf8"),
+      ) as BuiltinRaw;
+    const pick = (raw: BuiltinRaw) => ({
+      templates: raw.config.providerConfigRules.templateRules.filter((template) =>
+        (f08NewTemplateIds as readonly string[]).includes(template.templateId),
+      ),
+      templateModelRules: raw.config.modelConfigRules.templateModelRules.filter((rule) =>
+        (f08NewTemplateIds as readonly string[]).includes(rule.templateId),
+      ),
+      siteRules: [...new Set(raw.config.modelConfigRules.providerSiteRules.map((x) => JSON.stringify(x)))],
+    });
+
+    const release = await readRaw("zcode-builtin.json");
+    const testConfig = await readRaw("zcode-builtin.test.json");
+    expect(release.revision).toBe(43);
+    expect(testConfig.revision).toBe(43);
+    expect(pick(testConfig)).toEqual(pick(release));
+    // 上游 rev43 新增的站点规则随配置收录：glm-5.3 在 Z.ai / BigModel / ZCode highspeed
+    // 三个 Anthropic 端点不支持视频；opencode go 的 chat-completions 端点不支持
+    // JSON Schema 输出。
+    const releaseSiteRules = pick(release).siteRules;
+    for (const rule of [
+      JSON.stringify({
+        modelMatch: "glm-5\\.3",
+        apiTypeMatch: "anthropic-messages",
+        baseUrlMatch: "https://api\\.z\\.ai/api/anthropic/?",
+        config: { properties: { inputFormat: { supportsVideo: false } } },
+      }),
+      JSON.stringify({
+        modelMatch: "glm-5\\.3",
+        apiTypeMatch: "anthropic-messages",
+        baseUrlMatch: "https://open\\.bigmodel\\.cn/api/anthropic/?",
+        config: { properties: { inputFormat: { supportsVideo: false } } },
+      }),
+      JSON.stringify({
+        modelMatch: "glm-5\\.3",
+        apiTypeMatch: "anthropic-messages",
+        baseUrlMatch: "https://zcode\\.z\\.ai/api/v1/highspeed/anthropic/?",
+        config: { properties: { inputFormat: { supportsVideo: false } } },
+      }),
+      JSON.stringify({
+        modelMatch: ".*",
+        apiTypeMatch: "openai-chat-completions",
+        baseUrlMatch: "https://opencode\\.ai/zen/go/v1/?",
+        config: { properties: { supportsJsonSchemaOutput: false } },
+      }),
+    ]) {
+      expect(releaseSiteRules, `缺少上游 rev43 站点规则 ${rule}`).toContain(rule);
+    }
+  });
+
   it("聚合供应商按维护清单提供独立模板，不复用上游 Provider 配置", async () => {
     const source = new NodeZCodeBuiltinProviderConfigSource({
       bundledFilePath: zcodeBuiltinProviderConfigFilePath,
@@ -851,7 +1164,9 @@ describe("ZCode Built-in Provider Config 完整性", () => {
       }
 
       expect(exactEnabled.get("openai\0gpt-5.6")).toBe(false);
-      expect(exactEnabled.get("openai\0gpt-5.6-sol")).toBe(true);
+      // F08（上游 rev43）：gpt-5.6-sol 随 gpt-6.1-sol 上线降级为默认关闭。
+      expect(exactEnabled.get("openai\0gpt-5.6-sol")).toBe(false);
+      expect(exactEnabled.get("openai\0gpt-6.1-sol")).toBe(true);
       expect(exactEnabled.get("minimax\0MiniMax-M3")).toBe(true);
       expect(exactEnabled.get("xai\0grok-4.3")).toBe(false);
     } finally {
@@ -876,19 +1191,34 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         "bigmodel-api",
         "bigmodel-standard-api",
         "moonshot-kimi",
+        // F08（上游 v3.17.1 rev43）：13 个新模板按上游顺序全量收录（BYOK），
+        // opencode-go 三模板顺序跟随上游重排为 responses → messages → chat。
+        "kimi-code-cn",
+        "kimi-code-intl",
         "minimax",
+        "minimax-m-plan-cn",
         "deepseek",
         "qwen-alibaba-model-studio-cn",
         "qwen-alibaba-model-studio-intl",
+        "qwen-coding-plan-cn",
+        "qwen-token-plan-team-cn",
         "xiaomi-mimo",
         "xiaomi-mimo-token-plan",
+        "tencent-tokenhub-cn",
+        "tencent-tokenhub-intl",
+        "volcengine-ark",
+        "volcengine-coding-plan",
+        "volcengine-agent-plan",
+        "stepfun",
+        "stepfun-step-plan",
         "openai",
         "anthropic",
         "xai",
+        "siliconflow-cn",
         "openrouter",
-        "opencode-go-chat",
-        "opencode-go-messages",
         "opencode-go-responses",
+        "opencode-go-messages",
+        "opencode-go-chat",
         "opencode-zen-responses",
         "opencode-zen-messages",
         "opencode-zen-chat",
@@ -929,10 +1259,13 @@ describe("ZCode Built-in Provider Config 完整性", () => {
       });
 
       expect(snapshot.providerTemplates?.get("openai")?.config.toJSON()).toMatchObject({
+        // F08（上游 rev43）：openai 新增 gpt-6.1-sol / gpt-6-luna，gpt-5.6-sol 降级为默认关闭。
         builtinModelIds: [
           "gpt-6-astra",
-          "gpt-5.6-sol",
           "gpt-5.6-terra",
+          "gpt-6.1-sol",
+          "gpt-6-luna",
+          "gpt-5.6-sol",
           "gpt-5.6-luna",
           "gpt-5.6",
           "gpt-5.4",
@@ -948,8 +1281,12 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         api: { type: "openai-responses", baseUrl: "https://api.openai.com/v1" },
       });
       expect(snapshot.providerTemplates?.get("anthropic")?.config.toJSON()).toMatchObject({
+        // F08（上游 rev43）：anthropic 新增 claude-5.5 系三款。
         builtinModelIds: [
           "claude-fable-5-1",
+          "claude-opus-5-5",
+          "claude-sonnet-5-5",
+          "claude-haiku-5-5",
           "claude-fable-5",
           "claude-opus-5",
           "claude-sonnet-5",
@@ -962,7 +1299,8 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         api: { type: "anthropic-messages", baseUrl: "https://api.anthropic.com/v1" },
       });
       expect(snapshot.providerTemplates?.get("xai")?.config.toJSON()).toMatchObject({
-        builtinModelIds: ["grok-4.6", "grok-build-0.1", "grok-4.3"],
+        // F08（上游 rev43）：xai 新增 grok-4.7 并重排为 build 系在前。
+        builtinModelIds: ["grok-build-0.1", "grok-4.7", "grok-4.6", "grok-4.3"],
         access: {
           type: "api-key",
           apiKeyManagementUrl: "https://console.x.ai",
@@ -1299,19 +1637,33 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         "template:bigmodel-api",
         "template:bigmodel-standard-api",
         "template:moonshot-kimi",
+        // F08（上游 v3.17.1 rev43）：13 个新模板进入 Registry，顺序与 Built-in 列表一致。
+        "template:kimi-code-cn",
+        "template:kimi-code-intl",
         "template:minimax",
+        "template:minimax-m-plan-cn",
         "template:deepseek",
         "template:qwen-alibaba-model-studio-cn",
         "template:qwen-alibaba-model-studio-intl",
+        "template:qwen-coding-plan-cn",
+        "template:qwen-token-plan-team-cn",
         "template:xiaomi-mimo",
         "template:xiaomi-mimo-token-plan",
+        "template:tencent-tokenhub-cn",
+        "template:tencent-tokenhub-intl",
+        "template:volcengine-ark",
+        "template:volcengine-coding-plan",
+        "template:volcengine-agent-plan",
+        "template:stepfun",
+        "template:stepfun-step-plan",
         "template:openai",
         "template:anthropic",
         "template:xai",
+        "template:siliconflow-cn",
         "template:openrouter",
-        "template:opencode-go-chat",
-        "template:opencode-go-messages",
         "template:opencode-go-responses",
+        "template:opencode-go-messages",
+        "template:opencode-go-chat",
         "template:opencode-zen-responses",
         "template:opencode-zen-messages",
         "template:opencode-zen-chat",

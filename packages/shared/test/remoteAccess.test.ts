@@ -1,11 +1,28 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
+  WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY,
   normalizeRemoteAccessGatewayUrl,
   remoteAccessSettingsPatchSchema,
   remoteAccessSettingsSchema,
   tryNormalizeRemoteAccessGatewayUrl,
 } from "../src/remoteAccess.js";
+
+describe("WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY", () => {
+  it("冻结为 zcode-remote-ui-v1，且不替代原远控能力位", async () => {
+    const { WEB_REMOTE_CONTROL_BACKEND_CAPABILITY } =
+      await import("../src/web-remote-control-channel.js");
+    const sharedIndex = await import("../src/index.js");
+    expect(WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY).toBe("zcode-remote-ui-v1");
+    expect(WEB_REMOTE_CONTROL_BACKEND_CAPABILITY).toBe("zcode-remote-control");
+    expect(WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY).not.toBe(
+      WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
+    );
+    expect(sharedIndex.WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY).toBe(
+      WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY,
+    );
+  });
+});
 
 describe("normalizeRemoteAccessGatewayUrl", () => {
   it("去掉尾部斜杠并推导 ws/wss 基地址", () => {
@@ -73,10 +90,12 @@ describe("normalizeRemoteAccessGatewayUrl", () => {
 describe("remoteAccess settings schema", () => {
   it("缺省时给出关闭 + 未配置 + 默认 namespace", () => {
     expect(DEFAULT_REMOTE_ACCESS_NAMESPACE).toBe("zody");
+    // allowMobileOpenArbitraryPath 缺省 true（不改变老用户行为），测试随 schema 补齐该字段。
     expect(remoteAccessSettingsSchema.parse({})).toEqual({
       enabled: false,
       gatewayUrl: "",
       namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE,
+      allowMobileOpenArbitraryPath: true,
     });
     expect(remoteAccessSettingsSchema.parse({ namespace: "  " }).namespace).toBe(
       DEFAULT_REMOTE_ACCESS_NAMESPACE,
@@ -102,21 +121,24 @@ describe("remoteAccess settings schema", () => {
       enabled: true,
       gatewayUrl: "https://gateway.example.com",
       namespace: "zcode",
+      allowMobileOpenArbitraryPath: true,
     });
     expect(JSON.stringify(parsed)).not.toContain("zgb_secret");
   });
 
-  it("patch 要求三个字段一次给全，并拒绝非法地址与多余字段", () => {
+  it("patch 要求全部字段一次给全，并拒绝非法地址与多余字段", () => {
     expect(
       remoteAccessSettingsPatchSchema.parse({
         enabled: true,
         gatewayUrl: "https://gateway.example.com/",
         namespace: "zcode",
+        allowMobileOpenArbitraryPath: true,
       }),
     ).toEqual({
       enabled: true,
       gatewayUrl: "https://gateway.example.com",
       namespace: "zcode",
+      allowMobileOpenArbitraryPath: true,
     });
     // settings 更新是浅合并，少传字段会把已有地址/namespace 悄悄清空，因此必须直接拒绝。
     expect(remoteAccessSettingsPatchSchema.safeParse({ enabled: true }).success).toBe(false);
@@ -137,7 +159,25 @@ describe("remoteAccess settings schema", () => {
     ).toBe(false);
     // 空串是「未配置」的合法写法（清空地址后开关仍然可以关掉）。
     expect(
-      remoteAccessSettingsPatchSchema.parse({ enabled: false, gatewayUrl: "", namespace: "" }),
-    ).toEqual({ enabled: false, gatewayUrl: "", namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE });
+      remoteAccessSettingsPatchSchema.parse({
+        enabled: false,
+        gatewayUrl: "",
+        namespace: "",
+        allowMobileOpenArbitraryPath: false,
+      }),
+    ).toEqual({
+      enabled: false,
+      gatewayUrl: "",
+      namespace: DEFAULT_REMOTE_ACCESS_NAMESPACE,
+      allowMobileOpenArbitraryPath: false,
+    });
+    // 缺少 allowMobileOpenArbitraryPath 同样会被浅合并悄悄清空，必须拒绝。
+    expect(
+      remoteAccessSettingsPatchSchema.safeParse({
+        enabled: true,
+        gatewayUrl: "https://gateway.example.com",
+        namespace: "zcode",
+      }).success,
+    ).toBe(false);
   });
 });

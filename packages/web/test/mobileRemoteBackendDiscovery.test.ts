@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import type { BackendPresenceV4 } from "@zclaudia/gateway-protocol";
-import { WEB_REMOTE_CONTROL_BACKEND_CAPABILITY } from "@zcode/shared";
+import {
+  WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
+  WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY,
+} from "@zcode/shared";
 import {
   startMobileRemoteBackendDiscovery,
   type MobileRemoteBackendDiscoverySnapshot,
@@ -129,7 +132,11 @@ describe("mobile remote backend discovery (T4.2)", () => {
         { backendId: "backend-a", name: "Credential name", online: false, lastSeenAt: 1 },
       ];
       fake.registry = [
-        presence("backend-a", [WEB_REMOTE_CONTROL_BACKEND_CAPABILITY], "Studio Mac"),
+        presence(
+          "backend-a",
+          [WEB_REMOTE_CONTROL_BACKEND_CAPABILITY, WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY],
+          "Studio Mac",
+        ),
       ];
     });
     await settle(snapshots);
@@ -141,6 +148,33 @@ describe("mobile remote backend discovery (T4.2)", () => {
         name: "Studio Mac",
         online: true,
         supported: true,
+        lastSeenAt: 2,
+      },
+    ]);
+    dispose();
+  });
+
+  it("marks a backend unsupported when it advertises remote control but not the desktop UI capability", async () => {
+    const { snapshots, dispose } = collect((fake) => {
+      fake.registry = [
+        presence("backend-a", [WEB_REMOTE_CONTROL_BACKEND_CAPABILITY], "Old Desktop"),
+      ];
+    });
+    await settle(snapshots);
+
+    expect(snapshots.at(-1)?.backends).toEqual([
+      {
+        backendId: "backend-b",
+        name: "Office PC",
+        online: false,
+        supported: true,
+        lastSeenAt: 2,
+      },
+      {
+        backendId: "backend-a",
+        name: "Old Desktop",
+        online: true,
+        supported: false,
         lastSeenAt: 2,
       },
     ]);

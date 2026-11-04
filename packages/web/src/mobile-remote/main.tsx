@@ -1,8 +1,6 @@
 import {
-  generateMobileDeviceFingerprint,
   installDocumentHiddenMotionPause,
   installMobileKeyboardInsetTracker,
-  setStreamClientId,
 } from "@zcode/ui";
 import "@zcode/ui/styles.css";
 import { applyWebThemePreference } from "../webThemePreference.js";
@@ -22,8 +20,6 @@ installDocumentHiddenMotionPause();
 // 故与 installDocumentHiddenMotionPause 同样丢弃卸载函数；无 visualViewport 的环境安装为安全无操作。
 installMobileKeyboardInsetTracker();
 applyWebThemePreference();
-// 初始化流式 clientId，确保所有 hook 在首次渲染前就使用稳定 ID；
-// 建连前 seedStableWebRemoteControlClientId 会按 clientInstanceId 覆盖成持久 ID。
-setStreamClientId(generateMobileDeviceFingerprint());
-
+// M2-T2：clientInstanceId 只来自原生 session context，bootstrap 在读取并校验后
+// 立即调用 setStreamClientId；入口不再生成指纹或写入 localStorage。
 void bootstrapGatewayWebRemoteControl(new URLSearchParams(window.location.search));

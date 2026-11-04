@@ -52,6 +52,54 @@ describe("notification click resolution", () => {
     services.zcodeTaskService.getTaskMeta.mockResolvedValue(null as any);
     await expect(validateMobileNotificationTask(services as any, target)).rejects.toThrow();
   });
+  it("rejects a remote workspace whose attachment is no longer attached", async () => {
+    const options = setup();
+    options.listWorkspaces.mockResolvedValue({
+      workspaces: [{ kind: "remote", ...target, remoteSessionId: undefined }],
+    });
+    await expect(resolveMobileNotificationNavigation(options)).rejects.toThrow(
+      "notification-workspace-unavailable",
+    );
+  });
+
+  it("accepts a local workspace only when path and identity both match", async () => {
+    const localTarget = {
+      ...target,
+      workspaceKey: "/repo",
+      workspaceIdentity: undefined,
+      remoteSessionId: undefined,
+    };
+    const reader = {
+      getNotification: vi.fn().mockResolvedValue({ notificationId: "n", target: localTarget }),
+    };
+    const listWorkspaces = vi.fn().mockResolvedValue({
+      workspaces: [{ kind: "local", ...localTarget }],
+    });
+    await expect(
+      resolveMobileNotificationNavigation({
+        backendId: "b",
+        notificationId: "n",
+        reader: reader as any,
+        listWorkspaces,
+      }),
+    ).resolves.toMatchObject({ target: localTarget });
+
+    // 相同路径但不同逻辑身份不能命中（本地 path 与远程 identity 不能互相冒充）。
+    listWorkspaces.mockResolvedValue({
+      workspaces: [
+        { kind: "remote", ...localTarget, workspaceIdentity: "ssh:a:/repo", remoteSessionId: "a" },
+      ],
+    });
+    await expect(
+      resolveMobileNotificationNavigation({
+        backendId: "b",
+        notificationId: "n",
+        reader: reader as any,
+        listWorkspaces,
+      }),
+    ).rejects.toThrow("notification-workspace-unavailable");
+  });
+
   it("keeps the authoritative task/session mapping and refreshes an attachment by identity", async () => {
     const resolved = await resolveMobileNotificationNavigation(
       setup({ remoteSessionId: "old-attachment", sessionId: "distinct-session" }),

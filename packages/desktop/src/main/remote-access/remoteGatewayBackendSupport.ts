@@ -1,6 +1,8 @@
-import { GatewayBackend } from "@zclaudia/gateway-backend";
+import { GatewayBackend, type HttpServeResponse } from "@zclaudia/gateway-backend";
 import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
+  WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
+  WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY,
   tryNormalizeRemoteAccessGatewayUrl,
   webRemoteControlChannelCloseFrameSchema,
   type RemoteAccessGatewayConnectionErrorReason,
@@ -11,7 +13,9 @@ import {
 import type {
   RemoteGatewayBackendConfig,
   RemoteGatewayBackendSdkFactory,
+  RemoteGatewayBackendSdkLike,
   RemoteGatewayChannel,
+  RemoteGatewayHttpHandler,
 } from "./remoteGatewayBackendTypes.js";
 
 /** 配置归一化 + 错误映射 + close 帧编码；与连接生命周期分开，便于单测和复用。 */
@@ -45,6 +49,38 @@ export function resolveConfig(
     complete: baseUrl !== "" && credential !== undefined,
     signature: JSON.stringify([config.enabled, baseUrl, namespace, credential ?? ""]),
   };
+}
+
+/** backend 能力位：远控是基础能力，UI capability 只在真正接入 provider 时附加。 */
+export function resolveGatewayCapabilities(hasMobileUiHandler: boolean): string[] {
+  return hasMobileUiHandler
+    ? [WEB_REMOTE_CONTROL_BACKEND_CAPABILITY, WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY]
+    : [WEB_REMOTE_CONTROL_BACKEND_CAPABILITY];
+}
+
+/**
+ * 旧 SDK 代次的兜底响应。
+ *
+ * 配置换代、测试连接、REPLACED、异常关闭和 dispose 后，旧 SDK 可能仍有在途的
+ * `http_request`。此时不能把旧制品当成本代次内容返回，也不能落入通用代理；
+ * 用有界的 503 + no-store 让手机按网络错误处理。
+ */
+export function createStaleMobileUiHttpResponse(): HttpServeResponse {
+  return { status: 503, headers: { "cache-control": "no-store" } };
+}
+
+/**
+ * 把 provider 绑定到单次 SDK 实例：只有仍为 active 且 backend 未 disposed 的代次
+ * 才能读取 UI 制品。
+ */
+export function registerMobileUiHttpHandler(
+  sdk: RemoteGatewayBackendSdkLike,
+  handler: RemoteGatewayHttpHandler,
+  isCurrentSdk: () => boolean,
+): void {
+  sdk.serveHttp((request) =>
+    isCurrentSdk() ? handler(request) : createStaleMobileUiHttpResponse(),
+  );
 }
 
 /**

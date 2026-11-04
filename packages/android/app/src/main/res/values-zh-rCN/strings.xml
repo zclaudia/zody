@@ -21,4 +21,9 @@
     <string name="remote_attachment_source_message">拍照，或从手机中选择文件。</string>
     <string name="remote_attachment_take_photo">拍照</string>
     <string name="remote_attachment_choose_file">选择文件</string>
+    <!-- M2-T3：旧配置 schema 的破坏性升级确认。确认前只检测、不删除任何凭证。 -->
+    <string name="mobile_shell_repair_title">需要重新配对</string>
+    <string name="mobile_shell_repair_message">此版本使用新的配对格式。请重新与电脑配对以继续；只有在你确认后才会清除旧配对数据。</string>
+    <string name="mobile_shell_repair_confirm">清除旧配对并重新配对</string>
+    <string name="mobile_shell_repair_cancel">暂不处理</string>
 </resources>

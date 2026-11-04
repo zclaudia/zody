@@ -128,6 +128,74 @@ describe("ProviderTemplatePicker", () => {
     );
   });
 
+  it("F08 rev43 新模板（Kimi Code / 腾讯 TokenHub / 火山方舟 / 阶跃 / 硅基流动等）出现在添加列表并可创建", async () => {
+    // F08（上游 v3.17.1 rev43）：13 个新 BYOK 模板全量收录，读取正式 Built-in 配置
+    // 渲染添加列表，确认不支持的厂商不会混入、点击创建以正确 templateId 落地。
+    const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+    const builtin = JSON.parse(
+      await readFile(resolve(repoRoot, "config/provider/zcode-builtin.json"), "utf8"),
+    );
+    const newTemplateIds = [
+      "kimi-code-cn",
+      "kimi-code-intl",
+      "minimax-m-plan-cn",
+      "qwen-coding-plan-cn",
+      "qwen-token-plan-team-cn",
+      "tencent-tokenhub-cn",
+      "tencent-tokenhub-intl",
+      "volcengine-ark",
+      "volcengine-coding-plan",
+      "volcengine-agent-plan",
+      "stepfun",
+      "stepfun-step-plan",
+      "siliconflow-cn",
+    ];
+    const templates = builtin.config.providerConfigRules.templateRules.filter(
+      (template: { templateId: string }) => newTemplateIds.includes(template.templateId),
+    );
+    expect(templates.map((template: { templateId: string }) => template.templateId)).toEqual(
+      newTemplateIds,
+    );
+    const onCreateFromTemplate = vi.fn<(templateId: string) => Promise<void>>().mockResolvedValue();
+
+    render(
+      createElement(
+        TooltipProvider,
+        null,
+        createElement(ProviderTemplatePicker, {
+          templates,
+          onBack: vi.fn(),
+          onCreateFromTemplate,
+          onCreateCustom: vi.fn(),
+          creating: false,
+        }),
+      ),
+    );
+
+    // 每个新模板都以官方双语名出现在入口。
+    for (const name of [
+      "Kimi Code（国内）",
+      "Kimi Code（国际）",
+      "MiniMax M Plan（中国）",
+      "阿里云百炼 Coding Plan（中国）",
+      "阿里云百炼 Token Plan 团队版（中国）",
+      "腾讯 TokenHub 广州 API（中国站）",
+      "腾讯 TokenHub 新加坡 API（中国站）",
+      "火山方舟 API",
+      "火山方舟 Coding Plan",
+      "火山方舟 Agent Plan",
+      "阶跃星辰 API",
+      "阶跃星辰 Step Plan",
+      "硅基流动 API（中国）",
+    ]) {
+      expect(await screen.findByRole("button", { name })).toBeTruthy();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "火山方舟 Coding Plan" }));
+    await waitFor(() => expect(onCreateFromTemplate).toHaveBeenLastCalledWith("volcengine-coding-plan"));
+    fireEvent.click(screen.getByRole("button", { name: "硅基流动 API（中国）" }));
+    await waitFor(() => expect(onCreateFromTemplate).toHaveBeenLastCalledWith("siliconflow-cn"));
+  });
+
   it("Template 创建失败时在详情底部显示错误并允许重试", async () => {
     const onCreateFromTemplate = vi
       .fn<(templateId: string) => Promise<void>>()

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
+import { useMobileRemoteRefreshGuard } from "@/mobileRemoteRefreshGuards.js";
 
 /**
  * home-5：触屏态命中区下限 44×44px（docs/web-remote-control/mobile-viewport-input-and-touch.md D1）。
@@ -33,6 +34,8 @@ export function MobileWorkspacePicker({
   onOpened(workspaceKey: string): void | Promise<void>;
 }) {
   const { intl } = useZCodeIntl();
+  // 目录选择器是活动弹层；关闭/打开完成卸载后解除刷新阻塞。
+  useMobileRemoteRefreshGuard("mobile-workspace-picker", () => "active-overlay");
   const [initialResult, setInitialResult] = useState<{ resolvedPath: string } | "failed" | null>(
     null,
   );

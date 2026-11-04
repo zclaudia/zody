@@ -7,7 +7,9 @@ import {
   WEB_REMOTE_CONTROL_CHANNEL_HELLO_TIMEOUT_MS,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
   WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION,
+  encodeWebRemoteControlRpcTransportMessage,
   type WebRemoteControlAppPayload,
+  type WebRemoteControlRpcTransportPayload,
 } from "@zcode/shared";
 import {
   createGatewayDeviceTransport,
@@ -152,18 +154,36 @@ function createHarness(
   const socketUrls: string[] = [];
   const states: string[] = [];
   const payloads: WebRemoteControlAppPayload[] = [];
+  const rawPayloads: WebRemoteControlRpcTransportPayload[] = [];
   const sendReady = vi.fn();
   const rawFault = vi.fn();
   const session = transport.createSession({
     onStateChange: (state) => states.push(state),
     onPayload: (payload) => payloads.push(payload),
+    onRawTransportPayload: (payload) => {
+      if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") {
+        return false;
+      }
+      rawPayloads.push(payload as WebRemoteControlRpcTransportPayload);
+      return true;
+    },
     onRawTransportFault: rawFault,
     onSendReady: sendReady,
   });
   if (sessionOptions.session) {
     session.start();
   }
-  return { transport, session, logger, states, payloads, sendReady, rawFault, socketUrls };
+  return {
+    transport,
+    session,
+    logger,
+    states,
+    payloads,
+    rawPayloads,
+    sendReady,
+    rawFault,
+    socketUrls,
+  };
 }
 
 function attachClient(
@@ -183,6 +203,20 @@ function attachClient(
   harness.transport.handleChannel(channel, { channelId, kind: "zcode-remote" });
   channel.deliver(hello(options.clientInstanceId, options.appProtocol));
   return { channel, socket };
+}
+
+/** 把逻辑消息编码成真实 relay 帧；小消息通常一帧一条。 */
+function encodeRpcFrames(
+  bridgeSessionId: string,
+  messages: string[],
+): WebRemoteControlRpcTransportPayload[] {
+  return messages.flatMap((message, index) =>
+    encodeWebRemoteControlRpcTransportMessage(new TextEncoder().encode(message), {
+      bridgeSessionId,
+      firstPhysicalSeq: index + 1,
+      messageSeq: index + 1,
+    }),
+  );
 }
 
 afterEach(() => {
@@ -392,6 +426,65 @@ describe("GatewayDeviceTransport", () => {
       },
     ]);
     expect(first.channel.frames()).toEqual([]);
+  });
+
+  it("desktop-continuous 按到达顺序交付流式帧、工具更新和终态，关闭后迟到帧不进入业务层", () => {
+    const harness = createHarness();
+    const { channel } = attachClient(harness);
+    const frames = encodeRpcFrames("bridge-desktop", [
+      "stream-chunk-1",
+      "tool-updated-progress",
+      "tool-updated-completed",
+      "turn-terminal",
+    ]);
+
+    for (const frame of frames) {
+      channel.deliver(dataFrame(frame));
+    }
+
+    // transport 只做透明转发：不合并、不重排，也不把终态后的帧丢掉。
+    expect(harness.rawPayloads).toEqual(frames);
+    expect(harness.states).toEqual(["waiting_terminal", "paired"]);
+
+    harness.transport.handleGatewayChannelClosed({
+      channelId: channel.channelId,
+      reason: "epoch_changed",
+    });
+    // 旧 channel 的迟到流式帧不能在该 run 结束后再次进入 runtime。
+    channel.deliver(dataFrame(frames[0]!));
+
+    expect(harness.rawPayloads).toHaveLength(frames.length);
+    expect(harness.states.at(-1)).toBe("waiting_terminal");
+  });
+
+  it("高频业务帧不写 info/debug，只有异常帧按 warn/debug 诊断", () => {
+    const harness = createHarness();
+    const { channel } = attachClient(harness);
+    harness.logger.info.mockClear();
+    harness.logger.debug.mockClear();
+    harness.logger.warn.mockClear();
+
+    for (let index = 0; index < 100; index += 1) {
+      channel.deliver(
+        dataFrame({
+          zcode_type: "app-error",
+          reason: "unexpected-error",
+          error: `stream-${index}`,
+        }),
+      );
+    }
+    expect(harness.payloads).toHaveLength(100);
+    // 与消息流同数量级的正常帧不能走 info/debug，避免生产日志随流量膨胀。
+    expect(harness.logger.info).not.toHaveBeenCalled();
+    expect(harness.logger.debug).not.toHaveBeenCalled();
+    expect(harness.logger.warn).not.toHaveBeenCalled();
+
+    channel.deliver(dataFrame("x".repeat(WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES + 1)));
+    expect(harness.logger.warn).toHaveBeenCalledWith(
+      "[remote-access] oversize gateway channel frame dropped",
+      expect.objectContaining({ maxBytes: WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES }),
+    );
+    expect(harness.logger.info).not.toHaveBeenCalled();
   });
 
   it("returns to waiting when the gateway reports the channel closed", () => {

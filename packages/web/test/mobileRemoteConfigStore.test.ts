@@ -98,14 +98,8 @@ describe("mobile remote config store (T4.2)", () => {
     ).rejects.toThrow(MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE);
   });
 
-  it("persists one clientInstanceId per backend", async () => {
-    const store = new MobileRemoteConfigStore(createMemorySecureStore(), development);
-    const first = await store.getClientInstanceId("backend-a");
-    const again = await store.getClientInstanceId("backend-a");
-    const other = await store.getClientInstanceId("backend-b");
-
-    expect(first).toBeTruthy();
-    expect(again).toBe(first);
-    expect(other).not.toBe(first);
+  it("does not generate or persist clientInstanceId in Remote pages (M2-T2)", () => {
+    // clientInstanceId 的唯一所有者是 Android 原生配置 store，经 getSessionContext 只读提供。
+    expect("getClientInstanceId" in MobileRemoteConfigStore.prototype).toBe(false);
   });
 });

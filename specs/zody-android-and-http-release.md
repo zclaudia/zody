@@ -5,7 +5,9 @@
 ## Android 产品与构建接口
 
 - 名称为 Zody，applicationId / namespace 为 `io.github.zclaudia.zody.mobile`。Kotlin 包和相对 Manifest 类名保持一致；原生桥协议名不随品牌机械更改。
-- versionName 从根 `package.json` 读取，初始为 `0.1.0`；versionCode 初始为 `1`。根版本是对外版本的唯一来源。
+- versionName 从根 `package.json` 读取；versionCode 当前为 `2`，必须大于引入轻 Shell 前的 `1`。根版本是对外版本的唯一来源。首次启动检测到旧配置 schema 时提示重新配对，只有用户确认后才清理旧凭证。
+- APK 只内置轻 Shell（配对、设置、discovery、选电脑、错误/升级）。手机主 UI 由当前选中的桌面经 Gateway 提供，APK 不再打包完整 Remote 制品；桌面离线时不能冷启动主 UI，但 Shell 的重试、设置和切换电脑可用。
+- 两个应用内 origin 均需进入 Gateway CORS/WebSocket Origin allowlist：Shell 为 `https://appassets.androidplatform.net`，Remote 为 `https://remote.zody.local`。release 仍只允许 HTTPS Gateway，Debug 明文规则不变。
 - Debug 构建保持可独立运行。Release 必须使用用户持有并离线备份的专用 keystore，CI 从 GitHub Secrets 解码后注入以下环境变量：
 
 | 环境变量                         | 用途                                          | 缺失行为                   |
@@ -15,9 +17,9 @@
 | `ZODY_ANDROID_KEY_ALIAS`         | 签名 alias                                    | 同上                       |
 | `ZODY_ANDROID_KEY_PASSWORD`      | key 口令                                      | 同上                       |
 
-签名材料由 Gradle 构建配置持有；不写入资源、BuildConfig、仓库或日志。Release 不回退 Debug 签名；只校验存在性和由签名工具实际读取结果，不输出变量内容。Android 继续只加载随包的手机页面，release HTTPS 与原生安全存储规则不变。
+签名材料由 Gradle 构建配置持有；不写入资源、BuildConfig、仓库或日志。Release 不回退 Debug 签名；只校验存在性和由签名工具实际读取结果，不输出变量内容。Android 只加载随包的 Shell 与 App 内固定的 Remote origin，不在 APK 内保存完整主 UI；release HTTPS、原生安全存储和 `ZodyShellBridge` / `ZodyRemoteBridge` 的 session 代次规则不变。
 
-验收：BuildConfig 的 appId/版本正确；缺少材料时 release 在构建前置校验失败；Debug 不要求 release 材料；实际签名包通过 APK 签名验证后方可晋级。证书生成和 GitHub Secrets 的实际配置单独记录，不把配置代码等同于已配置密钥。
+验收：BuildConfig 的 appId/版本正确；APK 资源只含轻 Shell，不含完整 Remote 制品或旧 `assets/remote/`；缺少材料时 release 在构建前置校验失败；Debug 不要求 release 材料；实际签名包通过 APK 签名验证后方可晋级。证书生成和 GitHub Secrets 的实际配置单独记录，不把配置代码等同于已配置密钥。
 
 ## HTTP 默认与接口
 

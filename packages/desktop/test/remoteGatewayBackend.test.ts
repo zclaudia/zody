@@ -4,6 +4,8 @@ import type {
   BackendErrorInfo,
   GatewayBackendOptions,
   GatewayBackendState,
+  HttpServeRequest,
+  HttpServeResponse,
 } from "@zclaudia/gateway-backend";
 import {
   createRemoteGatewayBackend,
@@ -12,6 +14,7 @@ import {
   type RemoteGatewayBackendSdkLike,
   type RemoteGatewayChannel,
   type RemoteGatewayChannelHandler,
+  type RemoteGatewayHttpHandler,
 } from "../src/main/remote-access/remoteGatewayBackend.js";
 
 const COMPLETE_CONFIG: RemoteGatewayBackendConfig = {
@@ -33,6 +36,17 @@ function createDeferred<T>() {
 
 function backendError(code: BackendErrorCode): BackendErrorInfo {
   return { code, message: code, occurredAt: 0 };
+}
+
+const MOBILE_UI_REQUEST: HttpServeRequest = {
+  method: "GET",
+  path: "/assets/remote/index.html",
+  headers: {},
+  body: new Uint8Array(),
+};
+
+function staleMobileUiResponse(): HttpServeResponse {
+  return { status: 503, headers: { "cache-control": "no-store" } };
 }
 
 class FakeChannel implements RemoteGatewayChannel {
@@ -140,6 +154,21 @@ class FakeBackend implements RemoteGatewayBackendSdkLike {
     this.kinds.set(kind, handler);
   }
 
+  readonly httpHandlers: RemoteGatewayHttpHandler[] = [];
+
+  serveHttp(handler: RemoteGatewayHttpHandler): void {
+    this.events.push("serveHttp");
+    this.httpHandlers.push(handler);
+  }
+
+  async serveHttpRequest(request: HttpServeRequest): Promise<HttpServeResponse> {
+    const handler = this.httpHandlers[this.httpHandlers.length - 1];
+    if (!handler) {
+      throw new Error("serveHttp handler was not registered");
+    }
+    return handler(request);
+  }
+
   async connect(): Promise<{ backendId: string; epoch: number }> {
     this.connectCalls += 1;
     this.events.push("connect");
@@ -196,7 +225,10 @@ class FakeBackend implements RemoteGatewayBackendSdkLike {
   }
 }
 
-function createHarness(initialConfig: RemoteGatewayBackendConfig = COMPLETE_CONFIG) {
+function createHarness(
+  initialConfig: RemoteGatewayBackendConfig = COMPLETE_CONFIG,
+  options: { mobileUiHandler?: RemoteGatewayHttpHandler } = {},
+) {
   const logger = {
     debug: vi.fn(),
     info: vi.fn(),
@@ -210,8 +242,9 @@ function createHarness(initialConfig: RemoteGatewayBackendConfig = COMPLETE_CONF
     loadConfig: async () => config,
     logger,
     allowInsecureTransport: true,
-    createBackend: (options) => {
-      const fake = new FakeBackend(options, order);
+    ...(options.mobileUiHandler ? { mobileUiHandler: options.mobileUiHandler } : {}),
+    createBackend: (createOptions) => {
+      const fake = new FakeBackend(createOptions, order);
       backends.push(fake);
       return fake;
     },
@@ -296,11 +329,137 @@ describe("createRemoteGatewayBackend", () => {
     );
     expect(fake.events.indexOf("onMessage")).toBeLessThan(fake.events.indexOf("connect"));
     expect(fake.events.indexOf("onState")).toBeLessThan(fake.events.indexOf("connect"));
+    expect(fake.events).not.toContain("serveHttp");
     expect(harness.backend.getStatus()).toEqual({
       state: "online",
       backendId: "backend-1",
       epoch: 1,
     });
+  });
+
+  it("配置 mobileUiHandler 时在 connect() 前注册 serveHttp，并同时声明远控和 UI 能力位", async () => {
+    const mobileUiHandler = vi.fn(async () => ({
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+      body: "<!doctype html>",
+    }));
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+
+    await harness.backend.reloadConfig();
+
+    const fake = harness.backends[0]!;
+    // UI 能力位是附加声明，不能挤掉原有远控能力位。
+    expect(fake.options.capabilities).toEqual(["zcode-remote-control", "zcode-remote-ui-v1"]);
+    expect(fake.httpHandlers).toHaveLength(1);
+    expect(fake.events.indexOf("onChannel:zcode-remote")).toBeGreaterThanOrEqual(0);
+    // 既有 channel handler 顺序不变；serveHttp 追加在 connect 之前。
+    expect(fake.events.indexOf("onChannel:zcode-remote")).toBeLessThan(
+      fake.events.indexOf("serveHttp"),
+    );
+    expect(fake.events.indexOf("serveHttp")).toBeLessThan(fake.events.indexOf("connect"));
+
+    await expect(fake.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toEqual({
+      status: 200,
+      headers: { "content-type": "text/html; charset=utf-8" },
+      body: "<!doctype html>",
+    });
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
+    expect(mobileUiHandler).toHaveBeenCalledWith(MOBILE_UI_REQUEST);
+  });
+
+  it("UI HTTP handler 与 zcode-remote channel handler 互不串线", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200, body: "ui-only" }));
+    const channelHandler = vi.fn();
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+    harness.backend.setChannelHandler(channelHandler);
+
+    await harness.backend.reloadConfig();
+    const fake = harness.backends[0]!;
+
+    // 业务路径也只由 UI handler 做静态映射；provider 负责 404，不会进入 channel handler。
+    await fake.serveHttpRequest({
+      method: "GET",
+      path: "/api/sessions",
+      headers: {},
+      body: new Uint8Array(),
+    });
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
+    expect(channelHandler).not.toHaveBeenCalled();
+
+    // channel offer 只交给 zcode-remote handler，不会触发 UI HTTP handler；
+    // HTTP 侧不持有 task/session/snapshot/queue 状态。
+    const channel = new FakeChannel();
+    expect(fake.offer("zcode-remote", channel)).toBe(true);
+    expect(channelHandler).toHaveBeenCalledTimes(1);
+    expect(channelHandler.mock.calls[0]?.[0]).toBe(channel);
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it("同一 SDK 多次 reload 不重复注册 serveHttp", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200 }));
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+
+    await harness.backend.reloadConfig();
+    await harness.backend.reloadConfig();
+    await harness.backend.applyConfig({ ...COMPLETE_CONFIG });
+
+    expect(harness.backends).toHaveLength(1);
+    expect(harness.backends[0]!.httpHandlers).toHaveLength(1);
+    expect(harness.backends[0]!.events.filter((event) => event === "serveHttp")).toHaveLength(1);
+  });
+
+  it("配置换代后旧 SDK 的 UI handler 返回 no-store 503，只有新 SDK 响应", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200, body: "current-ui" }));
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+    await harness.backend.reloadConfig();
+    const first = harness.backends[0]!;
+    await expect(first.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toMatchObject({ status: 200 });
+
+    await harness.backend.applyConfig({
+      ...COMPLETE_CONFIG,
+      gatewayUrl: "https://gateway-b.example.com",
+    });
+
+    expect(harness.backends).toHaveLength(2);
+    // 旧代次不能继续响应：新连接生效后，旧 SDK 的 handler 必须 fail closed。
+    await expect(first.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toEqual(
+      staleMobileUiResponse(),
+    );
+    await expect(harness.backends[1]!.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toMatchObject({
+      status: 200,
+    });
+    expect(mobileUiHandler).toHaveBeenCalledTimes(2);
+  });
+
+  it("SDK 关闭或 REPLACED 后 UI handler 不再响应", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200 }));
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+    await harness.backend.reloadConfig();
+    const fake = harness.backends[0]!;
+    await expect(fake.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toMatchObject({ status: 200 });
+
+    fake.lastError = backendError("REPLACED");
+    fake.emitState("closed");
+
+    await expect(fake.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toEqual(
+      staleMobileUiResponse(),
+    );
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
+  });
+
+  it("异常重连期间同一 SDK 的 UI handler 保持可响应", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200 }));
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+    await harness.backend.reloadConfig();
+    const fake = harness.backends[0]!;
+
+    fake.emitState("connecting");
+    await expect(fake.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toMatchObject({ status: 200 });
+    fake.emitState("connected");
+    await expect(fake.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toMatchObject({ status: 200 });
+
+    expect(harness.backends).toHaveLength(1);
+    expect(mobileUiHandler).toHaveBeenCalledTimes(2);
   });
 
   it("连接不依赖窗口：只靠配置就能从 disabled 走到 online", async () => {
@@ -652,6 +811,31 @@ describe("createRemoteGatewayBackend", () => {
     });
   });
 
+  it("「测试连接」结束后测试 SDK 的 UI handler 失效，恢复连接的 handler 才响应", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200, body: "restored-ui" }));
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+    await harness.backend.reloadConfig();
+
+    await harness.backend.testConnection({
+      gatewayUrl: "https://test.example.com",
+      namespace: "zcode",
+      credential: "zgb_test-credential",
+    });
+
+    expect(harness.backends).toHaveLength(3);
+    const testSdk = harness.backends[1]!;
+    expect(testSdk.events.indexOf("serveHttp")).toBeGreaterThanOrEqual(0);
+    expect(testSdk.events.indexOf("serveHttp")).toBeLessThan(testSdk.events.indexOf("connect"));
+    // 测试连接只是临时握手，不接管 UI 请求。
+    await expect(testSdk.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toEqual(
+      staleMobileUiResponse(),
+    );
+    await expect(harness.backends[2]!.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toMatchObject({
+      status: 200,
+    });
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
+  });
+
   it("「测试连接」：有手机连接时禁用", async () => {
     const harness = createHarness();
     await harness.backend.reloadConfig();
@@ -743,5 +927,20 @@ describe("createRemoteGatewayBackend", () => {
 
     await harness.backend.reloadConfig();
     expect(harness.backends).toHaveLength(1);
+  });
+
+  it("dispose 后 UI handler 不再响应", async () => {
+    const mobileUiHandler = vi.fn(async () => ({ status: 200 }));
+    const harness = createHarness(COMPLETE_CONFIG, { mobileUiHandler });
+    await harness.backend.reloadConfig();
+    const fake = harness.backends[0]!;
+    await expect(fake.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toMatchObject({ status: 200 });
+
+    await harness.backend.dispose();
+
+    await expect(fake.serveHttpRequest(MOBILE_UI_REQUEST)).resolves.toEqual(
+      staleMobileUiResponse(),
+    );
+    expect(mobileUiHandler).toHaveBeenCalledTimes(1);
   });
 });

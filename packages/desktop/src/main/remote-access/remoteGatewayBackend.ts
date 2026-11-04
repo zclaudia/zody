@@ -1,8 +1,5 @@
 import type { GatewayBackendOptions, GatewayBackendState } from "@zclaudia/gateway-backend";
-import {
-  WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
-  type RemoteAccessGatewayConnectionStatus,
-} from "@zcode/shared";
+import type { RemoteAccessGatewayConnectionStatus } from "@zcode/shared";
 import type {
   RemoteGatewayBackend,
   RemoteGatewayBackendConfig,
@@ -16,7 +13,9 @@ import {
   defaultCreateBackend,
   isSameStatus,
   mapBackendError,
+  registerMobileUiHttpHandler,
   resolveConfig,
+  resolveGatewayCapabilities,
 } from "./remoteGatewayBackendSupport.js";
 
 export type * from "./remoteGatewayBackendTypes.js";
@@ -133,11 +132,12 @@ export function createRemoteGatewayBackend(
   }
 
   function createSdk(config: ReturnType<typeof resolveConfig>): RemoteGatewayBackendSdkLike {
+    const mobileUiHandler = dependencies.mobileUiHandler;
     const options: GatewayBackendOptions = {
       url: config.baseUrl,
       credential: config.credential ?? "",
       namespace: config.namespace,
-      capabilities: [WEB_REMOTE_CONTROL_BACKEND_CAPABILITY],
+      capabilities: resolveGatewayCapabilities(mobileUiHandler !== undefined),
       reconnect: true,
       // T3.3：transport 需要扣住数据 socket 读 bufferedAmount 做背压。
       ...(dependencies.socketFactory ? { socketFactory: dependencies.socketFactory } : {}),
@@ -148,6 +148,10 @@ export function createRemoteGatewayBackend(
     // 必须在拿到 channel_offer 之前注册（这里在 connect() 之前），且只注册这一个 kind：
     // 其余 kind 由 SDK 自动回 channel_reject{no_handler}。
     channelHub.registerKindHandler(sdk);
+    if (mobileUiHandler) {
+      // 同样在 connect() 之前同步注册；旧 SDK 在新代次生效后只返回有界 503。
+      registerMobileUiHttpHandler(sdk, mobileUiHandler, () => !disposed && activeSdk === sdk);
+    }
     return sdk;
   }
 

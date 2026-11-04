@@ -9,6 +9,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.ViewGroup
@@ -50,6 +52,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,21 +76,35 @@ import io.github.zclaudia.zody.mobile.bridge.FileChooserSpecs
 import io.github.zclaudia.zody.mobile.bridge.MobileBridgeEventDispatcher
 import io.github.zclaudia.zody.mobile.bridge.MobileBridgeLifecycleState
 import io.github.zclaudia.zody.mobile.bridge.MobileDownloadHandler
+import io.github.zclaudia.zody.mobile.bridge.MobileNotificationActionDispatcher
+import io.github.zclaudia.zody.mobile.bridge.MobileNotificationBridgeAdapter
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationBridgeClient
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationClickDispatcher
 import io.github.zclaudia.zody.mobile.bridge.MobileNotificationPermissionDispatcher
-import io.github.zclaudia.zody.mobile.bridge.ZcodeMobileBridge
+import io.github.zclaudia.zody.mobile.bridge.RemoteNativeOperationState
+import io.github.zclaudia.zody.mobile.bridge.RemoteNativeReloadGuard
+import io.github.zclaudia.zody.mobile.bridge.ZodyRemoteBridge
+import io.github.zclaudia.zody.mobile.bridge.ZodyShellBridge
+import io.github.zclaudia.zody.mobile.config.MobileShellConfigStore
+import io.github.zclaudia.zody.mobile.config.MobileShellRepairReason
+import io.github.zclaudia.zody.mobile.remoteui.RemoteUiInterceptRequest
+import io.github.zclaudia.zody.mobile.remoteui.RemoteUiInterceptResponse
+import io.github.zclaudia.zody.mobile.remoteui.RemoteUiProxy
+import io.github.zclaudia.zody.mobile.remoteui.RemoteUiResponseCache
+import io.github.zclaudia.zody.mobile.remoteui.RemoteUiSessionContext
+import io.github.zclaudia.zody.mobile.ui.shell.MobileShellController
+import io.github.zclaudia.zody.mobile.ui.shell.MobileShellControllerHost
+import io.github.zclaudia.zody.mobile.ui.shell.MobileShellControllerListener
+import io.github.zclaudia.zody.mobile.ui.shell.MobileShellControllerState
+import io.github.zclaudia.zody.mobile.ui.shell.MobileShellOrigins
+import io.github.zclaudia.zody.mobile.ui.shell.MobileShellSource
+import io.github.zclaudia.zody.mobile.ui.shell.RemoteUiInterceptOutcome
+import io.github.zclaudia.zody.mobile.ui.shell.RemoteUiInterceptor
+import io.github.zclaudia.zody.mobile.ui.shell.RemoteUiWebResponse
+import io.github.zclaudia.zody.mobile.ui.shell.toWebResponse
+import java.io.ByteArrayInputStream
 import java.io.File
 
-/**
- * 内置页面由 Gradle 从 `packages/web/dist-mobile-remote` 同步到 `assets/remote/`，
- * WebViewAssetLoader 把它映射为 `https://appassets.androidplatform.net/assets/remote/`。
- * 页面连接 gateway 走跨 origin 的 WSS/fetch，不再加载任何远端页面。
- */
-private const val APP_ASSETS_HOST = "appassets.androidplatform.net"
-private const val APP_ASSETS_PATH_PREFIX = "/assets/remote/"
-private const val REMOTE_PAGE_PATH = "${APP_ASSETS_PATH_PREFIX}index.html"
-private const val REMOTE_PAGE_URL = "https://$APP_ASSETS_HOST$REMOTE_PAGE_PATH"
 private const val FILE_PROVIDER_SUFFIX = ".fileprovider"
 private const val TAG = "ZodyRemoteControlApp"
 
@@ -110,9 +127,21 @@ private class FileChooserActions {
     var launchDocuments: () -> Unit = {}
 }
 
+/**
+ * Shell（APK assets）与 Remote（桌面只读 UI）共用一个 WebView。
+ *
+ * 导航、bridge 互斥、代次和 session 生命周期全部由 [MobileShellController] 串行管理；
+ * 本 Composable 只保留 Android 平台能力（文件选择、拍照、通知 pending、系统栏、保活）和
+ * WebView 的同步拦截器接线，不保存 task/session 业务状态。
+ */
 @Composable
-fun RemoteControlApp(modifier: Modifier = Modifier) {
+fun RemoteControlApp(
+    modifier: Modifier = Modifier,
+    // M3：与 MainActivity 共享同一实例，通知权限请求也计入原生 veto；重建时随宿主新建。
+    nativeOperationState: RemoteNativeOperationState = remember { RemoteNativeOperationState() },
+) {
     val context = LocalContext.current
+    val activity = context as? Activity
     val assetLoader = remember(context) {
         WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(context))
@@ -122,32 +151,91 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     var bridgeDispatcher by remember { mutableStateOf<MobileBridgeEventDispatcher?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var pageError by remember { mutableStateOf<String?>(null) }
-    val activity = context as? Activity
-    // 凭证存储随页面创建；Keystore 主密钥在首次读写时才初始化。
-    val secureStore = remember(context) { EncryptedSharedPreferencesSecureStore(context) }
-    // T6.3：文件保存与打开共用 MediaStore/FileProvider 一条路径，DownloadListener 也复用它。
-    val fileSaver = remember(context) { DownloadsFileWriter(context) }
-    val fileOpener = remember(context) { AndroidMobileFileOpener(context) }
-    val notificationBridge = remember(context) { MobileNotificationBridgeClient(context) }
-    val downloadHandler = remember(context) {
-        MobileDownloadHandler(context, fileSaver, fileOpener)
-    }
-    val bridge = remember(secureStore, fileSaver, fileOpener, notificationBridge, activity) {
-        ZcodeMobileBridge(
-            secureStore,
-            fileSaver,
-            fileOpener,
-            notificationBridge,
-            requestNotificationPermission = { (activity as? MainActivity)?.requestNotificationPermissionIfNeeded() },
-        )
-    }
-
+    var controllerState by remember { mutableStateOf<MobileShellControllerState?>(null) }
+    // Activity/进程重建时恢复上一 source；冷启动始终从 Shell 开始。
+    var startRemote by rememberSaveable { mutableStateOf(false) }
+    // 文件选择、拍照和相机权限由本 Composable 的 ActivityResult launcher 承载；
+    // 状态只表达“系统 UI 尚未返回”，prepareReload 读取它做原生 veto。
     var pendingFileChooser by remember { mutableStateOf<PendingFileChooser?>(null) }
     var showFileSourceDialog by remember { mutableStateOf(false) }
     var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
     var pendingCameraFile by remember { mutableStateOf<File?>(null) }
 
+    // 凭证存储随页面创建；Keystore 主密钥在首次读写时才初始化。
+    val secureStore = remember(context) { EncryptedSharedPreferencesSecureStore(context) }
+    val configStore = remember(context) {
+        MobileShellConfigStore(secureStore, allowInsecureTransport = BuildConfig.DEBUG)
+    }
+    // T6.3：文件保存与打开共用 MediaStore/FileProvider 一条路径，DownloadListener 也复用它。
+    val fileSaver = remember(context) { DownloadsFileWriter(context) }
+    val fileOpener = remember(context) { AndroidMobileFileOpener(context) }
+    val notificationBridge = remember(context) { MobileNotificationBridgeClient(context) }
+    val remoteUiCache = remember { RemoteUiResponseCache() }
+    val controller = remember(configStore) {
+        MobileShellController(
+            configStore = configStore,
+            appVersion = BuildConfig.VERSION_NAME,
+            allowInsecureGatewayTransport = BuildConfig.DEBUG,
+            interceptorFactory = { sessionContext ->
+                AndroidRemoteUiInterceptor(
+                    sessionContext = sessionContext,
+                    cache = remoteUiCache,
+                    allowInsecureGatewayTransport = BuildConfig.DEBUG,
+                )
+            },
+            mainExecutor = { runnable -> Handler(Looper.getMainLooper()).post(runnable) },
+        )
+    }
+    // M4-T1：WebView 下载在后台线程落盘；发起下载的 session 必须仍是当前 Remote 会话，
+    // 切换 backend 后旧页面的迟到下载不能在 Downloads 提交或触发 ACTION_VIEW。
+    val downloadHandler = remember(context, controller) {
+        MobileDownloadHandler(
+            context = context,
+            saver = fileSaver,
+            opener = fileOpener,
+            currentSessionId = { controller.remoteSessionSnapshot()?.sessionId },
+        )
+    }
+    val shellBridge = remember(controller, configStore) {
+        ZodyShellBridge(
+            controller = controller,
+            configStore = configStore,
+            appVersion = BuildConfig.VERSION_NAME,
+            allowInsecureGatewayTransport = BuildConfig.DEBUG,
+        )
+    }
+    val remoteBridge = remember(
+        controller,
+        fileSaver,
+        fileOpener,
+        notificationBridge,
+        activity,
+        nativeOperationState,
+    ) {
+        ZodyRemoteBridge(
+            controller = controller,
+            appVersion = BuildConfig.VERSION_NAME,
+            fileSaver = fileSaver,
+            fileOpener = fileOpener,
+            notificationBridge = MobileNotificationBridgeAdapter(notificationBridge),
+            requestNotificationPermission = {
+                (activity as? MainActivity)?.requestNotificationPermissionIfNeeded()
+            },
+            nativeReloadGuard = RemoteNativeReloadGuard { nativeOperationState.isBusy() },
+        )
+    }
+    val shellHost = remember(controller, shellBridge, remoteBridge) {
+        WebViewShellHost(
+            shellBridge = shellBridge,
+            remoteBridge = remoteBridge,
+            currentView = { webView },
+            currentDispatcher = { bridgeDispatcher },
+        )
+    }
+
     fun completeFileChooser(uris: Array<Uri>?) {
+        nativeOperationState.end(RemoteNativeOperationState.Operation.FILE_CHOOSER)
+        nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
         val pending = pendingFileChooser
         pendingFileChooser = null
         showFileSourceDialog = false
@@ -181,6 +269,8 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { result ->
+        // 拍照取消或完成都会回到这里，先释放拍照 busy。
+        nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
         val uri = pendingCameraUri
         if (result.resultCode == Activity.RESULT_OK && uri != null) {
             // 拍摄成功后保留缓存文件，交给 WebView 读取；系统会在缓存压力下自行清理。
@@ -198,6 +288,8 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
+        // 权限对话框已返回（授予、拒绝或系统取消），对应 busy 结束。
+        nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_PERMISSION)
         // 拒绝拍照权限时回退到系统文件选择器，用户仍能添加附件。
         if (granted) {
             actions.launchCamera()
@@ -214,6 +306,7 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         if (granted) {
             actions.launchCamera()
         } else {
+            nativeOperationState.begin(RemoteNativeOperationState.Operation.CAMERA_PERMISSION)
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
@@ -232,10 +325,12 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
                         Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 )
             }
+            nativeOperationState.begin(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
             try {
                 cameraLauncher.launch(intent)
             } catch (error: ActivityNotFoundException) {
                 Log.w(TAG, "No camera app is available for attachment capture.", error)
+                nativeOperationState.end(RemoteNativeOperationState.Operation.CAMERA_CAPTURE)
                 clearCameraCapture()
                 completeFileChooser(null)
             }
@@ -276,6 +371,7 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         // 上一次选择还没结束时，先按取消处理，避免页面一直等不到回调。
         pendingFileChooser?.callback?.onReceiveValue(null)
         pendingFileChooser = PendingFileChooser(callback, params)
+        nativeOperationState.begin(RemoteNativeOperationState.Operation.FILE_CHOOSER)
         when {
             params.isCaptureEnabled -> requestCameraCapture()
             FileChooserSpecs.acceptsImages(params.acceptTypes.toList()) ->
@@ -315,8 +411,17 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         }
     }
 
+    // controller 的 source/generation/repair 状态是 Compose 的唯一只读来源。
+    DisposableEffect(controller) {
+        val listener = MobileShellControllerListener { state ->
+            controllerState = state
+            startRemote = state.source == MobileShellSource.REMOTE
+        }
+        controller.addListener(listener)
+        onDispose { controller.removeListener(listener) }
+    }
+
     // T6.2：Activity ON_START/ON_STOP 是“页面是否可见”的宿主事实，用它驱动页面暂停/恢复连接。
-    // 权限弹窗、配置变更不会触发 ON_STOP，避免把短暂遮挡误判成后台。
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, webView, bridgeDispatcher) {
         val dispatcher = bridgeDispatcher
@@ -337,32 +442,29 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
         }
     }
 
-    DisposableEffect(bridgeDispatcher) {
-        val dispatcher = bridgeDispatcher
-        val subscription = if (dispatcher == null) null else MobileNotificationClickDispatcher.subscribe { backendId, notificationId ->
-            val payload = org.json.JSONObject().put("backendId", backendId).put("notificationId", notificationId).toString()
-            dispatcher.dispatchNotificationClick(payload)
+    // 通知 intent 先进入 controller；Remote ready 之前只排队，不向页面派发。
+    DisposableEffect(controller) {
+        val clickSubscription = MobileNotificationClickDispatcher.subscribe { backendId, notificationId ->
+            controller.onNotificationClick(backendId, notificationId)
         }
-        val permissionSubscription = if (dispatcher == null) null else MobileNotificationPermissionDispatcher.subscribe { granted ->
-            dispatcher.dispatchNotificationPermissionChanged(granted)
+        val permissionSubscription = MobileNotificationPermissionDispatcher.subscribe { granted ->
+            controller.onNotificationPermissionChanged(granted)
         }
-        val actionSubscription = if (dispatcher == null) null else io.github.zclaudia.zody.mobile.bridge.MobileNotificationActionDispatcher.subscribe { backendId, notificationId, optionId, optionKind ->
-            val payload = org.json.JSONObject().put("backendId", backendId)
-                .put("notificationId", notificationId)
-                .put("optionId", optionId)
-                .put("optionKind", optionKind)
-                .toString()
-            dispatcher.dispatchNotificationAction(payload)
+        val actionSubscription = MobileNotificationActionDispatcher.subscribe { backendId, notificationId, optionId, optionKind ->
+            controller.onNotificationAction(backendId, notificationId, optionId, optionKind)
         }
         onDispose {
-            subscription?.close()
-            permissionSubscription?.close()
-            actionSubscription?.close()
+            clickSubscription.close()
+            permissionSubscription.close()
+            actionSubscription.close()
         }
     }
 
     DisposableEffect(Unit) {
         onDispose {
+            // Activity 重建/销毁：先失效 controller，再清理随宿主生命周期结束的原生 busy 标记。
+            controller.shutdown()
+            nativeOperationState.clear()
             // 页面销毁时把未完成的文件选择按取消收尾，避免 WebView 的回调悬挂。
             pendingFileChooser?.callback?.onReceiveValue(null)
             pendingFileChooser = null
@@ -393,7 +495,7 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
                     createRemoteControlWebView(
                         context = viewContext,
                         assetLoader = assetLoader,
-                        bridge = bridge,
+                        controller = controller,
                         chromeClient = chromeClient,
                         downloadHandler = downloadHandler,
                         onLoadingChanged = { loading -> isLoading = loading },
@@ -401,7 +503,9 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
                     ).also { view ->
                         bridgeDispatcher = MobileBridgeEventDispatcher.forWebView(view)
                         webView = view
-                        view.loadUrl(REMOTE_PAGE_URL)
+                        // 先挂 host，再由 controller 串行安装 Shell bridge 并加载 Shell。
+                        controller.attachHost(shellHost)
+                        controller.start(restoreRemote = startRemote)
                     }
                 },
             )
@@ -418,11 +522,30 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
                     message = message,
                     onRetry = {
                         pageError = null
-                        webView?.reload()
+                        // Shell 加载失败时重试仍是 Shell；Remote 失败已由 controller 回 Shell。
+                        webView?.loadUrl(MobileShellOrigins.SHELL_PAGE_URL)
                     },
                 )
             }
         }
+    }
+
+    if (controllerState?.repairReason != null) {
+        AlertDialog(
+            onDismissRequest = { controller.dismissRepair() },
+            title = { Text(stringResource(R.string.mobile_shell_repair_title)) },
+            text = { Text(stringResource(R.string.mobile_shell_repair_message)) },
+            confirmButton = {
+                TextButton(onClick = { controller.confirmRepair() }) {
+                    Text(stringResource(R.string.mobile_shell_repair_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { controller.dismissRepair() }) {
+                    Text(stringResource(R.string.mobile_shell_repair_cancel))
+                }
+            },
+        )
     }
 
     if (showFileSourceDialog) {
@@ -455,6 +578,72 @@ fun RemoteControlApp(modifier: Modifier = Modifier) {
             },
         )
     }
+}
+
+private class WebViewShellHost(
+    private val shellBridge: ZodyShellBridge,
+    private val remoteBridge: ZodyRemoteBridge,
+    private val currentView: () -> WebView?,
+    private val currentDispatcher: () -> MobileBridgeEventDispatcher?,
+) : MobileShellControllerHost {
+    override fun removeBridges() {
+        currentView()?.apply {
+            removeJavascriptInterface(ZodyShellBridge.GLOBAL_KEY)
+            removeJavascriptInterface(ZodyRemoteBridge.GLOBAL_KEY)
+        }
+    }
+
+    override fun installShellBridge() {
+        currentView()?.addJavascriptInterface(shellBridge, ZodyShellBridge.GLOBAL_KEY)
+    }
+
+    override fun installRemoteBridge() {
+        currentView()?.addJavascriptInterface(remoteBridge, ZodyRemoteBridge.GLOBAL_KEY)
+    }
+
+    override fun loadUrl(url: String) {
+        currentView()?.loadUrl(url)
+    }
+
+    override fun showRepair(reason: MobileShellRepairReason) {
+        // 重新配对确认框由 Compose 观察 controller 状态渲染；这里不需要额外的 View 操作。
+    }
+
+    override fun onRemoteReady(generation: Long, backendId: String) {
+        // Remote ready 后 controller 已按代次/backend 派发排队的通知事件。
+    }
+
+    override fun dispatchNotificationClick(payloadJson: String) {
+        currentDispatcher()?.dispatchNotificationClick(payloadJson)
+    }
+
+    override fun dispatchNotificationAction(payloadJson: String) {
+        currentDispatcher()?.dispatchNotificationAction(payloadJson)
+    }
+
+    override fun dispatchNotificationPermissionChanged(granted: Boolean) {
+        currentDispatcher()?.dispatchNotificationPermissionChanged(granted)
+    }
+}
+
+private class AndroidRemoteUiInterceptor(
+    sessionContext: RemoteUiSessionContext,
+    cache: RemoteUiResponseCache,
+    allowInsecureGatewayTransport: Boolean,
+) : RemoteUiInterceptor {
+    private val proxy = RemoteUiProxy(
+        sessionContext = sessionContext,
+        cache = cache,
+        requireHttpsGateway = !allowInsecureGatewayTransport,
+        threadGuard = {
+            check(Looper.myLooper() != Looper.getMainLooper()) {
+                "RemoteUiProxy must run on a WebView interceptor worker."
+            }
+        },
+    )
+
+    override fun execute(request: RemoteUiInterceptRequest): RemoteUiInterceptResponse =
+        proxy.execute(request)
 }
 
 @Composable
@@ -496,7 +685,7 @@ private fun RemoteControlErrorOverlay(
 private fun createRemoteControlWebView(
     context: Context,
     assetLoader: WebViewAssetLoader,
-    bridge: ZcodeMobileBridge,
+    controller: MobileShellController,
     chromeClient: WebChromeClient,
     downloadHandler: MobileDownloadHandler,
     onLoadingChanged: (Boolean) -> Unit,
@@ -520,14 +709,12 @@ private fun createRemoteControlWebView(
             displayZoomControls = false
             allowFileAccess = false
             allowContentAccess = false
-            // Debug 内置页仍是 HTTPS appassets；开发用 HTTP Gateway 需要同时放开混合内容。
-            // release 保持 HTTPS-only，不能由页面参数改变此策略。
+            // Debug 本地开发允许 http Gateway 的混合内容；release 保持 HTTPS-only。
             mixedContentMode = if (BuildConfig.DEBUG) WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                 else WebSettings.MIXED_CONTENT_NEVER_ALLOW
             userAgentString = "$userAgentString ZodyAndroid/${BuildConfig.VERSION_NAME}"
         }
-        // 只加载内置页面；离开 appassets 的主框架导航会被交给系统浏览器，桥不会暴露给远端页面。
-        addJavascriptInterface(bridge, "ZcodeMobileBridge")
+        // bridge 不在这里安装：由 controller 在每次导航时先移除旧 bridge、再安装目标 bridge。
         webChromeClient = chromeClient
         // 页面自身发起的下载（a[download] 等）与 saveFile 共用 MediaStore/打开路径。
         setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
@@ -540,7 +727,24 @@ private fun createRemoteControlWebView(
                 view: WebView,
                 request: WebResourceRequest,
             ): WebResourceResponse? {
-                // 只有 appassets.androidplatform.net 会命中 AssetLoader；gateway 的 fetch/WSS 返回 null 走网络。
+                val url = request.url.toString()
+                // Remote origin 的 UI 请求全部走原生只读代理；其它请求（含 Gateway WSS/fetch）保持默认路径。
+                if (MobileShellOrigins.isRemoteOrigin(url)) {
+                    return when (
+                        val outcome = controller.intercept(
+                            method = request.method,
+                            url = url,
+                            requestHeaders = request.requestHeaders,
+                        )
+                    ) {
+                        RemoteUiInterceptOutcome.Unavailable,
+                        RemoteUiInterceptOutcome.Stale,
+                        -> emptyInterceptResponse()
+                        is RemoteUiInterceptOutcome.Completed ->
+                            outcome.response.toWebResponse(request.method).toAndroidWebResponse()
+                    }
+                }
+                // Shell 的 /assets/shell/ 由 AssetLoader 映射到 APK assets。
                 return assetLoader.shouldInterceptRequest(request.url)
             }
 
@@ -556,15 +760,17 @@ private fun createRemoteControlWebView(
                 view: WebView,
                 request: WebResourceRequest,
             ): Boolean {
-                if (!request.isForMainFrame) {
-                    return false
+                val allowed = MobileShellOrigins.isAllowedSource(request.url.toString())
+                if (request.isForMainFrame) {
+                    if (allowed) {
+                        return false
+                    }
+                    // 主框架离开两份固定 source 一律交给系统浏览器；非 http(s) scheme 不打开。
+                    openExternalUrl(view.context, request.url)
+                    return true
                 }
-                if (isBundledPageUrl(request.url)) {
-                    return false
-                }
-                // 内置页面是唯一可信入口：其它导航一律交给系统浏览器，WebView 不再加载远端页面。
-                openExternalUrl(view.context, request.url)
-                return true
+                // 第三方 iframe 一律拦截，且不为子框架打开外部浏览器。
+                return !allowed
             }
 
             override fun onReceivedError(
@@ -575,18 +781,79 @@ private fun createRemoteControlWebView(
                 if (request?.isForMainFrame != true) {
                     return
                 }
-                onLoadingChanged(false)
-                onMainFrameError(error?.description?.toString().orEmpty())
+                handleMainFrameFailure(
+                    url = request.url.toString(),
+                    message = error?.description?.toString().orEmpty(),
+                    controller = controller,
+                    onLoadingChanged = onLoadingChanged,
+                    onMainFrameError = onMainFrameError,
+                )
+            }
+
+            override fun onReceivedHttpError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                errorResponse: WebResourceResponse?,
+            ) {
+                if (request?.isForMainFrame != true) {
+                    return
+                }
+                val status = errorResponse?.statusCode ?: return
+                if (status < 400) {
+                    return
+                }
+                handleMainFrameFailure(
+                    url = request.url.toString(),
+                    message = "HTTP $status",
+                    controller = controller,
+                    onLoadingChanged = onLoadingChanged,
+                    onMainFrameError = onMainFrameError,
+                )
             }
         }
     }
 }
 
-private fun isBundledPageUrl(uri: Uri): Boolean {
-    return uri.scheme == "https" &&
-        uri.host == APP_ASSETS_HOST &&
-        uri.path.orEmpty().startsWith(APP_ASSETS_PATH_PREFIX)
+private fun handleMainFrameFailure(
+    url: String,
+    message: String,
+    controller: MobileShellController,
+    onLoadingChanged: (Boolean) -> Unit,
+    onMainFrameError: (String) -> Unit,
+) {
+    onLoadingChanged(false)
+    if (controller.isRemoteSource() && MobileShellOrigins.isRemoteOrigin(url)) {
+        // Remote 入口/资源失败：只释放手机侧 transport 并回 Shell，不重建桌面 runtime。
+        controller.onRemoteLoadFailure()
+        return
+    }
+    if (!controller.isRemoteSource() && MobileShellOrigins.isShellPage(url)) {
+        onMainFrameError(message)
+    }
 }
+
+private fun RemoteUiWebResponse.toAndroidWebResponse(): WebResourceResponse =
+    WebResourceResponse(
+        mimeType,
+        encoding,
+        statusCode,
+        reasonPhrase,
+        headers,
+        ByteArrayInputStream(body),
+    )
+
+private fun emptyInterceptResponse(): WebResourceResponse =
+    WebResourceResponse(
+        "text/plain",
+        "utf-8",
+        503,
+        "Service Unavailable",
+        mapOf(
+            "cache-control" to "no-store",
+            "x-content-type-options" to "nosniff",
+        ),
+        ByteArrayInputStream(ByteArray(0)),
+    )
 
 private fun openExternalUrl(context: Context, uri: Uri) {
     // 只把 http(s) 交给系统；javascript:/file: 等 scheme 不开放。

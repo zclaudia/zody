@@ -15,51 +15,9 @@
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <title>Zody</title>
-    <script>
-      (() => {
-        // 与 index.html 相同的首屏主题兜底：bundle 执行前先按本地偏好决定底色和 color-scheme，
-        // 避免深色主题用户在手机 WebView 里看到一帧白底。
-        const BROWSER_THEME_COLORS = {
-          dark: "#161616",
-          light: "#f8f8f8",
-        };
-
-        const normalizeResolvedTheme = (theme) => {
-          if (theme === "dark" || theme === "zai-dark") return "dark";
-          if (theme === "light" || theme === "zai-light") return "light";
-          return theme;
-        };
-
-        const syncBrowserThemeSurface = (theme) => {
-          document.documentElement.setAttribute("data-zcode-browser-theme-surface", theme);
-          document.documentElement.style.colorScheme = theme;
-          document
-            .querySelector('meta[name="theme-color"]')
-            ?.setAttribute("content", BROWSER_THEME_COLORS[theme]);
-          document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", theme);
-        };
-
-        try {
-          const saved = localStorage.getItem("zody-theme") || "zai-dark";
-          const resolved =
-            saved === "system"
-              ? window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light"
-              : normalizeResolvedTheme(saved);
-          const theme = resolved === "dark" ? "dark" : "light";
-          document.documentElement.setAttribute("data-zcode-bootstrap-theme", theme);
-          syncBrowserThemeSurface(theme);
-          if (theme === "dark") {
-            document.documentElement.classList.add("dark");
-          }
-        } catch {
-          document.documentElement.setAttribute("data-zcode-bootstrap-theme", "dark");
-          syncBrowserThemeSurface("dark");
-          document.documentElement.classList.add("dark");
-        }
-      })();
-    </script>
+    <!-- M2-T2：首屏主题从内联脚本外置为同源静态文件，Remote CSP script-src 'self'
+         不需要 unsafe-inline；classic script 保持抽取前的阻塞式初始化顺序。 -->
+    <script src="/assets/remote/mobile-theme-bootstrap.js"></script>
     <style>
       html,
       body,

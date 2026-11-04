@@ -50,6 +50,11 @@ import {
   patchNsisInstallSectionFile,
   restoreNsisInstallSectionFileSync,
 } from "./scripts/patch-nsis-install-section.mjs";
+import {
+  MOBILE_WEB_RESOURCE_DIR_NAME,
+  resolveMobileWebSourceDir,
+  verifyMobileWebReleaseDirectory,
+} from "./scripts/mobile-web-assets.mjs";
 
 const buildMetadata = getBuildMetadata();
 const targetPlatform = getTargetPlatform();
@@ -82,6 +87,26 @@ const shouldEnableMacSigning =
   process.env.ZCODE_ENABLE_MAC_SIGN === "1" && Boolean(macSigningIdentity);
 const workspaceRoot = resolve(import.meta.dirname, "../..");
 const desktopPackageRoot = import.meta.dirname;
+// 移动 Remote UI 与桌面同版交付：构建产物在 packages/web/dist-mobile-remote，
+// 打包后只读 resources/mobile-web。开发态 provider 直接读源目录。
+const mobileWebSourceDir = resolveMobileWebSourceDir({ desktopPackageRoot });
+
+export function createMobileWebExtraResource({ sourceDir = mobileWebSourceDir } = {}) {
+  return {
+    from: sourceDir,
+    to: MOBILE_WEB_RESOURCE_DIR_NAME,
+    // 移动 UI 发布制品不能携带 sourcemap；与 app.asar 的裁剪规则保持一致。
+    filter: ["**/*", "!**/*.map"],
+  };
+}
+
+/**
+ * 打包前 fail closed：复用 M1-T1 的 verifyMobileWebRelease 校验 manifest、HTML meta、
+ * 引用资源、sourcemap 与摘要。该步骤在 beforePack 中执行，直接调用 bundle 也会被拦下。
+ */
+export async function assertMobileWebPackagingInputs({ rootDir = mobileWebSourceDir } = {}) {
+  return verifyMobileWebReleaseDirectory({ rootDir });
+}
 // Computer Use Helper（macOS .app、Windows runtime）只随真实 producer 打包；开源占位包下跳过随包资源与校验。
 const shouldPackageComputerUseHelper = isRealComputerUseProducerInstalled({ desktopPackageRoot });
 const HELPER_FILENAME = "zcode-browser-import-helper.exe";
@@ -648,6 +673,10 @@ export default {
     `node_modules/node-pty/prebuilds/${targetPlatform.key}/**`,
   ],
   beforePack: async (context) => {
+    // 打包前校验移动 Remote UI 制品；缺失时立即失败，不产出没有移动主 UI 的安装包。
+    await runTimedAsync("beforePack:assertMobileWebRelease", () =>
+      assertMobileWebPackagingInputs(),
+    );
     // 修复依据：build:no-runtime-assets 也可能直接打包，必须重新校验并暂存当前四平台引用闭包。
     runCommand(
       process.execPath,
@@ -706,6 +735,11 @@ export default {
     );
     await runTimedAsync("afterPack:stripPackagedSourcemapReferences", () =>
       stripPackagedSourcemapReferences(context),
+    );
+    await runTimedAsync("afterPack:assertPackagedMobileWebRelease", () =>
+      verifyMobileWebReleaseDirectory({
+        rootDir: resolve(resolvePackagedResourcesDir(context), MOBILE_WEB_RESOURCE_DIR_NAME),
+      }),
     );
     await runTimedAsync("afterPack:refreshDarwinAsarIntegrity", () =>
       refreshPackagedDarwinAsarIntegrity(context),
@@ -773,6 +807,7 @@ export default {
     : {}),
   extraResources: [
     { from: "resources/remote-runtime", to: "remote-runtime" },
+    createMobileWebExtraResource(),
     ...(existsSync(resolve(workspaceRoot, "packages/browser-extension/dist"))
       ? [
           {

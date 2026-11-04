@@ -5,7 +5,6 @@ import {
   WebRemoteControlMobileStartPage,
   WebRemoteControlStandaloneStoreProvider,
   ZCodeIntlProvider,
-  generateMobileDeviceFingerprint,
   setStreamClientId,
   setWebRemoteControlTerminalTransportState,
   type WebRemoteControlTerminalTransportState as UiWebRemoteControlTerminalTransportState,
@@ -18,12 +17,12 @@ import {
 } from "@zcode/client";
 import {
   WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS,
-  ZCODE_VERSION,
   resolveWebRemoteControlInitialWorkspaceSelection,
   resolveWebRemoteControlWorkspaceKey,
   sessionCreateTelemetrySchema,
   type IPlatformService,
-  type PlatformSecureStore,
+  type MobileRemoteBridge,
+  type MobileSessionContext,
   type WebRemoteControlAppPayload,
   type WebRemoteControlExternalWorkspaceBridge,
   type WebRemoteControlFailure,
@@ -59,17 +58,12 @@ import {
 } from "./mobileNotificationClickQueue.js";
 import { showMobileNotificationActionResult } from "./mobileNotificationActionResult.js";
 import { createMobileNavigationOwner } from "./mobileNavigationOwner.js";
-import { nativeAllowsInsecureGatewayTransport } from "./mobileRemoteNativeBuild.js";
 import { createWebRemoteControlAppPayloadRequester } from "./payloadRequester.js";
 import { createWebRemoteControlRelayRequestRecovery } from "./requestRecovery.js";
 import { createHomeOnlyWebRemoteControlServices } from "./homeOnlyServices.js";
 import { createWebRemoteControlLifecycleRecovery } from "../webRemoteControlLifecycle.js";
 import { seedWebRemoteControlThemePreference } from "../webRemoteControlThemeSeed.js";
-import {
-  createWebRemoteControlVersionGuard,
-  retryObsoleteWebRemoteControlBootstrapCheck,
-} from "../webRemoteControlVersion.js";
-import { showWebRemoteControlVersionNotice } from "../webRemoteControlVersionNotice.js";
+import { retryObsoleteWebRemoteControlBootstrapCheck } from "../webRemoteControlVersion.js";
 import { collectWebRemoteControlMobileDeviceInfo } from "../webRemoteControlDeviceInfo.js";
 import {
   markCurrentWebRemoteControlBridgeTaskRead,
@@ -92,65 +86,88 @@ import {
   type GatewayTerminalTransportState,
 } from "./gatewayTerminalTransport.js";
 import { resolveWebRemoteControlThemeFromSearchParams } from "./gatewayBootstrapConfig.js";
-import { MobileRemoteConfigStore } from "./mobileRemoteConfigStore.js";
 import {
-  resolveMobileRemoteConnection,
-  type MobileRemoteConnectionConfig,
-  type MobileRemoteSetupMode,
-} from "./mobileRemoteSetup.js";
+  MobileRemoteSessionContextError,
+  isMobileRemoteSessionBackend,
+  readMobileRemoteSessionContext,
+  type MobileRemoteSession,
+} from "./mobileRemoteSessionContext.js";
 import {
-  createMobileRemoteSecureStore,
-  resolveMobileRemoteNativeBridge,
-} from "./mobileRemoteSecureStore.js";
-import { saveMobileRemoteSettingsDraft } from "./mobileRemoteSettingsDraft.js";
+  checkMobileRemoteRelease,
+  type MobileRemoteReleaseCheckResult,
+} from "./mobileRemoteReleaseCheck.js";
 import { installMobileRemoteNativeHost } from "./mobileRemoteNativeHost.js";
 import {
   createMobileRemoteFileCapabilities,
   resolveMobileRemoteFileBridge,
 } from "./mobileRemoteFileBridge.js";
+import { parseMobileRemoteBridgeEnvelope } from "./mobileRemoteBridgeEnvelope.js";
+import {
+  createMobileRemoteReleaseRuntime,
+  type MobileRemoteReleaseRuntime,
+} from "./mobileUiReleaseRuntime.js";
+import { showMobileUiReleaseNotice } from "./mobileUiReleaseNotice.js";
+import type {
+  MobileUiReleaseController,
+  MobileUiReleaseControllerOptions,
+} from "./mobileUiReleaseController.js";
 
 /**
- * 手机远控启动模块（T1.2 迁出 `main.tsx`，T3.4 换成 gateway transport，T4.2 加设置/选电脑流程）。
- * 手机入口（`mobile.html`）从这里启动远控：
- * 设置页/选电脑页（首次使用）→ 建 GatewayTerminalTransport → 校验桌面版本 → 打开 workspace bridge
- * → 渲染 Root 或「没有打开的项目」首页。
+ * 手机 Remote 启动模块（M2-T2）。
+ *
+ * 启动顺序：读取并严格校验 `ZodyRemoteBridge.getSessionContext()` → 校验 release
+ * manifest 支持当前 bridgeVersion → 创建 GatewayTerminalTransport → 校验桌面版本 →
+ * 打开 workspace bridge → 渲染 Root 或「没有打开的项目」首页。
+ *
+ * Remote 不再包含配对、设置或选电脑页面：连接配置、凭证和 clientInstanceId 只由
+ * Android 原生配置 store 持有；需要修改连接或切换电脑时统一调用 `returnShell`。
  */
 export interface BootstrapGatewayWebRemoteControlOptions {
-  /** 注入的平台实现；缺省创建带安全存储能力的 Web 平台。 */
+  /** 注入的平台实现；缺省创建带文件/通知/生命周期能力的 Web 平台。 */
   platform?: IPlatformService;
-  /** 安全存储覆盖；缺省从原生桥/开发模式 localStorage 创建。 */
-  secureStore?: PlatformSecureStore;
-  /** release 构建不允许 URL 凭证；默认 `!import.meta.env.PROD`。 */
-  allowUrlConfig?: boolean;
-  /** 本地开发允许 http gateway；默认 `!import.meta.env.PROD`。 */
+  /** 测试注入；缺省从 `globalThis.ZodyRemoteBridge` 发现。 */
+  bridge?: MobileRemoteBridge;
+  /** 测试注入；缺省执行真实 `/mobile-ui/release` 校验。 */
+  checkRelease?: typeof checkMobileRemoteRelease;
+  /** 测试注入；缺省调用 `bridge.returnShell`。 */
+  returnShell?: (reason: string, sessionId: string) => void;
+  /** 本地开发允许 http gateway；缺省由 bridge capability 与构建模式推导。 */
   allowInsecureTransport?: boolean;
+  /** 注入生产标志，缺省使用 `import.meta.env.PROD`。 */
+  isProduction?: boolean;
+  /** 测试注入；缺省使用全局 fetch。 */
+  fetcher?: typeof fetch;
+  /** 测试注入 release controller 工厂；缺省使用 M3-T1 实现。 */
+  createReleaseController?: (
+    options: MobileUiReleaseControllerOptions,
+  ) => MobileUiReleaseController;
 }
 
 type GatewaySessionContext = {
   platform: IPlatformService;
-  configStore: MobileRemoteConfigStore;
-  /** 已连接会话内的连接分区与首次设置共用同一套校验（release 禁止 http）。 */
+  session: MobileSessionContext;
+  /** 当前 Remote 文档使用的原生桥；宿主事件对象按同一 sessionId 安装。 */
+  bridge?: MobileRemoteBridge;
+  /** 平台适配器与设置分区共用同一套 release 校验（release 禁止 http）。 */
   allowInsecureTransport: boolean;
-  reopenConnection(
-    mode: MobileRemoteSetupMode,
-  ): Promise<MobileRemoteConnectionConfig | null>;
+  /** 修改连接/切换电脑/失败出口的统一入口；原生按 sessionId 校验。 */
+  requestReturnShell(reason: string): void;
+  /** M3-T2：release controller 与文件桥共用同一构建/网络注入。 */
+  isProduction: boolean;
+  fetcher?: typeof fetch;
+  createReleaseController?: BootstrapGatewayWebRemoteControlOptions["createReleaseController"];
 };
 
-function createDefaultSecureStore(): PlatformSecureStore {
-  const bridge = resolveMobileRemoteNativeBridge();
-  return createMobileRemoteSecureStore(bridge ? { bridge } : {});
-}
-
 /**
- * 把启动阶段的平台能力透传给 Root/手机 Shell（T6.2/T6.3）。
- * Root 会重新构造一个 Web 平台对象，安全存储、前后台、返回键和文件能力都必须显式带上，
+ * 把启动阶段的平台能力透传给 Root（T6.2/T6.3）。
+ * Root 会重新构造一个 Web 平台对象，前后台、返回键、文件与通知能力都必须显式带上，
  * 否则 `useOptionalPlatform()` 在 UI 层看不到原生能力。
+ * 安全存储不在列表里：Remote 没有配置读写路径（M2-T2）。
  */
 function pickMobileRemotePlatformCapabilities(
   platform: IPlatformService,
 ): Pick<
   IPlatformService,
-  | "secureStore"
   | "onAppLifecycleChange"
   | "onBackPressed"
   | "saveFile"
@@ -161,7 +178,6 @@ function pickMobileRemotePlatformCapabilities(
     ...(platform.mobileNotifications
       ? { mobileNotifications: platform.mobileNotifications }
       : {}),
-    ...(platform.secureStore ? { secureStore: platform.secureStore } : {}),
     ...(platform.onAppLifecycleChange
       ? { onAppLifecycleChange: platform.onAppLifecycleChange }
       : {}),
@@ -187,25 +203,6 @@ let isPageUnloading = false;
 
 function createWebRemoteControlRequestId(prefix: string): string {
   return `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`}`;
-}
-
-function seedStableWebRemoteControlClientId(clientInstanceId: string): void {
-  const storageKey = `zody-web-remote-client-id:${clientInstanceId}`;
-  try {
-    const existing = globalThis.localStorage?.getItem(storageKey)?.trim();
-    if (existing) {
-      setStreamClientId(existing);
-      return;
-    }
-    const nextId =
-      globalThis.crypto?.randomUUID?.() ?? generateMobileDeviceFingerprint();
-    globalThis.localStorage?.setItem(storageKey, nextId);
-    setStreamClientId(nextId);
-  } catch {
-    // Bugfix: iOS private mode 等环境可能禁用 localStorage。
-    // 这里保留前面注入的物理指纹 fallback，避免远控首屏因 clientId 持久化失败而中断。
-    setStreamClientId(generateMobileDeviceFingerprint());
-  }
 }
 
 function renderWebRemoteControlLoading(
@@ -242,36 +239,156 @@ function isRecoverableGatewayFailure(
   return reason === "gateway-unreachable" || reason === "desktop-disconnected";
 }
 
+function mapSessionContextErrorToFailure(
+  error: unknown,
+): WebRemoteControlFailure {
+  if (error instanceof MobileRemoteSessionContextError) {
+    switch (error.code) {
+      case "native-bridge-unavailable":
+      case "bridge-version-unsupported":
+      case "unsupported-capability":
+        return {
+          ...toWebRemoteControlFailure("incompatible-version", error.message),
+          upgrade: "mobile",
+        };
+      case "stale-session":
+        // 原生已经使旧 session 失效；页面不再尝试写配置或重建会话。
+        return toWebRemoteControlFailure(
+          "unexpected-error",
+          "The remote session is no longer active.",
+        );
+      default:
+        return toWebRemoteControlFailure("unexpected-error", error.message);
+    }
+  }
+  return toWebRemoteControlFailure(
+    "unexpected-error",
+    error instanceof Error ? error.message : String(error),
+  );
+}
+
 export async function bootstrapGatewayWebRemoteControl(
   params: URLSearchParams,
   options: BootstrapGatewayWebRemoteControlOptions = {},
 ): Promise<void> {
-  const allowUrlConfig = options.allowUrlConfig ?? !import.meta.env.PROD;
-  // Debug APK 也打包 production Web，不能仅凭 Vite PROD 错拒本地 HTTP Gateway。
-  const allowInsecureTransport =
-    options.allowInsecureTransport ??
-    (!import.meta.env.PROD || nativeAllowsInsecureGatewayTransport());
-  // T6.2：Android 壳注入 ZcodeMobileBridge 后，安装宿主 → 页面的 ZcodeMobileBridgeHost
-  // （前后台/返回键）。普通浏览器返回 undefined，页面继续只依赖 document 事件。
-  const nativeHost = installMobileRemoteNativeHost();
-  // T6.3：文件桥与事件桥共用同一个注入对象；缺桥时只保留 16 MiB 附件上限。
+  seedWebRemoteControlThemePreference(
+    resolveWebRemoteControlThemeFromSearchParams(params),
+  );
+
+  const isProduction = options.isProduction ?? import.meta.env.PROD;
+  let bridge = options.bridge;
+  if (!bridge && !isProduction && !import.meta.env.PROD) {
+    // 浏览器开发模式的 Shell 会写入 handoff；这里把 handoff 模拟成原生桥。
+    // `import.meta.env.PROD` 在 release 构建被常量折叠，开发适配器不会进入产物。
+    const { installDevelopmentMobileRemoteBridge } = await import(
+      "./mobileRemoteDevelopmentBridge.js"
+    );
+    bridge = installDevelopmentMobileRemoteBridge();
+  }
+
+  let session: MobileRemoteSession;
+  try {
+    // M2-T2：Remote 唯一的数据入口。缺桥、JSON/schema 损坏、backend 或 bridgeVersion
+    // 不兼容都在这里 fail closed，不会带着部分配置创建 transport。
+    session = readMobileRemoteSessionContext({
+      ...(bridge ? { bridge } : {}),
+      isProduction,
+      ...(options.allowInsecureTransport !== undefined
+        ? { allowInsecureTransport: options.allowInsecureTransport }
+        : {}),
+    });
+  } catch (error) {
+    renderWebRemoteControlFailure(mapSessionContextErrorToFailure(error), {
+      onRetry: () => window.location.reload(),
+    });
+    return;
+  }
+
+  // clientInstanceId 由原生配置 store 按 backendId 持久化；页面只把它作为流式 clientId，
+  // 不再生成、写入页面存储或回写 SecureStore。
+  setStreamClientId(session.context.clientInstanceId);
+
+  let returningToShell = false;
+  const requestReturnShell = (reason: string): void => {
+    if (returningToShell) {
+      return;
+    }
+    returningToShell = true;
+    try {
+      if (options.returnShell) {
+        options.returnShell(reason, session.context.sessionId);
+      } else {
+        session.bridge.returnShell(reason, session.context.sessionId);
+      }
+    } catch {
+      // 原生可能已经使当前 session 失效；页面保持 fail closed，不写任何配置。
+    }
+  };
+
+  // 启动业务 Channel 前校验 release manifest 支持当前 bridgeVersion（M2-T2；轮询归 M3）。
+  let release: MobileRemoteReleaseCheckResult;
+  try {
+    release = await (options.checkRelease ?? checkMobileRemoteRelease)({
+      context: session.context,
+      isProduction,
+      ...(options.fetcher ? { fetcher: options.fetcher } : {}),
+    });
+  } catch {
+    release = { kind: "unavailable", reason: "network-error" };
+  }
+  if (release.kind === "upgrade-required") {
+    renderWebRemoteControlFailure(
+      {
+        ...toWebRemoteControlFailure(
+          "incompatible-version",
+          "This desktop UI requires a newer Zody app. Update the APK to continue.",
+        ),
+        upgrade: "mobile",
+      },
+      { onRetry: () => window.location.reload() },
+    );
+    return;
+  }
+  if (release.kind === "unavailable") {
+    // 首次加载无法确认发布清单时按 spec 第 10 节返回 Shell；页面同时保留可手动重试的
+    // 失败页，避免原生 returnShell 尚未完成时出现白屏。
+    renderWebRemoteControlFailure(
+      toWebRemoteControlFailure(
+        "gateway-unreachable",
+        "Unable to verify the desktop UI release.",
+      ),
+      {
+        onRetry: () => window.location.reload(),
+        onOpenSettings: () => requestReturnShell("settings"),
+        onChooseBackend: () => requestReturnShell("backend"),
+      },
+    );
+    requestReturnShell("release-check-failed");
+    return;
+  }
+
+  // T6.2：Android 注入 ZodyRemoteBridge 后，安装宿主 → 页面的 ZcodeMobileBridgeHost
+  // （前后台/返回键/通知事件）；带 sessionId 的旧格式仍按当前 session 过滤。
+  const nativeHost = installMobileRemoteNativeHost({
+    sessionId: session.context.sessionId,
+    bridge: session.bridge,
+  });
+  // T6.3：文件桥与事件桥共用同一个注入对象；每次调用携带 sessionId。
   const fileCapabilities = createMobileRemoteFileCapabilities(
     resolveMobileRemoteFileBridge(),
+    { sessionId: session.context.sessionId },
   );
-  const secureStore =
-    options.secureStore ??
-    options.platform?.secureStore ??
-    createDefaultSecureStore();
-  // 不展开注入的平台对象：桌面/测试实现可能是带原型方法的实例。能力缺省时只补 secureStore。
+  // 不展开注入的平台对象：桌面/测试实现可能是带原型方法的实例。
   const platform =
     options.platform ??
     createWebPlatform({
-      secureStore,
       ...fileCapabilities,
-      mobileNotifications: createMobileNotificationPlatform(
-        globalThis,
-        nativeHost?.onNotificationPermissionChanged,
-      ),
+      mobileNotifications: createMobileNotificationPlatform(globalThis, {
+        sessionId: session.context.sessionId,
+        ...(nativeHost
+          ? { subscribePermission: nativeHost.onNotificationPermissionChanged }
+          : {}),
+      }),
       ...(nativeHost
         ? {
             onAppLifecycleChange: nativeHost.onAppLifecycleChange,
@@ -279,72 +396,39 @@ export async function bootstrapGatewayWebRemoteControl(
           }
         : {}),
     });
-  if (!platform.secureStore) {
-    platform.secureStore = secureStore;
-  }
-  const configStore = new MobileRemoteConfigStore(platform.secureStore, {
-    allowInsecureTransport,
-  });
-  const setupOptions = {
-    store: configStore,
-    allowUrlConfig,
-    allowInsecureTransport,
-  };
-
-  seedWebRemoteControlThemePreference(
-    resolveWebRemoteControlThemeFromSearchParams(params),
-  );
-
-  let config: MobileRemoteConnectionConfig | null;
-  try {
-    config = await resolveMobileRemoteConnection(params, setupOptions);
-  } catch (error) {
-    // 设置流程本身失败（例如安全存储不可用）时给用户可重试的失败页，而不是白屏。
-    renderWebRemoteControlFailure(
-      toWebRemoteControlFailure(
-        "unexpected-error",
-        error instanceof Error ? error.message : String(error),
-      ),
-    );
-    return;
-  }
-  if (!config) {
-    return;
-  }
 
   const context: GatewaySessionContext = {
     platform,
-    configStore,
-    allowInsecureTransport,
-    reopenConnection: (mode) =>
-      resolveMobileRemoteConnection(null, setupOptions, {
-        mode,
-        readUrlConfig: false,
-      }),
+    session: session.context,
+    bridge: session.bridge,
+    allowInsecureTransport: session.allowInsecureTransport,
+    requestReturnShell,
+    isProduction,
+    ...(options.fetcher ? { fetcher: options.fetcher } : {}),
+    ...(options.createReleaseController
+      ? { createReleaseController: options.createReleaseController }
+      : {}),
   };
-  await startGatewaySession(config, context);
+  await startGatewaySession(context);
 }
 
 async function startGatewaySession(
-  gatewayConfig: MobileRemoteConnectionConfig,
   context: GatewaySessionContext,
 ): Promise<void> {
-  let clientInstanceId: string;
-  try {
-    clientInstanceId = await context.configStore.getClientInstanceId(
-      gatewayConfig.backendId,
-    );
-  } catch (error) {
-    renderWebRemoteControlFailure(
-      toWebRemoteControlFailure(
-        "unexpected-error",
-        error instanceof Error ? error.message : String(error),
-      ),
-    );
-    return;
-  }
+  const gatewayConfig = context.session;
 
-  seedStableWebRemoteControlClientId(clientInstanceId);
+  // M3-T2：整个文档只创建一个 release controller/guard 注册表。注册表先安装，
+  // 后续任一 React root 挂载的 UI 状态都能登记 guard；controller 在业务 ready 后才启动。
+  const releaseRuntime: MobileRemoteReleaseRuntime = createMobileRemoteReleaseRuntime({
+    session: gatewayConfig,
+    ...(context.bridge ? { bridge: context.bridge } : {}),
+    isProduction: context.isProduction,
+    ...(context.fetcher ? { fetcher: context.fetcher } : {}),
+    ...(context.createReleaseController
+      ? { createController: context.createReleaseController }
+      : {}),
+  });
+  const disposeReleaseNotice = showMobileUiReleaseNotice(releaseRuntime.controller);
 
   const navigationOwner = createMobileNavigationOwner();
   let mobileCapabilities:
@@ -354,6 +438,16 @@ async function startGatewaySession(
   let negotiatedAppProtocol: number | undefined;
   let renderCurrentExternalRelayRoot: (() => void) | undefined;
   let connectionGeneration = 0;
+  // 旧 mobile versionGuard 已由 release controller 替代；bootstrap 仍需要按连接代际
+  // 丢弃迟到的 desktop bootstrap 响应，避免旧结果参与新 Root 挂载。
+  let bootstrapCheckGeneration = 0;
+  let pendingVersionCheck:
+    | Promise<WebRemoteControlWindowBootstrapResult | undefined>
+    | undefined;
+  const invalidateBootstrapCheck = (): void => {
+    bootstrapCheckGeneration += 1;
+    pendingVersionCheck = undefined;
+  };
   let notificationServices:
     | Awaited<ReturnType<typeof connectViaProtocol>>
     | undefined;
@@ -387,29 +481,40 @@ async function startGatewaySession(
   let ready = false;
   let terminated = false;
   let disposed = false;
-  let restarting = false;
   let terminalTransportState: UiWebRemoteControlTerminalTransportState = "idle";
   let currentWorkspaceKey: string | undefined;
   let currentTaskId: string | undefined;
   let currentRecoveryId: string | undefined;
+  // M2-T2/M2-T5：业务 Channel 真正可交互后只通知一次；原生在此前只排队通知 intent。
+  let remoteReadySignalled = false;
+  const signalRemoteReady = (): void => {
+    if (remoteReadySignalled || terminated) {
+      return;
+    }
+    remoteReadySignalled = true;
+    const bridge = context.bridge;
+    const markReady = bridge?.markRemoteReady;
+    if (!bridge || !markReady) {
+      return;
+    }
+    try {
+      parseMobileRemoteBridgeEnvelope(
+        markReady.call(bridge, gatewayConfig.sessionId),
+      );
+    } catch {
+      // 原生可能已在导航/重建期间淘汰当前 session；保持页面 fail closed，不重试也不写配置。
+    }
+  };
+  // 业务 ready 的唯一收口：先启动 release controller 并立即检查，再通知原生可派发。
+  const signalBusinessReady = (): void => {
+    releaseRuntime.start();
+    signalRemoteReady();
+  };
   let nextBridgeGeneration = 0;
   let latestRecentProjects: WebRemoteControlRecentProjectsResult | undefined;
   let renderStartPageIfActive: (() => void) | undefined;
   let disposeStartPageWorkspaceSubscription: (() => void) | undefined;
   let disposeStartPageRecentSubscription: (() => void) | undefined;
-  let disposeVersionNotice: (() => void) | undefined;
-  const versionGuard = createWebRemoteControlVersionGuard({
-    requestBootstrap: () => requestBootstrap(),
-    isPageReady: () => ready,
-    onVersionChanged: (version) => {
-      // 页面打进 APK 后没有版本化 URL 可导航；这里只提示，是否重新加载由用户决定，
-      // 真正的协议不兼容由 channel 的 appProtocol 协商处理（见 webRemoteControlVersion.ts）。
-      disposeVersionNotice?.();
-      disposeVersionNotice = showWebRemoteControlVersionNotice(version, () =>
-        window.location.reload(),
-      );
-    },
-  });
   let activeRelayProtocol:
     | ReturnType<typeof createAcknowledgedWebRemoteControlRelayProtocol>
     | undefined;
@@ -563,36 +668,30 @@ async function startGatewaySession(
     );
   };
 
-  // 这两个动作依赖 transport/requester，真实实现放在建连代码之后；失败页回调只在
+  // disposeSession 依赖 transport/requester，真实实现放在建连代码之后；失败页回调只在
   // 建连完成后触发，所以先占位可以避免前置声明顺序问题。
   let disposeSession = (): void => {};
-  let reopenSetup = (_mode: MobileRemoteSetupMode): void => {};
-
-  const reopenAfterConnectionChange = (): void => reopenSetup("auto");
 
   /**
-   * 已连接会话内的连接设置统一进入 SettingsPage 的“连接”分区。
-   * 这里只注入连接配置、唯一保存 helper 和重连动作；UI 不 import web 的 store。
-   * 首次配置、失败页、backend picker 与 Root 外 StartPage 仍走原有独立 setup 流程。
+   * 已连接会话内的“连接”分区（M2-T2）。
+   *
+   * Remote 不再保存配置：保存和重连都统一调用 `returnShell`，由 Shell/原生配置 store
+   * 完成修改；页面上已提交的草稿只用于触发退出，不写 SecureStore 或普通 Store。
    */
   const mobileConnectionSettings = {
     initial: {
       ...(gatewayConfig.gatewayUrl ? { gatewayUrl: gatewayConfig.gatewayUrl } : {}),
       ...(gatewayConfig.namespace ? { namespace: gatewayConfig.namespace } : {}),
-      // 凭证不回显：只告诉表单是否已保存，草稿中的新凭证仅在本次提交内使用。
+      // 凭证不回显：只告诉表单是否已保存。
       credentialConfigured: Boolean(gatewayConfig.credential),
     },
     allowInsecureTransport: context.allowInsecureTransport,
-    save: async (draft: WebRemoteControlMobileSettingsDraft) => {
-      const result = await saveMobileRemoteSettingsDraft({
-        store: context.configStore,
-        initial: gatewayConfig,
-        draft,
-        allowInsecureTransport: context.allowInsecureTransport,
-      });
-      return { scopeChanged: result.scopeChanged };
+    save: async (_draft: WebRemoteControlMobileSettingsDraft) => {
+      context.requestReturnShell("connection-settings");
+      // 页面正在返回 Shell；UI 不再触发本地重连。
+      return { scopeChanged: false };
     },
-    reconnect: reopenAfterConnectionChange,
+    reconnect: () => context.requestReturnShell("connection-settings"),
   };
 
   const renderBootstrapFailure = (
@@ -617,9 +716,9 @@ async function startGatewaySession(
     }
     disposeSession();
     renderWebRemoteControlFailure(failure, {
-      // 失败页使用独立连接设置流程，不经过已连接会话内的 SettingsPage 分区。
-      onOpenSettings: () => reopenSetup("settings"),
-      onChooseBackend: () => reopenSetup("backend"),
+      // 连接修改/切换电脑只能回 Shell；Remote 没有配置写入路径。
+      onOpenSettings: () => context.requestReturnShell("settings"),
+      onChooseBackend: () => context.requestReturnShell("backend"),
       onRetry: () => window.location.reload(),
     });
   };
@@ -710,6 +809,8 @@ async function startGatewaySession(
       recovering = false;
       bootstrapping = false;
       if (recoveryReady && !terminated) {
+        // 首次 ready 后原生才允许派发；恢复成功时补一次幂等通知。
+        signalBusinessReady();
         // Android 可能在回前台重协商期间点击通知；原生 slot 仍是权威待办，
         // 仅在 recovery owner 成功后重新读取，不用定时器猜恢复时序。
         retryPendingNotificationClick();
@@ -725,9 +826,9 @@ async function startGatewaySession(
     namespace: gatewayConfig.namespace,
     credential: gatewayConfig.credential,
     backendId: gatewayConfig.backendId,
-    clientInstanceId,
+    clientInstanceId: gatewayConfig.clientInstanceId,
     clientName: "Zody Mobile",
-    appVersion: ZCODE_VERSION,
+    appVersion: gatewayConfig.appVersion,
     onRawTransportPayload: (payload) =>
       activeRelayProtocol?.acceptPayload(payload) ?? false,
     onRawTransportFault: (reasonCode) => {
@@ -787,7 +888,7 @@ async function startGatewaySession(
       }
       const uiState = toUiTerminalTransportState(state);
       terminalTransportState = uiState;
-      if (uiState !== "paired") versionGuard.invalidate();
+      if (uiState !== "paired") invalidateBootstrapCheck();
       setWebRemoteControlTerminalTransportState(uiState);
       if (!ready) {
         renderWebRemoteControlLoading(uiState);
@@ -861,6 +962,8 @@ async function startGatewaySession(
       sendMobileDiagnostic(diagnostic);
     },
     onSendReady: () => {
+      // 业务 Channel 重新 ready 时立即检查发布；controller 未启动前为 no-op。
+      releaseRuntime.notifyBusinessReconnect();
       if (activeRelayProtocol?.isDegraded()) return;
       // Bug 修复：channel 重新 ready 只说明链路恢复，desktop peer 可能已经换代，
       // 也可能只丢了上一批 data/ACK。重放同 bridge 未 ACK 批次，由 messageSeq 去重；
@@ -872,8 +975,7 @@ async function startGatewaySession(
       negotiatedAppProtocol = info.appProtocol;
       // 新 channel 的 capability 必须来自新 bootstrap。让旧代际检查失效，
       // 但保留上次已确认值，避免恢复期间把现有入口暂时隐藏。
-      versionGuard.invalidate();
-      pendingVersionCheck = undefined;
+      invalidateBootstrapCheck();
       // 旧检查返回 undefined 后，由原始 bootstrap/recovery caller 等待新 generation，
       // 这样 fresh 结果会继续原来的 Root 挂载流程，而非只刷新脱离流程的 capabilities。
       if (!import.meta.env.PROD) {
@@ -920,20 +1022,25 @@ async function startGatewaySession(
       return response.result;
     };
 
-  let pendingVersionCheck:
-    | Promise<WebRemoteControlWindowBootstrapResult | undefined>
-    | undefined;
   const checkDesktopVersion = (): Promise<
     WebRemoteControlWindowBootstrapResult | undefined
   > => {
     if (pendingVersionCheck) return pendingVersionCheck;
     // T4.2：版本不匹配不会返回 undefined。这里只在明确发生连接代际变化、且新 channel
     // 已 ready 时继续原 caller 的 bootstrap；普通网络失败和释放状态不会触发重试。
+    // M3-T2：发布变化由 release controller 检测；这里只保留 bootstrap 请求与代际丢弃。
+    // generation 必须在每次 check 时读取：retryObsolete 会在新 channel ready 后重试，
+    // 若沿用首次请求的旧代际，会把重试结果也判为过期。
     const request = retryObsoleteWebRemoteControlBootstrapCheck({
-      check: () =>
-        requestWithRelayRecovery(() => versionGuard.check(), {
+      check: async () => {
+        const requestGeneration = bootstrapCheckGeneration;
+        const result = await requestWithRelayRecovery(() => requestBootstrap(), {
           recoverTimeout: true,
-        }),
+        });
+        return terminated || requestGeneration !== bootstrapCheckGeneration
+          ? undefined
+          : result;
+      },
       getConnectionGeneration: () => connectionGeneration,
       isChannelReady: () => terminalTransportState === "paired",
       isDisposed: () => terminated,
@@ -1040,7 +1147,7 @@ async function startGatewaySession(
         updatedAt: Date.now(),
       },
       deviceInfo: collectWebRemoteControlMobileDeviceInfo({
-        appVersion: ZCODE_VERSION,
+        appVersion: gatewayConfig.appVersion,
       }),
     });
   };
@@ -1400,13 +1507,13 @@ async function startGatewaySession(
     open: async (pending) => {
       disposeNotificationNotice?.();
       disposeNotificationNotice = undefined;
-      if (pending.backendId !== gatewayConfig.backendId) {
-        disposeSession();
-        await startGatewaySession(
-          { ...gatewayConfig, backendId: pending.backendId },
-          context,
-        );
-      } else await openNotification(pending.notificationId);
+      if (!isMobileRemoteSessionBackend(gatewayConfig, pending.backendId)) {
+        // Remote 不能自行切换 backend；返回 Shell 让原生按选中电脑重新派发 pending。
+        // 不 ack：pending 槽仍由 Android 持有。
+        context.requestReturnShell("notification-backend-mismatch");
+        return;
+      }
+      await openNotification(pending.notificationId);
     },
     onError: (error, pending) => {
       if (
@@ -1438,13 +1545,12 @@ async function startGatewaySession(
     open: async (pending) => {
       disposeNotificationNotice?.();
       disposeNotificationNotice = undefined;
-      if (pending.backendId !== gatewayConfig.backendId) {
-        disposeSession();
-        await startGatewaySession(
-          { ...gatewayConfig, backendId: pending.backendId },
-          context,
-        );
-      } else await openNotificationAction(pending);
+      if (!isMobileRemoteSessionBackend(gatewayConfig, pending.backendId)) {
+        // 按钮动作同样不能跨 backend 执行；保留 pending，不 ack。
+        context.requestReturnShell("notification-backend-mismatch");
+        return;
+      }
+      await openNotificationAction(pending);
     },
     onError: (error, pending) => {
       if (
@@ -1947,7 +2053,7 @@ async function startGatewaySession(
                 }
               })();
             }}
-            onOpenSettings={() => reopenSetup("settings")}
+            onOpenSettings={() => context.requestReturnShell("settings")}
             openOtherProject={
               (negotiatedAppProtocol ?? 1) >= 4
                 ? {
@@ -2014,6 +2120,7 @@ async function startGatewaySession(
     if (bootstrapResult.workspaces.length === 0) {
       // 「电脑上没有窗口 / 没有打开的项目」不是失败，属于首页空态（方案「失败原因与恢复」）。
       renderMobileRemoteStartPage();
+      signalBusinessReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2039,6 +2146,7 @@ async function startGatewaySession(
       : resolveWebRemoteControlInitialWorkspaceSelection(bootstrapResult);
     if (!selectedWorkspace) {
       renderMobileRemoteStartPage();
+      signalBusinessReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2048,6 +2156,7 @@ async function startGatewaySession(
         selectedWorkspace.workspaceKey,
         selectedWorkspace.taskId,
       );
+      signalBusinessReady();
       void consumeNativeNotification();
       void consumeNativeNotificationAction();
       return;
@@ -2057,11 +2166,16 @@ async function startGatewaySession(
       taskId: selectedWorkspace.taskId,
     });
     renderExternalRelayRoot(result.services, result.bridge);
+    signalBusinessReady();
     void consumeNativeNotification();
   };
 
   const disposeNativeNotification = (() => {
-    const host = installMobileRemoteNativeHost();
+    // 同一文档/同一 session 复用启动时安装的宿主；事件仍按 sessionId 过滤。
+    const host = installMobileRemoteNativeHost({
+      sessionId: gatewayConfig.sessionId,
+      ...(context.bridge ? { bridge: context.bridge } : {}),
+    });
     const disposeClick = host?.onNotificationClick((click) => {
       void consumeNativeNotification(click);
     });
@@ -2117,9 +2231,10 @@ async function startGatewaySession(
     disposeNotificationNotice?.();
     disposeNotificationNotice = undefined;
     searchHighlight = undefined;
-    versionGuard.dispose();
-    disposeVersionNotice?.();
-    disposeVersionNotice = undefined;
+    // M3-T2：统一销毁 release controller/轮询/guard 注册表与提示浮层；
+    // beforeunload 复用同一路径，不触发重复 admission 或配置写入。
+    disposeReleaseNotice();
+    releaseRuntime.dispose();
     disposeStartPageWorkspaceSubscription?.();
     disposeStartPageWorkspaceSubscription = undefined;
     disposeStartPageRecentSubscription?.();
@@ -2136,21 +2251,6 @@ async function startGatewaySession(
     lifecycle.dispose();
     requester.dispose();
     transport.dispose();
-  };
-
-  reopenSetup = (mode: MobileRemoteSetupMode) => {
-    if (restarting) {
-      return;
-    }
-    restarting = true;
-    disposeSession();
-    void (async () => {
-      const next = await context.reopenConnection(mode);
-      if (next) {
-        // 新会话有独立的 transport/root 生命周期；旧会话已经释放。
-        await startGatewaySession(next, context);
-      }
-    })();
   };
 
   window.addEventListener(

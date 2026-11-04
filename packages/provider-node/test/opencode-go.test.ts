@@ -4,21 +4,28 @@ import { compileModelOptionMaps } from "@zcode/model-option-map";
 import { ModelConfig, ModelConfigRules, parseZCodeBuiltinModelConfigRules } from "@zcode/provider";
 
 const url = "https://opencode.ai/zen/go/v1";
+// F08（上游 v3.17.1 rev43）：Go 端点成员随上游更新——新增 minimax-m3.1-flash、
+// kimi-k3.1-pro、mimo-v2.6 系、claude-haiku-5-5、gpt-6-luna、grok-4.7；
+// 旧型号 mimo-v2.5 系、gpt-5.6-luna、grok-4.6 随上游降级为默认关闭。
 const members = {
   "opencode-go-chat": [
+    "minimax-m3.1-flash",
+    "kimi-k3.1-pro",
     "glm-5.3-flash",
     "glm-5.3",
-    "glm-5.2",
-    "glm-5.1",
     "kimi-k3",
     "kimi-k2.7-code",
-    "kimi-k2.6",
     "deepseek-v4.1-flash",
     "deepseek-v4-pro",
-    "deepseek-v4-flash",
-    "deepseek-v4-flash-vision-exp",
+    "mimo-v2.6-pro",
+    "mimo-v2.6-flash",
     "mimo-v2.5",
     "mimo-v2.5-pro",
+    "glm-5.2",
+    "glm-5.1",
+    "kimi-k2.6",
+    "deepseek-v4-flash",
+    "deepseek-v4-flash-vision-exp",
     "hy4-preview",
     "hy3",
   ],
@@ -31,23 +38,27 @@ const members = {
     "qwen3.7-max",
     "qwen3.7-plus",
     "qwen3.6-plus",
+    "claude-haiku-5-5",
   ],
-  "opencode-go-responses": ["gpt-5.6-luna", "grok-4.6"],
+  "opencode-go-responses": ["gpt-6-luna", "grok-4.7", "gpt-5.6-luna", "grok-4.6"],
 };
 const enabled = new Set([
+  "minimax-m3.1-flash",
+  "kimi-k3.1-pro",
   "glm-5.3-flash",
   "glm-5.3",
   "kimi-k3",
   "kimi-k2.7-code",
   "deepseek-v4.1-flash",
   "deepseek-v4-pro",
-  "mimo-v2.5",
-  "mimo-v2.5-pro",
+  "mimo-v2.6-pro",
+  "mimo-v2.6-flash",
   "minimax-m3",
   "qwen3.8-max",
   "qwen3.8-flash",
-  "gpt-5.6-luna",
-  "grok-4.6",
+  "claude-haiku-5-5",
+  "gpt-6-luna",
+  "grok-4.7",
 ]);
 let rules: ModelConfigRules;
 let templates: {
@@ -59,12 +70,24 @@ let templates: {
     builtinModelIds: string[];
   };
 }[];
+// F08（上游 v3.17.1 rev43）：新成员的 Go 端点能力/参数直接声明在模板条目
+// （templateModelRules 的 properties/optionSpecs），自建供应商在同一端点只能解析到
+// 通用规则或兜底；这些成员不断言与 manual 一致，由模板条目声明生效断言覆盖。
+let templateDeclared = new Set<string>();
 beforeAll(async () => {
   const release = JSON.parse(
     await readFile(new URL("../../../config/provider/zcode-builtin.json", import.meta.url), "utf8"),
   );
   rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
   templates = release.config.providerConfigRules.templateRules;
+  templateDeclared = new Set(
+    release.config.modelConfigRules.templateModelRules
+      .filter(
+        (rule: { templateId: string; modelId: string; config: { properties?: unknown; optionSpecs?: unknown } }) =>
+          rule.config.properties !== undefined || rule.config.optionSpecs !== undefined,
+      )
+      .map((rule: { templateId: string; modelId: string }) => `${rule.templateId}/${rule.modelId}`),
+  );
 });
 const input = (modelId: string, apiType = "openai-chat-completions", baseUrl = url) => ({
   providerId: "personal-go",
@@ -104,13 +127,32 @@ describe("Todo149 Go 模板与自建供应商共用站点规则", () => {
       const manual = rules.resolve(i);
       expect(fromTemplate.validateComplete(), modelId).toEqual([]);
       expect(fromTemplate.enabled, modelId).toBe(enabled.has(modelId));
-      expect(fromTemplate.properties?.toJSON()).toEqual(manual.properties?.toJSON());
-      expect(fromTemplate.optionSpecs?.toJSON()).toEqual(manual.optionSpecs?.toJSON());
+      if (!templateDeclared.has(`${templateId}/${modelId}`)) {
+        expect(fromTemplate.properties?.toJSON()).toEqual(manual.properties?.toJSON());
+        expect(fromTemplate.optionSpecs?.toJSON()).toEqual(manual.optionSpecs?.toJSON());
+      }
       expect(manual.properties?.supportsNativeWebSearch, modelId).toBe(false);
       for (const level of fromTemplate.optionSpecs!.reasoningLevel!.values!)
         expect(() => patch(fromTemplate, level), `${modelId}/${level}`).not.toThrow();
     }
   });
+
+  it.each([
+    // F08：Go 端点新成员按上游模板条目声明能力（通用上下文无对应家族规则，落兜底）。
+    ["opencode-go-responses", "gpt-6-luna", 1_050_000, true, true],
+    ["opencode-go-responses", "grok-4.7", 500_000, true, false],
+    ["opencode-go-messages", "claude-haiku-5-5", 200_000, true, true],
+  ] as const)(
+    "%s/%s 的模板条目能力声明生效",
+    (templateId, modelId, context, image, pdf) => {
+      const fromTemplate = rules.resolve({ ...input(modelId), templateId });
+      expect(fromTemplate.properties?.contextWindow).toBe(context);
+      expect(fromTemplate.properties?.inputFormat.toJSON()).toMatchObject({
+        supportsImage: image,
+        supportsPdf: pdf,
+      });
+    },
+  );
 
   // 原因：GLM 落入通用四组参数兜底，Go 上游严格校验并拒绝 enable_thinking/reasoning。
   it.each(["glm-5.3", "glm-5.3-flash"])(

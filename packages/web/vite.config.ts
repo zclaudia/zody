@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { pdfJsCMapsPlugin } from "../ui/vite/pdfJsCMapsPlugin.js";
@@ -19,10 +19,36 @@ function resolveZCodeEnv(value: string | undefined): "test" | "production" {
   return value?.trim().toLowerCase() === "production" ? "production" : "test";
 }
 
+/**
+ * Shell 源入口是 `mobile-shell.html`，但 Android WebViewAssetLoader 的固定入口是
+ * `/assets/shell/index.html`（spec 第 6.1 节）。在 Rollup 产物里直接把 HTML 改名为
+ * index.html，构建脚本无需再做一次文件搬运；Remote 的 `mobile.html → index.html`
+ * 仍由 M1 的 `build-mobile-web-release.mjs` 负责，两条制品互不复用。
+ */
+function mobileShellHtmlEntryPlugin(enabled: boolean): Plugin {
+  return {
+    name: "zcode:mobile-shell-entry",
+    apply: "build",
+    writeBundle() {
+      if (!enabled) {
+        return;
+      }
+      const outDir = resolve(HERE, "dist-mobile-shell");
+      const source = resolve(outDir, "mobile-shell.html");
+      const target = resolve(outDir, "index.html");
+      if (existsSync(source)) {
+        renameSync(source, target);
+      }
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   // 手机入口（mobile.html）用独立 mode 打包：产物与普通 Web 客户端分开，入口也不复用 index.html。
   // 这样普通 Web 客户端构建产物里不会带上手机页面（T3.4 之后它才会引入 @zclaudia/gateway-client）。
   const mobileEntry = mode === "mobile";
+  // Shell 轻壳独立 mode：只包含配对/设置/discovery，不打包 Remote 工作台。
+  const mobileShellEntry = mode === "mobile-shell";
   // `.env*` 只提供链接常量；当前产品环境由启动脚本或 CI 注入 ZCODE_ENV。
   // 启动脚本通过 process.env 显式选择 test/production；它必须优先于 .env 文件，
   // 否则 mode 对应的旧配置可能被误解析到错误 endpoint。
@@ -35,7 +61,15 @@ export default defineConfig(({ mode }) => {
   const zcodeEndpointOrigin = resolveRuntimeZCodeEndpointOrigin(endpointEnv);
 
   return {
-    plugins: [pdfJsCMapsPlugin(), react(), tailwindcss(), thirdPartyNoticesVitePlugin()],
+    plugins: [
+      // PDF.js CMaps 属于 Remote 工作台的 PDF 预览能力；Shell 轻壳不包含文件预览，
+      // 跳过该插件避免把数千个 cmap 资源复制进 APK。普通 Web 与 Remote 保持原行为。
+      ...(mobileShellEntry ? [] : [pdfJsCMapsPlugin()]),
+      react(),
+      tailwindcss(),
+      thirdPartyNoticesVitePlugin(),
+      mobileShellHtmlEntryPlugin(mobileShellEntry),
+    ],
     resolve: {
       alias: {
         // 修复 UI 组件库中的 @ 别名解析失败。
@@ -47,8 +81,18 @@ export default defineConfig(({ mode }) => {
         // hoisted node_modules 可能把 d3-shape 旁边的旧 d3-path@1.x 暴露给 Vite 预构建，
         // 导致桌面/Web dev 都在依赖优化阶段失败；显式指向根部 3.x 入口以固定解析边界。
         "d3-path": resolve(__dirname, "../../node_modules/d3-path/src/index.js"),
+        // Shell 轻壳没有终端和数学公式；复用同一份 styles.css 时把这两块 CSS 置空，
+        // 避免把 xterm 样式和 KaTeX 字体（woff/ttf）复制进 APK。
+        ...(mobileShellEntry
+          ? {
+              "katex/dist/katex.min.css": resolve(HERE, "src/mobile-shell/empty.css"),
+              "@xterm/xterm/css/xterm.css": resolve(HERE, "src/mobile-shell/empty.css"),
+            }
+          : {}),
       },
     },
+    // Shell 是轻壳，不复制普通 Web 的 material-icons 等 public 资源；Remote/普通 Web 保持原行为。
+    publicDir: mobileShellEntry ? false : "public",
     server: {
       port: 5173,
       proxy: {
@@ -81,13 +125,22 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify(zcodeEndpointOrigin),
     },
     build: {
-      // 手机入口产物单独放到 dist-mobile-remote，避免与普通 Web 客户端互相清空（两边都是待打包产物，
-      // 分开后各自的「产物里有没有 gateway SDK」也能独立核对）。
-      outDir: mobileEntry ? "dist-mobile-remote" : "dist",
+      // 三个入口各自独立产物：普通 Web（dist）、Remote（dist-mobile-remote）、
+      // Shell（dist-mobile-shell）。分开目录避免互相清空，也能独立核对 bundle 边界。
+      outDir: mobileEntry
+        ? "dist-mobile-remote"
+        : mobileShellEntry
+          ? "dist-mobile-shell"
+          : "dist",
       emptyOutDir: true,
-      rollupOptions: mobileEntry ? { input: { index: resolve(HERE, "mobile.html") } } : undefined,
+      rollupOptions: mobileEntry
+        ? { input: { index: resolve(HERE, "mobile.html") } }
+        : mobileShellEntry
+          ? { input: { index: resolve(HERE, "mobile-shell.html") } }
+          : undefined,
       // 生产不在浏览器产物暴露 sourceMappingURL，避免客户端侧还原业务源码。
-      sourcemap: mode === "production" || mobileEntry ? "hidden" : true,
+      // Shell 直接同步进 APK 且没有二次冻结步骤，因此不生成 sourcemap 文件。
+      sourcemap: mobileShellEntry ? false : mode === "production" || mobileEntry ? "hidden" : true,
     },
   };
 });

@@ -6,6 +6,8 @@ dist-release/
 packages/desktop/dist-*/
 # 手机远控入口（mobile.html）的独立构建产物；与普通 Web 客户端的 dist/ 相互独立，不入库。
 packages/web/dist-mobile-remote/
+# Android 轻 Shell 的独立构建产物，只包含配对、设置和选电脑，不入库。
+packages/web/dist-mobile-shell/
 out/
 # 本地生成的草稿与临时产物；需要保留的品牌草稿已移到 docs/brand/。
 /output/
@@ -75,6 +77,10 @@ binding.Makefile
 packages/desktop/resources/macos-window-bounds/
 # CUA Helper SEA 基座下载缓存（scripts/cua-helper-sea-base.mjs 落盘的官方 Node 22 运行时，纯下载产物）
 /.tmp/
+# 桌面端本地探针暂存（如手机远控点击验证），不入库。根目录 /.tmp/ 匹配不到这里。
+packages/desktop/.tmp/
+# 本机临时目录误落到仓库内的 CUA 驱动闭包审计缓存（macOS var/folders/.../T），不入库。
+packages/private/
 # Python 字节码（docker/plugin-eval/summarize.py 在主机上跑会生成）。
 __pycache__/
 *.pyc

@@ -1,23 +1,28 @@
 import {
+  resolveMobileRemoteBridge,
+  type MobileNotificationActionClick,
+  type MobileNotificationClick,
+  type PlatformAppLifecycleState,
+} from "@zcode/shared";
+import {
   parseMobileNotificationAction,
   parseMobileNotificationClick,
 } from "./mobileRemoteNotifications.js";
-import type {
-  MobileNotificationActionClick,
-  MobileNotificationClick,
-  PlatformAppLifecycleState,
-} from "@zcode/shared";
-import { resolveMobileRemoteNativeBridge } from "./mobileRemoteSecureStore.js";
 
 /**
- * Android 原生桥的事件方向（T6.2）。
+ * Android 原生桥的事件方向（T6.2 / M2-T2）。
  *
- * Kotlin 的 `ZcodeMobileBridge`（`@JavascriptInterface`）只能由页面调用；宿主 → 页面的
- * 前后台与返回键事件通过 `evaluateJavascript` 调用这里安装的 `ZcodeMobileBridgeHost`。
- * 只有检测到原生桥时才安装，普通浏览器（`pnpm dev:mobile-remote`）不会得到这些能力。
+ * Kotlin 的 `ZodyRemoteBridge`（`@JavascriptInterface`）只能由页面调用；宿主 → 页面的
+ * 前后台、返回键和通知事件通过 `evaluateJavascript` 调用这里安装的
+ * `ZcodeMobileBridgeHost`（M2-T5 `MobileBridgeEventDispatcher` 的固定对象名）。
  *
- * 页面其余部分只通过 `IPlatformService.onAppLifecycleChange` / `onBackPressed` 消费，
- * 不直接访问 `window.ZcodeMobileBridgeHost`。
+ * M2-T5 的 dispatcher 只传事件 payload（单参）。stale 隔离由原生
+ * `MobileShellController` 的 generation/sessionId 校验，以及本模块按 session 安装宿主对象
+ * 负责；页面不再接受带 `sessionId` 首参的旧调用格式。
+ * - 返回键的同步 handler 必须返回 false，让宿主继续回退/退出。
+ *
+ * 页面其余部分只通过 `IPlatformService.onAppLifecycleChange` / `onBackPressed` /
+ * `MobileNotificationPlatform` 消费，不直接访问宿主对象。
  */
 
 export const MOBILE_REMOTE_NATIVE_HOST_GLOBAL_KEY = "ZcodeMobileBridgeHost";
@@ -35,43 +40,52 @@ export interface MobileRemoteNativeHostBinding {
 }
 
 export interface InstallMobileRemoteNativeHostOptions {
+  /** 当前 Remote 文档的 sessionId；用于复用同一 session 的宿主绑定。 */
+  sessionId: string;
   /** 注入点；默认 `globalThis`。 */
   target?: unknown;
-  /** 注入点；默认从 target 上发现 `ZcodeMobileBridge`。 */
-  bridge?: ReturnType<typeof resolveMobileRemoteNativeBridge>;
+  /** 注入点；默认从 target 上发现 `ZodyRemoteBridge`。 */
+  bridge?: ReturnType<typeof resolveMobileRemoteBridge>;
 }
 
-// 同一页面可能多次启动 bootstrap（重开设置不会，但测试会）；宿主对象只安装一次，避免旧订阅失联。
-const installedHosts = new WeakMap<object, MobileRemoteNativeHostBinding>();
+interface InstalledHost {
+  sessionId: string;
+  binding: MobileRemoteNativeHostBinding;
+}
+
+// 同一页面只对应一个 Remote session；缓存只避免测试重复安装时丢失已有订阅。
+const installedHosts = new WeakMap<object, InstalledHost>();
 
 export function installMobileRemoteNativeHost(
-  options: InstallMobileRemoteNativeHostOptions = {},
+  options: InstallMobileRemoteNativeHostOptions,
 ): MobileRemoteNativeHostBinding | undefined {
   const target = options.target ?? globalThis;
   if (!target || typeof target !== "object") {
     return undefined;
   }
   const existing = installedHosts.get(target);
-  if (existing) {
-    return existing;
+  if (existing?.sessionId === options.sessionId) {
+    return existing.binding;
   }
-  const bridge = options.bridge ?? resolveMobileRemoteNativeBridge(target);
+  const bridge = options.bridge ?? resolveMobileRemoteBridge(target);
   if (!bridge) {
-    // 没有原生桥：不安装宿主对象，IPlatformService 也不提供这两个能力。
+    // 没有原生桥：不安装宿主对象，IPlatformService 也不提供这些能力。
     return undefined;
   }
 
+  const sessionId = options.sessionId;
   const permissionHandlers = new Set<(granted: boolean) => void>();
   const notificationHandlers = new Set<(click: MobileNotificationClick) => void>();
   const actionHandlers = new Set<(action: MobileNotificationActionClick) => void>();
   const lifecycleHandlers = new Set<LifecycleHandler>();
   const backHandlers = new Set<BackHandler>();
+
   const host = {
-    onNotificationPermissionChanged(granted: unknown) {
-      if (typeof granted !== "boolean") return;
+    onNotificationPermissionChanged(value: unknown) {
+      if (typeof value !== "boolean") return;
       for (const handler of permissionHandlers) {
         try {
-          handler(granted);
+          handler(value);
         } catch {
           /* Isolate page subscribers. */
         }
@@ -99,14 +113,14 @@ export function installMobileRemoteNativeHost(
           }
         }
     },
-    onAppLifecycle(state: unknown): void {
-      if (state !== "foreground" && state !== "background") {
+    onAppLifecycle(value: unknown): void {
+      if (value !== "foreground" && value !== "background") {
         return;
       }
       // 复制一份再遍历：handler 可能在回调里取消订阅，不能边遍历边改 Set。
       for (const handler of Array.from(lifecycleHandlers)) {
         try {
-          handler(state);
+          handler(value);
         } catch {
           // 页面回调异常不能反噬宿主事件循环；下一个 handler 仍要收到事件。
         }
@@ -154,6 +168,6 @@ export function installMobileRemoteNativeHost(
       };
     },
   };
-  installedHosts.set(target, binding);
+  installedHosts.set(target, { sessionId, binding });
   return binding;
 }

@@ -11,11 +11,17 @@ import {
 import { cn } from "@/components/lib/utils.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
 import { useAlertDialogStore } from "@/store/alertDialogStore.js";
+import { useMobileRemoteRefreshGuard } from "@/mobileRemoteRefreshGuards.js";
 
 export function AlertDialogHost() {
   const { intl } = useZCodeIntl();
   const pendingRequest = useAlertDialogStore((state) => state.pendingRequest);
   const settleAlert = useAlertDialogStore((state) => state.settleAlert);
+
+  // 活动确认弹层属于 M3 refresh guard 的 active-overlay 来源；关闭后自然解除。
+  useMobileRemoteRefreshGuard("active-alert-dialog", () =>
+    pendingRequest ? "active-overlay" : null,
+  );
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {

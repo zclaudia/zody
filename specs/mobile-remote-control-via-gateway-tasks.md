@@ -1,5 +1,10 @@
 # 手机远控改走 gateway：实施任务拆分
 
+> 2026-11-03 修订：手机主 UI 交付已改为“APK 轻 Shell + 桌面 provider”，见
+> [移动端主 UI 随桌面交付切换方案](mobile-remote-ui-desktop-delivery.md)。本文保留历史任务拆分；
+> T6.1/T6.2 中“构建 `assets/remote/`、注入 `ZcodeMobileBridge`”的描述已被新方案取代，现行
+> 命令和桥边界以 `docs/mobile-remote-control-android.md` 为准。
+
 状态：草案（2026-10-17）。对应方案见 [mobile-remote-control-via-gateway.md](mobile-remote-control-via-gateway.md)（下称「方案」）。本文只拆任务，规则以方案为准；两者冲突时先改方案。
 
 ## 拆分原则
@@ -369,29 +374,30 @@ A、B、C、D、E 五条车道可以同时开工。车道汇合点是 T3.3（A �
 
 ## 阶段 6：Android
 
-### T6.1 Android 壳改造（M）
+### T6.1 Android 壳改造（M）（已被轻 Shell 方案取代）
 
 - **目标**：壳只加载内置页面，清除官方域名和配对残留。方案对应「Android 壳」和「清理清单」中的 Android 各行。
 - **改动**：`packages/android`：
-  - Gradle 任务在构建时执行 `pnpm build:mobile-web`，把产物拷入 `assets/remote/`；
-  - 用 `WebViewAssetLoader` 加载，并且只允许加载这个 origin；
+  - Gradle 任务在构建时执行 `pnpm build:mobile-shell`，把 `dist-mobile-shell/` 拷入 `assets/shell/`；
+  - 用 `WebViewAssetLoader` 加载轻 Shell，并且只允许 Shell 与 Remote 两个固定 origin；
   - 删除二维码扫描（CameraX、ML Kit）、两个 deep link 的 intent-filter、`RemoteControlUrlPolicy` 中的官方白名单、`RemoteControlRecentLinksStore`、粘贴页、`REMOTE_CONTROL_DEFAULT_URL`、`remote_url_placeholder`；
   - `RemoteControlKeepAliveService` 去掉与 URL 的耦合；
   - `allowBackup=false`；WebView 调试只在 debug 构建开启；
   - 品牌（`applicationId`、`namespace`、包路径）等待「待决事项 1」确定，确定前保持不变。
-- **验证**：debug APK 能加载内置页面，并在浏览器开发模式的配置下连上本地 gateway；`packages/android` 中 grep 不到 `zcode.z.ai`。
-- **依赖**：T1.2（需要 `build:mobile-web`）。
+- **验证**：debug APK 能加载轻 Shell，并在浏览器开发模式的配置下连上本地 gateway；`packages/android` 中 grep 不到 `zcode.z.ai`。
+- **依赖**：T1.2（需要 `build:mobile-shell`）。
 
-### T6.2 原生桥（M）
+### T6.2 原生桥（M）（已拆分为双 bridge）
 
 - **目标**：提供页面需要的原生能力。
 - **改动**：
-  - `ZcodeMobileBridge`：
-    - `secureStore.get/set/remove`（Keystore 加 `EncryptedSharedPreferences`）；
-    - 前后台事件；
-    - 返回键分发。
-  - 页面侧通过 `IPlatformService` 的可选能力接入（实现放在 `packages/web/src/mobile-remote/`），不直接调用 `window.*`。
-- **验证**：Kotlin 单测覆盖存储读写；页面侧对桥缺失与存在两种情况都有测试，release 构建在桥缺失时拒绝保存凭证。
+  - `ZodyShellBridge`：配置读写、`configRevision`、按 backend 的 `clientInstanceId`、
+    `openRemote` 和诊断。
+  - `ZodyRemoteBridge`：只读 `getSessionContext()`、文件、通知、lifecycle、返回 Shell 和刷新
+    veto；所有状态变更携带 `sessionId` 并由原生校验代次。
+  - 页面侧通过 `IPlatformService` 的可选能力接入（实现放在 `packages/web/src/mobile-remote/`），
+    不直接调用 `window.*`。旧 `ZcodeMobileBridge` 不再注入。
+- **验证**：Kotlin 单测覆盖配置读写与 session 代次；页面侧对桥缺失与存在两种情况都有测试，release 构建缺少 `ZodyShellBridge` 时 fail closed。
 - **依赖**：T6.1。
 
 ### T6.3 文件能力（M）

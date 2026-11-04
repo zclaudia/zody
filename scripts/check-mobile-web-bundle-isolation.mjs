@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // 校验手机远控入口的产物隔离（T1.2，方案「Android 壳 · 内置页面」）：
 //   1. 普通 Web 客户端构建产物（packages/web/dist）不得包含 @zclaudia/gateway-client；
-//   2. 手机入口产物（packages/web/dist-mobile-remote）必须存在，且入口是 mobile.html。
+//   2. 手机入口产物（packages/web/dist-mobile-remote）必须存在，且规范化入口是 index.html
+//      （源文件 mobile.html 由 build-mobile-web-release.mjs 重命名）。
 // 只扫代码类产物（.js/.mjs/.css/.html/.map）：dist 里的 THIRD-PARTY-NOTICES.md 会列出依赖名，
 // 那是许可证清单而不是被打进 bundle 的代码，不能作为命中依据。
 import { readdir, readFile, stat } from "node:fs/promises";
@@ -13,7 +14,9 @@ import { findGatewayClientMarkers } from "./mobile-web-bundle-inspection.mjs";
 const REPO_ROOT = resolve(import.meta.dirname, "..");
 const WEB_DIST = resolve(REPO_ROOT, "packages/web/dist");
 const MOBILE_DIST = resolve(REPO_ROOT, "packages/web/dist-mobile-remote");
-const MOBILE_ENTRY_HTML = "mobile.html";
+// 手机入口源文件是 mobile.html，但 build-mobile-web-release.mjs 会把产物规范化为 index.html
+// （spec 第 4.2 节），产物目录里不再有 mobile.html，所以这里检查规范化后的入口。
+const MOBILE_ENTRY_HTML = "index.html";
 
 const SCANNED_EXTENSIONS = [".js", ".mjs", ".css", ".html", ".map"];
 
@@ -84,7 +87,7 @@ async function main() {
       console.error(`  - ${hit.file} ← ${hit.marker}`);
     }
     console.error(
-      "手机远控代码必须只经 mobile.html 入口打包；普通 Web 客户端入口不应引用 @zclaudia/gateway-client。",
+      "手机远控代码必须只经 mobile.html 源入口打包；普通 Web 客户端入口不应引用 @zclaudia/gateway-client。",
     );
     process.exit(1);
   }

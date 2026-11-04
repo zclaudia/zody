@@ -6,6 +6,10 @@ import {
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import {
+  resolveUnsavedSettingsBlockReason,
+  useMobileRemoteRefreshGuard,
+} from "@/mobileRemoteRefreshGuards.js";
 
 /**
  * 手机连接设置表单的共享实现。
@@ -95,6 +99,18 @@ export function useWebRemoteControlMobileSettingsForm<T>({
   // 保证按钮在视口外（小屏/横屏）时错误依然可见。
   const errorRef = useRef<HTMLParagraphElement | null>(null);
   const credentialConfigured = initial?.credentialConfigured === true;
+
+  // 连接设置草稿只由本 hook 持有；guard 读取同一状态，保存/取消 reset 后自动解除。
+  useMobileRemoteRefreshGuard("mobile-settings-draft", () =>
+    resolveUnsavedSettingsBlockReason({
+      current: { gatewayUrl, namespace, credential },
+      initial: {
+        ...(initial?.gatewayUrl === undefined ? {} : { gatewayUrl: initial.gatewayUrl }),
+        ...(initial?.namespace === undefined ? {} : { namespace: initial.namespace }),
+        credentialConfigured,
+      },
+    }),
+  );
 
   const reset = () => {
     setGatewayUrl(initial?.gatewayUrl ?? "");

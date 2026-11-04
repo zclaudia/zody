@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.provider.MediaStore
 import android.util.Log
 
 /**
@@ -16,16 +15,11 @@ import android.util.Log
  */
 class AndroidMobileFileOpener(private val context: Context) : MobileFileOpener {
     override fun open(uri: String, mimeType: String): Boolean {
+        // M4-T1：allowlist 与 ACTION_VIEW 解耦，JVM 测试覆盖 authority/scheme，Android 层只负责发 intent。
+        if (!MobileFileUris.isAllowedOpenUri(uri, context.packageName)) {
+            return false
+        }
         val parsed = runCatching { Uri.parse(uri) }.getOrNull() ?: return false
-        if (parsed.scheme != "content") {
-            return false
-        }
-        val authority = parsed.authority
-        val allowed = authority == MediaStore.AUTHORITY ||
-            authority == "${context.packageName}.fileprovider"
-        if (!allowed) {
-            return false
-        }
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(parsed, mimeType.ifBlank { "application/octet-stream" })
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)

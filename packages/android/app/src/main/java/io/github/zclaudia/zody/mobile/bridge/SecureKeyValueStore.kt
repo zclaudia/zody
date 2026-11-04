@@ -26,8 +26,8 @@ interface SecureKeyValueStore {
  * - `MasterKey` 由 Android Keystore 生成并持有 AES256-GCM 主密钥，永不导出；
  * - `EncryptedSharedPreferences` 用 AES256-SIV 加密 key、AES256-GCM 加密 value。
  *
- * 文件只属于本应用（`allowBackup=false` 避免进入备份）。页面通过
- * `ZcodeMobileBridge.secureStoreGet/Set/Remove` 访问，不接触明文文件。
+ * 文件只属于本应用（`allowBackup=false` 避免进入备份）。M2 起页面不再拥有通用安全存储桥：
+ * 只允许 `ZodyShellBridge` 经 `MobileShellConfigStore` 读写配对配置，Remote 只能读取当前会话上下文。
  */
 // security-crypto 1.1.0 把 EncryptedSharedPreferences/MasterKey 标记为 deprecated，但方案明确要求
 // 这组 API；后续迁移时只需替换本类实现，SecureKeyValueStore 与桥契约不变。

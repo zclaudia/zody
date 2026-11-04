@@ -145,6 +145,8 @@ export * from "./remoteAssetInstallMode.js";
 export * from "./onboardingRecord.js";
 export * from "./remoteResourcePackages.js";
 export * from "./remoteAccess.js";
+export * from "./mobile-ui-release.js";
+export * from "./mobile-ui-bridge.js";
 export {
   BROWSER_SCREENSHOT_SURFACE_PREPARE_TIMEOUT_MS,
   BROWSER_VIEW_RESTORE_BOOTSTRAP_URL,
