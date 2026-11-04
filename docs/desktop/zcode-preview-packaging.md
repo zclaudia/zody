@@ -1,5 +1,7 @@
 # ZCode Preview 内部测试包
 
+> **历史设计说明（当前分支）**：本文保留原 Preview 设计和历史判据，不表示所列 GitLab、旧脚本或发布链仍在当前仓库可执行。现有 `scripts/doctor-macos-release-app.sh` 的 Helper variant 依据 `ZODY_ENV` 和 `ZODY_PREVIEW_IDENTITY`；其他实现以当前源码为准。
+
 ## Feature Summary
 
 | Field                 | Value                                                                                                                                                                                                                   |
@@ -272,7 +274,7 @@ workflow path selection
 | `packages/ui/.../WindowsCaptionMenuButton.tsx` `shouldShowDesktopUpdateEntry` | `ZCodeEnv` | `ZCodeProductFlavor` |
 | `scripts/notarize-macos.sh` `is_preview_package` / `is_strict_release` | `ZCODE_ENV=test` | 加上 `ZCODE_PREVIEW_IDENTITY`；Preview 永不进入 strict release |
 | `scripts/sign-macos-runtime-binaries.sh` fail-closed | `ZCODE_ENV=test` | `is_preview_package` |
-| `scripts/doctor-macos-release-app.sh` 默认 Helper variant | `ZCODE_ENV=test` | 加上 `ZCODE_PREVIEW_IDENTITY` |
+| `scripts/doctor-macos-release-app.sh` 默认 Helper variant | `ZCODE_ENV=test` | 当前使用 `ZODY_ENV=test` 或 `ZODY_PREVIEW_IDENTITY=1` |
 | `scripts/upload-oss.sh` / `scripts/package-cua-helper-release.mjs` `is_strict_release` | `ZCODE_ENV != test` | 再排除 Preview 身份 |
 | `scripts/publish-release.sh` | 拒绝 `ZCODE_ENV=test` | 同时拒绝 `ZCODE_PREVIEW_IDENTITY` 为真 |
 | `scripts/notify-feishu.mjs` | 标题只带环境 | `production` + 身份开关时追加 `· ZCode Preview`，其余标题不变 |

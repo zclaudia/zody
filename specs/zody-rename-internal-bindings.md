@@ -5,3 +5,5 @@
 静态 source assertion 中仅三处随源码标识符更新；模拟内部模块 export 的两个对象键随被引用的 export 更新，其他外部对象键保持。远程部署文档仅更新当前 binding 名称并保留真实路径；已删除分享功能的历史文档只更正顶部状态，正文保持原字节。
 
 node-repl-host 声明产物使用原 tsconfig 的逻辑 rootDir/outDir 和自定义 writeFile 隔离生成，完整比较 48 个 tracked 输出；除 result.d.ts 与其 map 外的 46 项必须与基线完全一致，result 二项只有实际变化时才提升。保持独立 process 控制旗标及其声明产物不变。验证实际共享导出、真实消费者、插件与运行时边界，并记录源文本/值和声明输出比较。
+
+macOS release doctor 的两个脚本内部 binding 分别由 `ZCODE_HOME_DIR`、`ZCODE_HOME_HELPER_APP_PATH` 改为 `ZODY_DOCTOR_HOME_DIR`、`ZODY_DOCTOR_HOME_HELPER_APP_PATH`。唯一输入仍为 `ZODY_HOME` 或 `HOME/.zody`，显式 `ZODY_CUA_HELPER_APP_PATH` 优先，Helper 文件名、路径与签名检查不变；脚本不新增 export/unset。在调用者预先导出旧局部变量时，新脚本不再覆盖旧变量；未发现此内部变量的外部消费者。Bash 会保留预先导出的同名新变量属性，不能声称所有调用环境下变量均不被子进程继承。

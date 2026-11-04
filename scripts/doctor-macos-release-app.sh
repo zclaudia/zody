@@ -3,10 +3,10 @@
 set -euo pipefail
 
 APP_PATH="${1:-${ZODY_MACOS_RELEASE_APP_PATH:-/Applications/Zody.app}}"
-ZCODE_HOME_DIR="${ZODY_HOME:-${HOME:+$HOME/.zody}}"
+ZODY_DOCTOR_HOME_DIR="${ZODY_HOME:-${HOME:+$HOME/.zody}}"
 CUA_HELPER_INSTALL_VARIANT="${ZODY_CUA_HELPER_INSTALL_VARIANT:-}"
 # 安装包身份与后端环境分轴：ZODY_PREVIEW_IDENTITY=1 让生产后端的构建仍是 Zody Preview。
-# 只认 "1"，与 CI workflow / release 门的精确比较同一套语义（其它拼写由 resolve_zcode_env 拒绝）。
+# 此脚本仅将值精确等于 "1" 视为启用，其余值不触发该判断。
 is_preview_identity_requested() {
   [[ "${ZODY_PREVIEW_IDENTITY:-}" = "1" ]]
 }
@@ -19,9 +19,9 @@ if [ -n "$CUA_HELPER_INSTALL_VARIANT" ] && [[ ! "$CUA_HELPER_INSTALL_VARIANT" =~
 fi
 CUA_HELPER_INSTALL_SUBDIR="${CUA_HELPER_INSTALL_VARIANT:+$CUA_HELPER_INSTALL_VARIANT/}"
 # Shell cannot import producer TS constants. macosReleaseAppDoctor.test.ts locks these literals to
-# @zcode/zcode-cua/broker/helperConstants so a future producer rename fails loudly.
-ZCODE_HOME_HELPER_APP_PATH="${ZCODE_HOME_DIR:+$ZCODE_HOME_DIR/computer-use/${CUA_HELPER_INSTALL_SUBDIR}ZCode Computer Use.app}"
-HELPER_APP_PATH="${ZODY_CUA_HELPER_APP_PATH:-$ZCODE_HOME_HELPER_APP_PATH}"
+# @zody/zody-cua/broker/helperConstants so a future producer rename fails loudly.
+ZODY_DOCTOR_HOME_HELPER_APP_PATH="${ZODY_DOCTOR_HOME_DIR:+$ZODY_DOCTOR_HOME_DIR/computer-use/${CUA_HELPER_INSTALL_SUBDIR}ZCode Computer Use.app}"
+HELPER_APP_PATH="${ZODY_CUA_HELPER_APP_PATH:-$ZODY_DOCTOR_HOME_HELPER_APP_PATH}"
 # 修复原因：`--help` 作为首参时 basename 会把它当作选项报错退出，导致帮助无法显示；用 `--` 结束选项解析。
 APP_BUNDLE_NAME="$(basename -- "$APP_PATH")"
 APP_DISPLAY_NAME="${APP_BUNDLE_NAME%.app}"

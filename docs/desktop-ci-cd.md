@@ -1,5 +1,7 @@
 # Desktop CI/CD
 
+> **历史说明（当前分支）**：本文描述的 GitLab CI 和公证脚本已不在当前仓库，不是当前可执行发布流程。现有 `scripts/doctor-macos-release-app.sh` 独立入口使用 `ZODY_CUA_REQUIRE_HELPER`、`ZODY_CUA_HELPER_APP_PATH` 和 `ZODY_HOME`；真实签名与发行验收需另按现行产物和流程确认。以下正文保留历史记录。
+
 `z-code` 的桌面端 CI/CD 入口是根目录的 `.gitlab-ci.yml`，具体 job 按职责拆分在 `.gitlab/ci/*.yml` 中。正式发布在普通 tag 管道上为 `approve -> validate -> upload -> preload -> publish -> release-notify`。发布日志由 infra API 直接编辑 runner 共享目录中的 `latest.yml`；z-code CI 在人工确认后、上传前统一校验六个平台和 remote assets，只上传版本化静态产物，不读取仓库 changelog、不生成独立 locale 清单，也不覆盖 CDN 上的旧 generic stable feed。
 
 ## 配置文件结构

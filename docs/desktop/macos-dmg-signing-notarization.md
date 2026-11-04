@@ -1,5 +1,7 @@
 # macOS DMG Signing And Notarization
 
+> **历史说明（当前分支）**：本文所述 `scripts/notarize-macos.sh` 和 GitLab 公证流程已不在当前仓库，以下内容不是当前可执行步骤。现有 `scripts/doctor-macos-release-app.sh` 独立入口使用 `ZODY_CUA_REQUIRE_HELPER`、`ZODY_CUA_HELPER_APP_PATH` 和 `ZODY_HOME`；真实签名与公证需另按现行流程确认。以下正文保留历史记录。
+
 ## 背景
 
 macOS release DMG 是用户从浏览器下载后直接交给 Gatekeeper 评估的最终分发物。3.1.2 曾出现 DMG 已经通过 `notarytool` 并执行 `stapler staple`，但 DMG 本体没有 Developer ID 签名的情况；带 Chrome quarantine 的下载文件会被 `spctl -t open/install` 判定为 `source=no usable signature`，导致部分用户安装失败。

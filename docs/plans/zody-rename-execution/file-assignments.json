@@ -17189,5 +17189,27 @@
       "historical share spec body",
       "real user data"
     ]
+  },
+  "R20_SHELL_DOC_TAIL": {
+    "title": "Doctor script shell bindings and historical desktop documentation status",
+    "baselineCommit": "e55cda50c6c4ef2be3af38148fc780e159db6960",
+    "frozenProposal": "output/zody-rename-w5-preflight/R20-shell-doc-tail-e55cda-proposal.json",
+    "implementationAgent": "/root/terra_r22_resume",
+    "writeSet": [
+      "scripts/doctor-macos-release-app.sh",
+      "docs/desktop-ci-cd.md",
+      "docs/desktop/macos-dmg-signing-notarization.md",
+      "docs/desktop/zcode-preview-packaging.md",
+      "specs/zody-rename-internal-bindings.md",
+      "docs/plans/zody-rename-execution/reports/R20-shell-doc-tail.md"
+    ],
+    "plannedPaths": [
+      "docs/plans/zody-rename-execution/reports/R20-shell-doc-tail.md"
+    ],
+    "scopeStatus": "independently-accepted-scoped",
+    "gate": "DeepSeek scoped PASS; six source hashes and seven logs verified. Existing doctor tests 9/9, bash syntax and root typecheck/lint/architecture pass, 303 lint warnings. Two comments-only addendum changes preserve executable bytes. Cleanup/post-audit complete, 1.25 MiB observed. Source lock released after commit; no real signing/notarization or new worktree.",
+    "scopeAddenda": [
+      "output/zody-rename-w5-preflight/R20-shell-doc-tail-addendum-1.json"
+    ]
   }
 }
