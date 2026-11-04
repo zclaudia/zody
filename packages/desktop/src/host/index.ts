@@ -2876,10 +2876,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
                 // CLI 的 defaultBrowserId 规则执行。手机 replay 不暴露 extension 默认，
                 // 避免未验证恢复链路的客户端继承外部 Chrome backend。
                 getDefaultBrowserId: async (input) =>
-                  resolveExtensionDefaultBrowserId(
-                    extensionDefaultBrowserId,
-                    input.clientMode,
-                  ),
+                  resolveExtensionDefaultBrowserId(extensionDefaultBrowserId, input.clientMode),
               },
               // CUA 顶部提示属于物理 Windows 桌面投影；非 Windows 和远端 authority 都不得上报。
               cuaOperationStateReporter:

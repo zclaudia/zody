@@ -68,9 +68,7 @@ describe("macOS CUA self-use build defaults", () => {
       network: { digestSha256: CUA_DEMO_DEFAULT_PUBLIC_FACTS.networkDigestSha256 },
     });
     expect(sha256(MANIFEST_PATH)).toBe(CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256);
-    expect(sha256(STARTUP_SNAPSHOT_PATH)).toBe(
-      CUA_DEMO_DEFAULT_PUBLIC_FACTS.startupSnapshotSha256,
-    );
+    expect(sha256(STARTUP_SNAPSHOT_PATH)).toBe(CUA_DEMO_DEFAULT_PUBLIC_FACTS.startupSnapshotSha256);
     expect(JSON.parse(selection.profileJson)).toEqual(selection.profile);
     expect(selection.profileJson).not.toContain("httpProxy");
     expect(selection.profileJson).not.toContain("Authorization");
@@ -132,9 +130,7 @@ describe("macOS CUA self-use build defaults", () => {
       manifestPath: MANIFEST_PATH,
       profileJson: defaults.profileJson,
     });
-    expect(explicit.validated.manifestSha256).toBe(
-      CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256,
-    );
+    expect(explicit.validated.manifestSha256).toBe(CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256);
 
     const manifestOnly = await resolveMacosCuaDemoBuildSelection({
       env: { [NARROW_MANIFEST_ENV]: MANIFEST_PATH },

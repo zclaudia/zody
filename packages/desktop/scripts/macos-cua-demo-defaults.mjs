@@ -5,14 +5,8 @@ import { readFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 import process from "node:process";
 
-import {
-  NarrowResourceError,
-  sha256Bytes,
-} from "./macos-cua-narrow-resources-base.mjs";
-import {
-  NARROW_MANIFEST_ENV,
-  REPO_ROOT,
-} from "./macos-cua-narrow-resources-constants.mjs";
+import { NarrowResourceError, sha256Bytes } from "./macos-cua-narrow-resources-base.mjs";
+import { NARROW_MANIFEST_ENV, REPO_ROOT } from "./macos-cua-narrow-resources-constants.mjs";
 import { validateNarrowManifest } from "./macos-cua-narrow-resources-validate.mjs";
 import { createNormalHostNarrowProfile } from "./lib/normal-host-candidate-profile.mjs";
 
@@ -195,8 +189,7 @@ async function resolveDefaultSelection({ env, repoRoot, targetPlatform, validate
   const observedSelection = profile.provider.selection;
   if (
     profile.resourceManifest.sha256 !== CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256 ||
-    profile.provider.revisionSha256 !==
-      CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerDigestSha256 ||
+    profile.provider.revisionSha256 !== CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerDigestSha256 ||
     observedSelection.providerId !== expectedSelection.providerId ||
     observedSelection.modelId !== expectedSelection.modelId ||
     observedSelection.options?.reasoningLevel !== expectedSelection.options.reasoningLevel ||

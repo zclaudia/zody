@@ -72,10 +72,12 @@ function createCapturingFork(): CapturingFork {
       const child = new FakeHelperChild();
       // fork 异步回报 ready 控制消息（socket/pid 与 host 铸造值一致）。
       queueMicrotask(() => {
-        child.emit(
-          "message",
-          { protocol: CONTROL_PROTOCOL, type: "ready", socketPath: SOCKET_PATH, pid: HELPER_PID },
-        );
+        child.emit("message", {
+          protocol: CONTROL_PROTOCOL,
+          type: "ready",
+          socketPath: SOCKET_PATH,
+          pid: HELPER_PID,
+        });
       });
       return child;
     },

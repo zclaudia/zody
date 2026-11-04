@@ -174,9 +174,7 @@ export function createZCodeAgentNativeRuntimeStartupContext(input: {
   return {
     // 中文注释：字段旧名前缀撞上 M2 已退出标识（生产源码零残留断言），更名详见
     // ZCodeAgentNativeRuntimeStartupContext 处注释；digest 计算与语义不变。
-    providerDigestSha256: digestZCodeAgentNativeRuntimeProviderSnapshot(
-      input.providerSettingsView,
-    ),
+    providerDigestSha256: digestZCodeAgentNativeRuntimeProviderSnapshot(input.providerSettingsView),
     selection: normalizeZCodeAgentNativeRuntimeSelection(
       input.modelSelectionView.preferredSelection,
     ),
