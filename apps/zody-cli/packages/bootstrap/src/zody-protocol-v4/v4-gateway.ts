@@ -586,7 +586,7 @@ function defaultLogEpoch(): string {
 }
 
 function artifactRefBelongsToSession(ref: string, sessionId: string): boolean {
-  return ref.startsWith(`zcode-artifact://${encodeURIComponent(sessionId)}/`);
+  return ref.startsWith(`zody-artifact://${encodeURIComponent(sessionId)}/`);
 }
 
 /** 附件在文件系统层「确定不存在」的错误码集合。 */
@@ -2122,7 +2122,9 @@ export class ConversationV4Gateway {
       throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.shareReadNotAuthorized);
     }
     const attachment = row.attachments?.[params.attachmentIndex];
-    if (!attachment || (attachment.ref !== params.ref && attachment.previewRef !== params.ref)) {
+    if (!attachment || (attachment.ref !== params.ref && attachment.previewRef !== params.ref) ||
+        (/^(?:zcode|zody)-artifact:\/\//u.test(params.ref) && !artifactRefBelongsToSession(params.ref, params.sessionId)) ||
+        (attachment.previewRef && /^(?:zcode|zody)-artifact:\/\//u.test(attachment.previewRef) && !artifactRefBelongsToSession(attachment.previewRef, params.sessionId))) {
       throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.shareReadNotAuthorized);
     }
     const messageId = publisher.getMessageIdForRow(row.rowId) ?? undefined;
@@ -2175,7 +2177,9 @@ export class ConversationV4Gateway {
       throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.shareStatNotAuthorized);
     }
     const attachment = row.attachments?.[params.attachmentIndex];
-    if (!attachment || (attachment.ref !== params.ref && attachment.previewRef !== params.ref)) {
+    if (!attachment || (attachment.ref !== params.ref && attachment.previewRef !== params.ref) ||
+        (/^(?:zcode|zody)-artifact:\/\//u.test(params.ref) && !artifactRefBelongsToSession(params.ref, params.sessionId)) ||
+        (attachment.previewRef && /^(?:zcode|zody)-artifact:\/\//u.test(attachment.previewRef) && !artifactRefBelongsToSession(attachment.previewRef, params.sessionId))) {
       throw new ZodyAttachmentFaultError(ZCODE_ATTACHMENT_FAULT_CODES.shareStatNotAuthorized);
     }
     const messageId = publisher.getMessageIdForRow(row.rowId) ?? undefined;
@@ -2244,7 +2248,11 @@ export class ConversationV4Gateway {
     target?: { rowId: number; entityId: string },
     attachmentIndex?: number,
   ): { attachment: AttachmentRef; messageId?: string; attachmentIndex?: number } | null {
+    // URI 必须在 cache/Host 前验证代际和 session；普通路径仍按既有行授权。
+    const allowed = (value: string) => !/^(?:zcode|zody)-artifact:\/\//u.test(value) || artifactRefBelongsToSession(value, sessionId);
+    if (!allowed(ref)) return null;
     const isPreviewable = (attachment: AttachmentRef) => {
+      if (attachment.previewRef && !allowed(attachment.previewRef)) return false;
       const mime = attachment.mime.split(";", 1)[0]?.trim().toLowerCase() ?? "";
       // 根因：原预览仅放行图片、视频和 PDF，文本附件即使归属当前行也被拒绝。
       // 文本只开放既有材料标记，后续仍须通过权威行、附件索引和 ref 的归属校验。

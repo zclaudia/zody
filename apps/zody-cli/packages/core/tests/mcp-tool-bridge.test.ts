@@ -1177,7 +1177,7 @@ describe("MCP tool bridge", () => {
         artifactWrites.push(request.content);
         return {
           id: "explicit-browser-shot",
-          uri: "zcode-artifact://session/explicit-browser-shot",
+          uri: "zody-artifact://session/explicit-browser-shot",
           path: "/tmp/explicit-browser-shot.png",
           bytes: request.content.byteLength,
           contentType: request.contentType,
@@ -1264,7 +1264,7 @@ describe("MCP tool bridge", () => {
         request: Parameters<NonNullable<ToolArtifactStorePort["writeToolResultBinaryArtifact"]>>[0],
       ) => ({
         id: "unexpected",
-        uri: "zcode-artifact://session/unexpected",
+        uri: "zody-artifact://session/unexpected",
         path: "/tmp/unexpected.png",
         bytes: request.content.byteLength,
         contentType: request.contentType,
@@ -1418,7 +1418,7 @@ describe("MCP tool bridge", () => {
         });
         return {
           id: "artifact-large-image",
-          uri: "zcode-artifact://session/artifact-large-image",
+          uri: "zody-artifact://session/artifact-large-image",
           path: "/tmp/mcp-image.png",
           bytes: content.byteLength,
           contentType: request.contentType,
@@ -1474,7 +1474,7 @@ describe("MCP tool bridge", () => {
         });
         return {
           id: "artifact-large-image",
-          uri: "zcode-artifact://session/artifact-large-image",
+          uri: "zody-artifact://session/artifact-large-image",
           path: "/tmp/mcp-image.json",
           bytes: Buffer.byteLength(request.content, "utf8"),
           contentType: request.contentType ?? "application/json",

@@ -35,13 +35,13 @@ describe("model request media capability projection", () => {
             type: "image",
             mediaType: "image/png",
             dataUrl: "data:image/png;base64,b25l",
-            source: { id: "image-1", kind: "inline", uri: "zcode-artifact://s/image-1" },
+            source: { id: "image-1", kind: "inline", uri: "zody-artifact://s/image-1" },
           },
           {
             type: "image",
             mediaType: "image/jpeg",
             dataUrl: "data:image/jpeg;base64,dHdv",
-            source: { id: "image-2", kind: "inline", uri: "zcode-artifact://s/image-2" },
+            source: { id: "image-2", kind: "inline", uri: "zody-artifact://s/image-2" },
           },
         ],
       },
@@ -99,7 +99,7 @@ describe("model request media capability projection", () => {
             source: {
               id: "video-1",
               kind: "inline",
-              uri: "zcode-artifact://s/video-1",
+              uri: "zody-artifact://s/video-1",
             },
           },
         ],
@@ -110,7 +110,7 @@ describe("model request media capability projection", () => {
 
     expect(ensureMediaAttachmentPath).toHaveBeenCalledWith({
       mediaType: "video/mp4",
-      uri: "zcode-artifact://s/video-1",
+      uri: "zody-artifact://s/video-1",
     });
     expect(withPaths[0]?.content).toEqual([
       { type: "text", text: "describe this video" },
@@ -182,7 +182,7 @@ describe("model request media capability projection", () => {
             source: {
               id: "video-1",
               kind: "inline",
-              uri: "zcode-artifact://s/video-1",
+              uri: "zody-artifact://s/video-1",
             },
           },
         ],
@@ -232,7 +232,7 @@ describe("model request media capability projection", () => {
             source: {
               id: "image-1",
               kind: "inline",
-              uri: "zcode-artifact://s/image-1",
+              uri: "zody-artifact://s/image-1",
             },
           },
         ],
@@ -320,7 +320,7 @@ describe("model request media capability projection", () => {
               id: "image-1",
               kind: "inline",
               path: "/tmp/stale-image.png",
-              uri: "zcode-artifact://s/image-1",
+              uri: "zody-artifact://s/image-1",
             },
           },
         ],
@@ -331,7 +331,7 @@ describe("model request media capability projection", () => {
 
     expect(ensureMediaAttachmentPath).toHaveBeenCalledWith({
       mediaType: "image/png",
-      uri: "zcode-artifact://s/image-1",
+      uri: "zody-artifact://s/image-1",
     });
     expect(projected[0]?.content).toEqual([
       expect.objectContaining({
@@ -355,13 +355,13 @@ describe("model request media capability projection", () => {
       type: "image" as const,
       mediaType: "image/png",
       dataUrl: "data:image/png;base64,b25l",
-      source: { id: "image-1", kind: "inline" as const, uri: "zcode-artifact://s/image-1" },
+      source: { id: "image-1", kind: "inline" as const, uri: "zody-artifact://s/image-1" },
     };
     const bmp = {
       type: "image" as const,
       mediaType: "image/bmp",
       dataUrl: "data:image/bmp;base64,dHdv",
-      source: { id: "image-2", kind: "inline" as const, uri: "zcode-artifact://s/image-2" },
+      source: { id: "image-2", kind: "inline" as const, uri: "zody-artifact://s/image-2" },
     };
     const messages: ModelInputMessage[] = [
       {

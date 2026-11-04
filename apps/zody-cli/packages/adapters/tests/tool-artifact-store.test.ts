@@ -33,10 +33,15 @@ describe("Node tool artifact store", () => {
         retention: "session",
       });
 
-      expect(result.uri).toContain("zcode-artifact://");
+      expect(result.uri).toContain("zody-artifact://");
       expect(result.path).toBeDefined();
       expect(result.bytes).toBe(Buffer.byteLength("large output", "utf8"));
       await expect(readFile(result.path!, "utf8")).resolves.toBe("large output");
+
+      // 历史 URI 即使落盘内容仍在也不能作为新代际读取或 stat。
+      const legacyUri = result.uri.replace("zody-artifact:", "zcode-artifact:");
+      await expect(store.readToolResultArtifact({ uri: legacyUri })).rejects.toThrow();
+      await expect(store.statToolResultArtifact!({ uri: legacyUri })).rejects.toThrow();
 
       const read = await store.readToolResultArtifact({ uri: result.uri });
       expect(read).toMatchObject({

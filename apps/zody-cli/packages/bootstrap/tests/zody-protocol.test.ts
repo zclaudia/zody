@@ -785,7 +785,7 @@ describe("ZodyProtocolAgentServer", () => {
 
   it("hydrates image artifact file parts when building session snapshots", async () => {
     const sessionId = "sess_image_artifact" as SessionId;
-    const artifactUri = "zcode-artifact://sess_image_artifact/tool-result-image";
+    const artifactUri = "zody-artifact://sess_image_artifact/tool-result-image";
     const app = createFakeApp(
       { sessionId },
       {
@@ -1322,7 +1322,7 @@ describe("ZodyProtocolAgentServer", () => {
   });
 
   it("routes attachment begin/chunk/commit/abort without a full-data RPC", async () => {
-    const writePromptAttachment = vi.fn(async () => ({ ref: "zcode-artifact://upload/server" }));
+    const writePromptAttachment = vi.fn(async () => ({ ref: "zody-artifact://upload/server" }));
     const server = new ZodyProtocolAgentServer({
       createZodyApp: (options) => createFakeApp(options, { writePromptAttachment }),
       cwd: workspace.workspacePath,
@@ -1366,14 +1366,14 @@ describe("ZodyProtocolAgentServer", () => {
         method: V4_METHODS.attachmentCommit,
         params: common,
       }),
-    ).resolves.toEqual({ ref: "zcode-artifact://upload/server" });
+    ).resolves.toEqual({ ref: "zody-artifact://upload/server" });
     await expect(
       requestResult(server, {
         id: "attachment-commit-retry",
         method: V4_METHODS.attachmentCommit,
         params: common,
       }),
-    ).resolves.toEqual({ ref: "zcode-artifact://upload/server" });
+    ).resolves.toEqual({ ref: "zody-artifact://upload/server" });
     await expect(
       requestResult(server, {
         id: "attachment-abort",

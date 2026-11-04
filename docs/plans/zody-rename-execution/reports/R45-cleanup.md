@@ -1,0 +1,9 @@
+# R45 stage cleanup
+
+After independent bounded acceptance, the controller rechecked exact paths, device/inode identities, complete inventories, file hashes and process references. Fifteen recorded isolated roots were moved on the same volume into `output/zody-rename-cleanup-20261104/r45-preflight/preserved-*` and reverified before deleting 40 explicit Node/tsx/Chromium cache directories. All 56 package Turbo logs were copied and hash-verified before removing their 24 obsolete `.turbo` directories.
+
+The accepted current Desktop/Agent manifest was reverified before removing the superseded W4 clone's two build directories. Its source manifest and verification record remain. Twenty-two synthetic SQLite files from failed runs 01–05 were also removed after exact SHA/size checks. All raw logs, screenshots, result records, fixture media and source remain; run06's latest valid state remains in its preserved root. The six original `/tmp` locations now resolve through `final-cleanup-result.json`'s `moved_roots` mapping. Main/source worktrees, shared dependencies, fixed tools, R02, unified release archives and the standalone stage were not removed.
+
+Post-audit verifies 3,490 retained files, 1,618 directories, 56 Turbo logs and all 6,710 current artifact entries. The one E2E TypeScript incremental-cache difference from the original run06 manifest was recorded before cleanup; final runtime artifacts match the final manifest. Three worktrees and two local branches remain in use, so none was deleted in this stage.
+
+Observed available-space increases were 29,880,320 and 187,068,416 bytes, totaling **206.90 MiB**. Availability after the second operation was **35.22 GiB**. These are concurrent volume snapshots, not an exact APFS block-accounting claim. Detailed manifests, execution preconditions, deletion records and `post-cleanup-verification.json` are retained under `r45-preflight/`.

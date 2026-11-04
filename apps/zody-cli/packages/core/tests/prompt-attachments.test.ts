@@ -10,10 +10,33 @@ import type { FileSystemPort } from "../src/runtime/deps.js";
 import type { ResolvedTurnAttachment } from "../src/runtime/types.js";
 
 describe("prompt attachment provider content order", () => {
+  it.each(["image", "video", "pdf"] as const)("does not read legacy %s from a URI or path", async (type) => {
+    const readToolResultArtifact = vi.fn();
+    const readBinaryFile = vi.fn();
+    const [result] = await resolveTurnAttachments([{ type, content: "zcode-artifact://sess_old/media", path: "/tmp/original" }], {
+      artifactStore: { readToolResultArtifact } as never,
+      fileSystemPort: { readBinaryFile } as never,
+      sessionId: createSessionId("old"), traceContext: { traceId: "old" }, workingDirectory: "/tmp",
+    });
+    expect(result?.metadata?.recoverability).toBe("metadata_only");
+    expect(readToolResultArtifact).not.toHaveBeenCalled();
+    expect(readBinaryFile).not.toHaveBeenCalled();
+  });
+
+  it("does not treat a legacy artifact path as a local file", async () => {
+    const readBinaryFile = vi.fn();
+    const [result] = await resolveTurnAttachments([{ type: "video", path: "zcode-artifact://sess_old/media" }], {
+      fileSystemPort: { readBinaryFile } as never, sessionId: createSessionId("old"),
+      traceContext: { traceId: "old" }, workingDirectory: "/tmp",
+    });
+    expect(result?.metadata?.recoverability).toBe("metadata_only");
+    expect(readBinaryFile).not.toHaveBeenCalled();
+  });
+
   it("resolves an inline PDF into a provider file block and durable artifact", async () => {
     const dataUrl = `data:application/pdf; charset=binary;base64,${Buffer.from("%PDF-1.7\\nbody").toString("base64")}`;
     const writeToolResultArtifact = vi.fn(async () => ({
-      uri: "zcode-artifact://pdf-inline-1",
+      uri: "zody-artifact://pdf-inline-1",
       bytes: dataUrl.length,
       contentType: "text/plain",
       createdAt: new Date(),
@@ -36,14 +59,14 @@ describe("prompt attachment provider content order", () => {
         mediaType: "application/pdf",
         name: "report.pdf",
         dataUrl,
-        source: { uri: "zcode-artifact://pdf-inline-1" },
+        source: { uri: "zody-artifact://pdf-inline-1" },
       },
       metadata: {
-        artifactUri: "zcode-artifact://pdf-inline-1",
+        artifactUri: "zody-artifact://pdf-inline-1",
         storageKind: "artifact",
       },
       mime: "application/pdf",
-      url: "zcode-artifact://pdf-inline-1",
+      url: "zody-artifact://pdf-inline-1",
     });
     expect(writeToolResultArtifact).toHaveBeenCalledOnce();
   });
@@ -59,7 +82,7 @@ describe("prompt attachment provider content order", () => {
       revision: { id: "rev-pdf", mtimeMs: 1, sizeBytes: pdfBytes.byteLength, hash: "hash-pdf" },
     }));
     const writeToolResultArtifact = vi.fn(async () => ({
-      uri: "zcode-artifact://pdf-local-1",
+      uri: "zody-artifact://pdf-local-1",
       bytes: pdfBytes.byteLength,
       contentType: "text/plain",
       createdAt: new Date(),
@@ -94,7 +117,7 @@ describe("prompt attachment provider content order", () => {
         name: "report.pdf",
         source: { kind: "local_file", path },
       },
-      metadata: { artifactUri: "zcode-artifact://pdf-local-1", storageKind: "artifact" },
+      metadata: { artifactUri: "zody-artifact://pdf-local-1", storageKind: "artifact" },
       mime: "application/pdf",
     });
   });
@@ -825,7 +848,7 @@ describe("prompt attachment provider content order", () => {
           storageKind: "metadata_only",
         },
         mime: "image/*",
-        url: "zcode-artifact://prompt-attachment",
+        url: "zody-artifact://prompt-attachment",
       },
     ] satisfies ResolvedTurnAttachment[]);
 

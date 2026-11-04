@@ -44,7 +44,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("invalidates memoized artifact images when their session or reader changes", () => {
     const readAttachment = vi.fn();
     const base = {
-      children: "![CUA](zcode-artifact://session-1/shot)",
+      children: "![CUA](zody-artifact://session-1/shot)",
       sessionId: "session-1",
       readAttachment,
     };
@@ -641,7 +641,7 @@ describe("resolveMessageStreamdownMode", () => {
               mediaType: "image/png",
             }),
           },
-          "![CUA](zcode-artifact://session-1/shot)",
+          "![CUA](zody-artifact://session-1/shot)",
         ),
       ),
     );

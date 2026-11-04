@@ -147,6 +147,10 @@ async function resolveTurnAttachment(
       reason: "deferred_clipboard_text",
     });
   }
+  // 旧持久 URI 不得落入文本或本地文件分支，也不能从旧缓存恢复媒体。
+  if (attachment.content?.startsWith("zcode-artifact://") || attachment.path?.startsWith("zcode-artifact://")) {
+    return resolvedPlaceholderAttachment(attachment, `attachment-${index + 1}`, "attachment_read_failed");
+  }
   if (attachment.content) {
     if (attachment.type === "pdf" && !isDataOrArtifactUrl(attachment.content)) {
       // PDF 曾沿用普通 file 的 inline 文本分支，损坏或伪造的正文会被 UTF-8

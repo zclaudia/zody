@@ -1121,15 +1121,23 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
           // 热态预览会和冷恢复 artifact 不一致。同一 message/index 必须优先取不可变副本。
           artifactUri =
             persistedAttachment.metadata?.artifactUri ??
-            (persistedAttachment.url.startsWith("zcode-artifact://")
+            (persistedAttachment.url.startsWith("zody-artifact://")
               ? persistedAttachment.url
               : undefined);
+          // 历史 URI 不能被当成普通路径或原文件重新读取。
+          if (persistedAttachment.url.startsWith("zcode-artifact://") || artifactUri?.startsWith("zcode-artifact://")) {
+            throw new Error("fault.attachment.previewRefNotAuthorized");
+          }
           ref =
             artifactUri ??
             (!persistedAttachment.url.startsWith("data:") ? persistedAttachment.url : input.ref);
         }
         // message row 会先于后续 FilePart 逐条落库；目标 part 尚未可见时仍应
         // 使用已经由当前 projection 授权的 input.ref，不能制造短暂的预览失败窗口。
+      }
+      if (ref.startsWith("zcode-artifact://") ||
+          (ref.startsWith("zody-artifact://") && !ref.startsWith(`zody-artifact://${encodeURIComponent(sessionId)}/`))) {
+        throw new Error("fault.attachment.previewRefNotAuthorized");
       }
       return { ref, mediaType, ...(artifactUri ? { artifactUri } : {}) };
     };
@@ -1250,7 +1258,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
         const { ref, mediaType } = await resolvePromptAttachment(input);
         // 读取必须留在 session runtime 内：artifact 走 session store，路径走当前
         // FileSystemPort，SSH/WSL/Docker 才会命中正确的远端文件系统。
-        if (ref.startsWith("zcode-artifact://")) {
+        if (ref.startsWith("zody-artifact://")) {
           const artifact = await artifactStore.readToolResultArtifact({
             uri: ref,
             trace: traceContext,

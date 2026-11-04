@@ -16421,7 +16421,56 @@
       "docs/plans/zody-full-divergence-rename-survey.md"
     ],
     "writeSet": [
-      "docs/plans/zody-rename-execution/reports/R45.md"
+      "apps/zody-cli/packages/adapters/src/storage/index.ts",
+      "apps/zody-cli/packages/adapters/tests/tool-artifact-store.test.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/create-app.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/prompt-input.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/workflow-artifact-publish.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/workflow-driver-types.ts",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/attachment-refs.ts",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/v4-gateway.ts",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/session-mapper.ts",
+      "apps/zody-cli/packages/bootstrap/tests/session-persistence.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/v4-native-attachments.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/workflow-driver-artifacts.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/zody-protocol.test.ts",
+      "apps/zody-cli/packages/core/src/agent/file-part-hydration.ts",
+      "apps/zody-cli/packages/core/src/runtime/helpers/attachment-artifacts.ts",
+      "apps/zody-cli/packages/core/src/runtime/helpers/attachment-path-reference.ts",
+      "apps/zody-cli/packages/core/src/runtime/helpers/attachment-placeholder.ts",
+      "apps/zody-cli/packages/core/src/runtime/helpers/attachments.ts",
+      "apps/zody-cli/packages/core/src/runtime/helpers/media-attachment-path.ts",
+      "apps/zody-cli/packages/core/src/runtime/helpers/media-observability.ts",
+      "apps/zody-cli/packages/core/src/runtime/helpers/tool-result-media-persistence.ts",
+      "apps/zody-cli/packages/core/tests/get-workflow-run-tool.test.ts",
+      "apps/zody-cli/packages/core/tests/mcp-tool-bridge.test.ts",
+      "apps/zody-cli/packages/core/tests/media-capability.test.ts",
+      "apps/zody-cli/packages/core/tests/media-observability.test.ts",
+      "apps/zody-cli/packages/core/tests/node-repl-browser-injection.test.ts",
+      "apps/zody-cli/packages/core/tests/prompt-attachments.test.ts",
+      "apps/zody-cli/packages/core/tests/runtime-persistence.test.ts",
+      "apps/zody-cli/packages/core/tests/runtime-tool-loop.test.ts",
+      "apps/zody-cli/packages/core/tests/runtime-tool-result-settlement.test.ts",
+      "apps/zody-cli/packages/core/tests/session-history-hydrator.test.ts",
+      "apps/zody-cli/packages/core/tests/test-image-artifact-store.ts",
+      "apps/zody-cli/packages/core/tests/tool-result-media-persistence.test.ts",
+      "apps/zody-cli/packages/dynamic-workflow/src/engine/types.ts",
+      "docs/conversation-session-case-catalog.md",
+      "docs/testing/conversation-session-e2e-coverage-matrix.md",
+      "packages/shared/src/markdown-artifact-images.ts",
+      "packages/shared/src/zody-protocol-v4/workflow-artifacts.ts",
+      "packages/shared/test/markdownArtifactImages.test.ts",
+      "packages/ui/src/app-shell/workflow-artifacts/WorkflowArtifactCards.tsx",
+      "packages/ui/test/agentV4ConnectionTransports.test.ts",
+      "packages/ui/test/markdownImageGallery.test.ts",
+      "packages/ui/test/messageResponseArtifactSessionRerender.test.ts",
+      "packages/ui/test/messageResponseStreamdownMode.test.ts",
+      "packages/ui/test/v4ConversationRowViewUserEdit.test.ts",
+      "packages/ui/test/zodySessionProjection.test.ts",
+      "specs/zody-rename-artifact.md",
+      "docs/plans/zody-rename-execution/reports/R45.md",
+      "packages/desktop/test/e2e/conversation-session/manual-review/pending/zody-rename-artifact.test.ts",
+      "packages/ui/src/components/ai-elements/markdown-image.tsx"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -16430,12 +16479,24 @@
       "共享接口未经主控交接不得修改"
     ],
     "plannedPaths": [
-      "docs/plans/zody-rename-execution/reports/R45.md"
+      "specs/zody-rename-artifact.md",
+      "docs/plans/zody-rename-execution/reports/R45.md",
+      "packages/desktop/test/e2e/conversation-session/manual-review/pending/zody-rename-artifact.test.ts"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "independently-accepted-scoped",
+    "gate": "986 focused and controller71 pass; root/CLI checks pass; independent bounded acceptance includes real ordinary Host/Agent media warm/cold read and actual gateway old/cross-session denial. Stage cleanup complete (206.90 MiB observed). Formal WDIO promotion/default arm64 CUA/mobile/release excluded. Source lock released for post-commit R46 rebind.",
     "structureScope": [
       "artifact 生成、解析、投影及历史读取测试"
+    ],
+    "implementationAgent": "/root/terra_r30_test_roles",
+    "baselineCommit": "04860520b23e184913efd3640d72236a079b89db",
+    "frozenProposal": "output/zody-rename-w5-preflight/R45-frozen-proposal.json",
+    "conditionalWrites": [
+      {
+        "path": "packages/ui/src/components/ai-elements/markdown-image.tsx",
+        "blob": "8fcdde305c9d48fc4c854b9bd0e01056de5caab7",
+        "reason": "Reserve this path in scope; only edit if the legacy markdown red test demonstrates a fallback. Unrecognized image refs reach resolvedSrc and img, so verify renderer hardening and absence of media/file/network access."
+      }
     ]
   },
   "R46": {

@@ -19,7 +19,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("artifact-backed Markdown images", () => {
   it("reads an authorized session artifact instead of passing its custom URI to img", async () => {
-    const ref = "zcode-artifact://session-1/cua-shot";
+    const ref = "zody-artifact://session-1/cua-shot";
     const rewritten = rewriteMarkdownArtifactImageSources(`![shot](${ref})`);
     const src = rewritten.match(/!\[shot\]\(([^)]+)\)/u)?.[1] ?? "";
     const readAttachment = vi.fn().mockResolvedValue({

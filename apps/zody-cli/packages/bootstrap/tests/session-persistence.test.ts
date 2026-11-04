@@ -41,6 +41,7 @@ import {
   type WorkflowRunSnapshot,
 } from "@zody/contracts";
 import { resolveLatestSession, runZodyProtocolAgent } from "../src/index.js";
+import { materializeInputHistoryEntry } from "../src/app/prompt-input.js";
 import { ProductProjection } from "../src/zody-protocol-v4/product-projection.js";
 import { synthesizeEventsFromMessages } from "../src/zody-protocol-v4/transcript-hydration.js";
 import {
@@ -49,6 +50,45 @@ import {
 } from "./helpers/registry-backed-test-app.js";
 
 describe("session persistence", () => {
+  it("drops legacy input history media without reading even when a store is present", async () => {
+    const readToolResultArtifact = vi.fn();
+    const entry = { id: "history" as never, projectID: createProjectId("project"), text: "old text", kind: "prompt" as const,
+      time: { created: 1 }, attachments: [{ type: "image" as const, path: "old.png", content: "zcode-artifact://old/image" }] };
+    const result = await materializeInputHistoryEntry(entry, { readToolResultArtifact } as never);
+    expect(result?.text).toBe("old text");
+    expect(result?.attachments).toEqual([{ type: "image" }]);
+    expect(readToolResultArtifact).not.toHaveBeenCalled();
+    expect(entry.attachments[0].content).toBe("zcode-artifact://old/image");
+  });
+
+  it("materializes current input history while legacy media remains metadata", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "artifact-history-"));
+    const store = createNodeToolArtifactStore({ rootDir });
+    try {
+      const artifact = await store.writeToolResultArtifact({
+        sessionId: createSessionId("history-session"), toolCallId: "history-image" as never,
+        toolName: "prompt-attachment:image", content: "data:image/png;base64,eA==",
+        contentType: "text/plain", retention: "session",
+      });
+      expect(artifact.uri).toMatch(/^zody-artifact:\/\//u);
+      const read = vi.spyOn(store, "readToolResultArtifact");
+      const entry = { id: "history" as never, projectID: createProjectId("project"),
+        text: "keep text", kind: "prompt" as const, time: { created: 1 }, attachments: [
+          { type: "image" as const, path: "current.png", content: artifact.uri },
+          { type: "image" as const, path: "legacy.png", content: artifact.uri.replace("zody-artifact:", "zcode-artifact:") },
+        ] };
+      const result = await materializeInputHistoryEntry(entry, store);
+      expect(result?.text).toBe("keep text");
+      expect(result?.attachments).toEqual([
+        { type: "image", path: "current.png", content: "data:image/png;base64,eA==" },
+        { type: "image" },
+      ]);
+      expect(read).toHaveBeenCalledTimes(1);
+      expect(entry.attachments[1].content).toMatch(/^zcode-artifact:/u);
+    } finally { await rm(rootDir, { recursive: true, force: true }); }
+  });
+
+
   // fork（F4.2）：原「user message data 持久化 Highspeed metadata」测试随
   // intent.highspeed → metadata.highspeed 写入链一起删除。
 
@@ -88,8 +128,8 @@ describe("session persistence", () => {
         mime: "video/mp4",
       });
 
-      expect(imageAttachment.ref).toMatch(/^zcode-artifact:\/\//u);
-      expect(videoAttachment.ref).toMatch(/^zcode-artifact:\/\//u);
+      expect(imageAttachment.ref).toMatch(/^zody-artifact:\/\//u);
+      expect(videoAttachment.ref).toMatch(/^zody-artifact:\/\//u);
       await vi.waitFor(() => expect(primeSpy).toHaveBeenCalledTimes(2));
       expect(primeSpy).toHaveBeenNthCalledWith(1, {
         bytes,
@@ -138,6 +178,43 @@ describe("session persistence", () => {
       sessionStore.close();
       await rm(tempRoot, { force: true, recursive: true });
     }
+  });
+
+  it("rejects legacy persisted media before original path, cache, read and stat", async () => {
+    const root = await mkdtemp(join(tmpdir(), "r45-old-media-"));
+    const originalPath = join(root, "original.mov");
+    const store = createSqliteSessionStore({ dbPath: ":memory:" });
+    const sessionId = createSessionId("r45-old-media");
+    const messageId = createMessageId();
+    const artifacts = createNodeToolArtifactStore({ rootDir: join(root, "artifacts"), videoCacheRootDir: join(root, "video-cache") });
+    let app: Awaited<ReturnType<typeof createZodyApp>> | undefined;
+    try {
+      await writeFile(originalPath, "original bytes");
+      await store.createSession({ id: sessionId, projectID: createProjectId("r45-old"), slug: "old", directory: root, title: "old", version: "test" });
+      await store.saveMessage({ id: messageId, sessionID: sessionId, role: "user", time: { created: 1 }, agent: "test", model: { providerID: "test", modelID: "test" } });
+      const bytes = Uint8Array.from([0, 0, 0, 24, 102, 116, 121, 112]);
+      const durable = await artifacts.writeToolResultArtifact({ sessionId, toolCallId: "old-media" as never, toolName: "legacy-fixture", content: `data:video/mp4;base64,${Buffer.from(bytes).toString("base64")}`, contentType: "text/plain", retention: "session" });
+      const cached = await artifacts.ensureMediaAttachmentPath!({ uri: durable.uri, mediaType: "video/mp4" });
+      if (cached.status !== "ready") throw new Error("synthetic cached artifact was not created");
+      await expect(readFile(cached.path)).resolves.toEqual(Buffer.from(bytes));
+      const uri = durable.uri.replace("zody-artifact:", "zcode-artifact:");
+      await store.savePart({ id: createPartId(), sessionID: sessionId, messageID: messageId, type: "file", filename: "old.mov", mime: "video/mp4", url: originalPath,
+        source: { type: "file", path: originalPath, text: { value: originalPath, start: 0, end: originalPath.length } },
+        metadata: { artifactUri: uri, originalUrl: originalPath, recoverability: "provider_ready", storageKind: "artifact" } });
+      const read = vi.spyOn(artifacts, "readToolResultBinaryArtifact");
+      const statArtifact = vi.spyOn(artifacts, "statToolResultArtifact");
+      const cache = vi.spyOn(artifacts, "ensureMediaAttachmentPath");
+      app = await createZodyApp({ artifactStore: artifacts, sessionId, sessionStore: store, env: {}, runtimeConfig: { workingDirectory: root }, skipUserConfig: true });
+      const ref = { ref: originalPath, mime: "video/mp4", messageId, attachmentIndex: 0 };
+      await expect(app.readPromptAttachment({ ...ref, maxBytes: 1024 })).rejects.toThrow();
+      await expect(app.statPromptAttachment(ref)).rejects.toThrow();
+      await expect(app.resolvePromptAttachmentPreviewSource(ref)).rejects.toThrow();
+      expect(read).not.toHaveBeenCalled(); expect(statArtifact).not.toHaveBeenCalled(); expect(cache).not.toHaveBeenCalled();
+      await expect(readFile(originalPath, "utf8")).resolves.toBe("original bytes");
+      await expect(readFile(cached.path)).resolves.toEqual(Buffer.from(bytes));
+      const persisted = await store.messageWithParts({ sessionID: sessionId, messageID: messageId });
+      expect(persisted?.parts[0]).toMatchObject({ metadata: { artifactUri: uri } });
+    } finally { await app?.close?.(); store.close(); await rm(root, { recursive: true, force: true }); }
   });
 
   it("previews the exact persisted media artifact before a mutable original path", async () => {
@@ -2122,7 +2199,7 @@ describe("session persistence", () => {
       const storedPromptHistory = await store.recallPreviousInputHistory({
         projectID: testProjectIdFromDirectory(tempRoot),
       });
-      expect(storedPromptHistory?.attachments?.[0]?.content).toMatch(/^zcode-artifact:\/\//);
+      expect(storedPromptHistory?.attachments?.[0]?.content).toMatch(/^zody-artifact:\/\//);
       expect(storedPromptHistory?.attachments?.[0]?.content).not.toContain("base64");
 
       await app.sendInput("queued through app", { delivery: "auto" });

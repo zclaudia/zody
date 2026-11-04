@@ -83,7 +83,7 @@ function fakeArtifactStore(options?: { binary?: boolean; failWith?: Error }): {
   const writes: RecordedWrite[] = [];
   const receipt = (index: number, bytes: number, contentType: string): ToolArtifactWriteResult => ({
     id: `artifact-${index}`,
-    uri: `zcode-artifact://${SESSION_ID}/artifact-${index}`,
+    uri: `zody-artifact://${SESSION_ID}/artifact-${index}`,
     path: `/store/${SESSION_ID}/artifact-${index}`,
     bytes,
     contentType,
@@ -230,7 +230,7 @@ describe("workflow driver — 产物发布（artifact.file）", () => {
       description: "本轮的性能回归",
       contentType: "application/pdf",
       bytes: Buffer.byteLength("%PDF-1.7\n…", "utf8"),
-      uri: `zcode-artifact://${SESSION_ID}/artifact-1`,
+      uri: `zody-artifact://${SESSION_ID}/artifact-1`,
       sourcePath: "out/report.pdf",
     });
     // publishedAt 由 driver 填（引擎没有时钟），且必须是本次调用期间的时刻。

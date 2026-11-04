@@ -180,7 +180,7 @@ function snapshotFilePartArtifactUri(
   const metadataArtifactUri =
     typeof part.metadata?.artifactUri === "string" ? part.metadata.artifactUri : undefined;
   const artifactUri = metadataArtifactUri ?? part.url;
-  return artifactUri.startsWith("zcode-artifact://") ? artifactUri : undefined;
+  return artifactUri.startsWith("zody-artifact://") ? artifactUri : undefined;
 }
 
 function dataUrlFromSnapshotArtifact(

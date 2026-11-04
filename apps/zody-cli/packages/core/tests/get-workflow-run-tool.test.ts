@@ -460,7 +460,7 @@ describe("GetWorkflowRun handler — published artifacts", () => {
     itemCount: 0,
     versions: [
       { version: 1, publishedAt: 1, bytes: 10, uri: "zcode-artifact://one" },
-      { version: 2, publishedAt: 2, bytes: 4_096, uri: "zcode-artifact://two" },
+      { version: 2, publishedAt: 2, bytes: 4_096, uri: "zody-artifact://two" },
     ],
   };
   const PERF = {

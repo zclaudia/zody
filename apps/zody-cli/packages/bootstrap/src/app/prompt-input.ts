@@ -80,10 +80,16 @@ export async function materializeInputHistoryEntry(
   entry: InputHistoryEntry | null,
   artifactStore: ToolArtifactStorePort | undefined,
 ): Promise<InputHistoryEntry | null> {
-  if (!entry?.attachments || !artifactStore) return entry;
+  if (!entry?.attachments) return entry;
   const attachments = await Promise.all(
     entry.attachments.map(async (attachment): Promise<InputHistoryAttachment> => {
-      if (!attachment.content?.startsWith("zcode-artifact://")) return attachment;
+      // 旧媒体只保留元数据，禁止交给存储或本地路径回退。
+      if (attachment.content?.startsWith("zcode-artifact://")) {
+        const { content: _content, path: _path, ...metadata } = attachment;
+        return metadata;
+      }
+      if (!attachment.content?.startsWith("zody-artifact://")) return attachment;
+      if (!artifactStore) return attachmentWithoutInlineContent(attachment);
       try {
         const artifact = await artifactStore.readToolResultArtifact({ uri: attachment.content });
         return {
