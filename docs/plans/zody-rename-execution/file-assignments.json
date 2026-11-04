@@ -17479,5 +17479,46 @@
       "output/zody-rename-r20-launch-doc/controller/addendum-2-full-document-tail.json"
     ],
     "controllerVerification": "docs/plans/zody-rename-execution/reports/R20-launch-doc-tail-controller-verification.md"
+  },
+  "R40_ERROR_MESSAGE_ID": {
+    "baselineCommit": "737ac457c6adbe71e6780619ab4f0cc07e067b8e",
+    "controllerGrant": "output/zody-rename-r40-error-message-id/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "specs/zody-rename-error-values.md",
+      "docs/chat/media-budget-error-i18n.md",
+      "packages/ui/src/ChatErrorBanner.tsx",
+      "packages/ui/src/i18n/locales/en-US.ts",
+      "packages/ui/src/i18n/locales/zh-CN.ts",
+      "packages/ui/src/request-security-edition/messages.ts",
+      "packages/ui/src/lib/providerBusinessError.ts",
+      "packages/ui/src/lib/conversationTelemetryParityScenarioDefinitions.ts",
+      "packages/ui/test/providerBusinessError.test.ts",
+      "packages/ui/test/chatErrorBannerI18n.test.ts",
+      "docs/plans/zody-rename-execution/reports/R40-error-message-id.md"
+    ],
+    "readSet": [
+      "packages/ui/src/i18n/IntlProvider.tsx",
+      "packages/ui/src/i18n/index.ts",
+      "packages/ui/src/lib/zodyUiError.ts",
+      "packages/ui/test/zodyUiError.test.ts",
+      "packages/ui/src/request-security-edition/errors.ts",
+      "packages/ui/src/lib/conversationTelemetryLegacyParityE2E.ts",
+      "packages/ui/src/v4/telemetry/conversationTelemetryParityE2E.ts",
+      "packages/ui/test/chatErrorBannerTelemetry.test.ts",
+      "apps/zody-cli/packages/contracts/src/interfaces/mcp.port.ts",
+      "specs/zody-rename-runtime-contract.md",
+      "packages/ui/src/v4/ConversationComposer.tsx",
+      "packages/ui/src/lib/chatErrorBannerTelemetry.ts",
+      "packages/ui/test/v4ConversationComposerErrorBanner.test.ts",
+      "packages/desktop/test/conversationTelemetryParity.test.ts",
+      "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-telemetry-parity-core.test.ts",
+      "docs/trace/archive/turn-trace-observability-v2.md",
+      "packages/desktop/src/renderer/src/plugin-sandbox/genUi.ts"
+    ],
+    "scopeStatus": "bounded-source-accepted-cleaned",
+    "gate": "Scoped DeepSeek acceptance, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R40-error-message-id-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R40-error-message-id-controller-verification.md"
   }
 }

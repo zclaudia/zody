@@ -1,6 +1,6 @@
 # Zody 活跃错误值
 
-同版本内错误的唯一所有者生成结构化 code，RPC 按原值透传，消费者根据同一 code 分类；旧 live 值保持不透明，不作为新值别名。以下活跃 code 原子切换：`ZCODE_FILE_LOCK_TIMEOUT` → `ZODY_FILE_LOCK_TIMEOUT`、`ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED` → `ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED`、`ZCODE_AGENT_PROVIDER_NOT_READY` → `ZODY_AGENT_PROVIDER_NOT_READY`、`ZCODE_AGENT_RUNTIME_UNAVAILABLE` → `ZODY_AGENT_RUNTIME_UNAVAILABLE`、`ZCODE_RUNTIME_MODEL_UNAVAILABLE` → `ZODY_RUNTIME_MODEL_UNAVAILABLE`。非品牌 `provider_not_ready` reason 和 `zcode.error` locale namespace 不变。
+同版本内错误的唯一所有者生成结构化 code，RPC 按原值透传，消费者根据同一 code 分类；旧 live 值保持不透明，不作为新值别名。以下活跃 code 原子切换：`ZCODE_FILE_LOCK_TIMEOUT` → `ZODY_FILE_LOCK_TIMEOUT`、`ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED` → `ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED`、`ZCODE_AGENT_PROVIDER_NOT_READY` → `ZODY_AGENT_PROVIDER_NOT_READY`、`ZCODE_AGENT_RUNTIME_UNAVAILABLE` → `ZODY_AGENT_RUNTIME_UNAVAILABLE`、`ZCODE_RUNTIME_MODEL_UNAVAILABLE` → `ZODY_RUNTIME_MODEL_UNAVAILABLE`。非品牌 `provider_not_ready` reason 不变。第一方 UI 的 24 个错误 locale ID 及 `zcode.unavailable`、`zcode.initFailed` 原子切到相同后缀的 `zody.*`；旧 ID 不别名，译文和错误 code 不变。历史 raw 与未知错误保持原文，不迁移或推定未知外部 metadata。
 
 历史 task index、snapshot 和 JSON 中的旧 code/message 按原字节保留，不迁移、映射或自动解释新语义；未知 code 作为普通错误显示原 message。历史模型不可用的旧 code 不承诺继续获得专属本地化或抑制。RPC 不修改未知 code，保持其原始值与 data；当前 UI 的模型不可用 code 由 SessionPane 局部发送失败生成，不声称 CLI 生成该特定 literal。
 

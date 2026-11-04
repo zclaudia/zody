@@ -5083,39 +5083,39 @@ const zhCN: Record<string, string> = {
   "chat.permission.switchMode.placeholder": "实施计划",
 
   // ZCode Agent
-  "zcode.unavailable": "AI 代理不可用",
-  "zcode.initFailed": "启动 AI 代理失败",
-  "zcode.error.TASK_OWNED_BY_OTHER_HOST": "该任务正在另一个已连接视图中运行。",
-  "zcode.error.STALE_TASK_OWNER_COMMAND": "该操作属于旧的运行轮次，已忽略。",
-  "zcode.error.NO_ACTIVE_TASK_OWNER": "当前没有可处理该操作的任务所有者。",
-  "zcode.error.OWNER_COMMAND_FAILED": "任务所有者未能完成该操作。",
-  "zcode.error.MEDIA_BUDGET_CURRENT_ATTACHMENT_TOO_LARGE":
+  "zody.unavailable": "AI 代理不可用",
+  "zody.initFailed": "启动 AI 代理失败",
+  "zody.error.TASK_OWNED_BY_OTHER_HOST": "该任务正在另一个已连接视图中运行。",
+  "zody.error.STALE_TASK_OWNER_COMMAND": "该操作属于旧的运行轮次，已忽略。",
+  "zody.error.NO_ACTIVE_TASK_OWNER": "当前没有可处理该操作的任务所有者。",
+  "zody.error.OWNER_COMMAND_FAILED": "任务所有者未能完成该操作。",
+  "zody.error.MEDIA_BUDGET_CURRENT_ATTACHMENT_TOO_LARGE":
     "当前附件总量过大，请移除部分附件或压缩后重试。",
-  "zcode.error.MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE":
+  "zody.error.MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE":
     "当前图片附件过大，请移除部分图片或压缩后重试。",
-  "zcode.error.MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE":
+  "zody.error.MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE":
     "当前视频附件过大，请移除部分视频或压缩后重试。",
-  "zcode.error.ZODY_RUNTIME_MODEL_UNAVAILABLE":
+  "zody.error.ZODY_RUNTIME_MODEL_UNAVAILABLE":
     "当前使用的模型已不可用，请从当前模型列表中选择一个可用模型后继续。",
-  "zcode.error.ZCODE_BIGMODEL_TEAM_PLAN_MEMBER_REQUIRED":
+  "zody.error.ZCODE_BIGMODEL_TEAM_PLAN_MEMBER_REQUIRED":
     "当前模型不可用，请检查是否已将当前账号添加到项目成员列表",
-  "zcode.error.CLAUDE_UNKNOWN_COMMAND":
+  "zody.error.CLAUDE_UNKNOWN_COMMAND":
     "Claude Code 未知命令 {command}。请确认命令名称，或切换到支持该命令的 Agent/技能后重试。",
-  "zcode.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS":
+  "zody.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS":
     "Claude Code 未知命令 {command}（参数：{args}）。请确认命令名称，或切换到支持该命令的 Agent/技能后重试。",
-  "zcode.error.providerBusiness.1006": "登录状态已失效，请重新登录后再试。",
-  "zcode.error.providerBusiness.1005":
+  "zody.error.providerBusiness.1006": "登录状态已失效，请重新登录后再试。",
+  "zody.error.providerBusiness.1005":
     "今日免费计划额度已用完。请升级账户、切换模型，或等待额度恢复。",
-  "zcode.error.providerBusiness.3006": "当前模型不在可用范围内，请切换到允许的模型后重试。",
-  "zcode.error.providerBusiness.3002": "请求过于频繁，请稍后重试。",
-  "zcode.error.providerBusiness.3001": "请求参数错误，请检查输入后重试。",
-  "zcode.error.providerBusiness.3008": "当前系统繁忙，请切换模型、升级账户，或稍后再试。",
-  "zcode.error.providerBusiness.3009": "当前系统繁忙，请切换模型、升级账户，或稍后再试。",
-  "zcode.error.providerBusiness.3010": "当前系统繁忙，请切换模型、升级账户，或稍后再试。",
-  "zcode.error.providerBusiness.3102": "已超过单次最长运行时间，请创建新的闲时任务继续。",
-  "zcode.error.modelSuspiciousEmpty": "模型未返回任何内容。",
-  "zcode.error.providerBusiness.2007": "上游服务暂时不可用，请稍后重试。",
-  "zcode.error.providerBusiness.429": "请求过于频繁，请稍后重试。",
+  "zody.error.providerBusiness.3006": "当前模型不在可用范围内，请切换到允许的模型后重试。",
+  "zody.error.providerBusiness.3002": "请求过于频繁，请稍后重试。",
+  "zody.error.providerBusiness.3001": "请求参数错误，请检查输入后重试。",
+  "zody.error.providerBusiness.3008": "当前系统繁忙，请切换模型、升级账户，或稍后再试。",
+  "zody.error.providerBusiness.3009": "当前系统繁忙，请切换模型、升级账户，或稍后再试。",
+  "zody.error.providerBusiness.3010": "当前系统繁忙，请切换模型、升级账户，或稍后再试。",
+  "zody.error.providerBusiness.3102": "已超过单次最长运行时间，请创建新的闲时任务继续。",
+  "zody.error.modelSuspiciousEmpty": "模型未返回任何内容。",
+  "zody.error.providerBusiness.2007": "上游服务暂时不可用，请稍后重试。",
+  "zody.error.providerBusiness.429": "请求过于频繁，请稍后重试。",
 
   // 调试信息栏
   "debugInfo.taskId": "Task ID",
