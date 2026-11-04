@@ -1,3 +1,4 @@
+import * as childPorts from "../src/runtime/helpers/child-client-ports.js";
 import { setup as setupProfileScenario, done as profileDone } from "./subagent-profile-scenario.js";
 import { createRecordingSubagentSessionStore } from "./subagent-test-store.js";
 import { describe, expect, it, vi } from "vitest";
@@ -1302,9 +1303,11 @@ describe("Explore subagent", () => {
     ).toContain("http client port is wired");
   });
 
-  it("runs a custom profile-backed subagent with its prompt and tool allowlist", async () => {
+  it.each(["zcode-reviewer", "ZCode Reviewer"])("runs a custom profile-backed subagent with its prompt and tool allowlist: %s", async (profileInput) => {
     const sessionId = createSessionId("runtime-custom-subagent-profile");
     const eventStore = createTestSessionEventStore();
+    const sessionStore = createRecordingSubagentSessionStore();
+    const ports = vi.spyOn(childPorts, "deriveChildClientPorts");
     const parentRequests: any[] = [];
     const childRequests: any[] = [];
 
@@ -1330,6 +1333,7 @@ describe("Explore subagent", () => {
       },
       {
         eventStore,
+        sessionStore,
         modelFactory: createTestModelFactory({
           async generateText(request: any) {
             const toolNames = (request.tools ?? []).map((tool: any) => tool.name);
@@ -1347,7 +1351,7 @@ describe("Explore subagent", () => {
                       input: {
                         description: "检查实现边界",
                         prompt: "检查 subagent 与 main agent 的边界。",
-                        subagent_type: "ZCode Reviewer",
+                        subagent_type: profileInput,
                       },
                     },
                   ],
@@ -1364,7 +1368,6 @@ describe("Explore subagent", () => {
             }
 
             childRequests.push(request);
-            childObservations.push(observation);
             return {
               finishReason: "stop",
               providerMetadata: undefined,
@@ -1376,7 +1379,14 @@ describe("Explore subagent", () => {
       },
     );
 
-    const result = await runtime.executeTurn("让自定义 agent 检查边界");
+    let result: Awaited<ReturnType<typeof runtime.executeTurn>>;
+    let portCalls: typeof ports.mock.calls;
+    try {
+      result = await runtime.executeTurn("让自定义 agent 检查边界");
+      portCalls = [...ports.mock.calls];
+    } finally {
+      ports.mockRestore();
+    }
     const parentFirstRequestText = parentRequests[0].messages
       .map((message: any) => modelMessageContentToText(message.content))
       .join("\n");
@@ -1387,6 +1397,16 @@ describe("Explore subagent", () => {
     const parentAgentToolDescription =
       parentRequests[0].tools.find((tool: any) => tool.name === "Agent")?.description ?? "";
 
+    const events = await eventStore.getEvents(sessionId);
+    const spawn = events.find((event) => event.type === SessionEventType.SubagentSpawned);
+    const childSessionId = (spawn?.payload as { childSessionId: SessionId } | undefined)
+      ?.childSessionId;
+    expect(childSessionId).toBeTruthy();
+    const messages = await sessionStore.messages({ sessionID: childSessionId! });
+    expect(messages.length).toBeGreaterThan(0);
+    expect(messages.some((message) => message.info.agent === "zody-zcode-reviewer")).toBe(true);
+    const matched = portCalls.find(([, context]) => context.childSessionId === childSessionId);
+    expect(matched?.[1].agentType).toBe("zcode-reviewer");
     expect(result.response).toBe("父 agent 采纳了自定义 agent 的结论。");
     expect(parentFirstRequestText).toContain("Available agent types for the Agent tool:");
     expect(parentFirstRequestText).toContain("zcode-reviewer");

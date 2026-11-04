@@ -1277,6 +1277,7 @@ describe("session persistence", () => {
     const dbPath = join(tempRoot, "session.sqlite");
     const store = createSqliteSessionStore({ dbPath });
     const requestModels: string[] = [];
+    const ports = vi.spyOn(AgentRuntime.prototype, "createChildClientPorts");
     const pluginRoots = vi.spyOn(bundledPlugins, "resolveOfficialPluginRoots").mockReturnValue([]);
 
     try {
@@ -1334,12 +1335,26 @@ describe("session persistence", () => {
       });
 
       expect(result.status).toBe("completed");
+      const ids = result.snapshot?.sessionLinks.map((link) => link.sessionId).filter(Boolean) ?? [];
+      expect(ids.length).toBeGreaterThan(0);
+      const calls = ports.mock.calls
+        .map(([input]) => input)
+        .filter((input) => ids.includes(input.childSessionId));
+      expect(calls.some((input) => input.agentType === "zody-expert")).toBe(true);
+      const messages = (
+        await Promise.all(
+          ids.map((id) => store.messages({ sessionID: id as ReturnType<typeof createSessionId> })),
+        )
+      ).flat();
+      expect(messages.length).toBeGreaterThan(0);
+      expect(messages.some((message) => message.info.agent === "zody-expert")).toBe(true);
       expect(requestModels[0]).toBe("zai/glm-main");
       expect(requestModels.slice(1)).toContain("deepseek/deepseek-v4-pro");
       expect(result.snapshot?.sessionLinks.map((link) => link.model)).toContain(
         "deepseek/deepseek-v4-pro",
       );
     } finally {
+      ports.mockRestore();
       pluginRoots.mockRestore();
       store.close();
       await rm(tempRoot, { recursive: true, force: true });

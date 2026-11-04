@@ -17595,5 +17595,29 @@
     "gate": "Scoped DeepSeek acceptance, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
     "acceptanceReport": "docs/plans/zody-rename-execution/reports/R20-workflow-agent-identity-independent-review.md",
     "controllerVerification": "docs/plans/zody-rename-execution/reports/R20-workflow-agent-identity-controller-verification.md"
+  },
+  "R20_AGENT_IDENTITY_ADJACENT": {
+    "baselineCommit": "b51426938367a25423064f76c9d6c61ce0846b77",
+    "controllerGrant": "output/zody-rename-r20-agent-adjacent/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "apps/zody-cli/packages/bootstrap/src/app/workflow-facade.ts",
+      "apps/zody-cli/packages/core/src/runtime/methods/subagent.ts",
+      "apps/zody-cli/packages/bootstrap/tests/session-persistence.test.ts",
+      "apps/zody-cli/packages/core/tests/subagent-explore.test.ts",
+      "specs/zody-rename-telemetry.md",
+      "docs/plans/zody-rename-execution/reports/R20-agent-identity-adjacent.md"
+    ],
+    "readSet": [
+      "apps/zody-cli/packages/core/src/hooks/configured-runner-input.ts",
+      "apps/zody-cli/packages/core/src/runtime/methods/message-persistence.ts",
+      "apps/zody-cli/packages/core/src/runtime/methods/usage-observability.ts",
+      "apps/zody-cli/packages/core/tests/hooks-seven-events.test.ts",
+      "apps/zody-cli/packages/core/tests/runtime-persistence.test.ts"
+    ],
+    "scopeStatus": "bounded-source-accepted-cleaned",
+    "gate": "Scoped DeepSeek acceptance, five controller checks, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R20-agent-identity-adjacent-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R20-agent-identity-adjacent-controller-verification.md"
   }
 }
