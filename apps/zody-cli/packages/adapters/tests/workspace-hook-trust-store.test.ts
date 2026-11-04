@@ -54,6 +54,18 @@ afterEach(async () => {
 });
 
 describe("FileWorkspaceHookTrustStore", () => {
+  it("R47.1 fails closed for an unknown persisted schema version", async () => {
+    const base = await root();
+    const path = join(base, "workspace-hook-trust-v1.json");
+    const raw = JSON.stringify({ schemaVersion: 999, records: [record("workspace:a", DIGEST_A)] });
+    await writeFile(path, raw);
+    const store = createFileWorkspaceHookTrustStore({ filePath: path });
+    const loaded = await store.load();
+    expect(loaded).toMatchObject({ status: "corrupt", records: [] });
+    expect(loaded.recoveredCorruptPath).toBeDefined();
+    await expect(readFile(loaded.recoveredCorruptPath!, "utf8")).resolves.toBe(raw);
+  });
+
   it("只使用 user config storage.dir，不接受 project/env storage 覆盖", async () => {
     const home = await root();
     const custom = join(home, "trusted-user-storage");

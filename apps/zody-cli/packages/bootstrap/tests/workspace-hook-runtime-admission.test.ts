@@ -1,7 +1,7 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createConfig } from "@zody/adapters/config";
 import {
   createDefaultFileWorkspaceHookTrustStore,
@@ -10,6 +10,7 @@ import {
 } from "@zody/adapters/storage";
 import { createWorkspaceHookTrustRecords } from "@zody/core";
 import { SessionEventType, type ExecutionPort } from "@zody/contracts";
+import * as bundledPlugins from "../src/app/bundled-plugins.js";
 import { createRegistryBackedTestApp as createZodyApp } from "./helpers/registry-backed-test-app.js";
 
 const roots: string[] = [];
@@ -19,6 +20,174 @@ afterEach(async () => {
 });
 
 describe("createZodyApp workspace Hook admission", () => {
+  it.each([
+    [
+      "zcode.json",
+      "zcode.json",
+      "b9b32279ba40bcd44c57de80ab37b720f8fda331640c4bbc5dbde36ae05b04f9",
+    ],
+    [
+      ".zcode/config.json",
+      ".zcode/config.json",
+      "e47626cb23534acb728c47e0fa447350b90f7929e4adec650926a7fcccb599f0",
+    ],
+    [
+      "explicit-hooks.json",
+      "explicit",
+      "ffb8a9d8022e33fc06343ad4ec17d0c18f7de27855b4ef224868e75f952a2821",
+    ],
+  ])("R47.1 admits only the pinned v1 source %s", async (relative, kind, digest) => {
+    const root = await mkdtemp(join(tmpdir(), "r47-admission-"));
+    roots.push(root);
+    const workspace = join(root, "workspace");
+    const userConfigPath = join(root, "home", "config.json");
+    const storageRoot = join(root, "storage");
+    const path = join(workspace, relative);
+    await mkdir(join(workspace, ".git"), { recursive: true });
+    await mkdir(join(path, ".."), { recursive: true });
+    await mkdir(join(root, "home"), { recursive: true });
+    await writeFile(userConfigPath, JSON.stringify({ storage: { dir: storageRoot } }));
+    const source = {
+      hooks: {
+        enabled: true,
+        timeoutMs: 30000,
+        maxOutputBytes: 4096,
+        events: { SessionStart: [{ hooks: [{ type: "command", command: "echo r47-fixture" }] }] },
+      },
+    };
+    await writeFile(path, JSON.stringify(source));
+    const options = kind === "explicit" ? { projectConfigPath: path } : {};
+    const snapshot = createConfig({
+      env: {},
+      userConfigPath,
+      workingDirectory: workspace,
+      ...options,
+    }).sources.project.workspaceHookSnapshot;
+    expect(snapshot?.sourceFiles).toHaveLength(1);
+    expect(snapshot?.sourceFiles[0]).toMatchObject({ configFileKind: kind, discoveryOrder: 0 });
+    expect(snapshot?.hooks[0]).toMatchObject({
+      sourceFileIndex: 0,
+      resolvedTimeoutMs: 30000,
+      resolvedMaxOutputBytes: 4096,
+      hookDeclarationDigest: digest,
+    });
+    if (!snapshot) throw new Error("expected snapshot");
+    const store = await createDefaultFileWorkspaceHookTrustStore({ userConfigPath });
+    await store.grant([
+      {
+        workspaceIdentity: snapshot.workspaceIdentity,
+        hookDeclarationDigest: digest,
+        digestAlgorithm: "sha256",
+        decision: "trusted",
+        grantedAt: "2026-08-06T00:00:00.000Z",
+        eventAtGrant: "SessionStart",
+        displayCommandAtGrant: "echo r47-fixture",
+        sourcePathAtGrant: relative,
+        sourceDiscoveryOrderAtGrant: 0,
+        matcherAtGrant: null,
+        matcherIndexAtGrant: 0,
+        hookIndexAtGrant: 0,
+      },
+    ]);
+    const storePath = join(storageRoot, "security", "workspace-hook-trust-v1.json");
+    const originalRecord = await readFile(storePath, "utf8");
+    expect(JSON.parse(originalRecord).records[0]).toMatchObject({
+      hookDeclarationDigest: digest,
+      sourcePathAtGrant: relative,
+    });
+    const pluginRoots = vi.spyOn(bundledPlugins, "resolveOfficialPluginRoots").mockReturnValue([]);
+    const execute = async (projectConfigPath?: string) => {
+      const commands: string[] = [];
+      const eventStore = createInMemorySessionEventStore();
+      const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
+      let app: Awaited<ReturnType<typeof createZodyApp>> | undefined;
+      try {
+        app = await createZodyApp({
+          env: {},
+          executionPort: executionPort(commands),
+          eventStore,
+          modelExecutor: stopModelExecutor(),
+          runtimeConfig: { mcp: { enabled: false, servers: {} }, workingDirectory: workspace },
+          sessionStore,
+          userConfigPath,
+          workspaceHookTrustEnabled: true,
+          ...(projectConfigPath ? { projectConfigPath } : {}),
+        });
+        await app.submitPrompt("hello");
+        return { commands, events: await eventStore.getEvents(app.sessionId) };
+      } finally {
+        await app?.close();
+        sessionStore.close();
+      }
+    };
+    try {
+      expect((await execute(kind === "explicit" ? path : undefined)).commands).toEqual([
+        "echo r47-fixture",
+      ]);
+      await writeFile(path, JSON.stringify(source, null, 2) + "\n");
+      expect((await execute(kind === "explicit" ? path : undefined)).commands).toEqual([
+        "echo r47-fixture",
+      ]);
+      const moved =
+        kind === ".zcode/config.json"
+          ? join(workspace, ".zody", "config.json")
+          : join(workspace, ".zcode", "config.json");
+      await mkdir(join(moved, ".."), { recursive: true });
+      await rename(path, moved);
+      const movedSnapshot = createConfig({ env: {}, userConfigPath, workingDirectory: workspace })
+        .sources.project.workspaceHookSnapshot;
+      expect(movedSnapshot?.sourceFiles[0]).toMatchObject({
+        canonicalPath: moved,
+        configFileKind: kind === ".zcode/config.json" ? ".zody/config.json" : ".zcode/config.json",
+      });
+      expect(movedSnapshot?.hooks[0]?.hookDeclarationDigest).not.toBe(digest);
+      const movedResult = await execute();
+      expect(movedResult.commands).toEqual([]);
+      expect(movedResult.events).toContainEqual(
+        expect.objectContaining({
+          type: SessionEventType.HookRunBlocked,
+          payload: expect.objectContaining({ errorCode: "workspace_hooks_pending_trust" }),
+        }),
+      );
+      await rename(moved, path);
+      await writeFile(
+        path,
+        JSON.stringify({
+          hooks: {
+            ...source.hooks,
+            events: {
+              SessionStart: [{ hooks: [{ type: "command", command: "echo r47-changed" }] }],
+            },
+          },
+        }),
+      );
+      const changedSnapshot = createConfig({
+        env: {},
+        userConfigPath,
+        workingDirectory: workspace,
+        ...options,
+      }).sources.project.workspaceHookSnapshot;
+      expect(changedSnapshot?.sourceFiles[0]).toMatchObject({
+        canonicalPath: path,
+        configFileKind: kind,
+      });
+      expect(changedSnapshot?.hooks[0]?.hookDeclarationDigest).not.toBe(digest);
+      const changedResult = await execute(kind === "explicit" ? path : undefined);
+      expect(changedResult.commands).toEqual([]);
+      expect(changedResult.events).toContainEqual(
+        expect.objectContaining({
+          type: SessionEventType.HookRunBlocked,
+          payload: expect.objectContaining({ errorCode: "workspace_hook_declaration_changed" }),
+        }),
+      );
+      expect(await readFile(storePath, "utf8")).toBe(originalRecord);
+      expect(pluginRoots).toHaveBeenCalled();
+      await expect(stat(join(storageRoot, "plugins"))).rejects.toMatchObject({ code: "ENOENT" });
+    } finally {
+      pluginRoots.mockRestore();
+    }
+  });
+
   it("首次 activation 等待 Trust store load；pending blocked，exact pretrust 后执行同一 snapshot", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-workspace-hook-runtime-"));
     roots.push(root);

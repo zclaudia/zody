@@ -17619,5 +17619,29 @@
     "gate": "Scoped DeepSeek acceptance, five controller checks, exact cleanup and independent post-audit PASS complete. Full rename/R48/release unaccepted.",
     "acceptanceReport": "docs/plans/zody-rename-execution/reports/R20-agent-identity-adjacent-independent-review.md",
     "controllerVerification": "docs/plans/zody-rename-execution/reports/R20-agent-identity-adjacent-controller-verification.md"
+  },
+  "R47_SOURCE_TRUST_TESTS": {
+    "baselineCommit": "db51e8b980d0e65a42ce3a42f7fa7f6601ee050d",
+    "controllerGrant": "output/zody-rename-r47-source-trust/controller/grant.json",
+    "implementationAgent": "/root/terra_cleanup_audit",
+    "writeSet": [
+      "apps/zody-cli/packages/adapters/tests/workspace-hook-trust-phase1.test.ts",
+      "apps/zody-cli/packages/adapters/tests/workspace-hook-trust-store.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/workspace-hook-runtime-admission.test.ts"
+    ],
+    "readSet": [
+      "packages/shared/test/workspaceHookTrustStoreFile.test.ts",
+      "packages/shared/src/workspace-hook-config.ts",
+      "packages/shared/src/workspace-hook-digest.ts",
+      "packages/shared/src/workspace-hook-trust-store-file.ts",
+      "apps/zody-cli/packages/core/src/hooks/workspace-hook-trust-evaluation.ts",
+      "apps/zody-cli/packages/adapters/src/storage/workspace-hook-trust-store.ts",
+      "specs/zody-rename-runtime-contract.md",
+      "docs/specs/workspace-hook-trust-persistent-only.md"
+    ],
+    "scopeStatus": "bounded-source-accepted-cleaned",
+    "gate": "Three-test characterization accepted by DeepSeek, root checks and exact cleanup/post-audit PASS. Desktop restart and selected attachment routing remain pending; no whole R47/R48/release pass.",
+    "acceptanceReport": "docs/plans/zody-rename-execution/reports/R47-source-trust-independent-review.md",
+    "controllerVerification": "docs/plans/zody-rename-execution/reports/R47-source-trust-controller-verification.md"
   }
 }

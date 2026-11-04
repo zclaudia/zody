@@ -45,6 +45,55 @@ async function snapshotFor(
 }
 
 describe("workspace hook trust phase 1 discovery", () => {
+  it.each([
+    [
+      "zcode.json",
+      "zcode.json",
+      "b9b32279ba40bcd44c57de80ab37b720f8fda331640c4bbc5dbde36ae05b04f9",
+    ],
+    [
+      ".zcode/config.json",
+      ".zcode/config.json",
+      "e47626cb23534acb728c47e0fa447350b90f7929e4adec650926a7fcccb599f0",
+    ],
+    [
+      "explicit-hooks.json",
+      "explicit",
+      "ffb8a9d8022e33fc06343ad4ec17d0c18f7de27855b4ef224868e75f952a2821",
+    ],
+  ])("R47.1 preserves historical v1 source anchor %s", async (relative, kind, digest) => {
+    const root = await createWorkspace();
+    try {
+      const path = join(root, relative);
+      await writeJson(path, {
+        hooks: {
+          enabled: true,
+          timeoutMs: 30000,
+          maxOutputBytes: 4096,
+          events: { SessionStart: [{ hooks: [{ type: "command", command: "echo r47-fixture" }] }] },
+        },
+      });
+      const result = createConfig({
+        env: {},
+        skipUserConfig: true,
+        workingDirectory: root,
+        ...(kind === "explicit" ? { projectConfigPath: path } : {}),
+      });
+      const snapshot = result.sources.project.workspaceHookSnapshot;
+      expect(snapshot?.sourceFiles).toHaveLength(1);
+      expect(snapshot?.sourceFiles[0]).toMatchObject({ configFileKind: kind, discoveryOrder: 0 });
+      expect(snapshot?.hooks).toHaveLength(1);
+      expect(snapshot?.hooks[0]).toMatchObject({
+        resolvedTimeoutMs: 30000,
+        resolvedMaxOutputBytes: 4096,
+        sourceFileIndex: 0,
+      });
+      expect(snapshot?.hooks[0]?.hookDeclarationDigest).toBe(digest);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("保留 immutable project candidates 和 provenance，但仍不进入 executable runtime hooks", async () => {
     const root = await createWorkspace();
     try {
