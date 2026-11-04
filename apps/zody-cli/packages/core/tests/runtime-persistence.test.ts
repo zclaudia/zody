@@ -617,7 +617,7 @@ describe("AgentRuntime session persistence", () => {
     });
   });
 
-  it("creates the session once and persists user and assistant text messages", async () => {
+  it.each([{ agentName: undefined, expected: "zody-agent" }, { agentName: "persistence-test", expected: "persistence-test" }])("persists default and explicit agent identity: $expected", async ({ agentName, expected }) => {
     const sessionId = createSessionId("runtime-persistence-text");
     const store = createRecordingSessionStore();
     const responses = [
@@ -635,7 +635,7 @@ describe("AgentRuntime session persistence", () => {
     const runtime = createTestAgentRuntime(
       sessionId,
       {
-        agentName: "persistence-test",
+        ...(agentName ? { agentName } : {}),
         mode: "plan",
         workingDirectory: "/tmp/zcode-runtime-persistence",
       },
@@ -657,7 +657,9 @@ describe("AgentRuntime session persistence", () => {
     await runtime.executeTurn("second prompt");
 
     const userMessages = store.savedMessages.filter((message) => message.role === "user" && !message.synthetic);
+    expect(userMessages.map((message) => message.agent)).toEqual([expected, expected]);
     const assistantSaves = store.savedMessages.filter((message) => message.role === "assistant");
+    expect(assistantSaves.every((message) => message.agent === expected)).toBe(true);
     const assistantMessageIds = new Set(assistantSaves.map((message) => message.id));
     const completedAssistantSaves = assistantSaves.filter(
       (message) => message.role === "assistant" && message.time.completed !== undefined,
@@ -3135,7 +3137,7 @@ describe("AgentRuntime session persistence", () => {
     });
   });
 
-  it("records model, turn, and tool usage facts during a runtime turn", async () => {
+  it.each([{ agentName: undefined, expected: "zody-agent" }, { agentName: "custom-agent", expected: "custom-agent" }])("records runtime usage identity: $expected", async ({ agentName, expected }) => {
     const sessionId = createSessionId("runtime-usage-observability");
     const store = createRecordingSessionStore();
     const responses = [
@@ -3170,7 +3172,7 @@ describe("AgentRuntime session persistence", () => {
     ];
     const runtime = createTestAgentRuntime(
       sessionId,
-      { mode: "plan" },
+      { mode: "plan", ...(agentName ? { agentName } : {}) },
       {
         eventStore: createTestSessionEventStore(),
         modelFactory: createTestModelFactory({
@@ -3188,6 +3190,7 @@ describe("AgentRuntime session persistence", () => {
     await runtime.executeTurn("measure usage");
 
     expect(store.modelUsages).toHaveLength(2);
+    expect(store.modelUsages.map((usage) => usage.agent)).toEqual([expected, expected]);
     expect(store.modelUsages[0]).toMatchObject({
       cacheCreationInputTokens: 4,
       cacheReadInputTokens: 30,

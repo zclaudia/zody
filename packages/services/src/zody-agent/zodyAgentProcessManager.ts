@@ -332,7 +332,7 @@ interface ZodyAgentSpawnPreflight {
   cwdExists: boolean;
 }
 
-const serviceLog = createServiceLogger("zcode-agent");
+const serviceLog = createServiceLogger("zody-agent");
 
 const log = (...args: unknown[]) => serviceLog.info(undefined, ...args);
 const warnLog = (...args: unknown[]) => serviceLog.warn(undefined, ...args);

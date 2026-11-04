@@ -47,7 +47,7 @@ export function startProtocolResourceSampler(
           if (reason) {
             const { role: _role, counters, ...memoryFields } = memorySample;
             logger.info("Process memory sample", {
-              event: "zcode_protocol.process.memory_sample",
+              event: "zody_protocol.process.memory_sample",
               reason,
               ...memoryFields,
               counters,

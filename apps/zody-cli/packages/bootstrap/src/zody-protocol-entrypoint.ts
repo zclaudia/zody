@@ -90,26 +90,26 @@ export async function runZodyProtocolAgent(
   const loggerFactory = createNodeLoggerFactory({ env: options.env });
   const traceContext = createRootTraceContext({
     attributes: {
-      entrypoint: "zcode_protocol",
+      entrypoint: "zody_protocol",
     },
   });
-  const logger = loggerFactory.createLogger("zcode").child({
+  const logger = loggerFactory.createLogger("zody").child({
     ...traceContextToLogContext(traceContext),
-    module: "bootstrap.zcode_protocol",
+    module: "bootstrap.zody_protocol",
   });
   installZodyProtocolAiSdkWarningLogger(logger);
   const startupTimer = new StartupTimer(
     logger,
     {
       ...traceContextToLogContext(traceContext),
-      module: "bootstrap.zcode_protocol",
-      startupKind: "zcode_protocol_agent",
+      module: "bootstrap.zody_protocol",
+      startupKind: "zody_protocol_agent",
     },
     startupStartedAt,
   );
   startupTimer.start("ZCode Protocol agent startup started", {
     context: { version: options.version },
-    event: "zcode_protocol.startup.started",
+    event: "zody_protocol.startup.started",
     stage: "start",
   });
 
@@ -138,7 +138,7 @@ export async function runZodyProtocolAgent(
           output,
           onProgress: (progress) =>
             logger.info("SQLite startup state", {
-              event: "zcode_protocol.startup.storage_state",
+              event: "zody_protocol.startup.storage_state",
               ...progress,
             }),
         }),
@@ -155,8 +155,8 @@ export async function runZodyProtocolAgent(
     logger.info("Worker Provider Registry 已就绪", {
       accountRevision: providerRegistryRuntime.snapshot.sourceRevisions.account,
       configRevision: providerRegistryRuntime.snapshot.sourceRevisions.config,
-      event: "zcode_protocol.provider_registry.ready",
-      module: "bootstrap.zcode_protocol",
+      event: "zody_protocol.provider_registry.ready",
+      module: "bootstrap.zody_protocol",
       providerCount: providerRegistryRuntime.snapshot.registry.providers.length,
     });
     const runtimeSurface = resolveProtocolRuntimeSurface(runtimeEnv);
@@ -315,7 +315,7 @@ export async function runZodyProtocolAgent(
       logger,
     );
     startupTimer.complete("ZCode Protocol agent startup completed", {
-      event: "zcode_protocol.startup.completed",
+      event: "zody_protocol.startup.completed",
       stage: "total",
     });
     scheduleStartupLogRetentionCleanup(loggerFactory, logger);
@@ -325,7 +325,7 @@ export async function runZodyProtocolAgent(
       error instanceof Error ? error : new Error("Protocol runtime failed", { cause: error }),
     );
     startupTimer.fail("ZCode Protocol agent startup failed", error, {
-      event: "zcode_protocol.startup.failed",
+      event: "zody_protocol.startup.failed",
       stage: "total",
     });
     throw error;
@@ -345,8 +345,8 @@ export async function runZodyProtocolAgent(
     });
     logger.info("ZCode Protocol agent shutdown completed", {
       ...traceContextToLogContext(traceContext),
-      event: "zcode_protocol.shutdown.completed",
-      module: "bootstrap.zcode_protocol",
+      event: "zody_protocol.shutdown.completed",
+      module: "bootstrap.zody_protocol",
       status: "completed",
     });
   }

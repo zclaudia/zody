@@ -45,7 +45,7 @@ function createBatch(rendererInstanceId: string) {
     sequence: 1,
     droppedSinceLastFlush: 0,
     resource: {
-      serviceName: "zcode-desktop-renderer",
+      serviceName: "zody-desktop-renderer",
       serviceVersion: "test",
       deploymentEnvironment: "test",
       rendererInstanceId,

@@ -250,8 +250,8 @@ export class ZodyProtocolNdjsonConnection {
     } catch (error) {
       this.options.logger?.warn("ZCode Protocol JSON parse failed", {
         error: error instanceof Error ? error.message : String(error),
-        event: "zcode_protocol.parse.failed",
-        module: "bootstrap.zcode_protocol",
+        event: "zody_protocol.parse.failed",
+        module: "bootstrap.zody_protocol",
         status: "failed",
       });
       this.sendError("parse-error", -32700, "Parse error");

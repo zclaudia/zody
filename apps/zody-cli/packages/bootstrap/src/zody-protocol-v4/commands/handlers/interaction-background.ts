@@ -54,7 +54,7 @@ async function resolveInteraction(
       : (host.interactions?.resolve(payload.interactionId, payload.answer) ?? false);
   if (!delivered) {
     host.logger?.info?.("v4 resolveInteraction no pending interaction (idempotent)", {
-      event: "zcode_protocol.v4.interaction_already_resolved",
+      event: "zody_protocol.v4.interaction_already_resolved",
       interactionId: payload.interactionId,
       sessionId: envelope.sessionId,
     });
@@ -70,7 +70,7 @@ async function snoozeInteractionAutoResolution(
   const snoozed = (await host.interactions?.snoozeAutoResolution(payload.interactionId)) ?? false;
   if (!snoozed) {
     host.logger?.info?.("v4 snoozeInteractionAutoResolution no active countdown (idempotent)", {
-      event: "zcode_protocol.v4.interaction_auto_resolution_already_snoozed",
+      event: "zody_protocol.v4.interaction_auto_resolution_already_snoozed",
       interactionId: payload.interactionId,
       sessionId: envelope.sessionId,
     });

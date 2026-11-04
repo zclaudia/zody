@@ -41,7 +41,7 @@ export async function listMcpServers(
   const startupTimer = new StartupTimer(
     context.logger ?? noopLogger,
     {
-      module: "bootstrap.zcode_protocol.mcp",
+      module: "bootstrap.zody_protocol.mcp",
       workspaceKey: params.workspace.workspaceKey,
       workspacePath: params.workspace.workspacePath,
     },

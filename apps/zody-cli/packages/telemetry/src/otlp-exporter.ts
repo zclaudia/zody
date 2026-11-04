@@ -101,9 +101,9 @@ export function createOwnedAgentTelemetryRuntime(
     contextManager.disable();
   }
 
-  const tracer = provider.getTracer("@zcode/cli-agent-telemetry", String(TELEMETRY_SCHEMA_VERSION));
+  const tracer = provider.getTracer("@zody/cli-agent-telemetry", String(TELEMETRY_SCHEMA_VERSION));
   const meter = meterProvider.getMeter(
-    "@zcode/cli-agent-telemetry",
+    "@zody/cli-agent-telemetry",
     String(TELEMETRY_SCHEMA_VERSION),
   );
   const metrics = new OtelAgentTelemetryMetrics(meter);
@@ -163,28 +163,28 @@ export function createAgentTraceSampler(ratio = AGENT_TRACE_SAMPLE_RATIO): Sampl
 
 export function metricViews(): ViewOptions[] {
   return [
-    histogramView("zcode.agent.turn.duration", [1, 5, 10, 30, 60, 300, 600]),
-    histogramView("zcode.model.*.duration", [0.25, 1, 2, 5, 10, 30, 60, 120]),
+    histogramView("zody.agent.turn.duration", [1, 5, 10, 30, 60, 300, 600]),
+    histogramView("zody.model.*.duration", [0.25, 1, 2, 5, 10, 30, 60, 120]),
     histogramView(
-      "zcode.context.compaction.duration",
+      "zody.context.compaction.duration",
       [0.01, 0.05, 0.1, 0.5, 1, 5, 30, 120, 300, 600],
     ),
     histogramView(
-      "zcode.detached.operation.duration",
+      "zody.detached.operation.duration",
       [0.01, 0.05, 0.1, 0.5, 1, 5, 30, 120, 300, 600],
     ),
-    histogramView("zcode.agent.step.duration", [0.01, 0.05, 0.1, 0.5, 1, 5, 30, 120, 300, 600]),
-    histogramView("zcode.tool.execution.duration", [0.01, 0.1, 0.5, 1, 5, 30, 120, 300]),
+    histogramView("zody.agent.step.duration", [0.01, 0.05, 0.1, 0.5, 1, 5, 30, 120, 300, 600]),
+    histogramView("zody.tool.execution.duration", [0.01, 0.1, 0.5, 1, 5, 30, 120, 300]),
     histogramView(
-      "zcode.command.execution.duration",
+      "zody.command.execution.duration",
       [0.01, 0.05, 0.1, 0.5, 1, 5, 30, 120, 300, 600],
     ),
-    histogramView("zcode.*.time_to_first_*", [0.25, 0.5, 1, 2, 5, 10, 30, 60]),
-    histogramView("zcode.model.call.attempts", [1, 2, 3, 5, 8]),
-    cardinalityView("zcode.model.attempt.tokens"),
-    cardinalityView("zcode.model.attempt.stream_stall.count"),
-    cardinalityView("zcode.telemetry.creation_drop.count"),
-    cardinalityView("zcode.telemetry.abandoned.count"),
+    histogramView("zody.*.time_to_first_*", [0.25, 0.5, 1, 2, 5, 10, 30, 60]),
+    histogramView("zody.model.call.attempts", [1, 2, 3, 5, 8]),
+    cardinalityView("zody.model.attempt.tokens"),
+    cardinalityView("zody.model.attempt.stream_stall.count"),
+    cardinalityView("zody.telemetry.creation_drop.count"),
+    cardinalityView("zody.telemetry.abandoned.count"),
   ];
 }
 
@@ -244,15 +244,15 @@ function telemetryResourceAttributes(
       : undefined,
     "service.name": resource.serviceName,
     "service.version": resource.cliVersion,
-    "zcode.build.commit_id": resource.buildCommitId,
-    "zcode.device.installation_id": options.includeInstallationId
+    "zody.build.commit_id": resource.buildCommitId,
+    "zody.device.installation_id": options.includeInstallationId
       ? resource.installationId
       : undefined,
-    "zcode.product.version": resource.productVersion,
-    "zcode.runtime.distribution": resource.runtimeDistribution,
-    "zcode.runtime.surface": resource.runtimeSurface,
-    "zcode.telemetry.schema_owner": "cli",
-    "zcode.telemetry.schema_version": TELEMETRY_SCHEMA_VERSION,
+    "zody.product.version": resource.productVersion,
+    "zody.runtime.distribution": resource.runtimeDistribution,
+    "zody.runtime.surface": resource.runtimeSurface,
+    "zody.telemetry.schema_owner": "cli",
+    "zody.telemetry.schema_version": TELEMETRY_SCHEMA_VERSION,
   });
 }
 

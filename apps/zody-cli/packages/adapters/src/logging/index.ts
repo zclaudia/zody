@@ -215,7 +215,7 @@ export function createNodeLoggerFactory(options: NodeLoggerFactoryOptions = {}):
         logDir,
         logger:
           scheduleOptions.logger ??
-          create("zcode", {
+          create("zody", {
             module: "adapters.logging",
           }),
       });

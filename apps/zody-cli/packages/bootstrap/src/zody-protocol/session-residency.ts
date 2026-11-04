@@ -67,7 +67,7 @@ export function createSessionResidentPoolHost(
     onDeactivated: (sessionId, decision) => {
       context.logger?.info("Session resident runtime deactivated", {
         ...deactivationLogContext(decision),
-        event: "zcode_protocol.session.resident_deactivated",
+        event: "zody_protocol.session.resident_deactivated",
         sessionId,
       });
     },
@@ -75,7 +75,7 @@ export function createSessionResidentPoolHost(
       context.logger?.warn("Session resident deactivation failed", {
         ...deactivationLogContext(decision),
         error: error instanceof Error ? error.message : String(error),
-        event: "zcode_protocol.session.resident_deactivation_failed",
+        event: "zody_protocol.session.resident_deactivation_failed",
         sessionId,
       });
     },

@@ -55,40 +55,40 @@ export class OtelAgentTelemetryMetrics implements AgentTelemetryMetricRecorder {
 
   constructor(meter: Meter) {
     this.durations = {
-      agent_turn: duration(meter, "zcode.agent.turn.duration"),
-      agent_step: duration(meter, "zcode.agent.step.duration"),
-      tool_execution: duration(meter, "zcode.tool.execution.duration"),
-      command_execution: duration(meter, "zcode.command.execution.duration"),
-      context_compaction: duration(meter, "zcode.context.compaction.duration"),
-      detached_operation: duration(meter, "zcode.detached.operation.duration"),
-      model_call: duration(meter, "zcode.model.call.duration"),
-      model_attempt: duration(meter, "zcode.model.attempt.duration"),
+      agent_turn: duration(meter, "zody.agent.turn.duration"),
+      agent_step: duration(meter, "zody.agent.step.duration"),
+      tool_execution: duration(meter, "zody.tool.execution.duration"),
+      command_execution: duration(meter, "zody.command.execution.duration"),
+      context_compaction: duration(meter, "zody.context.compaction.duration"),
+      detached_operation: duration(meter, "zody.detached.operation.duration"),
+      model_call: duration(meter, "zody.model.call.duration"),
+      model_attempt: duration(meter, "zody.model.attempt.duration"),
     };
-    this.modelCallAttempts = meter.createHistogram("zcode.model.call.attempts", {
+    this.modelCallAttempts = meter.createHistogram("zody.model.call.attempts", {
       description: "Physical provider attempts per logical model call",
       unit: "{attempt}",
     });
-    this.modelTokens = meter.createCounter("zcode.model.attempt.tokens", {
+    this.modelTokens = meter.createCounter("zody.model.attempt.tokens", {
       description: "Observed provider token delta by token type",
       unit: "{token}",
     });
     this.modelAttemptFirstProviderEvent = duration(
       meter,
-      "zcode.model.attempt.time_to_first_provider_event",
+      "zody.model.attempt.time_to_first_provider_event",
     );
-    this.modelAttemptFirstContent = duration(meter, "zcode.model.attempt.time_to_first_content");
-    this.modelAttemptFirstText = duration(meter, "zcode.model.attempt.time_to_first_text");
-    this.modelAttemptStreamStalls = meter.createCounter("zcode.model.attempt.stream_stall.count", {
+    this.modelAttemptFirstContent = duration(meter, "zody.model.attempt.time_to_first_content");
+    this.modelAttemptFirstText = duration(meter, "zody.model.attempt.time_to_first_text");
+    this.modelAttemptStreamStalls = meter.createCounter("zody.model.attempt.stream_stall.count", {
       description: "Observed stream stalls",
       unit: "{stall}",
     });
-    this.modelAttemptStreamMaxIdle = duration(meter, "zcode.model.attempt.stream_max_idle");
-    this.commandFirstOutput = duration(meter, "zcode.command.execution.time_to_first_output");
-    this.creationDrop = meter.createCounter("zcode.telemetry.creation_drop.count", {
+    this.modelAttemptStreamMaxIdle = duration(meter, "zody.model.attempt.stream_max_idle");
+    this.commandFirstOutput = duration(meter, "zody.command.execution.time_to_first_output");
+    this.creationDrop = meter.createCounter("zody.telemetry.creation_drop.count", {
       description: "Spans rejected before creation by runtime capacity protection",
       unit: "{span}",
     });
-    this.abandoned = meter.createCounter("zcode.telemetry.abandoned.count", {
+    this.abandoned = meter.createCounter("zody.telemetry.abandoned.count", {
       description: "Spans closed as abandoned",
       unit: "{span}",
     });

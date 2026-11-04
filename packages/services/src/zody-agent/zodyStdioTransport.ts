@@ -46,7 +46,7 @@ const E2E_COVERAGE_STDIO_EOF_EXIT_WAIT_MS = 5_000;
 const PROCESS_TREE_FORCE_AFTER_MS = 2_000;
 const PROCESS_TREE_WINDOWS_TASKKILL_TIMEOUT_MS = 1_000;
 const PROCESS_TREE_WINDOWS_EXIT_OBSERVATION_GRACE_MS = 250;
-const processTreeLogger = createServiceLogger("zcode-agent-process-tree");
+const processTreeLogger = createServiceLogger("zody-agent-process-tree");
 
 export class ZodyStdioTransport implements ZodyProtocolTransport {
   readonly kind = "stdio" as const;

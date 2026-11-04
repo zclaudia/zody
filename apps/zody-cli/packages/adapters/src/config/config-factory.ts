@@ -410,7 +410,7 @@ function logConfigDiagnostics(input: {
   if (diagnostics.length === 0) return;
 
   const loggerFactory = input.loggerFactory ?? createNodeLoggerFactory({ env: input.env });
-  const logger = loggerFactory.createLogger("zcode").child({
+  const logger = loggerFactory.createLogger("zody").child({
     module: "adapters.config",
   });
 

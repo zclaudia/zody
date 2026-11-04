@@ -507,7 +507,7 @@ export const run = async (ctx: RunContext, deps: RunDependencies = {}): Promise<
     env,
     logger:
       deps.logger ??
-      createNodeLoggerFactory({ env }).createLogger("zcode").child({ module: "cli" }),
+      createNodeLoggerFactory({ env }).createLogger("zody").child({ module: "cli" }),
     loadDotenv: (dotenvOptions = {}) => {
       const dotenvResult = (deps.loadDotenv ?? loadCliDotenv)(dotenvOptions);
       applyCliRuntimeEnvSanitization(dotenvOptions.env ?? env);

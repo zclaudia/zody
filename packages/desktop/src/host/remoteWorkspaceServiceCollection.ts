@@ -114,7 +114,7 @@ export function createRemoteWorkspaceServiceCollection(params: {
     (request) => {
       const startedAt = Date.now();
       const requestContext = {
-        event: "zcode_protocol.runtime_preferences.host_request_received",
+        event: "zody_protocol.runtime_preferences.host_request_received",
         module: "desktop.host.remote_workspace",
         requestId: request.requestId,
         scope: request.scope,

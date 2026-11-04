@@ -213,7 +213,7 @@ type ZodyTerminalStreamEvent =
 
 const GLM_PROVIDER: ZodyProvider = ZCODE_AGENT_PROVIDER;
 const EMPTY_SLASH_COMMANDS: ZodySlashCommand[] = [];
-const logger = createServiceLogger("zcode-task-service");
+const logger = createServiceLogger("zody-task-service");
 const ASK_USER_QUESTION_TOOL_NAME = "AskUserQuestion";
 const EXIT_PLAN_MODE_TOOL_NAME = "ExitPlanMode";
 const EXIT_PLAN_MODE_APPROVAL_QUESTION = "Review this implementation plan.";
@@ -953,7 +953,7 @@ export function createZodyTaskServiceAdapter(
 
     if (changed) {
       logger.debug(undefined, "ZCode snapshot 合并 live tool projection", {
-        event: "zcode_task.snapshot.live_tool_projection.merged",
+        event: "zody_task.snapshot.live_tool_projection.merged",
         liveToolCount: liveTools.length,
         mergedToolCount,
         taskId: meta.taskId,
@@ -2266,7 +2266,7 @@ export function createZodyTaskServiceAdapter(
       if (params.inputId && mayStartContinuation) {
         activePromptInputIds.set(taskKey(target), params.inputId);
       }
-      logger.info(params.inputId, "[zcode-task-service] goalSession start", {
+      logger.info(params.inputId, "[zody-task-service] goalSession start", {
         action: params.action,
         hasObjective: Boolean(params.objective?.trim()),
         mayStartContinuation,
@@ -2283,7 +2283,7 @@ export function createZodyTaskServiceAdapter(
         objective: params.objective,
         expectedRevision: params.expectedRevision,
       });
-      logger.info(params.inputId, "[zcode-task-service] goalSession agent 返回", {
+      logger.info(params.inputId, "[zody-task-service] goalSession agent 返回", {
         action: params.action,
         durationMs: Date.now() - startedAt,
         responseLength: result.response?.length ?? 0,
@@ -2297,7 +2297,7 @@ export function createZodyTaskServiceAdapter(
       const meta = await syncTaskIndexSnapshot(result.snapshot);
       // goal 动作后的快照收敛同为状态同步，不涉及归属，避免全局 membership 重拉。
       emitWorkspaceTaskListChanged(target, meta, "task_status_changed");
-      logger.info(params.inputId, "[zcode-task-service] goalSession task index 同步完成", {
+      logger.info(params.inputId, "[zody-task-service] goalSession task index 同步完成", {
         action: params.action,
         durationMs: Date.now() - startedAt,
         startedTurn: result.startedTurn,
@@ -2644,7 +2644,7 @@ export function createZodyTaskServiceAdapter(
           (await taskIndexRepo.getTaskMeta(params)) ??
           (await syncTaskIndexMeta(legacySnapshot.meta));
         const indexDurationMs = Date.now() - indexStartedAt;
-        logger.info(undefined, "[zcode-task-service] 历史快照读取完成", {
+        logger.info(undefined, "[zody-task-service] 历史快照读取完成", {
           clientMode: params.clientMode ?? "unknown",
           durationMs: Date.now() - startedAt,
           indexDurationMs,
@@ -2672,7 +2672,7 @@ export function createZodyTaskServiceAdapter(
       const indexStartedAt = Date.now();
       const indexedMeta = await syncTaskIndexMeta(zodySnapshot.meta);
       const indexDurationMs = Date.now() - indexStartedAt;
-      logger.info(undefined, "[zcode-task-service] 历史快照读取完成", {
+      logger.info(undefined, "[zody-task-service] 历史快照读取完成", {
         clientMode: params.clientMode ?? "unknown",
         durationMs: Date.now() - startedAt,
         indexDurationMs,
@@ -2692,7 +2692,7 @@ export function createZodyTaskServiceAdapter(
       const startedAt = Date.now();
       const snapshot = await service.getTaskSnapshot(params);
       if (!snapshot) {
-        logger.info(undefined, "[zcode-task-service] 历史快照 ETag 读取为空", {
+        logger.info(undefined, "[zody-task-service] 历史快照 ETag 读取为空", {
           clientMode: params.clientMode ?? "unknown",
           durationMs: Date.now() - startedAt,
           messageLimit: params.messageLimit ?? null,
@@ -2706,7 +2706,7 @@ export function createZodyTaskServiceAdapter(
       const etag = createHash("sha256").update(JSON.stringify(snapshot)).digest("hex");
       const etagDurationMs = Date.now() - etagStartedAt;
       if (params.ifNoneMatch && params.ifNoneMatch === etag) {
-        logger.info(undefined, "[zcode-task-service] 历史快照 ETag 命中缓存", {
+        logger.info(undefined, "[zody-task-service] 历史快照 ETag 命中缓存", {
           clientMode: params.clientMode ?? "unknown",
           durationMs: Date.now() - startedAt,
           etagDurationMs,
@@ -2718,7 +2718,7 @@ export function createZodyTaskServiceAdapter(
         });
         return { snapshot: null, etag, notModified: true };
       }
-      logger.info(undefined, "[zcode-task-service] 历史快照 ETag 生成完成", {
+      logger.info(undefined, "[zody-task-service] 历史快照 ETag 生成完成", {
         clientMode: params.clientMode ?? "unknown",
         durationMs: Date.now() - startedAt,
         etagDurationMs,
@@ -4601,7 +4601,7 @@ function logStreamingToolInputProjection(
 ): void {
   logger.debug(traceId, "ZCode streaming tool input projected", {
     ...details,
-    event: "zcode.task.streaming_tool_input.projected",
+    event: "zody.task.streaming_tool_input.projected",
   });
 }
 
@@ -5650,7 +5650,7 @@ function buildAgentModelNetworkInterface(payload: Record<string, unknown>): stri
   const providerKind = safeNetworkDimension(stringValue(payload.providerKind)) ?? "unknown";
   const transport = safeNetworkDimension(stringValue(payload.transport)) ?? "unknown";
   const base = normalizeAgentModelBaseUrl(stringValue(payload.baseURL));
-  return `zcode_agent.model.${providerKind}.${transport}.${base}`;
+  return `zody_agent.model.${providerKind}.${transport}.${base}`;
 }
 
 function normalizeAgentModelBaseUrl(value: string | undefined): string {

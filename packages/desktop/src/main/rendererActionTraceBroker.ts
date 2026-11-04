@@ -241,7 +241,7 @@ function toReadableSpan(
     ended: true,
     resource,
     instrumentationScope: {
-      name: "@zcode/desktop-renderer-action-trace",
+      name: "@zody/desktop-renderer-action-trace",
       version: "1",
     },
     droppedAttributesCount: 0,

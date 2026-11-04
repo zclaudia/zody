@@ -83,17 +83,17 @@ describe("ModelApiTelemetryStatusSink V5", () => {
     const spans = exporter.getFinishedSpans();
     expect(parentName(spans, "model_attempt")).toBe("model_call");
     expect(parentName(spans, "model_call")).toBe("agent_step");
-    expect(span(spans, "model_call").attributes).not.toHaveProperty("zcode.model_call.model_role");
+    expect(span(spans, "model_call").attributes).not.toHaveProperty("zody.model_call.model_role");
     expect(span(spans, "model_attempt").attributes).toMatchObject({
-      "zcode.model_attempt.provider_kind": "anthropic",
-      "zcode.model_attempt.provider_origin": "https://proxy.example.com",
-      "zcode.model_attempt.provider_route": "/tenant/{id}/v1/messages",
-      "zcode.model_attempt.requested_model": "anthropic/claude-sonnet",
-      "zcode.model_attempt.reasoning_effective_state": "enabled",
-      "zcode.model_attempt.cache_read_tokens": 3,
-      "zcode.model_attempt.cache_write_tokens": 2,
-      "zcode.model_attempt.input_tokens": 10,
-      "zcode.model_attempt.output_tokens": 5,
+      "zody.model_attempt.provider_kind": "anthropic",
+      "zody.model_attempt.provider_origin": "https://proxy.example.com",
+      "zody.model_attempt.provider_route": "/tenant/{id}/v1/messages",
+      "zody.model_attempt.requested_model": "anthropic/claude-sonnet",
+      "zody.model_attempt.reasoning_effective_state": "enabled",
+      "zody.model_attempt.cache_read_tokens": 3,
+      "zody.model_attempt.cache_write_tokens": 2,
+      "zody.model_attempt.input_tokens": 10,
+      "zody.model_attempt.output_tokens": 5,
     });
     expect(span(spans, "model_attempt").events.map((event) => event.name)).toEqual([
       "first_provider_event",
@@ -101,10 +101,10 @@ describe("ModelApiTelemetryStatusSink V5", () => {
       "first_text",
     ]);
     expect(span(spans, "model_call").attributes).toMatchObject({
-      "zcode.model_call.outcome": "completed",
+      "zody.model_call.outcome": "completed",
     });
     expect(span(spans, "agent_turn").attributes).not.toHaveProperty(
-      "zcode.agent_turn.provider_input_tokens_total",
+      "zody.agent_turn.provider_input_tokens_total",
     );
   });
 
@@ -161,26 +161,26 @@ describe("ModelApiTelemetryStatusSink V5", () => {
       .filter((candidate) => candidate.name === "model_attempt");
     expect(attempts).toHaveLength(2);
     expect(attempts[0]?.attributes).toMatchObject({
-      "zcode.model_attempt.error_code": "ECONNRESET",
-      "zcode.model_attempt.http_status_code": 429,
-      "zcode.model_attempt.provider_error_code": "E429",
-      "zcode.model_attempt.provider_error_message": "authorization: {redacted}",
-      "zcode.model_attempt.outcome": "failed",
+      "zody.model_attempt.error_code": "ECONNRESET",
+      "zody.model_attempt.http_status_code": 429,
+      "zody.model_attempt.provider_error_code": "E429",
+      "zody.model_attempt.provider_error_message": "authorization: {redacted}",
+      "zody.model_attempt.outcome": "failed",
     });
-    expect(String(attempts[0]?.attributes["zcode.model_attempt.error_message"])).not.toContain(
+    expect(String(attempts[0]?.attributes["zody.model_attempt.error_message"])).not.toContain(
       "secret",
     );
-    expect(String(attempts[0]?.attributes["zcode.model_attempt.error_message"])).toContain(
+    expect(String(attempts[0]?.attributes["zody.model_attempt.error_message"])).toContain(
       "socket reset upstream request=req-42",
     );
     expect(attempts[1]?.attributes).toMatchObject({
-      "zcode.model_attempt.attempt_cause": "retry",
-      "zcode.model_attempt.retry_delay_ms": 25,
-      "zcode.model_attempt.previous_request_id": "request-1",
+      "zody.model_attempt.attempt_cause": "retry",
+      "zody.model_attempt.retry_delay_ms": 25,
+      "zody.model_attempt.previous_request_id": "request-1",
     });
     const modelCall = span(exporter.getFinishedSpans(), "model_call");
-    expect(modelCall.attributes).not.toHaveProperty("zcode.model_call.had_error");
-    expect(modelCall.attributes).not.toHaveProperty("zcode.model_call.error_message");
+    expect(modelCall.attributes).not.toHaveProperty("zody.model_call.had_error");
+    expect(modelCall.attributes).not.toHaveProperty("zody.model_call.error_message");
   });
 
   it("Session 关闭时释放仍未收到终态事件的 model call 索引", () => {
@@ -227,10 +227,10 @@ describe("ModelApiTelemetryStatusSink V5", () => {
     expect(sink.activeCallCount).toBe(1);
     const abandoned = exporter
       .getFinishedSpans()
-      .filter((candidate) => candidate.attributes["zcode.model_call.outcome"] === "abandoned");
+      .filter((candidate) => candidate.attributes["zody.model_call.outcome"] === "abandoned");
     expect(abandoned).toHaveLength(1);
     expect(abandoned[0]?.attributes).toMatchObject({
-      "zcode.model_call.abandon_reason": "missing_terminal",
+      "zody.model_call.abandon_reason": "missing_terminal",
     });
   });
 

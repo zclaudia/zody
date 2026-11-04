@@ -230,11 +230,11 @@ describe("TTFT02 真实发送诊断到最终 OTLP", () => {
           .flatMap((record) => record.data.resourceMetrics ?? [])
           .flatMap((resource) => resource.scopeMetrics)
           .flatMap((scope) => scope.metrics)
-          .filter((metric) => metric.name.startsWith("zcode.local_ttft."));
+          .filter((metric) => metric.name.startsWith("zody.local_ttft."));
       };
       const count = async () =>
         (await metrics())
-          .filter((metric) => metric.name === "zcode.local_ttft.duration")
+          .filter((metric) => metric.name === "zody.local_ttft.duration")
           .flatMap((metric) => metric.histogram?.dataPoints ?? [])
           .reduce((sum, point) => sum + Number(point.count ?? 0), 0);
       await browser.waitUntil(async () => (await count()) >= roots.length, {

@@ -49,7 +49,7 @@ describe("ARMS-compatible OTLP/HTTP V4", () => {
         runtimeDistribution: "packaged",
         runtimeSurface: "desktop_local_host",
         serviceInstanceId: "instance-1",
-        serviceName: "zcode-cli-agent",
+        serviceName: "zody-cli-agent",
       },
     });
     closeOwner = async () => {
@@ -141,18 +141,22 @@ describe("ARMS-compatible OTLP/HTTP V4", () => {
       ]),
     );
     expect(attributes).toMatchObject({
-      "service.name": "zcode-cli-agent",
+      "service.name": "zody-cli-agent",
       "service.version": "0.16.1",
-      "zcode.device.installation_id": "installation-1",
-      "zcode.product.version": "3.6.1",
-      "zcode.telemetry.schema_owner": "cli",
-      "zcode.telemetry.schema_version": 6,
+      "zody.device.installation_id": "installation-1",
+      "zody.product.version": "3.6.1",
+      "zody.telemetry.schema_owner": "cli",
+      "zody.telemetry.schema_version": 6,
     });
     const spanNames = decoded.resourceSpans
       .flatMap((item) => item.scopeSpans)
       .flatMap((item) => item.spans)
       .map((item) => item.name);
     expect(spanNames).toEqual(expect.arrayContaining(["agent_turn", "agent_step"]));
+    expect(spanNames.filter((name) => name === "agent_turn")).toHaveLength(1);
+    const traceScopes = decoded.resourceSpans.flatMap((item) => item.scopeSpans);
+    expect(traceScopes.map((item) => item.scope?.name)).toContain("@zody/cli-agent-telemetry");
+    expect(JSON.stringify(decoded)).not.toContain('"zcode.');
 
     expect(metricRequest?.headers["x-arms-license-key"]).toBe("write-only-test");
     expect(metricRequest?.headers["content-encoding"]).toBe("gzip");
@@ -172,12 +176,12 @@ describe("ARMS-compatible OTLP/HTTP V4", () => {
       ]),
     );
     expect(metricResourceAttributes).toMatchObject({
-      "service.name": "zcode-cli-agent",
+      "service.name": "zody-cli-agent",
       "service.version": "0.16.1",
-      "zcode.product.version": "3.6.1",
-      "zcode.telemetry.schema_version": 6,
+      "zody.product.version": "3.6.1",
+      "zody.telemetry.schema_version": 6,
     });
-    expect(metricResourceAttributes["zcode.device.installation_id"]).toBeUndefined();
+    expect(metricResourceAttributes["zody.device.installation_id"]).toBeUndefined();
     expect(metricResourceAttributes["service.instance.id"]).toBeUndefined();
     const metricNames = decodedMetrics.resourceMetrics
       .flatMap((item) => item.scopeMetrics)
@@ -185,15 +189,26 @@ describe("ARMS-compatible OTLP/HTTP V4", () => {
       .map((item) => item.name);
     expect(metricNames).toEqual(
       expect.arrayContaining([
-        "zcode.agent.turn.duration",
-        "zcode.agent.step.duration",
-        "zcode.model.attempt.duration",
-        "zcode.model.attempt.time_to_first_content",
-        "zcode.model.attempt.tokens",
-        "zcode.model.call.attempts",
-        "zcode.model.call.duration",
+        "zody.agent.turn.duration",
+        "zody.agent.step.duration",
+        "zody.model.attempt.duration",
+        "zody.model.attempt.time_to_first_content",
+        "zody.model.attempt.tokens",
+        "zody.model.call.attempts",
+        "zody.model.call.duration",
       ]),
     );
+    const turnMetrics = decodedMetrics.resourceMetrics
+      .flatMap((resource) => resource.scopeMetrics)
+      .flatMap((scope) => scope.metrics)
+      .filter((metric) => metric.name === "zody.agent.turn.duration");
+    expect(turnMetrics).toHaveLength(1);
+    const turnPoints = turnMetrics[0]?.histogram?.dataPoints ?? [];
+    expect(turnPoints).toHaveLength(1);
+    expect(Number(turnPoints[0]?.count?.toString())).toBe(1);
+    expect(metricNames.filter((name) => name === "zody.agent.turn.duration")).toHaveLength(1);
+    expect(metricNames.some((name) => name.startsWith("zcode."))).toBe(false);
+    expect(decodedMetrics.resourceMetrics.flatMap((resource) => resource.scopeMetrics).map((scope) => scope.scope?.name)).toContain("@zody/cli-agent-telemetry");
     const metricAttributeKeys = decodedMetrics.resourceMetrics
       .flatMap((item) => item.scopeMetrics)
       .flatMap((item) => item.metrics)
@@ -205,10 +220,10 @@ describe("ARMS-compatible OTLP/HTTP V4", () => {
       .flatMap((point) => point.attributes.map((attribute) => attribute.key));
     expect(metricAttributeKeys).not.toEqual(
       expect.arrayContaining([
-        "zcode.device.installation_id",
-        "zcode.execution.session_id",
-        "zcode.execution.turn_id",
-        "zcode.model_attempt.request_id",
+        "zody.device.installation_id",
+        "zody.execution.session_id",
+        "zody.execution.turn_id",
+        "zody.model_attempt.request_id",
       ]),
     );
   });
@@ -236,7 +251,7 @@ describe("ARMS-compatible OTLP/HTTP V4", () => {
         runtimeDistribution: "packaged",
         runtimeSurface: "desktop_local_host",
         serviceInstanceId: "instance-unsampled",
-        serviceName: "zcode-cli-agent",
+        serviceName: "zody-cli-agent",
       },
       traceSampleRatio: 0,
     });

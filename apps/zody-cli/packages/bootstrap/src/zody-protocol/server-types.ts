@@ -329,9 +329,9 @@ export function requireSession(
     // 不能只留下相同的错误文本，否则无法判断 UI 是读早了还是 task index 带来了脏引用。
     context.logger?.warn("ZCode Protocol session runtime missing", {
       activeSessionCount: context.sessions.size,
-      event: "zcode_protocol.session.require_missing",
+      event: "zody_protocol.session.require_missing",
       hasSessionStore: Boolean(context.deps.sessionStore),
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       operation: options.operation ?? "unknown",
       ...(options.deliveryKind ? { deliveryKind: options.deliveryKind } : {}),
       sessionId,
@@ -345,7 +345,7 @@ export function requireSession(
 }
 
 export function createProtocolLogger(deps: ZodyProtocolAgentDependencies): Logger | undefined {
-  return deps.loggerFactory?.createLogger("zcode").child({
-    module: "bootstrap.zcode_protocol",
+  return deps.loggerFactory?.createLogger("zody").child({
+    module: "bootstrap.zody_protocol",
   });
 }

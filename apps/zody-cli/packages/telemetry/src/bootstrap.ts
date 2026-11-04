@@ -171,7 +171,7 @@ async function createPreparedOwner(
     runtimeSurface:
       options.runtimeSurface ?? resolveRuntimeSurface(env.ZODY_TELEMETRY_RUNTIME_SURFACE),
     serviceInstanceId: randomUUID(),
-    serviceName: env.OTEL_SERVICE_NAME?.trim() || "zcode-cli-agent",
+    serviceName: env.OTEL_SERVICE_NAME?.trim() || "zody-cli-agent",
   };
   try {
     const { createOwnedAgentTelemetryRuntime } = await import("./otlp-exporter.js");

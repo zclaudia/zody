@@ -59,7 +59,7 @@ describe("session lifecycle diagnostics", () => {
       expect.objectContaining({
         level: "warn",
         context: expect.objectContaining({
-          event: "zcode_protocol.session.require_missing",
+          event: "zody_protocol.session.require_missing",
           deliveryKind: "desktop-continuous",
           operation: "session_read",
           sessionId: "sess_missing",
@@ -86,7 +86,7 @@ describe("session lifecycle diagnostics", () => {
       expect.objectContaining({
         level: "warn",
         context: expect.objectContaining({
-          event: "zcode_protocol.session.resume_persisted_missing",
+          event: "zody_protocol.session.resume_persisted_missing",
           sessionId: "sess_missing",
         }),
       }),
@@ -111,7 +111,7 @@ describe("session lifecycle diagnostics", () => {
       expect.objectContaining({
         level: "warn",
         context: expect.objectContaining({
-          event: "zcode_protocol.session.persisted_missing",
+          event: "zody_protocol.session.persisted_missing",
           operation: "session_subagents",
           sessionId: "sess_missing",
         }),
@@ -175,7 +175,7 @@ describe("session lifecycle diagnostics", () => {
       expect.objectContaining({
         level: "warn",
         context: expect.objectContaining({
-          event: "zcode_protocol.v4.resume_persisted_missing",
+          event: "zody_protocol.v4.resume_persisted_missing",
           sessionId: "sess_missing",
         }),
       }),

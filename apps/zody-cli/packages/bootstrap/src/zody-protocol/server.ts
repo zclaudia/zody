@@ -415,7 +415,7 @@ export class ZodyProtocolAgentServer {
         record.unsubscribe?.();
       } catch {
         this.logger?.warn("Session unsubscribe failed during protocol shutdown", {
-          event: "zcode_protocol.session.unsubscribe.failed",
+          event: "zody_protocol.session.unsubscribe.failed",
         });
       }
     }
@@ -472,9 +472,9 @@ export class ZodyProtocolAgentServer {
         return undefined;
       }
       this.logger?.debug("ZCode Protocol notification ignored", {
-        event: "zcode_protocol.notification.ignored",
+        event: "zody_protocol.notification.ignored",
         method: message.method,
-        module: "bootstrap.zcode_protocol",
+        module: "bootstrap.zody_protocol",
       });
     }
     return undefined;

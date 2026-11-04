@@ -81,6 +81,20 @@ describe("Telemetry V4 bootstrap", () => {
     });
   });
 
+  it("uses the new default service name and preserves an explicit OTEL override", async () => {
+    const exporter = await import("../src/otlp-exporter.js");
+    const create = vi.spyOn(exporter, "createOwnedAgentTelemetryRuntime");
+    const home = await mkdtemp(join(tmpdir(), "r46-service-name-"));
+    const base = { OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://127.0.0.1:1/v1/traces", ZODY_HOME: home };
+    try {
+      await prepareModelTelemetryEnv(base, {});
+      expect(create.mock.calls.at(-1)?.[0].resource.serviceName).toBe("zody-cli-agent");
+      await shutdownPreparedModelTelemetry();
+      await prepareModelTelemetryEnv({ ...base, OTEL_SERVICE_NAME: "custom-service" }, {});
+      expect(create.mock.calls.at(-1)?.[0].resource.serviceName).toBe("custom-service");
+    } finally { create.mockRestore(); }
+  });
+
   it("Standalone 异步生成并复用随机 installation id", async () => {
     const home = await mkdtemp(join(tmpdir(), "zcode-telemetry-"));
     const env = {

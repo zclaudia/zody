@@ -319,7 +319,7 @@ export async function persistCompactSummary(
           body: summary,
           diffs: [],
         },
-        agent: this.config.agentName ?? "zcode-agent",
+        agent: this.config.agentName ?? "zody-agent",
         modelSelection: persistedModel,
         semantics: {
           origin: "agent_runtime",
@@ -401,7 +401,7 @@ async function persistCompactReminderMessage(
         time: {
           created,
         },
-        agent: this.config.agentName ?? "zcode-agent",
+        agent: this.config.agentName ?? "zody-agent",
         metadata: compactReminderPartMetadata(entry.metadata),
         modelSelection: currentModel,
         semantics: {

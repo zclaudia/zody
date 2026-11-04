@@ -192,7 +192,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
     options,
   );
   const loggerFactory = options.loggerFactory ?? createNodeLoggerFactory({ env: options.env });
-  const logger = loggerFactory.createLogger("zcode").child({
+  const logger = loggerFactory.createLogger("zody").child({
     ...traceContextToLogContext(traceContext),
     module: "bootstrap",
   });
@@ -201,7 +201,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
     {
       ...traceContextToLogContext(traceContext),
       module: "bootstrap",
-      startupKind: "zcode_app",
+      startupKind: "zody_app",
     },
     startupStartedAt,
   );
@@ -214,7 +214,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
     configResult,
     startupTimer,
   });
-  const modelLogger = loggerFactory.createLogger("zcode").child({
+  const modelLogger = loggerFactory.createLogger("zody").child({
     ...traceContextToLogContext(traceContext),
     module: "adapters.model",
   });

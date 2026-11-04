@@ -1174,7 +1174,7 @@ describe("ZodyProtocolAgentServer", () => {
     });
 
     const completed = logs.find(
-      (log) => log.context.event === "zcode_protocol.session_create.completed",
+      (log) => log.context.event === "zody_protocol.session_create.completed",
     );
     expect(completed?.context.snapshotPhaseDurationsMs).toMatchObject({
       buildSnapshot: expect.any(Number),
@@ -1604,7 +1604,7 @@ describe("ZodyProtocolAgentServer", () => {
 
     expect(snapshot.session.traceId).toBe("trace_from_app");
     const createRecord = logs.find(
-      (log) => log.context.event === "zcode_protocol.create_record.mcp_config",
+      (log) => log.context.event === "zody_protocol.create_record.mcp_config",
     );
     expect(createRecord?.context.rootTraceId).toBe("trace_from_app");
   });
@@ -2213,11 +2213,11 @@ describe("ZodyProtocolAgentServer", () => {
 
     const sentLog = logs.find(
       (log) =>
-        log.context.event === "zcode_protocol.session_event.sent" &&
+        log.context.event === "zody_protocol.session_event.sent" &&
         log.context.eventId === "evt_text_delta_1",
     );
     expect(sentLog?.context).toMatchObject({
-      event: "zcode_protocol.session_event.sent",
+      event: "zody_protocol.session_event.sent",
       eventId: "evt_text_delta_1",
       payloadKeys: ["delta", "done", "kind"],
       payloadKind: "text_delta",

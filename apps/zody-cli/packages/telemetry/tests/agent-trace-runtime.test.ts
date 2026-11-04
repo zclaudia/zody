@@ -56,10 +56,10 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     compaction.setInputTokens(94_001);
 
     expect(harness.activeSpans.get("context_compaction")?.attributes).toMatchObject({
-      "zcode.context_compaction.input_tokens": 94_001,
-      "zcode.context_compaction.policy_context_window_tokens": 128_000,
-      "zcode.context_compaction.threshold_tokens": 94_000,
-      "zcode.context_compaction.token_source": "provider_usage",
+      "zody.context_compaction.input_tokens": 94_001,
+      "zody.context_compaction.policy_context_window_tokens": 128_000,
+      "zody.context_compaction.threshold_tokens": 94_000,
+      "zody.context_compaction.token_source": "provider_usage",
     });
 
     compaction.finishCompleted();
@@ -116,8 +116,8 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     expect(parentName(spans, "tool_execution")).toBe("agent_step");
     expect(parentName(spans, "agent_step")).toBe("agent_turn");
     expect(span(spans, "command_execution").attributes).toMatchObject({
-      "zcode.command_execution.safe_name": "git",
-      "zcode.command_execution.exit_code": 0,
+      "zody.command_execution.safe_name": "git",
+      "zody.command_execution.exit_code": 0,
       "process.exit.code": 0,
     });
     expect(span(spans, "tool_execution").events.map((event) => event.name)).toEqual([
@@ -157,15 +157,15 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
 
     const spans = harness.exporter.getFinishedSpans();
     expect(spans[0]?.attributes).toMatchObject({
-      "zcode.detached_operation.outcome": "failed",
-      "zcode.detached_operation.failure_stage": "unhandled",
+      "zody.detached_operation.outcome": "failed",
+      "zody.detached_operation.failure_stage": "unhandled",
     });
-    expect(String(spans[0]?.attributes["zcode.detached_operation.error_message"])).not.toContain(
+    expect(String(spans[0]?.attributes["zody.detached_operation.error_message"])).not.toContain(
       "secret",
     );
     expect(spans[1]?.attributes).toMatchObject({
-      "zcode.detached_operation.outcome": "abandoned",
-      "zcode.detached_operation.abandon_reason": "missing_terminal",
+      "zody.detached_operation.outcome": "abandoned",
+      "zody.detached_operation.abandon_reason": "missing_terminal",
     });
   });
 
@@ -210,13 +210,13 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     expect(detachedSpan.links[0]?.context.traceState?.serialize()).toBe("vendor=value");
     expect(detachedSpan.links[0]?.context.isRemote).toBe(true);
     expect(detachedSpan.links[0]?.attributes).toEqual({
-      "zcode.link.relation": "triggered_by",
+      "zody.link.relation": "triggered_by",
     });
     expect(turnSpan.attributes).toMatchObject({
-      "zcode.execution.identity_state": "authenticated",
-      "zcode.execution.user_subject_id": "subject-123",
+      "zody.execution.identity_state": "authenticated",
+      "zody.execution.user_subject_id": "subject-123",
     });
-    expect(detachedSpan.attributes["zcode.execution.user_subject_id"]).toBeUndefined();
+    expect(detachedSpan.attributes["zody.execution.user_subject_id"]).toBeUndefined();
   });
 
   it("被调用方等待的前台 Operation 使用真实 Parent，不伪造成跨 Trace Link", async () => {
@@ -276,12 +276,12 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     const sourceSpan = spans.find(
       (candidate) =>
         candidate.name === "agent_turn" &&
-        candidate.attributes["zcode.execution.session_id"] === "session-source",
+        candidate.attributes["zody.execution.session_id"] === "session-source",
     );
     const unrelatedSpan = spans.find(
       (candidate) =>
         candidate.name === "agent_turn" &&
-        candidate.attributes["zcode.execution.session_id"] === "session-unrelated",
+        candidate.attributes["zody.execution.session_id"] === "session-unrelated",
     );
     const operationSpan = span(spans, "detached_operation");
     expect(operationSpan.parentSpanContext?.spanId).toBe(sourceSpan?.spanContext().spanId);
@@ -405,42 +405,42 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     const toolSpan = spans.find(
       (candidate) =>
         candidate.name === "tool_execution" &&
-        candidate.attributes["zcode.execution.tool_call_id"] === "tool-agent-1",
+        candidate.attributes["zody.execution.tool_call_id"] === "tool-agent-1",
     );
     const foregroundTurn = spans.find(
       (candidate) =>
         candidate.name === "agent_turn" &&
-        candidate.attributes["zcode.execution.session_id"] === "session-child",
+        candidate.attributes["zody.execution.session_id"] === "session-child",
     );
     const foregroundStep = spans.find(
       (candidate) =>
         candidate.name === "agent_step" &&
-        candidate.attributes["zcode.execution.turn_id"] === "turn-child",
+        candidate.attributes["zody.execution.turn_id"] === "turn-child",
     );
     const foregroundCall = spans.find(
       (candidate) =>
         candidate.name === "model_call" &&
-        candidate.attributes["zcode.execution.turn_id"] === "turn-child",
+        candidate.attributes["zody.execution.turn_id"] === "turn-child",
     );
     const foregroundAttempt = spans.find(
       (candidate) =>
         candidate.name === "model_attempt" &&
-        candidate.attributes["zcode.execution.turn_id"] === "turn-child",
+        candidate.attributes["zody.execution.turn_id"] === "turn-child",
     );
     const foregroundTool = spans.find(
       (candidate) =>
         candidate.name === "tool_execution" &&
-        candidate.attributes["zcode.execution.tool_call_id"] === "tool-child-bash",
+        candidate.attributes["zody.execution.tool_call_id"] === "tool-child-bash",
     );
     const foregroundCommand = spans.find(
       (candidate) =>
         candidate.name === "command_execution" &&
-        candidate.attributes["zcode.execution.tool_call_id"] === "tool-child-bash",
+        candidate.attributes["zody.execution.tool_call_id"] === "tool-child-bash",
     );
     const linkedTurn = spans.find(
       (candidate) =>
         candidate.name === "agent_turn" &&
-        candidate.attributes["zcode.execution.session_id"] === "session-background",
+        candidate.attributes["zody.execution.session_id"] === "session-background",
     );
     expect(foregroundTurn?.parentSpanContext?.spanId).toBe(toolSpan?.spanContext().spanId);
     expect(foregroundTurn?.spanContext().traceId).toBe(toolSpan?.spanContext().traceId);
@@ -462,7 +462,7 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     expect(linkedTurn?.parentSpanContext).toBeUndefined();
     expect(linkedTurn?.links[0]?.context.spanId).toBe(toolSpan?.spanContext().spanId);
     expect(linkedTurn?.links[0]?.attributes).toEqual({
-      "zcode.link.relation": "spawned_by",
+      "zody.link.relation": "spawned_by",
     });
   });
 
@@ -474,7 +474,7 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     });
     tool.finishCompleted();
     const toolSpan = span(harness.exporter.getFinishedSpans(), "tool_execution");
-    expect(toolSpan.attributes["zcode.tool_execution.exit_code"]).toBeUndefined();
+    expect(toolSpan.attributes["zody.tool_execution.exit_code"]).toBeUndefined();
     expect(toolSpan.attributes["process.exit.code"]).toBeUndefined();
   });
 
@@ -490,14 +490,14 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     turn.finishFailed("agent_loop", "provider", error);
 
     expect(span(harness.exporter.getFinishedSpans(), "agent_turn").attributes).toMatchObject({
-      "zcode.agent_turn.error_category": "provider",
-      "zcode.agent_turn.error_code": "E_PROVIDER",
-      "zcode.agent_turn.error_type": "Error",
-      "zcode.agent_turn.outcome": "failed",
+      "zody.agent_turn.error_category": "provider",
+      "zody.agent_turn.error_code": "E_PROVIDER",
+      "zody.agent_turn.error_type": "Error",
+      "zody.agent_turn.outcome": "failed",
     });
     const message = String(
       span(harness.exporter.getFinishedSpans(), "agent_turn").attributes[
-        "zcode.agent_turn.error_message"
+        "zody.agent_turn.error_message"
       ],
     );
     expect(message).not.toContain("private-token");
@@ -560,18 +560,18 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
 
     const spans = harness.exporter.getFinishedSpans();
     expect(span(spans, "model_attempt").attributes).toMatchObject({
-      "zcode.model_attempt.error_code": "E_PROVIDER",
-      "zcode.model_attempt.error_message": "provider request req-raw-123 failed",
+      "zody.model_attempt.error_code": "E_PROVIDER",
+      "zody.model_attempt.error_message": "provider request req-raw-123 failed",
       "error.cause.code": "ECONNRESET",
       "error.cause.type": "Error",
       "error.cause.message": "socket reset authorization: {redacted}",
     });
     expect(span(spans, "model_call").attributes).toMatchObject({
-      "zcode.model_call.failure_stage": "attempts",
-      "zcode.model_call.outcome": "failed",
+      "zody.model_call.failure_stage": "attempts",
+      "zody.model_call.outcome": "failed",
     });
     expect(span(spans, "model_call").attributes).not.toHaveProperty(
-      "zcode.model_call.error_message",
+      "zody.model_call.error_message",
     );
     expect(span(spans, "model_call").attributes).not.toHaveProperty("error.cause.message");
   });
@@ -591,7 +591,7 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
     harness.runtime.abandonSession("session-1");
     expect(harness.exporter.getFinishedSpans()).toHaveLength(1);
     expect(harness.exporter.getFinishedSpans()[0]?.attributes).toMatchObject({
-      "zcode.agent_turn.abandon_reason": "session_shutdown",
+      "zody.agent_turn.abandon_reason": "session_shutdown",
     });
     first.finishCompleted();
   });
@@ -644,14 +644,14 @@ describe("AgentExecutionTelemetryRuntime V5", () => {
       attempt.setOutputTokens(4);
 
       expect(harness.activeSpans.get("model_attempt")?.attributes).toMatchObject({
-        "zcode.model_attempt.input_tokens": 12,
-        "zcode.model_attempt.output_tokens": 4,
+        "zody.model_attempt.input_tokens": 12,
+        "zody.model_attempt.output_tokens": 4,
       });
       expect(harness.activeSpans.get("model_call")?.attributes).not.toHaveProperty(
-        "zcode.model_call.provider_input_tokens_total",
+        "zody.model_call.provider_input_tokens_total",
       );
       expect(harness.activeSpans.get("agent_turn")?.attributes).not.toHaveProperty(
-        "zcode.agent_turn.provider_input_tokens_total",
+        "zody.agent_turn.provider_input_tokens_total",
       );
 
       attempt.finishCompleted();

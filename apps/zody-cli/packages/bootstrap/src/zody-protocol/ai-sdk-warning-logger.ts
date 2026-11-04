@@ -22,7 +22,7 @@ export function installZodyProtocolAiSdkWarningLogger(logger: Logger): void {
       const warnings = Array.isArray(options.warnings) ? options.warnings : [];
       logger.warn("AI SDK model warning", {
         event: "model.sdk.warning",
-        module: "bootstrap.zcode_protocol",
+        module: "bootstrap.zody_protocol",
         status: "completed",
         model: stringValue(options.model),
         provider: stringValue(options.provider),

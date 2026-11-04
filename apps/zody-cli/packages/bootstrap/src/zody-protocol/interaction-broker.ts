@@ -808,9 +808,9 @@ async function readPersistedAutoResolution(
   } catch (error) {
     context.logger?.warn("Failed to restore user input auto-resolution state", {
       error: error instanceof Error ? error.message : String(error),
-      event: "zcode_protocol.user_input_auto_resolution_restore_failed",
+      event: "zody_protocol.user_input_auto_resolution_restore_failed",
       interactionId: request.requestId,
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       sessionId: request.sessionId,
     });
     return undefined;

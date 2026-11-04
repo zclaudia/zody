@@ -99,7 +99,7 @@ export function buildZodyDataSizeArmsPayload(params: {
   };
   result: ZodyDataSizeScanResult;
 }): FinalArmsCustomEventPayload {
-  const eventName = "perf_resource_zcode_data_size";
+  const eventName = "perf_resource_zody_data_size";
   return {
     group: "resource",
     name: eventName,
@@ -111,7 +111,7 @@ export function buildZodyDataSizeArmsPayload(params: {
       directories_scanned: params.result.directoriesScanned,
       event_name: eventName,
       files_scanned: params.result.filesScanned,
-      metric_kind: "zcode_data_bytes",
+      metric_kind: "zody_data_bytes",
       metric_value: params.result.bytes,
       partial_reason: params.result.partialReason,
       platform: normalizeOsCategory(params.context.platform),
@@ -119,7 +119,7 @@ export function buildZodyDataSizeArmsPayload(params: {
       scan_error_count: params.result.scanErrorCount,
       scan_status: params.result.status,
       schema_version: 1,
-      zcode_data_bytes: params.result.bytes,
+      zody_data_bytes: params.result.bytes,
     }),
     type: "custom",
     value: params.result.bytes,
@@ -214,7 +214,7 @@ export function createZodyDataSizeTelemetryScheduler(
       await dependencies.writeState(nextState);
       persistedState = nextState;
     } catch (error) {
-      dependencies.logger.warn("[zcode-data-size] failed to persist report state", error);
+      dependencies.logger.warn("[zody-data-size] failed to persist report state", error);
     }
   }
 
@@ -236,7 +236,7 @@ export function createZodyDataSizeTelemetryScheduler(
       await dependencies.writeState(restoredState);
       persistedState = previousState;
     } catch (error) {
-      dependencies.logger.warn("[zcode-data-size] failed to roll back report reservation", error);
+      dependencies.logger.warn("[zody-data-size] failed to roll back report reservation", error);
     }
   }
 
@@ -287,7 +287,7 @@ export function createZodyDataSizeTelemetryScheduler(
       await persistSuccess(reportedAt);
       idleWaitingSince = null;
       dependencies.logger.info(
-        `[zcode-data-size] reported status=${result.status} bytes=${result.bytes}`,
+        `[zody-data-size] reported status=${result.status} bytes=${result.bytes}`,
       );
       schedule(
         timing.dailyIntervalMs +
@@ -303,7 +303,7 @@ export function createZodyDataSizeTelemetryScheduler(
       }
       const aborted = abortController.signal.aborted || isAbortError(error);
       dependencies.logger.warn(
-        `[zcode-data-size] ${aborted ? "scan aborted" : "scan/report failed"}`,
+        `[zody-data-size] ${aborted ? "scan aborted" : "scan/report failed"}`,
         error,
       );
       schedule(aborted ? timing.abortedRetryMs : timing.failureRetryMs);
@@ -340,7 +340,7 @@ export function createZodyDataSizeTelemetryScheduler(
     } catch (error) {
       // Bug 根因：状态读取失败不等于没有历史状态；按首次启动继续采集会绕过持久化限流。
       // 无法确认配额时保持 fail-closed，并且只重试状态读取，不进入采集调度。
-      dependencies.logger.warn("[zcode-data-size] failed to read report state", error);
+      dependencies.logger.warn("[zody-data-size] failed to read report state", error);
       schedule(timing.failureRetryMs, initializeFromPersistedState);
       return;
     }
@@ -431,7 +431,7 @@ export function registerDesktopZodyDataSizeTelemetry(options: {
     writeState: (state) => writeZodyDataSizeTelemetryState(options.stateFile, state),
   });
   void desktopScheduler.start().catch((error) => {
-    options.logger.warn("[zcode-data-size] scheduler start failed", error);
+    options.logger.warn("[zody-data-size] scheduler start failed", error);
   });
 }
 

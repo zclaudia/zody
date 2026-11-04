@@ -1,3 +1,7 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { ZodyAgentProcessManager } from "@zody/services/node";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
@@ -146,6 +150,29 @@ function buildCrashpadProcessTypeDump(options: {
 }
 
 describe("appARMSBootstrap beforeReport", () => {
+  it("counts a real Agent exit once and filters its marked console duplicate", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "r46-lifecycle-"));
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const reporter = { onSpawn: vi.fn(), onExit: vi.fn(), onError: vi.fn() };
+    const manager = new ZodyAgentProcessManager({
+      commandResolver: () => ({ command: process.execPath, args: ["-e", "process.exit(1)"], cwd: workspacePath }),
+      processLifecycleReporter: reporter,
+    });
+    try {
+      await manager.getClient({ workspacePath });
+      await vi.waitFor(() => expect(reporter.onExit).toHaveBeenCalledTimes(1));
+      await vi.waitFor(() => expect(log.mock.calls.some((args) => String(args[1]).includes(ZCODE_AGENT_LIFECYCLE_LOG_MARKER))).toBe(true));
+      const message = String(log.mock.calls.find((args) => String(args[1]).includes(ZCODE_AGENT_LIFECYCLE_LOG_MARKER))?.[1]);
+      const payload = { events: [{ event_type: "custom", name: "perf_agent_crash" }, { event_type: "exception", type: "error", source: "console.error", message }] };
+      const beforeReport = await getBeforeReport();
+      const filtered = beforeReport(payload) as { events: Array<Record<string, unknown>> };
+      expect(filtered.events).toHaveLength(1);
+      expect(filtered.events[0]).toMatchObject({ event_type: "custom", name: "perf_agent_crash" });
+      expect(message).toContain("[zody-agent-lifecycle-reported]");
+      expect(message).not.toContain("[zcode-agent-lifecycle-reported]");
+    } finally { manager.disposeAll(); log.mockRestore(); rmSync(workspacePath, { recursive: true, force: true }); }
+  });
+
   it("filters only explicitly marked lifecycle console wrappers, preserving real JS errors", async () => {
     const beforeReport = await getBeforeReport();
     const wrapper = {

@@ -206,7 +206,7 @@ async function stop(
           : undefined,
     event: "v4.stop.foreground_execution_inspected",
     expectedForegroundExecutionId: payload.expectedForegroundExecutionId,
-    module: "bootstrap.zcode_protocol_v4.commands",
+    module: "bootstrap.zody_protocol_v4.commands",
     runtimeStopKind: runtimeStop?.kind ?? "unsupported",
     sessionId: record.app.sessionId,
   });

@@ -358,7 +358,7 @@ import {
   zodyMcpUiCloseInstanceResultSchema,
   zodyMcpUiOpenInstanceResultSchema,
 } from "@zody/shared";
-const logger = createServiceLogger("zcode-agent-service");
+const logger = createServiceLogger("zody-agent-service");
 const cuaOperationLogger = createServiceLogger("cua-operation-turn");
 const PLUGIN_MANAGEMENT_WORKSPACE_DIR_NAME = "plugin-workspace";
 // 状态探测完成后释放闲置的 MCP 子进程；只作用于控制面，不回收会话进程。
@@ -1260,8 +1260,8 @@ export function createZodyAgentService(
     // 远端 Host transport 仍存活但设置 responder 不返回时，旧 pending
     // 没有终止条件，会阻塞 Session 生命周期。超时只结束本次请求，不重试或降级。
     logger.warn(undefined, "运行时偏好请求等待 Host 响应超时", {
-      event: "zcode_agent.runtime_preferences.host_response_timeout",
-      module: "services.zcode_agent",
+      event: "zody_agent.runtime_preferences.host_response_timeout",
+      module: "services.zody_agent",
       requestId,
       scope: pending.request.scope,
       sessionId: pending.request.sessionId,
@@ -2160,8 +2160,8 @@ export function createZodyAgentService(
             workspaceKey: resolveWorkspaceKey(workspace),
           });
           logger.info(undefined, "运行时偏好请求已转发给 Host", {
-            event: "zcode_agent.runtime_preferences.host_request_dispatched",
-            module: "services.zcode_agent",
+            event: "zody_agent.runtime_preferences.host_request_dispatched",
+            module: "services.zody_agent",
             requestId,
             scope: dynamicRequest.scope,
             sessionId: dynamicRequest.sessionId,
@@ -4858,15 +4858,15 @@ export function createZodyAgentService(
       const pending = takePendingSessionRuntimePreferences(params.requestId);
       if (!pending) {
         logger.warn(undefined, "运行时偏好响应找不到 pending 请求", {
-          event: "zcode_agent.runtime_preferences.response_without_pending",
-          module: "services.zcode_agent",
+          event: "zody_agent.runtime_preferences.response_without_pending",
+          module: "services.zody_agent",
           requestId: params.requestId,
         });
         throw new Error(`ZCode session runtime preferences request not found: ${params.requestId}`);
       }
       const responseContext = {
-        event: "zcode_agent.runtime_preferences.host_response_received",
-        module: "services.zcode_agent",
+        event: "zody_agent.runtime_preferences.host_response_received",
+        module: "services.zody_agent",
         requestId: params.requestId,
         scope: pending.request.scope,
         sessionId: pending.request.sessionId,

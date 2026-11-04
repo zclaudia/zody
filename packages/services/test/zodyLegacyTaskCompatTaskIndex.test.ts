@@ -667,6 +667,7 @@ describe("ZCode legacy task compat task index", () => {
   });
 
   it("reports the manual automation runId on terminal outcome", async () => {
+    const logSpy = vi.spyOn(console, "log");
     const { indexFrameEmitter, service } = createService();
     const task = await service.createTask({ workspacePath: "/repo", provider: "glm" });
     const outcomes: Array<{ inputId?: string; outcome: string }> = [];
@@ -688,8 +689,10 @@ describe("ZCode legacy task compat task index", () => {
       await flushMicrotasks();
 
       expect(outcomes).toEqual([expect.objectContaining({ inputId: runId, outcome: "succeeded" })]);
+      expect(logSpy.mock.calls.some((args) => String(args[0]).includes("[zody-task-service]"))).toBe(true);
     } finally {
       disposable.dispose();
+      logSpy.mockRestore();
     }
   });
 
@@ -1060,7 +1063,7 @@ describe("ZCode legacy task compat task index", () => {
     expect(observations).toEqual([
       {
         transport: "http",
-        interface: "zcode_agent.model.openai-compatible.sse.api.example.com/v1",
+        interface: "zody_agent.model.openai-compatible.sse.api.example.com/v1",
         durationMs: 456,
         ok: true,
         attempt: 2,

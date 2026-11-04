@@ -1516,7 +1516,7 @@ describe("v4 原生 stop", () => {
       activeForegroundExecutionId: "foreground-1",
       event: "v4.stop.foreground_execution_inspected",
       expectedForegroundExecutionId: "foreground-1",
-      module: "bootstrap.zcode_protocol_v4.commands",
+      module: "bootstrap.zody_protocol_v4.commands",
       runtimeStopKind: "stopped",
       sessionId: "s1",
     });

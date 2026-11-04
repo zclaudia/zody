@@ -241,7 +241,7 @@ async function readStaleResponse(id: string): Promise<Record<string, unknown> | 
     const lines = (await readFile(join(logDir, name), "utf8")).split("\n");
     for (const line of lines.slice(0, -1)) {
       if (
-        line.includes('"event":"zcode_protocol.v4.interaction_already_resolved"') &&
+        line.includes('"event":"zody_protocol.v4.interaction_already_resolved"') &&
         line.includes(id)
       )
         return JSON.parse(line) as Record<string, unknown>;

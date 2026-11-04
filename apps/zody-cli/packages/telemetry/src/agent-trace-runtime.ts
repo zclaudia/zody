@@ -167,8 +167,8 @@ export class AgentExecutionTelemetryRuntime
               includeQuery: true,
               includeSession: true,
             }),
-            "zcode.agent_turn.turn_number": integer(input.turnNumber),
-            "zcode.agent_turn.input_source": safeEnum(input.inputSource),
+            "zody.agent_turn.turn_number": integer(input.turnNumber),
+            "zody.agent_turn.input_source": safeEnum(input.inputSource),
           }),
           context: parentContext,
           correlation,
@@ -203,8 +203,8 @@ export class AgentExecutionTelemetryRuntime
         const span = this.startSpan({
           attributes: compactAttributes({
             ...executionProjection(parent?.correlation),
-            "zcode.agent_step.step_id": safeId(input.stepId),
-            "zcode.agent_step.step_index": integer(input.stepIndex),
+            "zody.agent_step.step_id": safeId(input.stepId),
+            "zody.agent_step.step_index": integer(input.stepIndex),
           }),
           context: parentContext,
           correlation: parent?.correlation,
@@ -238,8 +238,8 @@ export class AgentExecutionTelemetryRuntime
         const span = this.startSpan({
           attributes: compactAttributes({
             ...executionProjection(parent?.correlation, { includeActor: true }),
-            "zcode.execution.tool_call_id": safeId(input.toolCallId),
-            "zcode.tool_execution.tool_name": toolName,
+            "zody.execution.tool_call_id": safeId(input.toolCallId),
+            "zody.tool_execution.tool_name": toolName,
             ...toolCompatibilityAttributes({
               toolCallId: input.toolCallId,
               toolName: input.registeredToolName,
@@ -280,18 +280,18 @@ export class AgentExecutionTelemetryRuntime
         const span = this.startSpan({
           attributes: compactAttributes({
             ...executionProjection(parent?.correlation),
-            "zcode.context_compaction.trigger": safeEnum(input.trigger),
-            "zcode.context_compaction.phase": safeEnum(input.phase),
-            "zcode.context_compaction.model_mode": safeEnum(input.modelMode),
-            "zcode.context_compaction.outer_attempt": integer(input.outerAttempt),
-            "zcode.context_compaction.max_attempts": integer(input.maxAttempts),
-            "zcode.context_compaction.triggering_step_index": integer(input.triggeringStepIndex),
-            "zcode.context_compaction.policy_context_window_tokens": finiteNonNegative(
+            "zody.context_compaction.trigger": safeEnum(input.trigger),
+            "zody.context_compaction.phase": safeEnum(input.phase),
+            "zody.context_compaction.model_mode": safeEnum(input.modelMode),
+            "zody.context_compaction.outer_attempt": integer(input.outerAttempt),
+            "zody.context_compaction.max_attempts": integer(input.maxAttempts),
+            "zody.context_compaction.triggering_step_index": integer(input.triggeringStepIndex),
+            "zody.context_compaction.policy_context_window_tokens": finiteNonNegative(
               input.policyContextWindowTokens,
             ),
-            "zcode.context_compaction.threshold_tokens": finiteNonNegative(input.thresholdTokens),
-            "zcode.context_compaction.token_source": safeEnum(input.tokenSource),
-            "zcode.context_compaction.recovered_from_logical_call_id": safeId(
+            "zody.context_compaction.threshold_tokens": finiteNonNegative(input.thresholdTokens),
+            "zody.context_compaction.token_source": safeEnum(input.tokenSource),
+            "zody.context_compaction.recovered_from_logical_call_id": safeId(
               input.recoveredFromLogicalCallId,
             ),
           }),
@@ -340,13 +340,13 @@ export class AgentExecutionTelemetryRuntime
               includeQuery: true,
               includeSession: true,
             }),
-            "zcode.detached_operation.operation": safeEnum(input.operation),
-            "zcode.detached_operation.execution_kind": safeEnum(input.executionKind),
-            "zcode.detached_operation.trigger": safeEnum(input.trigger),
-            "zcode.detached_operation.target_kind": safeEnum(input.targetKind),
-            "zcode.detached_operation.goal_iteration": integer(input.goalIteration),
-            "zcode.detached_operation.chunk_index": integer(input.chunkIndex),
-            "zcode.detached_operation.chunk_count": integer(input.chunkCount),
+            "zody.detached_operation.operation": safeEnum(input.operation),
+            "zody.detached_operation.execution_kind": safeEnum(input.executionKind),
+            "zody.detached_operation.trigger": safeEnum(input.trigger),
+            "zody.detached_operation.target_kind": safeEnum(input.targetKind),
+            "zody.detached_operation.goal_iteration": integer(input.goalIteration),
+            "zody.detached_operation.chunk_index": integer(input.chunkIndex),
+            "zody.detached_operation.chunk_count": integer(input.chunkCount),
           }),
           context: parentContext,
           correlation: input.context,
@@ -385,28 +385,28 @@ export class AgentExecutionTelemetryRuntime
               includeQuery: true,
               includeSession: true,
             }),
-            "zcode.execution.logical_call_id": safeId(input.logicalCallId),
-            "zcode.model_call.operation": safeEnum(input.operation),
-            "zcode.model_call.streaming": input.streaming,
-            "zcode.model_call.model_role": safeEnum(input.modelRole),
-            "zcode.model_call.requested_provider_id": safeString(input.requested.providerId, 128),
-            "zcode.model_call.requested_model": safeString(input.requested.requestedModel, 128),
-            "zcode.model_call.reasoning_capability": safeEnum(input.requested.reasoning.capability),
-            "zcode.model_call.reasoning_requested_state": safeEnum(
+            "zody.execution.logical_call_id": safeId(input.logicalCallId),
+            "zody.model_call.operation": safeEnum(input.operation),
+            "zody.model_call.streaming": input.streaming,
+            "zody.model_call.model_role": safeEnum(input.modelRole),
+            "zody.model_call.requested_provider_id": safeString(input.requested.providerId, 128),
+            "zody.model_call.requested_model": safeString(input.requested.requestedModel, 128),
+            "zody.model_call.reasoning_capability": safeEnum(input.requested.reasoning.capability),
+            "zody.model_call.reasoning_requested_state": safeEnum(
               input.requested.reasoning.requestedState,
             ),
-            "zcode.model_call.reasoning_requested_control": safeEnum(
+            "zody.model_call.reasoning_requested_control": safeEnum(
               input.requested.reasoning.requestedControl,
             ),
-            "zcode.model_call.reasoning_requested_level": safeString(
+            "zody.model_call.reasoning_requested_level": safeString(
               input.requested.reasoning.requestedLevel,
               128,
             ),
-            "zcode.model_call.reasoning_requested_budget_tokens": integer(
+            "zody.model_call.reasoning_requested_budget_tokens": integer(
               input.requested.reasoning.requestedBudgetTokens,
             ),
-            "zcode.model_call.call_cause": safeEnum(input.callCause),
-            "zcode.model_call.previous_logical_call_id": safeId(input.previousLogicalCallId),
+            "zody.model_call.call_cause": safeEnum(input.callCause),
+            "zody.model_call.previous_logical_call_id": safeId(input.previousLogicalCallId),
           }),
           context: parentContext,
           correlation: parent?.correlation,
@@ -458,12 +458,12 @@ export class AgentExecutionTelemetryRuntime
         const span = this.startSpan({
           attributes: compactAttributes({
             ...executionProjection(parent.correlation),
-            "zcode.execution.tool_call_id": safeId(parent.toolCallId),
-            "zcode.command_execution.safe_name": safeString(input.safeName, 128),
-            "zcode.command_execution.category": safeEnum(input.category),
-            "zcode.command_execution.command_count": integer(input.commandCount),
-            "zcode.command_execution.shell_kind": safeEnum(input.shellKind),
-            "zcode.command_execution.sandboxed": input.sandboxed,
+            "zody.execution.tool_call_id": safeId(parent.toolCallId),
+            "zody.command_execution.safe_name": safeString(input.safeName, 128),
+            "zody.command_execution.category": safeEnum(input.category),
+            "zody.command_execution.command_count": integer(input.commandCount),
+            "zody.command_execution.shell_kind": safeEnum(input.shellKind),
+            "zody.command_execution.sandboxed": input.sandboxed,
           }),
           context: parent.activeContext,
           correlation: parent.correlation,
@@ -503,35 +503,35 @@ export class AgentExecutionTelemetryRuntime
               includeQuery: true,
               includeSession: true,
             }),
-            "zcode.execution.tool_call_id": safeId(parent.toolCallId),
-            "zcode.execution.logical_call_id": parentWriter.logicalCallId,
-            "zcode.execution.model_operation": parentWriter.operation,
-            "zcode.execution.model_role": parentWriter.modelRole,
-            "zcode.model_attempt.request_id": safeId(input.requestId),
-            "zcode.model_attempt.attempt_number": integer(input.attemptNumber),
-            "zcode.model_attempt.max_attempts": integer(input.maxAttempts),
-            "zcode.model_attempt.attempt_cause": safeEnum(input.attemptCause),
-            "zcode.model_attempt.previous_request_id": safeId(input.previousRequestId),
-            "zcode.model_attempt.retry_delay_ms": finiteNonNegative(input.retryDelayMs),
-            "zcode.model_attempt.provider_id": safeString(target.providerId, 128),
-            "zcode.model_attempt.provider_kind": safeEnum(target.providerKind),
-            "zcode.model_attempt.provider_origin": safeString(target.providerOrigin),
-            "zcode.model_attempt.provider_route": safeString(target.providerRoute),
-            "zcode.model_attempt.requested_model": safeString(target.requestedModel, 128),
-            "zcode.model_attempt.transport": safeEnum(input.transport),
-            "zcode.model_attempt.api_operation": safeEnum(input.apiOperation),
-            "zcode.model_attempt.reasoning_capability": safeEnum(target.reasoning.capability),
-            "zcode.model_attempt.reasoning_requested_state": safeEnum(
+            "zody.execution.tool_call_id": safeId(parent.toolCallId),
+            "zody.execution.logical_call_id": parentWriter.logicalCallId,
+            "zody.execution.model_operation": parentWriter.operation,
+            "zody.execution.model_role": parentWriter.modelRole,
+            "zody.model_attempt.request_id": safeId(input.requestId),
+            "zody.model_attempt.attempt_number": integer(input.attemptNumber),
+            "zody.model_attempt.max_attempts": integer(input.maxAttempts),
+            "zody.model_attempt.attempt_cause": safeEnum(input.attemptCause),
+            "zody.model_attempt.previous_request_id": safeId(input.previousRequestId),
+            "zody.model_attempt.retry_delay_ms": finiteNonNegative(input.retryDelayMs),
+            "zody.model_attempt.provider_id": safeString(target.providerId, 128),
+            "zody.model_attempt.provider_kind": safeEnum(target.providerKind),
+            "zody.model_attempt.provider_origin": safeString(target.providerOrigin),
+            "zody.model_attempt.provider_route": safeString(target.providerRoute),
+            "zody.model_attempt.requested_model": safeString(target.requestedModel, 128),
+            "zody.model_attempt.transport": safeEnum(input.transport),
+            "zody.model_attempt.api_operation": safeEnum(input.apiOperation),
+            "zody.model_attempt.reasoning_capability": safeEnum(target.reasoning.capability),
+            "zody.model_attempt.reasoning_requested_state": safeEnum(
               target.reasoning.requestedState,
             ),
-            "zcode.model_attempt.reasoning_requested_control": safeEnum(
+            "zody.model_attempt.reasoning_requested_control": safeEnum(
               target.reasoning.requestedControl,
             ),
-            "zcode.model_attempt.reasoning_requested_level": safeString(
+            "zody.model_attempt.reasoning_requested_level": safeString(
               target.reasoning.requestedLevel,
               128,
             ),
-            "zcode.model_attempt.reasoning_requested_budget_tokens": integer(
+            "zody.model_attempt.reasoning_requested_budget_tokens": integer(
               target.reasoning.requestedBudgetTokens,
             ),
             ...modelAttemptCompatibilityAttributes(target),
@@ -761,7 +761,7 @@ function causationLink(
 ): Link {
   return {
     attributes: {
-      "zcode.link.relation": relation,
+      "zody.link.relation": relation,
     },
     context: spanContextFromCausation(causation),
   };
@@ -792,7 +792,7 @@ class TurnWriter extends TrackedBaseWriter implements AgentTurnSpanWriter {
   finishCompleted(
     resultType: "assistant_message" | "tool_request" | "no_output" | "other" = "other",
   ): void {
-    this.finishCompletedIfOpen(() => this.setAttribute("zcode.agent_turn.result_type", resultType));
+    this.finishCompletedIfOpen(() => this.setAttribute("zody.agent_turn.result_type", resultType));
   }
 
   finishFailed(
@@ -844,7 +844,7 @@ class StepWriter extends TrackedBaseWriter implements AgentStepSpanWriter {
   ): void {
     this.metricLabels.terminal_reason = terminalReason;
     this.finishCompletedIfOpen(() =>
-      this.setAttribute("zcode.agent_step.terminal_reason", terminalReason),
+      this.setAttribute("zody.agent_step.terminal_reason", terminalReason),
     );
   }
 
@@ -904,18 +904,18 @@ class ToolWriter extends TrackedBaseWriter implements ToolExecutionSpanWriter {
   }
 
   setPermissionDecision(decision: "granted" | "denied" | "not_required"): void {
-    this.setAttribute("zcode.tool_execution.permission_decision", decision);
+    this.setAttribute("zody.tool_execution.permission_decision", decision);
     if (this.permissionRequested && decision !== "not_required") {
       this.addEvent("permission_decided", { decision });
     }
   }
 
   setOutputBytes(bytes: number): void {
-    this.setAttribute("zcode.tool_execution.output_bytes", finiteNonNegative(bytes));
+    this.setAttribute("zody.tool_execution.output_bytes", finiteNonNegative(bytes));
   }
 
   setOutputTruncated(truncated: boolean): void {
-    this.setAttribute("zcode.tool_execution.output_truncated", truncated);
+    this.setAttribute("zody.tool_execution.output_truncated", truncated);
   }
 
   startCommand(input: CommandTraceStart): CommandExecutionSpanWriter {
@@ -928,7 +928,7 @@ class ToolWriter extends TrackedBaseWriter implements ToolExecutionSpanWriter {
 
   finishDenied(reason: "user_denied" | "policy_denied" | "unavailable" | "unknown"): void {
     this.finishDomainOutcomeIfOpen("denied", () =>
-      this.setAttribute("zcode.tool_execution.permission_denial_reason", reason),
+      this.setAttribute("zody.tool_execution.permission_denial_reason", reason),
     );
   }
 
@@ -988,7 +988,7 @@ class CommandWriter extends TrackedBaseWriter implements CommandExecutionSpanWri
     this.firstOutput = true;
     const elapsed = this.elapsedMs();
     this.firstOutputMs = elapsed;
-    this.setAttribute("zcode.command_execution.first_output_ms", elapsed);
+    this.setAttribute("zody.command_execution.first_output_ms", elapsed);
     this.addEvent("first_output");
   }
 
@@ -998,22 +998,22 @@ class CommandWriter extends TrackedBaseWriter implements CommandExecutionSpanWri
 
   setExitCode(exitCode: number): void {
     const normalized = integer(exitCode);
-    this.setAttribute("zcode.command_execution.exit_code", normalized);
+    this.setAttribute("zody.command_execution.exit_code", normalized);
     this.setAttributes(commandCompatibilityAttributes({ exitCode: normalized }));
   }
 
   setSignal(signal: string): void {
     const normalized = safeIdentifier(signal);
-    this.setAttribute("zcode.command_execution.signal", normalized);
+    this.setAttribute("zody.command_execution.signal", normalized);
     this.setAttributes(commandCompatibilityAttributes({ signal: normalized }));
   }
 
   setOutputBytes(bytes: number): void {
-    this.setAttribute("zcode.command_execution.output_bytes", finiteNonNegative(bytes));
+    this.setAttribute("zody.command_execution.output_bytes", finiteNonNegative(bytes));
   }
 
   setTimedOut(timedOut: boolean): void {
-    this.setAttribute("zcode.command_execution.timed_out", timedOut);
+    this.setAttribute("zody.command_execution.timed_out", timedOut);
   }
 
   finishCompleted(): void {
@@ -1084,11 +1084,11 @@ class CompactionWriter extends TrackedBaseWriter implements ContextCompactionSpa
   }
 
   setInputTokens(tokens: number): void {
-    this.setAttribute("zcode.context_compaction.input_tokens", finiteNonNegative(tokens));
+    this.setAttribute("zody.context_compaction.input_tokens", finiteNonNegative(tokens));
   }
 
   setOutputTokens(tokens: number): void {
-    this.setAttribute("zcode.context_compaction.output_tokens", finiteNonNegative(tokens));
+    this.setAttribute("zody.context_compaction.output_tokens", finiteNonNegative(tokens));
   }
 
   markFallbackSelected(reason: string): void {
@@ -1144,7 +1144,7 @@ class DetachedWriter extends TrackedBaseWriter implements DetachedOperationSpanW
   }
 
   setResultType(resultType: "text" | "boolean" | "metadata" | "other"): void {
-    this.setAttribute("zcode.detached_operation.result_type", resultType);
+    this.setAttribute("zody.detached_operation.result_type", resultType);
   }
 
   finishCompleted(): void {
@@ -1311,56 +1311,56 @@ class ModelAttemptWriter extends TrackedBaseWriter implements ModelAttemptSpanWr
   }
 
   setProviderRequestId(requestId: string): void {
-    this.setAttribute("zcode.model_attempt.provider_request_id", safeString(requestId, 256));
+    this.setAttribute("zody.model_attempt.provider_request_id", safeString(requestId, 256));
   }
 
   setResponseModel(model: ResponseModelTelemetryDescriptor): void {
     const value = safeString(model.model, 128);
-    this.setAttribute("zcode.model_attempt.response_model", value);
+    this.setAttribute("zody.model_attempt.response_model", value);
     this.setAttributes(modelResponseCompatibilityAttributes({ responseModel: value }));
   }
 
   setEffectiveReasoningState(state: ModelReasoningState): void {
-    this.setAttribute("zcode.model_attempt.reasoning_effective_state", safeEnum(state));
+    this.setAttribute("zody.model_attempt.reasoning_effective_state", safeEnum(state));
   }
 
   setEffectiveReasoningControl(control: ModelReasoningControlType): void {
-    this.setAttribute("zcode.model_attempt.reasoning_effective_control", safeEnum(control));
+    this.setAttribute("zody.model_attempt.reasoning_effective_control", safeEnum(control));
   }
 
   setEffectiveReasoningLevel(level: string): void {
-    this.setAttribute("zcode.model_attempt.reasoning_effective_level", safeString(level, 128));
+    this.setAttribute("zody.model_attempt.reasoning_effective_level", safeString(level, 128));
   }
 
   setEffectiveReasoningBudgetTokens(tokens: number): void {
     this.setAttribute(
-      "zcode.model_attempt.reasoning_effective_budget_tokens",
+      "zody.model_attempt.reasoning_effective_budget_tokens",
       finiteNonNegative(tokens),
     );
   }
 
   setFinishReason(reason: ModelFinishReason): void {
     const value = safeString(reason, 128);
-    this.setAttribute("zcode.model_attempt.finish_reason", value);
+    this.setAttribute("zody.model_attempt.finish_reason", value);
     this.setAttributes(modelResponseCompatibilityAttributes({ finishReason: value }));
   }
 
   setInputTokens(tokens: number): void {
-    this.setUsage("inputTokens", "input", tokens, "zcode.model_attempt.input_tokens");
+    this.setUsage("inputTokens", "input", tokens, "zody.model_attempt.input_tokens");
     this.setAttributes(modelResponseCompatibilityAttributes({ inputTokens: tokens }));
   }
 
   setOutputTokens(tokens: number): void {
-    this.setUsage("outputTokens", "output", tokens, "zcode.model_attempt.output_tokens");
+    this.setUsage("outputTokens", "output", tokens, "zody.model_attempt.output_tokens");
     this.setAttributes(modelResponseCompatibilityAttributes({ outputTokens: tokens }));
   }
 
   setReasoningTokens(tokens: number): void {
-    this.setUsage("reasoningTokens", "reasoning", tokens, "zcode.model_attempt.reasoning_tokens");
+    this.setUsage("reasoningTokens", "reasoning", tokens, "zody.model_attempt.reasoning_tokens");
   }
 
   setCacheReadTokens(tokens: number): void {
-    this.setUsage("cacheReadTokens", "cache_read", tokens, "zcode.model_attempt.cache_read_tokens");
+    this.setUsage("cacheReadTokens", "cache_read", tokens, "zody.model_attempt.cache_read_tokens");
   }
 
   setCacheWriteTokens(tokens: number): void {
@@ -1368,30 +1368,30 @@ class ModelAttemptWriter extends TrackedBaseWriter implements ModelAttemptSpanWr
       "cacheWriteTokens",
       "cache_write",
       tokens,
-      "zcode.model_attempt.cache_write_tokens",
+      "zody.model_attempt.cache_write_tokens",
     );
   }
 
   setStreamOutputCommitted(committed: boolean): void {
-    this.setAttribute("zcode.model_attempt.stream_output_committed", committed);
+    this.setAttribute("zody.model_attempt.stream_output_committed", committed);
   }
 
   setHttpStatusCode(statusCode: number): void {
     const normalized = integer(statusCode);
-    this.setAttribute("zcode.model_attempt.http_status_code", normalized);
+    this.setAttribute("zody.model_attempt.http_status_code", normalized);
     this.setAttributes(httpResponseCompatibilityAttributes(statusCode));
   }
 
   setProviderErrorCode(code: string): void {
-    this.setAttribute("zcode.model_attempt.provider_error_code", safeString(code, 128));
+    this.setAttribute("zody.model_attempt.provider_error_code", safeString(code, 128));
   }
 
   setProviderErrorMessage(message: string): void {
-    this.setAttribute("zcode.model_attempt.provider_error_message", sanitizeErrorMessage(message));
+    this.setAttribute("zody.model_attempt.provider_error_message", sanitizeErrorMessage(message));
   }
 
   setRetryAfterMs(delayMs: number): void {
-    this.setAttribute("zcode.model_attempt.retry_after_ms", finiteNonNegative(delayMs));
+    this.setAttribute("zody.model_attempt.retry_after_ms", finiteNonNegative(delayMs));
   }
 
   markFirstProviderEvent(): void {
@@ -1399,7 +1399,7 @@ class ModelAttemptWriter extends TrackedBaseWriter implements ModelAttemptSpanWr
     this.firstProviderEvent = true;
     const elapsed = this.elapsedMs();
     this.firstProviderEventMs = elapsed;
-    this.setAttribute("zcode.model_attempt.time_to_first_provider_event_ms", elapsed);
+    this.setAttribute("zody.model_attempt.time_to_first_provider_event_ms", elapsed);
     this.addEvent("first_provider_event");
   }
 
@@ -1408,7 +1408,7 @@ class ModelAttemptWriter extends TrackedBaseWriter implements ModelAttemptSpanWr
     this.firstContent = true;
     const elapsed = this.elapsedMs();
     this.firstContentMs = elapsed;
-    this.setAttribute("zcode.model_attempt.time_to_first_content_ms", elapsed);
+    this.setAttribute("zody.model_attempt.time_to_first_content_ms", elapsed);
     this.addEvent("first_content");
   }
 
@@ -1417,7 +1417,7 @@ class ModelAttemptWriter extends TrackedBaseWriter implements ModelAttemptSpanWr
     this.firstText = true;
     const elapsed = this.elapsedMs();
     this.firstTextMs = elapsed;
-    this.setAttribute("zcode.model_attempt.time_to_first_text_ms", elapsed);
+    this.setAttribute("zody.model_attempt.time_to_first_text_ms", elapsed);
     this.addEvent("first_text");
   }
 
@@ -1519,7 +1519,7 @@ function inheritedMetadata(
 }
 
 function lifecycleKeys(spanName: string): WriterLifecycleKeys {
-  const prefix = `zcode.${spanName}`;
+  const prefix = `zody.${spanName}`;
   return {
     abandonReason: `${prefix}.abandon_reason`,
     cancelReason: `${prefix}.cancel_reason`,

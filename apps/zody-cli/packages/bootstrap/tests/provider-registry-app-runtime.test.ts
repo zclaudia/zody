@@ -1,3 +1,7 @@
+import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createNodeLoggerFactory } from "@zody/adapters/logging";
 import { createSqliteSessionStore } from "@zody/adapters/storage";
 import {
   SESSION_ENTRY_MODEL_SELECTION,
@@ -38,8 +42,12 @@ describe("ZCode App Provider Registry runtime", () => {
 
   it("新 Session 优先 Configured Default；未配置时按正式初始规则选择最高档", async () => {
     const registry = new ProviderRegistry([provider()]);
+    const logDir = await mkdtemp(join(tmpdir(), "r46-startup-"));
     const sessionStore = createSqliteSessionStore({ dbPath: ":memory:" });
+    const loggerFactory = createNodeLoggerFactory({ logDir });
+    const createLogger = vi.spyOn(loggerFactory, "createLogger");
     const common = {
+      loggerFactory,
       env: {},
       modelAdapter: fakeModelAdapter(),
       providerRegistry: registry,
@@ -59,9 +67,14 @@ describe("ZCode App Provider Registry runtime", () => {
         options: { reasoningLevel: "low" },
       },
     });
+    expect(createLogger).toHaveBeenCalledWith("zody");
+    expect(createLogger.mock.calls.some(([category]) => category === "zcode")).toBe(false);
     expect(configured.getModel()).toBe("provider-a/model-b");
     expect(configured.getThoughtLevel()).toBe("low");
     await configured.close?.();
+    const logs = (await readFile(join(logDir, (await readdir(logDir))[0]!), "utf8")).trim().split("\n").map((line) => JSON.parse(line));
+    expect(logs.some((entry) => entry.context?.startupKind === "zody_app")).toBe(true);
+    expect(logs.some((entry) => entry.context?.startupKind === "zcode_app")).toBe(false);
 
     const unbound = await createZodyApp(common);
     // Todo 88：这是全新 Session 初始化，不是历史失效选择恢复，允许正式初始推荐。
@@ -73,6 +86,7 @@ describe("ZCode App Provider Registry runtime", () => {
     });
     await unbound.close?.();
     sessionStore.close();
+    await rm(logDir, { recursive: true, force: true });
   });
 
   it("恢复 Session 时使用持久 Session Selection 覆盖 Environment 默认值", async () => {

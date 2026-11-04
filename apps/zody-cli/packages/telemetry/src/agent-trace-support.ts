@@ -320,30 +320,30 @@ export function executionProjection(
 ): Record<string, unknown> {
   if (!correlation) return {};
   return {
-    "zcode.execution.session_id": options.includeSession
+    "zody.execution.session_id": options.includeSession
       ? safeId(correlation.sessionId)
       : undefined,
-    "zcode.execution.parent_session_id": options.includeSession
+    "zody.execution.parent_session_id": options.includeSession
       ? safeId(correlation.parentSessionId)
       : undefined,
-    "zcode.execution.turn_id": safeId(correlation.turnId),
-    "zcode.execution.parent_turn_id": options.includeSession
+    "zody.execution.turn_id": safeId(correlation.turnId),
+    "zody.execution.parent_turn_id": options.includeSession
       ? safeId(correlation.parentTurnId)
       : undefined,
-    "zcode.execution.query_id": options.includeQuery ? safeId(correlation.queryId) : undefined,
-    "zcode.execution.actor_kind": options.includeActor
+    "zody.execution.query_id": options.includeQuery ? safeId(correlation.queryId) : undefined,
+    "zody.execution.actor_kind": options.includeActor
       ? safeEnum(correlation.actorKind)
       : undefined,
-    "zcode.execution.agent_name": options.includeAgent
+    "zody.execution.agent_name": options.includeAgent
       ? safeIdentifier(correlation.agentName)
       : undefined,
-    "zcode.execution.identity_state": options.includeIdentity
+    "zody.execution.identity_state": options.includeIdentity
       ? safeEnum(correlation.identityState)
       : undefined,
-    "zcode.execution.user_subject_id": options.includeIdentity
+    "zody.execution.user_subject_id": options.includeIdentity
       ? safeId(correlation.userSubjectId)
       : undefined,
-    "zcode.execution.launch_surface": safeEnum(correlation.launchSurface),
+    "zody.execution.launch_surface": safeEnum(correlation.launchSurface),
   };
 }
 

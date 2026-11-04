@@ -658,9 +658,9 @@ function mapProtocolSessionEvent(
   if (!shouldExposeSessionEventToProtocol(event)) {
     const payload = asRecord(event.payload);
     context.logger?.debug("ZCode Protocol session event filtered", {
-      event: "zcode_protocol.session_event.filtered",
+      event: "zody_protocol.session_event.filtered",
       eventId: String(event.id),
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       payloadKind: stringValue(payload.kind),
       sessionEventSequenceNumber: event.sequenceNumber,
       sessionEventType: event.type,
@@ -792,10 +792,10 @@ function logProtocolSessionEventSent(
   };
   context.logger?.debug("ZCode Protocol session event sent", {
     deliveryKind: mappedEvent.deliveryKind,
-    event: "zcode_protocol.session_event.sent",
+    event: "zody_protocol.session_event.sent",
     eventId: mappedEvent.eventId,
     method: "session/event",
-    module: "bootstrap.zcode_protocol",
+    module: "bootstrap.zody_protocol",
     payloadKeys: Object.keys(payload).sort(),
     payloadKind: typeof payload.kind === "string" ? payload.kind : undefined,
     payloadSummary: summarizeProtocolPayload(payload),
@@ -1077,7 +1077,7 @@ async function persistImportedSessionHistory(params: {
           sessionID: params.sessionId,
           role: "user",
           time: { created: importedAt },
-          agent: "zcode-agent",
+          agent: "zody-agent",
           // 合并新增分享导入时仍沿用旧 model 字段，既引用了失效变量，也会丢失未绑定语义。
           // 与普通导入共用结构化选择合同；导入不要求模型可执行。
           ...(currentModel ? { modelSelection: currentModel } : {}),
@@ -1177,7 +1177,7 @@ async function persistImportedSessionHistory(params: {
         sessionID: params.sessionId,
         role: "user",
         time: { created: timestamp },
-        agent: "zcode-agent",
+        agent: "zody-agent",
         ...(currentModel ? { modelSelection: currentModel } : {}),
         metadata: { migrationSource: importedHistory.source },
       });
@@ -1191,7 +1191,7 @@ async function persistImportedSessionHistory(params: {
           lastUserMessageId ?? createMessageId(`${params.sessionId}_import_parent_${index}`),
         ...(currentModel ? { modelId, providerId } : {}),
         mode: params.record.app.getMode(),
-        agent: "zcode-agent",
+        agent: "zody-agent",
         path: {
           cwd: workspace.workspacePath,
           root: workspace.workspacePath,
@@ -1218,9 +1218,9 @@ async function persistImportedSessionHistory(params: {
   }
 
   params.context.logger?.info("ZCode Protocol imported history persisted", {
-    event: "zcode_protocol.session_import.persisted",
+    event: "zody_protocol.session_import.persisted",
     messageCount: importedHistory.messages.length,
-    module: "bootstrap.zcode_protocol",
+    module: "bootstrap.zody_protocol",
     removedMessageCount,
     sessionId: params.sessionId,
     source: importedHistory.source,
@@ -1275,11 +1275,11 @@ async function createSessionWithProjection<T>(
   const sessionId = (params.sessionId ?? createSessionId()) as SessionId;
   const workspace = params.workspace;
   context.logger?.info("ZCode Protocol session/create started", {
-    event: "zcode_protocol.session_create.started",
+    event: "zody_protocol.session_create.started",
     hasInitialModel: params.model !== undefined,
     hasInitialThoughtLevel: params.thoughtLevel !== undefined,
     inboundTraceId: trace?.traceId,
-    module: "bootstrap.zcode_protocol",
+    module: "bootstrap.zody_protocol",
     persistence: params.persistence,
     sessionId,
     status: "started",
@@ -1327,8 +1327,8 @@ async function createSessionWithProjection<T>(
         // workspace 默认 thoughtLevel 可能来自上一个模型。新 session 继承另一模型时，
         // 不能把不支持的档位硬塞给 runtime，否则创建阶段会抛 Unsupported reasoning effort。
         context.logger?.warn("ZCode Protocol session/create skipped unsupported thought level", {
-          event: "zcode_protocol.session_create.thought_level_skipped",
-          module: "bootstrap.zcode_protocol",
+          event: "zody_protocol.session_create.thought_level_skipped",
+          module: "bootstrap.zody_protocol",
           requestedThoughtLevel: initialThoughtLevel,
           sessionId,
           supportedThoughtLevels: record.app.listThoughtLevels(),
@@ -1357,11 +1357,11 @@ async function createSessionWithProjection<T>(
     snapshotDurationMs = Date.now() - snapshotStartedAt;
     context.logger?.info("ZCode Protocol session/create completed", {
       durationMs: Date.now() - startedAt,
-      event: "zcode_protocol.session_create.completed",
+      event: "zody_protocol.session_create.completed",
       hasInitialModel: initialModel !== undefined,
       hasInitialThoughtLevel: initialThoughtLevel !== undefined,
       messageCount: createdSnapshotResult.messageCount,
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       persistence: params.persistence,
       recordCreateDurationMs,
       rootTraceId: record.traceContext.traceId,
@@ -1379,8 +1379,8 @@ async function createSessionWithProjection<T>(
     context.logger?.warn("ZCode Protocol session/create failed", {
       durationMs: Date.now() - startedAt,
       errorMessage: error instanceof Error ? error.message : String(error),
-      event: "zcode_protocol.session_create.failed",
-      module: "bootstrap.zcode_protocol",
+      event: "zody_protocol.session_create.failed",
+      module: "bootstrap.zody_protocol",
       persistence: params.persistence,
       recordCreateDurationMs,
       rootTraceId: record.traceContext.traceId,
@@ -1437,9 +1437,9 @@ export async function activateSessionForResume(
   const activeBeforeWait = context.sessions.has(params.sessionId);
   context.logger?.debug("ZCode Protocol session resume started", {
     activeBeforeWait,
-    event: "zcode_protocol.session.resume_started",
+    event: "zody_protocol.session.resume_started",
     hasSessionStore: Boolean(context.deps.sessionStore),
-    module: "bootstrap.zcode_protocol",
+    module: "bootstrap.zody_protocol",
     sessionId: params.sessionId,
   });
   // 再激活闸门：该 session 正在容量去激活（app.close 收尾未完成）时先等待，
@@ -1457,9 +1457,9 @@ export async function activateSessionForResume(
       activeBeforeWait,
       activeSessionCount: context.sessions.size,
       durationMs: Math.max(0, Date.now() - resumeStartedAt),
-      event: "zcode_protocol.session.resume_persisted_missing",
+      event: "zody_protocol.session.resume_persisted_missing",
       hasSessionStore: Boolean(context.deps.sessionStore),
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       sessionId: params.sessionId,
     });
     throw new ProtocolRequestError(
@@ -1527,8 +1527,8 @@ export async function activateSessionForResume(
   context.logger?.info("ZCode Protocol session resume completed", {
     activeSessionCount: context.sessions.size,
     durationMs: Math.max(0, Date.now() - resumeStartedAt),
-    event: "zcode_protocol.session.resume_completed",
-    module: "bootstrap.zcode_protocol",
+    event: "zody_protocol.session.resume_completed",
+    module: "bootstrap.zody_protocol",
     persistedMessageCount: persistedMessages.length,
     sessionId: params.sessionId,
     traceId: record.traceContext.traceId,
@@ -1575,10 +1575,10 @@ async function repairLegacyRemoteSessionWorkspaceForResume(
     refreshed.path === legacyRemote.workspacePath;
   if (!repairPersisted) {
     context.logger?.warn("legacy remote session workspace repair was not persisted", {
-      event: "zcode_protocol.session_resume.legacy_remote_workspace_repair_rejected",
+      event: "zody_protocol.session_resume.legacy_remote_workspace_repair_rejected",
       legacyWorkspaceDirectory,
       legacyWorkspaceIdentity: legacyRemote.workspaceIdentity,
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       repaired,
       sessionId: session.id,
       workspacePath: legacyRemote.workspacePath,
@@ -1600,10 +1600,10 @@ async function repairLegacyRemoteSessionWorkspaceForResume(
   }
   if (repaired) {
     context.logger?.info("legacy remote session workspace repaired", {
-      event: "zcode_protocol.session_resume.legacy_remote_workspace_repaired",
+      event: "zody_protocol.session_resume.legacy_remote_workspace_repaired",
       legacyWorkspaceDirectory,
       legacyWorkspaceIdentity: legacyRemote.workspaceIdentity,
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       sessionId: session.id,
       workspacePath: legacyRemote.workspacePath,
     });
@@ -1719,8 +1719,8 @@ export async function listSessionSubagents(
     context.logger?.warn("ZCode Protocol session subagents has no persisted parent", {
       activeSessionCount: context.sessions.size,
       activeSession: Boolean(liveParent),
-      event: "zcode_protocol.session.persisted_missing",
-      module: "bootstrap.zcode_protocol",
+      event: "zody_protocol.session.persisted_missing",
+      module: "bootstrap.zody_protocol",
       operation: "session_subagents",
       sessionId: params.sessionId,
     });
@@ -2994,7 +2994,7 @@ export function onSessionEvent(
       // 这条 notify 过去只在抛错时有日志，成功路径无痕，于是「agent 压根没发」
       // 与「发了但宿主侧静默丢弃」无法区分。CLI 自己的 jsonl 收 debug 级，足够闭环到源头。
       context.logger?.debug("Computer Use operation lifecycle notification sent", {
-        event: "zcode_protocol.computer-use.operation-event.sent",
+        event: "zody_protocol.computer-use.operation-event.sent",
         eventId: computerUseOperationEvent.eventId,
         sessionId: computerUseOperationEvent.sessionId,
         kind: computerUseOperationEvent.kind,
@@ -3004,7 +3004,7 @@ export function onSessionEvent(
     } catch (error) {
       context.logger?.warn("Computer Use operation lifecycle notification failed", {
         error: error instanceof Error ? error.message : String(error),
-        event: "zcode_protocol.computer-use.operation-event.failed",
+        event: "zody_protocol.computer-use.operation-event.failed",
         eventId: computerUseOperationEvent.eventId,
         sessionId: computerUseOperationEvent.sessionId,
         turnId:
@@ -3158,8 +3158,8 @@ async function requestSessionRuntimePreferences(
   // 按本文件既有惯例断言收口，避免多处日志构造重复转换。
   const traceId = trace?.traceId as TraceId | undefined;
   context.logger?.debug("ZCode Protocol runtime preferences request started", {
-    event: "zcode_protocol.runtime_preferences.request_started",
-    module: "bootstrap.zcode_protocol",
+    event: "zody_protocol.runtime_preferences.request_started",
+    module: "bootstrap.zody_protocol",
     scope,
     sessionId,
     traceId,
@@ -3176,8 +3176,8 @@ async function requestSessionRuntimePreferences(
     );
     context.logger?.debug("ZCode Protocol runtime preferences response received", {
       durationMs: Math.max(0, Date.now() - startedAt),
-      event: "zcode_protocol.runtime_preferences.response_received",
-      module: "bootstrap.zcode_protocol",
+      event: "zody_protocol.runtime_preferences.response_received",
+      module: "bootstrap.zody_protocol",
       scope,
       sessionId,
       traceId,
@@ -3190,8 +3190,8 @@ async function requestSessionRuntimePreferences(
       durationMs: Math.max(0, Date.now() - startedAt),
       errorCode,
       errorMessage,
-      event: "zcode_protocol.runtime_preferences.request_failed",
-      module: "bootstrap.zcode_protocol",
+      event: "zody_protocol.runtime_preferences.request_failed",
+      module: "bootstrap.zody_protocol",
       scope,
       sessionId,
       traceId,
@@ -3308,7 +3308,7 @@ async function createRecord(
   const taskType = params.taskType ?? "interactive";
   const runtimeMcp = protocolMcpServersToRuntimeMcpConfig(params.mcpServers);
   context.logger?.info("ZCode Protocol createRecord MCP config", {
-    event: "zcode_protocol.create_record.mcp_config",
+    event: "zody_protocol.create_record.mcp_config",
     rootTraceId: traceContext.traceId,
     inboundTraceId: trace?.traceId,
     paramMcpServerCount: params.mcpServers?.length ?? 0,
@@ -3629,9 +3629,9 @@ async function snapshotWithDiagnostics(
     // 超过阈值时记录各子阶段，便于区分 sqlite 等待、消息读取和 projection 构建。
     context.logger?.warn("ZCode Protocol session snapshot slow", {
       durationMs: totalDurationMs,
-      event: "zcode_protocol.session_snapshot.slow",
+      event: "zody_protocol.session_snapshot.slow",
       messageCount: messages.length,
-      module: "bootstrap.zcode_protocol",
+      module: "bootstrap.zody_protocol",
       phaseDurationsMs,
       sessionId: record.app.sessionId,
       status: "completed",
@@ -3653,7 +3653,7 @@ async function readSnapshotTarget(
     // 否则 UI 会误以为历史 session 没有目标。这里保留运行期 projection 并记录协议层日志。
     context.logger?.warn("Failed to read persisted session goal for protocol snapshot", {
       errorMessage: error instanceof Error ? error.message : String(error),
-      event: "zcode_protocol.snapshot.target_read_failed",
+      event: "zody_protocol.snapshot.target_read_failed",
       sessionId: record.app.sessionId,
     });
     return undefined;
@@ -3671,7 +3671,7 @@ async function readSnapshotTodos(
     // 但协议 snapshot 仍可用消息历史继续恢复首屏。
     context.logger?.warn("Failed to read persisted session todos for protocol snapshot", {
       errorMessage: error instanceof Error ? error.message : String(error),
-      event: "zcode_protocol.snapshot.todos_read_failed",
+      event: "zody_protocol.snapshot.todos_read_failed",
       sessionId: record.app.sessionId,
     });
     return [];
@@ -3701,7 +3701,7 @@ async function readSessionTargetCompletionVerificationEvents(
     // session 主体恢复，但必须留下日志，否则冷启动后分组丢失很难排查。
     context.logger?.warn("Failed to read persisted goal verification entries", {
       errorMessage: error instanceof Error ? error.message : String(error),
-      event: "zcode_protocol.snapshot.goal_verification_entries_read_failed",
+      event: "zody_protocol.snapshot.goal_verification_entries_read_failed",
       sessionId: record.app.sessionId,
     });
     return [];
@@ -4012,7 +4012,7 @@ async function getPersistedSession(
     onPersistenceFailure: (error) => {
       context.logger?.warn("Session path repair persistence failed; using in-memory repair", {
         errorMessage: error instanceof Error ? error.message : String(error),
-        event: "zcode_protocol.session.path_repair.persist_failed",
+        event: "zody_protocol.session.path_repair.persist_failed",
         sessionId,
       });
     },

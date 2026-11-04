@@ -196,8 +196,8 @@ async function replayDynamicWorkflowRunEvents(
   } catch (error) {
     context.logger?.warn("v4 hydrate dynamic workflow replay failed", {
       error: error instanceof Error ? error.message : String(error),
-      event: "zcode_protocol.v4.hydrate_workflow_replay_failed",
-      module: "bootstrap.zcode_protocol",
+      event: "zody_protocol.v4.hydrate_workflow_replay_failed",
+      module: "bootstrap.zody_protocol",
       sessionId,
     });
     return [];
@@ -576,7 +576,7 @@ export function createConversationV4Gateway(
   context: ZodyProtocolAgentServerContext,
 ): ConversationV4Gateway {
   const log = createProtocolLogger(context.deps)?.child({
-    module: "bootstrap.zcode_protocol_v4_gateway",
+    module: "bootstrap.zody_protocol_v4_gateway",
   });
   const persistentCommands = new PersistentCommandIndex({
     loadSession: async (sessionId) => {
@@ -1410,8 +1410,8 @@ export function createConversationV4Gateway(
           if (claimedCount > 0) {
             context.logger?.info("legacy remote sessions claimed by task-index allowlist", {
               claimedCount,
-              event: "zcode_protocol.v4.sessions_index_legacy_remote_claimed",
-              module: "bootstrap.zcode_protocol",
+              event: "zody_protocol.v4.sessions_index_legacy_remote_claimed",
+              module: "bootstrap.zody_protocol",
               workspaceId,
             });
           }
@@ -1420,8 +1420,8 @@ export function createConversationV4Gateway(
           // 后续携带 allowlist 的订阅会再次进入这里，不能用失败结果封死迁移。
           context.logger?.warn("legacy remote sessions claim failed; continuing strict load", {
             error: error instanceof Error ? error.message : String(error),
-            event: "zcode_protocol.v4.sessions_index_legacy_remote_claim_failed",
-            module: "bootstrap.zcode_protocol",
+            event: "zody_protocol.v4.sessions_index_legacy_remote_claim_failed",
+            module: "bootstrap.zody_protocol",
             workspaceId,
           });
         }
@@ -1450,8 +1450,8 @@ export function createConversationV4Gateway(
     } catch (error) {
       context.logger?.warn("sessions-index stored summaries failed", {
         error: error instanceof Error ? error.message : String(error),
-        event: "zcode_protocol.v4.sessions_index_stored_failed",
-        module: "bootstrap.zcode_protocol",
+        event: "zody_protocol.v4.sessions_index_stored_failed",
+        module: "bootstrap.zody_protocol",
       });
       return [];
     }
@@ -1485,8 +1485,8 @@ export function createConversationV4Gateway(
       if (!persisted) {
         context.logger?.warn("ZCode Protocol v4 cold resume has no persisted session", {
           activeSessionCount: context.sessions.size,
-          event: "zcode_protocol.v4.resume_persisted_missing",
-          module: "bootstrap.zcode_protocol",
+          event: "zody_protocol.v4.resume_persisted_missing",
+          module: "bootstrap.zody_protocol",
           sessionId,
         });
         return { status: "notFound" };
@@ -1533,8 +1533,8 @@ export function createConversationV4Gateway(
                   sessionEntries(input).catch((error) => {
                     context.logger?.warn("v4 cold history session entries read failed", {
                       error: error instanceof Error ? error.message : String(error),
-                      event: "zcode_protocol.v4.cold_history_session_entries_failed",
-                      module: "bootstrap.zcode_protocol",
+                      event: "zody_protocol.v4.cold_history_session_entries_failed",
+                      module: "bootstrap.zody_protocol",
                       sessionId,
                     });
                     return [];
@@ -1863,8 +1863,8 @@ export function createConversationV4Gateway(
         // 都落空时，返回空事件会把真实的生命周期竞态伪装成“历史为空”，必须留下明确现场。
         context.logger?.warn("ZCode Protocol v4 hydrate has no active runtime", {
           activeSessionCount: context.sessions.size,
-          event: "zcode_protocol.v4.hydrate_runtime_missing",
-          module: "bootstrap.zcode_protocol",
+          event: "zody_protocol.v4.hydrate_runtime_missing",
+          module: "bootstrap.zody_protocol",
           phase: "loadPersistedEvents",
           sessionId,
         });
@@ -1902,8 +1902,8 @@ export function createConversationV4Gateway(
                         store.sessionEntries!(input).catch((error) => {
                           context.logger?.warn("v4 hydrate session entries read failed", {
                             error: error instanceof Error ? error.message : String(error),
-                            event: "zcode_protocol.v4.hydrate_session_entries_failed",
-                            module: "bootstrap.zcode_protocol",
+                            event: "zody_protocol.v4.hydrate_session_entries_failed",
+                            module: "bootstrap.zody_protocol",
                           });
                           return [];
                         }),
@@ -1925,9 +1925,9 @@ export function createConversationV4Gateway(
         onArtifactError: (messageId, error) =>
           context.logger?.warn("v4 cold file change artifact read failed", {
             error: error instanceof Error ? error.message : String(error),
-            event: "zcode_protocol.v4.hydrate_file_changes_failed",
+            event: "zody_protocol.v4.hydrate_file_changes_failed",
             messageId,
-            module: "bootstrap.zcode_protocol",
+            module: "bootstrap.zody_protocol",
             sessionId,
           }),
       });
@@ -1952,8 +1952,8 @@ export function createConversationV4Gateway(
       for (const diagnostic of merged.diagnostics) {
         const fields = {
           ...diagnostic,
-          event: "zcode_protocol.v4.hydrate_three_source_merge",
-          module: "bootstrap.zcode_protocol",
+          event: "zody_protocol.v4.hydrate_three_source_merge",
+          module: "bootstrap.zody_protocol",
           sessionId,
         };
         if (
@@ -1994,8 +1994,8 @@ export function createConversationV4Gateway(
       context.logger?.warn("ZCode Protocol v4 gateway error", {
         ...errorContext,
         error: error instanceof Error ? error.message : String(error),
-        event: "zcode_protocol.v4.gateway_error",
-        module: "bootstrap.zcode_protocol",
+        event: "zody_protocol.v4.gateway_error",
+        module: "bootstrap.zody_protocol",
         scope,
       }),
   });

@@ -15,6 +15,16 @@ afterEach(async () => {
 });
 
 describe("OtelAgentTelemetryMetrics", () => {
+  it("exports one new-name token metric without an old-name duplicate", async () => {
+    const { exporter, metrics, provider } = createHarness();
+    metrics.recordModelTokenDelta("input", 12, { model: "synthetic", provider_kind: "test" });
+    await provider.forceFlush();
+    const items = exporter.getMetrics().flatMap((resource) => resource.scopeMetrics).flatMap((scope) => scope.metrics);
+    const tokens = items.filter((metric) => metric.descriptor.name === "zody.model.attempt.tokens");
+    expect(tokens).toHaveLength(1);
+    expect(tokens[0]?.dataPoints).toHaveLength(1);
+    expect(items.some((metric) => metric.descriptor.name === "zcode.model.attempt.tokens")).toBe(false);
+  });
   it("只接受每个 Instrument 的低基数标签，机械丢弃身份和内容字段", async () => {
     const { exporter, metrics, provider } = createHarness();
     metrics.recordModelTokenDelta("input", 12, {

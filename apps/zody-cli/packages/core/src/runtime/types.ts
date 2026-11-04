@@ -243,7 +243,7 @@ export interface AgentRuntimeConfig {
   };
   language?: string;
   outputStyle?: OutputStylePromptConfig;
-  agentName?: string; // Default: "zcode-agent"
+  agentName?: string; // Default: "zody-agent"
   workingDirectory?: string; // Required for context builder
   /**
    * 调用方传入的实际工作区路径表示，用于 session 持久化与本地身份恢复。

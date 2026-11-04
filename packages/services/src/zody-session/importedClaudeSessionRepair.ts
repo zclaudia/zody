@@ -7,7 +7,7 @@ import type {
   ZodySessionResumeParams,
 } from "#src/zody-session/zodySession.js";
 
-const logger = createServiceLogger("zcode-session-service");
+const logger = createServiceLogger("zody-session-service");
 
 export async function repairEmptyImportedClaudeSessionSnapshot(params: {
   agentService: IZodyAgentService;
@@ -28,7 +28,7 @@ export async function repairEmptyImportedClaudeSessionSnapshot(params: {
     onRepair: (history) => {
       logger.warn(
         undefined,
-        `[zcode-session-service] Claude 导入 session 历史异常，按 ${history.source} 回填 taskId=${params.target.sessionId}`,
+        `[zody-session-service] Claude 导入 session 历史异常，按 ${history.source} 回填 taskId=${params.target.sessionId}`,
       );
     },
   });

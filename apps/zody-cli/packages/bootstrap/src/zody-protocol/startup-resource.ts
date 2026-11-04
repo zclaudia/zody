@@ -27,7 +27,7 @@ export async function acquireProtocolStartupResource<T>(options: {
           } catch (error) {
             options.logger.warn("Late protocol startup resource cleanup failed", {
               errorType: error instanceof Error ? error.name : typeof error,
-              event: "zcode_protocol.startup.late_cleanup.failed",
+              event: "zody_protocol.startup.late_cleanup.failed",
             });
           }
         },

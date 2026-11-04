@@ -1545,7 +1545,7 @@ describe("session persistence", () => {
 
       const logEntries = await readLogEntries(join(tempRoot, "log"));
       const startupCompletedIndex = logEntries.findIndex(
-        (entry) => entry.event === "zcode_protocol.startup.completed",
+        (entry) => entry.event === "zody_protocol.startup.completed",
       );
       const retentionScheduledIndex = logEntries.findIndex(
         (entry) => entry.event === "log.retention.cleanup.scheduled",

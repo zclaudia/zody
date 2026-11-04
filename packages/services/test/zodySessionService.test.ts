@@ -379,6 +379,7 @@ describe("createZodySessionService", () => {
   });
 
   it("repairs empty imported Claude protocol sessions from legacy snapshots", async () => {
+    const logSpy = vi.spyOn(console, "warn");
     useTempDataBaseDir();
     const workspacePath = "/workspace/imported";
     const sessionId = "claude-import-empty";
@@ -448,6 +449,9 @@ describe("createZodySessionService", () => {
     await expect(service.resumeSession({ workspacePath, sessionId })).resolves.toBe(
       repairedSnapshot,
     );
+
+    expect(logSpy.mock.calls.some((args) => String(args[0]).includes("[zody-session-service]"))).toBe(true);
+    logSpy.mockRestore();
 
     expect(agentService.createSession).toHaveBeenCalledWith({
       workspacePath,

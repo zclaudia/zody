@@ -76,7 +76,7 @@ export function createLocalTtftSpans(
       events: [],
       ended: true,
       resource,
-      instrumentationScope: { name: "@zcode/local-ttft", version: "1" },
+      instrumentationScope: { name: "@zody/local-ttft", version: "1" },
       droppedAttributesCount: 0,
       droppedEventsCount: 0,
       droppedLinksCount: 0,

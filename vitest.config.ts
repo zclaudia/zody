@@ -51,7 +51,8 @@ export default defineConfig({
   // 测试固定注入事件上报端点，使遥测上报链路在单测中可验证；真实构建由 scripts/build-time-config.mjs 决定。
   // fork（F3.2）：端点改用 RFC 2606 保留域名 example.invalid，单测漏配也不会命中官方服务。
   define: {
-    __ZCODE_TELEMETRY_REPORT_ENDPOINT__: JSON.stringify(
+    // 修复原因：运行时代际已改用 ZODY define，旧名称使测试端点为空而跳过上报。
+    __ZODY_TELEMETRY_REPORT_ENDPOINT__: JSON.stringify(
       "https://example.invalid/api/v1/event/report",
     ),
   },

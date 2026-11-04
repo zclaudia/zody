@@ -81,7 +81,7 @@ describe("OTLP ARMS cost controls", () => {
     }
 
     const attempts = histogramViews.find(
-      (view) => view.instrumentName === "zcode.model.call.attempts",
+      (view) => view.instrumentName === "zody.model.call.attempts",
     );
     expect(attempts?.aggregation).toMatchObject({
       options: { boundaries: [1, 2, 3, 5, 8] },

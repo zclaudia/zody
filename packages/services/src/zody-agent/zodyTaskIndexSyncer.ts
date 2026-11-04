@@ -47,7 +47,7 @@ import type {
 import { ZCODE_AGENT_RUNTIME_UNAVAILABLE_CODE } from "./zodyAgent.js";
 import { formatTaskMetaModelSelectionFromSnapshot } from "./zodyConfigOptions.js";
 
-const logger = createServiceLogger("zcode-task-index-syncer");
+const logger = createServiceLogger("zody-task-index-syncer");
 
 /** v4 订阅 connectionId 作用域：与 renderer 侧栏共 topic 不同代际（重订阅替换）。 */
 const TASK_INDEX_SUBSCRIBER_SCOPE = "task-index";

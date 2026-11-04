@@ -66,6 +66,21 @@ describe("Node logging adapter", () => {
     }
   });
 
+  it("emits the renamed fallback category and schedules retention exactly once", async () => {
+    const logDir = await mkdtemp(join(tmpdir(), "r46-log-"));
+    try {
+      const factory = createNodeLoggerFactory({ logDir, minLevel: LogLevel.Debug });
+      factory.createLogger("zody").info("category probe");
+      const setTimeout = (_callback: () => void, _delay: number) => ({ unref() {} });
+      factory.scheduleLogRetentionCleanup({ setTimeout });
+      factory.scheduleLogRetentionCleanup({ setTimeout });
+      const entries = (await readFile(join(logDir, (await readdir(logDir))[0]!), "utf8")).trim().split("\n").map((line) => JSON.parse(line));
+      expect(entries.filter((entry) => entry.message === "category probe")).toMatchObject([{ module: "zody" }]);
+      expect(entries.filter((entry) => entry.event === "log.retention.cleanup.scheduled")).toHaveLength(1);
+      expect(entries.some((entry) => entry.module === "zcode")).toBe(false);
+    } finally { await rm(logDir, { recursive: true, force: true }); }
+  });
+
   it("does not throw when the log sink cannot be written", async () => {
     const tempRoot = await mkdtemp(join(tmpdir(), "zcode-log-fail-"));
     const fileAsDirectory = join(tempRoot, "not-a-directory");
