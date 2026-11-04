@@ -15,6 +15,7 @@
     "control-protocol.d.ts",
     "control-channel.d.ts",
     "producer-control.d.ts",
+    "test/broker-helper-constants.test.ts",
     "test/control-protocol.test.ts",
     "test/control-channel.test.ts",
     "test/control-channel-frames.test.ts",

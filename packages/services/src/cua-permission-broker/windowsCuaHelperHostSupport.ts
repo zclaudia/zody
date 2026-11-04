@@ -1,6 +1,7 @@
 import { fork as nodeFork, type ForkOptions } from "node:child_process";
 
 import {
+  HELPER_GHOST_CURSOR_OVERLAY_ARG,
   mintBrokerSocketPath,
   probeHelperHealth,
   type HelperHealth,
@@ -14,6 +15,11 @@ import type { WindowsCuaRuntime } from "#src/cua-permission-broker/windowsCuaDev
 
 export const CONTROL_PROTOCOL = WINDOWS_DEV_CONTROL_PROTOCOL;
 export const ADDON_ENV = HELPER_ADDON_ENV;
+/**
+ * ghost overlay 恒开 argv（上游 v3.17.1 a60ba6a7，Windows 产品链对齐 macOS）。
+ * 漏传时 helper 侧 OverlayEnabled() 恒 false、agent 光标完全不渲染。
+ */
+export const GHOST_CURSOR_OVERLAY_ARG = HELPER_GHOST_CURSOR_OVERLAY_ARG;
 
 export interface WindowsCuaChild {
   readonly pid?: number;

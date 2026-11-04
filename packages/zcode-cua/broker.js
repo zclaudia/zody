@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+// 公共 Host 通过 broker 入口复用参数契约；占位包仍拒绝真实能力调用。
+// 上游 v3.17.1（a60ba6a7）新增：ghost cursor overlay 恒开 argv，防本地字面量漂移。
+export { HELPER_GHOST_CURSOR_OVERLAY_ARG } from "./broker-helper-constants.js";
+
 export const BROKER_SOCKET_ENV = "ZCODE_CUA_PERMISSION_BROKER_SOCKET";
 export const BROKER_UNAVAILABLE_ENV = "ZCODE_CUA_PERMISSION_BROKER_UNAVAILABLE";
 
