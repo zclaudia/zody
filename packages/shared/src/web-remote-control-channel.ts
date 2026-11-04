@@ -30,7 +30,7 @@ export const WEB_REMOTE_CONTROL_CHANNEL_KIND = "zcode-remote";
 export const WEB_REMOTE_CONTROL_BACKEND_CAPABILITY = "zcode-remote-control";
 
 /** channel 帧格式版本：只有帧格式不兼容变化时才递增，不相等就直接 `close{incompatible-version}`。 */
-export const WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION = 1;
+export const WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION = 2;
 
 /** 应用层 payload 协议区间；`max` 是本仓库当前实现的版本。 */
 export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION = 1;
@@ -149,6 +149,7 @@ export const webRemoteControlChannelHelloFrameSchema = z
 export const webRemoteControlChannelHelloAckFrameSchema = z
   .object({
     type: z.literal("hello_ack"),
+    protocolVersion: positiveSafeIntegerSchema,
     appProtocol: positiveSafeIntegerSchema,
     desktopAppVersion: appVersionSchema,
   })

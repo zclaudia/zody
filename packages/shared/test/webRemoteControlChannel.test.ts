@@ -39,7 +39,7 @@ const VALID_FRAMES = {
     clientName: "Pixel 8",
     appVersion: "1.2.3",
   },
-  hello_ack: { type: "hello_ack", appProtocol: 1, desktopAppVersion: "3.15.1" },
+  hello_ack: { type: "hello_ack", protocolVersion: 2, appProtocol: 1, desktopAppVersion: "3.15.1" },
   data: {
     type: "data",
     payload: { zcode_type: "bootstrap-request", requestId: "request-1" },
@@ -113,7 +113,7 @@ function readShapeByZcodeType(): Map<string, Set<string>> {
 describe("web remote control channel frames", () => {
   it("按 spec 固定常量：kind、版本、超时、1 MiB 帧上限", () => {
     expect(WEB_REMOTE_CONTROL_CHANNEL_KIND).toBe("zcode-remote");
-    expect(WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION).toBe(1);
+    expect(WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION).toBe(2);
     expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION).toBe(1);
     expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION).toBe(4);
     expect(WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE).toEqual({ min: 1, max: 4 });
@@ -172,9 +172,9 @@ describe("web remote control channel frames", () => {
 
   it("protocolVersion 不相等时仍解析出 hello，交给调用方回 close{incompatible-version}", () => {
     expect(
-      parseWebRemoteControlChannelFrame({ ...VALID_FRAMES.hello, protocolVersion: 2 }),
-    ).toMatchObject({ protocolVersion: 2 });
-    expect(isWebRemoteControlChannelProtocolVersionSupported(2)).toBe(false);
+      parseWebRemoteControlChannelFrame({ ...VALID_FRAMES.hello, protocolVersion: 1 }),
+    ).toMatchObject({ protocolVersion: 1 });
+    expect(isWebRemoteControlChannelProtocolVersionSupported(1)).toBe(false);
     expect(
       isWebRemoteControlChannelProtocolVersionSupported(
         WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION,
@@ -182,6 +182,17 @@ describe("web remote control channel frames", () => {
     ).toBe(true);
     expect(
       parseWebRemoteControlChannelFrame({ ...VALID_FRAMES.hello, protocolVersion: 0 }),
+    ).toBeNull();
+  });
+
+  it("requires an ack channel version while retaining incompatible versions for close", () => {
+    const { protocolVersion: _version, ...missing } = VALID_FRAMES.hello_ack;
+    expect(parseWebRemoteControlChannelFrame(missing)).toBeNull();
+    expect(
+      parseWebRemoteControlChannelFrame({ ...VALID_FRAMES.hello_ack, protocolVersion: 1 }),
+    ).toMatchObject({ protocolVersion: 1 });
+    expect(
+      parseWebRemoteControlChannelFrame({ ...VALID_FRAMES.hello_ack, protocolVersion: "2" }),
     ).toBeNull();
   });
 

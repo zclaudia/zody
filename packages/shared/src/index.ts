@@ -44,7 +44,7 @@ export type {
 export type { WorkspacePurpose } from "./workspacePurpose.js";
 export { DEFAULT_LOCALE } from "./protocol.js";
 export { ZODY_VERSION, ZODY_COMMIT, ZODY_BUILD_TIME } from "./version.js";
-export type { HelloMessage, HelloAckMessage } from "./handshake.js";
+export * from "./handshake.js";
 export type { ArmsRumEnv, ZodyEnv, ZodyProductFlavor } from "./env.js";
 export type { RemoteAssetInstallMode } from "./remoteAssetInstallMode.js";
 export type {

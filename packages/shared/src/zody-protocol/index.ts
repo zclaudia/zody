@@ -114,7 +114,7 @@ export {
   type HookInvocationRow,
 } from "../zody-protocol-v4/rows.js";
 
-export const ZCODE_PROTOCOL_NAME = "ZCode Protocol" as const;
+export const ZCODE_PROTOCOL_NAME = "Zody Protocol" as const;
 export const ZCODE_PROTOCOL_VERSION = 1 as const;
 // V4 wire 与 legacy 主协议并存；禁止为了 V4 physical framing 改写 legacy 版本。
 export const ZCODE_PROTOCOL_V4_WIRE_VERSION = 3 as const;

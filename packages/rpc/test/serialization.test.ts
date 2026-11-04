@@ -56,6 +56,17 @@ describe("serialization", () => {
     expect([...result]).toEqual([1, 2, 3, 4]);
   });
 
+  it("roundtrips nested bytes and preserves old marker as ordinary data", () => {
+    expect(roundtrip({ nested: new Uint8Array([4, 5]) })).toEqual({
+      nested: new Uint8Array([4, 5]),
+    });
+    const old = { __zcode_rpc_nested_uint8array_v1: true, base64: "BAU=" };
+    expect(roundtrip({ old })).toEqual({ old });
+    const writer = new BufferWriter();
+    serialize(writer, { nested: new Uint8Array([4, 5]) });
+    expect(writer.buffer.toString()).toContain("__zody_rpc_nested_uint8array_v1");
+  });
+
   it("should roundtrip floats via JSON fallback", () => {
     expect(roundtrip(3.14)).toBeCloseTo(3.14);
   });

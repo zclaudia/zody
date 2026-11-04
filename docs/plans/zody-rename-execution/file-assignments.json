@@ -16029,16 +16029,34 @@
   "R40": {
     "title": "共享 wire 名称、schema 与兼容门接口",
     "readSet": [
+      ".agents/skills/architecture-governance/SKILL.md",
       "AGENTS.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
       "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "docs/plans/zody-rename-execution/reports/R40-preflight.md",
       "packages/rpc/src/protocol.ts",
-      "packages/shared/src/handshake.ts"
+      "packages/shared/src/handshake.ts",
+      "specs/zody-rename-runtime-contract.md"
     ],
     "writeSet": [
-      "docs/plans/zody-rename-execution/reports/R40.md",
+      "packages/shared/src/handshake.ts",
+      "packages/shared/src/validation.ts",
+      "packages/shared/src/index.ts",
+      "packages/shared/src/channels.ts",
+      "packages/shared/src/web-remote-control-channel.ts",
+      "packages/shared/src/zody-protocol/index.ts",
       "packages/rpc/src/protocol.ts",
-      "packages/shared/src/handshake.ts"
+      "packages/rpc/src/serialization.ts",
+      "packages/shared/test/handshake.test.ts",
+      "packages/shared/test/validation.test.ts",
+      "packages/shared/test/webRemoteControlChannel.test.ts",
+      "packages/shared/test/zodyRenameProtocol.test.ts",
+      "packages/rpc/test/protocol.test.ts",
+      "packages/rpc/test/serialization.test.ts",
+      "packages/rpc/test/zodyRenameProtocol.test.ts",
+      "specs/zody-rename-runtime-contract.md",
+      "docs/plans/zody-rename-execution/reports/R40.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -16047,13 +16065,18 @@
       "共享接口未经主控交接不得修改"
     ],
     "plannedPaths": [
-      "docs/plans/zody-rename-execution/reports/R40.md"
+      "docs/plans/zody-rename-execution/reports/R40.md",
+      "packages/rpc/test/zodyRenameProtocol.test.ts",
+      "packages/shared/test/handshake.test.ts",
+      "packages/shared/test/zodyRenameProtocol.test.ts"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "verified-interface; generation/schema shared API frozen for consumers",
+    "gate": "Independent R40 interface PASS; retain two R41 typecheck errors until consumer integration. Cleanup records in output/zody-rename-r40/implementation/cleanup.json.",
     "structureScope": [
       "shared wire/schema 和 bootstrap 对应副本；RPC 控制标记"
-    ]
+    ],
+    "writer": "/root/terra_r22_resume",
+    "baselineCommit": "b2c29bf6"
   },
   "R41": {
     "title": "stdio 握手双端接入",

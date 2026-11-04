@@ -225,11 +225,17 @@ class FakeMessagePort implements MessagePortLike {
   peer?: FakeMessagePort;
   readonly posted: unknown[] = [];
 
-  addEventListener(_type: "message", listener: (event: { data: MessagePortPayload }) => void): void {
+  addEventListener(
+    _type: "message",
+    listener: (event: { data: MessagePortPayload }) => void,
+  ): void {
     this.listeners.add(listener);
   }
 
-  removeEventListener(_type: "message", listener: (event: { data: MessagePortPayload }) => void): void {
+  removeEventListener(
+    _type: "message",
+    listener: (event: { data: MessagePortPayload }) => void,
+  ): void {
     this.listeners.delete(listener);
   }
 
@@ -270,12 +276,13 @@ describe("MessagePortProtocol connection flow sideband", () => {
         sendFlowState(state: "saturated" | "drained"): void;
       }
     ).sendFlowState("saturated");
-    rightPort.emit({ __zcodeRpcControl: "connection-flow-v1", state: "forged" });
+    rightPort.emit({ __zodyRpcControl: "connection-flow-v1", state: "forged" });
+    rightPort.emit({ __zcodeRpcControl: "connection-flow-v1", state: "drained" });
 
     expect(binary).toEqual(["rpc-binary"]);
     expect(flow).toEqual(["saturated"]);
     expect(leftPort.posted).toContainEqual({
-      __zcodeRpcControl: "connection-flow-v1",
+      __zodyRpcControl: "connection-flow-v1",
       state: "saturated",
     });
     left.disconnect();

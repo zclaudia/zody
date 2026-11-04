@@ -8,7 +8,7 @@
 
 - stdio server 首行严格 `{type:"zody-hello", version:string, platform:string, arch:string, pid:positive integer, generation:2}`；client 回复严格 `{type:"zody-hello-ack", version:string, clientId:nonempty string, generation:2}`。保留 SSH 非 JSON banner 跳过；识别到旧 `zcode-hello` 或无效/错误代际即拒绝，不等待超时。server 只在有效 ack 后注册 RPC；client 只在有效 hello 后写 ack、移交同一缓冲区的剩余字节。新 server 拒绝旧 ack，旧 server 的 hello 被新 client 立即拒绝；超时只处理静默对端。失败、EOF、取消关闭所属 stream/子进程并移除监听器和缓冲，零业务 admission。
 - `GET /api/server-info` 在现有字段上增加必需整数 `renameGeneration:2`；新 client 必须在连接前验证，缺失即失败。两套实现 `packages/server/src/http.ts` 和 `packages/zcode-server-cli/src/server-core/http.ts` 均实现。`/api/rpc-host-capability`、`/ws/host` 的新请求携带 `x-zody-generation: 2`；先认证和代际验证，再签发/消费 capability、升级与注册业务；旧 header 不授信。普通 HTTP 请求失败返回 HTTP 426 与 JSON `{error:"incompatible-generation"}`；WebSocket upgrade 拒绝只要求 HTTP 426 状态，客户端显示兼容错误，不要求 JSON body。普通浏览器无法设置自定义 header：`/ws` 和 `/ws/remote/:id` 使用 WebSocket 子协议 `zody-generation-2`，服务端升级前要求并选中它；客户端验证所选子协议后才发送 RPC。缺失/错误拒绝升级；新客户端遇到旧服务器未选中协议时关闭，不发送业务。包括 remoteId 分支，server-info 检查与子协议都必须验证，防止缓存页及中途目标变更。
-- 手机经 gateway 到已有 desktop attachment：复用 `web-remote-control-channel` 的严格 `hello`/`hello_ack`，将 channel protocolVersion 从 1 增至 2 并精确校验（与 `ZODY_RENAME_GENERATION=2` 数值相同、语义独立），沿用 appProtocol 范围协商；ack 只有协商成功后发出。旧/缺失版本以既有 `close{incompatible-version}` 关闭，双方在 ack 前不发送 data、订阅或恢复。gateway 只转发，不将字段或 token 提升为 trusted host。保留 workspaceIdentity 和 remoteSessionId；断线清理 attachment，重连重新握手后恢复 replayable，不新建 Host/Agent。
+- 手机经 gateway 到已有 desktop attachment：复用 `web-remote-control-channel` 的严格 `hello`/`hello_ack`，将 channel protocolVersion 从 1 增至 2 并精确校验（与 `ZODY_RENAME_GENERATION=2` 数值相同、语义独立），沿用 appProtocol 范围协商；`hello_ack` 同样必需携带 `protocolVersion:2`，ack 只有协商成功后发出，接收端校验版本后才进入业务。旧/缺失版本以既有 `close{incompatible-version}` 关闭，双方在 ack 前不发送 data、订阅或恢复。gateway 只转发，不将字段或 token 提升为 trusted host。保留 workspaceIdentity 和 remoteSessionId；断线清理 attachment，重连重新握手后恢复 replayable，不新建 Host/Agent。
 
 ```mermaid
 sequenceDiagram
@@ -23,6 +23,10 @@ sequenceDiagram
 ```
 
 同代分别验证 desktop-continuous 的实时流和 web-remote-replayable 的断线恢复；旧新双向分别验证零业务写入和进程、socket、capability、监听器清理。部署锁保证并发串行；安装失败、取消或运行版本不匹配不得开放入口，保留可回滚的完整旧组合，skipDeploy 也必须验证真实运行实例。
+
+## R40 共享接口交接
+
+`handshake` 公开代际常量与纯检查函数；hello/ack schema 严格拒绝额外字段。主应用 PlatformChannels、InternalChannels 和仓内 EmbeddedBrowserWebviewChannels 的值使用 `zody:`；CodingPlanWebviewChannels 属外部官网桥合同，暂保留原值，PluginSandboxChannels 保持其独立插件合同。RPC 的连接流控制键为 `__zodyRpcControl`，嵌套字节标记为 `__zody_rpc_nested_uint8array_v1`；旧键不得被解释为新控制帧或新二进制包装。手机 channel 版本常量独立定为 2；非法版本保留既有形状校验及不兼容关闭语义。R41/R42/R44 消费这些接口前不得将中间版本作为可互通发行组合。
 
 ## 数据、环境与信任
 

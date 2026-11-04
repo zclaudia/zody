@@ -11,6 +11,7 @@ import {
 } from "./sessionCreateTelemetry.js";
 /* eslint-disable max-lines -- 运行时 schema 当前集中在共享包入口，外部 relay payload 校验加入后先保持单一导出面。 */
 import { z } from "zod";
+import { ZODY_RENAME_GENERATION } from "./handshake.js";
 import { networkCaptureControlSchema, networkCaptureBatchSchema } from "./networkCapture.js";
 import { browserCommandSchema } from "./browser-use/commands.js";
 import { browserCommandResultSchema } from "./browser-use/result.js";
@@ -586,18 +587,20 @@ export const remoteTargetSchema = z.discriminatedUnion("kind", [
 ]);
 
 export const helloMessageSchema = z.object({
-  type: z.literal("zcode-hello"),
+  type: z.literal("zody-hello"),
   version: z.string(),
   platform: z.string(),
   arch: z.string(),
-  pid: z.number().int(),
-});
+  pid: z.number().int().positive(),
+  generation: z.literal(ZODY_RENAME_GENERATION),
+}).strict();
 
 export const helloAckMessageSchema = z.object({
-  type: z.literal("zcode-hello-ack"),
+  type: z.literal("zody-hello-ack"),
   version: z.string(),
   clientId: nonEmptyStringSchema,
-});
+  generation: z.literal(ZODY_RENAME_GENERATION),
+}).strict();
 
 export const rendererLogPayloadSchema = z.object({
   level: z.enum(["info", "warn", "error"]),
