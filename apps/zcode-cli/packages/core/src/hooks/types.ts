@@ -4,6 +4,7 @@ import type {
   HookExecutionDescriptor,
   HookInput,
   HookJSONOutput,
+  HookOnError,
   HookPermissionDecision,
   HookSourceKind,
   HooksRuntimeConfig,
@@ -58,6 +59,8 @@ export interface HookRegistration {
   descriptor?: HookExecutionDescriptor | ((input: HookInput) => HookExecutionDescriptor);
   event: HookEventName;
   matcher?: string;
+  /** hook 自身出错时的处置（contracts 的 HookOnError）；缺席 = allow。来源：上游 a60ba6a7。 */
+  onError?: HookOnError;
   source?: string;
   sourceKind?: HookSourceKind;
   timeoutMs?: number;

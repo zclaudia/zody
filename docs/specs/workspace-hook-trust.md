@@ -804,6 +804,9 @@ interface CanonicalWorkspaceHookEntry {
   // Presentation-only，不进入 declaration digest。
   statusMessage?: string;
 
+  // 仅在声明明确写 deny 时在场（与 declaration digest 同一条规则，来源上游 a60ba6a7）。
+  onError?: "deny";
+
   sourceRootEnabled: boolean;
   declarationEnabled: boolean;
   runtimeHooksEnabled: boolean;
@@ -824,6 +827,7 @@ interface CanonicalWorkspaceHookEntry {
 - source/merged root `maxOutputBytes` 解析后的有效值进入 `resolvedMaxOutputBytes`；
 - command 的 `async` 和 `shell` 是执行语义，必须进入 canonical form；
 - `statusMessage` 只影响呈现，不改变命令执行，明确排除在 declaration digest 之外；
+- `onError: "deny"` 把「hook 自身出错即放行（fail-open）」改成「出错即按退出码 2 拦截」（只对 PreToolUse 生效），是执行安全语义，必须进入 canonical form 与 declaration digest：加上或去掉它都会改变摘要，需要重新信任。不写或写 `allow` 时该字段不在场，声明摘要与引入该字段之前逐字节相同，已有 Trust 不失效——因此无需提升 digest schema version（上游 a60ba6a7 同此设计）；
 - schema 的 `.passthrough()` 未知扩展字段为 round-trip compatibility，V1 明确不进入 digest；Runtime 不得消费任何未知扩展字段，除非先把它加入受支持 schema、提升 digest schema version 并增加测试。
 
 `reviewItemId` 不能由 renderer 解释为权限 key；Runtime 必须通过等待中的 immutable request 将其映射回 declaration digest。

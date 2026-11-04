@@ -1,4 +1,6 @@
 import {
+  HookEventName,
+  HookOnError,
   HookOutcome,
   SessionEventType,
   isCoreError,
@@ -212,8 +214,20 @@ export class InMemoryHookRunner implements HookRunner {
         const durationMs = Date.now() - startedAt;
         const outcome = resolveHookFailureOutcome(error);
         const errorMessage = sanitizeHookDisplayText(readHookErrorMessage(error));
+        // hook 自身出错，原先一律放行（fail-open）：一条读错字段而崩溃的守卫等于不存在，且没人知道。
+        // `onError: "deny"` 让这次出错与「hook 以退出码 2 拦截」同形，交给下游同一条 deny 路径。
+        // 来源：上游 a60ba6a7（core/src/hooks/runner.ts）。
+        const denyReason = resolveDenyOnErrorReason(hook, input, outcome, errorMessage);
+        if (denyReason !== undefined) {
+          mergeHookRunResult(
+            result,
+            processHookOutput(input.hookEventName, preToolUseDenyOutput(denyReason)),
+          );
+        }
         await this.emitHookEvent(
-          SessionEventType.HookRunFailed,
+          denyReason === undefined
+            ? SessionEventType.HookRunFailed
+            : SessionEventType.HookRunBlocked,
           input,
           hookInvocationId,
           hookRunId,
@@ -226,8 +240,9 @@ export class InMemoryHookRunner implements HookRunner {
             durationMs,
             errorCode: isCoreError(error) ? error.code : undefined,
             errorMessage,
-            outcome,
+            outcome: denyReason === undefined ? outcome : HookOutcome.Blocked,
             stderrPreview: errorMessage,
+            ...(denyReason === undefined ? {} : { blockReason: denyReason }),
           },
         );
 
@@ -243,6 +258,8 @@ export class InMemoryHookRunner implements HookRunner {
           hookIndex,
           matcher: hook.matcher,
           module: "core.hooks",
+          ...(denyReason === undefined ? {} : { onError: HookOnError.Deny }),
+          outcome,
           source: hook.source,
         });
       }
@@ -459,4 +476,36 @@ function sanitizeHookDiagnostics(
 
 export function createInMemoryHookRunner(options?: HookRunnerOptions): InMemoryHookRunner {
   return new InMemoryHookRunner(options);
+}
+
+/**
+ * `onError: "deny"` 只在 PreToolUse 上、且 hook 真的运行过并出错时生效。用户中断不算出错：
+ * 把它变成拦截，会让「取消」看起来像策略拒绝。返回拦截理由；不拦截时返回 undefined。
+ * 来源：上游 a60ba6a7（core/src/hooks/runner.ts）。
+ */
+function resolveDenyOnErrorReason(
+  hook: HookRegistration,
+  input: HookInput,
+  outcome: HookOutcome,
+  errorMessage: string,
+): string | undefined {
+  if (hook.onError !== HookOnError.Deny) return undefined;
+  if (input.hookEventName !== HookEventName.PreToolUse) return undefined;
+  if (outcome === HookOutcome.Cancelled) return undefined;
+  return sanitizeHookDisplayText(
+    `PreToolUse hook failed and its onError is "deny", so the tool call is blocked: ${errorMessage}`,
+  );
+}
+
+/** 与退出码 2 的拦截同形（configured-runner-callback.ts 的 createExitCodeBlockOutput）。来源：上游 a60ba6a7。 */
+function preToolUseDenyOutput(reason: string): HookJSONOutput {
+  return {
+    continue: false,
+    reason,
+    hookSpecificOutput: {
+      hookEventName: HookEventName.PreToolUse,
+      permissionDecision: "deny",
+      permissionDecisionReason: reason,
+    },
+  };
 }

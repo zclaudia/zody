@@ -242,6 +242,8 @@ export const hookProcessSchema = z
     args: z.array(z.string()).optional(),
     timeoutMs: positiveNumberSchema.optional(),
     statusMessage: z.string().min(1).optional(),
+    // hook 自身出错时放行还是拦截；与 shared/workspace-hook-config.ts 逐字段等价（phase0 exhaustive lock 强制）。来源：上游 a60ba6a7。
+    onError: z.enum(["allow", "deny"]).optional(),
   })
 
   .passthrough();
@@ -256,6 +258,8 @@ export const hookCommandSchema = z
     timeout: positiveNumberSchema.optional(),
     timeoutMs: positiveNumberSchema.optional(),
     statusMessage: z.string().min(1).optional(),
+    // hook 自身出错时放行还是拦截；与 shared/workspace-hook-config.ts 逐字段等价（phase0 exhaustive lock 强制）。来源：上游 a60ba6a7。
+    onError: z.enum(["allow", "deny"]).optional(),
   })
   .passthrough();
 

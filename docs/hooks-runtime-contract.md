@@ -166,6 +166,17 @@ stdout 规则：
 - `2`：请求阻断；对可阻断事件产生对应 block/deny，Stop 产生继续一轮反馈。
 - 其他非零：可恢复 Hook 失败，不让整个 turn 崩溃。
 
+Hook 自身失败时的处置（单条 Hook 的 `onError` 字段，`process` 与 `command` 都可写；来源上游
+a60ba6a7）：
+
+- `allow`（缺省）：放行，工具照常执行，失败只记 `HookRunFailed` 事件与 warn 日志。
+- `deny`：只对 `PreToolUse` 生效。其他非零退出、超时、已知字段类型错误都等同于退出码 `2`：
+  工具调用被拒，终态事件是 `HookRunBlocked`，`blockReason` 写明是 Hook 失败触发的拦截，
+  `errorMessage` 保留原始失败。用户中断不算失败；未受信任而没有运行的工作区 Hook、
+  `async: true` 的 Hook 与其他事件不受影响。
+- 工作区 Hook 的 `onError: "deny"` 进声明摘要：加上或去掉它都要重新信任；不写或写 `allow`
+  的声明摘要不变（见 `docs/specs/workspace-hook-trust.md` §11.2）。
+
 事件输出效果：
 
 | Event                | 可阻断           | 可修改                                       | 模型可见上下文                                   |
