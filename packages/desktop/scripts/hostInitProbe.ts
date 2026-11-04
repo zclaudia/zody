@@ -27,7 +27,7 @@ export interface NativeHostInitProbeOptions {
   workspacePath: string;
   workspaceIdentity?: string;
   agentSpawnFallbackCwd?: string;
-  zcodeBuiltinProviderConfigFilePath: string;
+  zodyBuiltinProviderConfigFilePath: string;
   deviceMid?: string;
   runtimeProcessEnvPatch?: Record<string, string>;
   timeoutMs?: number;
@@ -79,7 +79,7 @@ function hostInitMessage(
     workspacePath: options.workspacePath,
     ...(options.workspaceIdentity ? { workspaceIdentity: options.workspaceIdentity } : {}),
     agentSpawnFallbackCwd: options.agentSpawnFallbackCwd ?? options.workspacePath,
-    zcodeBuiltinProviderConfigFilePath: options.zcodeBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath: options.zodyBuiltinProviderConfigFilePath,
     ...(options.deviceMid ? { deviceMid: options.deviceMid } : {}),
     ...(options.runtimeProcessEnvPatch
       ? { runtimeProcessEnvPatch: options.runtimeProcessEnvPatch }
@@ -227,7 +227,7 @@ function parseProbeArgs(argv: string[]): NativeHostInitProbeOptions {
       ? { agentSpawnFallbackCwd: values.get("--fallback-cwd") }
       : {}),
     ...(values.get("--device-mid") ? { deviceMid: values.get("--device-mid") } : {}),
-    zcodeBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
     ...(timeout ? { timeoutMs: Number(timeout) } : {}),
   };
 }

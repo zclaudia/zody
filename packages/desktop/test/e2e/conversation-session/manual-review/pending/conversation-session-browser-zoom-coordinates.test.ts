@@ -178,8 +178,8 @@ describe("ZCT-2096856609784438784：缩放后的截图坐标与真实点击一�
       }
       const appliedZoom = await browser.execute(async () => {
         return (
-          window as unknown as { zcode: { getDesktopZoomLevel(): Promise<{ zoomLevel: number }> } }
-        ).zcode.getDesktopZoomLevel();
+          window as unknown as { zody: { getDesktopZoomLevel(): Promise<{ zoomLevel: number }> } }
+        ).zody.getDesktopZoomLevel();
       });
       expect(appliedZoom.zoomLevel).toBe(zoomLevel);
       if (round > 0) {
@@ -814,8 +814,8 @@ describe("ZCT-2096856609784438784：缩放后的截图坐标与真实点击一�
 async function desktopCommand(command: string): Promise<void> {
   await browser.execute(async (value) => {
     await (
-      window as unknown as { zcode: { executeDesktopCommand(command: string): Promise<void> } }
-    ).zcode.executeDesktopCommand(value);
+      window as unknown as { zody: { executeDesktopCommand(command: string): Promise<void> } }
+    ).zody.executeDesktopCommand(value);
   }, command);
 }
 

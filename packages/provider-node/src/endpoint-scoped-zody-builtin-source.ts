@@ -89,7 +89,7 @@ export class EndpointScopedZodyBuiltinSource implements ProviderSource<ProviderC
       environmentConfigRoot: this.#options.environmentConfigRoot,
       platform: this.#options.platform,
       appVersion: this.#options.appVersion,
-      zcodeEndpointOrigin: endpointOrigin,
+      zodyEndpointOrigin: endpointOrigin,
     });
     if (this.#current?.activeFilePath === paths.activeFilePath) return this.#current;
 

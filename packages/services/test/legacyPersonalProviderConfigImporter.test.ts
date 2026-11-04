@@ -344,9 +344,9 @@ describe("Legacy Personal Provider Config Importer", () => {
     ]);
 
     const resolution = new ProviderConfigResolver().resolve({
-      zcodeBuiltinProviders: ProviderConfigMap.empty(),
+      zodyBuiltinProviders: ProviderConfigMap.empty(),
       personalProviders: document.providers,
-      zcodeBuiltinModelRules: genericRules,
+      zodyBuiltinModelRules: genericRules,
       personalModels: document.models,
       accountProviders: ProviderConfigMap.empty(),
     });
@@ -398,9 +398,9 @@ describe("Legacy Personal Provider Config Importer", () => {
     expect(document.models.getExact("zai-api", "user-model")).toBeUndefined();
 
     const resolution = new ProviderConfigResolver().resolve({
-      zcodeBuiltinProviders: zcodeBuiltinSnapshot().providers,
+      zodyBuiltinProviders: zcodeBuiltinSnapshot().providers,
       personalProviders: document.providers,
-      zcodeBuiltinModelRules: zcodeBuiltinSnapshot().models,
+      zodyBuiltinModelRules: zcodeBuiltinSnapshot().models,
       personalModels: document.models,
       accountProviders: ProviderConfigMap.empty(),
     });

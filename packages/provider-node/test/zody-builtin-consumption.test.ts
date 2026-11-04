@@ -39,7 +39,7 @@ it("更新只改变后续 Registry 消费，Personal 覆盖/历史选择与已�
   await source.read();
   let account!: AccountProviderService;
   const runtime = new NodeProviderRegistryRuntime({
-    zcodeBuiltinFilePath: active,
+    zodyBuiltinFilePath: active,
     personalFilePath: personal,
     personalPollingIntervalMs: false,
     createAccountSource(configSource) {

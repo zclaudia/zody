@@ -2843,7 +2843,7 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
               },
               serviceAuthorityMode: "desktop-local",
               zodyAgentSpawnFallbackCwd: msg.agentSpawnFallbackCwd,
-              zcodeBuiltinProviderConfigFilePath: msg.zcodeBuiltinProviderConfigFilePath,
+              zodyBuiltinProviderConfigFilePath: msg.zodyBuiltinProviderConfigFilePath,
               processLifecycleReporter: runtimeProcessLifecycleReporter,
               taskRuntimeReporter: runtimeTaskReporter,
               // fork（F2.9）：反馈本地化后不再向下传 deviceMid 与 feedbackApiBase，

@@ -55,7 +55,9 @@ function connectNodeRpc(
   headers: Record<string, string>,
 ): Promise<{ socket: WebSocket; services: ReturnType<typeof connectViaProtocol> }> {
   return new Promise((resolve, reject) => {
-    const socket = new WebSocket(url, { headers });
+    const socket = url.endsWith("/ws")
+      ? new WebSocket(url, "zody-generation-2", { headers })
+      : new WebSocket(url, { headers: { "x-zody-generation": "2", ...headers } });
     socket.once("error", reject);
     socket.once("open", () => {
       resolve({
@@ -71,7 +73,9 @@ function rejectedWebSocketStatus(
   headers: Record<string, string> = {},
 ): Promise<number | undefined> {
   return new Promise((resolve, reject) => {
-    const socket = new WebSocket(url, { headers });
+    const socket = url.endsWith("/ws")
+      ? new WebSocket(url, "zody-generation-2", { headers })
+      : new WebSocket(url, { headers: { "x-zody-generation": "2", ...headers } });
     socket.once("unexpected-response", (_request, response) => {
       response.resume();
       resolve(response.statusCode);
@@ -108,6 +112,23 @@ describe("server remote connection", () => {
     );
     servers.length = 0;
   });
+
+  it.each([undefined, 1, "2"])(
+    "rejects old server info %s before capability or WebSocket",
+    async (generation) => {
+      const fetchImpl = vi.fn(async () =>
+        Response.json({ renameGeneration: generation }),
+      ) as unknown as typeof fetch;
+      await expect(
+        connectServerRemote({ kind: "server", url: "http://127.0.0.1:1" }, { fetchImpl }),
+      ).rejects.toThrow(/incompatible generation/i);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+      expect(fetchImpl).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ cache: "no-store" }),
+      );
+    },
+  );
 
   it("resolves info and websocket endpoints from an HTTP server URL", () => {
     expect(resolveServerRemoteEndpoints("https://studio.example.com/zcode/")).toEqual({
@@ -182,12 +203,12 @@ describe("server remote connection", () => {
       serverId: "studio",
       workspaces: [{ path: "/home/dev/project" }],
     });
-    await expect(
-      connection.services.zodyAgentService.helloConversationV4(),
-    ).resolves.toMatchObject({
-      clientMode: "desktop-continuous",
-      deliveryProfile: "continuous",
-    });
+    await expect(connection.services.zodyAgentService.helloConversationV4()).resolves.toMatchObject(
+      {
+        clientMode: "desktop-continuous",
+        deliveryProfile: "continuous",
+      },
+    );
     expect(requestedPaths).toEqual(["/api/server-info", "/api/rpc-host-capability"]);
     let browserSocket: WebSocket | undefined;
     const browserServices = await connectViaWebSocket(`ws://127.0.0.1:${address.port}/ws`, {
@@ -241,12 +262,12 @@ describe("server remote connection", () => {
     );
     disposables.push(connection);
 
-    await expect(
-      connection.services.zodyAgentService.helloConversationV4(),
-    ).resolves.toMatchObject({
-      clientMode: "desktop-continuous",
-      deliveryProfile: "continuous",
-    });
+    await expect(connection.services.zodyAgentService.helloConversationV4()).resolves.toMatchObject(
+      {
+        clientMode: "desktop-continuous",
+        deliveryProfile: "continuous",
+      },
+    );
     expect(requestedUrls.map((url) => url.pathname)).toEqual([
       "/api/server-info",
       "/api/rpc-host-capability",
@@ -287,7 +308,7 @@ describe("server remote connection", () => {
             if (supported || !String(input).endsWith("/api/server-info")) return response;
             const info = serverRemoteInfoSchema.parse(await response.json());
             delete info.capabilities.processResourceTelemetry;
-            return Response.json(info);
+            return Response.json({ ...info, renameGeneration: 2 });
           },
         },
       );
@@ -343,12 +364,13 @@ describe("server remote connection", () => {
     expect(await rejectedWebSocketStatus(wsHost)).toBe(401);
     expect(
       await rejectedWebSocketStatus(wsHost, {
-        "x-zcode-rpc-host-capability": "forged",
+        "x-zody-rpc-host-capability": "forged",
       }),
     ).toBe(401);
 
     const ticketResponse = await fetch(`${httpBase}/api/rpc-host-capability`, {
       method: "POST",
+      headers: { "x-zody-generation": "2" },
     });
     expect(ticketResponse.status).toBe(200);
     const ticket = (await ticketResponse.json()) as {
@@ -359,7 +381,7 @@ describe("server remote connection", () => {
     expect(ticket.expiresAt).toBeGreaterThan(Date.now());
 
     const trusted = await connectNodeRpc(wsHost, {
-      "x-zcode-rpc-host-capability": ticket.capability,
+      "x-zody-rpc-host-capability": ticket.capability,
     });
     await expect(trusted.services.zodyAgentService.helloConversationV4()).resolves.toMatchObject({
       clientMode: "desktop-continuous",
@@ -367,7 +389,7 @@ describe("server remote connection", () => {
     });
     expect(
       await rejectedWebSocketStatus(wsHost, {
-        "x-zcode-rpc-host-capability": ticket.capability,
+        "x-zody-rpc-host-capability": ticket.capability,
       }),
     ).toBe(401);
     trusted.socket.close();

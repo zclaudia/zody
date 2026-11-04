@@ -1,3 +1,4 @@
+import { ZODY_RENAME_WEBSOCKET_PROTOCOL } from "@zody/shared";
 import {
   Emitter,
   VSBuffer,
@@ -64,7 +65,7 @@ export function connectViaWebSocket(
   options?: WebSocketConnectionOptions,
 ): Promise<IServiceAccessor> {
   return new Promise((resolve, reject) => {
-    const ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(wsUrl, ZODY_RENAME_WEBSOCKET_PROTOCOL);
     let settled = false;
 
     ws.addEventListener("error", () => {
@@ -91,6 +92,12 @@ export function connectViaWebSocket(
     });
 
     ws.addEventListener("open", () => {
+      if (ws.protocol !== ZODY_RENAME_WEBSOCKET_PROTOCOL) {
+        settled = true;
+        ws.close();
+        reject(new Error("WebSocket incompatible generation"));
+        return;
+      }
       settled = true;
       options?.onOpenSocket?.(ws);
       const socket = wrapBrowserWebSocket(ws);
@@ -99,9 +106,7 @@ export function connectViaWebSocket(
   });
 }
 
-export function connectViaProtocol(
-  protocol: IMessagePassingProtocol,
-): IServiceAccessor {
+export function connectViaProtocol(protocol: IMessagePassingProtocol): IServiceAccessor {
   return connectViaProtocolOwned(protocol).services;
 }
 

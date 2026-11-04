@@ -22,11 +22,40 @@ import {
 import { createServiceLogger } from "@zody/services/node";
 import {
   SERVER_REMOTE_PROTOCOL_VERSION,
+  ZODY_RENAME_GENERATION,
+  ZODY_RENAME_GENERATION_HEADER,
+  ZODY_RENAME_WEBSOCKET_PROTOCOL,
+  checkRenameGeneration,
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
   ZODY_VERSION,
   type ServerRemoteInfo,
 } from "@zody/shared";
 import { createHostCapabilityStore, type HostCapabilityStore } from "./hostCapability.js";
+
+// 原始 header 必须恰为单个规范值，不能把重复或宽松数字形式转换成代际 2。
+const generationGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header(ZODY_RENAME_GENERATION_HEADER);
+  if (
+    !checkRenameGeneration(
+      raw === String(ZODY_RENAME_GENERATION) ? ZODY_RENAME_GENERATION : undefined,
+    ).ok
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
+const browserProtocolGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header("sec-websocket-protocol");
+  const protocols = raw?.split(",").map((part) => part.trim()) ?? [];
+  if (
+    !protocols.includes(ZODY_RENAME_WEBSOCKET_PROTOCOL) ||
+    protocols.some((part) => !/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(part)) ||
+    new Set(protocols).size !== protocols.length
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
 
 export interface CoreHttpServer {
   host: string;
@@ -130,6 +159,14 @@ export async function createCoreHttpServer(
 ): Promise<CoreHttpServer> {
   const app = new Hono();
   const { injectWebSocket, upgradeWebSocket, wss } = createNodeWebSocket({ app });
+  // 子协议的默认实现选择首项；浏览器可能先提出其他协议，必须选中代际协议。
+  wss.options.handleProtocols = (protocols, request) => {
+    const path = new URL(request.url ?? "/", "http://localhost").pathname;
+    if (path === "/ws" || path.startsWith("/ws/remote/")) {
+      return protocols.has(ZODY_RENAME_WEBSOCKET_PROTOCOL) ? ZODY_RENAME_WEBSOCKET_PROTOCOL : false;
+    }
+    return protocols.values().next().value ?? false;
+  };
   const host = options.host ?? "127.0.0.1";
   if (!isLoopbackHost(host)) {
     // R2 当前只有本机/SSH 隧道入口，Core 尚未接入 token middleware；对外监听必须 fail-closed。
@@ -152,7 +189,12 @@ export async function createCoreHttpServer(
   // 裸 Set 无法落实 expiresAt，未消费的 capability 会一直有效并持续累积。
   // 使用与 packages/server 兼容的 TTL 一次性 store，使有效期和消费语义与返回信息一致。
   const capabilities = options.hostCapabilityStore ?? createHostCapabilityStore();
-  app.get("/api/server-info", (context) => context.json(info));
+  app.get("/api/server-info", (context) =>
+    context.json({ ...info, renameGeneration: ZODY_RENAME_GENERATION }),
+  );
+  app.use("/api/rpc-host-capability", generationGate);
+  app.use("/ws/host", generationGate);
+  app.use("/ws", browserProtocolGate);
   app.get(
     "/ws",
     upgradeWebSocket(() => ({

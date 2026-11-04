@@ -151,7 +151,7 @@ describe("taskRealtimeBridge", () => {
         {
           type: HostMessageTypes.InitLocal,
           hostId: "host-b",
-          zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
+          zodyBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
         },
         parentPort,
       )?.hostId,
@@ -165,7 +165,7 @@ describe("taskRealtimeBridge", () => {
         type: HostMessageTypes.InitLocal,
         hostId: "host-relay",
         deliveryKind: "relay_bridge",
-        zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
+        zodyBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
       },
       parentPort,
     );

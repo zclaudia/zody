@@ -205,7 +205,12 @@ async function connectRemoteUnchecked(
 
   // 4. Handshake
   log("performing handshake...");
-  const { hello, remaining } = await performHandshake(stream, clientId, options?.handshakeTimeout);
+  const { hello, remaining } = await performHandshake(
+    stream,
+    clientId,
+    options?.handshakeTimeout,
+    options?.signal,
+  );
   throwIfRemoteConnectAborted(options?.signal);
   log("handshake done, server version:", hello.version);
 
@@ -223,6 +228,8 @@ async function connectRemoteUnchecked(
   // 反向注册（desktop-resource ChannelServer）是第三方 IM bot 的资源回传链，随 bot
   // channels 整体删除；ChannelClient 主体结构保留。
   const services = new RemoteServiceAccess(client);
+  // 握手已暂停输出；RPC 完成订阅后再恢复，确保余帧不被丢弃。
+  stream.stdout.resume();
   let hasReportedRemoteClose = false;
   let hasStreamClosed = false;
   let resolveStreamClosed!: () => void;

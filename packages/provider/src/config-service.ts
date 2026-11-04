@@ -44,7 +44,7 @@ export interface PersonalProviderConfigRepository extends ProviderSource<Provide
 }
 
 export interface ProviderConfigServiceDependencies {
-  readonly zcodeBuiltinSource: ProviderSource<ProviderConfigLayerSnapshot>;
+  readonly zodyBuiltinSource: ProviderSource<ProviderConfigLayerSnapshot>;
   readonly personalRepository: PersonalProviderConfigRepository;
 }
 
@@ -94,17 +94,17 @@ function writableProviderOverlay(
 }
 
 export class ProviderConfigService implements ProviderSource<ProviderConfigSnapshot> {
-  readonly #zcodeBuiltinSource: ProviderSource<ProviderConfigLayerSnapshot>;
+  readonly #zodyBuiltinSource: ProviderSource<ProviderConfigLayerSnapshot>;
   readonly #personalRepository: PersonalProviderConfigRepository;
   readonly #listeners = new Set<(reason: string) => void>();
   readonly #sourceDisposers: Array<() => void>;
   #disposed = false;
 
   constructor(dependencies: ProviderConfigServiceDependencies) {
-    this.#zcodeBuiltinSource = dependencies.zcodeBuiltinSource;
+    this.#zodyBuiltinSource = dependencies.zodyBuiltinSource;
     this.#personalRepository = dependencies.personalRepository;
     this.#sourceDisposers = [
-      this.#zcodeBuiltinSource.onDidChange((reason) => this.#emit(`zcodeBuiltin:${reason}`)),
+      this.#zodyBuiltinSource.onDidChange((reason) => this.#emit(`zcodeBuiltin:${reason}`)),
       this.#personalRepository.onDidChange((reason) => this.#emit(`personal:${reason}`)),
     ];
   }
@@ -112,17 +112,17 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
   async read(): Promise<ProviderConfigSnapshot> {
     this.#assertNotDisposed();
     const [zcodeBuiltin, personal] = await Promise.all([
-      this.#zcodeBuiltinSource.read(),
+      this.#zodyBuiltinSource.read(),
       this.#personalRepository.read(),
     ]);
     return Object.freeze({
       revision: JSON.stringify([zcodeBuiltin.revision, personal.revision]),
-      zcodeBuiltinRevision: zcodeBuiltin.revision,
+      zodyBuiltinRevision: zcodeBuiltin.revision,
       personalRevision: personal.revision,
-      zcodeBuiltinProviders: zcodeBuiltin.providers,
-      zcodeBuiltinProviderTemplates: zcodeBuiltin.providerTemplates ?? ProviderTemplateMap.empty(),
+      zodyBuiltinProviders: zcodeBuiltin.providers,
+      zodyBuiltinProviderTemplates: zcodeBuiltin.providerTemplates ?? ProviderTemplateMap.empty(),
       personalProviders: personal.providers,
-      zcodeBuiltinModelRules: zcodeBuiltin.models,
+      zodyBuiltinModelRules: zcodeBuiltin.models,
       personalModels: personal.models,
       personalProviderOrder: personal.providerOrder ?? [],
     });
@@ -148,7 +148,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
     metadata?: Pick<ProviderConfigRule, "providerName" | "templateId" | "enabled">,
   ): Promise<ProviderConfigLayerSnapshot> {
     assertNonEmptyId("providerId", providerId);
-    const zodyBuiltin = await this.#zcodeBuiltinSource.read();
+    const zodyBuiltin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => {
       assertMembershipCurrent(membership, providerId, current);
       const builtin = zodyBuiltin.providers.get(providerId);
@@ -225,7 +225,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
   async createPersonalProvider(
     input: CreatePersonalProviderInput = {},
   ): Promise<PersonalProviderCreation> {
-    const zodyBuiltin = await this.#zcodeBuiltinSource.read();
+    const zodyBuiltin = await this.#zodyBuiltinSource.read();
     const templateId = input.templateId?.trim();
     const template = templateId ? zodyBuiltin.providerTemplates?.get(templateId) : undefined;
     if (templateId && !template) throw new Error(`Provider Template 不存在: ${templateId}`);
@@ -287,7 +287,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
   async reorderPersonalProviders(
     providerIds: readonly ProviderId[],
   ): Promise<ProviderConfigLayerSnapshot> {
-    const zodyBuiltin = await this.#zcodeBuiltinSource.read();
+    const zodyBuiltin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => ({
       providers: current.providers,
       models: current.models,
@@ -301,7 +301,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
     membership?: ProviderModelMembership,
   ): Promise<ProviderConfigLayerSnapshot> {
     assertNonEmptyId("providerId", providerId);
-    const zodyBuiltin = await this.#zcodeBuiltinSource.read();
+    const zodyBuiltin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => {
       assertMembershipCurrent(membership, providerId, current);
       const builtinProvider =
@@ -330,7 +330,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
   ): Promise<ProviderConfigLayerSnapshot> {
     const normalizedProviderId = normalizeId("providerId", providerId);
     const normalizedModelId = normalizeId("modelId", modelId);
-    const zodyBuiltin = await this.#zcodeBuiltinSource.read();
+    const zodyBuiltin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => {
       assertMembershipCurrent(membership, normalizedProviderId, current);
       const provider = writableProviderOverlay(zodyBuiltin, current, normalizedProviderId);
@@ -377,7 +377,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
     const currentId = normalizeId("modelId", currentModelId);
     const nextId = normalizeId("modelId", nextModelId);
     if (currentId === nextId) return this.#personalRepository.read();
-    const zodyBuiltin = await this.#zcodeBuiltinSource.read();
+    const zodyBuiltin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => {
       assertMembershipCurrent(membership, normalizedProviderId, current);
       const provider = current.providers.get(normalizedProviderId);
@@ -424,7 +424,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
     const id = normalizeId("providerId", providerId);
     const model = normalizeId("modelId", modelId);
     if (typeof enabled !== "boolean") throw new Error("Model enabled 必须是 boolean");
-    const builtin = await this.#zcodeBuiltinSource.read();
+    const builtin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => {
       assertMembershipCurrent(membership, id, current);
       const provider = current.providers.get(id);
@@ -460,7 +460,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
     const normalizedProviderId = normalizeId("providerId", providerId);
     const originalId = normalizeId("modelId", originalModelId);
     const nextId = normalizeId("modelId", nextModelId);
-    const zodyBuiltin = await this.#zcodeBuiltinSource.read();
+    const zodyBuiltin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => {
       assertMembershipCurrent(membership, normalizedProviderId, current);
       if (current.revision !== expectedPersonalRevision) {
@@ -527,7 +527,7 @@ export class ProviderConfigService implements ProviderSource<ProviderConfigSnaps
   ): Promise<ProviderConfigLayerSnapshot> {
     const normalizedProviderId = normalizeId("providerId", providerId);
     const normalizedModelId = normalizeId("modelId", modelId);
-    const builtin = await this.#zcodeBuiltinSource.read();
+    const builtin = await this.#zodyBuiltinSource.read();
     return this.#updatePersonal((current) => {
       assertMembershipCurrent(membership, normalizedProviderId, current);
       const provider = current.providers.get(normalizedProviderId);
@@ -663,17 +663,17 @@ function normalizeProviderOrder(
 }
 
 function appendCurrentProviderOrder(
-  zcodeBuiltinProviders: ProviderConfigMap,
+  zodyBuiltinProviders: ProviderConfigMap,
   personalProviders: ProviderConfigMap,
   currentOrder: readonly ProviderId[] | undefined,
   addedProviderId: ProviderId,
 ): ProviderId[] {
   const current = normalizeProviderOrder(
-    zcodeBuiltinProviders,
+    zodyBuiltinProviders,
     personalProviders,
     currentOrder ?? [],
   );
-  return normalizeProviderOrder(zcodeBuiltinProviders, personalProviders, [
+  return normalizeProviderOrder(zodyBuiltinProviders, personalProviders, [
     ...current.filter((providerId) => providerId !== addedProviderId),
     addedProviderId,
   ]);

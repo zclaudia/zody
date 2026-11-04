@@ -1,5 +1,11 @@
 import type { HelloMessage, HelloAckMessage } from "@zody/shared";
-import { ZODY_VERSION, formatZodError, helloMessageSchema } from "@zody/shared";
+import {
+  ZODY_VERSION,
+  ZODY_RENAME_GENERATION,
+  formatZodError,
+  helloMessageSchema,
+  helloAckMessageSchema,
+} from "@zody/shared";
 import type { StdioStream } from "./backend.js";
 
 const MAX_HANDSHAKE_DIAGNOSTIC_CHARS = 2048;
@@ -12,116 +18,114 @@ export interface HandshakeResult {
 
 /**
  * Perform the client-side handshake:
- * 1. Read lines from stdout until we find a zcode-hello JSON
+ * 1. Read lines from stdout until we find a zody-hello JSON
  *    (skip SSH banner/motd lines)
- * 2. Send a zcode-hello-ack to stdin
+ * 2. Send a zody-hello-ack to stdin
  * 3. Return the hello info and any remaining data
  */
 export function performHandshake(
   stream: StdioStream,
   clientId: string,
   timeoutMs = 10_000,
+  signal?: AbortSignal,
 ): Promise<HandshakeResult> {
   return new Promise((resolve, reject) => {
-    let buffer = "";
+    let buffer: Buffer = Buffer.alloc(0);
     let stdoutText = "";
     let stderrText = "";
     let settled = false;
-
-    const rejectWithDiagnostics = (message: string, exitCode?: number) => {
-      if (settled) {
-        return;
-      }
+    let closeDisposable: { dispose(): void } | undefined;
+    const cleanup = () => {
+      clearTimeout(timeout);
+      stream.stdout.removeListener("data", onData);
+      stream.stdout.removeListener("end", onEnd);
+      stream.stdout.removeListener("error", onError);
+      stream.stderr.removeListener("data", onStderrData);
+      stream.stdin.removeListener("error", onError);
+      signal?.removeEventListener("abort", onAbort);
+      closeDisposable?.dispose();
+    };
+    const fail = (message: string, exitCode?: number) => {
+      if (settled) return;
       settled = true;
       cleanup();
       reject(
         new Error(
-          formatHandshakeFailure(message, {
-            exitCode,
-            stdout: stdoutText,
-            stderr: stderrText,
-          }),
+          formatHandshakeFailure(message, { exitCode, stdout: stdoutText, stderr: stderrText }),
         ),
       );
     };
-
-    const timeout = setTimeout(() => {
-      rejectWithDiagnostics("Handshake timeout: no zcode-hello received within timeout");
-    }, timeoutMs);
-
-    const onData = (chunk: Buffer) => {
-      const text = chunk.toString("utf-8");
-      buffer += text;
-      stdoutText = appendLimited(stdoutText, text);
-
-      // Process line by line
+    const onEnd = () => fail("Stream closed before handshake completed");
+    const onError = (error: Error) => fail(`Handshake stream error: ${error.message}`);
+    const onAbort = () => fail("Handshake canceled");
+    const onStderrData = (chunk: Buffer) => {
+      stderrText = appendLimited(stderrText, chunk.toString("utf8"));
+    };
+    const onData = (chunk: Buffer | string) => {
+      const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      buffer = Buffer.concat([buffer, bytes]);
+      stdoutText = appendLimited(stdoutText, bytes.toString("utf8"));
       while (true) {
-        const newlineIdx = buffer.indexOf("\n");
-        if (newlineIdx === -1) break;
-
-        const line = buffer.slice(0, newlineIdx).trim();
-        buffer = buffer.slice(newlineIdx + 1);
-
-        // Try to parse as hello message
-        if (line.startsWith("{")) {
-          try {
-            const rawValue = JSON.parse(line);
-            const result = helloMessageSchema.safeParse(rawValue);
-            if (result.success) {
-              if (settled) {
-                return;
-              }
-              settled = true;
-              cleanup();
-
-              // Send ack
-              const ack: HelloAckMessage = {
-                type: "zcode-hello-ack",
-                version: ZODY_VERSION,
-                clientId,
-              };
-              stream.stdin.write(JSON.stringify(ack) + "\n");
-
-              resolve({
-                hello: result.data as HelloMessage,
-                remaining: buffer.length > 0 ? Buffer.from(buffer, "utf-8") : null,
-              });
-              return;
-            }
-            if (
-              rawValue &&
-              typeof rawValue === "object" &&
-              "type" in rawValue &&
-              (rawValue as { type?: unknown }).type === "zcode-hello"
-            ) {
-              rejectWithDiagnostics(`Invalid zcode-hello: ${formatZodError(result.error)}`);
-              return;
-            }
-          } catch {
-            // Not JSON, skip (SSH banner line)
-          }
+        const index = buffer.indexOf(10);
+        if (index < 0) return;
+        const line = buffer.subarray(0, index).toString("utf8").trim();
+        buffer = buffer.subarray(index + 1);
+        let raw: unknown;
+        try {
+          raw = JSON.parse(line);
+        } catch {
+          continue;
         }
-        // Non-JSON lines are treated as SSH banner/motd — skip
+        const result = helloMessageSchema.safeParse(raw);
+        if (!result.success) {
+          fail(`Invalid hello: ${formatZodError(result.error)}`);
+          return;
+        }
+        // 先暂停，确保在消费者重新装配 RPC 前不会丢失随后的字节。
+        (stream.stdout as NodeJS.ReadableStream & { pause(): void }).pause();
+        const ack: HelloAckMessage = {
+          type: "zody-hello-ack",
+          version: ZODY_VERSION,
+          clientId,
+          generation: ZODY_RENAME_GENERATION,
+        };
+        const checkedAck = helloAckMessageSchema.safeParse(ack);
+        if (!checkedAck.success) {
+          fail(`Invalid hello-ack: ${formatZodError(checkedAck.error)}`);
+          return;
+        }
+        try {
+          stream.stdin.write(JSON.stringify(ack) + "\n", (error?: Error | null) => {
+            // Writable error 事件负责统一拒绝；回调先触发时不能提前移除 error 监听。
+            if (error || settled) return;
+            settled = true;
+            cleanup();
+            resolve({ hello: result.data, remaining: buffer.length ? Buffer.from(buffer) : null });
+          });
+        } catch (error) {
+          fail(`Handshake ack write failed: ${String(error)}`);
+        }
+        return;
       }
     };
-
-    const onStderrData = (chunk: Buffer) => {
-      stderrText = appendLimited(stderrText, chunk.toString("utf-8"));
-    };
-
+    const timeout = setTimeout(
+      () => fail("Handshake timeout: no zody-hello received within timeout"),
+      timeoutMs,
+    );
     stream.stdout.on("data", onData);
+    stream.stdout.once("end", onEnd);
+    stream.stdout.once("error", onError);
     stream.stderr.on("data", onStderrData);
-
-    const closeDisposable = stream.onClose((code) => {
-      rejectWithDiagnostics("Stream closed before handshake completed", code);
-    });
-
-    const cleanup = () => {
-      clearTimeout(timeout);
-      stream.stdout.removeListener("data", onData);
-      stream.stderr.removeListener("data", onStderrData);
+    stream.stdin.once("error", onError);
+    closeDisposable = stream.onClose((code) =>
+      fail("Stream closed before handshake completed", code),
+    );
+    if (settled) {
       closeDisposable.dispose();
-    };
+      return;
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
+    if (signal?.aborted) onAbort();
   });
 }
 

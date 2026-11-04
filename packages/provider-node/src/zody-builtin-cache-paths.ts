@@ -12,7 +12,7 @@ export interface ZodyBuiltinCachePathOptions {
   readonly environmentConfigRoot: string;
   readonly platform: string;
   readonly appVersion: string;
-  readonly zcodeEndpointOrigin: string;
+  readonly zodyEndpointOrigin: string;
 }
 
 export interface ZodyBuiltinCachePaths {
@@ -26,7 +26,7 @@ export function resolveZodyBuiltinCachePaths(
 ): ZodyBuiltinCachePaths {
   const platform = normalizeSegment(options.platform, "platform");
   const appVersion = normalizeSegment(options.appVersion, "appVersion");
-  const endpointKey = createZodyBuiltinEndpointKey(options.zcodeEndpointOrigin);
+  const endpointKey = createZodyBuiltinEndpointKey(options.zodyEndpointOrigin);
   const directory = join(
     options.environmentConfigRoot,
     "runtime",
@@ -48,8 +48,8 @@ export function resolveZodyBuiltinCachePaths(
 const ZCODE_BUILTIN_UNCONFIGURED_ENDPOINT_KEY = "endpoint-unconfigured";
 
 /** 将 ZCode 控制面 Origin 规范化后映射为安全、稳定且碰撞风险可忽略的缓存路径段。 */
-export function createZodyBuiltinEndpointKey(zcodeEndpointOrigin: string): string {
-  const trimmed = zcodeEndpointOrigin.trim();
+export function createZodyBuiltinEndpointKey(zodyEndpointOrigin: string): string {
+  const trimmed = zodyEndpointOrigin.trim();
   // fork（F3.1）：未配置端点不再回落官方地址，使用固定目录保证缓存隔离且可稳定读取。
   if (!trimmed) {
     return ZCODE_BUILTIN_UNCONFIGURED_ENDPOINT_KEY;

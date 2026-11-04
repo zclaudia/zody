@@ -16071,7 +16071,7 @@
       "packages/shared/test/zodyRenameProtocol.test.ts"
     ],
     "scopeStatus": "verified-interface; generation/schema shared API frozen for consumers",
-    "gate": "Independent R40 interface PASS; retain two R41 typecheck errors until consumer integration. Cleanup records in output/zody-rename-r40/implementation/cleanup.json.",
+    "gate": "Independent R40 interface PASS. Original two R41 caller type errors resolved by W4 combined root checks. R40 temporary cleanup preserved in output/zody-rename-r40/implementation/cleanup.json.",
     "structureScope": [
       "shared wire/schema 和 bootstrap 对应副本；RPC 控制标记"
     ],
@@ -16084,21 +16084,33 @@
       "AGENTS.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
       "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/reports/R40-independent-review.md",
+      "docs/plans/zody-rename-execution/reports/R40.md",
+      "docs/plans/zody-rename-execution/reports/R41-preflight.md",
       "packages/server/src/entry-stdio.ts",
       "packages/server/src/remote/handshake.ts",
       "packages/server/test/remoteConnect.test.ts",
       "packages/server/test/stdioLifecycle.test.ts",
       "packages/services/src/zcode-agent/zcodeStdioTransport.ts",
-      "packages/services/test/zcodeStdioTransport.test.ts"
+      "packages/services/test/zcodeStdioTransport.test.ts",
+      "specs/zody-rename-runtime-contract.md"
     ],
     "writeSet": [
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/server.ts",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/transport.ts",
+      "apps/zody-cli/packages/bootstrap/tests/zody-protocol-transport.test.ts",
       "docs/plans/zody-rename-execution/reports/R41.md",
       "packages/server/src/entry-stdio.ts",
+      "packages/server/src/remote/connect.ts",
       "packages/server/src/remote/handshake.ts",
+      "packages/server/src/stdioHandshake.ts",
       "packages/server/test/remoteConnect.test.ts",
+      "packages/server/test/stdioHandshake.test.ts",
       "packages/server/test/stdioLifecycle.test.ts",
-      "packages/services/src/zcode-agent/zcodeStdioTransport.ts",
-      "packages/services/test/zcodeStdioTransport.test.ts"
+      "packages/services/src/zody-agent/zodyStdioTransport.ts",
+      "packages/services/test/zodyStdioTransport.processTree.test.ts",
+      "packages/services/test/zodyStdioTransport.test.ts",
+      "specs/zody-rename-stdio.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -16107,13 +16119,22 @@
       "共享接口未经主控交接不得修改"
     ],
     "plannedPaths": [
-      "docs/plans/zody-rename-execution/reports/R41.md"
+      "docs/plans/zody-rename-execution/reports/R41.md",
+      "packages/server/src/stdioHandshake.ts",
+      "packages/server/test/stdioHandshake.test.ts",
+      "specs/zody-rename-stdio.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "independently-accepted-scoped",
+    "gate": "DeepSeek scoped PASS; controller fixed-toolchain checks pass; stage cleanup complete. R48 actual mixed-version/platform/mobile gates remain.",
     "structureScope": [
       "services stdio transport、CLI stdio 对端和测试"
-    ]
+    ],
+    "writer": "/root/terra_r30_dispatch",
+    "baselineCommit": "71acf64f",
+    "narrowHandoffs": {
+      "packages/server/src/remote/connect.ts": "Forward existing cancellation to handshake and restore stdout only after protocol/client read listeners are installed, before awaiting RPC; no deployment/version/routing changes. Return file to R43 after R41.",
+      "packages/server/src/entry-stdio.ts": "R41 owns file and synchronizes zcodeBuiltinProviderConfigFilePath -> zodyBuiltinProviderConfigFilePath from R44 contract."
+    }
   },
   "R42": {
     "title": "HTTP/Web/手机 attachment 门禁",
@@ -16121,19 +16142,37 @@
       "AGENTS.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
       "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/reports/R40-independent-review.md",
+      "docs/plans/zody-rename-execution/reports/R40.md",
+      "docs/plans/zody-rename-execution/reports/R42-preflight.md",
       "packages/desktop/src/host/serverRemoteConnection.ts",
       "packages/desktop/test/serverRemoteConnection.test.ts",
       "packages/server/src/http.ts",
       "packages/zcode-server-cli/src/server-core/http.ts",
-      "packages/zcode-server-cli/test/coreHttp.test.ts"
+      "packages/zcode-server-cli/test/coreHttp.test.ts",
+      "specs/zody-rename-runtime-contract.md"
     ],
     "writeSet": [
       "docs/plans/zody-rename-execution/reports/R42.md",
+      "packages/client/src/websocket.ts",
+      "packages/client/test/zodyRenameWebsocket.test.ts",
       "packages/desktop/src/host/serverRemoteConnection.ts",
+      "packages/desktop/src/main/remote-access/gatewayDeviceTransportHello.ts",
+      "packages/desktop/src/main/remote-access/gatewayDeviceTransportInbound.ts",
+      "packages/desktop/test/gatewayDeviceTransport.test.ts",
+      "packages/desktop/test/remoteWorkspaceServicePortBridge.test.ts",
       "packages/desktop/test/serverRemoteConnection.test.ts",
       "packages/server/src/http.ts",
-      "packages/zcode-server-cli/src/server-core/http.ts",
-      "packages/zcode-server-cli/test/coreHttp.test.ts"
+      "packages/server/test/serverInfoHttp.test.ts",
+      "packages/web/src/main.tsx",
+      "packages/web/src/mobile-remote/gatewayTerminalTransport.ts",
+      "packages/web/src/renameCompatibility.ts",
+      "packages/web/test/mobileRemoteGatewayTerminalTransport.test.ts",
+      "packages/web/test/webRemoteControlWorkspaceBridgeSession.test.ts",
+      "packages/web/test/zodyRenameBootstrap.test.ts",
+      "packages/zody-server-cli/src/server-core/http.ts",
+      "packages/zody-server-cli/test/coreHttp.test.ts",
+      "specs/zody-rename-http-attachment.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -16142,31 +16181,47 @@
       "共享接口未经主控交接不得修改"
     ],
     "plannedPaths": [
-      "docs/plans/zody-rename-execution/reports/R42.md"
+      "docs/plans/zody-rename-execution/reports/R42.md",
+      "packages/client/test/zodyRenameWebsocket.test.ts",
+      "packages/web/src/renameCompatibility.ts",
+      "packages/web/test/zodyRenameBootstrap.test.ts",
+      "specs/zody-rename-http-attachment.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "independently-accepted-scoped",
+    "gate": "DeepSeek scoped PASS; controller fixed-toolchain checks pass; stage cleanup complete. R48 actual mixed-version/platform/mobile gates remain.",
     "structureScope": [
       "Web/手机连接与 attachment 入口及测试"
-    ]
+    ],
+    "writer": "/root/terra_r30_test_roles",
+    "baselineCommit": "71acf64f"
   },
   "R43": {
     "title": "部署、启动与运行版本验证",
     "readSet": [
       "AGENTS.md",
+      "specs/zody-rename-runtime-contract.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
-      "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "docs/plans/zody-rename-execution/test-map.md",
       "packages/server/src/remote/connect.ts",
       "packages/server/src/remote/deploy.ts",
       "packages/server/src/remote/serverBundleDeployCheck.ts",
+      "packages/server/test/remoteDeploy.test.ts",
+      "packages/server/test/remoteDeployLock.test.ts",
       "packages/server/test/remoteConnect.test.ts"
     ],
     "writeSet": [
-      "docs/plans/zody-rename-execution/reports/R43.md",
+      "specs/zody-rename-remote-deploy.md",
       "packages/server/src/remote/connect.ts",
       "packages/server/src/remote/deploy.ts",
       "packages/server/src/remote/serverBundleDeployCheck.ts",
-      "packages/server/test/remoteConnect.test.ts"
+      "packages/server/test/remoteDeploy.test.ts",
+      "packages/server/test/remoteDeployLock.test.ts",
+      "packages/server/test/remoteConnect.test.ts",
+      "docs/plans/zody-rename-execution/reports/R43.md",
+      "docs/plans/zody-rename-execution/reports/R43-release-runbook.md",
+      "packages/server/src/remote/handshake.ts",
+      "packages/server/test/stdioHandshake.test.ts"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -16177,9 +16232,34 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R43.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
-    "structureScope": []
+    "scopeStatus": "prepared-await-W4-checkpoint",
+    "gate": "R41/R42 independently accepted and cleaned. Dispatch after current W4 source checkpoint and sole Desktop build lock release; freeze actual HEAD. No real remote deployment.",
+    "structureScope": [],
+    "writer": "/root/terra_r30_dispatch",
+    "contractCases": [
+      "matching version but stale marker forces deploy; new marker alone never authorizes running connection",
+      "skipDeploy still rejects old/missing/wrong-generation or mismatched live hello before RPC",
+      "live process wrong version rejected before services publication, including post-install race",
+      "generation-2 actual hello and matching runtime admit only after ack; independent of artifact marker",
+      "concurrent fresh recheck under lock; abort, failed upload, lock release failure and offline reconnect leave no reusable partial state",
+      "old deployment actor and caller-serialized lock boundary cannot overwrite validated running target; exercise controlled local target and report coexistence limit",
+      "selected env config matches producer and launched runtime, no credentials in evidence",
+      "release target inventory, suspend old auto-deploy, validate each target, rollback complete old set"
+    ],
+    "excludedCandidateFiles": [
+      {
+        "path": "packages/desktop/src/host/index.ts",
+        "reason": "SSH caller-serialized mode is selected here; inspect whether existing per-target single-flight is sufficient across old/new deployers; only add if a verified fix needs its owner, not automatically"
+      },
+      {
+        "path": "packages/server/src/remote/deployLock.ts",
+        "reason": "find actual lock owner before expanding; only if tests demonstrate acquire/abort/release lifecycle requires modification"
+      }
+    ],
+    "narrowHandoffs": {
+      "packages/server/src/remote/handshake.ts": "R41 accepted. Add expected running version validation before ack, preserving strict generation, raw-byte handoff and lifecycle. No check after ack claiming zero server initialization.",
+      "packages/server/test/stdioHandshake.test.ts": "R41 accepted. Controlled real child mismatched-version test must observe no ack/no initialization marker; retain byte/lifecycle tests."
+    }
   },
   "R44": {
     "title": "主应用桥、IPC 与内部 builtin 属性",
@@ -16187,15 +16267,110 @@
       "AGENTS.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
       "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/reports/R40-independent-review.md",
+      "docs/plans/zody-rename-execution/reports/R40.md",
+      "docs/plans/zody-rename-execution/reports/R44-preflight.md",
       "packages/client/src/globals.d.ts",
       "packages/desktop/src/preload/index.ts",
-      "packages/provider-node/src/zcode-builtin-release.ts"
+      "packages/provider-node/src/zcode-builtin-release.ts",
+      "specs/zody-rename-runtime-contract.md"
     ],
     "writeSet": [
+      "apps/zody-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts",
+      "apps/zody-cli/packages/bootstrap/src/zody-protocol/account-provider-config.ts",
+      "apps/zody-cli/packages/bootstrap/tests/account-config-delivery.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/process-provider-registry-runtime.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/session-persistence.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/zody-builtin-model-runtime-integration.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/zody-protocol-telemetry-lifecycle.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/zody-protocol.test.ts",
+      "apps/zody-cli/packages/cli/src/provider-runtime-env.ts",
+      "apps/zody-cli/packages/cli/tests/build-sea.test.mjs",
+      "apps/zody-cli/packages/cli/tests/provider-runtime-env.test.ts",
       "docs/plans/zody-rename-execution/reports/R44.md",
       "packages/client/src/globals.d.ts",
+      "packages/client/src/logger.ts",
+      "packages/client/src/rendererLoggingEnv.ts",
+      "packages/client/test/rendererLogging.test.ts",
+      "packages/desktop/scripts/hostInitProbe.ts",
+      "packages/desktop/src/host/index.ts",
+      "packages/desktop/src/main/cuaPermissionDragPanel.ts",
+      "packages/desktop/src/main/desktopHostProcess.ts",
+      "packages/desktop/src/main/index.ts",
+      "packages/desktop/src/preload/cuaPermissionPanel.ts",
       "packages/desktop/src/preload/index.ts",
-      "packages/provider-node/src/zcode-builtin-release.ts"
+      "packages/desktop/src/renderer/src/desktopBrowserPlatformBridge.ts",
+      "packages/desktop/src/renderer/src/desktopPlatform.ts",
+      "packages/desktop/src/renderer/src/main.tsx",
+      "packages/desktop/test/e2e/browser-tab-close-idempotent.test.ts",
+      "packages/desktop/test/e2e/browser-tab-residency.test.ts",
+      "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-agent-step-message-scope.test.ts",
+      "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-browser-zoom-coordinates.test.ts",
+      "packages/desktop/test/e2e/help-client-config.test.ts",
+      "packages/desktop/test/e2e/help-menu-about.test.ts",
+      "packages/desktop/test/e2e/helpers/conversation-telemetry-parity-capture.ts",
+      "packages/desktop/test/e2e/manual-review/pending/windows-file-reveal.test.ts",
+      "packages/desktop/test/e2e/manual-review/pending/windows-tray-export-logs.test.ts",
+      "packages/desktop/test/e2e/process-resource-telemetry-roles.test.ts",
+      "packages/desktop/test/e2e/settings/browser-extension-settings.test.ts",
+      "packages/desktop/test/hostInitProbe.test.ts",
+      "packages/desktop/test/preloadDisposer.test.ts",
+      "packages/desktop/test/rendererMessageHandler.test.ts",
+      "packages/desktop/test/taskRealtimeBridge.test.ts",
+      "packages/provider-node/src/endpoint-scoped-zody-builtin-source.ts",
+      "packages/provider-node/src/legacy-reasoning-level.ts",
+      "packages/provider-node/src/provider-config-runtime.ts",
+      "packages/provider-node/src/provider-registry-runtime.ts",
+      "packages/provider-node/src/runtime-paths.ts",
+      "packages/provider-node/src/zody-builtin-cache-paths.ts",
+      "packages/provider-node/test/fixtures/builtin-registry-observer.ts",
+      "packages/provider-node/test/personal-rule-persistence.test.ts",
+      "packages/provider-node/test/provider-node-runtime.test.ts",
+      "packages/provider-node/test/reasoning-level-migration.test.ts",
+      "packages/provider-node/test/zody-builtin-consumption.test.ts",
+      "packages/provider-node/test/zody-builtin-integrity.test.ts",
+      "packages/provider-node/test/zody-builtin-lifecycle.test.ts",
+      "packages/provider-node/test/zody-builtin-release.test.ts",
+      "packages/provider/src/account-provider-service.ts",
+      "packages/provider/src/config-service.ts",
+      "packages/provider/src/facades.ts",
+      "packages/provider/src/registry-service.ts",
+      "packages/provider/src/resolver.ts",
+      "packages/provider/src/sources.ts",
+      "packages/provider/test/account-provider-service.test.ts",
+      "packages/provider/test/config-service.test.ts",
+      "packages/provider/test/facades.test.ts",
+      "packages/provider/test/provider-template.test.ts",
+      "packages/provider/test/registry-service.test.ts",
+      "packages/provider/test/resolver.test.ts",
+      "packages/provider/test/todo21-resolution.test.ts",
+      "packages/server/src/entry-http.ts",
+      "packages/server/src/stdioServices.ts",
+      "packages/server/test/stdioDesktopPresentationSurface.test.ts",
+      "packages/services/src/model-provider/providerConfigRuntime.ts",
+      "packages/services/src/model-provider/providerRuntime.ts",
+      "packages/services/src/node.ts",
+      "packages/services/src/zody-agent/zodyAgentService.ts",
+      "packages/services/test/legacyPersonalProviderConfigImporter.test.ts",
+      "packages/services/test/legacyProviderUpgrade.test.ts",
+      "packages/services/test/localServicesRemoteAuthority.test.ts",
+      "packages/services/test/providerBuiltinRecovery.test.ts",
+      "packages/services/test/providerConfigRuntime.test.ts",
+      "packages/services/test/providerRuleFileIntegration.test.ts",
+      "packages/services/test/providerRuntime.test.ts",
+      "packages/services/test/telemetryRegistration.test.ts",
+      "packages/services/test/zodyAgentProcessManager.test.ts",
+      "packages/services/test/zodyAgentService.providerRegistry.test.ts",
+      "packages/shared/src/validation.ts",
+      "packages/shared/src/zody-protocol/index.ts",
+      "packages/shared/test/accountProviderSnapshotProtocol.test.ts",
+      "packages/shared/test/validation.test.ts",
+      "packages/ui/src/logger.ts",
+      "packages/ui/test/logger.test.ts",
+      "packages/ui/test/memoryDiagnostics.test.ts",
+      "packages/zody-server-cli/src/server-core/core.ts",
+      "packages/zody-server-cli/test/runtimeUpdateIntegration.test.ts",
+      "specs/zody-rename-main-bridge.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -16204,13 +16379,36 @@
       "共享接口未经主控交接不得修改"
     ],
     "plannedPaths": [
-      "docs/plans/zody-rename-execution/reports/R44.md"
+      "docs/plans/zody-rename-execution/reports/R44.md",
+      "specs/zody-rename-main-bridge.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "independently-accepted-scoped",
+    "gate": "Corrected code and actual ordinary-Host bridge smoke independently accepted; root/CLI checks pass; stage cleanup complete. Default arm64 frozen-CUA build and Agent conversation not cleared. Runtime evidence is x64 JS target config plus real arm64 Electron.",
     "structureScope": [
       "preload 主桥、Main IPC、desktopPlatform 和 builtin 属性及测试"
-    ]
+    ],
+    "writer": "/root/terra_r22_resume",
+    "baselineCommit": "71acf64f",
+    "narrowHandoffs": {
+      "packages/shared/src/validation.ts": "Rename builtin field and reject its retired key explicitly, including coexistence with new key. Preserve existing handling of unrelated unknown keys; no handshake/auth/generation edits.",
+      "packages/shared/src/zody-protocol/index.ts": "Only basedOnZCodeBuiltinRevision -> basedOnZodyBuiltinRevision, preserving revision string contents and other wire contracts.",
+      "apps/zody-cli/packages/bootstrap/tests/zody-protocol.test.ts": "R44 sole writer; update active protocol.name fixture for R40 plus builtin fields; preserve historical and negative fixtures."
+    },
+    "legacyFixtureRule": "Historical disk inputs, external JSON keys and revision string contents must stay unchanged; update only actual active internal API/return-shape references. Trace whole snapshot serialization before declaring absence of persistence.",
+    "reviewCorrectionHandoffs": {
+      "from": "R20/R30 stopped writers",
+      "paths": [
+        "packages/desktop/test/e2e/help-client-config.test.ts",
+        "packages/desktop/test/e2e/help-menu-about.test.ts",
+        "packages/desktop/test/e2e/browser-tab-residency.test.ts",
+        "packages/desktop/test/e2e/browser-tab-close-idempotent.test.ts",
+        "packages/desktop/test/e2e/settings/browser-extension-settings.test.ts",
+        "packages/desktop/test/e2e/manual-review/pending/windows-file-reveal.test.ts",
+        "packages/desktop/test/e2e/manual-review/pending/windows-tray-export-logs.test.ts",
+        "packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-browser-zoom-coordinates.test.ts"
+      ],
+      "scope": "Only actual main-window bridge field type/access closure; preserve plugin iframe aliases, historical paths, custom events and unrelated behavior."
+    }
   },
   "R45": {
     "title": "artifact URI 硬切与历史会话可加载",

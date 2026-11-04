@@ -33,12 +33,12 @@ afterAll(() => source.dispose());
 function view(modelId: string, level: string, personalModels = ModelConfigRules.empty()) {
   const config = {
     revision: "c",
-    zcodeBuiltinRevision: "b",
+    zodyBuiltinRevision: "b",
     personalRevision: "p",
-    zcodeBuiltinProviders: builtin.providers,
-    zcodeBuiltinProviderTemplates: builtin.templates,
+    zodyBuiltinProviders: builtin.providers,
+    zodyBuiltinProviderTemplates: builtin.templates,
     personalProviders: ProviderConfigMap.empty(),
-    zcodeBuiltinModelRules: builtin.models,
+    zodyBuiltinModelRules: builtin.models,
     personalModels,
   };
   // fork（F4.1a）：官方账号 provider 已从 Built-in 下线；改名规则的回归载体改为
@@ -46,7 +46,7 @@ function view(modelId: string, level: string, personalModels = ModelConfigRules.
   const providerId = "personal-zai";
   const account = {
     revision: "a",
-    basedOnZCodeBuiltinRevision: "b",
+    basedOnZodyBuiltinRevision: "b",
     providers: ProviderConfigMap.empty(),
     states: {},
   };

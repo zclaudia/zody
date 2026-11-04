@@ -127,10 +127,10 @@ export function createRegistryModelConfig(
 }
 
 export interface ProviderConfigResolverInput {
-  readonly zcodeBuiltinProviders: ProviderConfigMap;
-  readonly zcodeBuiltinProviderTemplates?: ProviderTemplateMap;
+  readonly zodyBuiltinProviders: ProviderConfigMap;
+  readonly zodyBuiltinProviderTemplates?: ProviderTemplateMap;
   readonly personalProviders: ProviderConfigMap;
-  readonly zcodeBuiltinModelRules: ModelConfigRules;
+  readonly zodyBuiltinModelRules: ModelConfigRules;
   readonly personalModels: ModelConfigRules;
   readonly accountProviders: ProviderConfigMap;
   readonly accountStates?: AccountProviderStates;
@@ -185,11 +185,11 @@ export class ProviderConfigResolver {
     const accountProviders = new ProviderConfigMap(
       input.accountProviders
         .entries()
-        .filter(([providerId]) => input.zcodeBuiltinProviders.has(providerId))
+        .filter(([providerId]) => input.zodyBuiltinProviders.has(providerId))
         .map(([providerId, config]) => [providerId, config.withoutGroup()] as const),
     );
-    const concreteBuiltinProviders = input.zcodeBuiltinProviders.overlay(accountProviders);
-    const providerTemplates = input.zcodeBuiltinProviderTemplates;
+    const concreteBuiltinProviders = input.zodyBuiltinProviders.overlay(accountProviders);
+    const providerTemplates = input.zodyBuiltinProviderTemplates;
     const effectiveBuiltinProviders = concreteBuiltinProviders.mapConfigs((concrete, _id, rule) => {
       const template = rule.templateId
         ? providerTemplates?.get(rule.templateId)?.config
@@ -208,7 +208,7 @@ export class ProviderConfigResolver {
     });
     const effectiveProviders = effectiveBuiltinProviders.overlay(templatePersonalProviders);
     const effectiveModelRules = ModelConfigRules.composeEffective(
-      input.zcodeBuiltinModelRules,
+      input.zodyBuiltinModelRules,
       input.personalModels,
     );
     const issues: ConfigValidationIssue[] = [];
@@ -262,7 +262,7 @@ export class ProviderConfigResolver {
           apiType: config.api?.type,
           baseUrl: config.api?.baseUrl,
         });
-        const effectiveBuiltinConfig = input.zcodeBuiltinModelRules.resolve({
+        const effectiveBuiltinConfig = input.zodyBuiltinModelRules.resolve({
           providerId,
           templateId,
           modelId,
@@ -363,7 +363,7 @@ function resolveProviderOrder(
     return group === "zai-family" || group === "bigmodel-family";
   });
   const familySet = new Set(familyIds);
-  const builtinIds = input.zcodeBuiltinProviders
+  const builtinIds = input.zodyBuiltinProviders
     .keys()
     .filter((providerId) => !familySet.has(providerId));
   const builtinSet = new Set(builtinIds);

@@ -26,6 +26,7 @@ import {
   WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS,
   gateWebRemoteControlAppPayloadVersion,
   isWebRemoteControlChannelHeartbeatExpired,
+  isWebRemoteControlChannelProtocolVersionSupported,
   negotiateWebRemoteControlAppProtocol,
   parseWebRemoteControlAppPayload,
   parseWebRemoteControlChannelFrameJson,
@@ -669,6 +670,26 @@ export class GatewayTerminalTransport {
       maxFrameBytes: WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
     });
     if (parsed.kind === "discarded") {
+      if (
+        this.awaitingHelloAck &&
+        parsed.reason === "malformed" &&
+        parsed.frameType === "hello_ack"
+      ) {
+        // 旧或无效 ack 必须立即终止，不能把版本冲突当成握手超时。
+        this.sendFrameOn(channel, {
+          type: "close",
+          reason: "incompatible-version",
+          upgrade: "desktop",
+        });
+        this.enterTerminalFailure(
+          createFailure(
+            "incompatible-version",
+            "Desktop channel protocol is incompatible.",
+            "desktop",
+          ),
+        );
+        return;
+      }
       if (parsed.reason === "oversize") {
         this.options.onRawTransportFault?.(GATEWAY_TERMINAL_RAW_FRAME_TOO_LARGE_FAULT);
       }
@@ -715,6 +736,19 @@ export class GatewayTerminalTransport {
     }
     this.awaitingHelloAck = false;
     this.clearHelloAckTimer();
+    if (!isWebRemoteControlChannelProtocolVersionSupported(frame.protocolVersion)) {
+      const upgrade =
+        frame.protocolVersion < WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION ? "desktop" : "mobile";
+      this.sendFrameOn(channel, {
+        type: "close",
+        reason: "incompatible-version",
+        upgrade,
+      });
+      this.enterTerminalFailure(
+        createFailure("incompatible-version", "Desktop channel protocol is incompatible.", upgrade),
+      );
+      return;
+    }
     const negotiation = negotiateWebRemoteControlAppProtocol(
       { min: frame.appProtocol, max: frame.appProtocol },
       WEB_REMOTE_CONTROL_APP_PROTOCOL_RANGE,

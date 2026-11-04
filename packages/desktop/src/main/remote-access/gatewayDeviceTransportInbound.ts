@@ -137,6 +137,17 @@ export function handleGatewayChannelMessage(
   }
   const parsed = parseWebRemoteControlChannelFrameJson(message.data);
   if (parsed.kind === "discarded") {
+    if (
+      !channel.ready &&
+      !channel.closing &&
+      parsed.reason === "malformed" &&
+      parsed.frameType === "hello"
+    ) {
+      // 可识别但不合法的握手不能静默等待超时，否则旧客户端会误判为网络故障。
+      channel.sendFrame({ type: "close", reason: "incompatible-version", upgrade: "mobile" });
+      channel.close("incompatible-version");
+      return;
+    }
     if (parsed.reason === "oversize") {
       host.logger.warn("[remote-access] oversize gateway channel frame dropped", {
         channelId: channel.channelId,

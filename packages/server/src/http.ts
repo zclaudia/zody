@@ -31,6 +31,10 @@ import {
   formatZodError,
   remoteTargetSchema,
   SERVER_REMOTE_PROTOCOL_VERSION,
+  ZODY_RENAME_GENERATION,
+  ZODY_RENAME_GENERATION_HEADER,
+  ZODY_RENAME_WEBSOCKET_PROTOCOL,
+  checkRenameGeneration,
   ZCODE_RPC_HOST_CAPABILITY_HEADER,
   ZODY_VERSION,
   type ServerRemoteInfo,
@@ -39,6 +43,31 @@ import {
 import { connectRemote, createRemoteBackend, type RemoteConnection } from "./remote/index.js";
 import { createHostCapabilityStore } from "./hostCapability.js";
 import { isAllowedHttpRequest, resolveHttpBinding } from "./httpSecurity.js";
+
+// 原始 header 必须恰为单个规范值，不能把重复或宽松数字形式转换成代际 2。
+const generationGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header(ZODY_RENAME_GENERATION_HEADER);
+  if (
+    !checkRenameGeneration(
+      raw === String(ZODY_RENAME_GENERATION) ? ZODY_RENAME_GENERATION : undefined,
+    ).ok
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
+const browserProtocolGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header("sec-websocket-protocol");
+  const protocols = raw?.split(",").map((part) => part.trim()) ?? [];
+  if (
+    !protocols.includes(ZODY_RENAME_WEBSOCKET_PROTOCOL) ||
+    protocols.some((part) => !/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(part)) ||
+    new Set(protocols).size !== protocols.length
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
 
 function wrapWebSocket(ws: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();
@@ -307,7 +336,15 @@ export function createHttpServer(
 ) {
   const binding = resolveHttpBinding(options);
   const app = new Hono();
-  const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+  const { injectWebSocket, upgradeWebSocket, wss } = createNodeWebSocket({ app });
+  // 子协议的默认实现选择首项；浏览器可能先提出其他协议，必须选中代际协议。
+  wss.options.handleProtocols = (protocols, request) => {
+    const path = new URL(request.url ?? "/", "http://localhost").pathname;
+    if (path === "/ws" || path.startsWith("/ws/remote/")) {
+      return protocols.has(ZODY_RENAME_WEBSOCKET_PROTOCOL) ? ZODY_RENAME_WEBSOCKET_PROTOCOL : false;
+    }
+    return protocols.values().next().value ?? false;
+  };
   const hostCapabilities = createHostCapabilityStore();
 
   const authToken = binding.authToken;
@@ -338,7 +375,13 @@ export function createHttpServer(
     });
   }
 
-  app.get("/api/server-info", (c) => c.json(createServerInfo(options)));
+  app.get("/api/server-info", (c) =>
+    c.json({ ...createServerInfo(options), renameGeneration: ZODY_RENAME_GENERATION }),
+  );
+  app.use("/api/rpc-host-capability", generationGate);
+  app.use("/ws/host", generationGate);
+  app.use("/ws", browserProtocolGate);
+  app.use("/ws/remote/*", browserProtocolGate);
   app.post("/api/rpc-host-capability", (c) => c.json(hostCapabilities.issue()));
 
   // 普通 `/ws` 永远是 terminal-client；浏览器/任意客户端设置旧 mode header

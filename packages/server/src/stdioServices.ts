@@ -8,7 +8,7 @@ import {
 
 export interface CreateStdioServicesOptions {
   env?: Record<string, string | undefined>;
-  zcodeBuiltinProviderConfigFilePath: string;
+  zodyBuiltinProviderConfigFilePath: string;
   zodyAgentCommandResolver?: ZodyAgentCommandResolver;
 }
 
@@ -36,7 +36,7 @@ export function createStdioServices(options: CreateStdioServicesOptions) {
   // 远程 Desktop 的呈现能力必须从 stdio 入口收到的 authority mode 进入 Services 推导链。
   // 测试注入 resolver 只用于在 spawn 前观察最终命令，不改变生产默认 resolver。
   const services = createLocalServices({
-    zcodeBuiltinProviderConfigFilePath: options.zcodeBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath: options.zodyBuiltinProviderConfigFilePath,
     // fork（bot channels 移除）：topicResourceRelayChannel（第三方 IM bot 资源回传链）不再注入。
     serviceAuthorityMode: authorityModeParseResult.mode,
     zodyAgentCommandResolver: options.zodyAgentCommandResolver,

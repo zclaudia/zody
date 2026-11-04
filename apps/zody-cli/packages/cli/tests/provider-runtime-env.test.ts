@@ -40,12 +40,12 @@ test("preserves explicitly injected provider runtime paths", async () => {
 test("resolves the development ZCode Built-in Config and shared Personal Config", async () => {
   const root = await temporaryDirectory();
   const entrypoint = join(root, "apps/zody-cli/packages/cli/src/main.ts");
-  const zcodeBuiltinFilePath = join(root, "config/provider/zody-builtin.json");
+  const zodyBuiltinFilePath = join(root, "config/provider/zody-builtin.json");
   await mkdir(dirname(entrypoint), { recursive: true });
-  await mkdir(dirname(zcodeBuiltinFilePath), { recursive: true });
+  await mkdir(dirname(zodyBuiltinFilePath), { recursive: true });
   // 随包配置按入口真实路径（解析软链接后）定位，入口文件必须真实存在。
   await writeFile(entrypoint, "");
-  await writeFile(zcodeBuiltinFilePath, EMPTY_RELEASE);
+  await writeFile(zodyBuiltinFilePath, EMPTY_RELEASE);
 
   const prepared = await prepareCliProviderRuntimeEnv({
     argv: ["tui"],
@@ -86,7 +86,7 @@ test("resolves the development ZCode Built-in Config and shared Personal Config"
   // 临时目录本身可能经过软链接（macOS 的 /tmp、/var），随包配置报告的是真实路径。
   assert.equal(
     prepared.ZODY_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE,
-    await realpath(zcodeBuiltinFilePath),
+    await realpath(zodyBuiltinFilePath),
   );
   await assert.rejects(access(join(dirname(activeFilePath!), "zcode-builtin-refresh.json")));
 });
@@ -112,11 +112,11 @@ test("materializes the SEA config in the fixed environment resource path, separa
     platform: "test-platform",
   });
 
-  const zcodeBuiltinFilePath = prepared[ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV];
-  assert.ok(zcodeBuiltinFilePath);
-  assertActiveConfigPath(zcodeBuiltinFilePath, root);
+  const zodyBuiltinFilePath = prepared[ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV];
+  assert.ok(zodyBuiltinFilePath);
+  assertActiveConfigPath(zodyBuiltinFilePath, root);
   assert.deepEqual(
-    JSON.parse(await readFile(zcodeBuiltinFilePath, "utf8")),
+    JSON.parse(await readFile(zodyBuiltinFilePath, "utf8")),
     JSON.parse(zcodeBuiltinContent),
   );
   assert.equal(reads, 1);
@@ -129,10 +129,10 @@ test("materializes the SEA config in the fixed environment resource path, separa
     "bundled",
     "zody-builtin.json",
   );
-  assert.notEqual(resource, zcodeBuiltinFilePath);
+  assert.notEqual(resource, zodyBuiltinFilePath);
   assert.deepEqual(JSON.parse(await readFile(resource, "utf8")), JSON.parse(zcodeBuiltinContent));
   assert.equal(prepared.ZODY_BUILTIN_PROVIDER_BUNDLED_CONFIG_FILE, resource);
-  await assert.rejects(access(join(dirname(zcodeBuiltinFilePath), "zcode-builtin-refresh.json")));
+  await assert.rejects(access(join(dirname(zodyBuiltinFilePath), "zcode-builtin-refresh.json")));
 });
 
 test("does not resolve provider assets for commands that do not run Core", async () => {

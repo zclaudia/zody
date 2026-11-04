@@ -101,6 +101,7 @@ export function acceptGatewayChannelHello<T extends GatewayDeviceHelloRecord>(
 
   host.sendFrame(record, {
     type: "hello_ack",
+    protocolVersion: WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION,
     appProtocol: negotiation.appProtocol,
     desktopAppVersion: host.desktopAppVersion,
   });

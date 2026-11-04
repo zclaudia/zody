@@ -17,7 +17,7 @@ import {
 } from "../src/index.js";
 
 // 发布验证必须指向最终上传的那份文件，而不是默认悄悄检查仓库源文件。
-const zcodeBuiltinProviderConfigFilePath =
+const zodyBuiltinProviderConfigFilePath =
   process.env.ZODY_BUILTIN_RELEASE_TEST_FILE?.trim() ||
   fileURLToPath(new URL("../../../config/provider/zody-builtin.json", import.meta.url));
 
@@ -33,7 +33,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
     "未知模型在 %s 下拥有完整两档兜底并可进入 Registry",
     async (apiType) => {
       const source = new NodeZodyBuiltinProviderConfigSource({
-        bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+        bundledFilePath: zodyBuiltinProviderConfigFilePath,
         watch: false,
       });
       try {
@@ -49,10 +49,10 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         expect(model.optionSpecs?.reasoningLevel?.values).toEqual(["disabled", "enabled"]);
         expect(model.properties?.inputFormat.supportsImage).toBe(false);
         const result = new ProviderConfigResolver().resolve({
-          zcodeBuiltinProviders: snapshot.providers,
-          zcodeBuiltinProviderTemplates: snapshot.providerTemplates,
+          zodyBuiltinProviders: snapshot.providers,
+          zodyBuiltinProviderTemplates: snapshot.providerTemplates,
           accountProviders: ProviderConfigMap.empty(),
-          zcodeBuiltinModelRules: snapshot.models,
+          zodyBuiltinModelRules: snapshot.models,
           personalModels: ModelConfigRules.empty(),
           personalProviders: new ProviderConfigMap([
             [
@@ -81,13 +81,13 @@ describe("ZCode Built-in Provider Config 完整性", () => {
   );
   it("GLM-5.3-Flash 的媒体输入能力在 BYOK 模板上保持明确", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
     try {
       const snapshot = await source.read();
-      const rawRelease = JSON.parse(await readFile(zcodeBuiltinProviderConfigFilePath, "utf8")) as {
+      const rawRelease = JSON.parse(await readFile(zodyBuiltinProviderConfigFilePath, "utf8")) as {
         revision: number;
         config: { modelConfigRules: Record<string, unknown> };
       };
@@ -170,7 +170,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("按当前官方证据声明各厂商主推模型和关键静态属性", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -311,7 +311,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("MiMo API 与 Token Plan 是独立模板，端点与模型成员互不越界", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -352,7 +352,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("MiMo v2.6 与 v2.5 模型规则分别命中，能力不串用", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -448,7 +448,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("MiMo v2.6 规则命中带厂商/网关前缀的模型 ID 与 [1m] 标记，且不误伤 ultraspeed", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -519,7 +519,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("MiMo 模板升级不静默改写旧 Personal 的名称、Key、URL 与禁用态", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -564,11 +564,11 @@ describe("ZCode Built-in Provider Config 完整性", () => {
         },
       ]);
       const resolution = new ProviderConfigResolver().resolve({
-        zcodeBuiltinProviders: snapshot.providers,
-        zcodeBuiltinProviderTemplates: snapshot.providerTemplates,
+        zodyBuiltinProviders: snapshot.providers,
+        zodyBuiltinProviderTemplates: snapshot.providerTemplates,
         accountProviders: ProviderConfigMap.empty(),
         personalProviders,
-        zcodeBuiltinModelRules: snapshot.models,
+        zodyBuiltinModelRules: snapshot.models,
         personalModels: ModelConfigRules.empty(),
       });
       expect(resolution.issues).toEqual([]);
@@ -712,7 +712,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("聚合供应商按维护清单提供独立模板，不复用上游 Provider 配置", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
     try {
@@ -737,7 +737,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("聚合供应商同型号命中模型规则和 API Map，保留完整 ID 且每家至少启用一个代表型号", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
     try {
@@ -805,7 +805,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("每个 Provider 的默认 enabled 模型形成成员前缀，历史或 alias 型号默认关闭", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -861,7 +861,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("按产品分组声明 Zhipu 系统 Provider 与外部主流 Provider", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -982,7 +982,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("按模型家族连续排列 Rule，且不保留语义等价的重复 matcher", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -1000,7 +1000,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
       // 分组后“模型家族连续”只约束 Model Rule 本组；把 Model/API/Site 三组拼起来会
       // 人为制造重复家族，无法再验证原本想检查的书写顺序。
-      const rawRelease = JSON.parse(await readFile(zcodeBuiltinProviderConfigFilePath, "utf8")) as {
+      const rawRelease = JSON.parse(await readFile(zodyBuiltinProviderConfigFilePath, "utf8")) as {
         config: { modelConfigRules: { modelRules: readonly { modelMatch: string }[] } };
       };
       const modelRules = rawRelease.config.modelConfigRules.modelRules;
@@ -1026,7 +1026,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("Reasoning 公开档位按语义强度从低到高排列", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -1065,7 +1065,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("解析 OpenAI Responses 与 Anthropic Messages 的模型事实和 reasoning 映射", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -1234,7 +1234,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("每个 Built-in 模板与模型成员都完整，启用成员在补齐访问材料后进入正式 Registry", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
 
@@ -1284,11 +1284,11 @@ describe("ZCode Built-in Provider Config 完整性", () => {
       }
 
       const resolution = new ProviderConfigResolver().resolve({
-        zcodeBuiltinProviders: snapshot.providers,
-        zcodeBuiltinProviderTemplates: snapshot.providerTemplates,
+        zodyBuiltinProviders: snapshot.providers,
+        zodyBuiltinProviderTemplates: snapshot.providerTemplates,
         accountProviders: ProviderConfigMap.empty(),
         personalProviders: new ProviderConfigMap(personalProviders),
-        zcodeBuiltinModelRules: snapshot.models,
+        zodyBuiltinModelRules: snapshot.models,
         personalModels: ModelConfigRules.empty(),
       });
 
@@ -1340,7 +1340,7 @@ describe("ZCode Built-in Provider Config 完整性", () => {
 
   it("正式 Built-in JSON 不携带旧模型能力字段", async () => {
     const document = JSON.parse(
-      await readFile(zcodeBuiltinProviderConfigFilePath, "utf8"),
+      await readFile(zodyBuiltinProviderConfigFilePath, "utf8"),
     ) as unknown;
     const keys = collectObjectKeys(document);
 

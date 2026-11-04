@@ -1324,7 +1324,7 @@ export function createZodyAgentService(
           zodyProtocolMethods.providerUpdateAccountConfig,
           {
             revision: snapshot.revision,
-            basedOnZCodeBuiltinRevision: snapshot.basedOnZCodeBuiltinRevision,
+            basedOnZodyBuiltinRevision: snapshot.basedOnZodyBuiltinRevision,
             // Account 是运行时事实信封，不是磁盘 Provider 规则集合；保持原有协议字典。
             providers: Object.fromEntries(
               [...snapshot.providers.entries()].map(([providerId, config]) => [

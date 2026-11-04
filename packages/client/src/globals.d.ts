@@ -61,7 +61,7 @@ import type {
 } from "@zody/shared";
 
 /**
- * window.zcode 类型定义 —— 仅包含需要 main 进程参与的平台操作
+ * window.zody 类型定义 —— 仅包含需要 main 进程参与的平台操作
  *
  * 凭据管理已迁移到 ICredentialService（通过 RPC），不再经过此接口。
  */
@@ -77,7 +77,7 @@ declare global {
       disposeSandbox(sandboxId: string, initId?: number): Promise<void>;
       consumeUserGesture(sandboxId: string): Promise<boolean>;
     };
-    zcode: {
+    zody: {
       connectRemote(
         options: RemoteTarget,
         requestId?: string,

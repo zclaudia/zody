@@ -28,10 +28,10 @@ describe("App Built-in / Account 失败恢复", () => {
     await writeFile(builtin, JSON.stringify(release));
     const download = vi.fn(async () => null);
     const configRuntime = createProviderConfigRuntime({
-      zcodeBuiltinFilePath: builtin,
+      zodyBuiltinFilePath: builtin,
       personalFilePath: join(root, "personal.json"),
       personalPollingIntervalMs: false,
-      zcodeBuiltinRemote: {
+      zodyBuiltinRemote: {
         controlFilePath: join(root, "control.json"),
         resolveEndpointKey: () => "https://control.example",
         fetchRelease: download,
@@ -60,19 +60,19 @@ describe("App Built-in / Account 失败恢复", () => {
       fail = true;
       await writeFile(builtin, JSON.stringify({ ...release, revision: 2 }));
       await vi.waitFor(() => expect(errors).toHaveBeenCalled());
-      expect(runtime.registryService.getSnapshot()!.config.zcodeBuiltinRevision).toBe(
-        old.config.zcodeBuiltinRevision,
+      expect(runtime.registryService.getSnapshot()!.config.zodyBuiltinRevision).toBe(
+        old.config.zodyBuiltinRevision,
       );
       fail = false;
       const beforeRecovery = resolve.mock.calls.length;
       await vi.advanceTimersByTimeAsync(60_000);
       await vi.waitFor(() =>
-        expect(runtime.registryService.getSnapshot()!.config.zcodeBuiltinRevision).toMatch(
+        expect(runtime.registryService.getSnapshot()!.config.zodyBuiltinRevision).toMatch(
           "zcode-builtin:2:",
         ),
       );
       const next = runtime.registryService.getSnapshot()!;
-      expect(next.account.basedOnZCodeBuiltinRevision).toBe(next.config.zcodeBuiltinRevision);
+      expect(next.account.basedOnZodyBuiltinRevision).toBe(next.config.zodyBuiltinRevision);
       expect(resolve.mock.calls.length).toBe(beforeRecovery + 1);
       expect(download).toHaveBeenCalledTimes(1);
     } finally {

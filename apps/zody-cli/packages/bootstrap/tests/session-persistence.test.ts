@@ -2854,7 +2854,10 @@ async function createProtocolProviderEnv(root: string): Promise<Record<string, s
     writeFile(zcodeBuiltinFilePath, emptyBuiltinRelease),
     writeFile(personalFilePath, emptyPersonalConfig),
   ]);
-  return createNodeProviderRuntimePathEnv({ zcodeBuiltinFilePath, personalFilePath });
+  return createNodeProviderRuntimePathEnv({
+    zodyBuiltinFilePath: zcodeBuiltinFilePath,
+    personalFilePath,
+  });
 }
 
 async function readLogEntries(logDir: string): Promise<LogEntry[]> {

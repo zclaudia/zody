@@ -5,7 +5,7 @@ import { createHostCapabilityStore } from "../src/server-core/hostCapability.js"
 import { createCoreHttpServer } from "../src/server-core/http.js";
 
 async function expectWebSocketOpens(url: string): Promise<void> {
-  const socket = new WebSocket(url);
+  const socket = new WebSocket(url, "zody-generation-2");
   await new Promise<void>((resolve, reject) => {
     socket.once("open", () => {
       socket.close();
@@ -19,7 +19,7 @@ async function expectWebSocketOpens(url: string): Promise<void> {
 }
 
 async function openWebSocket(url: string): Promise<WebSocket> {
-  const socket = new WebSocket(url);
+  const socket = new WebSocket(url, "zody-generation-2");
   await new Promise<void>((resolve, reject) => {
     socket.once("open", () => resolve());
     socket.once("unexpected-response", (_request, response) =>
@@ -58,16 +58,18 @@ describe("standalone Server Core ingress", () => {
       },
     });
 
-    const rejected = await fetch(`http://${server.host}:${server.port}/ws/host`);
+    const rejected = await fetch(`http://${server.host}:${server.port}/ws/host`, {
+      headers: { "x-zody-generation": "2" },
+    });
     expect(rejected.status).toBe(401);
 
     const capabilityResponse = await fetch(
       `http://${server.host}:${server.port}/api/rpc-host-capability`,
-      { method: "POST" },
+      { method: "POST", headers: { "x-zody-generation": "2" } },
     );
     const capability = (await capabilityResponse.json()) as { capability: string };
     const socket = new WebSocket(`ws://${server.host}:${server.port}/ws/host`, {
-      headers: { "x-zcode-rpc-host-capability": capability.capability },
+      headers: { "x-zody-generation": "2", "x-zody-rpc-host-capability": capability.capability },
     });
     await new Promise<void>((resolve, reject) => {
       socket.once("open", () => {
@@ -82,9 +84,49 @@ describe("standalone Server Core ingress", () => {
 
     // 一次性 ticket：同一 capability 重放必须被拒绝。
     const replayed = await fetch(`http://${server.host}:${server.port}/ws/host`, {
-      headers: { "x-zcode-rpc-host-capability": capability.capability },
+      headers: { "x-zody-generation": "2", "x-zody-rpc-host-capability": capability.capability },
     });
     expect(replayed.status).toBe(401);
+  });
+
+  it("rejects wrong generations without consuming capability and selects the requested protocol", async () => {
+    const server = await createCoreHttpServer(new ServiceCollection());
+    servers.push(server);
+    const base = `http://${server.host}:${server.port}`;
+    expect((await fetch(`${base}/api/rpc-host-capability`, { method: "POST" })).status).toBe(426);
+    const response = await fetch(`${base}/api/rpc-host-capability`, {
+      method: "POST",
+      headers: { "x-zody-generation": "2" },
+    });
+    const { capability } = (await response.json()) as { capability: string };
+    const old = await fetch(`${base}/ws/host`, {
+      headers: {
+        "x-zody-generation": "1",
+        "x-zody-rpc-host-capability": capability,
+      },
+    });
+    expect(old.status).toBe(426);
+    const socket = new WebSocket(`ws://${server.host}:${server.port}/ws/host`, {
+      headers: {
+        "x-zody-generation": "2",
+        "x-zody-rpc-host-capability": capability,
+      },
+    });
+    await new Promise<void>((resolve, reject) => {
+      socket.once("open", resolve);
+      socket.once("error", reject);
+    });
+    socket.close();
+    const browser = new WebSocket(`ws://${server.host}:${server.port}/ws`, [
+      "other",
+      "zody-generation-2",
+    ]);
+    await new Promise<void>((resolve, reject) => {
+      browser.once("open", resolve);
+      browser.once("error", reject);
+    });
+    expect(browser.protocol).toBe("zody-generation-2");
+    browser.close();
   });
 
   it("publishes the installation-scoped server identity supplied by Supervisor", async () => {
@@ -129,6 +171,7 @@ describe("standalone Server Core ingress", () => {
     servers.push(server);
     const issued = await fetch(`http://${server.host}:${server.port}/api/rpc-host-capability`, {
       method: "POST",
+      headers: { "x-zody-generation": "2" },
     });
     const { capability, expiresAt } = (await issued.json()) as {
       capability: string;
@@ -137,9 +180,24 @@ describe("standalone Server Core ingress", () => {
     expect(expiresAt).toBe(100);
     now = 101;
     const rejected = await fetch(`http://${server.host}:${server.port}/ws/host`, {
-      headers: { "x-zcode-rpc-host-capability": capability },
+      headers: { "x-zody-generation": "2", "x-zody-rpc-host-capability": capability },
     });
     expect(rejected.status).toBe(401);
+  });
+
+  it("rejects an old browser subprotocol before upgrade", async () => {
+    const server = await createCoreHttpServer(new ServiceCollection());
+    servers.push(server);
+    const socket = new WebSocket(`ws://${server.host}:${server.port}/ws`, "old-protocol");
+    const status = await new Promise<number | undefined>((resolve, reject) => {
+      socket.once("unexpected-response", (_request, response) => {
+        response.resume();
+        resolve(response.statusCode);
+      });
+      socket.once("open", () => reject(new Error("unexpected upgrade")));
+      socket.once("error", reject);
+    });
+    expect(status).toBe(426);
   });
 
   it("rejects non-loopback listeners until authenticated ingress is implemented", async () => {

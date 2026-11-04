@@ -10,16 +10,16 @@ export const logger = {
   info(...args: unknown[]) {
     if (isRendererProductionBuild()) return;
     console.log(formatLogPrefix("renderer"), ...args);
-    window.zcode?.log("info", args);
+    window.zody?.log("info", args);
   },
   warn(...args: unknown[]) {
     if (isRendererProductionBuild()) return;
     console.warn(formatLogPrefix("renderer"), ...args);
-    window.zcode?.log("warn", args);
+    window.zody?.log("warn", args);
   },
   error(...args: unknown[]) {
     if (isRendererProductionBuild()) return;
     console.error(formatLogPrefix("renderer"), ...args);
-    window.zcode?.log("error", args);
+    window.zody?.log("error", args);
   },
 };

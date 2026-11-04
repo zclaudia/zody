@@ -247,14 +247,14 @@ describe(`问号菜单应用入口（${expectedFlavor}）`, () => {
     expect(await browser.electron.execute((electron) => electron.app.isPackaged)).toBe(false);
     await browser.execute(() => {
       const target = window as unknown as {
-        zcode: {
+        zody: {
           onUpdateCheckResult(callback: (payload: UpdateCheckResultPayload) => void): () => void;
         };
         __helpUpdateResult?: UpdateCheckResultPayload;
         __helpUpdateDispose?: () => void;
       };
       target.__helpUpdateResult = undefined;
-      target.__helpUpdateDispose = target.zcode.onUpdateCheckResult((payload) => {
+      target.__helpUpdateDispose = target.zody.onUpdateCheckResult((payload) => {
         target.__helpUpdateResult = payload;
       });
     });

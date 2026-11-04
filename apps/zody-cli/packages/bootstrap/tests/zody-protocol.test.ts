@@ -3191,7 +3191,7 @@ describe("ZodyProtocolAgentServer", () => {
         params: { workspace },
       }),
     );
-    expect(created.protocol).toEqual({ name: "ZCode Protocol", version: 1 });
+    expect(created.protocol).toEqual({ name: "Zody Protocol", version: 1 });
     expect(created.session.workspace.workspaceKey).toBe(workspace.workspaceKey);
 
     const read = zodySessionStateSnapshotSchema.parse(
@@ -4787,7 +4787,7 @@ describe("ZodyProtocolAgentServer", () => {
       method: zodyProtocolMethods.providerUpdateAccountConfig,
       params: {
         revision: "account-1",
-        basedOnZCodeBuiltinRevision: "zcode-builtin:1",
+        basedOnZodyBuiltinRevision: "zcode-builtin:1",
         states: {
           "account:zai-individual-coding-plan": {
             availability: "available",
@@ -4812,7 +4812,7 @@ describe("ZodyProtocolAgentServer", () => {
     expect(syncAccountProviderConfig).toHaveBeenCalledTimes(1);
     const snapshot = syncAccountProviderConfig.mock.calls[0]?.[0];
     expect(snapshot?.revision).toBe("account-1");
-    expect(snapshot?.basedOnZCodeBuiltinRevision).toBe("zcode-builtin:1");
+    expect(snapshot?.basedOnZodyBuiltinRevision).toBe("zcode-builtin:1");
     expect(snapshot?.states?.["account:zai-individual-coding-plan"].current).toBe(false);
     // ProviderConfigMap.toJSON 现在是规则数组（外层身份与 config 分层），不再是 map。
     expect(snapshot?.providers.toJSON()).toEqual([

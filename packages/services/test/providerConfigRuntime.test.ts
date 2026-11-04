@@ -55,20 +55,20 @@ describe("ProviderConfigRuntime", () => {
       const configDir = join(root, ".zody", "v2");
       const legacyFilePath = join(configDir, "config.json");
       const personalFilePath = join(configDir, "provider_config.json");
-      const zcodeBuiltinFilePath = join(root, "builtin.json");
+      const zodyBuiltinFilePath = join(root, "builtin.json");
       const secret = "PRIVATE_KEY_MUST_NOT_APPEAR_IN_ERRORS";
       const invalidText =
         stage === "json"
           ? `{"apiKey":"${secret}","provider":`
           : JSON.stringify({ provider: { custom: { kind: secret } } });
       await mkdir(configDir, { recursive: true });
-      await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()));
+      await writeFile(zodyBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()));
       if (stage === "io") await mkdir(legacyFilePath);
       else await writeFile(legacyFilePath, invalidText);
       setDataBaseDir(root);
       const recovery = vi.fn();
       const runtime = createProviderConfigRuntime({
-        zcodeBuiltinFilePath,
+        zodyBuiltinFilePath,
         readLegacyProviders: readLegacyZodyConfigProviders,
         onPersonalConfigRecovery: recovery,
         personalPollingIntervalMs: false,
@@ -123,12 +123,12 @@ describe("ProviderConfigRuntime", () => {
 
   it("旧配置不存在时仍可初始化空 Personal 配置", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-new-install-"));
-    const zcodeBuiltinFilePath = join(root, "builtin.json");
-    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()));
+    const zodyBuiltinFilePath = join(root, "builtin.json");
+    await writeFile(zodyBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()));
     setDataBaseDir(root);
     const recovery = vi.fn();
     const runtime = createProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       readLegacyProviders: readLegacyZodyConfigProviders,
       onPersonalConfigRecovery: recovery,
       personalPollingIntervalMs: false,
@@ -150,9 +150,9 @@ describe("ProviderConfigRuntime", () => {
 
   it("保留含非法 endpoint 的 Personal Provider，并把问题留给 Registry 完整性校验", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const personalFilePath = join(root, "provider_config.json");
-    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
+    await writeFile(zodyBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
     await writeFile(
       personalFilePath,
       JSON.stringify({
@@ -188,7 +188,7 @@ describe("ProviderConfigRuntime", () => {
 
     const recovery = vi.fn();
     const runtime = createProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       personalPollingIntervalMs: false,
       watch: false,
@@ -207,7 +207,7 @@ describe("ProviderConfigRuntime", () => {
 
   it("从旧 config.json 导入同目录 provider_config.json，不改写旧文件且不备份", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const configDir = join(root, ".zody", "v2");
     const legacyFilePath = join(configDir, "config.json");
     const legacyText = JSON.stringify({
@@ -221,10 +221,10 @@ describe("ProviderConfigRuntime", () => {
     });
     await mkdir(configDir, { recursive: true });
     await writeFile(legacyFilePath, legacyText, "utf8");
-    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
+    await writeFile(zodyBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
     setDataBaseDir(root);
     const runtime = createProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       readLegacyProviders: readLegacyZodyConfigProviders,
       watch: false,
     });
@@ -246,7 +246,7 @@ describe("ProviderConfigRuntime", () => {
 
   it("已导入 Personal 配置后重跑不再读取旧配置（幂等）", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const configDir = join(root, ".zody", "v2");
     const legacyFilePath = join(configDir, "config.json");
     const personalFilePath = join(configDir, "provider_config.json");
@@ -261,11 +261,11 @@ describe("ProviderConfigRuntime", () => {
     });
     await mkdir(configDir, { recursive: true });
     await writeFile(legacyFilePath, legacyText, "utf8");
-    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
+    await writeFile(zodyBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
 
     const firstReadLegacyProviders = vi.fn(async () => [legacyProvider()]);
     const first = createProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       readLegacyProviders: firstReadLegacyProviders,
       personalPollingIntervalMs: false,
@@ -282,7 +282,7 @@ describe("ProviderConfigRuntime", () => {
 
     const secondReadLegacyProviders = vi.fn(async () => [legacyProvider()]);
     const second = createProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       readLegacyProviders: secondReadLegacyProviders,
       personalPollingIntervalMs: false,
@@ -308,7 +308,7 @@ describe("ProviderConfigRuntime", () => {
 
   it("Personal 配置已存在时不用旧 config.json 覆盖", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const configDir = join(root, ".zody", "v2");
     const legacyFilePath = join(configDir, "config.json");
     const personalFilePath = join(configDir, "provider_config.json");
@@ -348,11 +348,11 @@ describe("ProviderConfigRuntime", () => {
       }),
       "utf8",
     );
-    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
+    await writeFile(zodyBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
 
     const readLegacyProviders = vi.fn(async () => [legacyProvider()]);
     const runtime = createProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       readLegacyProviders,
       personalPollingIntervalMs: false,
@@ -376,12 +376,12 @@ describe("ProviderConfigRuntime", () => {
 
   it("用注入的 ZCode Built-in Source 初始化，并在 Personal 文件缺失时单向导入旧配置", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-runtime-"));
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const personalFilePath = join(root, "personal.json");
-    await writeFile(zcodeBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
+    await writeFile(zodyBuiltinFilePath, JSON.stringify(emptyBuiltinRelease()), "utf8");
     const readLegacyProviders = vi.fn(async () => [legacyProvider()]);
     const runtime = createProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       readLegacyProviders,
       watch: false,
@@ -451,10 +451,10 @@ describe("ProviderConfigRuntime", () => {
       },
     }));
     const runtime = createProviderConfigRuntime({
-      zcodeBuiltinFilePath: bundledFilePath,
-      zcodeBuiltinActiveFilePath: activeFilePath,
+      zodyBuiltinFilePath: bundledFilePath,
+      zodyBuiltinActiveFilePath: activeFilePath,
       personalFilePath: join(root, "personal.json"),
-      zcodeBuiltinRemote: {
+      zodyBuiltinRemote: {
         controlFilePath: join(root, "cache", "refresh-control.json"),
         resolveEndpointKey: () => "https://example.com",
         fetchRelease,

@@ -58,7 +58,8 @@ class FakeConnectBackend implements IRemoteBackend {
       queueMicrotask(() => {
         stdout.write(
           `${JSON.stringify({
-            type: "zcode-hello",
+            type: "zody-hello",
+            generation: 2,
             version: ZODY_VERSION,
             platform: "linux",
             arch: "arm64",

@@ -59,13 +59,13 @@ export async function startProcessProviderRegistryRuntime(
     ...paths,
     ...(bundledFile
       ? {
-          zcodeBuiltinFilePath: bundledFile,
-          zcodeBuiltinActiveFilePath: paths.zcodeBuiltinFilePath,
+          zodyBuiltinFilePath: bundledFile,
+          zodyBuiltinActiveFilePath: paths.zodyBuiltinFilePath,
           ...(remoteRefreshEnabled
             ? {
-                zcodeBuiltinRemote: {
+                zodyBuiltinRemote: {
                   controlFilePath: join(
-                    dirname(paths.zcodeBuiltinFilePath),
+                    dirname(paths.zodyBuiltinFilePath),
                     "zcode-builtin-refresh.json",
                   ),
                   resolveEndpointKey: () => remoteRefreshEndpointOrigin,
@@ -97,7 +97,7 @@ export async function startProcessProviderRegistryRuntime(
       : {}),
   });
   // fork（F4.9）：Standalone Coding Plan 账号服务删除后，Built-in 变更不再有
-  // AccountService 自动重算 basedOnZCodeBuiltinRevision；Mutable Account Overlay 必须
+  // AccountService 自动重算 basedOnZodyBuiltinRevision；Mutable Account Overlay 必须
   // 跟随 Built-in 重定基，否则 Registry 会判定账号事实过期而持续服务旧快照。
   // Provider/states 原样保留，只更新 baseline revision；账号链收口后此处随 F4.7 再简化。
   const disposeAccountRebase = runtime.configService.onDidChange(() => {
@@ -107,10 +107,10 @@ export async function startProcessProviderRegistryRuntime(
           runtime.configService.read(),
           accountSource.read(),
         ]);
-        if (account.basedOnZCodeBuiltinRevision === config.zcodeBuiltinRevision) return;
+        if (account.basedOnZodyBuiltinRevision === config.zodyBuiltinRevision) return;
         accountSource.replace(
           createAccountProviderConfigSnapshot(
-            config.zcodeBuiltinRevision,
+            config.zodyBuiltinRevision,
             account.providers,
             account.states ?? {},
           ),
@@ -176,13 +176,13 @@ const LEGACY_OFFPEAK_IDLE_PLAN_PROVIDER_IDS: ReadonlySet<string> = new Set([
 /** 把协议信封解析为进程 Registry 使用的第三层 Account Config Overlay。 */
 export function parseProcessAccountProviderConfigSnapshot(input: {
   readonly revision: string;
-  readonly basedOnZCodeBuiltinRevision: string;
+  readonly basedOnZodyBuiltinRevision: string;
   readonly providers: unknown;
   readonly states?: AccountProviderStates;
 }): AccountProviderConfigSnapshot {
   const revision = input.revision.trim();
   if (!revision) throw new Error("Account Config revision 不能为空");
-  const basedOnZodyBuiltinRevision = input.basedOnZCodeBuiltinRevision.trim();
+  const basedOnZodyBuiltinRevision = input.basedOnZodyBuiltinRevision.trim();
   if (!basedOnZodyBuiltinRevision) {
     throw new Error("Account Config Built-in revision 不能为空");
   }
@@ -202,7 +202,7 @@ export function parseProcessAccountProviderConfigSnapshot(input: {
   }
   return Object.freeze({
     revision,
-    basedOnZCodeBuiltinRevision: basedOnZodyBuiltinRevision,
+    basedOnZodyBuiltinRevision: basedOnZodyBuiltinRevision,
     providers,
     // 与 Overlay 属于同一快照；不能只更新 revision 却丢掉当前连接事实。
     ...(input.states ? { states: input.states } : {}),

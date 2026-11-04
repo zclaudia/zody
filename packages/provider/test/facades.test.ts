@@ -61,9 +61,9 @@ function completeModelConfig(): ModelConfig {
 async function createService(): Promise<ProviderRegistryService> {
   const config: ProviderConfigSnapshot = {
     revision: "config-1",
-    zcodeBuiltinRevision: "builtin-1",
+    zodyBuiltinRevision: "builtin-1",
     personalRevision: "personal-1",
-    zcodeBuiltinProviders: new ProviderConfigMap([
+    zodyBuiltinProviders: new ProviderConfigMap([
       [
         "account",
         createAccountProviderConfig({
@@ -97,7 +97,7 @@ async function createService(): Promise<ProviderRegistryService> {
         }),
       },
     ]),
-    zcodeBuiltinModelRules: new ModelConfigRules([
+    zodyBuiltinModelRules: new ModelConfigRules([
       { type: "model", modelMatch: ".*", config: completeModelConfig() },
     ]),
     personalModels: new ModelConfigRules([
@@ -123,7 +123,7 @@ async function createService(): Promise<ProviderRegistryService> {
   const account: AccountProviderConfigSnapshot = {
     revision: "account-1",
     states: { account: { availability: "available", entitled: true, current: true } },
-    basedOnZCodeBuiltinRevision: "builtin-1",
+    basedOnZodyBuiltinRevision: "builtin-1",
     providers: new ProviderConfigMap([
       ["account", createAccountProviderConfig({ models: ["m1"], entitled: true })],
     ]),

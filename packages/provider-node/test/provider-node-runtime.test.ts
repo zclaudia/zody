@@ -52,7 +52,7 @@ vi.mock("node:fs", async (importOriginal) => {
 });
 
 const temporaryDirectories: string[] = [];
-const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
+const zodyBuiltinProviderConfigFilePath = fileURLToPath(
   new URL("../../../config/provider/zody-builtin.json", import.meta.url),
 );
 
@@ -70,7 +70,7 @@ afterEach(async () => {
 describe("@zody/provider-node", () => {
   it("从 Built-in Model Config Rules 解析 ox-alpha 同策略别名和 API-specific reasoning", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
     const snapshot = await source.read();
@@ -136,7 +136,7 @@ describe("@zody/provider-node", () => {
 
   it("从 Built-in Config 解析模型能力、Access 协议和 Tool Schema 兼容事实", async () => {
     const source = new NodeZodyBuiltinProviderConfigSource({
-      bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+      bundledFilePath: zodyBuiltinProviderConfigFilePath,
       watch: false,
     });
     const snapshot = await source.read();
@@ -268,12 +268,12 @@ describe("@zody/provider-node", () => {
         [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: " /personal.json ",
       }),
     ).toEqual({
-      zcodeBuiltinFilePath: "/zcodeBuiltin.json",
+      zodyBuiltinFilePath: "/zcodeBuiltin.json",
       personalFilePath: "/personal.json",
     });
     expect(
       createNodeProviderRuntimePathEnv({
-        zcodeBuiltinFilePath: "/zcodeBuiltin.json",
+        zodyBuiltinFilePath: "/zcodeBuiltin.json",
         personalFilePath: "/personal.json",
       }),
     ).toEqual({
@@ -486,9 +486,9 @@ describe("@zody/provider-node", () => {
 
   it("Node Config Runtime 在新目标缺失时调用外部 Legacy Importer 并不产生备份", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const personalFilePath = join(root, "provider_config.json");
-    await writeZCodeBuiltin(zcodeBuiltinFilePath, "zcodeBuiltin-model");
+    await writeZCodeBuiltin(zodyBuiltinFilePath, "zcodeBuiltin-model");
     const importLegacy = vi.fn(async () => {
       return Object.freeze({
         providers: new ProviderConfigMap([["legacy", personalProviderConfig(false)]]),
@@ -496,7 +496,7 @@ describe("@zody/provider-node", () => {
       });
     });
     const runtime = new NodeProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       importLegacy,
       watch: false,
@@ -522,7 +522,7 @@ describe("@zody/provider-node", () => {
       throw new Error("已有 Personal Config 时不应再次导入旧 Provider Store");
     });
     const restartedRuntime = new NodeProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       importLegacy: repeatedImport,
       watch: false,
@@ -569,15 +569,15 @@ describe("@zody/provider-node", () => {
 
   it("Endpoint-scoped Config Runtime 向 Agent 暴露当前 Endpoint 的 Active 路径", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const environmentConfigRoot = join(root, "environment");
     const personalFilePath = join(root, "config.json");
     const endpointOrigin = "https://api.example.com";
-    await writeZCodeBuiltin(zcodeBuiltinFilePath, "zcodeBuiltin-model");
+    await writeZCodeBuiltin(zodyBuiltinFilePath, "zcodeBuiltin-model");
     const runtime = new NodeProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
-      zcodeBuiltinEnvironment: {
+      zodyBuiltinEnvironment: {
         environmentConfigRoot,
         platform: "darwin-aarch64",
         appVersion: "3.9.2",
@@ -595,7 +595,7 @@ describe("@zody/provider-node", () => {
         environmentConfigRoot,
         platform: "darwin-aarch64",
         appVersion: "3.9.2",
-        zcodeEndpointOrigin: endpointOrigin,
+        zodyEndpointOrigin: endpointOrigin,
       }).activeFilePath,
     );
     // start 不等待后台下载；释放临时目录前等待首轮控制文件 lease 收尾，不能和 rm 竞态。
@@ -605,14 +605,14 @@ describe("@zody/provider-node", () => {
 
   it("正式 Personal Config 损坏时保留原文件且不误调 Legacy Importer", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const personalFilePath = join(root, "provider_config.json");
     const invalidText = JSON.stringify({ provider: { unsupported: {} } }, null, 2);
-    await writeZCodeBuiltin(zcodeBuiltinFilePath, "zcodeBuiltin-model");
+    await writeZCodeBuiltin(zodyBuiltinFilePath, "zcodeBuiltin-model");
     await writeFile(personalFilePath, invalidText, "utf8");
     const importLegacy = vi.fn(async () => emptyUpdate());
     const runtime = new NodeProviderConfigRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       importLegacy,
       watch: false,
@@ -629,9 +629,9 @@ describe("@zody/provider-node", () => {
 
   it("Node Registry Runtime 在进程级聚合 Config，并只发布完整 API Provider", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zcodeBuiltin.json");
+    const zodyBuiltinFilePath = join(root, "zcodeBuiltin.json");
     const personalFilePath = join(root, "personal.json");
-    await writeCompleteZCodeBuiltin(zcodeBuiltinFilePath);
+    await writeCompleteZCodeBuiltin(zodyBuiltinFilePath);
     await writeFile(
       personalFilePath,
       JSON.stringify(
@@ -652,7 +652,7 @@ describe("@zody/provider-node", () => {
       "utf8",
     );
     const runtime = new NodeProviderRegistryRuntime({
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       personalFilePath,
       watch: false,
     });

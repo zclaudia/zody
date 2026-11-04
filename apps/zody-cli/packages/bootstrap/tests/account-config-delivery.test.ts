@@ -67,17 +67,17 @@ describe("托管 Worker 账号交付", () => {
     vi.spyOn(started.runtime.configService, "read").mockResolvedValue({
       ...config,
       revision: "config-B",
-      zcodeBuiltinRevision: "builtin-B",
+      zodyBuiltinRevision: "builtin-B",
     });
     await registry.refresh("配套配置到达");
     expect(registry.getSnapshot()?.account.revision).toBe(next.revision);
-    expect(registry.getSnapshot()?.config.zcodeBuiltinRevision).toBe("builtin-B");
+    expect(registry.getSnapshot()?.config.zodyBuiltinRevision).toBe("builtin-B");
   });
 
   it("刷新失败后同一份快照重交仍刷新，不能因 Source 已收过而跳过", async () => {
     const started = await startRuntime();
     const next = createAccountProviderConfigSnapshot(
-      started.snapshot.config.zcodeBuiltinRevision,
+      started.snapshot.config.zodyBuiltinRevision,
       ProviderConfigMap.empty(),
       {},
     );
@@ -94,7 +94,7 @@ describe("托管 Worker 账号交付", () => {
     expect(() =>
       parseProcessAccountProviderConfigSnapshot({
         revision: "incomplete",
-        basedOnZCodeBuiltinRevision: "builtin-A",
+        basedOnZodyBuiltinRevision: "builtin-A",
         providers: {
           "account:bigmodel-individual-coding-plan": {
             access: { type: "zhipu-account", entitled: true },
@@ -112,7 +112,7 @@ describe("托管 Worker 账号交付", () => {
     expect(() =>
       parseProcessAccountProviderConfigSnapshot({
         revision: "allowed",
-        basedOnZCodeBuiltinRevision: "builtin-A",
+        basedOnZodyBuiltinRevision: "builtin-A",
         states: {},
         providers: { [providerId]: { access: { type: "zhipu-account", entitled } } },
       }),

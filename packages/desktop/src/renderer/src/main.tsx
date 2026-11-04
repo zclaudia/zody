@@ -316,7 +316,7 @@ function initializeBusinessRoot(port: MessagePort): void {
 
   syncAppTelemetryContext({
     bridge: {
-      syncTelemetryContext: (context) => window.zcode.syncTelemetryContext(context),
+      syncTelemetryContext: (context) => window.zody.syncTelemetryContext(context),
     },
     createRendererContext: collectTelemetryRendererContext,
   });

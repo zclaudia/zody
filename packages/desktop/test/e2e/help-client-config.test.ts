@@ -16,18 +16,18 @@ type DesktopBridge = {
 
 async function command(command: string) {
   await browser.execute(async (value) => {
-    await (window as unknown as { zcode: DesktopBridge }).zcode.executeDesktopCommand(value);
+    await (window as unknown as { zody: DesktopBridge }).zody.executeDesktopCommand(value);
   }, command);
 }
 async function available(locale: "zh-CN" | "en-US") {
   return browser.execute(
-    async (value) => (window as unknown as { zcode: DesktopBridge }).zcode.canOpenCommunity(value),
+    async (value) => (window as unknown as { zody: DesktopBridge }).zody.canOpenCommunity(value),
     locale,
   );
 }
 async function english() {
   await browser.execute(async () => {
-    await (window as unknown as { zcode: DesktopBridge }).zcode.setApplicationLocale("en-US");
+    await (window as unknown as { zody: DesktopBridge }).zody.setApplicationLocale("en-US");
   });
 }
 
@@ -73,7 +73,7 @@ describe("帮助配置 client/configs", () => {
     else await writeFile(localPath, originalLocal, "utf8");
     await seedSettings(originalSettings);
     await browser.execute(async (locale) => {
-      await (window as unknown as { zcode: DesktopBridge }).zcode.setApplicationLocale(locale);
+      await (window as unknown as { zody: DesktopBridge }).zody.setApplicationLocale(locale);
     }, originalSettings.locale ?? "en-US");
   });
 

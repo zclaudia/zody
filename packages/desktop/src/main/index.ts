@@ -1899,7 +1899,7 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         label,
         {
           ...initMessage,
-          zcodeBuiltinProviderConfigFilePath: resolveZodyBuiltinProviderConfigFilePath(),
+          zodyBuiltinProviderConfigFilePath: resolveZodyBuiltinProviderConfigFilePath(),
         },
         {
           hostProcessLocalEnv,

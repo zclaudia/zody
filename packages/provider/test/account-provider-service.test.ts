@@ -47,9 +47,9 @@ function configSnapshot(
 ): ProviderConfigSnapshot {
   return {
     revision,
-    zcodeBuiltinRevision: revision,
+    zodyBuiltinRevision: revision,
     personalRevision: "personal-1",
-    zcodeBuiltinProviders: new ProviderConfigMap([
+    zodyBuiltinProviders: new ProviderConfigMap([
       [
         "account-plan",
         createAccountProviderConfig({
@@ -69,7 +69,7 @@ function configSnapshot(
       ],
     ]),
     personalProviders: ProviderConfigMap.empty(),
-    zcodeBuiltinModelRules: ModelConfigRules.empty(),
+    zodyBuiltinModelRules: ModelConfigRules.empty(),
     personalModels: ModelConfigRules.empty(),
   };
 }
@@ -83,7 +83,7 @@ describe("AccountProviderService", () => {
     await service.read();
     const published: string[] = [];
     service.onDidChange(() => {
-      void service.read().then((snapshot) => published.push(snapshot.basedOnZCodeBuiltinRevision));
+      void service.read().then((snapshot) => published.push(snapshot.basedOnZodyBuiltinRevision));
     });
     resolve.mockImplementationOnce(async () => {
       await new Promise<void>((done) => {
@@ -98,7 +98,7 @@ describe("AccountProviderService", () => {
     configSource.emit("builtin-update");
     release();
     await pending;
-    expect((await service.read()).basedOnZCodeBuiltinRevision).toBe("config-3");
+    expect((await service.read()).basedOnZodyBuiltinRevision).toBe("config-3");
     expect(published).toEqual(["config-3"]);
     service.dispose();
   });
@@ -134,7 +134,7 @@ describe("AccountProviderService", () => {
         access: { type: "zhipu-account", entitled: true },
       },
     });
-    expect(snapshot.basedOnZCodeBuiltinRevision).toBe("config-1");
+    expect(snapshot.basedOnZodyBuiltinRevision).toBe("config-1");
     service.dispose();
   });
 
@@ -215,7 +215,7 @@ describe("AccountProviderService", () => {
       });
     });
     expect(changed).toHaveBeenCalledWith("config:personal-saved");
-    expect((await service.read()).basedOnZCodeBuiltinRevision).toBe("config-2");
+    expect((await service.read()).basedOnZodyBuiltinRevision).toBe("config-2");
     service.dispose();
   });
 
@@ -243,7 +243,7 @@ describe("AccountProviderService", () => {
     configSource.emit("remote-updated");
 
     await vi.waitFor(async () =>
-      expect((await service.read()).basedOnZCodeBuiltinRevision).toBe("builtin-2"),
+      expect((await service.read()).basedOnZodyBuiltinRevision).toBe("builtin-2"),
     );
     expect((await service.read()).revision).not.toBe(initial.revision);
     expect(changed).toHaveBeenCalledOnce();
@@ -335,7 +335,7 @@ describe("AccountProviderService", () => {
     const offPeakProviderId = "account:zai-offpeak-idle-plan";
     const configSource = new MutableConfigSource({
       ...initial,
-      zcodeBuiltinProviders: initial.zcodeBuiltinProviders.set(
+      zodyBuiltinProviders: initial.zodyBuiltinProviders.set(
         offPeakProviderId,
         new ProviderConfig({
           group: "zai-family",
@@ -356,7 +356,7 @@ describe("AccountProviderService", () => {
     service.onDidRefreshError(refreshError);
 
     await expect(service.read()).resolves.toMatchObject({
-      basedOnZCodeBuiltinRevision: "config-1",
+      basedOnZodyBuiltinRevision: "config-1",
       providers: expect.any(ProviderConfigMap),
     });
     // fork（F4.11）：fail-closed Overlay 不再扫描 Built-in 里的 zhipu-account Provider（已无
@@ -376,7 +376,7 @@ describe("AccountProviderService", () => {
     const offPeakProviderId = "account:zai-offpeak-idle-plan";
     const configSource = new MutableConfigSource({
       ...initial,
-      zcodeBuiltinProviders: initial.zcodeBuiltinProviders.set(
+      zodyBuiltinProviders: initial.zodyBuiltinProviders.set(
         offPeakProviderId,
         new ProviderConfig({
           group: "zai-family",

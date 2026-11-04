@@ -81,7 +81,7 @@ describe("stdio Desktop presentation surface", () => {
       "app-server",
       "--stdio",
     ]);
-    const zcodeBuiltinProviderConfigFilePath = join(home, "zody-builtin.json");
+    const zodyBuiltinProviderConfigFilePath = join(home, "zody-builtin.json");
     const personalConfigFilePath = join(home, ".zody", "v2", "provider_config.json");
     await mkdir(join(home, ".zody", "v2"), { recursive: true });
     await writeFile(
@@ -110,7 +110,7 @@ describe("stdio Desktop presentation surface", () => {
       "utf8",
     );
     await writeFile(
-      zcodeBuiltinProviderConfigFilePath,
+      zodyBuiltinProviderConfigFilePath,
       JSON.stringify({
         schemaVersion: 1,
         revision: 1,
@@ -189,7 +189,7 @@ describe("stdio Desktop presentation surface", () => {
       env: {
         [SERVICE_AUTHORITY_MODE_ENV]: "desktop-attached-remote",
       },
-      zcodeBuiltinProviderConfigFilePath,
+      zodyBuiltinProviderConfigFilePath,
       zodyAgentCommandResolver: commandResolver,
     });
 

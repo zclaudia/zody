@@ -90,7 +90,7 @@ export interface HostInitMessage {
   }>;
   agentSpawnFallbackCwd?: string;
   /** Main 解析后的 ZCode Built-in Provider Config 路径；Host/Services 不感知 Electron 安装布局。 */
-  zcodeBuiltinProviderConfigFilePath: string;
+  zodyBuiltinProviderConfigFilePath: string;
   /** Main 提前异步采集并过滤的本机 runtime 环境；只允许传给 InitLocal。 */
   runtimeProcessEnvPatch?: Record<string, string>;
 }

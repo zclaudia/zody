@@ -212,18 +212,18 @@ async function prepareArmsCapture(): Promise<FinalArmsCaptureMode> {
     async (targetArmsEvents) => {
       type DebugWindow = Window & {
         __zcodeArmsCustomEventsE2E?: Array<ArmsCustomEventPayload & { recordedAt?: number }>;
-        __zcodeFinalArmsCustomEventsE2E?: {
+        __zodyFinalArmsCustomEventsE2E?: {
           clear(): Promise<void>;
           configure(request: { suppressedEventNames: string[] }): Promise<void>;
         };
-        zcode?: {
+        zody?: {
           reportArmsCustomEvent?: (payload: ArmsCustomEventPayload) => Promise<unknown>;
         };
       };
       const host = window as DebugWindow;
       host.__zcodeArmsCustomEventsE2E = [];
 
-      const finalBridge = host.__zcodeFinalArmsCustomEventsE2E;
+      const finalBridge = host.__zodyFinalArmsCustomEventsE2E;
       if (finalBridge) {
         await finalBridge.clear();
         await finalBridge.configure({ suppressedEventNames: [...targetArmsEvents] });
@@ -360,11 +360,11 @@ async function readTargetFinalArms(mode: FinalArmsCaptureMode): Promise<JsonReco
     async (targetArmsEvents) => {
       const bridge = (
         window as Window & {
-          __zcodeFinalArmsCustomEventsE2E?: {
+          __zodyFinalArmsCustomEventsE2E?: {
             read(): Promise<Array<{ payload: JsonRecord }>>;
           };
         }
-      ).__zcodeFinalArmsCustomEventsE2E;
+      ).__zodyFinalArmsCustomEventsE2E;
       if (!bridge) return [];
       const entries = await bridge.read();
       return entries

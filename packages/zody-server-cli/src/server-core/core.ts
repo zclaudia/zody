@@ -40,7 +40,7 @@ export async function runServerCore(generation: number): Promise<void> {
     );
   }
   const services = createLocalServices({
-    zcodeBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
     serviceAuthorityMode: "standalone-server",
   });
   const taskActivityTracker = createTaskActivityTracker(services.getOptional(IZodyAgentService));

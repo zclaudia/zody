@@ -219,6 +219,7 @@ describe("GatewayDeviceTransport", () => {
 
     expect(channel.frames()).toContainEqual({
       type: "hello_ack",
+      protocolVersion: 2,
       appProtocol: WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION,
       desktopAppVersion: "9.9.9",
     });
@@ -231,9 +232,29 @@ describe("GatewayDeviceTransport", () => {
     const { channel } = attachClient(harness, { appProtocol: { min: 1, max: 3 } });
 
     expect(channel.frames()).toContainEqual(
-      expect.objectContaining({ type: "hello_ack", appProtocol: 3 }),
+      expect.objectContaining({ type: "hello_ack", protocolVersion: 2, appProtocol: 3 }),
     );
   });
+
+  it.each([undefined, "2", 1])(
+    "rejects invalid or old hello version %s before readiness",
+    (version) => {
+      const harness = createHarness();
+      const channel = new FakeChannel("bad-generation");
+      harness.transport.handleChannel(channel, {
+        channelId: "bad-generation",
+        kind: "zcode-remote",
+      });
+      channel.deliver({ ...hello(), protocolVersion: version });
+      expect(channel.frames()).toContainEqual({
+        type: "close",
+        reason: "incompatible-version",
+        upgrade: "mobile",
+      });
+      expect(harness.sendReady).not.toHaveBeenCalled();
+      expect(channel.isOpen).toBe(false);
+    },
+  );
 
   it("rejects a protocolVersion mismatch with close{incompatible-version}", () => {
     const harness = createHarness();

@@ -12,19 +12,19 @@ export interface ProviderSource<TSnapshot> {
 
 export interface ProviderConfigSnapshot {
   readonly revision: string;
-  readonly zcodeBuiltinRevision: string;
+  readonly zodyBuiltinRevision: string;
   readonly personalRevision: string;
-  readonly zcodeBuiltinProviders: ProviderConfigMap;
-  readonly zcodeBuiltinProviderTemplates: ProviderTemplateMap;
+  readonly zodyBuiltinProviders: ProviderConfigMap;
+  readonly zodyBuiltinProviderTemplates: ProviderTemplateMap;
   readonly personalProviders: ProviderConfigMap;
-  readonly zcodeBuiltinModelRules: ModelConfigRules;
+  readonly zodyBuiltinModelRules: ModelConfigRules;
   readonly personalModels: ModelConfigRules;
   readonly personalProviderOrder?: readonly string[];
 }
 
 export interface AccountProviderConfigSnapshot {
   readonly revision: string;
-  readonly basedOnZCodeBuiltinRevision: string;
+  readonly basedOnZodyBuiltinRevision: string;
   readonly providers: ProviderConfigMap;
   readonly states?: AccountProviderStates;
 }
@@ -36,19 +36,19 @@ export function createFailClosedAccountProviderConfigSnapshot(
   // fork（F4.11）：Built-in 配置已无 zhipu-account Provider（F4.1a），账号 Overlay 恒为空；
   // revision 仍与 Built-in revision 对齐，保留 Registry 的“账号事实未到达”发布门禁。
   return createAccountProviderConfigSnapshot(
-    config.zcodeBuiltinRevision,
+    config.zodyBuiltinRevision,
     ProviderConfigMap.empty(),
   );
 }
 
 export function createAccountProviderConfigSnapshot(
-  basedOnZCodeBuiltinRevision: string,
+  basedOnZodyBuiltinRevision: string,
   providers: ProviderConfigMap,
   states?: AccountProviderStates,
 ): AccountProviderConfigSnapshot {
   return Object.freeze({
-    revision: `account:${JSON.stringify([basedOnZCodeBuiltinRevision, providers.toJSON(), states])}`,
-    basedOnZCodeBuiltinRevision,
+    revision: `account:${JSON.stringify([basedOnZodyBuiltinRevision, providers.toJSON(), states])}`,
+    basedOnZodyBuiltinRevision,
     providers,
     ...(states ? { states } : {}),
   });
@@ -56,7 +56,7 @@ export function createAccountProviderConfigSnapshot(
 
 const EMPTY_ACCOUNT_PROVIDER_CONFIG_SNAPSHOT: AccountProviderConfigSnapshot = Object.freeze({
   revision: "empty-account-config-v1",
-  basedOnZCodeBuiltinRevision: "uninitialized",
+  basedOnZodyBuiltinRevision: "uninitialized",
   providers: ProviderConfigMap.empty(),
 });
 
@@ -92,7 +92,7 @@ function freezeAccountProviderConfigSnapshot(
 ): AccountProviderConfigSnapshot {
   return Object.freeze({
     revision: snapshot.revision,
-    basedOnZCodeBuiltinRevision: snapshot.basedOnZCodeBuiltinRevision,
+    basedOnZodyBuiltinRevision: snapshot.basedOnZodyBuiltinRevision,
     providers: snapshot.providers,
     ...(snapshot.states ? { states: snapshot.states } : {}),
   });

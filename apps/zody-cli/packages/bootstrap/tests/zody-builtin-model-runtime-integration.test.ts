@@ -17,11 +17,11 @@ import {
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ApiProviderModelRuntime } from "../src/app/provider-registry-model-runtime.js";
 
-const zcodeBuiltinProviderConfigFilePath = fileURLToPath(
+const zodyBuiltinProviderConfigFilePath = fileURLToPath(
   new URL("../../../../../config/provider/zody-builtin.json", import.meta.url),
 );
 const source = new NodeZodyBuiltinProviderConfigSource({
-  bundledFilePath: zcodeBuiltinProviderConfigFilePath,
+  bundledFilePath: zodyBuiltinProviderConfigFilePath,
   watch: false,
 });
 let zcodeBuiltin: ZCodeBuiltinProviderConfigSnapshot;
@@ -110,13 +110,13 @@ function resolveOneBuiltinProvider(
     throw new Error(`测试引用的 Built-in Provider 或 Personal 实例不存在: ${providerId}`);
   }
   const resolution = new ProviderConfigResolver().resolve({
-    zcodeBuiltinProviders: provider
+    zodyBuiltinProviders: provider
       ? new ProviderConfigMap([[providerId, provider]])
       : ProviderConfigMap.empty(),
-    zcodeBuiltinProviderTemplates: zcodeBuiltin.providerTemplates,
+    zodyBuiltinProviderTemplates: zcodeBuiltin.providerTemplates,
     accountProviders: overlays.accountProviders ?? ProviderConfigMap.empty(),
     personalProviders: overlays.personalProviders ?? ProviderConfigMap.empty(),
-    zcodeBuiltinModelRules: zcodeBuiltin.models,
+    zodyBuiltinModelRules: zcodeBuiltin.models,
     personalModels: overlays.models ?? ModelConfigRules.empty(),
   });
   expect(resolution.issues).toEqual([]);

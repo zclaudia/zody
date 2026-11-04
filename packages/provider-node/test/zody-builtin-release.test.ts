@@ -126,19 +126,19 @@ describe("ZCode Built-in Release", () => {
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
-      zcodeEndpointOrigin: "https://EXAMPLE.com/",
+      zodyEndpointOrigin: "https://EXAMPLE.com/",
     });
     const equivalent = resolveZodyBuiltinCachePaths({
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
-      zcodeEndpointOrigin: "https://example.com",
+      zodyEndpointOrigin: "https://example.com",
     });
     const second = resolveZodyBuiltinCachePaths({
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
-      zcodeEndpointOrigin: "https://staging.example.com",
+      zodyEndpointOrigin: "https://staging.example.com",
     });
     expect(first).toEqual(equivalent);
     // 路径断言保留全部隔离层级，不能用 POSIX 分隔符让 Windows 正确实现误报。
@@ -156,7 +156,7 @@ describe("ZCode Built-in Release", () => {
         environmentConfigRoot: "/environment",
         platform: "../other",
         appVersion: "3.0.0",
-        zcodeEndpointOrigin: "https://example.com",
+        zodyEndpointOrigin: "https://example.com",
       }),
     ).toThrow("platform");
   });
@@ -166,7 +166,7 @@ describe("ZCode Built-in Release", () => {
       environmentConfigRoot: "/environment",
       platform: "darwin-aarch64",
       appVersion: "3.0.0",
-      zcodeEndpointOrigin: "   ",
+      zodyEndpointOrigin: "   ",
     });
 
     expect(basename(dirname(unconfigured.activeFilePath))).toBe("endpoint-unconfigured");
@@ -466,7 +466,7 @@ describe("ZCode Built-in Release", () => {
       pollingIntervalMs: false,
     });
     const config = new ProviderConfigService({
-      zcodeBuiltinSource: source,
+      zodyBuiltinSource: source,
       personalRepository: personal,
     });
     const registry = new ProviderRegistryService({
@@ -484,7 +484,7 @@ describe("ZCode Built-in Release", () => {
       await source.refresh({ force: true });
       const second = await registry.refresh("endpoint-switch");
       expect(second.sourceRevisions.config).not.toBe(first.sourceRevisions.config);
-      expect(second.account.basedOnZCodeBuiltinRevision).toBe(second.config.zcodeBuiltinRevision);
+      expect(second.account.basedOnZodyBuiltinRevision).toBe(second.config.zodyBuiltinRevision);
       expect(second.resolution.resolvedProviders[0]?.models.map((model) => model.modelId)).toEqual([
         "model-b",
       ]);
@@ -494,12 +494,12 @@ describe("ZCode Built-in Release", () => {
         watch: false,
       });
       try {
-        expect((await worker.read()).revision).toBe(second.config.zcodeBuiltinRevision);
+        expect((await worker.read()).revision).toBe(second.config.zodyBuiltinRevision);
       } finally {
         worker.dispose();
       }
       endpoint = "https://A.example.com/";
-      expect((await source.read()).revision).toBe(first.config.zcodeBuiltinRevision);
+      expect((await source.read()).revision).toBe(first.config.zodyBuiltinRevision);
       // 等待来源通知触发的刷新完成后再拆除临时目录，不与后台文件锁竞争清理。
       await registry.refresh("endpoint-back");
     } finally {

@@ -18,7 +18,7 @@ async function main(): Promise<void> {
   // fork（bot channels 移除）：topic-resource relay（createTopicResourcePeers /
   // topicResourceRelayChannel）是第三方 IM bot 的资源回传链，随 bot channels 整体删除。
   const services = createLocalServices({
-    zcodeBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
     providerProvisioningTargetEnabled: Boolean(authToken),
   });
 

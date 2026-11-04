@@ -258,7 +258,7 @@ async function registerDetachedBrowserTab(
   const result = (await browser.executeAsync(
     async (targetTabId, guestId, targetWorkspaceKey, done) => {
       try {
-        const bridge = (window as Window & { zcode?: BrowserTestBridge }).zcode;
+        const bridge = (window as Window & { zody?: BrowserTestBridge }).zody;
         const attached = await bridge?.browserViewAttachGuest?.({
           key: targetTabId,
           webContentsId: guestId,

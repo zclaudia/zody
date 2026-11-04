@@ -680,10 +680,20 @@ export const hostInitLocalMessageSchema = z.object({
   // 启动只预热 active workspace（desktop STARTUP_AGENT_WARMUP_LIMIT = 1），协议层同步收紧上限。
   agentWarmupTargets: z.array(hostAgentWarmupTargetSchema).max(1).optional(),
   agentSpawnFallbackCwd: nonEmptyStringSchema.optional(),
-  zcodeBuiltinProviderConfigFilePath: nonEmptyStringSchema,
+  zodyBuiltinProviderConfigFilePath: nonEmptyStringSchema,
+  // 改名硬切要求拒绝旧字段，即使与新字段并存；其他未知字段仍按原规则剥离。
+  zcodeBuiltinProviderConfigFilePath: z.never().optional(),
   runtimeProcessEnvPatch: z
     .record(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/), z.string())
     .optional(),
+}).superRefine((value, ctx) => {
+  if (Object.hasOwn(value, "zcodeBuiltinProviderConfigFilePath")) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["zcodeBuiltinProviderConfigFilePath"],
+      message: "Retired field is not allowed",
+    });
+  }
 });
 
 export const windowHostRemoteWorkspaceDescriptorSchema = z

@@ -82,17 +82,17 @@ describe("process provider registry runtime", () => {
       expect(runtime.runtime.registryService.getSnapshot()).toBe(old);
       releaseDownload();
       await vi.waitFor(() =>
-        expect(runtime.runtime.registryService.getSnapshot()!.config.zcodeBuiltinRevision).toMatch(
+        expect(runtime.runtime.registryService.getSnapshot()!.config.zodyBuiltinRevision).toMatch(
           `zcode-builtin:${builtin.revision}:`,
         ),
       );
       const next = runtime.runtime.registryService.getSnapshot()!;
-      expect(next.account.basedOnZCodeBuiltinRevision).toBe(next.config.zcodeBuiltinRevision);
+      expect(next.account.basedOnZodyBuiltinRevision).toBe(next.config.zodyBuiltinRevision);
       expect(JSON.parse(await readFile(active, "utf8")).revision).toBe(builtin.revision);
       expect(JSON.parse(await readFile(bundled, "utf8")).revision).toBe(builtin.revision - 1);
       const worker = await startProcessProviderRegistryRuntime(env);
       try {
-        expect(worker.snapshot.config.zcodeBuiltinRevision).toBe(next.config.zcodeBuiltinRevision);
+        expect(worker.snapshot.config.zodyBuiltinRevision).toBe(next.config.zodyBuiltinRevision);
         expect(request).toHaveBeenCalledTimes(2);
       } finally {
         worker.dispose();
@@ -135,7 +135,7 @@ describe("process provider registry runtime", () => {
       expect(request).not.toHaveBeenCalled();
       expect(JSON.parse(await readFile(active, "utf8")).revision).toBe(builtin.revision);
       const snapshot = runtime.runtime.registryService.getSnapshot()!;
-      expect(snapshot.config.zcodeBuiltinRevision).toMatch(`zcode-builtin:${builtin.revision}:`);
+      expect(snapshot.config.zodyBuiltinRevision).toMatch(`zcode-builtin:${builtin.revision}:`);
     } finally {
       runtime.dispose();
     }
@@ -162,8 +162,8 @@ describe("process provider registry runtime", () => {
       await writeFile(filePath, JSON.stringify(builtin));
       await vi.waitFor(() => {
         const next = runtime.runtime.registryService.getSnapshot()!;
-        expect(next.config.zcodeBuiltinRevision).toMatch(`zcode-builtin:${builtin.revision}:`);
-        expect(next.account.basedOnZCodeBuiltinRevision).toBe(next.config.zcodeBuiltinRevision);
+        expect(next.config.zodyBuiltinRevision).toMatch(`zcode-builtin:${builtin.revision}:`);
+        expect(next.account.basedOnZodyBuiltinRevision).toBe(next.config.zodyBuiltinRevision);
       });
       expect(
         runtime.runtime.registryService.getProvider("account:bigmodel-individual-coding-plan"),
@@ -178,7 +178,7 @@ describe("process provider registry runtime", () => {
     // current 即更新有效选择」的机制改用本地 fixture 验证（与本文件 zcodeBuiltinRelease
     // 工厂风格一致），不向任何 config JSON 回填账号数据。
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
+    const zodyBuiltinFilePath = join(root, "zody-builtin.json");
     const personal = "account:bigmodel-individual-coding-plan";
     const team = "account:bigmodel-team-coding-plan";
     const codingPlanProvider = {
@@ -192,7 +192,7 @@ describe("process provider registry runtime", () => {
       builtinModelIds: ["GLM-5.3"],
     };
     await writeFile(
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       JSON.stringify(
         zcodeBuiltinRelease({
           providers: {
@@ -209,7 +209,7 @@ describe("process provider registry runtime", () => {
       "utf8",
     );
     const runtime = await startProcessProviderRegistryRuntime({
-      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
+      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zodyBuiltinFilePath,
       [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: join(root, "personal.json"),
     });
     const original = Object.freeze({
@@ -228,7 +228,7 @@ describe("process provider registry runtime", () => {
     try {
       for (const current of [personal, team, personal]) {
         const snapshot = createAccountProviderConfigSnapshot(
-          runtime.snapshot.config.zcodeBuiltinRevision,
+          runtime.snapshot.config.zodyBuiltinRevision,
           providers,
           {
             [personal]: {
@@ -274,7 +274,7 @@ describe("process provider registry runtime", () => {
     } as const;
     const parsed = parseProcessAccountProviderConfigSnapshot({
       revision: "account-1",
-      basedOnZCodeBuiltinRevision: "zcode-builtin:1",
+      basedOnZodyBuiltinRevision: "zcode-builtin:1",
       states,
       providers: {
         account: {
@@ -294,7 +294,7 @@ describe("process provider registry runtime", () => {
         builtinModelIds: ["model-a"],
       },
     });
-    expect(parsed.basedOnZCodeBuiltinRevision).toBe("zcode-builtin:1");
+    expect(parsed.basedOnZodyBuiltinRevision).toBe("zcode-builtin:1");
     expect(parsed.states).toEqual(states);
   });
 
@@ -302,7 +302,7 @@ describe("process provider registry runtime", () => {
     expect(() =>
       parseProcessAccountProviderConfigSnapshot({
         revision: "account-invalid",
-        basedOnZCodeBuiltinRevision: "zcode-builtin:1",
+        basedOnZodyBuiltinRevision: "zcode-builtin:1",
         providers: {
           api: {
             access: {
@@ -319,7 +319,7 @@ describe("process provider registry runtime", () => {
     expect(() =>
       parseProcessAccountProviderConfigSnapshot({
         revision: "account-invalid-static-field",
-        basedOnZCodeBuiltinRevision: "zcode-builtin:1",
+        basedOnZodyBuiltinRevision: "zcode-builtin:1",
         providers: {
           account: {
             access: { type: "zhipu-account", entitled: true },
@@ -338,15 +338,15 @@ describe("process provider registry runtime", () => {
 
   it("Personal 文件损坏时保留原文件并以内存空配置启动", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
+    const zodyBuiltinFilePath = join(root, "zody-builtin.json");
     const personalFilePath = join(root, "personal.json");
     await writeFile(
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       JSON.stringify(zcodeBuiltinRelease({ providers: {}, templates: {}, models: [] })),
     );
     await writeFile(personalFilePath, "{not-json");
     const started = await startProcessProviderRegistryRuntime({
-      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
+      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zodyBuiltinFilePath,
       [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
     });
     try {
@@ -364,10 +364,10 @@ describe("process provider registry runtime", () => {
 
   it("从进程环境启动一份 Registry，并由调用方持有生命周期", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
+    const zodyBuiltinFilePath = join(root, "zody-builtin.json");
     const personalFilePath = join(root, "personal.json");
     await writeFile(
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       JSON.stringify(
         zcodeBuiltinRelease({
           providers: {
@@ -449,7 +449,7 @@ describe("process provider registry runtime", () => {
     );
 
     const started = await startProcessProviderRegistryRuntime({
-      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
+      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zodyBuiltinFilePath,
       [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
     });
 
@@ -458,7 +458,7 @@ describe("process provider registry runtime", () => {
     started?.accountSource.replace(
       {
         revision: "account-access-1",
-        basedOnZCodeBuiltinRevision: started!.snapshot.config.zcodeBuiltinRevision,
+        basedOnZodyBuiltinRevision: started!.snapshot.config.zodyBuiltinRevision,
         providers: new ProviderConfigMap([
           [
             "account",
@@ -480,7 +480,7 @@ describe("process provider registry runtime", () => {
     const beforeSwitch = await started.accountSource.read();
     const switched = parseProcessAccountProviderConfigSnapshot({
       revision: "account-access-2",
-      basedOnZCodeBuiltinRevision: beforeSwitch.basedOnZCodeBuiltinRevision,
+      basedOnZodyBuiltinRevision: beforeSwitch.basedOnZodyBuiltinRevision,
       providers: Object.fromEntries(
         [...beforeSwitch.providers.entries()].map(([id, config]) => [id, config.toJSON()]),
       ),
@@ -495,11 +495,11 @@ describe("process provider registry runtime", () => {
 
   it("只有显式开启 Standalone 导入时才迁移旧 CLI 用户 Provider", async () => {
     const root = await temporaryDirectory();
-    const zcodeBuiltinFilePath = join(root, "zody-builtin.json");
+    const zodyBuiltinFilePath = join(root, "zody-builtin.json");
     const personalFilePath = join(root, "personal.json");
     const legacyFilePath = join(root, "legacy-cli.json");
     await writeFile(
-      zcodeBuiltinFilePath,
+      zodyBuiltinFilePath,
       JSON.stringify(
         zcodeBuiltinRelease({
           providers: {},
@@ -532,7 +532,7 @@ describe("process provider registry runtime", () => {
       "utf8",
     );
     const env = {
-      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zcodeBuiltinFilePath,
+      [ZODY_BUILTIN_PROVIDER_CONFIG_FILE_ENV]: zodyBuiltinFilePath,
       [ZODY_PERSONAL_PROVIDER_CONFIG_FILE_ENV]: personalFilePath,
     };
 

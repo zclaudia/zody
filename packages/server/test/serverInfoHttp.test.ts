@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { WebSocket } from "ws";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AddressInfo } from "node:net";
 import { once } from "node:events";
 import { request } from "node:http";
@@ -8,6 +9,17 @@ import { tmpdir } from "node:os";
 import { ServiceCollection } from "@zody/services";
 import { SERVER_REMOTE_PROTOCOL_VERSION } from "@zody/shared";
 import { createHttpServer } from "../src/http.js";
+
+vi.mock("../src/remote/index.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/remote/index.js")>();
+  return {
+    ...original,
+    createRemoteBackend: vi.fn(async () => ({})),
+    connectRemote: vi.fn(async () => ({
+      services: { fileService: {}, gitService: {}, systemService: {}, terminalService: {} },
+    })),
+  };
+});
 
 async function boundAddress(server: ReturnType<typeof createHttpServer>): Promise<AddressInfo> {
   if (!server.listening) await once(server, "listening");
@@ -94,7 +106,7 @@ describe("server info HTTP endpoint", () => {
     expect(reboundStatus).toBe(403);
     const accepted = await fetch(`${baseUrl}/api/rpc-host-capability`, {
       method: "POST",
-      headers: { origin: baseUrl },
+      headers: { origin: baseUrl, "x-zody-generation": "2" },
     });
     expect(accepted.status).toBe(200);
   });
@@ -121,6 +133,7 @@ describe("server info HTTP endpoint", () => {
       name: "Studio Server",
       version: expect.any(String),
       protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
+      renameGeneration: 2,
       authRequired: false,
       workspaces: [
         {
@@ -165,13 +178,145 @@ describe("server info HTTP endpoint", () => {
     expect(capabilityRejected.status).toBe(401);
     const capabilityAccepted = await fetch(
       `${baseUrl}/api/rpc-host-capability?token=secret-token`,
-      { method: "POST" },
+      { method: "POST", headers: { "x-zody-generation": "2" } },
     );
     expect(capabilityAccepted.status).toBe(200);
     await expect(capabilityAccepted.json()).resolves.toMatchObject({
       capability: expect.any(String),
       expiresAt: expect.any(Number),
     });
+  });
+
+  it("rejects duplicate generation header without issuing capability", async () => {
+    const server = createHttpServer(new ServiceCollection(), 0);
+    servers.push(server);
+    const address = await boundAddress(server);
+    const status = await new Promise<number | undefined>((resolve, reject) => {
+      const req = request(
+        `http://127.0.0.1:${address.port}/api/rpc-host-capability`,
+        {
+          method: "POST",
+          headers: [
+            "host",
+            `127.0.0.1:${address.port}`,
+            "content-length",
+            "0",
+            "x-zody-generation",
+            "2",
+            "x-zody-generation",
+            "2",
+          ],
+        },
+        (response) => {
+          response.resume();
+          resolve(response.statusCode);
+        },
+      );
+      req.on("error", reject);
+      req.end();
+    });
+    expect(status).toBe(426);
+  });
+
+  it("gates capability before consumption and selects the generation protocol", async () => {
+    const server = createHttpServer(new ServiceCollection(), 0, { authToken: "synthetic-token" });
+    servers.push(server);
+    const address = await boundAddress(server);
+    const base = `http://127.0.0.1:${address.port}`;
+    const endpoint = `${base}/api/rpc-host-capability?token=synthetic-token`;
+    expect((await fetch(`${base}/api/rpc-host-capability`, { method: "POST" })).status).toBe(401);
+    expect((await fetch(endpoint, { method: "POST" })).status).toBe(426);
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "x-zody-generation": "2" },
+    });
+    const { capability } = (await response.json()) as { capability: string };
+    const bad = await fetch(`${base}/ws/host?token=synthetic-token`, {
+      headers: {
+        "x-zody-generation": "1",
+        "x-zody-rpc-host-capability": capability,
+      },
+    });
+    expect(bad.status).toBe(426);
+    const host = new WebSocket(`ws://127.0.0.1:${address.port}/ws/host?token=synthetic-token`, {
+      headers: {
+        "x-zody-generation": "2",
+        "x-zody-rpc-host-capability": capability,
+      },
+    });
+    await new Promise<void>((resolve, reject) => {
+      host.once("open", resolve);
+      host.once("error", reject);
+    });
+    host.close();
+    const browser = new WebSocket(`ws://127.0.0.1:${address.port}/ws?token=synthetic-token`, [
+      "other",
+      "zody-generation-2",
+    ]);
+    await new Promise<void>((resolve, reject) => {
+      browser.once("open", resolve);
+      browser.once("error", reject);
+    });
+    expect(browser.protocol).toBe("zody-generation-2");
+    browser.close();
+  });
+
+  it.each(["/ws", "/ws/remote/not-found"])(
+    "rejects old WebSocket protocol on %s before upgrade",
+    async (path) => {
+      const server = createHttpServer(new ServiceCollection(), 0);
+      servers.push(server);
+      const address = await boundAddress(server);
+      const socket = new WebSocket(`ws://127.0.0.1:${address.port}${path}`, "old-protocol");
+      const status = await new Promise<number | undefined>((resolve, reject) => {
+        socket.once("unexpected-response", (_request, response) => {
+          response.resume();
+          resolve(response.statusCode);
+        });
+        socket.once("open", () => reject(new Error("unexpected upgrade")));
+        socket.once("error", reject);
+      });
+      expect(status).toBe(426);
+    },
+  );
+
+  it("does not consume a remoteId on an incompatible WebSocket upgrade", async () => {
+    const server = createHttpServer(new ServiceCollection(), 0);
+    servers.push(server);
+    const address = await boundAddress(server);
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/connect-remote`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ kind: "server", url: "http://127.0.0.1:1" }),
+    });
+    const { id } = (await response.json()) as { id: string };
+    const url = `ws://127.0.0.1:${address.port}/ws/remote/${id}`;
+    const old = new WebSocket(url, "old-protocol");
+    const status = await new Promise<number | undefined>((resolve, reject) => {
+      old.once("unexpected-response", (_request, result) => {
+        result.resume();
+        resolve(result.statusCode);
+      });
+      old.once("open", () => reject(new Error("unexpected upgrade")));
+      old.once("error", reject);
+    });
+    expect(status).toBe(426);
+    const accepted = new WebSocket(url, "zody-generation-2");
+    try {
+      await new Promise<void>((resolve, reject) => {
+        accepted.once("open", resolve);
+        accepted.once("error", reject);
+      });
+      const second = new WebSocket(url, "zody-generation-2");
+      const closeCode = await new Promise<number>((resolve, reject) => {
+        second.once("close", resolve);
+        second.once("error", reject);
+      });
+      expect(closeCode).toBe(4004);
+      expect(accepted.readyState).toBe(WebSocket.OPEN);
+    } finally {
+      accepted.close();
+    }
   });
 
   it("serves static web files with SPA fallback", async () => {

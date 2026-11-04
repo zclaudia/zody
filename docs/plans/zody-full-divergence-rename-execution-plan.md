@@ -196,10 +196,12 @@ flowchart TD
 ### R41 — stdio 握手双端接入
 
 - **依赖**：R40；可与 R42/R44 并行。
-- **写范围**：`packages/server/src/entry-stdio.ts`、`remote/handshake.ts`、services 的 Agent stdio transport、CLI stdio 对端及对应测试；不写 shared、rpc、`remote/connect.ts`、HTTP 或插件沙箱。
+- **写范围**：`packages/server/src/entry-stdio.ts`、`remote/handshake.ts`、services 的 Agent stdio transport、CLI stdio 对端及对应测试；不写 shared、rpc、HTTP 或插件沙箱。`remote/connect.ts` 仅交 R41 接入既有取消信号和握手字节移交：先装配协议/客户端读监听，再恢复 stdout，不能在等待 RPC 响应之后才恢复；部署、路由和运行版本检查仍归 R43。
 - **操作**：接入 R40 门禁，新旧两向不进入业务；明确握手失败、EOF、取消与残余数据处理，关闭所属流/进程，不用延迟绕过同步问题。
 - **测试 seed**：`packages/server/test/{stdioLifecycle,remoteConnect}.test.ts`、`packages/services/test/zcodeStdioTransport.test.ts`；R41 独写新增 `packages/server/test/stdioHandshake.test.ts`，覆盖 server strict ack、新旧、EOF/取消和剩余缓冲。RemoteServer hello/ack 与 Agent LF JSON 协议分别处理，不给 Agent 套用该 schema。`remoteConnect.test.ts` 在本任务结束后交 R43，不允许并行编辑。
 - **验收**：同代成功、双向不兼容可见拒绝、零 admission/业务写入、资源释放；真实旧产物组合留 R48 集成执行。返回调用接口给 R43。
+
+W4 文件交接：`entry-stdio.ts` 由 R41 唯一写入，同时消费 R44 的 `zodyBuiltinProviderConfigFilePath` 字段。CLI bootstrap 的 `tests/zody-protocol.test.ts` 全文件交 R44，同步当前协议名称 fixture 与 builtin 字段；R41 使用独立 transport 测试，不并行写该文件。
 
 ### R42 — HTTP/Web/手机 attachment 门禁
 
@@ -212,7 +214,7 @@ flowchart TD
 ### R43 — 部署、启动与运行版本验证
 
 - **依赖**：R41、R42、R30；W4 对应写入已停止。
-- **写范围**：`packages/server/src/remote/{connect,deploy,serverBundleDeployCheck}.ts`、manifest 的部署调用者/配置、相关测试及本次发布 runbook；不再修改 shared 或握手函数实现。
+- **写范围**：`packages/server/src/remote/{connect,deploy,serverBundleDeployCheck}.ts`、manifest 的部署调用者/配置、相关测试及本次发布 runbook；不修改 shared。R41 验收后仅将 `remote/handshake.ts` 和 `stdioHandshake.test.ts` 的运行版本检查交 R43：必须在严格代际校验后、发送 ack 前验证期望版本，保留字节交接和生命周期处理。在 connect 等待握手返回后才拒绝，不能证明远端尚未初始化。
 - **操作**：保留连接时部署机制但增加计划要求的运行版本/能力验证；`skipDeploy` 不绕过门禁。补并发、中断、旧部署者尝试、离线重连和环境配置一致性场景；marker 仅是静态线索。
 - **测试 seed**：`packages/server/test/{remoteDeploy,remoteDeployLock,remoteConnect}.test.ts`。
 - **验收**：失败不开放业务，不遗留错误可复用状态；目标清点/暂停旧自动部署/逐个验证/回退步骤写成 runbook。只在隔离测试目标演练，不把本任务当作生产远端部署授权。
@@ -222,6 +224,8 @@ flowchart TD
 - **依赖**：R40；W4 并行候选。
 - **写范围**：manifest 的 preload 主桥、client globals、desktopPlatform 消费端、Main IPC handlers、内部 scheme/debug globals、provider-node builtin 剩余属性和相应测试；排除 iframe/plugin bridge、R42 HTTP/attachment、shared 常量。
 - **操作**：统一使用 R40 channel 名称，主桥两端同版本切换；endpoint/title 已完成项只回归。内部 URI/调试入口按清单处理，不触碰 artifact（R45）或外部插件命名空间。
+
+R40 验收后仅将两个 shared builtin 字段锁交 R44：Host 初始化 `zcodeBuiltinProviderConfigFilePath` → `zodyBuiltinProviderConfigFilePath`，Account Provider Snapshot 的 `basedOnZCodeBuiltinRevision` → `basedOnZodyBuiltinRevision`。生产、消费及测试同批，R41 独写入口的对应构造由 R41 同步；不得修改冻结的代际/握手/权限 schema、外部 JSON、既有持久文件名或 revision 内容。遇到整体 snapshot 序列化须追清实际存储边界，不能凭字段名搜索推断没有持久化。
 - **验收**：主应用平台操作、IPC 请求/响应/事件路径的目标测试和真实 Desktop 冒烟；builtin 配置构建与读取同源；平台适配仍走 IPlatformService。若发现与 R42 同文件，先交主控拆分或串行。
 
 ### R45 — artifact URI 硬切与历史会话可加载

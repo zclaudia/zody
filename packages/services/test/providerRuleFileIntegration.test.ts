@@ -47,7 +47,7 @@ describe("Todo104 Services 规则读写完整链路", () => {
       ),
     );
     const runtime = createProviderRuntime({
-      zcodeBuiltinFilePath: fileURLToPath(
+      zodyBuiltinFilePath: fileURLToPath(
         new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),
       personalFilePath,

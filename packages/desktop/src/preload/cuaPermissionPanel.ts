@@ -10,7 +10,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { PlatformChannels, type CuaPermissionKind, type Locale } from "@zody/shared";
 
-const CUA_PERMISSION_PANEL_STATE_CHANNEL = "zcode:cua-permission-panel-state";
+const CUA_PERMISSION_PANEL_STATE_CHANNEL = "zody:cua-permission-panel-state";
 
 interface CuaPermissionPanelState {
   permission: CuaPermissionKind;

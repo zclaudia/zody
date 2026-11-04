@@ -47,12 +47,12 @@ async function setup(
   const bundled = join(root, "bundled.json");
   await writeFile(bundled, JSON.stringify(release));
   const runtime = new NodeProviderConfigRuntime({
-    zcodeBuiltinFilePath: bundled,
-    zcodeBuiltinActiveFilePath: join(root, "active.json"),
+    zodyBuiltinFilePath: bundled,
+    zodyBuiltinActiveFilePath: join(root, "active.json"),
     personalFilePath: join(root, "personal.json"),
     watch: false,
     personalPollingIntervalMs: false,
-    zcodeBuiltinRemote: {
+    zodyBuiltinRemote: {
       controlFilePath: join(root, "control.json"),
       resolveEndpointKey: () => "https://example.com",
       fetchRelease,

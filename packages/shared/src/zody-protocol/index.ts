@@ -2458,7 +2458,7 @@ export type ZodyProviderTestModelConnectivityResult = z.infer<
 export const zodyProviderUpdateAccountConfigParamsSchema = z
   .object({
     revision: nonEmptyString,
-    basedOnZCodeBuiltinRevision: nonEmptyString,
+    basedOnZodyBuiltinRevision: nonEmptyString,
     // Provider Config 的字段校验由 @zody/provider 负责；协议层只约束可传输信封。
     providers: z.record(z.string(), z.unknown()),
     // 账号状态与 Overlay 必须一起传递，否则 Worker 会丢失非当前套餐的执行门禁。

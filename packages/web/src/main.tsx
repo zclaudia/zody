@@ -9,7 +9,8 @@ import {
 } from "@zody/ui";
 import "@zody/ui/styles.css";
 import { connectViaWebSocket } from "@zody/client";
-import type { ServerRemoteInfo, WebRemoteControlFailure } from "@zody/shared";
+import type { WebRemoteControlFailure } from "@zody/shared";
+import { resolveCompatibleWebBootstrap } from "./renameCompatibility.js";
 // fork（F4.10）：Web OAuth 登录与回调页随官方账号链删除；Web 远控入口由 gateway
 // 远程访问链路承载，普通 Web 启动流程直接渲染应用。
 import {
@@ -46,34 +47,12 @@ function resolveDefaultWsOrigin(): string {
 }
 
 async function resolveWebBootstrap(): Promise<WebBootstrapResult> {
-  const params = new URLSearchParams(window.location.search);
-  const remoteId = params.get("remote");
-  const wsUrl = remoteId
-    ? `${resolveDefaultWsOrigin()}/ws/remote/${remoteId}`
-    : `${resolveDefaultWsOrigin()}/ws`;
-
-  if (remoteId) {
-    return { wsUrl };
-  }
-
   try {
-    const response = await fetch("/api/server-info", {
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      return { wsUrl };
-    }
-    const serverInfo = (await response.json()) as Partial<ServerRemoteInfo>;
-    const workspace = Array.isArray(serverInfo.workspaces) ? serverInfo.workspaces[0] : undefined;
-    return {
-      wsUrl,
-      ...(workspace?.path ? { initialWorkspaceAbsPath: workspace.path } : {}),
-      ...(workspace?.workspaceIdentity
-        ? { initialWorkspaceIdentity: workspace.workspaceIdentity }
-        : {}),
-    };
-  } catch {
-    return { wsUrl };
+    return await resolveCompatibleWebBootstrap(resolveDefaultWsOrigin(), window.location.search);
+  } catch (error) {
+    throw new Error(
+      `Server incompatible generation: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 

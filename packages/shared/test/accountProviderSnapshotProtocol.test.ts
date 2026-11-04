@@ -7,7 +7,7 @@ import {
 describe("Account 快照协议", () => {
   const snapshot = {
     revision: "account-1",
-    basedOnZCodeBuiltinRevision: "builtin-1",
+    basedOnZodyBuiltinRevision: "builtin-1",
     providers: {},
     states: {
       account: {
@@ -19,6 +19,25 @@ describe("Account 快照协议", () => {
       },
     },
   };
+
+  it("拒绝旧账号信封字段", () => {
+    const { basedOnZodyBuiltinRevision, ...rest } = snapshot;
+    expect(
+      zodyProviderUpdateAccountConfigParamsSchema.safeParse({
+        ...rest,
+        basedOnZCodeBuiltinRevision: basedOnZodyBuiltinRevision,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("拒绝新旧账号信封字段并存", () => {
+    expect(
+      zodyProviderUpdateAccountConfigParamsSchema.safeParse({
+        ...snapshot,
+        basedOnZCodeBuiltinRevision: "old",
+      }).success,
+    ).toBe(false);
+  });
 
   it("完整往返 Account State，不将其当未知字段删除", () => {
     expect(zodyProviderUpdateAccountConfigParamsSchema.parse(snapshot)).toEqual(snapshot);

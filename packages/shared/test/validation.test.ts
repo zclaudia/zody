@@ -278,7 +278,7 @@ describe("hostResponseMessageSchema", () => {
       type: "init-local",
       workspacePath: "/repo/active",
       agentWarmupTargets: [{ workspacePath: "/repo/active" }],
-      zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
+      zodyBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
       runtimeProcessEnvPatch: {
         PATH: "/Users/demo/.local/bin:/usr/bin:/bin",
         FNM_DIR: "/Users/demo/.fnm",
@@ -288,10 +288,41 @@ describe("hostResponseMessageSchema", () => {
     expect(parsed.success).toBe(true);
     if (parsed.success && parsed.data.type === "init-local") {
       expect(parsed.data.runtimeProcessEnvPatch?.PATH).toContain("/Users/demo/.local/bin");
-      expect(parsed.data.zcodeBuiltinProviderConfigFilePath).toBe(
+      expect(parsed.data.zodyBuiltinProviderConfigFilePath).toBe(
         "/repo/config/provider/zody-builtin.json",
       );
     }
+  });
+
+  it("rejects the retired host builtin field", () => {
+    expect(
+      hostIncomingMessageSchema.safeParse({
+        type: "init-local",
+        zcodeBuiltinProviderConfigFilePath: "/repo/config.json",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects mixed host fields without changing unrelated unknown-key handling", () => {
+    const input = {
+      type: "init-local",
+      zodyBuiltinProviderConfigFilePath: "/new",
+      zcodeBuiltinProviderConfigFilePath: "/old",
+    };
+    expect(hostIncomingMessageSchema.safeParse(input).success).toBe(false);
+    expect(
+      hostIncomingMessageSchema.safeParse({
+        ...input,
+        zcodeBuiltinProviderConfigFilePath: undefined,
+      }).success,
+    ).toBe(false);
+    const result = hostIncomingMessageSchema.safeParse({
+      type: "init-local",
+      zodyBuiltinProviderConfigFilePath: "/new",
+      unrelated: 1,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).not.toHaveProperty("unrelated");
   });
 
   it("rejects local host init without an ZCode Built-in Provider Config", () => {
@@ -306,7 +337,7 @@ describe("hostResponseMessageSchema", () => {
     expect(
       hostIncomingMessageSchema.safeParse({
         type: "init-local",
-        zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
+        zodyBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
         runtimeProcessEnvPatch: { PATH: ["/usr/bin"] },
       }).success,
     ).toBe(false);
@@ -315,7 +346,7 @@ describe("hostResponseMessageSchema", () => {
   it("rejects more than one local host agent warmup target", () => {
     const parsed = hostIncomingMessageSchema.safeParse({
       type: "init-local",
-      zcodeBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
+      zodyBuiltinProviderConfigFilePath: "/repo/config/provider/zody-builtin.json",
       agentWarmupTargets: ["a", "b"].map((name) => ({
         workspacePath: `/repo/${name}`,
       })),

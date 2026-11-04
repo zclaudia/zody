@@ -87,7 +87,7 @@ export async function prepareCliProviderRuntimeEnv(
     environmentConfigRoot: join(dataBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2"),
     platform,
     appVersion,
-    zcodeEndpointOrigin: zodyEndpointOrigin,
+    zodyEndpointOrigin: zodyEndpointOrigin,
   });
   const source = new NodeZodyBuiltinProviderConfigSource({
     bundledFilePath: zodyBuiltinFilePath,
