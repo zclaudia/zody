@@ -17000,17 +17000,53 @@
     "title": "共享插件兼容规则与公共接口",
     "readSet": [
       "AGENTS.md",
+      "CONTEXT.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
       "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/contract-map.md",
+      "docs/plans/zody-rename-execution/test-map.md",
+      "docs/plans/zody-rename-execution/manifest.json",
+      "docs/plans/zody-rename-execution/task-ledger.md",
+      "output/zody-rename-w6-controller/r50-dispatch-proposal.md",
+      "packages/shared/package.json",
       "packages/shared/src/gen-ui/contract.ts",
       "packages/shared/src/mcp-apps/contract.ts",
-      "packages/shared/src/mcp-apps/toolMeta.ts"
+      "packages/shared/src/mcp-apps/toolMeta.ts",
+      "packages/shared/src/gen-ui/contract.test.ts",
+      "packages/shared/src/mcp-apps/contract.test.ts",
+      "packages/shared/src/gen-ui/CONTRACT.md",
+      "packages/shared/src/mcp-apps/CONTRACT.md",
+      "packages/ui/src/gen-ui/adapters/page.ts",
+      "packages/desktop/src/renderer/src/plugin-sandbox/genUi.ts",
+      "packages/ui/src/plugin-ui/domain/buildPluginUiHostCapabilities.ts",
+      "packages/services/src/plugin-ui-bridge/pluginUiBridgeService.ts",
+      "packages/ui/src/plugin-ui/domain/pluginUiToolFeed.ts",
+      "packages/ui/src/plugin-ui/app/pluginUiResourceSubscriptions.ts",
+      "packages/desktop/scripts/mcp-apps-host-fixture/widget.tsx",
+      "packages/desktop/src/main/pluginSandbox/csp.ts",
+      "apps/zody-cli/packages/adapters/src/mcp/descriptor.ts",
+      "apps/zody-cli/packages/adapters/src/mcp/index.ts",
+      "apps/zody-cli/packages/node-repl-host/src/request-context.ts",
+      "apps/zody-cli/packages/node-repl-host/src/cua-node-repl-mcp-port.ts",
+      "apps/zody-cli/packages/node-repl-host/src/result.ts",
+      "apps/zody-cli/packages/contracts/src/interfaces/mcp.port.ts",
+      "apps/zody-cli/packages/contracts/src/tools/tool-result-metadata.ts",
+      "apps/zody-cli/packages/core/src/mcp/index.ts",
+      "apps/zody-cli/packages/core/src/mcp/image-normalization.ts",
+      "apps/zody-cli/packages/core/src/tool/executor/result-display.ts"
     ],
     "writeSet": [
       "docs/plans/zody-rename-execution/reports/R50.md",
+      "specs/zody-rename-plugin-wire.md",
       "packages/shared/src/gen-ui/contract.ts",
       "packages/shared/src/mcp-apps/contract.ts",
-      "packages/shared/src/mcp-apps/toolMeta.ts"
+      "packages/shared/src/mcp-apps/toolMeta.ts",
+      "packages/shared/src/gen-ui/contract.test.ts",
+      "packages/shared/src/mcp-apps/contract.test.ts",
+      "packages/shared/src/gen-ui/CONTRACT.md",
+      "packages/shared/src/mcp-apps/CONTRACT.md",
+      "packages/shared/src/gen-ui/contract.example.ts",
+      "packages/shared/src/mcp-apps/contract.example.ts"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -17021,8 +17057,8 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R50.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已按预案落锁（2026-11-05，基线 2043607a92a9d4439c81c1f426dc5e55f92ec933）：writeSet 取 r50-dispatch-proposal.md §8 扩充集合。legacy wire 值按 manifest 保留、只登记不删除；归一化后形状不变（validation.ts 不在 writeSet，形状有变须停下回报主控）；不做泛化前缀替换、不实现失败后重发。contract.example.ts 为 §7.3 按需项，未使用不新建。R50 未执行：R51–R53 消费面切换、真实 sandbox E2E（RENAME-PLUGIN-WIRE，R56）与历史 tool result 回放均未验证；scopeStatus 取现有 reviewable-dispatch-scope（主控授权可派发、尚未独立验收）。",
     "structureScope": [
       "shared MCP Apps/Gen UI 公共合同与测试"
     ]
