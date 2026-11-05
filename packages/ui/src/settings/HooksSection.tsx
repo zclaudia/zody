@@ -181,6 +181,7 @@ export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionP
   const { trustActionAvailable, trustingHookId, trustHook } = useWorkspaceHookInlineTrust({
     workspacePath: targetWorkspacePath,
     workspaceIdentity: targetWorkspaceIdentity,
+    remoteSessionId: targetServiceResolution.remoteSessionId ?? undefined,
     hooksService: targetServiceResolution.rpcReady ? hooksService : undefined,
     rpcReady: targetServiceResolution.rpcReady,
   });

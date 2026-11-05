@@ -2570,6 +2570,8 @@ Phase 4 安全结论：
 已完成：
 
 - `workspaceHookReview` active command target 扩展为 `sessionId + taskId + runId + remoteSessionId? + workspaceIdentity + bundleDigest + reviewFlowId + generation + interactionId`；Runtime registry 对 task/run/remote/snapshot/generation 做同一处 fail-closed 校验，wrong task、stale run、wrong remote session 与 runtime restart 前的旧 command 均不能写 Trust；
+- Renderer 发起侧同样按 `workspaceKey + remoteSessionId + optional taskSessionId` 精确选择 command/review binding；同 remote 多 task 不猜 owner，旧连接迟到 effect 与等待链在换代时失效。详见
+  [持久信任规格 §11](./workspace-hook-trust-persistent-only.md#11-renderer-精确路由)。
 - protocol session 的 `runId` 改为每次 Runtime 创建生成的新 epoch token；restart/resume 后旧 interaction 不会因相同 sessionId 被误接纳；task realtime owner-command 兼容 schema 同步携带 bundle digest，但 relay/main 仍不复制 Trust store、snapshot 或 review registry；
 - `web-remote-replayable` Host 与 Desktop 一样显式宣告 review domain capability；ClientHello 继续以 `workspaceHookReviewUi=true` 独立宣告 UI 能力，旧 Client omission 仍等价于 false；body 中的 clientMode/delivery profile 仍会由 trusted connection facade 清除并覆盖；
 - Mobile/Web 从现有 conversation snapshot/delta 的 `pendingInteractions[kind=workspaceHookReview]` 恢复同一 request；gap/resync、refresh 与 attachment 重建只重建 renderer subscription，不 settle Runtime request；first-valid-decision 仍由 Runtime registry 保证；

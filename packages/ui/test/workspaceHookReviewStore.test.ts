@@ -246,4 +246,118 @@ describe("workspace Hook review renderer store", () => {
     useWorkspaceHookReviewStore.getState().clear("session", "interaction-2");
     expect(useWorkspaceHookReviewStore.getState().bindings.session).toBeUndefined();
   });
+
+  it("同 identity 的 remote command 只按 remoteSessionId 精确匹配，不猜 task", () => {
+    const oldSend = vi.fn();
+    const selectedSend = vi.fn();
+    const commands: Record<string, WorkspaceHookCommandBinding> = {
+      old: {
+        sessionId: "task-old",
+        workspacePath: "/repo",
+        workspaceIdentity: "remote:repo",
+        remoteSessionId: "remote-old",
+        sendCommand: oldSend,
+      },
+      selected: {
+        sessionId: "task-selected",
+        workspacePath: "/repo",
+        workspaceIdentity: "remote:repo",
+        remoteSessionId: "remote-selected",
+        sendCommand: selectedSend,
+      },
+      local: { sessionId: "task-local", workspacePath: "/repo", sendCommand: vi.fn() },
+    };
+
+    expect(
+      findWorkspaceHookCommandBinding(commands, "/repo", "remote:repo", {
+        remoteSessionId: "remote-selected",
+      })?.sendCommand,
+    ).toBe(selectedSend);
+    expect(
+      findWorkspaceHookCommandBinding(commands, "/repo", "remote:repo", {
+        remoteSessionId: "remote-old",
+      })?.sendCommand,
+    ).toBe(oldSend);
+    // remote 缺匹配不能借同 identity 的另一个 remote 或无 identity 的 local binding。
+    expect(
+      findWorkspaceHookCommandBinding(commands, "/repo", "remote:repo", {
+        remoteSessionId: "remote-missing",
+      }),
+    ).toBeUndefined();
+    // 没有 taskSessionId 且同 remote 不唯一时 fail closed。
+    expect(findWorkspaceHookCommandBinding(commands, "/repo", "remote:repo")).toBeUndefined();
+    expect(
+      findWorkspaceHookCommandBinding(commands, "/repo", "remote:repo", {
+        remoteSessionId: "remote-selected",
+        taskSessionId: "task-old",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("同 remote 多个 task 的 review 只有显式 taskSessionId 才可消歧", () => {
+    const reviews = {
+      old: {
+        ...binding({ interactionId: "old", remoteSessionId: "remote-old" }),
+        workspacePath: "/repo",
+      },
+      selectedA: {
+        ...binding({
+          interactionId: "selected-a",
+          sessionId: "task-a",
+          remoteSessionId: "remote-selected",
+        }),
+        workspacePath: "/repo",
+      },
+      selectedB: {
+        ...binding({
+          interactionId: "selected-b",
+          sessionId: "task-b",
+          remoteSessionId: "remote-selected",
+        }),
+        workspacePath: "/repo",
+      },
+    };
+
+    expect(
+      findWorkspaceHookReviewBinding(reviews, "/repo", "workspace:repo", {
+        remoteSessionId: "remote-selected",
+      }),
+    ).toBeUndefined();
+    expect(
+      findWorkspaceHookReviewBinding(reviews, "/repo", "workspace:repo", {
+        remoteSessionId: "remote-selected",
+        taskSessionId: "task-b",
+      })?.request.interactionId,
+    ).toBe("selected-b");
+    expect(
+      findWorkspaceHookReviewBinding(reviews, "/repo", "workspace:repo", {
+        remoteSessionId: "remote-missing",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("review binding 的 remote 必须与同 session command channel 同源", () => {
+    const sendCommand = vi.fn();
+    useWorkspaceHookReviewStore.getState().connect("session-a", {
+      sessionId: "session-a",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-b",
+      sendCommand,
+    });
+
+    useWorkspaceHookReviewStore.getState().upsert("session-a", {
+      ...binding({ sessionId: "session-a", remoteSessionId: "remote-a" }),
+      sendCommand,
+    });
+    expect(useWorkspaceHookReviewStore.getState().bindings["session-a"]).toBeUndefined();
+
+    useWorkspaceHookReviewStore.getState().upsert("session-a", {
+      ...binding({ sessionId: "session-a", remoteSessionId: "remote-b" }),
+      sendCommand,
+    });
+    expect(
+      useWorkspaceHookReviewStore.getState().bindings["session-a"]?.request.remoteSessionId,
+    ).toBe("remote-b");
+  });
 });

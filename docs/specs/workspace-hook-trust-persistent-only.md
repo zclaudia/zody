@@ -234,6 +234,40 @@ Renderer              V4/Bootstrap                 Core / Trust Store
     `workspace_hooks_blocked_by_policy` 与 `workspace_hooks_policy_requires_pretrust`。本地管理员 CLI
     若保留预审能力，必须继续走与 Settings RPC 不同的显式入口，不能复用普通 UI authority。
 
+## 11. Renderer 精确路由
+
+本节锁定 R47 的发起侧路由合同；持久 Trust 身份仍是 `workspaceIdentity?.trim() || workspacePath`
+加精确 declaration digest，`remoteSessionId`、task/session 只用于活跃命令与 review 路由，不构成
+第二个 Trust owner。
+
+1. Settings 行内 Trust、PendingBanner 与 Runtime review 命令必须沿同一
+   `workspaceKey + remoteSessionId + optional taskSessionId` 路由。binding 的
+   `remoteSessionId` 与查询目标都按
+   trim 后的非空值精确比较；任何一侧有值而另一侧缺失都不匹配，不借用同 identity 的其他 session、
+   另一 remote 或无 identity 的本地 binding。
+2. 只有双方都不带 identity 的旧 local binding 才允许 `workspacePath` fallback；本地
+   `remoteSessionId` 也必须缺省。存在多个同 route binding 时必须按明确的 taskSessionId 收窄；
+   仍不唯一则 fail closed，不按插入顺序、`createdAt` 或最新 generation 猜 owner。
+3. 唯一匹配的 immutable review 直接按其完整 target respond。否则向唯一匹配的 command binding
+   发 request，等待同 workspace、remoteSessionId、task session、bundle 与 reviewItemId 的 review，
+   再 respond。request 使用的 `sendCommand` 必须与等待/响应链同源；连接换代、abort 或 binding
+   失效时停止等待，旧 flow 不得借新通道重发。
+4. 已经取得 review 后，respond 的失败、超时或换代不得改走独立 grant。只有尚未取得匹配 review、
+   request 明确返回既有可降级 reason，且调用方给出的 hooks service 已绑定所选 remote 时，才可沿用
+   现行受控 workspace pretrust；policy 拒绝、route 歧义、错误 remote、stale/timeout 均不触发 grant。
+5. 旧 renderer effect 的迟到 review upsert 不得覆盖或删除新连接 binding；review binding 的
+   `request.remoteSessionId` 必须与该 session 当前 command binding 的 remote 同源。
+
+```text
+UI (workspaceKey, remoteSessionId, taskSessionId)
+  -> unique command binding (strict route)
+  -> request on that binding.sendCommand
+  -> unique review (same route + bundle + item + sendCommand)
+  -> respond with immutable target
+
+ambiguous / missing route / replaced sendCommand / abort -> reject, no command, no grant
+```
+
 ## 改名实施目标
 
 本文件描述的现有行为在全面改名时须遵守 [Zody 改名运行时契约](../../specs/zody-rename-runtime-contract.md)；代际门禁、来源摘要和资源清理以该目标规格为准，尚未实现的行为不视为当前已发布。

@@ -34,6 +34,7 @@ function workspaceHook(): Hook {
 
 function reviewBinding(
   sendCommand: (envelope: CommandEnvelope) => Promise<CommandAck>,
+  overrides: Partial<WorkspaceHookReviewBinding["request"]> = {},
 ): WorkspaceHookReviewBinding {
   return {
     workspacePath: "/repo",
@@ -70,6 +71,7 @@ function reviewBinding(
         },
       ],
       warningCode: "workspace_hooks_execute_code",
+      ...overrides,
     },
   };
 }
@@ -307,5 +309,309 @@ describe("workspace Hook Settings inline trust", () => {
       accepted: false,
       reasonCode: "workspace_hooks_require_trust_capable_host",
     });
+  });
+
+  it("同 identity 双 remote 时只向选中 remote 的 task 发送 request/respond", async () => {
+    const oldSend = vi.fn(async (envelope: CommandEnvelope) => accepted(envelope));
+    const selectedSend = vi.fn(async (envelope: CommandEnvelope) => {
+      if (envelope.type === "requestWorkspaceHookReview") {
+        queueMicrotask(() => {
+          useWorkspaceHookReviewStore.getState().upsert(
+            "task-selected",
+            reviewBinding(selectedSend, {
+              sessionId: "task-selected",
+              remoteSessionId: "remote-selected",
+            }),
+          );
+        });
+      }
+      return accepted(envelope);
+    });
+    useWorkspaceHookReviewStore.getState().connect("task-old", {
+      sessionId: "task-old",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-old",
+      sendCommand: oldSend,
+    });
+    useWorkspaceHookReviewStore.getState().connect("task-selected", {
+      sessionId: "task-selected",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-selected",
+      sendCommand: selectedSend,
+    });
+    // A 的旧 review 不能因为同 identity/path 被选中。
+    useWorkspaceHookReviewStore.getState().upsert("task-old", {
+      ...reviewBinding(oldSend, { sessionId: "task-old", remoteSessionId: "remote-old" }),
+    });
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        reviewWaitTimeoutMs: 100,
+      }),
+    ).resolves.toEqual({ accepted: true });
+
+    expect(oldSend).not.toHaveBeenCalled();
+    expect(selectedSend.mock.calls.map(([envelope]) => envelope.type)).toEqual([
+      "requestWorkspaceHookReview",
+      "respondWorkspaceHookReview",
+    ]);
+    expect(selectedSend.mock.calls[0]?.[0].payload).toEqual(
+      expect.objectContaining({ sessionId: "task-selected", remoteSessionId: "remote-selected" }),
+    );
+    expect(selectedSend.mock.calls[1]?.[0].payload).toMatchObject({
+      sessionId: "task-selected",
+      remoteSessionId: "remote-selected",
+    });
+  });
+
+  it("选中 remote 没有 task binding 时不借同 identity 的其他 remote", async () => {
+    const oldSend = vi.fn(async (envelope: CommandEnvelope) => accepted(envelope));
+    useWorkspaceHookReviewStore.getState().connect("task-old", {
+      sessionId: "task-old",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-old",
+      sendCommand: oldSend,
+    });
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+      }),
+    ).resolves.toEqual({
+      accepted: false,
+      reasonCode: "workspace_hooks_require_trust_capable_host",
+    });
+    expect(oldSend).not.toHaveBeenCalled();
+  });
+
+  it("选中 remote 无 task 时仍可走该 remote service 绑定的既有 workspace pretrust", async () => {
+    const oldSend = vi.fn(async (envelope: CommandEnvelope) => accepted(envelope));
+    useWorkspaceHookReviewStore.getState().connect("task-old", {
+      sessionId: "task-old",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-old",
+      sendCommand: oldSend,
+    });
+    const grantWithoutSession = vi.fn(async () => ({ accepted: true }));
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        grantWithoutSession,
+      }),
+    ).resolves.toEqual({ accepted: true });
+    expect(oldSend).not.toHaveBeenCalled();
+    expect(grantWithoutSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("同 remote 多 task 且无显式 taskSessionId 时歧义拒绝，不发命令也不 grant", async () => {
+    const firstSend = vi.fn(async (envelope: CommandEnvelope) => accepted(envelope));
+    const secondSend = vi.fn(async (envelope: CommandEnvelope) => accepted(envelope));
+    for (const [sessionId, sendCommand] of [
+      ["task-a", firstSend],
+      ["task-b", secondSend],
+    ] as const) {
+      useWorkspaceHookReviewStore.getState().connect(sessionId, {
+        sessionId,
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        sendCommand,
+      });
+    }
+    const grantWithoutSession = vi.fn(async () => ({ accepted: true }));
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        grantWithoutSession,
+      }),
+    ).resolves.toEqual({
+      accepted: false,
+      reasonCode: "workspace_hooks_snapshot_mismatch",
+    });
+    expect(firstSend).not.toHaveBeenCalled();
+    expect(secondSend).not.toHaveBeenCalled();
+    expect(grantWithoutSession).not.toHaveBeenCalled();
+  });
+
+  it("同 remote 多 task 时显式 taskSessionId 只向精确 task 发送", async () => {
+    const firstSend = vi.fn(async (envelope: CommandEnvelope) => accepted(envelope));
+    const secondSend = vi.fn(async (envelope: CommandEnvelope) => {
+      if (envelope.type === "requestWorkspaceHookReview") {
+        queueMicrotask(() => {
+          useWorkspaceHookReviewStore.getState().upsert(
+            "task-b",
+            reviewBinding(secondSend, {
+              sessionId: "task-b",
+              remoteSessionId: "remote-selected",
+            }),
+          );
+        });
+      }
+      return accepted(envelope);
+    });
+    for (const [sessionId, sendCommand] of [
+      ["task-a", firstSend],
+      ["task-b", secondSend],
+    ] as const) {
+      useWorkspaceHookReviewStore.getState().connect(sessionId, {
+        sessionId,
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        sendCommand,
+      });
+    }
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        taskSessionId: "task-b",
+        reviewWaitTimeoutMs: 100,
+      }),
+    ).resolves.toEqual({ accepted: true });
+    expect(firstSend).not.toHaveBeenCalled();
+    expect(secondSend.mock.calls.map(([envelope]) => envelope.type)).toEqual([
+      "requestWorkspaceHookReview",
+      "respondWorkspaceHookReview",
+    ]);
+  });
+
+  it("等待期间连接换代时停止旧 flow，不借新通道 respond 也不 grant", async () => {
+    const grantWithoutSession = vi.fn(async () => ({ accepted: true }));
+    const nextSend = vi.fn(async (envelope: CommandEnvelope) => accepted(envelope));
+    const sendCommand = vi.fn(async (envelope: CommandEnvelope) => {
+      if (envelope.type === "requestWorkspaceHookReview") {
+        setTimeout(() => {
+          useWorkspaceHookReviewStore.getState().disconnect("task-selected", sendCommand);
+          useWorkspaceHookReviewStore.getState().connect("task-selected", {
+            sessionId: "task-selected",
+            workspacePath: "/repo",
+            workspaceIdentity: "workspace:repo",
+            remoteSessionId: "remote-selected",
+            sendCommand: nextSend,
+          });
+        }, 0);
+      }
+      return accepted(envelope);
+    });
+    useWorkspaceHookReviewStore.getState().connect("task-selected", {
+      sessionId: "task-selected",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-selected",
+      sendCommand,
+    });
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        grantWithoutSession,
+        reviewWaitTimeoutMs: 100,
+      }),
+    ).resolves.toEqual({
+      accepted: false,
+      reasonCode: "workspace_hooks_snapshot_mismatch",
+    });
+    expect(sendCommand).toHaveBeenCalledTimes(1);
+    expect(nextSend).not.toHaveBeenCalled();
+    expect(grantWithoutSession).not.toHaveBeenCalled();
+  });
+
+  it("已取得 review 后 respond 失败不转 grant", async () => {
+    const sendCommand = vi.fn(async (envelope: CommandEnvelope) =>
+      failed(envelope, "workspace_hooks_bundle_changed"),
+    );
+    useWorkspaceHookReviewStore.getState().connect("task-selected", {
+      sessionId: "task-selected",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-selected",
+      sendCommand,
+    });
+    useWorkspaceHookReviewStore.getState().upsert(
+      "task-selected",
+      reviewBinding(sendCommand, {
+        sessionId: "task-selected",
+        remoteSessionId: "remote-selected",
+      }),
+    );
+    const grantWithoutSession = vi.fn(async () => ({ accepted: true }));
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        grantWithoutSession,
+      }),
+    ).resolves.toEqual({
+      accepted: false,
+      reasonCode: "workspace_hooks_bundle_changed",
+    });
+    expect(grantWithoutSession).not.toHaveBeenCalled();
+  });
+
+  it("request 返回失败但同通道 review 已到达时优先 respond，不转 grant", async () => {
+    const commandTypes: string[] = [];
+    const grantWithoutSession = vi.fn(async () => ({ accepted: true }));
+    const sendCommand = vi.fn(async (envelope: CommandEnvelope) => {
+      commandTypes.push(envelope.type);
+      if (envelope.type === "requestWorkspaceHookReview") {
+        useWorkspaceHookReviewStore.getState().upsert(
+          "task-selected",
+          reviewBinding(sendCommand, {
+            sessionId: "task-selected",
+            remoteSessionId: "remote-selected",
+          }),
+        );
+        return failed(envelope, "workspace_hooks_snapshot_mismatch");
+      }
+      return accepted(envelope);
+    });
+    useWorkspaceHookReviewStore.getState().connect("task-selected", {
+      sessionId: "task-selected",
+      workspacePath: "/repo",
+      workspaceIdentity: "workspace:repo",
+      remoteSessionId: "remote-selected",
+      sendCommand,
+    });
+
+    await expect(
+      trustWorkspaceHookWithReview({
+        hook: workspaceHook(),
+        workspacePath: "/repo",
+        workspaceIdentity: "workspace:repo",
+        remoteSessionId: "remote-selected",
+        grantWithoutSession,
+      }),
+    ).resolves.toEqual({ accepted: true });
+    expect(commandTypes).toEqual(["requestWorkspaceHookReview", "respondWorkspaceHookReview"]);
+    expect(grantWithoutSession).not.toHaveBeenCalled();
   });
 });

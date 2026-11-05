@@ -4371,6 +4371,7 @@ export function SessionPane({
             sessionId={sessionId}
             workspacePath={workspacePath}
             workspaceIdentity={workspaceIdentity}
+            remoteSessionId={remoteSessionId ?? undefined}
             admission={snapshot.workspaceHookAdmission}
           />
         ) : null}

@@ -1,5 +1,6 @@
-import { close, createReadStream, createWriteStream, fstat, read } from "node:fs";
+import { close, createWriteStream, fstat, read } from "node:fs";
 import { createPrivateKey, createPublicKey, sign, type KeyObject } from "node:crypto";
+import { Socket } from "node:net";
 import { Duplex } from "node:stream";
 import { finished } from "node:stream/promises";
 import { promisify } from "node:util";
@@ -330,11 +331,36 @@ export async function createControlDuplex(
     assertPrivatePipe(readFdNumber, "control_fd_unavailable", "private control fd unavailable"),
     assertPrivatePipe(writeFdNumber, "control_fd_unavailable", "private control fd unavailable"),
   ]);
-  // 两个 stream 拥有 fd5/fd6；channel.dispose()/Duplex.destroy() 统一关闭，外层不再按数字 close。
-  return Duplex.from({
-    readable: createReadStream("", { autoClose: true, fd: readFdNumber }),
-    writable: createWriteStream("", { autoClose: true, fd: writeFdNumber }),
-  });
+  // 修复依据：fs.ReadStream 无法取消已提交给 libuv 的 pipe read。父 peer 保持打开时，
+  // destroy() 不会 close 底层读取，pending fs 请求会拖住事件循环，导致 ready 失败后
+  // dispose/process.exit 都无法结束进程。net.Socket 复用既有 fd 的 pipe handle，
+  // destroy 会停止读取并关闭 fd；allowHalfOpen 把半关闭决策留给 channel，两个 socket
+  // 各自仍是 fd5/fd6 的唯一所有者，外层不按数字 close。
+  // 平台边界：该 transport 在 macOS 真实 pipe 已实测；Windows 属产品合同但尚无 runner
+  // 证据，不为未验证平台增加 fallback。
+  let readable: Socket | undefined;
+  let writable: Socket | undefined;
+  try {
+    readable = new Socket({
+      allowHalfOpen: true,
+      fd: readFdNumber,
+      readable: true,
+      writable: false,
+    });
+    writable = new Socket({
+      allowHalfOpen: true,
+      fd: writeFdNumber,
+      readable: false,
+      writable: true,
+    });
+  } catch (error) {
+    readable?.destroy();
+    writable?.destroy();
+    throw new ControlOnlyEntryError("control_fd_unavailable", "private control fd unavailable", {
+      cause: error,
+    });
+  }
+  return Duplex.from({ readable, writable });
 }
 
 export function writeFailure(writeStderr: (text: string) => void, code: string): void {

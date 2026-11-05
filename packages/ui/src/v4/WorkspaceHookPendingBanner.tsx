@@ -10,7 +10,7 @@ import { logger } from "@/logger.js";
 import { runUserAction } from "@/lib/userActionTelemetry.js";
 import { useOptionalTabStore } from "@/store/TabStoreProvider.js";
 import {
-  findWorkspaceHookCommandBinding,
+  resolveWorkspaceHookCommandBinding,
   useWorkspaceHookReviewStore,
   type WorkspaceHookCommandBinding,
 } from "@/store/workspaceHookReviewStore.js";
@@ -56,6 +56,7 @@ export interface WorkspaceHookPendingBannerProps {
   sessionId: string;
   workspacePath: string;
   workspaceIdentity?: string;
+  remoteSessionId?: string;
   admission: WorkspaceHookAdmissionInfo | null;
 }
 
@@ -71,6 +72,7 @@ export const WorkspaceHookPendingBanner = memo(function WorkspaceHookPendingBann
   sessionId,
   workspacePath,
   workspaceIdentity,
+  remoteSessionId,
   admission,
 }: WorkspaceHookPendingBannerProps) {
   const { intl } = useZodyIntl();
@@ -85,35 +87,66 @@ export const WorkspaceHookPendingBanner = memo(function WorkspaceHookPendingBann
 
     // 通过 command binding 发送 requestWorkspaceHookReview 命令。
     // 该通道正是为无 pending review interaction 时保留命令通道而设。
-    const binding = findWorkspaceHookCommandBinding(
-      commandBindings,
+    if (!admission) return;
+    const route = {
       workspacePath,
       workspaceIdentity,
-    );
-    if (binding && admission) {
-      const payload = {
+      remoteSessionId,
+      taskSessionId: sessionId,
+    };
+    const resolution = resolveWorkspaceHookCommandBinding(commandBindings, route);
+    const admissionWorkspaceKey = admission.workspaceIdentity?.trim() || workspacePath;
+    const routeWorkspaceKey = workspaceIdentity?.trim() || workspacePath;
+    if (admissionWorkspaceKey !== routeWorkspaceKey) {
+      logger.warn("[workspace-hook-pending] admission 与当前 workspace 路由不一致，未发送请求", {
         sessionId,
-        workspaceIdentity: admission.workspaceIdentity ?? workspaceIdentity ?? workspacePath,
         bundleDigest: admission.bundleDigest,
-      };
-      void sendWorkspaceHookCommand(
-        binding as Pick<WorkspaceHookCommandBinding, "sendCommand" | "onCommandSettled">,
-        sessionId,
-        "requestWorkspaceHookReview",
-        payload,
-      ).catch((error) => {
-        // 命令发送失败不阻断导航（容错）——用户已到达设置页，可手动操作。
-        logger.warn("[workspace-hook-pending] requestWorkspaceHookReview 发送失败", {
-          sessionId,
-          bundleDigest: admission.bundleDigest,
-          error,
-        });
       });
+      return;
     }
+    if (resolution.status !== "matched") {
+      // R47：同 remote 多 task 或 remote 已换代时不能按插入顺序猜 channel。
+      logger.warn("[workspace-hook-pending] 未找到唯一匹配的 review command channel，未发送请求", {
+        sessionId,
+        remoteSessionId,
+        status: resolution.status,
+        bundleDigest: admission.bundleDigest,
+      });
+      return;
+    }
+    const binding = resolution.binding;
+    if ((binding.remoteSessionId?.trim() || undefined) !== (remoteSessionId?.trim() || undefined)) {
+      logger.warn("[workspace-hook-pending] command channel remote 与当前会话不一致，未发送请求", {
+        sessionId,
+        remoteSessionId,
+        bundleDigest: admission.bundleDigest,
+      });
+      return;
+    }
+    const payload = {
+      sessionId,
+      ...(binding.remoteSessionId ? { remoteSessionId: binding.remoteSessionId } : {}),
+      workspaceIdentity: routeWorkspaceKey,
+      bundleDigest: admission.bundleDigest,
+    };
+    void sendWorkspaceHookCommand(
+      binding as Pick<WorkspaceHookCommandBinding, "sendCommand" | "onCommandSettled">,
+      binding.sessionId,
+      "requestWorkspaceHookReview",
+      payload,
+    ).catch((error) => {
+      // 命令发送失败不阻断导航（容错）——用户已到达设置页，可手动操作。
+      logger.warn("[workspace-hook-pending] requestWorkspaceHookReview 发送失败", {
+        sessionId,
+        bundleDigest: admission.bundleDigest,
+        error,
+      });
+    });
   }, [
     admission,
     commandBindings,
     openSettingsTab,
+    remoteSessionId,
     sessionId,
     workspaceIdentity,
     workspacePath,

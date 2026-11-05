@@ -26,6 +26,12 @@ describe("control-only marker", () => {
 const buildTimeoutMs = 120_000;
 const waitTimeoutMs = 10_000;
 const STARTUP_PROOF_DOMAIN = "zody.cua.control.startup.v1";
+const missingFdMessages: Record<number, string> = {
+  3: "private bootstrap fd unavailable",
+  4: "ready write failed",
+  5: "private control fd unavailable",
+  6: "private control fd unavailable",
+};
 
 type KeyMaterial = {
   controllerPrivate: ReturnType<typeof generateKeyPairSync>["privateKey"];
@@ -135,6 +141,15 @@ function waitForExit(
   });
 }
 
+async function waitForCondition(predicate: () => boolean, message: string): Promise<void> {
+  const deadline = Date.now() + waitTimeoutMs;
+  while (Date.now() < deadline) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error(message);
+}
+
 function spawnChild(
   serverPath: string,
   options: { bootstrap?: string; extraArgs?: string[]; bootstrapFd?: boolean } = {},
@@ -177,13 +192,26 @@ describe("control-only node_repl entry", () => {
       stdio: ["ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"],
     });
     let stdout = "";
+    let stderr = "";
     child.stdout?.on("data", (chunk: Buffer) => { stdout += chunk.toString(); });
-    child.stderr?.resume();
+    child.stderr?.setEncoding("utf8");
+    child.stderr?.on("data", (chunk: string) => { stderr += chunk; });
     (child.stdio[3] as Writable).end(createBootstrap(createKeys(), "challenge-missing-fd"));
     try {
       const exit = await withTimeout(waitForExit(child), "child did not exit with unavailable fd");
       expect(exit).toEqual({ code: 1, signal: null });
-      expect(JSON.parse(stdout)).toEqual({ code: 1, selected: missingFd, verified: "EBADF" });
+      expect(JSON.parse(stdout)).toEqual({
+        code: 1,
+        selected: missingFd,
+        verified: "EBADF",
+        ...(missingFd === 4
+          ? { closedCode: "disposed", closedCount: 1, transportClosed: true }
+          : {}),
+      });
+      expect(stderr).toContain(missingFdMessages[missingFd]);
+      expect(stderr).not.toContain("{");
+      // fixture 只设置 exitCode 自然返回；父端 fd5 peer 保持打开，不得依赖强杀。
+      expect(child.killed).toBe(false);
     } finally {
       if (child.exitCode === null && child.signalCode === null) {
         child.kill("SIGKILL");
@@ -191,6 +219,259 @@ describe("control-only node_repl entry", () => {
       }
     }
   }, buildTimeoutMs);
+
+  it(
+    "cleans up when signed ready writing fails",
+    async () => {
+      const keys = createKeys();
+      const challenge = randomBytes(32).toString("base64url");
+      const child = spawnChild(serverPath, { bootstrap: createBootstrap(keys, challenge) });
+      let stderr = "";
+      let readyBytes = "";
+      child.stderr?.setEncoding("utf8");
+      child.stderr?.on("data", (chunk: string) => {
+        stderr += chunk;
+      });
+      const readyStream = child.stdio[4] as Readable;
+      readyStream.setEncoding("utf8");
+      readyStream.on("data", (chunk: string) => {
+        readyBytes += chunk;
+      });
+      // 本用例验证入口清理；fstat 通过后真实写失败的精确归因由下面的受控诊断用例提供。
+      // 关闭父端读端后 fd4 写端仍有效，signed ready 不会送达；fd5 写端保持打开。
+      readyStream.destroy();
+      try {
+        const exit = await withTimeout(waitForExit(child), "ready write failure did not exit");
+        expect(exit).toEqual({ code: 1, signal: null });
+        expect(child.killed).toBe(false);
+        expect(stderr).toContain("ready write failed");
+        expect(stderr).not.toContain("{");
+        expect(readyBytes).not.toContain('"kind":"ready"');
+      } finally {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill("SIGKILL");
+          await waitForExit(child).catch(() => undefined);
+        }
+      }
+    },
+    buildTimeoutMs,
+  );
+
+  it(
+    "proves ready fstat succeeds before the real write fails with EPIPE",
+    async () => {
+      const fixture = fileURLToPath(new URL("./fixtures/control-only-fd-reuse.ts", import.meta.url));
+      const child = spawn(process.execPath, ["--import", "tsx", fixture], {
+        env: { ...process.env, ZCONTROL_READY_WRITE_DIAGNOSTIC: "1" },
+        stdio: ["pipe", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+      child.stdout?.setEncoding("utf8");
+      child.stdout?.on("data", (chunk: string) => {
+        stdout += chunk;
+      });
+      child.stderr?.setEncoding("utf8");
+      child.stderr?.on("data", (chunk: string) => {
+        stderr += chunk;
+      });
+      (child.stdio[3] as Writable).end(
+        createBootstrap(createKeys(), "challenge-ready-write-diagnostic"),
+      );
+      try {
+        await withTimeout(
+          waitForCondition(
+            () => stdout.includes("ready-fstat-precheck\n"),
+            "ready fstat precheck was not reported",
+          ),
+          "ready fstat precheck was not reported",
+        );
+        (child.stdio[4] as Readable).destroy();
+        (child.stdin as Writable).write("go\n");
+        const exit = await withTimeout(waitForExit(child), "ready diagnostic child did not exit");
+        expect(exit).toEqual({ code: 0, signal: null });
+        expect(child.killed).toBe(false);
+        expect(stderr).toBe("");
+        const resultLine = stdout
+          .trim()
+          .split("\n")
+          .find((line) => line.startsWith("{"));
+        expect(JSON.parse(resultLine ?? "null")).toEqual({
+          cause: "EPIPE",
+          phase: "ready_write_failed",
+          precheck: true,
+        });
+      } finally {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill("SIGKILL");
+          await waitForExit(child).catch(() => undefined);
+        }
+      }
+    },
+    buildTimeoutMs,
+  );
+
+  it(
+    "keeps reused fd5/6 open after a repeated dispose",
+    async () => {
+      const keys = createKeys();
+      const challenge = randomBytes(32).toString("base64url");
+      const filePath = join(directory, "control-fd-reuse.txt");
+      const fixture = fileURLToPath(new URL("./fixtures/control-only-fd-reuse.ts", import.meta.url));
+      const child = spawn(process.execPath, ["--import", "tsx", fixture], {
+        env: { ...process.env, ZCONTROL_CONTROL_FD_REUSE_FILE: filePath },
+        stdio: ["ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+      child.stdout?.setEncoding("utf8");
+      child.stdout?.on("data", (chunk: string) => {
+        stdout += chunk;
+      });
+      child.stderr?.setEncoding("utf8");
+      child.stderr?.on("data", (chunk: string) => {
+        stderr += chunk;
+      });
+      (child.stdio[3] as Writable).end(createBootstrap(keys, challenge));
+      try {
+        const ready = JSON.parse(
+          await withTimeout(
+            readLine(child.stdio[4] as Readable, 4096),
+            "signed ready was not received for fd reuse",
+          ),
+        ) as Record<string, unknown>;
+        expect(
+          verify(
+            null,
+            Buffer.from(startupProof(challenge, child.pid as number)),
+            keys.producerPublic,
+            Buffer.from(String(ready.signature), "base64"),
+          ),
+        ).toBe(true);
+        const exit = await withTimeout(waitForExit(child), "control fd reuse child did not exit");
+        expect(exit).toEqual({ code: 0, signal: null });
+        expect(child.killed).toBe(false);
+        expect(stderr).toBe("");
+        expect(JSON.parse(stdout.trim())).toEqual({
+          closedCount: 1,
+          code: 0,
+          reused: [5, 6],
+          writeError: null,
+        });
+      } finally {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill("SIGKILL");
+          await waitForExit(child).catch(() => undefined);
+        }
+      }
+    },
+    buildTimeoutMs,
+  );
+
+  it(
+    "settles once and closes the remaining direction when the read direction reaches EOF",
+    async () => {
+      const keys = createKeys();
+      const challenge = randomBytes(32).toString("base64url");
+      const fixture = fileURLToPath(new URL("./fixtures/control-only-fd-reuse.ts", import.meta.url));
+      const child = spawn(process.execPath, ["--import", "tsx", fixture], {
+        env: { ...process.env, ZCONTROL_HALF_CLOSE_REPORT: "1" },
+        stdio: ["ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+      child.stdout?.setEncoding("utf8");
+      child.stdout?.on("data", (chunk: string) => {
+        stdout += chunk;
+      });
+      child.stderr?.setEncoding("utf8");
+      child.stderr?.on("data", (chunk: string) => {
+        stderr += chunk;
+      });
+      (child.stdio[3] as Writable).end(createBootstrap(keys, challenge));
+      try {
+        await withTimeout(
+          readLine(child.stdio[4] as Readable, 4096),
+          "signed ready was not received for half-close",
+        );
+        let writePeerEnded = false;
+        const writePeerClosed = new Promise<void>((resolve) => {
+          const stream = child.stdio[6] as Readable;
+          stream.once("end", () => {
+            writePeerEnded = true;
+            resolve();
+          });
+          stream.resume();
+        });
+        // 在父端发送 EOF 之前，子进程不得提前退出（fixture 只在 run 返回后写 stdout）。
+        expect(stdout).toBe("");
+        (child.stdio[5] as Writable).end();
+        const exit = await withTimeout(waitForExit(child), "half-close child did not exit");
+        await withTimeout(writePeerClosed, "child write direction did not close after read EOF");
+        expect(exit).toEqual({ code: 0, signal: null });
+        expect(child.killed).toBe(false);
+        expect(writePeerEnded).toBe(true);
+        expect(stderr).toBe("");
+        expect(JSON.parse(stdout.trim())).toEqual({ closedCount: 1, code: 0 });
+      } finally {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill("SIGKILL");
+          await waitForExit(child).catch(() => undefined);
+        }
+      }
+    },
+    buildTimeoutMs,
+  );
+
+  it(
+    "keeps the read direction active when only the write peer closes",
+    async () => {
+      const keys = createKeys();
+      const challenge = randomBytes(32).toString("base64url");
+      const fixture = fileURLToPath(new URL("./fixtures/control-only-fd-reuse.ts", import.meta.url));
+      const child = spawn(process.execPath, ["--import", "tsx", fixture], {
+        env: { ...process.env, ZCONTROL_HALF_CLOSE_REPORT: "1" },
+        stdio: ["ignore", "pipe", "pipe", "pipe", "pipe", "pipe", "pipe"],
+      });
+      let stdout = "";
+      let stderr = "";
+      child.stdout?.setEncoding("utf8");
+      child.stdout?.on("data", (chunk: string) => {
+        stdout += chunk;
+      });
+      child.stderr?.setEncoding("utf8");
+      child.stderr?.on("data", (chunk: string) => {
+        stderr += chunk;
+      });
+      (child.stdio[3] as Writable).end(createBootstrap(keys, challenge));
+      try {
+        await withTimeout(
+          readLine(child.stdio[4] as Readable, 4096),
+          "signed ready was not received for write half-close",
+        );
+        (child.stdio[6] as Readable).destroy();
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        expect(stdout).toBe("");
+        expect(child.exitCode).toBeNull();
+        expect(child.signalCode).toBeNull();
+        (child.stdio[5] as Writable).end();
+        const exit = await withTimeout(
+          waitForExit(child),
+          "half-close child did not exit after read EOF",
+        );
+        expect(exit).toEqual({ code: 0, signal: null });
+        expect(child.killed).toBe(false);
+        expect(stderr).toBe("");
+        expect(JSON.parse(stdout.trim())).toEqual({ closedCount: 1, code: 0 });
+      } finally {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill("SIGKILL");
+          await waitForExit(child).catch(() => undefined);
+        }
+      }
+    },
+    buildTimeoutMs,
+  );
 
   it(
     "fails closed when the private bootstrap fd is not a private pipe",
@@ -345,6 +626,8 @@ describe("control-only node_repl entry", () => {
           complete: false,
         });
 
+        await controller.dispose();
+        // 重复 dispose 必须幂等，不能再次关闭已释放或已复用的 fd。
         await controller.dispose();
         controller = undefined;
         const exit = await withTimeout(waitForExit(child), "child did not exit after dispose");

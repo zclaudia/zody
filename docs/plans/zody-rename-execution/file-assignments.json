@@ -16662,23 +16662,339 @@
     "readSet": [
       "AGENTS.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
-      "docs/plans/zody-full-divergence-rename-survey.md"
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/task-ledger.md",
+      "docs/plans/zody-rename-execution/reports/R22-resume-independent-review.md",
+      "docs/plans/zody-rename-execution/reports/R43-release-runbook.md",
+      "docs/plans/zody-rename-execution/reports/R47-local-runtime19.md",
+      "docs/plans/zody-rename-execution/reports/R40-unknown-meta-decision.md",
+      "output/zody-rename-w5-controller/r48-dispatch-proposal.md",
+      "output/zody-rename-w5-preflight/R20-remaining-owner-audit.json",
+      "output/zody-rename-w5-preflight/R45-e2e-readiness.json"
     ],
     "writeSet": [
-      "docs/plans/zody-rename-execution/reports/R48.md"
+      "docs/plans/zody-rename-execution/task-ledger.md",
+      "docs/plans/zody-rename-execution/file-assignments.json",
+      "output/zody-rename-r48/candidate-artifacts/**",
+      "output/zody-rename-r48/R48.0-baseline.md",
+      "docs/plans/zody-rename-execution/reports/R48.1-agent-stdio.md",
+      "output/zody-rename-r48/r48.1-agent-stdio/**",
+      "docs/plans/zody-rename-execution/reports/R48.1-server-stdio.md",
+      "output/zody-rename-r48/r48.1-server-stdio/**",
+      "docs/plans/zody-rename-execution/reports/R48.1-continuous-http.md",
+      "output/zody-rename-r48/r48.1-continuous-http/**",
+      "docs/plans/zody-rename-execution/reports/R48.1-replay-web-mobile.md",
+      "output/zody-rename-r48/r48.1-replay-web-mobile/**",
+      "docs/plans/zody-rename-execution/reports/R48.1-deploy-verify.md",
+      "output/zody-rename-r48/r48.1-deploy-verify/**",
+      "docs/plans/zody-rename-execution/reports/R48.2-env-startup.md",
+      "output/zody-rename-r48/r48.2-env-startup/**",
+      "docs/plans/zody-rename-execution/reports/R48.2-data-trust-telemetry.md",
+      "output/zody-rename-r48/r48.2-data-trust-telemetry/**",
+      "docs/plans/zody-rename-execution/reports/R48.md",
+      "output/zody-rename-r48/r48.2-closure/**"
     ],
     "excludeSet": [
-      "其他任务独占文件",
-      "真实用户数据",
-      "结构范围之外的文件",
-      "共享接口未经主控交接不得修改"
+      "产品源码（R48 只读；发现缺陷回报 owner，不在 R48 内修改）",
+      "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+      "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+      "真实用户数据与凭据",
+      "现网 gateway 容器 zclaudia-gateway-gateway-1",
+      "冻结/签名/CUA 资源（R60）",
+      "其他任务独占文件"
     ],
     "plannedPaths": [
-      "docs/plans/zody-rename-execution/reports/R48.md"
+      "docs/plans/zody-rename-execution/reports/R48.1-agent-stdio.md",
+      "docs/plans/zody-rename-execution/reports/R48.1-server-stdio.md",
+      "docs/plans/zody-rename-execution/reports/R48.1-continuous-http.md",
+      "docs/plans/zody-rename-execution/reports/R48.1-replay-web-mobile.md",
+      "docs/plans/zody-rename-execution/reports/R48.1-deploy-verify.md",
+      "docs/plans/zody-rename-execution/reports/R48.2-env-startup.md",
+      "docs/plans/zody-rename-execution/reports/R48.2-data-trust-telemetry.md",
+      "docs/plans/zody-rename-execution/reports/R48.md",
+      "output/zody-rename-r48/R48.0-baseline.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
-    "structureScope": []
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已授权 §4 九单元派发集合与 R48.0 基线同步；本条目是派发锁，不等于任何单元已执行或已验收。父 writeSet 为各单元并集，实际派发以 units[].writeSet 为准，单元间互不重叠；每单元只写自己的报告与 output/zody-rename-r48/<unit>/**，产品源码只读。R48 未执行：真实旧/新产物混布矩阵、既有失败对账、P3/P4 联合结论与发布门禁均未开始。Windows runner、旧独立 server-cli 混布格（R02 yazl 缺陷）、Android 设备层与 telemetry formal E2E 环境为 blocked 候选；R48 通过不等于发布。scopeStatus 取现有 reviewable-dispatch-scope（主控授权可派发、尚未独立验收），未取 independently-accepted-scoped 以免夸大。",
+    "structureScope": [
+      "P3/P4 全链路矩阵：L1 Agent stdio、L2 RemoteServer stdio、L3 desktop-continuous 双 HTTP 入口、L4 web-remote-replayable（Web + 手机 attachment）、L5 部署/运行版本 × N/O 版本组合 × darwin-arm64/linux 容器/win-x64（blocked）/Android（环境依赖）",
+      "横切 RENAME-ENV / RENAME-DATA / RENAME-DATA-TELEMETRY / RENAME-TRUST"
+    ],
+    "dispatchProposal": "output/zody-rename-w5-controller/r48-dispatch-proposal.md",
+    "units": [
+      {
+        "id": "R48.0",
+        "title": "基线冻结、账本同步、freshness、R02 旧产物复验与可用性表、R48 条目落锁、新候选产物构建（主控；不派实施代理）",
+        "owner": "controller",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/task-ledger.md",
+          "docs/plans/zody-rename-execution/file-assignments.json",
+          "output/zody-rename-r48/candidate-artifacts/**",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "docs/plans/zody-rename-execution/task-ledger.md",
+          "output/zody-rename-w5-controller/r48-dispatch-proposal.md",
+          "output/zody-rename-r02/legacy-runtime-artifacts.json",
+          "docs/plans/zody-rename-execution/reports/R02-server-cli-baseline-defect.md",
+          "scripts/check-workspace-freshness.mjs",
+          "mise.toml",
+          "package.json"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读；复制进本单元目录使用）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "先于一切单元：提交已验收的 R47/R20 候选并记录 commit/tree SHA，运行 node scripts/check-workspace-freshness.mjs，复验 R02 旧产物 SHA256 并登记旧对端可用性表（可启动/已知缺陷不可启动/未验证）。旧产物只读，使用前复制。未验证格如实登记，不得伪装旧对端。"
+      },
+      {
+        "id": "R48.1-A",
+        "title": "L1 Agent stdio 混布矩阵 + 目标单测复跑",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.1-agent-stdio.md",
+          "output/zody-rename-r48/r48.1-agent-stdio/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "packages/services/test/zodyStdioTransport.test.ts",
+          "packages/services/test/zodyStdioTransport.processTree.test.ts",
+          "packages/server/test/stdioLifecycle.test.ts",
+          "docs/plans/zody-rename-execution/reports/R02-server-cli-baseline-defect.md",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "N×N、N×O（旧 Agent = R02 zcode.cjs）、O×N（旧 Host = R02 旧 desktop 构建）× darwin-arm64（linux 容器 Agent 侧如可行）。每格记录两侧产物 SHA256、源码 SHA、命令、退出码、请求/响应关联与顺序、stderr 分离、EOF/取消进程树清理、旧 wire 名不进入业务。旧 Host 实跑形态未验证处登记 blocked/未验证。"
+      },
+      {
+        "id": "R48.1-B",
+        "title": "L2 RemoteServer stdio 混布矩阵",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.1-server-stdio.md",
+          "output/zody-rename-r48/r48.1-server-stdio/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "specs/zody-rename-runtime-contract.md",
+          "packages/server/test/stdioHandshake.test.ts",
+          "packages/server/test/remoteConnect.test.ts",
+          "packages/server/test/stdioLifecycle.test.ts",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "N×N、N×O、O×N × darwin-arm64 + linux 容器。断言：server 首帧严格 schema；ack 后同 chunk 移交；旧 zcode-hello 立即拒绝且不写 ack；SSH banner 跳过保留；取消/EOF 零 admission。旧 stdio server 实启属首次，未验证项如实登记。"
+      },
+      {
+        "id": "R48.1-C",
+        "title": "L3 desktop-continuous 双 HTTP 入口（入口①全格 + 入口② N×N；入口②旧对端格出阻塞登记）",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.1-continuous-http.md",
+          "output/zody-rename-r48/r48.1-continuous-http/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "specs/zody-rename-http-attachment.md",
+          "packages/server/test/serverInfoHttp.test.ts",
+          "packages/desktop/test/serverRemoteConnection.test.ts",
+          "packages/desktop/test/remoteWorkspaceServicePortBridge.test.ts",
+          "packages/zody-server-cli/test/coreHttp.test.ts",
+          "packages/zody-server-cli/package.json",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "入口① N×N、N×O（旧 server = R02 旧 server dist）、O×N × darwin-arm64 + linux 容器：capability 单次消费、断线重连不复用失效 capability、旧 header/缺失代际业务前 426。入口② N×N：stage 产物真实启动（含 Core 入口）/ready/server-info/正常 stop/无残留子进程；O×N/O×O 因旧独立发行包 yazl 缺陷阻塞登记，禁止伪装旧对端。continuous 语义不得用 replayable 断言替代。"
+      },
+      {
+        "id": "R48.1-D",
+        "title": "L4 web-remote-replayable：Web + 手机 attachment（协议层必做，设备层按环境）",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.1-replay-web-mobile.md",
+          "output/zody-rename-r48/r48.1-replay-web-mobile/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "specs/zody-rename-http-attachment.md",
+          "docs/testing/mobile-remote-phase2-e2e-plan.md",
+          "packages/client/test/zodyRenameWebsocket.test.ts",
+          "packages/web/test/zodyRenameBootstrap.test.ts",
+          "packages/web/test/mobileRemoteGatewayTerminalTransport.test.ts",
+          "packages/desktop/test/gatewayDeviceTransport.test.ts",
+          "scripts/run-mobile-host-identity-isolation-e2e.mjs",
+          "output/zody-rename-w5-preflight/R45-e2e-readiness.json",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "Web：N×N、旧缓存页×新 Server、新 Web×旧 Server × darwin-arm64；server-info renameGeneration 连接前校验、子协议选中后才发 RPC、旧页 upgrade 426、remoteId 分支同样校验、快照/队列恢复与重连不重复业务。手机：channel protocolVersion:2 与 zody protocol 5 payload、不兼容 close{incompatible-version}、复用 Host attachment 无第二 Host/Agent；隔离 gateway 容器（随机端口+独立卷+现签现删凭证），禁触现网容器。设备层视模拟器/ntfy 环境，缺则 blocked。"
+      },
+      {
+        "id": "R48.1-E",
+        "title": "L5 部署/运行版本矩阵 + R43 runbook 对照演练（隔离目标）",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.1-deploy-verify.md",
+          "output/zody-rename-r48/r48.1-deploy-verify/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "specs/zody-rename-remote-deploy.md",
+          "docs/plans/zody-rename-execution/reports/R43-release-runbook.md",
+          "packages/server/test/remoteDeploy.test.ts",
+          "packages/server/test/remoteDeployLock.test.ts",
+          "packages/server/test/remoteConnect.test.ts",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "隔离目标 × {正常, 离线未升级, 并发双 client, 部署中断, skipDeploy, 旧部署者尝试, 回退} × darwin-arm64/linux 容器：运行实例 hello 代际+版本实证；marker/--version 只作部署决策；失败目标保持业务关闭可回退；锁与进程清理。独占隔离部署目标与 SSH single-flight 锁；与 R48.1-B/C 共用容器目标时串行。只打隔离合成目标，不执行生产切换。"
+      },
+      {
+        "id": "R48.2-A",
+        "title": "RENAME-ENV 真实启动链（本进程/子进程/远端）",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.2-env-startup.md",
+          "output/zody-rename-r48/r48.2-env-startup/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "packages/server/test/zodyRenameEnv.test.ts",
+          "packages/services/test/zodyRenameEnv.test.ts",
+          "packages/desktop/test/desktopRuntimeEnv.test.ts",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "仅旧名/仅新名/并存/未设置 × 本进程/子进程/远端 × darwin-arm64(+linux)：只认 ZODY_* 且值贯穿 data root/credential secret/代理/provider 配置，旧名不静默回默认值。真实启动：隔离 HOME 下新候选 CLI --version、desktop test 环境与隔离远端 server 启动，记录 env 实际传值。"
+      },
+      {
+        "id": "R48.2-B",
+        "title": "RENAME-DATA / DATA-TELEMETRY / TRUST 场景（含 pending E2E 执行与 R47 远端路由首验）",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.2-data-trust-telemetry.md",
+          "output/zody-rename-r48/r48.2-data-trust-telemetry/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "specs/zody-rename-artifact.md",
+          "specs/zody-rename-telemetry.md",
+          "packages/desktop/test/remoteMediaPreviewProxy.test.ts",
+          "packages/shared/test/remoteUsageTelemetry.test.ts",
+          "packages/shared/test/workspaceHookTrustStoreFile.test.ts",
+          "packages/ui/test/workspaceHookReviewStore.test.ts",
+          "apps/zody-cli/packages/adapters/tests/workspace-hook-trust-phase1.test.ts",
+          "apps/zody-cli/packages/adapters/tests/workspace-hook-trust-store.test.ts",
+          "apps/zody-cli/packages/bootstrap/tests/workspace-hook-runtime-admission.test.ts",
+          "packages/desktop/test/e2e/conversation-session/manual-review/pending/zody-rename-artifact.test.ts",
+          "packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-host-identity-isolation.test.ts",
+          "docs/plans/zody-rename-execution/reports/R47-local-runtime19.md",
+          "output/zody-rename-w5-preflight/R45-e2e-readiness.json",
+          "output/zody-rename-r48/R48.0-baseline.md"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "DATA：新/旧 artifact URI × 真实 Desktop 冷/热会话，新媒体成功、旧 URI 失效但会话其余文本块可加载、无缓存绕过。TELEMETRY：隔离 collector × 可计数操作，只发新口径、每操作一次、无双发；R46 三个 formal E2E 按环境执行或 blocked，精确名单须取自 R46 控制器证据。TRUST：真实远端 A/B 双连接 × 路由/歧义/换代，grant 目标不含 remoteSessionId，歧义/失效/旧 effect 显式拒绝且零执行，本地单 binding path fallback 保留；runtime19 本地子集不重跑（复用 11645a82…），远端路由实测为首验。Desktop WDIO 不得与其他单元并行。"
+      },
+      {
+        "id": "R48.2-C",
+        "title": "收口：G 全矩阵、既有失败对账、P3/P4 联合结论、runbook 审核、待发布清单、回退演练证据、清理（父报告）",
+        "writeSet": [
+          "docs/plans/zody-rename-execution/reports/R48.md",
+          "output/zody-rename-r48/r48.2-closure/**"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "docs/plans/zody-full-divergence-rename-survey.md",
+          "docs/plans/zody-rename-execution/reports/R22-resume-independent-review.md",
+          "docs/plans/zody-rename-execution/reports/R43-release-runbook.md",
+          "docs/plans/zody-rename-execution/reports/R48.1-agent-stdio.md",
+          "docs/plans/zody-rename-execution/reports/R48.1-server-stdio.md",
+          "docs/plans/zody-rename-execution/reports/R48.1-continuous-http.md",
+          "docs/plans/zody-rename-execution/reports/R48.1-replay-web-mobile.md",
+          "docs/plans/zody-rename-execution/reports/R48.1-deploy-verify.md",
+          "docs/plans/zody-rename-execution/reports/R48.2-env-startup.md",
+          "docs/plans/zody-rename-execution/reports/R48.2-data-trust-telemetry.md",
+          "output/zody-rename-r22/resume-7089/case-comparison.json",
+          "docs/plans/zody-rename-execution/reports/R47-local-runtime19.md",
+          "docs/plans/zody-rename-execution/reports/R40-unknown-meta-decision.md",
+          "output/zody-rename-w5-preflight/R20-remaining-owner-audit.json"
+        ],
+        "excludeSet": [
+          "产品源码（R48 只读；新差异退回 R30/R41–R47 owner）",
+          "其他单元的报告与 output/zody-rename-r48/<其他单元>/**",
+          "output/zody-rename-r02/**（R02 旧产物证据树，只读）",
+          "真实用户数据与凭据",
+          "现网 gateway 容器 zclaudia-gateway-gateway-1",
+          "冻结/签名/CUA 资源（R60）",
+          "其他任务独占文件"
+        ],
+        "gate": "最后串行执行。G：根 typecheck/lint/changed architecture + 全量 architecture（2 条基线违规如实报）+ knip（已知失败保留）+ 全量 pnpm test:unit（不拆命令、不加 skip），R22 的 42 断言 + 4 套件级失败逐条对账（旧失败/同名未证同因/新差异），新差异退回 owner。R20 残余 owner / R40 retained readers / strict19 / narrow4 / CUA / 签名 / 跨平台逐项登记状态，未销项不得写已解决。交付 P3/P4 联合可合入结论、runbook 审核意见、待发布目标清单、回退演练证据、blocked 清单与放行条件。R48 通过不等于发布。"
+      }
+    ]
   },
   "R50": {
     "title": "共享插件兼容规则与公共接口",

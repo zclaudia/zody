@@ -26,6 +26,15 @@ const timelineState = vi.hoisted(() => ({
   rowContext: null as unknown,
 }));
 
+const pendingBannerProps = vi.hoisted(() => ({
+  current: null as {
+    sessionId?: string;
+    workspacePath?: string;
+    workspaceIdentity?: string;
+    remoteSessionId?: string;
+  } | null,
+}));
+
 // fork（F4.8）：分享选择 store mock 随会话分享功能删除。
 
 vi.mock("@/v4/useConversationProjection.js", () => ({
@@ -139,6 +148,16 @@ vi.mock("@/v4/V4InteractionDialogs.js", async () => {
   };
 });
 
+vi.mock("@/v4/WorkspaceHookPendingBanner.js", async () => {
+  const React = await import("react");
+  return {
+    WorkspaceHookPendingBanner: (props: typeof pendingBannerProps.current) => {
+      pendingBannerProps.current = props;
+      return React.createElement("div", { "data-testid": "mock-pending-banner" });
+    },
+  };
+});
+
 vi.mock("@/request-security-edition/V4ProviderRuntimeHeadersController.js", async () => {
   const React = await import("react");
   return {
@@ -203,16 +222,21 @@ function renderReadOnlyPane({
   apiRetry = null,
   lastError = null,
   readOnly = true,
+  remoteSessionId,
+  workspaceHookAdmission,
   workflowRuns,
 }: {
   allowWorkspaceFileRewind?: boolean;
   apiRetry?: ConversationSnapshot["control"]["apiRetry"];
   lastError?: ConversationSnapshot["control"]["lastError"];
   readOnly?: boolean;
+  remoteSessionId?: string;
+  workspaceHookAdmission?: ConversationSnapshot["workspaceHookAdmission"];
   workflowRuns?: ConversationSnapshot["workflowRuns"];
 } = {}): string {
   const snapshot = makeSnapshot(lastError);
   snapshot.control.apiRetry = apiRetry;
+  snapshot.workspaceHookAdmission = workspaceHookAdmission ?? null;
   if (workflowRuns) snapshot.workflowRuns = workflowRuns;
   projectionState.current = {
     lastError: null,
@@ -233,6 +257,7 @@ function renderReadOnlyPane({
         readOnly,
         sessionId: "child-session",
         workspacePath: "/workspace",
+        ...(remoteSessionId ? { remoteSessionId } : {}),
         ...(readOnly ? {} : { onOpenWorkflowRun: () => {} }),
       }),
     ),
@@ -331,6 +356,23 @@ describe("SessionPane read-only mode", () => {
     expect(html).not.toContain("workflow-run-island-pill");
   });
 
+  it("passes the pane remoteSessionId into the workspace Hook pending banner", () => {
+    const html = renderReadOnlyPane({
+      readOnly: false,
+      remoteSessionId: "remote-selected",
+      workspaceHookAdmission: {
+        pendingCount: 1,
+        bundleDigest: "a".repeat(64),
+        workspaceIdentity: "remote:workspace",
+      },
+    });
+
+    expect(html).toContain('data-testid="mock-pending-banner"');
+    expect(pendingBannerProps.current).toMatchObject({
+      sessionId: "child-session",
+      remoteSessionId: "remote-selected",
+    });
+  });
 });
 
 // fork（F4.8）：SessionPane 分享模式接线用例随会话分享功能删除。
