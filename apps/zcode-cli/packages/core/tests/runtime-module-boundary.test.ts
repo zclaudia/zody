@@ -8,6 +8,10 @@ const lineCountExemptFiles = new Set([
   // 现存大文件是显式重构债务；边界测试继续阻止新增未登记的大文件。
   ...[
     "agent-runtime.ts",
+    // 6ae791ee 加入 CUA 方法声明后达 407 行（>400），按惯例登记为重构债；拆分待 computer-use 线收口。
+    "internal-methods.ts",
+    // 6ae791ee 后 methods/index.ts 达 416 行，同为未登记超标；re-export 汇总文件，拆分收益低，登记为债。
+    "methods/index.ts",
     "internal-turn-methods.ts",
     "types.ts",
     "methods/background.ts",

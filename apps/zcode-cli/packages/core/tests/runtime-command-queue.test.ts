@@ -191,6 +191,9 @@ describe("RuntimeCommandQueue", () => {
         executionOrder.push(input);
         return {};
       }),
+      // 6ae791ee 起 finishForegroundExecution 会调用 CUA turn scope 失效（接口方法），
+      // 本用例的执行路径经过 foreground 结束，最小桩必须带上该方法，否则 TypeError。
+      invalidateCuaSubmissionTurnScopeForForeground: vi.fn(),
       foregroundPromotionLease: undefined,
       runtimeCommandDrainActive: false,
       runtimeCommandQueue: createRuntimeCommandQueue(),
