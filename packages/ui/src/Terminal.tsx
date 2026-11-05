@@ -62,7 +62,7 @@ export function Terminal({
       },
     };
   });
-  const closePanelAfterExitWorkspaceRef = useRef<string | null>(null);
+  const closePanelAfterSessionRemovalWorkspaceRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isVisible) {
@@ -82,12 +82,12 @@ export function Terminal({
   }, [cwd, isVisible, services, workspaceKey]);
 
   useEffect(() => {
-    const exitedWorkspaceKey = closePanelAfterExitWorkspaceRef.current;
+    const exitedWorkspaceKey = closePanelAfterSessionRemovalWorkspaceRef.current;
     if (!exitedWorkspaceKey) {
       return;
     }
 
-    closePanelAfterExitWorkspaceRef.current = null;
+    closePanelAfterSessionRemovalWorkspaceRef.current = null;
     if (exitedWorkspaceKey === workspaceKey) {
       onClose();
     }
@@ -187,40 +187,30 @@ export function Terminal({
     });
   }, [cwd, services, workspaceKey]);
 
-  const handleCloseSession = useCallback(
-    (sessionId: string) => {
-      const closeAction = getTerminalSessionCloseAction(panelState, sessionId);
+  const handleCloseSession = useCallback((sessionId: string) => {
+    setPanelState((current) => {
+      const session = current.sessions[sessionId];
+      const closeAction = getTerminalSessionCloseAction(current, sessionId);
+      const next = closeTerminalSession(current, sessionId);
+      if (!session || closeAction === "none" || next === current) {
+        return current;
+      }
+
+      // F14（产品裁决 A=跟随上游，来源 a60ba6a7）：最后一个 tab 的关闭不再只收起保活面板。
+      // 单 tab 关闭按钮过去不删除 descriptor，TerminalSession 因此不会卸载，Windows PTY 也无法 dispose。
+      // 先删除唯一状态源中的 session，提交后再经 closePanelAfterSessionRemovalWorkspaceRef 收起面板，
+      // 让 TerminalSession 继续统一负责资源回收；右上角关闭面板按钮仍是纯收起保活，行为不变。
       if (closeAction === "close-panel") {
-        // 旧 UI 在只剩一个 tab 时直接隐藏关闭按钮，用户无法从 tab 完成关闭。
-        // 最后一个 tab 的关闭语义是收起整个面板并保活 session，与右上角关闭面板按钮保持一致。
-        logger.info("[Terminal] close terminal panel from last tab", {
-          terminalTabId: sessionId,
-          workspaceKey,
-        });
-        onClose();
-        return;
+        closePanelAfterSessionRemovalWorkspaceRef.current = session.workspaceKey;
       }
-
-      if (closeAction !== "close-session") {
-        return;
-      }
-
-      setPanelState((current) => {
-        const session = current.sessions[sessionId];
-        const next = closeTerminalSession(current, sessionId);
-        if (!session || next === current) {
-          return current;
-        }
-
-        logger.info("[Terminal] close terminal tab", {
-          terminalTabId: sessionId,
-          workspaceKey: session.workspaceKey,
-        });
-        return next;
+      logger.info("[Terminal] close terminal tab", {
+        action: closeAction,
+        terminalTabId: sessionId,
+        workspaceKey: session.workspaceKey,
       });
-    },
-    [onClose, panelState, workspaceKey],
-  );
+      return next;
+    });
+  }, []);
 
   const handleSessionExit = useCallback(
     (sessionId: string, exitCode: number) => {
@@ -240,7 +230,7 @@ export function Terminal({
           workspaceKey: exitedWorkspaceKey,
         });
         if (result.action === "close-panel") {
-          closePanelAfterExitWorkspaceRef.current = exitedWorkspaceKey ?? null;
+          closePanelAfterSessionRemovalWorkspaceRef.current = exitedWorkspaceKey ?? null;
         }
         return result.state;
       });

@@ -68,11 +68,23 @@ describe("terminalPanelState", () => {
     expect(afterClosingFirst.sessions[second.id]?.index).toBe(2);
   });
 
-  it("requests closing the panel without deleting the only session", () => {
+  it("deletes the only session and its workspace so the PTY can dispose (last-tab close)", () => {
+    // F14 裁决 A（来源 a60ba6a7）：最后一个 tab 关闭=删除 session 后收起面板（PTY 真正 dispose、重开新建）。
+    // 反例证据：修复前本用例前身断言 closeTerminalSession(state).toBe(state)（收起保活、不删 descriptor）成立。
     const state = createState([createSession("terminal:1", 1)]);
 
     expect(getTerminalSessionCloseAction(state, "terminal:1")).toBe("close-panel");
-    expect(closeTerminalSession(state, "terminal:1")).toBe(state);
+    expect(closeTerminalSession(state, "terminal:1")).toEqual({ sessions: {}, workspaces: {} });
+
+    // 重开面板经 ensureWorkspaceTerminalState 懒创建全新 session（与 PTY exit 路径同一恢复语义）。
+    const reopened = ensureWorkspaceTerminalState(closeTerminalSession(state, "terminal:1"), {
+      workspaceKey: "workspace",
+      services,
+      cwd: "/repo/z-code",
+    });
+    const workspace = reopened.workspaces.workspace;
+    expect(workspace?.sessionIds).toHaveLength(1);
+    expect(reopened.sessions[workspace?.sessionIds[0] ?? ""]?.id).not.toBe("terminal:1");
   });
 
   it("removes a selected session and activates its previous neighbor", () => {

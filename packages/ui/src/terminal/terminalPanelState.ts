@@ -108,7 +108,7 @@ export function closeTerminalSession(
   state: TerminalPanelState,
   sessionId: string,
 ): TerminalPanelState {
-  if (getTerminalSessionCloseAction(state, sessionId) !== "close-session") {
+  if (getTerminalSessionCloseAction(state, sessionId) === "none") {
     return state;
   }
 
@@ -121,11 +121,17 @@ export function closeTerminalSession(
   const closingIndex = workspace.sessionIds.indexOf(sessionId);
   const nextSessionIds = workspace.sessionIds.filter((id) => id !== sessionId);
   const fallbackSessionId = nextSessionIds[Math.max(0, closingIndex - 1)] ?? nextSessionIds[0];
+  const { [sessionId]: _closedSession, ...nextSessions } = state.sessions;
+  // F14（产品裁决 A=跟随上游，来源 a60ba6a7）：关闭最后一个 session 时不再拒绝删除，
+  // 而是连带移除 workspace descriptor——TerminalSession 卸载并释放 PTY，重开面板按需懒创建新终端。
   if (!fallbackSessionId) {
-    return state;
+    const { [session.workspaceKey]: _closedWorkspace, ...nextWorkspaces } = state.workspaces;
+    return {
+      sessions: nextSessions,
+      workspaces: nextWorkspaces,
+    };
   }
 
-  const { [sessionId]: _closedSession, ...nextSessions } = state.sessions;
   return {
     sessions: nextSessions,
     workspaces: {
