@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "caseName": "zody-rename-plugin-wire",
+  "spec": "./test/e2e/plugins/zody-rename-plugin-wire.test.ts",
+  "fixtures": [
+    {
+      "id": "upstream-rename-wire-old",
+      "description": "RENAME-PLUGIN-WIRE renders the legacy-named Gen UI page (window.zcode, zcode:* events).",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_RENAME_PLUGIN_WIRE_OLD"],
+        "bodyIncludes": ["E2E_RENAME_PLUGIN_WIRE_OLD"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "replay": { "consumeOnce": true },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_RENAME_PLUGIN_WIRE_OLD_DONE\n::visualize{path=\"{{genUiOutputRoot}}/rename-wire-old.html\" title=\"Rename wire old plugin\"}"
+      }
+    },
+    {
+      "id": "upstream-rename-wire-new",
+      "description": "RENAME-PLUGIN-WIRE renders the canonical-named Gen UI page (window.zody, zody:* events).",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_RENAME_PLUGIN_WIRE_NEW"],
+        "bodyIncludes": ["E2E_RENAME_PLUGIN_WIRE_NEW"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "replay": { "consumeOnce": true },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_RENAME_PLUGIN_WIRE_NEW_DONE\n::visualize{path=\"{{genUiOutputRoot}}/rename-wire-new.html\" title=\"Rename wire new plugin\"}"
+      }
+    },
+    {
+      "id": "upstream-rename-wire-migrated",
+      "description": "RENAME-PLUGIN-WIRE renders the migrated Gen UI page that listens to both event names and both aliases.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_RENAME_PLUGIN_WIRE_MIGRATED"],
+        "bodyIncludes": ["E2E_RENAME_PLUGIN_WIRE_MIGRATED"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "replay": { "consumeOnce": true },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_RENAME_PLUGIN_WIRE_MIGRATED_DONE\n::visualize{path=\"{{genUiOutputRoot}}/rename-wire-migrated.html\" title=\"Rename wire migrated plugin\"}"
+      }
+    }
+  ]
+}

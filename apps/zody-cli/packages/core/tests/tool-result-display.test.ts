@@ -1,6 +1,9 @@
 import {
+  CUA_TARGET_APP_DISPLAY_META_KEY,
+  CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL,
   parseToolResultDisplayPayload,
   ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
+  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL,
 } from "@zody/contracts";
 import { toolCallGetWorkflowRunDisplaySchema } from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it } from "vitest";
@@ -1158,5 +1161,117 @@ describe("workflow observation tool displays", () => {
     // 失败路径走 ToolHandlerFailure，不构造 display——这里钉住「绝不产出半张卡」。
     expect(createToolResultDisplay("ResumeWorkflowRun", { ok: false })).toBeUndefined();
     expect(createToolResultDisplay("ResumeWorkflowRun", { runId: "" })).toBeUndefined();
+  });
+});
+
+// spec：specs/zody-rename-plugin-wire.md §1.3、§2、§4。
+// 在线投影（createToolResultDisplay 读 `_meta`）与历史回放（parseToolResultDisplayPayload
+// 读持久化 display）必须使用同一解释：canonical 单键、legacy 单键、双键等值都得到同一投影；
+// 冲突只丢弃该字段，整条工具结果照常保留。
+describe("R53 MCP meta dual-key boundaries", () => {
+  const nodeReplApp = { appKey: "darwin:com.apple.notes", displayName: "Notes" } as const;
+  const targetApp = {
+    schemaVersion: 1,
+    displayName: "Calculator",
+    iconLocators: [{ kind: "darwin-bundle-id", value: "com.apple.calculator" }],
+  } as const;
+
+  it.each([
+    ["legacy", { [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: nodeReplApp }],
+    ["canonical", { [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL]: nodeReplApp }],
+    [
+      "both",
+      {
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: nodeReplApp,
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL]: { ...nodeReplApp },
+      },
+    ],
+  ])(
+    "projects the node_repl app identity from %s metadata and replays it identically",
+    (_source, meta) => {
+      const display = createToolResultDisplay("mcp__node_repl__js", {
+        content: [{ type: "text", text: "clicked" }],
+        _meta: meta,
+      });
+
+      expect(display).toEqual({ kind: "node_repl_images", app: nodeReplApp });
+      // 历史回放：落库的 display 与在线投影逐字段一致。
+      expect(parseToolResultDisplayPayload(display)).toEqual(display);
+    },
+  );
+
+  it("drops a conflicting node_repl app identity but keeps the display", () => {
+    const display = createToolResultDisplay("mcp__node_repl__js", {
+      content: [{ type: "image", data: "AAAA", mimeType: "image/png" }],
+      _meta: {
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: nodeReplApp,
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL]: {
+          appKey: "darwin:com.apple.systempreferences",
+        },
+      },
+    });
+
+    expect(display).toEqual({
+      kind: "node_repl_images",
+      images: [{ base64: "AAAA", mimeType: "image/png" }],
+    });
+    expect(parseToolResultDisplayPayload(display)).toEqual(display);
+  });
+
+  it("treats a malformed canonical identity as absent rather than a second source", () => {
+    const display = createToolResultDisplay("mcp__node_repl__js", {
+      content: [{ type: "text", text: "clicked" }],
+      _meta: { [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL]: { appKey: "" } },
+    });
+    expect(display).toBeUndefined();
+  });
+
+  it.each([
+    ["legacy", { [CUA_TARGET_APP_DISPLAY_META_KEY]: targetApp }],
+    ["canonical", { [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: targetApp }],
+    [
+      "both",
+      {
+        [CUA_TARGET_APP_DISPLAY_META_KEY]: targetApp,
+        [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: { ...targetApp },
+      },
+    ],
+  ])(
+    "projects official CUA target-app metadata from %s and replays it identically",
+    (_source, meta) => {
+      const display = createToolResultDisplay(
+        "mcp__computer-use__key",
+        { content: [{ type: "text", text: "pressed" }], _meta: meta },
+        { officialCua: true },
+      );
+
+      expect(display).toMatchObject({ kind: "cua", toolName: "key", targetApp });
+      expect(parseToolResultDisplayPayload(display)).toEqual(display);
+    },
+  );
+
+  it("drops a conflicting target-app field without dropping the CUA result", () => {
+    const conflicting = createToolResultDisplay(
+      "mcp__computer-use__key",
+      {
+        content: [{ type: "text", text: "pressed" }],
+        _meta: {
+          [CUA_TARGET_APP_DISPLAY_META_KEY]: targetApp,
+          [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: { ...targetApp, displayName: "Notes" },
+        },
+      },
+      { officialCua: true },
+    );
+
+    expect(conflicting).toMatchObject({ kind: "cua", toolName: "key", status: "success" });
+    expect(conflicting).not.toHaveProperty("targetApp");
+  });
+
+  it("never reads target-app metadata from a non-official server, even under the canonical key", () => {
+    const display = createToolResultDisplay("mcp__third-party-computer-use__key", {
+      content: [{ type: "text", text: "pressed" }],
+      _meta: { [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: targetApp },
+    });
+    expect(display).not.toHaveProperty("targetApp");
   });
 });

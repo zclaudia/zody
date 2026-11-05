@@ -6,7 +6,7 @@ import type { PluginSandboxHandle, PluginSandboxTransportPort } from "@zody/shar
 import {
   MCP_APPS_HANDSHAKE_TIMEOUT_MS,
   MCP_APPS_HOST_NAME,
-  MCP_APPS_WIDGET_STATE_CONTEXT_KEY,
+  buildMcpAppsWidgetStateContextEntries,
   buildPluginSandboxScopeId,
 } from "@zody/shared/mcp-apps";
 import { createPluginUiAppTools } from "./pluginUiAppTools.js";
@@ -147,10 +147,12 @@ export function createPluginUiHostController(
     appTools?.resetForAttach();
     const widgetState = deps.getWidgetState();
     // widgetState 初值随握手经 hostContext 的扩展键下发（hostContext 允许附加键）；之后不再从宿主推送。
+    // R52：两种表示（`zody/widgetState` + legacy `zcode/widgetState`）来自同一份内存快照、引用同一对象；
+    // 快照只从 `getWidgetState` 这个唯一 owner 读一次，页面回写走 ui/set-widget-state，不产生第二份业务状态。
     const contextAtCreate: McpUiHostContext =
       widgetState === undefined
         ? hostContext
-        : { ...hostContext, [MCP_APPS_WIDGET_STATE_CONTEXT_KEY]: widgetState };
+        : { ...hostContext, ...buildMcpAppsWidgetStateContextEntries(widgetState) };
     const active = createAppBridge(
       { name: MCP_APPS_HOST_NAME, version: deps.hostVersion },
       deps.getHostCapabilities(),

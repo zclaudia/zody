@@ -17073,9 +17073,18 @@
       "packages/ui/src/gen-ui/adapters/page.ts"
     ],
     "writeSet": [
-      "docs/plans/zody-rename-execution/reports/R51.md",
+      "packages/desktop/src/renderer/src/plugin-sandbox/genUi.ts",
+      "packages/desktop/src/renderer/src/plugin-sandbox/alias.ts",
+      "packages/desktop/src/renderer/src/plugin-sandbox/aliasRuntime.ts",
+      "packages/desktop/src/renderer/src/plugin-sandbox/aliasRuntime.test.ts",
+      "packages/ui/src/gen-ui/adapters/page.ts",
+      "packages/ui/src/gen-ui/adapters/page.test.ts",
+      "packages/ui/src/gen-ui/CONTRACT.md",
       "packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-wire.test.ts",
-      "packages/ui/src/gen-ui/adapters/page.ts"
+      "packages/desktop/test/e2e/fixtures/cases/plugins/zody-rename-plugin-wire.json",
+      "packages/desktop/test/e2e/fixtures/upstream/plugin-management/zody-rename-plugin-wire.json",
+      "docs/plans/zody-rename-execution/reports/R51.md",
+      "specs/zody-rename-plugin-wire.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -17087,8 +17096,8 @@
       "packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-wire.test.ts",
       "docs/plans/zody-rename-execution/reports/R51.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已按预案落锁（2026-11-06，基线 7ed8ded8d766af76f27c155abb6c44f45da8248d）：writeSet 取 w6-consumers-dispatch-proposal.md §2.1 全项（12 路径；含报告、spec 限 §1.1 增一行 §6 改状态、E2E 用例与两个 case-local fixture）。zcode:globals 双名派发；zcode:error 与 __zcode__/* origin 内部路径族按预案 §5 登记，genUiVendor.ts/protocol.ts/session.ts/service.ts 不在 writeSet；shared 三契约文件与两个 contract.test.ts 只读。sandbox origin/partition（zcode-sandbox://、persist:plugin-sandbox-v2-*）不改写。R51 未执行：真实 sandbox E2E（RENAME-PLUGIN-WIRE，R56）、旧/新/迁移插件真机三态、Windows 均未验证。scopeStatus 取现有 reviewable-dispatch-scope（主控授权可派发、尚未独立验收）。",
     "structureScope": [
       "Desktop plugin-sandbox alias/Gen UI 与 UI page 和测试"
     ]
@@ -17101,6 +17110,17 @@
       "docs/plans/zody-full-divergence-rename-survey.md"
     ],
     "writeSet": [
+      "packages/services/src/plugin-ui-bridge/CONTRACT.md",
+      "packages/services/src/plugin-ui-bridge/pluginUiBridgeService.ts",
+      "packages/services/src/plugin-ui-bridge/resourceMetaBoundary.ts",
+      "packages/services/src/plugin-ui-bridge/contract.test.ts",
+      "packages/ui/src/plugin-ui/domain/buildPluginUiHostCapabilities.ts",
+      "packages/ui/src/plugin-ui/domain/buildPluginUiHostCapabilities.test.ts",
+      "packages/ui/src/plugin-ui/domain/pluginUiToolFeed.ts",
+      "packages/ui/src/plugin-ui/domain/pluginUiToolFeed.test.ts",
+      "packages/ui/src/plugin-ui/app/pluginUiHostController.ts",
+      "packages/ui/src/plugin-ui/app/pluginUiHostController.test.ts",
+      "packages/ui/src/plugin-ui/domain/buildPluginUiHostContext.test.ts",
       "docs/plans/zody-rename-execution/reports/R52.md"
     ],
     "excludeSet": [
@@ -17112,8 +17132,8 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R52.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已按预案落锁（2026-11-06，基线 7ed8ded8d766af76f27c155abb6c44f45da8248d）：writeSet 取 w6-consumers-dispatch-proposal.md §3.1 全项（12 路径；含新增 resourceMetaBoundary.ts、两份领域测试与报告）。入站资源 _meta 双键入站：等值接受、冲突返回可见错误并拒绝应用该字段，CSP fail-closed 回落规范缺省、绝不合并取宽；四能力键双宣告、出站 truncated 与 hostContext 双键同引用。pluginUiBridgeService.ts 现 404 行已超 400 行上限（基线既有全量违例），R52 改动必须净减行或按 §3.2 抽同模块新文件（不新增 policy 例外）。shared 三契约文件只读。R52 未执行：真实插件页三态与真实 iframe 生命周期（R56）未验证。scopeStatus 取现有 reviewable-dispatch-scope（主控授权可派发、尚未独立验收）。",
     "structureScope": [
       "services plugin-ui-bridge 和 UI plugin-ui domain/app 与测试"
     ]
@@ -17127,7 +17147,20 @@
       "docs/plans/zody-full-divergence-rename-survey.md"
     ],
     "writeSet": [
-      "apps/zcode-cli/packages/contracts/src/tools/tool-result-metadata.ts",
+      "apps/zody-cli/packages/contracts/src/interfaces/mcp.port.ts",
+      "apps/zody-cli/packages/contracts/src/tools/tool-result-metadata.ts",
+      "apps/zody-cli/packages/contracts/tests/tool-result-metadata.test.ts",
+      "apps/zody-cli/packages/core/src/mcp/index.ts",
+      "apps/zody-cli/packages/core/src/mcp/image-normalization.ts",
+      "apps/zody-cli/packages/core/src/tool/executor/result-display.ts",
+      "apps/zody-cli/packages/core/tests/mcp-ui-display.test.ts",
+      "apps/zody-cli/packages/core/tests/tool-result-display.test.ts",
+      "apps/zody-cli/packages/node-repl-host/src/request-context.ts",
+      "apps/zody-cli/packages/node-repl-host/src/cua-node-repl-mcp-port.ts",
+      "apps/zody-cli/packages/node-repl-host/src/result.ts",
+      "apps/zody-cli/packages/node-repl-host/test/mcp-server.test.ts",
+      "apps/zody-cli/packages/adapters/src/mcp/index.ts",
+      "apps/zody-cli/packages/adapters/tests/mcp.test.ts",
       "docs/plans/zody-rename-execution/reports/R53.md"
     ],
     "excludeSet": [
@@ -17139,8 +17172,8 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R53.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已按预案落锁（2026-11-06，基线 7ed8ded8d766af76f27c155abb6c44f45da8248d）：writeSet 取 w6-consumers-dispatch-proposal.md §4.1 全项（15 路径；前缀按 apps/zody-cli 勘误，含新增 core/tests/mcp-ui-display.test.ts 双侧 parse fixture 锁与报告）。三键镜像补 canonical、双键读取冲突拒绝应用该字段不丢整条结果；request-context 冲突/不等视作不可信回落 {}，路由落 UNTRUSTED_SESSION_KEY，不扩权；出站 request-context 由同一可信对象投影两键。CLI 生产源码对 @zody/shared/mcp-apps 只 import 常量与类型，不反向 import 实现函数；全部 control-only 族文件与 ZCODE_NODE_REPL_CONTROL_FLAG 不在集合（R20.3）；producer 键 zcode.cua/app-associations-v1 继续丢弃、宿主侧投影唯一。R53 未执行：历史 tool result 真机回放（持久化旧会话）与真实 MCP server 双键互通（R56）未验证。scopeStatus 取现有 reviewable-dispatch-scope（主控授权可派发、尚未独立验收）。",
     "structureScope": [
       "CLI contracts tool-result、core/mcp、adapters/mcp 和历史读取"
     ]

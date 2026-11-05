@@ -37,7 +37,11 @@ import type {
   McpToolCallResult,
   McpToolDescriptor,
 } from "@zody/contracts";
-import { McpResourceSubscribeUnsupportedError } from "@zody/contracts";
+import {
+  buildZodyMcpDualMetaEntry,
+  McpResourceSubscribeUnsupportedError,
+  ZODY_MCP_META_KEY_COMPAT,
+} from "@zody/contracts";
 import { type McpServerFailureKind } from "@zody/shared";
 import { buildMcpAppsClientCapabilities } from "@zody/shared/mcp-apps";
 import { createHash, randomUUID } from "node:crypto";
@@ -1994,7 +1998,10 @@ function mcpRequestMeta(request: McpCallToolRequest): Record<string, unknown> {
   };
   return {
     ...requestContext,
-    "com.zcode/request-context": requestContext,
+    // R53：同一份可信宿主上下文生成两种表示（canonical `com.zody/request-context` +
+    // legacy `com.zcode/request-context`），两键引用同一对象；旧 server 只读旧键不受影响，
+    // 新消费者 canonical 优先（spec §1.3）。
+    ...buildZodyMcpDualMetaEntry(ZODY_MCP_META_KEY_COMPAT.requestContext, requestContext),
   };
 }
 

@@ -1,6 +1,7 @@
 import { isAbsolute, resolve } from "node:path";
 import {
-  ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  readZodyMcpMetaEntry,
+  ZODY_MCP_META_KEY_COMPAT,
   type McpContentBlock,
   type McpToolCallResult,
   type McpToolDescriptor,
@@ -37,7 +38,10 @@ export async function normalizeMcpToolResultForModel(input: {
   // exact-raster 路径，既保留 CUA 帧，又不影响同一 server 的 Browser Use 图片。
   const isSharedNodeRepl =
     input.descriptor.serverName === "node_repl" || input.toolName === "mcp__node_repl__js";
-  if (input.preserveOfficialCuaFrames || (isSharedNodeRepl && hasOfficialCuaFrameAuthority(input.result))) {
+  if (
+    input.preserveOfficialCuaFrames ||
+    (isSharedNodeRepl && hasOfficialCuaFrameAuthority(input.result))
+  ) {
     return await preserveOfficialCuaFrameResult(input.result, {
       imageProcessorPort: input.context.imageProcessorPort,
       signal: input.context.abortSignal,
@@ -95,19 +99,20 @@ export function hasOfficialCuaFrameAuthority(result: unknown): result is McpTool
     content?: unknown;
     _meta?: Record<string, unknown>;
   };
-  if (!Array.isArray(candidate.content) || !candidate._meta?.[OFFICIAL_CUA_FRAME_INTEGRITY_META_KEY]) {
+  if (
+    !Array.isArray(candidate.content) ||
+    !candidate._meta?.[OFFICIAL_CUA_FRAME_INTEGRITY_META_KEY]
+  ) {
     return false;
   }
   const blocks = candidate.content;
-  return blocks.some(
-    (block, index) => {
-      if (!block || typeof block !== "object" || (block as { type?: unknown }).type !== "image") {
-        return false;
-      }
-      const nextText = (blocks[index + 1] as { text?: unknown } | undefined)?.text;
-      return typeof nextText === "string" && isOfficialCuaImageRefText(nextText);
-    },
-  );
+  return blocks.some((block, index) => {
+    if (!block || typeof block !== "object" || (block as { type?: unknown }).type !== "image") {
+      return false;
+    }
+    const nextText = (blocks[index + 1] as { text?: unknown } | undefined)?.text;
+    return typeof nextText === "string" && isOfficialCuaImageRefText(nextText);
+  });
 }
 
 async function normalizeMcpContentBlockForModel(
@@ -191,14 +196,25 @@ interface BrowserScreenshotArtifact {
 }
 
 function readBrowserScreenshotContentIndices(result: McpToolCallResult): Set<number> {
-  const value = result._meta?.[ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY];
-  if (!Array.isArray(value)) return new Set<number>();
-  return new Set(
-    value.filter(
-      (index): index is number =>
-        Number.isInteger(index) && index >= 0 && index < result.content.length,
-    ),
+  // R53：canonical `zody/browserScreenshotContentIndices` 与 legacy 双键读取。
+  // 只信宿主写入（node-repl-host 写入前会删掉伪造来源）；归一化后是集合语义，
+  // 先排序去重再比较，避免 [{0,2}] 与 [{2,0}] 被判成“冲突”。冲突/非法一律不应用。
+  const read = readZodyMcpMetaEntry(
+    result._meta,
+    ZODY_MCP_META_KEY_COMPAT.browserScreenshotContentIndices,
+    (value) => {
+      if (!Array.isArray(value)) return null;
+      return [
+        ...new Set(
+          value.filter(
+            (index): index is number =>
+              Number.isInteger(index) && index >= 0 && index < result.content.length,
+          ),
+        ),
+      ].sort((left, right) => left - right);
+    },
   );
+  return read.status === "accepted" ? new Set(read.value) : new Set<number>();
 }
 
 async function persistBrowserScreenshotArtifact(

@@ -1,5 +1,9 @@
 import { App, LATEST_PROTOCOL_VERSION, PostMessageTransport } from "@modelcontextprotocol/ext-apps";
-import { ZODY_GLOBALS_EVENT, createPluginSandboxAliasRuntime } from "./aliasRuntime.js";
+import {
+  ZODY_GLOBALS_EVENT,
+  ZODY_GLOBALS_EVENT_CANONICAL,
+  createPluginSandboxAliasRuntime,
+} from "./aliasRuntime.js";
 import { OPENAI_SET_GLOBALS_EVENT } from "./openaiAlias.js";
 
 /**
@@ -23,7 +27,10 @@ const runtime = createPluginSandboxAliasRuntime({
   transport: new PostMessageTransport(window.parent, window.parent),
   protocolVersion: LATEST_PROTOCOL_VERSION,
   onChange: (globals) => {
+    // 双名来自同一次 globals 投影：legacy 事件保持基线形状（无 payload，逐字节不变），
+    // canonical 事件携带 `detail.globals`，与 openai:set_globals 共用同一个 `globals` 对象引用。
     window.dispatchEvent(new CustomEvent(ZODY_GLOBALS_EVENT));
+    window.dispatchEvent(new CustomEvent(ZODY_GLOBALS_EVENT_CANONICAL, { detail: { globals } }));
     window.dispatchEvent(new CustomEvent(OPENAI_SET_GLOBALS_EVENT, { detail: { globals } }));
   },
 });
@@ -35,12 +42,16 @@ window.addEventListener("message", (event) => {
   if (data && typeof data === "object" && data.jsonrpc === "2.0") runtime.markForeignApp();
 });
 
-Object.defineProperty(window, "zcode", {
-  value: runtime.zcode,
-  writable: false,
-  configurable: false,
-  enumerable: true,
-});
+// 双命名空间：`window.zody` 与只读 `window.zcode` 指向同一个别名 API 对象，共享同一次懒握手与
+// 同一份内部状态；不是两个 runtime、也不是两条 ready/保存路径（spec §3、CONTRACT.md）。
+for (const name of ["zody", "zcode"] as const) {
+  Object.defineProperty(window, name, {
+    value: runtime.zcode,
+    writable: false,
+    configurable: false,
+    enumerable: true,
+  });
+}
 // 页面若自带 window.openai（如页面自带的 polyfill），不覆盖。
 if (!("openai" in window)) {
   Object.defineProperty(window, "openai", {

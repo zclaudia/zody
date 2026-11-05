@@ -1,5 +1,10 @@
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
-import { MCP_TOOL_META_TIMEOUT_MAX_MS, MCP_TOOL_META_TIMEOUT_MIN_MS } from "@zody/contracts";
+import {
+  buildZodyMcpDualMetaEntry,
+  MCP_TOOL_META_TIMEOUT_MAX_MS,
+  MCP_TOOL_META_TIMEOUT_MIN_MS,
+  ZODY_MCP_META_KEY_COMPAT,
+} from "@zody/contracts";
 import type {
   JsonSchema,
   Logger,
@@ -33,7 +38,8 @@ import {
 import { isSeaRuntime } from "./subprocess-launch.js";
 
 const NODE_REPL_SERVER_NAME = "node_repl";
-const REQUEST_CONTEXT_META_KEY = "com.zcode/request-context";
+// request-context 键由 contracts 单一来源提供（canonical `com.zody/...` + legacy `com.zcode/...`），
+// 不在本文件重复字面值；两种表示同引用写入，见 buildRequestMeta。
 // 本地 in-memory server 的默认工具预算与 factory 的 localServerConfig 保持一致。
 const DEFAULT_LOCAL_TOOL_TIMEOUT_MS = 600_000;
 
@@ -483,10 +489,7 @@ export function createCuaNodeReplMcpPort(input: CuaNodeReplMcpPortInput): McpPor
 
 /** native cli-entry 可绑定的最小工厂：serverPath 等资源由可信 composition 静态提供。 */
 export function createCuaNodeReplMcpPortFactory(
-  options: Omit<
-    CuaNodeReplMcpPortInput,
-    "port" | "captureOnce" | "closePort" | "helperCell"
-  > & {
+  options: Omit<CuaNodeReplMcpPortInput, "port" | "captureOnce" | "closePort" | "helperCell"> & {
     /**
      * ready 帧提供的私有 cellEndpoint。字段按 entry 可选：host/session-entry 的
      * ready 不带该值。CUA factory 存在时，getter 返回 undefined 会在实际 cell
@@ -606,7 +609,8 @@ function buildRequestMeta(request: McpCallToolRequest): Record<string, unknown> 
   };
   return {
     ...context,
-    [REQUEST_CONTEXT_META_KEY]: context,
+    // R53：同一份可信上下文投影成两种表示，两键引用同一对象（不是两次序列化）。
+    ...buildZodyMcpDualMetaEntry(ZODY_MCP_META_KEY_COMPAT.requestContext, context),
   };
 }
 

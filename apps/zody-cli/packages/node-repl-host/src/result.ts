@@ -1,11 +1,23 @@
 import {
+  buildZodyMcpDualMetaEntry,
   ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL,
+  ZODY_MCP_META_KEY_COMPAT,
   ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
+  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL,
 } from "@zody/contracts/mcp";
 import { isOfficialCuaImageRefText } from "@zody/zody-cua/frame-contract";
 import { CUA_APP_ASSOCIATIONS_META_KEY } from "@zody/zody-cua/host-display-contract";
 import type { NodeReplRunResult } from "@zody/core/repl";
 import type { CallToolResult } from "@modelcontextprotocol/server";
+
+/**
+ * producer 应用关联键的 canonical 形态。
+ *
+ * 旧字面值由 `@zody/zody-cua/host-display-contract` 拥有（producer 包不在本单元 writeSet）；
+ * 宿主只做“不可信来源丢弃”，因此必须两种表示都删，不能因 canonical 侧尚无消费者就放行。
+ */
+const CUA_APP_ASSOCIATIONS_META_KEY_CANONICAL = "zody.cua/app-associations-v1";
 
 type EmbeddedContentBlock = CallToolResult["content"][number];
 
@@ -27,7 +39,10 @@ function parseEmbeddedMcpResult(value: string): EmbeddedMcpResult | undefined {
     if (!Array.isArray(candidate.content)) return undefined;
     if (
       candidate.content.some(
-        (block) => !block || typeof block !== "object" || typeof (block as { type?: unknown }).type !== "string",
+        (block) =>
+          !block ||
+          typeof block !== "object" ||
+          typeof (block as { type?: unknown }).type !== "string",
       )
     ) {
       return undefined;
@@ -88,14 +103,24 @@ export function toMcpRunResult(run: NodeReplRunResult): CallToolResult {
   if (embedded?._meta) Object.assign(responseMeta, embedded._meta);
   // 该 key 决定 core 是否把原图落盘，不能允许 REPL 代码通过
   // setResponseMeta 伪造来源；只接受 NodeReplSession 根据真实 screenshot payload 生成的索引。
+  // R53：canonical 与 legacy 两种表示都要删，否则伪造来源可以换一个键名绕过。
   delete responseMeta[ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY];
+  delete responseMeta[ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL];
   // 同款处置：producer 的应用元数据决定工具卡显示哪个 App 的名称和图标。它经
   // `projectToHost` -> `nodeRepl.emitStructuredResult` 到达上面的合并循环，而那个 API 挂在模型
   // 可见的 sandbox globals 上 —— cell 里自己 emit 一份就能让卡片声称操作了别的应用。因此这里
-  // 无条件丢弃，只接受 CUA bridge 从 broker 响应直接记录的 run.cuaApp。
+  // 无条件丢弃（含 canonical 形态），只接受 CUA bridge 从 broker 响应直接记录的 run.cuaApp。
   delete responseMeta[CUA_APP_ASSOCIATIONS_META_KEY];
+  delete responseMeta[CUA_APP_ASSOCIATIONS_META_KEY_CANONICAL];
   delete responseMeta[ZODY_MCP_NODE_REPL_CUA_APP_META_KEY];
-  if (run.cuaApp) responseMeta[ZODY_MCP_NODE_REPL_CUA_APP_META_KEY] = run.cuaApp;
+  delete responseMeta[ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL];
+  if (run.cuaApp) {
+    // R53：宿主写入双表示，两键引用同一对象（spec §4 出站双表示）。
+    Object.assign(
+      responseMeta,
+      buildZodyMcpDualMetaEntry(ZODY_MCP_META_KEY_COMPAT.nodeReplCuaApp, run.cuaApp),
+    );
+  }
   // Anthropic 兼容网关（如 bigmodel MaaS）只解析 tool_result.content 开头的连续
   // image block，一旦先遇到 text 就丢弃后面的图，模型只能看到 image_ref 元数据而看不到画面
   // （实测 [image]/[image,text] 可见，[text,image]/[text,image,text] 不可见）。
@@ -139,8 +164,7 @@ export function toMcpRunResult(run: NodeReplRunResult): CallToolResult {
             (image) =>
               !structuredContent.some(
                 (block) =>
-                  block.type === "image" &&
-                  (block as { data?: string }).data === image.base64,
+                  block.type === "image" && (block as { data?: string }).data === image.base64,
               ),
           )
           .map((image) => ({
@@ -167,14 +191,16 @@ export function toMcpRunResult(run: NodeReplRunResult): CallToolResult {
       ? {
           _meta: {
             ...responseMeta,
-            ...((run.images?.length ?? 0) > 0 || structuredContent.some((block) => block.type === "image")
+            ...((run.images?.length ?? 0) > 0 ||
+            structuredContent.some((block) => block.type === "image")
               ? { "zcode/nodeReplEmittedImage": true }
               : {}),
             ...(browserScreenshotContentIndices && browserScreenshotContentIndices.length > 0
-              ? {
-                  [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]:
-                    browserScreenshotContentIndices,
-                }
+              ? // R53：宿主写入双表示，两键引用同一数组（同一次投影，不是两次序列化）。
+                buildZodyMcpDualMetaEntry(
+                  ZODY_MCP_META_KEY_COMPAT.browserScreenshotContentIndices,
+                  browserScreenshotContentIndices,
+                )
               : {}),
           },
         }

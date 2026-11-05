@@ -4,7 +4,11 @@ import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL,
   ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
+  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL,
+  ZODY_MCP_REQUEST_CONTEXT_META_KEY,
+  ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL,
 } from "@zody/contracts";
 import { CUA_APP_ASSOCIATIONS_META_KEY } from "@zody/zody-cua/host-display-contract";
 import {
@@ -257,6 +261,54 @@ describe("node_repl MCP server", () => {
     expect(result.isError).not.toBe(true);
     expect(result.content).toContainEqual(
       expect.objectContaining({ type: "text", text: "=> trusted-session" }),
+    );
+  });
+
+  // R53：宿主出站同时写 com.zody/request-context（canonical）与 com.zcode/request-context
+  // （legacy）；服务端两种表示都按同一 schema 读取，双键等值才接受。
+  it("reads the canonical request-context namespace written by the host", async () => {
+    const result = await client.callTool({
+      name: "js",
+      arguments: { code: "nodeRepl.requestMeta.session_id;" },
+      _meta: {
+        [ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL]: {
+          runtime_scope: "main",
+          session_id: "canonical-session",
+        },
+      },
+    });
+
+    expect(result.content).toContainEqual(
+      expect.objectContaining({ type: "text", text: "=> canonical-session" }),
+    );
+  });
+
+  it("accepts equal dual request contexts but not a conflicting pair", async () => {
+    const trustedContext = { runtime_scope: "main", session_id: "trusted-session" } as const;
+    const equal = await client.callTool({
+      name: "js",
+      arguments: { code: "nodeRepl.requestMeta.session_id;" },
+      _meta: {
+        [ZODY_MCP_REQUEST_CONTEXT_META_KEY]: trustedContext,
+        [ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL]: { ...trustedContext },
+      },
+    });
+    expect(equal.content).toContainEqual(
+      expect.objectContaining({ type: "text", text: "=> trusted-session" }),
+    );
+
+    // 冲突的两种表示不构成新的权限来源：buildRequestMeta 回落 {}，
+    // 路由落 UNTRUSTED_SESSION_KEY，而不是任选一侧（更不能选“更可信”的一侧）。
+    const conflicting = await client.callTool({
+      name: "js",
+      arguments: { code: "String(nodeRepl.requestMeta.session_id);" },
+      _meta: {
+        [ZODY_MCP_REQUEST_CONTEXT_META_KEY]: { session_id: "legacy-session" },
+        [ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL]: { session_id: "canonical-session" },
+      },
+    });
+    expect(conflicting.content).toContainEqual(
+      expect.objectContaining({ type: "text", text: "=> undefined" }),
     );
   });
 
@@ -572,5 +624,42 @@ describe("node_repl MCP server", () => {
       expect(result.content[index]?.type).toBe("image");
     }
     expect(result.content[1]).toEqual({ type: "image", data: "BBBB", mimeType: "image/png" });
+  });
+
+  // R53：宿主写入出站双表示（spec §4），且不可信来源的两种表示一起丢弃。
+  it("dual-writes trusted metadata with one shared reference and drops both spoofed forms", () => {
+    const trusted = toMcpRunResult({
+      logs: "",
+      images: [{ base64: "AQID", mimeType: "image/png" }],
+      browserScreenshotImageIndices: [0],
+      cuaApp: { appKey: "darwin:com.apple.notes" },
+      responseMeta: {
+        [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [1],
+        [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL]: [1],
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: { appKey: "darwin:forged" },
+        [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL]: { appKey: "darwin:forged" },
+        [CUA_APP_ASSOCIATIONS_META_KEY]: { schemaVersion: 1 },
+        "zody.cua/app-associations-v1": { schemaVersion: 1 },
+      },
+    } as never);
+
+    expect(trusted._meta).toMatchObject({
+      [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]: [0],
+      [ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL]: [0],
+      [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]: { appKey: "darwin:com.apple.notes" },
+      [ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL]: {
+        appKey: "darwin:com.apple.notes",
+      },
+    });
+    // 同一份冻结投影，不是两次序列化：两键必须引用同一对象/数组。
+    expect(trusted._meta?.[ZODY_MCP_NODE_REPL_CUA_APP_META_KEY]).toBe(
+      trusted._meta?.[ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL],
+    );
+    expect(trusted._meta?.[ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY]).toBe(
+      trusted._meta?.[ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL],
+    );
+    // producer 键的两种表示都不可信，必须整条消失。
+    expect(trusted._meta).not.toHaveProperty(CUA_APP_ASSOCIATIONS_META_KEY);
+    expect(trusted._meta).not.toHaveProperty("zody.cua/app-associations-v1");
   });
 });

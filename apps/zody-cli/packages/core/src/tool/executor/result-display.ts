@@ -3,10 +3,11 @@ import {
   RespondToCoordinatorOutputSchema,
   MCP_TOOL_DISPLAY_MAX_DESCRIPTION_CHARS,
   MCP_TOOL_DISPLAY_MAX_NAME_CHARS,
-  CUA_TARGET_APP_DISPLAY_META_KEY,
+  CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
   cuaTargetAppDisplaySchema,
   nodeReplCuaAppDisplaySchema,
-  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
+  readZodyMcpMetaEntry,
+  ZODY_MCP_META_KEY_COMPAT,
   SEND_MESSAGE_TOOL_NAME,
   SendMessageOutputSchema,
   TASK_OUTPUT_DISPLAY_MAX_OUTPUT_CHARS,
@@ -16,6 +17,7 @@ import {
   TASK_STOP_TOOL_NAME,
   TaskStopOutputSchema,
   type DiffHunk,
+  type CuaTargetAppDisplay,
   type NodeReplCuaAppDisplay,
   type ToolResultDisplayPayload,
 } from "@zody/contracts";
@@ -356,9 +358,7 @@ function createCuaToolResultDisplay(
   const truncated =
     mediaTruncated || structuredJson?.truncated === true || boundedText?.truncated === true;
   const meta = isRecord(result._meta) ? result._meta : undefined;
-  const targetApp = officialCua
-    ? cuaTargetAppDisplaySchema.safeParse(meta?.[CUA_TARGET_APP_DISPLAY_META_KEY])
-    : undefined;
+  const targetApp = officialCua ? readCuaTargetAppDisplay(meta) : undefined;
   const permissionStatus =
     officialCua && toolName === "request_access"
       ? cuaRequestAccessStatusSchema.safeParse(meta?.[CUA_REQUEST_ACCESS_STATUS_META_KEY])
@@ -377,7 +377,7 @@ function createCuaToolResultDisplay(
     ...(typeof errorRecord?.suggested_action === "string"
       ? { suggestedAction: errorRecord.suggested_action }
       : {}),
-    ...(targetApp?.success ? { targetApp: targetApp.data } : {}),
+    ...(targetApp ? { targetApp } : {}),
     ...(permissionStatus?.success ? { permissionStatus: permissionStatus.data } : {}),
     ...(media.length > 0 ? { media } : {}),
     ...(truncated ? { truncated: true } : {}),
@@ -393,19 +393,38 @@ function safeJson(value: unknown): string {
 }
 
 /**
+ * 读取 CUA 目标应用展示元数据。
+ *
+ * R53：`zody.cua/target-app-display-v1`（canonical）与 legacy `zcode.cua/target-app-display-v1`
+ * 双键读取，单键按原 schema；双键归一化相等才应用，冲突/非法一律不投影该字段
+ * （工具卡退回通用图标，整条 CUA display 仍保留）。历史回放走同一 parse 族，解释与在线一致。
+ */
+function readCuaTargetAppDisplay(
+  meta: Record<string, unknown> | undefined,
+): CuaTargetAppDisplay | undefined {
+  const read = readZodyMcpMetaEntry(meta, CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT, (value) => {
+    const parsed = cuaTargetAppDisplaySchema.safeParse(value);
+    return parsed.success ? parsed.data : null;
+  });
+  return read.status === "accepted" ? read.value : undefined;
+}
+
+/**
  * 读取宿主写入的 CUA 目标应用身份。
  *
- * 只认 `zcode/nodeReplCuaApp`：producer 自己的 `zcode.cua/app-associations-v1` 也可能出现在
+ * 只认 `zody/nodeReplCuaApp`（canonical）与 legacy `zcode/nodeReplCuaApp`：producer 自己的
+ * `zcode.cua/app-associations-v1`（canonical `zody.cua/app-associations-v1`）也可能出现在
  * `_meta` 里，但那个键经模型可写的 `nodeRepl.setResponseMeta` /
  * `nodeRepl.emitStructuredResult` 同样能到达，宿主已在 toMcpRunResult 里把它删掉。这里不做
  * 第二次兜底解析，避免把已经判定为不可信的来源重新接回展示面。
  */
 function readNodeReplCuaApp(output: Record<string, unknown>): NodeReplCuaAppDisplay | undefined {
   const meta = isRecord(output._meta) ? output._meta : undefined;
-  const parsed = nodeReplCuaAppDisplaySchema.safeParse(
-    meta?.[ZODY_MCP_NODE_REPL_CUA_APP_META_KEY],
-  );
-  return parsed.success ? parsed.data : undefined;
+  const read = readZodyMcpMetaEntry(meta, ZODY_MCP_META_KEY_COMPAT.nodeReplCuaApp, (value) => {
+    const parsed = nodeReplCuaAppDisplaySchema.safeParse(value);
+    return parsed.success ? parsed.data : null;
+  });
+  return read.status === "accepted" ? read.value : undefined;
 }
 
 function createNodeReplDisplay(

@@ -1,7 +1,12 @@
 // MCP Port - Model Context Protocol adapter boundary
 
 import type { McpServerFailureKind } from "@zody/shared";
-import type { McpAppsToolVisibility, McpToolUiDescriptor } from "@zody/shared/mcp-apps";
+import type {
+  McpAppsMetaKeyDirection,
+  McpAppsMetaKeyPair,
+  McpAppsToolVisibility,
+  McpToolUiDescriptor,
+} from "@zody/shared/mcp-apps";
 import type { JsonSchema } from "../model/index.js";
 import type { TraceContext } from "../tracing/tracer.js";
 
@@ -100,21 +105,166 @@ export interface McpToolAnnotations {
   openWorldHint?: boolean;
 }
 
+/**
+ * CLI 私有 MCP wire 键的双命名空间定义（规则见 `specs/zody-rename-plugin-wire.md` §1.3）。
+ *
+ * 旧字面值是 manifest 的 explicit-retention 条目，**只登记、不改写、不删除**；新规范值统一走
+ * `zody/*` / `zody.cua/*` / `com.zody/*`。CLI contracts 是 zod v3、shared 是 zod v4，不能复用
+ * shared 的 schema 与解析实现；这里按 R50 的同一规则手写常量镜像与同语义解析器
+ * （`readZodyMcpMetaEntry`），由 `contracts/tests/tool-result-metadata.test.ts` 与
+ * `core/tests/mcp-ui-display.test.ts` 双侧 fixture 锁定，不反向 import shared 实现函数。
+ */
 export const ZODY_MCP_ERROR_PRESENTATION_META_KEY = "zcode/errorPresentation";
+export const ZODY_MCP_ERROR_PRESENTATION_META_KEY_CANONICAL = "zody/errorPresentation";
 export const ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY = "message-only";
 /** MCP content 中来自模型显式 tab.screenshot() 的 image block 索引。 */
 export const ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY =
   "zcode/browserScreenshotContentIndices";
+export const ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL =
+  "zody/browserScreenshotContentIndices";
 /**
  * 本次 node_repl cell 操作的目标应用身份，供工具卡显示 App 图标。
  *
  * **只能由 node-repl-host 写入**：宿主的 CUA bridge 从 broker 响应里读 producer 的
- * `zcode.cua/app-associations-v1`，投影成这里的最小形态。producer 那个键本身经
- * `nodeRepl.setResponseMeta` / `nodeRepl.emitStructuredResult` 也能到达 `_meta`，而这两个
- * API 挂在模型可见的 sandbox globals 上，因此不可信、必须在宿主侧丢弃（同
+ * `zcode.cua/app-associations-v1`（canonical `zody.cua/app-associations-v1` 同属 producer 键），
+ * 投影成这里的最小形态。producer 那个键本身经 `nodeRepl.setResponseMeta` /
+ * `nodeRepl.emitStructuredResult` 也能到达 `_meta`，而这两个 API 挂在模型可见的 sandbox
+ * globals 上，因此不可信、必须在宿主侧丢弃（同
  * `ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY` 的处置）。
  */
 export const ZODY_MCP_NODE_REPL_CUA_APP_META_KEY = "zcode/nodeReplCuaApp";
+export const ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL = "zody/nodeReplCuaApp";
+/** node-repl 请求上下文键：由可信宿主从真实调用上下文生成，插件/模型传入的同名键不是权限来源。 */
+export const ZODY_MCP_REQUEST_CONTEXT_META_KEY = "com.zcode/request-context";
+export const ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL = "com.zody/request-context";
+
+const zodyMcpMetaKeyPair = (
+  canonical: string,
+  legacy: string,
+  direction: McpAppsMetaKeyDirection,
+  failClosed: boolean,
+): McpAppsMetaKeyPair => ({ canonical, legacy, direction, failClosed });
+
+/**
+ * CLI 侧 `_meta` 键对注册表（R50 `MCP_APPS_META_KEY_COMPAT` 的同语义镜像）。
+ * `failClosed` 只对“冲突即不得授予身份/权限”的键为 true；其余键冲突时只丢弃该字段，
+ * 整条工具结果照常保留（spec §2.3）。
+ */
+export const ZODY_MCP_META_KEY_COMPAT = {
+  requestContext: zodyMcpMetaKeyPair(
+    ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL,
+    ZODY_MCP_REQUEST_CONTEXT_META_KEY,
+    "bidirectional",
+    true,
+  ),
+  errorPresentation: zodyMcpMetaKeyPair(
+    ZODY_MCP_ERROR_PRESENTATION_META_KEY_CANONICAL,
+    ZODY_MCP_ERROR_PRESENTATION_META_KEY,
+    "inbound",
+    false,
+  ),
+  browserScreenshotContentIndices: zodyMcpMetaKeyPair(
+    ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL,
+    ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+    "bidirectional",
+    false,
+  ),
+  nodeReplCuaApp: zodyMcpMetaKeyPair(
+    ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL,
+    ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
+    "bidirectional",
+    false,
+  ),
+} as const satisfies Record<string, McpAppsMetaKeyPair>;
+
+/** 双键读取结果：`conflict` 由调用边界拒绝应用该字段；纯函数不 throw。 */
+export type ZodyMcpMetaEntryRead<T> =
+  | { status: "absent" }
+  | { status: "accepted"; value: T; source: "canonical" | "legacy" | "both" }
+  | {
+      status: "conflict";
+      canonicalKey: string;
+      legacyKey: string;
+      canonical: unknown;
+      legacy: unknown;
+    };
+
+/**
+ * 双键读取（R50 spec §2 的同语义 CLI 镜像）：单键按原 schema 校验，非法视作未声明；
+ * 双键各自归一化后相等才接受，任一不可用或不等即 `conflict`。不做“新键优先”，也不 throw。
+ */
+export function readZodyMcpMetaEntry<T>(
+  meta: unknown,
+  pair: McpAppsMetaKeyPair,
+  parse: (value: unknown) => T | null,
+): ZodyMcpMetaEntryRead<T> {
+  const root = asMetaRecord(meta);
+  if (!root) return { status: "absent" };
+  const hasCanonical = hasOwnMetaKey(root, pair.canonical);
+  const hasLegacy = hasOwnMetaKey(root, pair.legacy);
+  if (!hasCanonical && !hasLegacy) return { status: "absent" };
+  const canonical = hasCanonical ? parse(root[pair.canonical]) : null;
+  const legacy = hasLegacy ? parse(root[pair.legacy]) : null;
+  if (hasCanonical && hasLegacy) {
+    if (canonical === null || legacy === null || !jsonEquals(canonical, legacy)) {
+      return {
+        status: "conflict",
+        canonicalKey: pair.canonical,
+        legacyKey: pair.legacy,
+        canonical: root[pair.canonical],
+        legacy: root[pair.legacy],
+      };
+    }
+    return { status: "accepted", value: canonical, source: "both" };
+  }
+  if (hasCanonical) {
+    return canonical === null
+      ? { status: "absent" }
+      : { status: "accepted", value: canonical, source: "canonical" };
+  }
+  return legacy === null
+    ? { status: "absent" }
+    : { status: "accepted", value: legacy, source: "legacy" };
+}
+
+/**
+ * 出站双表示：同一份冻结快照同时写入 canonical 与 legacy 两个键，且两键引用同一对象
+ * （spec §4：禁止两次独立序列化产生内容分叉）。
+ */
+export function buildZodyMcpDualMetaEntry(
+  pair: McpAppsMetaKeyPair,
+  value: unknown,
+): Record<string, unknown> {
+  return { [pair.canonical]: value, [pair.legacy]: value };
+}
+
+function asMetaRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+// contracts 的 tsconfig 未显式抬高 target/lib，用 hasOwnProperty.call 而不是 Object.hasOwn。
+function hasOwnMetaKey(record: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(record, key);
+}
+
+/** 归一化值比较：按键排序的 JSON 文本，对象字面量顺序不影响等值判定。 */
+function jsonEquals(left: unknown, right: unknown): boolean {
+  return normalizedJson(left) === normalizedJson(right);
+}
+
+function normalizedJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(normalizedJson).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${normalizedJson(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "null";
+}
 // fork（F4.6）：ZCODE_MCP_SERVER_REQUEST_ID_META_KEY 只由官方 MCP 响应头写入，随链删除。
 
 export interface McpToolDescriptor {

@@ -1,8 +1,27 @@
-import { dirname } from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { mkdir } from "node:fs/promises";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { UnauthorizedError } from "@modelcontextprotocol/client";
+import {
+  ZODY_MCP_REQUEST_CONTEXT_META_KEY,
+  ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL,
+} from "@zody/contracts";
 import { ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY } from "@zody/shared";
 import type { SharedZodyCredentialStore } from "../src/auth/shared-credentials.js";
+
+/**
+ * OAuth 用例走默认 credential store（`~/.zody/v2/credentials.json`）。
+ *
+ * 授权事务在写凭据之前先 `mkdir <credentialDir>/<prefix>.authz.lock` 申请 lease，而
+ * `acquireFileLock` 不创建父目录：合成 HOME 下 `~/.zody/v2` 为空时，12 个授权用例会在拿到
+ * 授权 URL 之前因 ENOENT 失败。这是既有的 HOME 依赖，不是双键改造引入的行为；这里只补齐
+ * 用例本来就隐含的数据目录（已存在时 recursive 为 no-op），不切换 HOME、不注入第二个
+ * credential store、不改任何断言。
+ */
+beforeAll(async () => {
+  await mkdir(join(homedir(), ".zody", "v2"), { recursive: true });
+});
 
 const {
   capturedClientInfo,
@@ -217,6 +236,15 @@ describe("createMcpAdapter", () => {
         arguments: { code: "1 + 1" },
         name: "js",
         _meta: {
+          // R53：同一份可信 requestContext 同时生成 canonical 与 legacy 两种表示。
+          "com.zody/request-context": {
+            parent_span_id: "parent-1",
+            runtime_scope: "subagent",
+            session_id: "session-1",
+            span_id: "span-1",
+            trace_id: "trace-1",
+            turn_id: "turn-1",
+          },
           "com.zcode/request-context": {
             parent_span_id: "parent-1",
             runtime_scope: "subagent",
@@ -235,6 +263,37 @@ describe("createMcpAdapter", () => {
       },
       expect.objectContaining({ resetTimeoutOnProgress: true }),
     );
+  });
+
+  it("shares one request-context projection between the canonical and legacy keys", async () => {
+    const adapter = createMcpAdapter();
+    await adapter.connectServer("node_repl", { command: "node", type: "stdio" });
+
+    await adapter.callTool({
+      arguments: { code: "1 + 1" },
+      serverName: "node_repl",
+      toolName: "js",
+      runtimeScope: "main",
+      workspaceIdentity: "workspace-identity-1",
+      workspacePath: "/workspace",
+      trace: { sessionId: "session-1" as never, traceId: "trace-1" as never },
+    });
+
+    const request = clientCallToolMock.mock.calls.at(-1)?.[0] as
+      | { _meta?: Record<string, unknown> }
+      | undefined;
+    const meta = request?._meta;
+    expect(meta).toBeDefined();
+    // spec §4：两键必须引用同一投影对象，不能是两次独立序列化。
+    expect(meta?.[ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL]).toBe(
+      meta?.[ZODY_MCP_REQUEST_CONTEXT_META_KEY],
+    );
+    expect(meta?.[ZODY_MCP_REQUEST_CONTEXT_META_KEY]).toMatchObject({
+      runtime_scope: "main",
+      session_id: "session-1",
+      workspace_identity: "workspace-identity-1",
+      workspace_path: "/workspace",
+    });
   });
 
   it("uses the injected client version for MCP initialize", async () => {

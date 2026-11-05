@@ -32,16 +32,17 @@ flowchart LR
 
 ### 1.1 面 A：Gen UI（shared Gen UI contract + Desktop sandbox producer + UI adapter handler）
 
-| 旧值（保留）                | 新规范值                   | 形态                               | 方向              | 边界 / owner                                                                                                        |
-| --------------------------- | -------------------------- | ---------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `zcode/gen-ui/state`        | `zody/gen-ui/state`        | JSON-RPC 方法                      | 页面 → 宿主       | `packages/ui/src/gen-ui/adapters/page.ts` handler；`packages/desktop/src/renderer/src/plugin-sandbox/genUi.ts` 发送 |
-| `zcode/gen-ui/follow-up`    | `zody/gen-ui/follow-up`    | 方法                               | 页面 → 宿主       | 同上                                                                                                                |
-| `zcode/gen-ui/tweak`        | `zody/gen-ui/tweak`        | 方法                               | 页面 → 宿主       | 同上                                                                                                                |
-| `zcode/gen-ui/presentation` | `zody/gen-ui/presentation` | 方法                               | 页面 → 宿主       | 同上                                                                                                                |
-| `zcode/genUiState`          | `zody/genUiState`          | hostContext 键                     | 宿主 → 页面       | page.ts 注入                                                                                                        |
-| `zcode/genUiTweaks`         | `zody/genUiTweaks`         | hostContext 键                     | 宿主 → 页面       | page.ts 注入                                                                                                        |
-| `zcode:set_globals`         | `zody:set_globals`         | 页内 DOM 事件                      | 宿主运行时 → 页面 | genUi.ts 派发                                                                                                       |
-| `zcode/gen-ui`              | `zody/gen-ui`              | `hostCapabilities.experimental` 键 | 宿主 → 页面       | page.ts 能力宣告（此前为硬编码，本批登记为 shared 常量）                                                            |
+| 旧值（保留）                | 新规范值                   | 形态                               | 方向              | 边界 / owner                                                                                                                                                                             |
+| --------------------------- | -------------------------- | ---------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `zcode/gen-ui/state`        | `zody/gen-ui/state`        | JSON-RPC 方法                      | 页面 → 宿主       | `packages/ui/src/gen-ui/adapters/page.ts` handler；`packages/desktop/src/renderer/src/plugin-sandbox/genUi.ts` 发送                                                                      |
+| `zcode/gen-ui/follow-up`    | `zody/gen-ui/follow-up`    | 方法                               | 页面 → 宿主       | 同上                                                                                                                                                                                     |
+| `zcode/gen-ui/tweak`        | `zody/gen-ui/tweak`        | 方法                               | 页面 → 宿主       | 同上                                                                                                                                                                                     |
+| `zcode/gen-ui/presentation` | `zody/gen-ui/presentation` | 方法                               | 页面 → 宿主       | 同上                                                                                                                                                                                     |
+| `zcode/genUiState`          | `zody/genUiState`          | hostContext 键                     | 宿主 → 页面       | page.ts 注入                                                                                                                                                                             |
+| `zcode/genUiTweaks`         | `zody/genUiTweaks`         | hostContext 键                     | 宿主 → 页面       | page.ts 注入                                                                                                                                                                             |
+| `zcode:set_globals`         | `zody:set_globals`         | 页内 DOM 事件                      | 宿主运行时 → 页面 | genUi.ts 派发                                                                                                                                                                            |
+| `zcode:globals`             | `zody:globals`             | 页内 DOM 事件                      | 宿主运行时 → 页面 | aliasRuntime.ts 通知一次变更；alias.ts 双名派发（legacy 无 payload 不变，canonical `detail.globals` 与 `openai:set_globals` 同源；同批 `zcode:error`→`zody:error` 双名派发，无兼容字段） |
+| `zcode/gen-ui`              | `zody/gen-ui`              | `hostCapabilities.experimental` 键 | 宿主 → 页面       | page.ts 能力宣告（此前为硬编码，本批登记为 shared 常量）                                                                                                                                 |
 
 ### 1.2 面 B：MCP Apps（shared MCP Apps contract + 宿主接收/输出边界）
 
@@ -108,7 +109,8 @@ CLI contracts 是 zod v3、shared 是 zod v4，schema 对象不能直接复用�
 - `ZCODE_PLUGIN_ROOT` / `ZCODE_PLUGIN_DATA` / `ZCODE_PLUGIN_ID`：R55 owner；R50 不改。
 - `ZCODE_PLUGIN_HOST_COMMAND`：R54 owner；R20.3 与 R50–R53 只消费该决定。
 - `ZCODE_NODE_REPL_CONTROL_FLAG`：R20.3 owner（三声明/校验器/子进程消费者必须同动）；其插件侧 caller 迁移需与本批协调。
-- `__zcode__/vendor/` 路径段与 `zcode:globals` 别名运行时事件：归 R51 派发包；本 spec 只登记，不实施。
+- `__zcode__/vendor/` 等 `__zcode__/*` sandbox 内部路径与标记：属 `zcode-sandbox://` origin 例外（§5），R51 不改，R56 退役清单逐项复核。
+- `zcode:globals` 别名运行时事件由 R51 双名派发（`zody:globals`，同一状态投影）；此处只登记。
 
 ## 7. 边界与不动清单
 

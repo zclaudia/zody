@@ -2,10 +2,11 @@
 
 import {
   modelMessageContentToText,
+  readZodyMcpMetaEntry,
   resolveMcpToolVisibility,
   SessionEventType,
   ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY,
-  ZODY_MCP_ERROR_PRESENTATION_META_KEY,
+  ZODY_MCP_META_KEY_COMPAT,
   type JsonSchema,
   type McpPort,
   type McpToolCallResult,
@@ -107,10 +108,7 @@ function toRegisteredMcpToolName(
   descriptor: McpToolDescriptor,
   officialCuaAuthorityVerified: boolean,
 ): string {
-  if (
-    officialCuaAuthorityVerified &&
-    descriptor.serverName === ZODY_CUA_OFFICIAL_MCP_SERVER_NAME
-  ) {
+  if (officialCuaAuthorityVerified && descriptor.serverName === ZODY_CUA_OFFICIAL_MCP_SERVER_NAME) {
     // adapter 会把官方插件 serverName 命名空间化，descriptor.name 因而是
     // mcp__plugin_zcode-cua_computer-use__*；直接沿用它会让 provider 约定的 computer-use
     // 工具永远不存在。可信门成立后仅投影模型可见名称，handler 仍用 descriptor 的原路由。
@@ -449,9 +447,17 @@ export function formatMcpToolResult(output: unknown): ModelMessageContent {
   if (!output.isError) return content;
   // 展示策略由 MCP result 显式声明；通用 bridge 不应识别具体 server，
   // 也不应通过解析错误字符串来猜测哪些内容属于堆栈。
-  const errorPresentation = output._meta?.[ZODY_MCP_ERROR_PRESENTATION_META_KEY];
-  return typeof errorPresentation === "string" &&
-    errorPresentation === ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY
+  //
+  // R53：`zody/errorPresentation`（canonical）与 legacy `zcode/errorPresentation` 双键读取。
+  // 单键按原语义；双键归一化相等才应用；冲突时**拒绝应用该字段**但保留整条结果，
+  // 退回通用 MCP 错误前缀 —— 不静默丢结果，也不把冲突值放宽成 message-only。
+  const errorPresentation = readZodyMcpMetaEntry(
+    output._meta,
+    ZODY_MCP_META_KEY_COMPAT.errorPresentation,
+    (value) => (typeof value === "string" ? value : null),
+  );
+  return errorPresentation.status === "accepted" &&
+    errorPresentation.value === ZODY_MCP_ERROR_PRESENTATION_MESSAGE_ONLY
     ? content
     : `MCP tool returned an error:\n${modelMessageContentToText(content)}`;
 }

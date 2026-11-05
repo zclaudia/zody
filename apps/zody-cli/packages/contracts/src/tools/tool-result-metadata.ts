@@ -6,6 +6,7 @@ import {
   MCP_APPS_SURFACE_ID_MAX_CHARS,
   MCP_APPS_SURFACE_ID_PATTERN,
   MCP_APPS_WIDGET_META_MAX_BYTES,
+  type McpAppsMetaKeyPair,
 } from "@zody/shared/mcp-apps";
 
 import {
@@ -28,6 +29,18 @@ export const TASK_OUTPUT_DISPLAY_MAX_OUTPUT_CHARS = 2_000;
 export const MCP_TOOL_DISPLAY_MAX_NAME_CHARS = 256;
 export const MCP_TOOL_DISPLAY_MAX_DESCRIPTION_CHARS = 4 * 1024;
 export const CUA_TARGET_APP_DISPLAY_META_KEY = "zcode.cua/target-app-display-v1" as const;
+/**
+ * CUA 目标应用展示元数据的 canonical 键（spec `zody-rename-plugin-wire.md` §1.3）：
+ * 在线工具结果与历史持久化回放使用同一双键规则，冲突时拒绝应用该字段。
+ * 与 `ZODY_MCP_META_KEY_COMPAT` 同形，读取统一走 `readZodyMcpMetaEntry`。
+ */
+export const CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL = "zody.cua/target-app-display-v1" as const;
+export const CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT = {
+  canonical: CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL,
+  legacy: CUA_TARGET_APP_DISPLAY_META_KEY,
+  direction: "inbound",
+  failClosed: false,
+} as const satisfies McpAppsMetaKeyPair;
 
 export const applicationIconLocatorSchema = z.discriminatedUnion("kind", [
   z
@@ -192,7 +205,7 @@ export const nodeReplImageToolResultDisplayPayloadSchema = z
 
 /**
  * 插件 UI 元数据。
- * contracts 仍在 zod v3，无法直接复用 `@zcode/shared/mcp-apps` 的 zod v4 schema 对象，这里按同一常量
+ * contracts 仍在 zod v3，无法直接复用 `@zody/shared/mcp-apps` 的 zod v4 schema 对象，这里按同一常量
  * 手写一份；字段集合与 `mcpToolDisplayUiSchema` 必须一致，由 core/tests/mcp-ui-display.test.ts 用同一
  * fixture 双侧 parse 锁住。
  */

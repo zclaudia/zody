@@ -12,3 +12,13 @@ Host 服务是 UI 与 Agent MCP 之间的桥；UI 通过 `IPluginUiBridgeService
 - Sampling 仅透传到已存在的目标 workspace Agent，不新建/恢复执行、缓存结果或重放；超时/失败取消原 operationId。以严格 schema 返回官方基础 sampling 结果。
 
 Sampling 使用独立 `IPluginUiSamplingService` 描述符透传请求与取消，不扩张资源桥方法集合；Web/远程未注入时不声明 capability。
+
+## 资源 `_meta` 双键入站（R50 规则，R52 接入）
+
+规则全文见 [插件 wire 兼容 spec](../../../../specs/zody-rename-plugin-wire.md)。本服务是 MCP Apps 资源 `_meta` 的实际入站边界，只调用 `@zody/shared/mcp-apps` 的公开规则函数，不另造兼容判断。
+
+- 来源优先级不变：`resources/read` 选中的 HTML 项 `_meta` 是权威，只有该项没有任何声明时才翻 `resources/list` 条目兜底。
+- 单键（`zody/csp` 或 legacy `zcode/csp`）按原 schema 归一化后接受；非法视作未声明，不因识别到旧/新键而放宽。
+- 双键归一化相等才接受，返回值取规范值（不做"新键优先"）。
+- 双键冲突（归一化不等或任一侧非法）时，`prepareSandbox` 以可见错误 `PluginUiBridgeError("resource_meta_conflict")` 拒绝整个资源准备：不登记沙箱、不携带任何 CSP 放宽，绝不合并两侧或取更宽的一侧（fail-closed）。错误信息包含两侧键名，便于插件作者修正声明。
+- 其他资源字段（`permissions` / `prefersBorder` / 尺寸提示）语义不变；未声明的浏览器权限一律不授予。

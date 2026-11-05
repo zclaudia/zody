@@ -20,6 +20,7 @@ import type { McpAppsDownloadFileItem } from "@zody/shared/mcp-apps";
 import {
   MCP_APPS_SET_WIDGET_STATE_METHOD,
   MCP_APPS_WIDGET_STATE_CONTEXT_KEY,
+  MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL,
 } from "@zody/shared/mcp-apps";
 import type { OpenAiCompatApi, ZodyAliasApi } from "./aliasApi.js";
 import { createOpenAiCompatApi, readOpenAiGlobals } from "./openaiAlias.js";
@@ -70,7 +71,9 @@ export interface AliasAppLike {
   downloadFile(params: { contents: McpAppsDownloadFileItem[] }): Promise<{ isError?: boolean }>;
 }
 
+/** legacy `zcode:globals`（explicit-retention，见 specs/zody-rename-plugin-wire.md §1.1）；canonical 紧随其后。 */
 export const ZODY_GLOBALS_EVENT = "zcode:globals";
+export const ZODY_GLOBALS_EVENT_CANONICAL = "zody:globals";
 
 export interface PluginSandboxAliasRuntime {
   zcode: ZodyAliasApi;
@@ -147,9 +150,13 @@ export function createPluginSandboxAliasRuntime(options: {
           // widgetState 初值随握手经 hostContext 扩展键下发（宿主只在创建桥时带一次）。
           if (!widgetStateSeeded) {
             widgetStateSeeded = true;
-            const seeded = (app.getHostContext() as Record<string, unknown> | undefined)?.[
-              MCP_APPS_WIDGET_STATE_CONTEXT_KEY
-            ];
+            const context = app.getHostContext() as Record<string, unknown> | undefined;
+            // 读侧 canonical 优先、缺省回退 legacy（spec §4）；用 hasOwn 区分“未下发”与合法的 null 快照。
+            const seeded = context
+              ? Object.hasOwn(context, MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL)
+                ? context[MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL]
+                : context[MCP_APPS_WIDGET_STATE_CONTEXT_KEY]
+              : undefined;
             if (seeded !== undefined) widgetState = seeded;
           }
           notify();

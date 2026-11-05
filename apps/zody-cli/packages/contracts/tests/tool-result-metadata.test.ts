@@ -1,11 +1,27 @@
 import {
   createWorkflowToolResultDisplayPayloadSchema,
+  CUA_TARGET_APP_DISPLAY_META_KEY,
+  CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL,
+  CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
+  cuaTargetAppDisplaySchema,
   parseCompletedToolPartMetadata,
   parseToolResultDisplayPayload,
   respondToCoordinatorToolResultDisplayPayloadSchema,
   taskOutputToolResultDisplayPayloadSchema,
   toolResultDisplayPayloadSchema,
 } from "../src/tools/tool-result-metadata.js";
+import {
+  readZodyMcpMetaEntry,
+  ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL,
+  ZODY_MCP_ERROR_PRESENTATION_META_KEY,
+  ZODY_MCP_ERROR_PRESENTATION_META_KEY_CANONICAL,
+  ZODY_MCP_META_KEY_COMPAT,
+  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY,
+  ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL,
+  ZODY_MCP_REQUEST_CONTEXT_META_KEY,
+  ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL,
+} from "../src/interfaces/mcp.port.js";
 import { CreateWorkflowCausalityGraphSchema } from "../src/tools/create-workflow.js";
 import {
   getWorkflowRunToolResultDisplayPayloadSchema,
@@ -517,6 +533,145 @@ describe("create_workflow display field set (skew tripwire)", () => {
     expect(
       toolResultDisplayPayloadSchema.safeParse({ kind: "save_workflow", name: "x" }).success,
     ).toBe(false);
+  });
+});
+
+// spec：specs/zody-rename-plugin-wire.md §1.3、§2。
+// CLI contracts 是 zod v3，shared 是 zod v4，不能直接复用 shared 的常量/解析实现；
+// 这里锁定手写镜像的字面值，并用同一组 fixture 跑 absent/accepted/conflict 矩阵。
+// 生产读取方（core/node-repl-host）只调用 readZodyMcpMetaEntry，不各自复制判断。
+describe("CLI MCP meta key compatibility mirror", () => {
+  it("keeps the registered legacy/canonical literals byte-identical", () => {
+    expect(ZODY_MCP_REQUEST_CONTEXT_META_KEY).toBe("com.zcode/request-context");
+    expect(ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL).toBe("com.zody/request-context");
+    expect(ZODY_MCP_ERROR_PRESENTATION_META_KEY).toBe("zcode/errorPresentation");
+    expect(ZODY_MCP_ERROR_PRESENTATION_META_KEY_CANONICAL).toBe("zody/errorPresentation");
+    expect(ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY).toBe(
+      "zcode/browserScreenshotContentIndices",
+    );
+    expect(ZODY_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY_CANONICAL).toBe(
+      "zody/browserScreenshotContentIndices",
+    );
+    expect(ZODY_MCP_NODE_REPL_CUA_APP_META_KEY).toBe("zcode/nodeReplCuaApp");
+    expect(ZODY_MCP_NODE_REPL_CUA_APP_META_KEY_CANONICAL).toBe("zody/nodeReplCuaApp");
+    expect(CUA_TARGET_APP_DISPLAY_META_KEY).toBe("zcode.cua/target-app-display-v1");
+    expect(CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL).toBe("zody.cua/target-app-display-v1");
+    // 注册表的键对必须就是上面这些常量，防止有人在 helper 里另写字面值。
+    expect(ZODY_MCP_META_KEY_COMPAT.requestContext).toMatchObject({
+      canonical: ZODY_MCP_REQUEST_CONTEXT_META_KEY_CANONICAL,
+      legacy: ZODY_MCP_REQUEST_CONTEXT_META_KEY,
+    });
+    expect(ZODY_MCP_META_KEY_COMPAT.errorPresentation).toMatchObject({
+      canonical: ZODY_MCP_ERROR_PRESENTATION_META_KEY_CANONICAL,
+      legacy: ZODY_MCP_ERROR_PRESENTATION_META_KEY,
+    });
+    expect(CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT).toMatchObject({
+      canonical: CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL,
+      legacy: CUA_TARGET_APP_DISPLAY_META_KEY,
+    });
+  });
+
+  const targetApp = {
+    schemaVersion: 1,
+    displayName: "Calculator",
+    iconLocators: [{ kind: "darwin-bundle-id", value: "com.apple.calculator" }],
+  } as const;
+  const parseTargetApp = (value: unknown) => {
+    const parsed = cuaTargetAppDisplaySchema.safeParse(value);
+    return parsed.success ? parsed.data : null;
+  };
+
+  it("accepts either single representation with the original schema", () => {
+    expect(
+      readZodyMcpMetaEntry(
+        { [CUA_TARGET_APP_DISPLAY_META_KEY]: targetApp },
+        CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
+        parseTargetApp,
+      ),
+    ).toEqual({ status: "accepted", value: targetApp, source: "legacy" });
+    expect(
+      readZodyMcpMetaEntry(
+        { [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: targetApp },
+        CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
+        parseTargetApp,
+      ),
+    ).toEqual({ status: "accepted", value: targetApp, source: "canonical" });
+  });
+
+  it("accepts dual representations only when normalization is equal", () => {
+    // 键序不同不影响归一化等值；返回 canonical 侧的归一化值，而不是原始 JSON。
+    expect(
+      readZodyMcpMetaEntry(
+        {
+          [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: {
+            iconLocators: targetApp.iconLocators,
+            displayName: targetApp.displayName,
+            schemaVersion: 1,
+          },
+          [CUA_TARGET_APP_DISPLAY_META_KEY]: targetApp,
+        },
+        CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
+        parseTargetApp,
+      ),
+    ).toMatchObject({ status: "accepted", source: "both", value: targetApp });
+  });
+
+  it("reports conflict for unequal or unusable dual representations", () => {
+    expect(
+      readZodyMcpMetaEntry(
+        {
+          [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: { ...targetApp, displayName: "Notes" },
+          [CUA_TARGET_APP_DISPLAY_META_KEY]: targetApp,
+        },
+        CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
+        parseTargetApp,
+      ),
+    ).toMatchObject({
+      status: "conflict",
+      canonicalKey: CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL,
+      legacyKey: CUA_TARGET_APP_DISPLAY_META_KEY,
+    });
+    // 任一侧不可用同样是冲突：不能因为另一侧合法就放行更宽的一份。
+    expect(
+      readZodyMcpMetaEntry(
+        {
+          [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: { schemaVersion: 1 },
+          [CUA_TARGET_APP_DISPLAY_META_KEY]: targetApp,
+        },
+        CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
+        parseTargetApp,
+      ).status,
+    ).toBe("conflict");
+  });
+
+  it("treats an unusable single representation as absent, not as a different rule", () => {
+    expect(
+      readZodyMcpMetaEntry(
+        { [CUA_TARGET_APP_DISPLAY_META_KEY_CANONICAL]: { schemaVersion: 2 } },
+        CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT,
+        parseTargetApp,
+      ),
+    ).toEqual({ status: "absent" });
+    expect(
+      readZodyMcpMetaEntry({}, CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT, parseTargetApp),
+    ).toEqual({ status: "absent" });
+    expect(
+      readZodyMcpMetaEntry(undefined, CUA_TARGET_APP_DISPLAY_META_KEY_COMPAT, parseTargetApp),
+    ).toEqual({ status: "absent" });
+  });
+
+  it("keeps stored display parsing key-agnostic for historical replay", () => {
+    // _meta 键名不进入持久化 display；回放只看投影后的形状。同一份投影无论来自
+    // canonical/legacy/双键都得到同一结果，这就是“在线与历史使用同一解释”的存储侧。
+    const display = {
+      kind: "cua",
+      schemaVersion: 1,
+      toolName: "key",
+      status: "success",
+      targetApp,
+    } as const;
+    expect(parseToolResultDisplayPayload(display)).toEqual(display);
+    expect(parseCompletedToolPartMetadata({ schemaVersion: 1, display })?.display).toEqual(display);
   });
 });
 
