@@ -1603,14 +1603,14 @@
     "packages/rpc/src/logging-middleware.ts": "20edfd8e5d054097186f2498ec4e9c08c61740ed003fc69eecea8176a15fe025",
     "packages/rpc/src/network-telemetry-middleware.ts": "18a7cde46e6c65e0138af0623d07bf883ce278acf44654bc5144ecaadd36a536",
     "packages/rpc/src/persistent-protocol.ts": "80609595b89188272d743e557502c6cad3858f828acae31c2ef64206bb3c8978",
-    "packages/rpc/src/protocol.ts": "aafc0c098c75fcba4519fad2ecbee7e025d5d8a27c15c87e5ccb4ca6ce554670",
+    "packages/rpc/src/protocol.ts": "b59c13cb337826145c8a5ef5ec066ca0c6da1148f15d70986c49e2c7857be09e",
     "packages/rpc/src/proxy-channel.ts": "ec5b43e6a3a622a88a8aaa6af9cb37dbfe517932ee7f4a337019ec138bb2d513",
     "packages/rpc/src/remote.ts": "a11e072d5df7e1c1ce64814a68f72afc081246b364f0da409b5c9d22bc815957",
-    "packages/rpc/src/serialization.ts": "e949418e1cd17cc863c147fc8d1ff15237e1b5f0cb8e3344fd2a9ccfae9d54e7",
+    "packages/rpc/src/serialization.ts": "57ff70ba4f572395b1ca6d63e91ea64885c03ca5fa65324538434c59e61b263c",
     "packages/server/package.json": "534e79d3f3fb9e625c0629d0195ec63697da78535ed65efa40882577628bbb1c",
     "packages/services/package.json": "1c5d43f2057191b620925a1f08f110e78fbe15c100ddd6bc1ef4b2e8abd18650",
     "packages/shared/package.json": "bb3d151a760de2246a00ab3f0e8978fb47eb64dc9b905720cfedbdfb5696930d",
-    "packages/shared/src/zody-protocol-v4/wire-codec.ts": "ac2494a3acc795c809c94ee9393f50271a9c2a0fd33813459e5ab93842ceef75",
+    "packages/shared/src/zody-protocol-v4/wire-codec.ts": "2f302ece1879bf5727d0710c4e5ab3628a92a036fee3a98b99eb5a4d90b431b2",
     "packages/stream-animate/package.json": "61ea66d79d4b55ec8b99a7b3e6d9457592871a2cc1eb80954d001d7c409f3c4e",
     "packages/ui/package.json": "bc430b3c8b6167c093799351b94ef46b28a7cd20f428d26407b34ef92a801127",
     "packages/ui/src/components/ai-elements/agent.tsx": "830e7ea9e927de1524851337f1d35bda0e5690e3e4fa307fff854b60006b16c7",
@@ -30245,7 +30245,7 @@
         },
         {
           "file": "packages/rpc/src/protocol.ts",
-          "sha256": "aafc0c098c75fcba4519fad2ecbee7e025d5d8a27c15c87e5ccb4ca6ce554670"
+          "sha256": "b59c13cb337826145c8a5ef5ec066ca0c6da1148f15d70986c49e2c7857be09e"
         },
         {
           "file": "packages/rpc/src/proxy-channel.ts",
@@ -30257,7 +30257,7 @@
         },
         {
           "file": "packages/rpc/src/serialization.ts",
-          "sha256": "e949418e1cd17cc863c147fc8d1ff15237e1b5f0cb8e3344fd2a9ccfae9d54e7"
+          "sha256": "57ff70ba4f572395b1ca6d63e91ea64885c03ca5fa65324538434c59e61b263c"
         },
         {
           "file": "packages/rpc/examples/01-basic-ipc.ts",
@@ -30277,7 +30277,7 @@
         },
         {
           "file": "packages/shared/src/zody-protocol-v4/wire-codec.ts",
-          "sha256": "ac2494a3acc795c809c94ee9393f50271a9c2a0fd33813459e5ab93842ceef75"
+          "sha256": "2f302ece1879bf5727d0710c4e5ab3628a92a036fee3a98b99eb5a4d90b431b2"
         }
       ]
     },
