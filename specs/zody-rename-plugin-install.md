@@ -30,7 +30,7 @@ flowchart TD
 | 市场安装/元数据      | `apps/zody-cli/packages/adapters/src/plugins/marketplace.ts`          | 解析              | `findPluginManifestPath`：新 → Z → C → X；`readPluginManifestFromRoot` 非法即抛错              |
 | zip 源探测           | `apps/zody-cli/packages/adapters/src/plugins/zip-source.ts`           | 存在性            | `hasPluginManifest` 加入 `.zody-plugin/plugin.json`，其余探测顺序不变                          |
 | skill 别名/祖先遍历  | `apps/zody-cli/packages/adapters/src/skills/index.ts`                 | 解析（祖先上溯）  | `PLUGIN_MANIFEST_RELATIVE_PATHS` 前置新格式；新格式非法终止上溯并发出可见诊断                  |
-| 同步（用户插件）     | `packages/services/src/plugin-sync/pluginSyncService.ts`              | 解析              | `PLUGIN_MANIFEST_RELATIVE_PATHS` 前置新格式；读取失败继续、解析失败返回 null（不回退）         |
+| 同步（用户插件）     | `packages/services/src/plugin-sync/pluginSyncService.ts`              | 解析              | `PLUGIN_MANIFEST_RELATIVE_PATHS` 前置新格式；仅 ENOENT 继续；其他读取错误或非法名称返回 null（不回退）         |
 | 组件发现：skills     | `packages/services/src/skills/skillsService.ts`                       | 解析              | `findPluginManifestPath` 前置新格式；读取/解析失败返回 null                                    |
 | 组件发现：commands   | `packages/services/src/commands/commandsService.ts`                   | 解析              | 同上                                                                                           |
 | 组件发现：subagents  | `packages/services/src/subagents/subagentsService.ts`                 | 解析              | `PLUGIN_MANIFEST_PATHS` 前置新格式；新格式存在但读取/解析失败即返回 null，不继续旧格式         |
@@ -67,7 +67,8 @@ flowchart TD
    - 慢路径在 `isSeedCurrent` 命中时调用 `writeOfficialPluginRuntimeManifest`，以旧 manifest 为渲染源、写入新路径；
    - 发现层按 S1 只读新路径，得到重渲染后的新命令。
      该闭环由 `official-plugin-runtime.test.ts` 与 bootstrap `plugins.test.ts` 的升级用例证明（旧文件字节不变、新路径携带新命令、发现取新路径）。
-5. 若缓存目录只读导致新路径写入失败，错误按原有 transient/fatal 语义上抛，不静默丢弃（预案 §2.7-E 的升级触发条件）。
+5. 无 MCP 的 skill/command-only legacy seed 不需要运行期重写：marker 匹配且无遗留 backup 时，允许只读验证合法 legacy 对象后复用，不为制造新路径而写文件或获取 seed 锁。只有新 manifest 读取确为 ENOENT 才可检查 legacy；新文件不可读/非法时不得从 legacy 恢复快路径。带 MCP 的 legacy 缓存仍须进入持锁重渲染闭环。
+6. 若缓存目录只读导致新路径写入失败，错误按原有 transient/fatal 语义上抛，不静默丢弃（预案 §2.7-E 的升级触发条件）。
 
 ## S5 不变量
 
@@ -93,3 +94,23 @@ flowchart TD
   - 内置插件首次 seed / seed 复用；
   - 升级首跑：旧命令 manifest 重渲染到新路径且旧字节不变。
 - 真实安装/升级/seed 的 GUI E2E（`RENAME-PLUGIN-INSTALL`）由 R56 执行，见 `packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-install.test.ts`。
+
+## 独立 review 修复验收（2026-11-06）
+
+- 同步公共候选与归档导入入口覆盖新 manifest 为目录（EISDIR）、非法 name（与加载端同一正则值域）及非法 JSON；不登记候选、不安装、不改远端配置，不回退旧 manifest。ENOENT 保留既有旧格式回退。
+- skill-only legacy manifest 的重复读取不改旧字节、不创建 canonical，真实 bundled seed 热读零次 seed 写锁；带 MCP 的 legacy 仍须升级，新 manifest 非法绝不借 legacy 命中。
+
+```mermaid
+flowchart LR
+  A[现有seed marker与backup检查] --> B[读canonical manifest]
+  B -->|成功| C[按当前进程比较渲染字节]
+  B -->|仅ENOENT| D[读并验证legacy对象]
+  D -->|无MCP| E[复用同一seed 不加锁不写入]
+  D -->|有MCP或非法| F[现有seed锁内重验及升级]
+  B -->|其他错误或非法| F
+```
+
+- seed 复用必须检查 manifest 为对象且 `name` 与该官方插件定义一致；合法 JSON 的空对象、数组、null 或错身份同样不可复用。带 MCP 的 legacy manifest 即使渲染字节已一致，也必须首次写入 canonical；后续同字节 canonical 不重复写入。
+
+- 运行期写入与快路径共用“read canonical，仅 ENOENT 才 read legacy”的判定；不得用 `existsSync=false` 把 EACCES/EPERM 当作不存在。回归对 canonical stat/read 的 EACCES 做窄故障注入，验证慢路径不读 legacy。
+- 带 MCP 的升级闭环适用于有可用 launcher 的 CLI/Desktop/SEA 产品入口。非 SEA 且缺少 `process.argv[1]` 的嵌入式发现没有可用 host 前缀，保持既有“不生成运行期 MCP 配置”的语义，不将其标记为已升级，也不承诺该形态的热读零锁。

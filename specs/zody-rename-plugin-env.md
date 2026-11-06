@@ -41,7 +41,7 @@ official runtime 在 seed 阶段只能取得官方插件的 `pluginName` 与 `ro
 1. 新增可展开前缀 `${ZODY_PLUGIN_ROOT}`、`${ZODY_PLUGIN_DATA}`。它们与既有 `${ZCODE_PLUGIN_ROOT}`、`${ZCODE_PLUGIN_DATA}`、`${CLAUDE_PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_DATA}` 从同一上下文展开，结果必须相同。
 2. 模板覆盖位置：插件 MCP 配置（`command` / `args` / `cwd` / `env` / headers 中既有支持范围）、插件 hook 的 `command` 与 `args`、自定义命令的 shell 展开上下文。既有 `${CLAUDE_PROJECT_DIR}`、`${ZCODE_PROJECT_DIR}`、`${CLAUDE_SESSION_ID}`、`${ZCODE_SESSION_ID}`、`${CLAUDE_SKILL_DIR}`、`${ZCODE_SKILL_DIR}`、`${user_config.<key>}` 规则不变。
 3. 不承诺 `${ZODY_PLUGIN_ID}` / `${ZODY_PLUGIN_NAME}` 模板；ID/NAME 只以 env 提供。
-4. 缺少插件上下文时，`${ZODY_PLUGIN_ROOT/DATA}` 与既有插件模板前缀一样按各消费者原错误语义失败，不展开成空串。
+4. 缺少插件上下文时，六个 ROOT/DATA 模板（ZODY/ZCODE/CLAUDE）均在 command/args 展开阶段抛配置错误，早于 `ExecutionPort.run`；不得把原 token 交给 shell 再从继承环境展开，也不得展开成空串。ID/NAME 仍只提供 env，不增加模板承诺。
 5. 普通 `ZCODE_*` 环境变量不因本轮获得 `ZODY_*` 别名：MCP resolver 既有的 `ZCODE_` 前缀查找保持原样，不新增通用 `ZODY_` 前缀分支。`ZCODE_CUA_PLUGIN_ROOT` 已由 R30 硬切为 `ZODY_CUA_PLUGIN_ROOT`，不属于本 spec 的通用插件双注入。
 
 ## S4 保留与退役
@@ -64,3 +64,9 @@ official runtime 在 seed 阶段只能取得官方插件的 `pluginName` 与 `ro
 | 1.0 退役边界                   | 旧键与旧模板在本轮保留；`ZCODE_CUA_PLUGIN_ROOT` 不回到通用双注入路径                         |
 
 真实插件交互（子进程、hook、模板展开与外部冲突）由 RENAME-PLUGIN-ENV 用例覆盖；R55 只交付 pending 用例与 fixture，执行归 R56。
+
+## 独立 review 回归验收（2026-11-06）
+
+- command shell 与 process command/args 无插件上下文时，逐个 ROOT/DATA 模板报配置错误，执行次数为零；合成宿主身份变量不可改变结果。
+- 有上下文的双组身份与模板同源、普通 project/session token 行为保持。
+- 唯一执行入口顺序：配置hook → 上下文模板校验 → 环境overlay → ExecutionPort → 子进程。缺上下文模板在校验阶段终止，不新增授权或状态owner。
