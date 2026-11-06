@@ -8,6 +8,7 @@ import {
   zodyMcpUiOpenInstanceParamsSchema,
   zodyMcpUiReadResourceParamsSchema,
   zodyMcpUiResourceSubscriptionParamsSchema,
+  zodyMcpUiSetExecutionActiveParamsSchema,
   type ZodyMcpReadResourceResult,
   type ZodyMcpUiCallToolResult,
   type ZodyMcpUiCancelCallResult,
@@ -335,5 +336,29 @@ export async function validateMcpUiInstance(
     params,
     record.app.getMcpAppConnectionSnapshot(params.serverName),
   );
+  return {};
+}
+
+/**
+ * `mcp/uiSetExecutionActive`（F18 通道切片，上游 a60ba6a7 pluginUiBackgroundRetention）：
+ * 沙箱执行忙闲上报。凭证/scope fail closed 与 uiValidateInstance 同口径；
+ * 信号只写入实例唯一 owner 并构成 isBusy，供 `mcp/uiCloseInstance` 的 onlyIfIdle
+ * 原子裁决拒绝回收；保留/回收策略本身不在本方法实现
+ * （docs/plugin-ui-background-execution.md §11）。
+ */
+export async function setMcpUiExecutionActive(
+  context: ZodyProtocolAgentServerContext,
+  rawParams: unknown,
+) {
+  const params = parseParams(zodyMcpUiSetExecutionActiveParamsSchema, rawParams);
+  const record = requireSession(context, params.sessionId, {
+    operation: "mcp/uiSetExecutionActive",
+  });
+  mcpUiInstances.validate(
+    params.instance,
+    params,
+    record.app.getMcpAppConnectionSnapshot(params.serverName),
+  );
+  mcpUiInstances.setExecutionActive(params.instance, params.active);
   return {};
 }

@@ -32,6 +32,7 @@ const MCP_APP_CONCURRENT_METHODS = new Set<string>([
   zodyProtocolMethods.mcpUiOpenInstance,
   zodyProtocolMethods.mcpUiCloseInstance,
   zodyProtocolMethods.mcpUiValidateInstance,
+  zodyProtocolMethods.mcpUiSetExecutionActive,
   zodyProtocolMethods.mcpUiCallTool,
   zodyProtocolMethods.mcpUiSampling,
   zodyProtocolMethods.mcpUiCancelSampling,

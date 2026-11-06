@@ -150,7 +150,12 @@ import { createInMemorySessionEventStore } from "@zody/contracts";
 
 export type { ZodyProtocolAgentDependencies, ZodyProtocolSessionRecord };
 
-import { closeMcpUiInstance, openMcpUiInstance, validateMcpUiInstance } from "./mcp-ui/index.js";
+import {
+  closeMcpUiInstance,
+  openMcpUiInstance,
+  setMcpUiExecutionActive,
+  validateMcpUiInstance,
+} from "./mcp-ui/index.js";
 const MAX_CLIENT_REQUEST_REANNOUNCE_INTERVAL_MS = 10_000;
 
 type ZodyProtocolOutboundMessage = ZodyProtocolNotification | ZodyProtocolRequest;
@@ -706,6 +711,9 @@ export class ZodyProtocolAgentServer {
         return openMcpUiInstance(this.context, request.params);
       case zodyProtocolMethods.mcpUiValidateInstance:
         return validateMcpUiInstance(this.context, request.params);
+      // F18 通道切片（a60ba6a7）：沙箱执行忙闲上报，进入实例 owner 的 busy 观测。
+      case zodyProtocolMethods.mcpUiSetExecutionActive:
+        return setMcpUiExecutionActive(this.context, request.params);
       case zodyProtocolMethods.mcpUiCloseInstance:
         return closeMcpUiInstance(this.context, request.params);
       case zodyProtocolMethods.mcpUiSampling:

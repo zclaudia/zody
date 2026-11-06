@@ -22,6 +22,7 @@ export {
   openMcpUiInstance,
   readMcpUiResource,
   readMcpUiResourceForUi,
+  setMcpUiExecutionActive,
   subscribeMcpUiResource,
   unsubscribeMcpUiResource,
 } from "./protocol.js";

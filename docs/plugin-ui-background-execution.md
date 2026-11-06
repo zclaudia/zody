@@ -140,3 +140,31 @@
 - Main 不执行 MCP 权限策略，不保存会话、队列或 widgetState；Renderer 不直接接触插件 HTML、数据库或连接凭据。
 - `continuous` 与 `replayable` 的协议语义、CommandInbox/admission、Host owner/lease 边界不变。
 - Gen UI 复用同一窗口管理器与准入上限；Gen UI 自己的「有锚点才建 guest」规则（`gen-ui/adapters/retainedPage.ts:72-83`）不变，本项的离屏不销毁规则同样适用于其已存在的 owner。
+
+## 11. 沙箱执行忙闲通道 `mcp/uiSetExecutionActive`（F18 通道切片，2026-11-07）
+
+上游 v3.17.1（a60ba6a7）`pluginUiBackgroundRetention` 要求「busy 不回收」参与 Agent 端回收裁决。本仓实例凭证与 `onlyIfIdle` 裁决的唯一 owner 在 Agent（`McpUiInstances.isBusy`），沙箱侧执行信号必须经协议会话方法到达该 owner。本节只定义通道契约；保留/回收策略本身（上限 4 页、闲置 30 分钟淘汰、最小化暂停计时、claim/finish 预占、可见且有锚点自动重建）由 F18 后续策略步骤另行扩写本 spec。
+
+### 11.1 接口
+
+- 方法：`mcp/uiSetExecutionActive`（`zodyProtocolMethods.mcpUiSetExecutionActive`），params/result 契约注册于 `zodyProtocolSessionMethodContracts`。
+- params：实例 scope（`instance` + `workspace` + `sessionId` + `pluginId` + `serverName`，与 `mcp/uiCloseInstance` 同形）+ `active: boolean`（必填）。
+- result：`{}`（空对象，与 `mcp/uiValidateInstance` 同形）。
+
+### 11.2 状态所有者与裁决
+
+- `executionActive` 布尔的唯一落点是 Agent 侧 `McpUiInstances` 实例登记（`apps/zody-cli/packages/bootstrap/src/zody-protocol/mcp-ui/instances.ts`）；UI / Main 不保存副本、不写第二份。
+- `isBusy` = 工具调用 pins ∪ `executionActive`；`mcp/uiCloseInstance` 的 `onlyIfIdle` 裁决据此返回 `closed:false`，复用现有唯一裁决路径，不另建第二条回收裁决。
+- 幂等与代际：重复同值上报为无变化；实例关闭或换代即随登记消失，不跨代继承、不跨实例串扰。
+
+### 11.3 fail closed
+
+- 凭证与 scope 校验同 `mcp/uiValidateInstance`：token/runtimeId/generation/appIdentity、workspace/session/plugin/server、当前连接 identity/generation 全部匹配才生效；不匹配抛错，且不得改写其他实例的 busy 状态。
+- 实例未知（已关闭/已换代）时上、下置均抛错，不静默成功（与上游 sandbox `setExecutionActive` 的 fail closed 口径一致，来源 a60ba6a7 `packages/desktop/src/main/pluginSandbox/host.ts`）。
+
+### 11.4 验收场景（反例）
+
+- `active:true` 后 `mcp/uiCloseInstance{onlyIfIdle:true}` 返回 `{closed:false}` 且实例仍在；`active:false` 后同一调用返回 `{closed:true}`。
+- 伪造 scope（错 server/session）或过期 token 的上报抛错，目标实例 busy 状态不变，随后 `onlyIfIdle` 回收不被该次上报阻塞。
+- 仅工具 pins（未上报执行）时 busy 语义不变：pins>0 时 `onlyIfIdle` 同样拒绝。
+- 协议契约：`active` 缺失或非布尔、未知键被 params schema 拒绝。

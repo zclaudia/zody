@@ -19,6 +19,9 @@ interface InstanceRecord {
   cancel: AbortController;
   watched?: boolean;
   pins: Set<string>;
+  // F18 通道（上游 a60ba6a7）：沙箱执行忙闲信号；与工具 pins 一并构成 isBusy，
+  // 供 mcp/uiCloseInstance 的 onlyIfIdle 原子裁决消费（docs/plugin-ui-background-execution.md §11）。
+  executionActive?: boolean;
   onActivity?: (callId: string, active: boolean) => void;
 }
 /** 单一凭证 owner。撤销先从登记表移除，再触发取消；迟到结果无法重新获得执行权。 */
@@ -133,7 +136,25 @@ export class McpUiInstances {
     };
   }
   isBusy(lease: McpAppInstance): boolean {
-    return (this.records.get(lease.token)?.pins.size ?? 0) > 0;
+    const record = this.records.get(lease.token);
+    // 工具 pins 与沙箱执行信号任一在场即忙：onlyIfIdle 回收裁决据此拒绝（F18，a60ba6a7）。
+    return (record?.pins.size ?? 0) > 0 || record?.executionActive === true;
+  }
+  /**
+   * F18 通道切片：`mcp/uiSetExecutionActive` 的唯一状态写入点。
+   * 幂等：重复同值无变化；实例关闭/换代随登记消失，不跨代继承。
+   * 凭证比对与 validate 同口径（wire 上报的 instance 是解析副本，不能比对象引用）。
+   */
+  setExecutionActive(lease: McpAppInstance, active: boolean): void {
+    const record = this.records.get(lease.token);
+    if (
+      !record ||
+      record.lease.runtimeId !== lease.runtimeId ||
+      record.lease.generation !== lease.generation ||
+      record.lease.appIdentity !== lease.appIdentity
+    )
+      throw new Error("MCP App instance is no longer authorized");
+    record.executionActive = active;
   }
   find(token: string): InstanceRecord | undefined {
     return this.records.get(token);

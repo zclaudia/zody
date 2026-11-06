@@ -862,6 +862,16 @@ export const zodyMcpUiCloseInstanceParamsSchema = z
   .object({ ...zodyMcpUiPluginScopeShape, onlyIfIdle: z.boolean().optional() })
   .strict();
 export const zodyMcpUiCloseInstanceResultSchema = z.object({ closed: z.boolean() }).strict();
+// F18 通道切片（上游 a60ba6a7 pluginUiBackgroundRetention）：沙箱执行忙闲上报。
+// 只构成 Agent 端 onlyIfIdle 回收裁决的 busy 观测，不承载保留策略本身；
+// 契约见 docs/plugin-ui-background-execution.md §11。
+export const zodyMcpUiSetExecutionActiveParamsSchema = z
+  .object({ ...zodyMcpUiPluginScopeShape, active: z.boolean() })
+  .strict();
+export const zodyMcpUiSetExecutionActiveResultSchema = z.object({}).strict();
+export type ZodyMcpUiSetExecutionActiveParams = z.infer<
+  typeof zodyMcpUiSetExecutionActiveParamsSchema
+>;
 export const zodyMcpReadResourceParamsSchema = z
   .object({ ...zodyMcpUiPluginScopeShape, uri: nonEmptyString.max(2048) })
   .strict();
@@ -3960,6 +3970,8 @@ export const zodyProtocolMethods = {
   mcpUiOpenInstance: "mcp/uiOpenInstance",
   mcpUiCloseInstance: "mcp/uiCloseInstance",
   mcpUiValidateInstance: "mcp/uiValidateInstance",
+  // F18 通道切片（a60ba6a7）：沙箱执行忙闲上报，进入 Agent 端实例 owner 的 busy 观测。
+  mcpUiSetExecutionActive: "mcp/uiSetExecutionActive",
   mcpUiSampling: "mcp/uiSampling",
   mcpUiCancelSampling: "mcp/uiCancelSampling",
   mcpUiCallTool: "mcp/uiCallTool",
@@ -4051,6 +4063,10 @@ export const zodyProtocolSessionMethodContracts = {
   [zodyProtocolMethods.mcpUiValidateInstance]: {
     params: zodyMcpUiCloseInstanceParamsSchema,
     result: zodyMcpUiResourceSubscriptionResultSchema,
+  },
+  [zodyProtocolMethods.mcpUiSetExecutionActive]: {
+    params: zodyMcpUiSetExecutionActiveParamsSchema,
+    result: zodyMcpUiSetExecutionActiveResultSchema,
   },
   [zodyProtocolMethods.workspaceHookTrustGrant]: {
     params: zodyWorkspaceHookTrustGrantParamsSchema,
