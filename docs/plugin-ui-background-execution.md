@@ -2,6 +2,8 @@
 
 状态：领域 spec，2026-10-24。对应上游 v3.16.2 移植 I20；决策口径见 `docs/plans/upstream-v3.16.2-implementation-plan.md` §3「待决规则决策记录」（C5）。本文只定义页面生命周期与锚点关系的差异规则，通用能力边界仍以 `packages/ui/src/plugin-ui/CONTRACT.md`、`packages/desktop/src/main/pluginSandbox/CONTRACT.md` 和 `docs/plugin-ui-connection-readiness.md` 为准。
 
+> **2026-11-07 F18 增补（上游 v3.17.1 a60ba6a7）**：§12 定义「后台页面保留策略」并**修订取代** §2/§4/§6.1/§7/§8 中与之冲突的条目（逐条见 §12.1）；冲突处以 §12 为准，未列条目继续有效。§11 为其 Agent 端 busy 通道（已实现）。
+
 ## 1. 背景与缺口
 
 窗口级页面 owner 现在把「不可见」当成可回收信号：
@@ -168,3 +170,135 @@
 - 伪造 scope（错 server/session）或过期 token 的上报抛错，目标实例 busy 状态不变，随后 `onlyIfIdle` 回收不被该次上报阻塞。
 - 仅工具 pins（未上报执行）时 busy 语义不变：pins>0 时 `onlyIfIdle` 同样拒绝。
 - 协议契约：`active` 缺失或非布尔、未知键被 params schema 拒绝。
+
+## 12. 后台页面保留策略（F18，2026-11-07，上游 a60ba6a7）
+
+上游 v3.17.1 以「资源显式声明 + 窗口级有界保留」取代「全部页面无限后台」的设想：未声明的页面沿用默认隐藏即停；声明的页面按 4 页/30 分钟有界保留。本节定义该策略的产品规则、状态所有者、接口、事件顺序、幂等边界与验收；上游参考仅取语义（`pluginUiBackgroundRetention.ts`、`pluginUiPageRegistry.ts`、`pluginUiManagedPage.ts`、`pluginUiPagePlane.ts`、`mcp-apps/CONTRACT.md`）。
+
+### 12.1 口径变更记录（对 2026-10-24 的修订）
+
+| 2026-10-24 条目                                                                        | F18（2026-11-07）口径                                                                                                                                          |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| §2.1 废除「settled 且不可见立即 suspend」                                              | **恢复默认隐藏即停**：未声明页面沿用离屏 5 分钟定时器与 settled 即停（`pluginUiPageManager.ts` 现行为）；已声明页由 §12.2 保留策略保护，claim 拒绝兜住同一路径 |
+| §2.3 超限只拒绝新页面、不再因容量淘汰或回收现有页面                                    | **恢复上游容量路径**：30 task / 64 allocated 上限数值不变，超限时按既有路径回收「不可见且非忙」的空闲页面腾位（回收走 §12.5 原子裁决）；全部可见或忙才拒绝     |
+| §4.1 可见性不是销毁信号                                                                | 限定为「已声明且处于 4/30 边界内的页面」；未声明页面的隐藏仍是回收信号（经 busy 检查与 Agent 裁决软化为 tryRecycle，不再是无条件销毁）                         |
+| §6.1 删除离屏 5 分钟定时器的销毁语义                                                   | **撤销该结论**：5 分钟定时器保留为默认期限；已声明页不靠删除定时器、而靠 claim 拒绝获得保留                                                                    |
+| §7/§8 中「离屏 5 分钟仍保留」「settled 不 suspend」「第 31/65 次准入只拒绝不回收」等行 | 被 §12.7 场景取代；`pluginUiPageManager.test.ts` 中按 2026-10-24 口径写入的 5 个未实现红测随实现步骤按 F18 口径改写断言（本仓自有反例，非上游测试，不删除）    |
+
+其余条目（§4.2 无锚点继续执行对已声明页、§4.3 返回复用原 guest、§4.4 显式撤销后不复活、§4.6 非本地端无副作用、§6.2 Main TTL 6h、§6.3 迟到挂载、§10 保持不变）继续有效。
+
+### 12.2 产品规则
+
+1. **默认隐藏即停**：资源未声明 `backgroundRetention` 的页面沿用现状——离屏 5 分钟定时器、settled 且不可见且非忙即触发回收；回收是 tryRecycle（Agent 原子裁决），busy 时被拒绝并保留。
+2. **显式声明才保留**：`ui://` 页面资源自己的 `_meta.ui.backgroundRetention: true`（仅布尔；工具 metadata 不授予；缺省即不保留）。
+3. **上限 4 页**：同一窗口内处于后台（运行中、不可见或窗口最小化、未被回收裁决预占）的已声明页面超过 4 个时，才允许回收其中最旧闲置者；回收一个后回到 4。
+4. **闲置 30 分钟**：候选页最近一次活动（可见性边沿、controller 建立、feed 工具输入/结果）距今 ≥30 分钟才可回收；窗口可见且页面可见期间不累计闲置。
+5. **最小化暂停计时**：窗口最小化（`document.hidden`）时，可见页的闲置计时从最小化时刻重新起算；恢复可见即重置。
+6. **busy 不回收**：页面本地 busy（工具调用/采样/app 工具进行中）在 claim 前拒绝；Agent 端 busy（工具 pins ∪ `mcp/uiSetExecutionActive` 上报，§11）在 `onlyIfIdle` 裁决时拒绝。两侧任一忙即保留。
+7. **claim/finish 预占**：回收裁决前先在保留策略预占名额（pending），Agent 拒绝或裁决完成后释放；同一页面并发裁决合并为一次。
+8. **可见且有锚点自动重建**：裁决期间或完成后页面窗口可见且存在可见锚点时，同一 page owner 立即 `ensure()` 重建（新 controller、新凭证；旧凭证已撤销不得复用）。
+9. **后台执行表面**：已声明且运行中的页面隐藏时保留一个不可交互的执行表面（保持 rAF/定时器可执行，不接收输入）；恢复锚点后回到正常承载。
+10. **声明链路唯一**：声明只经资源级 `_meta` 归一化 → 沙箱登记 → 句柄 `resourceMeta` 回 renderer，无第二写入路径。
+
+### 12.3 状态所有者
+
+| 状态                                         | 唯一 owner                                                                                                                          | 其他层职责                                                                         |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 声明归一化（`backgroundRetention` 布尔）     | shared `normalizeMcpAppResourceMeta`（`packages/shared/src/mcp-apps/toolMeta.ts`）                                                  | services 桥只透传归一化结果；不自行解析布尔                                        |
+| 沙箱登记与句柄 `resourceMeta`                | Desktop Main `pluginSandbox` registry                                                                                               | 登记输入存 `record.resourceMeta`，随 `PluginSandboxHandle` 回 renderer             |
+| 沙箱后台执行节流开关                         | Desktop Main `pluginSandbox`（按 sandboxId+initId 代际校验，fail closed）                                                           | renderer 经 preload 上报该 guest 是否后台执行；只影响该 guest 的节流，不改窗口策略 |
+| 保留策略（4/30/最小化/claim 预占）           | Renderer 窗口级 `PluginUiBackgroundRetention`（单实例，随窗口）                                                                     | 页面/锚点只上报 activity/visibility，不做回收决策                                  |
+| 页面生命周期与容量（30/64、5 分钟、settled） | Renderer 窗口级 `PluginUiPageManager`（不变）                                                                                       | 保留策略通过 claim 在同一路径上豁免已声明页                                        |
+| Agent 端 busy（pins ∪ executionActive）      | Agent `McpUiInstances.isBusy`（§11）                                                                                                | `onlyIfIdle` 裁决唯一消费点                                                        |
+| 页面本地 busy                                | `pluginUiHostController.isBusy`                                                                                                     | `tryRecycle` 前置检查                                                              |
+| 回收裁决                                     | 唯一路径：`page.suspend()`（claim → `controller.tryRecycle()` → `bridge.recycleInstance` → `mcp/uiCloseInstance{onlyIfIdle:true}`） | 任何回收触发方（定时器/settled/容量/保留策略）都走该路径，不另建裁决               |
+
+### 12.4 接口与依赖方向
+
+```text
+ui:// 资源 _meta.ui.backgroundRetention(布尔)
+  → shared normalizeMcpAppResourceMeta（read 选中项 → list 同 uri 条目兜底；工具级不授予）
+  → services plugin-ui-bridge prepareSandbox：registerSandbox payload 带归一化字段
+  → desktop Main pluginSandbox registry：record.resourceMeta
+  → PluginSandboxHandle.resourceMeta → renderer pluginUiManagedPage.setHandle
+  → pluginUiPages.prepared(page, retain)：retention.register/release + 补一次 visibility 边沿
+  → PluginUiBackgroundRetention（register/activity/setWindowVisible/claim/finish/changed）
+  → page.suspend()（claim 预占）→ controller.tryRecycle → mcp/uiCloseInstance{onlyIfIdle}
+```
+
+- 依赖方向：renderer（UI 策略）→ host 桥（services）→ Main registry / Agent 协议；反向只有句柄与实例凭证回传。UI 不读 Main 登记表、Main 不做业务回收（§3 不变）。
+- 【落点缺口登记（实现步前必须解决）】上述链路中 `packages/services/src/plugin-ui-bridge/pluginUiBridgeService.ts` 的 registerSandbox payload 需要一行 `backgroundRetention` 透传（与 `showInline` 等同形），该路径不在本卡落点（packages/services 未列入）；实现步骤需 controller 扩落点或单独授权，否则按 §3.2 停止上报。
+- 沙箱执行忙闲上报（§11 `mcp/uiSetExecutionActive`）由 renderer 在页面声明保留且实际进入后台执行时调用，构成 Agent 端 busy 的第二来源。
+
+### 12.5 事件顺序
+
+```text
+声明页准备
+  → prepareSandbox（资源 _meta 归一化，read 项 → list 兜底）
+  → registerSandbox → Main registry 存 resourceMeta → handle 回 renderer
+  → managedPage.setHandle（fresh：sandboxId+initId 变化）
+  → pluginUiPages.prepared(page, retain=true)
+      → retention.register(page)；并补 sandboxPages.visibility(page, page.visible)
+        （冷后台页无可见性边沿，也要启动默认 5 分钟期限；已声明页由 claim 拒绝兜住）
+
+页面隐藏（收起卡片 / 滚出视口 / 切走 tab）
+  → plane 无可见锚点 → visibility(false) → 默认 5 分钟定时器；retention.activity 刷新闲置
+  → 已声明页运行中 → 保留隐藏执行表面（§12.2.9）
+
+回收触发（任一：5 分钟/settled/容量腾位/保留策略 changed）
+  → page.suspend()（非 force）
+      → recycling 重入检查 → claimRecycle(page)
+          未注册（默认页）→ 直接进入裁决
+          已注册 → 仅当 后台>4 ∧ 非可见 ∧ 非本地忙 ∧ 闲置≥30 分钟 才预占
+      → controller.tryRecycle()
+          本地忙 → false（保留）
+          → mcp/uiCloseInstance{onlyIfIdle:true}
+              Agent busy（pins ∪ executionActive）→ {closed:false} → finishRecycle → 保留，
+                等待下一次状态事件（不得零延时重试）
+              Agent 空闲 → {closed:true} → suspend(true) teardown（显式销毁语义）
+      → finally finishRecycle（释放预占）
+      → 裁决期间/完成后 窗口可见 ∧ plane.hasVisibleAnchor() → 同 owner ensure() 重建
+
+窗口最小化 / 恢复
+  → document.visibilitychange → retention.setWindowVisible(!hidden)
+      最小化：可见页 lastActive=now（闲置自最小化起算）
+      恢复：可见页 lastActive=now；managedPage.onWindowVisibility → 可见且有锚点 → ensure()
+```
+
+### 12.6 幂等边界
+
+- `prepared` 以 `sandboxId+initId` 变化判定 fresh；重复同值 register/release 无变化。
+- `claim/finish` 严格配对：recycling 期间重入返回同一 promise；`finish` 恒在 finally 执行；预占中的页面不计入后台配额、不参与候选。
+- `changed()` 合并同一轮状态变化：评估中收到的新变化置脏后再评；回收前读取最终状态，不在事件回调中重入页面释放。
+- Agent 拒绝后的候选不得零延时重试；定时器只在后台 >4 时调度，取非忙候选的最短剩余时间。
+- `mcp/uiSetExecutionActive` 幂等且随实例代际消失（§11.2）。
+- 显式删除/重载/来源失效走 `suspend(true)`（force），绕过 claim，不受保留策略保护（§4.4 不变）。
+
+### 12.7 验收场景（反例）
+
+1. 未声明页离屏 5 分钟 → 触发 tryRecycle；本地或 Agent busy → 保留。
+2. 已声明页离屏 5 分钟 / settled / 回合结束 → 保留运行，后台结果继续投递。
+3. 5 个已声明后台页：最旧闲置 ≥30 分钟被回收（Agent 空闲），后台数回到 4；≤4 时无论闲置多久不回收。
+4. 已声明页 busy（页面工具调用进行中，或 `mcp/uiSetExecutionActive` active:true）→ `onlyIfIdle` 返回 `{closed:false}` → 保留，且被拒候选在下次状态事件前不重试。
+5. 最小化 29 分钟 + 恢复可见 1 分钟 → 不回收（闲置被可见性重置）；持续隐藏 ≥30 分钟且后台 >4 → 回收。
+6. 回收裁决期间锚点返回且窗口可见 → 裁决完成后同 owner 自动重建（新 controller/新凭证，不复活旧实例）。
+7. 声明链路：资源 `_meta.ui.backgroundRetention:true` → `handle.resourceMeta.backgroundRetention:true` → `prepared` 注册；工具 metadata 声明不授予；非布尔值忽略（缺省不保留）；read 项缺 meta 时 list 条目兜底。
+8. 容量：第 31 个 task / 第 65 个 allocated 且存在空闲后台页 → 回收腾位后接纳；全部可见或忙 → 拒绝并提示。
+9. claim/finish：同一页并发触发（定时器 + settled + 容量）只产生一次 Agent 裁决。
+10. 手机/Web/远端：`supported:false` 不创建本地 guest（§4.6 不变，不因保留策略改变）。
+
+### 12.8 E2E 场景清单（按 e2e-case-lifecycle 现行规则）
+
+入口：plugins 域 `packages/desktop/test/e2e/plugins/manual-review/pending/`；覆盖矩阵 `docs/testing/plugin-management-lifecycle-e2e-coverage-matrix.md` + catalog `docs/plugin-management-lifecycle-case-catalog.md`；晋级后进 `pnpm run test:e2e:container:plugins` 预设。候选 case（实现步骤登记为 pending spec 并回填矩阵行）：
+
+| 候选                        | 场景                                                        | 断言要点                                                      |
+| --------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| `E2E-F18-01` 后台保留冒烟   | 声明页收起卡片/切走 tab 后页面继续执行                      | 后台工具调用/通知继续到达；返回锚点复用同 guest（不重新握手） |
+| `E2E-F18-02` 忙时不回收     | 声明页执行长任务时触发回收条件                              | 页面保留、任务结果完整投递                                    |
+| `E2E-F18-03` 闲置回收与重建 | 后台 >4 且最旧闲置到期 → 回收；锚点返回                     | 回收后同 owner 自动重建，widgetState 不串代                   |
+| `E2E-F18-04` 声明两态对照   | 同一插件资源 `_meta.ui.backgroundRetention` true/false 两态 | true → 离屏保留；false → 默认隐藏即停                         |
+
+环境缺口（如实登记）：
+
+- 30 分钟/4 页常量在真实 Electron E2E 中不可等待；E2E-F18-03 需要保留策略提供可注入时钟/常量覆盖的测试通道（实现步骤的 UI 侧测试注入点），否则该 case 只能以单测覆盖、E2E 标 blocked。
+- E2E 需要承载 `ui://` 资源 `_meta` 声明的插件 MCP server fixture（现有 `fixtures/plugin-mcp-skill` 可扩展）；E2E-F18-04 依赖同一 fixture 的两资源变体。
