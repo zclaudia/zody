@@ -75,10 +75,12 @@ const DEFAULT_MAX_ARCHIVE_BYTES = 50 * 1024 * 1024;
 const USER_CONFIG_FILE_MODE = 0o600;
 const MARKETPLACE_SOURCE_ROOT_DIRECTORY = "marketplace-sources";
 const MIRRORED_MARKETPLACE_PLUGIN_ROOT = "plugins";
-// R54：新格式优先；旧 `.zcode-plugin` 仅在新格式缺失时回退。读取失败继续探测，
-// 解析失败返回 null（不回退、不合并），见 readPluginManifestInfo。
+// R54：新格式只有 ENOENT 才回退；不可读或非法都返回 null，不从旧格式借身份。
+// 名称值域与 CLI 插件加载端保持一致，避免同步成功后 runtime 拒绝加载。
+const CANONICAL_PLUGIN_MANIFEST_DIRECTORY = ".zody-plugin";
+const PLUGIN_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]{0,127}$/u;
 const PLUGIN_MANIFEST_RELATIVE_PATHS = [
-  [".zody-plugin", "plugin.json"],
+  [CANONICAL_PLUGIN_MANIFEST_DIRECTORY, "plugin.json"],
   [".zcode-plugin", "plugin.json"],
   [".claude-plugin", "plugin.json"],
   [".codex-plugin", "plugin.json"],
@@ -946,7 +948,13 @@ async function readPluginManifestInfo(pluginRoot: string): Promise<PluginManifes
     let raw: string;
     try {
       raw = await readFile(manifestPath, "utf-8");
-    } catch {
+    } catch (error) {
+      // 新文件存在但不可读时回退，会让同步身份与实际加载的唯一 manifest 分叉。
+      if (
+        segments[0] === CANONICAL_PLUGIN_MANIFEST_DIRECTORY &&
+        (error as NodeJS.ErrnoException).code !== "ENOENT"
+      )
+        return null;
       continue;
     }
     let parsed: unknown;
@@ -959,7 +967,7 @@ async function readPluginManifestInfo(pluginRoot: string): Promise<PluginManifes
       return null;
     }
     const name = typeof parsed.name === "string" ? parsed.name.trim() : "";
-    if (!name) {
+    if (!PLUGIN_NAME_PATTERN.test(name)) {
       return null;
     }
     return {
