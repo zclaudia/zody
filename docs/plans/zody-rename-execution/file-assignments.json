@@ -17317,24 +17317,163 @@
     "readSet": [
       "AGENTS.md",
       "docs/plans/zody-full-divergence-rename-execution-plan.md",
-      "docs/plans/zody-full-divergence-rename-survey.md"
+      "docs/plans/zody-full-divergence-rename-survey.md",
+      "docs/plans/zody-rename-execution/task-ledger.md",
+      "docs/plans/zody-rename-execution/reports/R02.md",
+      "docs/plans/zody-rename-execution/reports/R48.md",
+      "docs/plans/zody-rename-execution/reports/R56.md",
+      "output/zody-rename-w8-controller/w8-dispatch-proposal.md"
     ],
     "writeSet": [
+      "output/cua-helper-round11/controller-signed/identity-pins.json",
+      "output/cua-helper-round11/worker-final/**",
+      "output/cua-helper-round11/controller-visual-final/**",
+      "output/cua-helper-round11/controller-signed/**",
+      "output/cua-driver-round7/candidate-work/**",
+      "output/cua-driver-round8/candidate-work/**",
+      "output/cua-driver-round9/candidate-work/**",
+      "output/cua-desktop-session/**",
+      "output/cua-app-icon/controller-prepared/**",
+      "output/cua-inapp-confirm/startup-snapshot-current.json",
+      "output/zody-rename-r60/**",
+      "packages/desktop/out/**",
+      "packages/desktop/dist/**",
+      "packages/desktop/bundled-agents/darwin-arm64/**",
+      "packages/desktop/scripts/macos-cua-demo-defaults.mjs",
       "docs/plans/zody-rename-execution/reports/R60.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
       "真实用户数据",
       "结构范围之外的文件",
-      "共享接口未经主控交接不得修改"
+      "共享接口未经主控交接不得修改",
+      "产品源码、冻结/构建脚本与测试（R60 只执行不改；唯一源码写点 `packages/desktop/scripts/macos-cua-demo-defaults.mjs` 四 pin 常量与注释）",
+      "bundle ID、证书 leaf/DR、Node CDHash 与 identity-pins 常量（信任根不动）",
+      "output/zody-rename-r02/**（R02 旧归档与证据树只读，永不覆盖）",
+      "third-party/inventory.json 与 THIRD-PARTY-NOTICES.md（P0-1 license 输入归主控/R21 license owner，先于源码冻结完成）",
+      "output/cua-* 与原生冻结目录的并行写入（R60 全程独占锁，其他单元不得并行调用同一构建/复原命令）",
+      "真实用户数据、凭据与 keychain 私钥内容"
     ],
     "plannedPaths": [
-      "docs/plans/zody-rename-execution/reports/R60.md"
+      "docs/plans/zody-rename-execution/reports/R60.md",
+      "output/zody-rename-r60/archives/narrow-frozen-v5.tar.gz",
+      "output/zody-rename-r60/archives/narrow-frozen-v5.tar.gz.sha256"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已按预案落锁（2026-11-06，基线 af24a3650285563dce5ae209bd9dd75f81ccb3c1，即 W8 预案编制基线；本条目核对时 `git rev-parse HEAD` 一致、`git status --porcelain` 为空）：writeSet 取 `output/zody-rename-w8-controller/w8-dispatch-proposal.md` §4.1 S0–S10 表与 §4.2 派发切分（:84-90），R60.1=S0+S1、R60.2=S2–S7、R60.3=S8–S10，各自精确路径见 units[]，父 writeSet 为三段并集。三段是同一 R60 独占写锁内的串行检查点（计划 :468），不是可并行子代理；共用证据根 `output/zody-rename-r60/**` 与单一合并报告 `reports/R60.md`，按 S0→S10 顺序写入。源码零改动：冻结/构建脚本 `build-round11.mjs`、`build-cua-desktop-session.mjs`、`macos-cua-narrow-resources-prepare.mjs`、`prepare-macos-cua-driver-round{7,8,9}.mjs`、`restore-cua-narrow-frozen.mjs` 只执行不改；唯一源码写点为 `packages/desktop/scripts/macos-cua-demo-defaults.mjs` 的四 pin 常量与注释（:40-48）；不触 bundle ID、证书 leaf/DR、Node CDHash 与 identity-pins 常量；不覆盖 R02 旧归档（`output/zody-rename-r02/**` 只读）。主控裁定（本轮探针结论，本条目仅转记、未复跑）：`SIGN-FAILED-rc127` 签名探针失败 → S2/S4 原身份重签及依赖它的 S3、S5–S8、S10 在放行前 blocked，保持发布暂停，不改信任根、不跳过签名断言；联网与交互项 blocked（S9 electron-builder 联网、S2/S4 keychain 解锁、S10 原生确认窗点击）；磁盘按最小目标集放行（`df -h /System/Volumes/Data` 实测 27Gi 可用/94%，按预案 §4.0 P0-2 回收前不扩列，非最小目标集产物不在本条授权内）。未决前置：P0-1 license 输入漂移（`node scripts/licenses.mjs check` exit 1）由主控按 R21 license 输入 owner 先于源码冻结完成，不在 R60 writeSet。落锁补充（本条目核对源码实测）：S5 必须显式 `--output <repo>/output/cua-app-icon/controller-prepared`，脚本默认 `output/cua-phase1-closeout/a-worker/narrow-resources`（`packages/desktop/scripts/macos-cua-narrow-resources-constants.mjs:46-51`）不是测试与 demo pin 读取的活动路径（`macos-cua-demo-defaults.mjs:34`）；S9 产物落 `packages/desktop/{out,dist,bundled-agents/darwin-arm64}`（`packages/desktop/scripts/bundle.mjs:53-54`）。五档口径：本条只是派发锁，R60.1/R60.2/R60.3 均未执行，不记“已实现/定向测试通过”或“独立验收通过”；`SIGN-FAILED` 与联网/交互项按“尚未验证/阻止发布”登记。scopeStatus 取现有 `reviewable-dispatch-scope`（主控授权可派发、尚未独立验收），未取 `independently-accepted-scoped` 以免夸大。",
     "structureScope": [
-      "最终 CUA 原生冻结目录、output 产物、pins 与新归档"
+      "最终 CUA 原生冻结目录、output 产物、pins 与新归档",
+      "R60.1 原生冻结目录恢复物与重建产物：output/cua-helper-round11/controller-signed/identity-pins.json（字节=R02 冻结副本）、output/cua-helper-round11/{worker-final,controller-visual-final}、output/cua-driver-round{7,8,9}/candidate-work",
+      "R60.2 output/cua-* 活动产物：output/cua-helper-round11/controller-signed、output/cua-desktop-session、output/cua-app-icon/controller-prepared、output/cua-inapp-confirm/startup-snapshot-current.json；pins：packages/desktop/scripts/macos-cua-demo-defaults.mjs 四 pin；新归档：output/zody-rename-r60/archives/narrow-frozen-v5.tar.gz{,.sha256}",
+      "R60.3 隔离恢复、真实 Desktop bundle 与截图：output/zody-rename-r60/{restore-recheck,screenshots}、packages/desktop/{out,dist,bundled-agents/darwin-arm64}",
+      "报告 docs/plans/zody-rename-execution/reports/R60.md（三段串行合并）；其余产品源码零改动"
+    ],
+    "dispatchProposal": "output/zody-rename-w8-controller/w8-dispatch-proposal.md",
+    "units": [
+      {
+        "id": "R60.1",
+        "title": "固定最终源码与 sealed inputs、Helper/native 重建（S0+S1；原生冻结目录恢复物与 output/cua-* 构建产物）",
+        "writeSet": [
+          "output/cua-helper-round11/controller-signed/identity-pins.json",
+          "output/cua-helper-round11/worker-final/**",
+          "output/cua-helper-round11/controller-visual-final/**",
+          "output/cua-driver-round7/candidate-work/**",
+          "output/cua-driver-round8/candidate-work/**",
+          "output/cua-driver-round9/candidate-work/**",
+          "output/zody-rename-r60/**",
+          "docs/plans/zody-rename-execution/reports/R60.md"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "docs/plans/zody-full-divergence-rename-survey.md",
+          "output/zody-rename-w8-controller/w8-dispatch-proposal.md",
+          "docs/plans/zody-rename-execution/reports/R48.md",
+          "docs/plans/zody-rename-execution/reports/R56.md",
+          "docs/plans/zody-rename-execution/reports/R02.md",
+          "output/zody-rename-r02/restore-recheck/output/cua-app-icon/controller-prepared/stage/identity-pins.json",
+          "packages/desktop/scripts/build-round11.mjs",
+          "packages/desktop/scripts/prepare-macos-cua-driver-round7.mjs",
+          "packages/desktop/scripts/prepare-macos-cua-driver-round8.mjs",
+          "packages/desktop/scripts/prepare-macos-cua-driver-round9.mjs"
+        ],
+        "excludeSet": [
+          "产品源码、冻结/构建脚本与测试（只执行不改）",
+          "其他 R60 子步骤正在写入的同一路径（三段串行，不并行）",
+          "output/zody-rename-r02/**（R02 旧归档与证据树只读）",
+          "bundle ID、证书 leaf/DR、Node CDHash 与 identity-pins 常量",
+          "真实用户数据与凭据",
+          "其他任务独占文件"
+        ],
+        "gate": "S0：`output/cua-helper-round11/controller-signed/identity-pins.json` 以 R02 冻结副本字节置位（`output/zody-rename-r02/restore-recheck/output/cua-app-icon/controller-prepared/stage/identity-pins.json`，`shasum -a 256` 相等），作为 S3 构建的只读常量；P0-1 license 输入漂移须先由主控/R21 owner 修复，否则不进入源码冻结。S1：`node packages/desktop/scripts/build-round11.mjs` exit 0，worker-final/controller-visual-final 与 round7→8→9 `candidate-work` 摘要落 `output/zody-rename-r60/`；T1 三文件 18/18 保持绿（预案 §3 实跑）；S1 相关 CUA 冻结输入 vitest（round11 authority/lease/visual、round7/8/9 prepare 与 license supplements）由红转绿。此后源码或 sealed input 变化使下游 S2–S10 证据失效（计划 :456）。签名探针 `SIGN-FAILED-rc127` 不阻断 S0/S1，但阻断后续重签。"
+      },
+      {
+        "id": "R60.2",
+        "title": "原身份重签、stage/manifest、demo pins 与新归档（S2–S7；output/cua-* 活动产物与 macos-cua-demo-defaults.mjs pins）",
+        "writeSet": [
+          "output/cua-helper-round11/controller-signed/**",
+          "output/cua-desktop-session/**",
+          "output/cua-app-icon/controller-prepared/**",
+          "output/cua-inapp-confirm/startup-snapshot-current.json",
+          "output/zody-rename-r60/**",
+          "packages/desktop/scripts/macos-cua-demo-defaults.mjs",
+          "docs/plans/zody-rename-execution/reports/R60.md"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "docs/plans/zody-full-divergence-rename-survey.md",
+          "output/zody-rename-w8-controller/w8-dispatch-proposal.md",
+          "output/zody-rename-r02/restore-recheck/restore-recheck.json",
+          "output/zody-rename-r02/restore-recheck/output/cua-app-icon/controller-prepared/stage/identity-pins.json",
+          "output/zody-rename-r02/restore-recheck/output/cua-inapp-confirm/startup-snapshot-current.json",
+          "packages/desktop/scripts/build-cua-desktop-session.mjs",
+          "packages/desktop/scripts/macos-cua-narrow-resources-prepare.mjs",
+          "packages/desktop/scripts/macos-cua-narrow-resources-constants.mjs",
+          "packages/desktop/scripts/macos-cua-demo-defaults.mjs",
+          "packages/desktop/scripts/restore-cua-narrow-frozen.mjs"
+        ],
+        "excludeSet": [
+          "产品源码、冻结/构建脚本与测试（只执行不改）",
+          "其他 R60 子步骤正在写入的同一路径（三段串行，不并行）",
+          "output/zody-rename-r02/**（R02 旧归档与证据树只读）",
+          "bundle ID、证书 leaf/DR、Node CDHash 与 identity-pins 常量",
+          "真实用户数据与凭据",
+          "其他任务独占文件"
+        ],
+        "gate": "S2/S4 使用既有 `Zody Local Computer Use` 身份重签，新 `identity-pins.json` 必须与 R02 冻结副本字节相等（信任根不动）；`codesign --verify --deep --strict --verbose=2` exit 0。主控探针 `SIGN-FAILED-rc127` 未放行前 S2/S4 及依赖的 S3、S5–S8、S10 blocked 登记，不得换信任根或跳过签名断言；keychain 解锁交用户决定。S3 `node packages/desktop/scripts/build-cua-desktop-session.mjs` exit 0（含内嵌 native tests）。S5 必须显式 `--output <repo>/output/cua-app-icon/controller-prepared`（脚本默认 `output/cua-phase1-closeout/a-worker/narrow-resources`，`macos-cua-narrow-resources-constants.mjs:46-51`），T2 narrow 37/37。S6 四 pin 重录后 T3 5/5，仅改 pin 常量与注释。S7 产出 `output/zody-rename-r60/archives/narrow-frozen-v5.tar.gz{,.sha256}`，`tar -tzf` 顶层仅 `output/cua-app-icon/**` 与 `output/cua-inapp-confirm/**`，不写 R02 目录、不覆盖 v4。"
+      },
+      {
+        "id": "R60.3",
+        "title": "隔离恢复、真实 Desktop bundle/afterPack 与截图（S8–S10；新归档复原验证与安装包）",
+        "writeSet": [
+          "output/zody-rename-r60/**",
+          "packages/desktop/out/**",
+          "packages/desktop/dist/**",
+          "packages/desktop/bundled-agents/darwin-arm64/**",
+          "docs/plans/zody-rename-execution/reports/R60.md"
+        ],
+        "readSet": [
+          "AGENTS.md",
+          "docs/plans/zody-full-divergence-rename-execution-plan.md",
+          "docs/plans/zody-full-divergence-rename-survey.md",
+          "output/zody-rename-w8-controller/w8-dispatch-proposal.md",
+          "output/zody-rename-r02/restore-recheck/restore-recheck.json",
+          "packages/desktop/scripts/bundle.mjs",
+          "packages/desktop/scripts/restore-cua-narrow-frozen.mjs",
+          "packages/desktop/electron-builder.config.js",
+          "packages/desktop/scripts/macos-cua-demo-defaults.mjs"
+        ],
+        "excludeSet": [
+          "产品源码、冻结/构建脚本与测试（只执行不改）",
+          "其他 R60 子步骤正在写入的同一路径（三段串行，不并行）",
+          "output/zody-rename-r02/**（R02 旧归档与证据树只读）",
+          "bundle ID、证书 leaf/DR、Node CDHash 与 identity-pins 常量",
+          "真实用户数据与凭据",
+          "其他任务独占文件"
+        ],
+        "gate": "S8 `node packages/desktop/scripts/restore-cua-narrow-frozen.mjs --archive <v5 绝对路径> --sha256 <hex> --repo-root <output/zody-rename-r60/restore-recheck 绝对路径>` exit 0，恢复侧 manifest/snapshot 摘要与 S5/S6 一致。S9 `pnpm bundle:desktop -- --os mac --arch arm64` exit 0（afterPack 机械断言随命令执行），产物逐文件 SHA256 与源码/entries/manifest/归档关联链落 `reports/R60.md`；electron-builder 需联网或 S2/S4 签名未放行时 blocked 保留，交主控申请用户授权。S10 真实单窗口截图需用户点击原生确认窗（不可代点、不可注入替代），产出 PNG/工具图/Stop 与 owner/lease 释放记录。交付 R61 做跨平台最终验收（计划 :458）；非最小目标集平台不在本条授权内，不自动上传或发布。"
+      }
     ]
   },
   "R61": {
