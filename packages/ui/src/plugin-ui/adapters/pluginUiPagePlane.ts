@@ -28,6 +28,9 @@ export function createPluginUiPagePlane(events: {
   let stopLayout: (() => void) | undefined;
   let stopPreview: (() => void) | undefined;
   let preview: HTMLElement | null = null;
+  // F18（上游 a60ba6a7）：声明保留的页面隐藏时保持可执行表面（docs/plugin-ui-background-execution.md §12.2.9）。
+  let executionActive = false;
+  let backgroundSize = { width: 640, height: 480 };
   let disposed = false,
     loaded = false,
     pluginLoaded = false,
@@ -94,6 +97,10 @@ export function createPluginUiPagePlane(events: {
     const chosen = candidates.find(([, a]) => a.placement.kind === "sidebar") ?? candidates.at(-1);
     visibility(Boolean(chosen && (chosen[1].visible || preview)));
     if (chosen && chosen[0] === current) return;
+    // 离开真实锚点前记录最后尺寸，隐藏执行表面按它恢复（F18，a60ba6a7）。
+    const bounds = root.getBoundingClientRect();
+    if (bounds.width > 0 && bounds.height > 0)
+      backgroundSize = { width: bounds.width, height: bounds.height };
     current = chosen?.[0];
     stopLayout?.();
     stopLayout = undefined;
@@ -103,6 +110,18 @@ export function createPluginUiPagePlane(events: {
       move(parkingRoot());
       root.style.display = "none";
       root.inert = true;
+      if (executionActive) {
+        // display:none 会停止页面依赖的 rAF；保留的 MCP 页面始终需要可执行且不接收输入的表面。
+        Object.assign(root.style, {
+          display: "block",
+          position: "fixed",
+          top: "0",
+          left: "0",
+          width: `${backgroundSize.width}px`,
+          height: `${backgroundSize.height}px`,
+          opacity: "0.001",
+        });
+      }
       return;
     }
     root.inert = false;
@@ -111,6 +130,16 @@ export function createPluginUiPagePlane(events: {
     move(parent);
     if (kind !== "flow" && parent !== node)
       stopLayout = track(node, () => position(node, parent, kind === "sidebar", layer));
+  };
+  // F18（a60ba6a7）：回收后自动重建的判据——锚点不仅连接，还要有可见尺寸。
+  // checkVisibility 做防御探测：jsdom 等测试环境没有实现时不因此误报不可见。
+  const hasVisibleBounds = (node: HTMLElement) => {
+    const rect = node.getBoundingClientRect();
+    const checkable =
+      typeof node.checkVisibility === "function"
+        ? node.checkVisibility({ visibilityProperty: true })
+        : true;
+    return node.isConnected && checkable && rect.width > 0 && rect.height > 0;
   };
   const intersection = new IntersectionObserver((entries) => {
     for (const entry of entries)
@@ -173,6 +202,17 @@ export function createPluginUiPagePlane(events: {
       const update = () => position(node, document.documentElement, true, 45);
       stopPreview = track(node, update);
       visibility(true);
+    },
+    // F18（a60ba6a7）：恢复意图以展示锚点为准，不能从旧 guest 的可见状态反推。
+    hasVisibleAnchor() {
+      return [...anchors.values()].some(
+        ({ placement, visible }) => visible && hasVisibleBounds(placement.node),
+      );
+    },
+    setExecutionActive(active: boolean) {
+      if (executionActive === active) return;
+      executionActive = active;
+      layout();
     },
     captureBounds(gutter = 0) {
       if (!frame || !visible) throw new Error("Sandbox is not visible");

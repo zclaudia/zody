@@ -1,10 +1,8 @@
 import type {
   McpAppCspRelaxations,
-  McpAppResourceMeta,
   McpAppsDisplayMode,
   McpAppsMetaKeyDirection,
   McpAppsMetaKeyPair,
-  McpAppsResourcePermission,
   McpAppsToolVisibility,
   McpToolUiCsp,
   McpToolUiDescriptor,
@@ -14,7 +12,6 @@ import {
   MCP_APPS_CSP_RELAXATION_META_KEY,
   MCP_APPS_CSP_RELAXATION_META_KEY_CANONICAL,
   MCP_APPS_DEFAULT_TOOL_VISIBILITY,
-  MCP_APPS_RESOURCE_PERMISSIONS,
   MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY,
   MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY_CANONICAL,
   MCP_APPS_LEGACY_RESOURCE_URI_META_KEY,
@@ -207,41 +204,9 @@ export function normalizeMcpToolUiMeta(meta: unknown): McpToolUiDescriptor | nul
 }
 
 /**
- * `ui://` HTML 资源项自己的 `_meta`（以被选中内容项的 `_meta.ui` 为准）。
- * csp 与 prefersBorder 兼容 `openai/widgetCSP` / `openai/widgetPrefersBorder` 别名；
- * 尺寸提示只有 `openai/widgetHeightHint` / `openai/widgetMinFrameHeight`；`openai/widgetShowCodexWidgetInline` → showInline；
- * 什么都没声明返回 null。
+ * `ui://` HTML 资源项 `_meta` 的归一化实现位于 `resourceMeta.ts`
+ * （F18 时为满足架构文件行数上限拆出；本文件保留其余工具/资源 meta 逻辑）。
  */
-export function normalizeMcpAppResourceMeta(meta: unknown): McpAppResourceMeta | null {
-  const root = asRecord(meta);
-  if (!root) return null;
-  const ui = asRecord(root.ui);
-  const result: McpAppResourceMeta = {};
-  const csp = readCsp(asRecord(ui?.csp), asRecord(root["openai/widgetCSP"]));
-  if (csp) result.csp = csp;
-  const prefersBorder =
-    readBoolean(ui?.prefersBorder) ?? readBoolean(root["openai/widgetPrefersBorder"]);
-  if (prefersBorder !== undefined) result.prefersBorder = prefersBorder;
-  const heightHint = readPositiveInt(root["openai/widgetHeightHint"]);
-  if (heightHint !== undefined) result.heightHint = heightHint;
-  const minFrameHeight = readPositiveInt(root["openai/widgetMinFrameHeight"]);
-  if (minFrameHeight !== undefined) result.minFrameHeight = minFrameHeight;
-  const showInline =
-    readBoolean(ui?.showInline) ?? readBoolean(root["openai/widgetShowCodexWidgetInline"]);
-  if (showInline !== undefined) result.showInline = showInline;
-  const cspRelaxations = normalizeMcpAppCspRelaxations(meta);
-  if (cspRelaxations) result.cspRelaxations = cspRelaxations;
-  const permissions = normalizeMcpAppResourcePermissions(ui?.permissions);
-  if (permissions.length > 0) result.permissions = permissions;
-  return Object.keys(result).length > 0 ? result : null;
-}
-
-/** `_meta.ui.permissions`：只认规范四键且值为对象（`{}`），未知键丢弃；按固定顺序返回。 */
-export function normalizeMcpAppResourcePermissions(value: unknown): McpAppsResourcePermission[] {
-  const root = asRecord(value);
-  if (!root) return [];
-  return MCP_APPS_RESOURCE_PERMISSIONS.filter((key) => asRecord(root[key]) !== null);
-}
 
 /**
  * 资源级 CSP 放宽的可见解析结果（R50）：`conflict` 携带两侧原始值，供边界记录可见错误；
@@ -338,7 +303,8 @@ function readDisplayMode(value: unknown): McpAppsDisplayMode | undefined {
 }
 
 /** 四类域各自独立读取；`openai/widgetCSP` 同时接受 camelCase 与 snake_case。 */
-function readCsp(
+// F18：供 resourceMeta.ts 复用（资源级 _meta 归一化拆出本文件后保持单向依赖）。
+export function readCsp(
   modern: Record<string, unknown> | null,
   legacy: Record<string, unknown> | null,
 ): McpToolUiCsp | undefined {
@@ -359,7 +325,7 @@ function readCsp(
   return csp;
 }
 
-function readPositiveInt(value: unknown): number | undefined {
+export function readPositiveInt(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) && value > 0
     ? Math.round(value)
     : undefined;
@@ -371,11 +337,11 @@ function readOriginList(value: unknown): string[] | undefined {
   return [...new Set(origins)];
 }
 
-function readBoolean(value: unknown): boolean | undefined {
+export function readBoolean(value: unknown): boolean | undefined {
   return typeof value === "boolean" ? value : undefined;
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
+export function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;

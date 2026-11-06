@@ -101,6 +101,12 @@ export interface McpAppResourceMeta {
   heightHint?: number;
   minFrameHeight?: number;
   showInline?: boolean;
+  /**
+   * F18（上游 a60ba6a7）：资源级显式后台保留申请；只认 `_meta.ui.backgroundRetention` 布尔，
+   * 工具 metadata 不授予，缺省不保留。实际回收由宿主窗口级 4/30 策略裁决
+   * （docs/plugin-ui-background-execution.md §12.2）。
+   */
+  backgroundRetention?: boolean;
 }
 /** 随沙箱句柄回到 renderer 的资源级呈现信息；CSP 与放宽只在 main 生效，不回传。 */
 export type PluginSandboxResourceMeta = Omit<McpAppResourceMeta, "csp" | "cspRelaxations">;
@@ -263,6 +269,8 @@ export interface PluginSandboxRegisterRequestPayload {
   minFrameHeight?: number;
   /** 资源级强制常驻标记，随句柄 resourceMeta 回 renderer。 */
   showInline?: boolean;
+  /** F18（上游 a60ba6a7）：资源级后台保留申请，随句柄 resourceMeta 回 renderer；缺省不保留。 */
+  backgroundRetention?: boolean;
 }
 /** host 内部使用的登记输入：去掉传输层 requestId。 */
 export type PluginSandboxRegisterInput = Omit<PluginSandboxRegisterRequestPayload, "requestId">;

@@ -26,11 +26,11 @@ import {
   buildMcpAppsTruncatedMeta,
   buildMcpAppsWidgetStateContextEntries,
   normalizeMcpAppCspRelaxations,
-  normalizeMcpAppResourceMeta,
   normalizeMcpToolUiMeta,
   readMcpAppsMetaEntry,
   resolveMcpAppsCspRelaxations,
 } from "./toolMeta.js";
+import { normalizeMcpAppResourceMeta } from "./resourceMeta.js";
 import {
   exampleClientCapabilities,
   exampleResourceMetaWithRelaxations,
@@ -278,5 +278,18 @@ describe("MCP Apps 双命名空间兼容（R50）", () => {
       visibility: ["model", "app"],
     });
     expect(unknown).toEqual(snapshot);
+  });
+
+  // F18（上游 a60ba6a7）：后台保留声明只认资源级 _meta.ui.backgroundRetention 布尔；
+  // 顶层键与工具级 metadata 都不授予（docs/plugin-ui-background-execution.md §12.2.2）。
+  it("只归一化资源级 _meta.ui.backgroundRetention 布尔，工具级不授予", () => {
+    const meta = (ui: unknown) => normalizeMcpAppResourceMeta({ ui });
+    expect(meta({ backgroundRetention: true })).toEqual({ backgroundRetention: true });
+    expect(meta({ backgroundRetention: false })).toEqual({ backgroundRetention: false });
+    expect(meta({ backgroundRetention: "yes" })).toBeNull();
+    expect(normalizeMcpAppResourceMeta({ backgroundRetention: true })).toBeNull();
+    expect(
+      normalizeMcpToolUiMeta({ ui: { resourceUri: "ui://a/b", backgroundRetention: true } }),
+    ).not.toHaveProperty("backgroundRetention");
   });
 });

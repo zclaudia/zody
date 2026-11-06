@@ -101,7 +101,13 @@ export function createPluginSandboxRegistry(
   const resourceMetaOf = (
     input: Pick<
       PluginSandboxRegisterInput,
-      "prefersBorder" | "heightHint" | "minFrameHeight" | "showInline" | "permissions"
+      | "prefersBorder"
+      | "heightHint"
+      | "minFrameHeight"
+      | "showInline"
+      | "permissions"
+      // F18（上游 a60ba6a7）：资源级后台保留声明随句柄回 renderer。
+      | "backgroundRetention"
     >,
   ): PluginSandboxHandle["resourceMeta"] => {
     const meta = {
@@ -110,6 +116,9 @@ export function createPluginSandboxRegistry(
       ...(input.heightHint !== undefined ? { heightHint: input.heightHint } : {}),
       ...(input.minFrameHeight !== undefined ? { minFrameHeight: input.minFrameHeight } : {}),
       ...(input.showInline !== undefined ? { showInline: input.showInline } : {}),
+      ...(input.backgroundRetention !== undefined
+        ? { backgroundRetention: input.backgroundRetention }
+        : {}),
     };
     return Object.keys(meta).length > 0 ? meta : undefined;
   };

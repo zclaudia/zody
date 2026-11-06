@@ -14,6 +14,25 @@ const input = {
   permissions: ["camera"] as const,
 };
 describe("MCP App native lifecycle", () => {
+  // F18（上游 a60ba6a7）：资源声明 backgroundRetention 经 registry 随句柄 resourceMeta 回 renderer，
+  // 未声明时保持缺省（docs/plugin-ui-background-execution.md §12.4）。
+  it("passes resourceMeta.backgroundRetention through the sandbox handle", () => {
+    const registry = createPluginSandboxRegistry();
+    const declared = registry.register({
+      ...input,
+      permissions: [],
+      backgroundRetention: true,
+    });
+    expect(declared.resourceMeta).toMatchObject({ backgroundRetention: true });
+    const undeclared = registry.register({
+      ...input,
+      permissions: [],
+      scopeId: "surface:undeclared",
+      instance: { runtimeId: "agent", generation: 2, token: "two", appIdentity: "b".repeat(64) },
+    });
+    expect(undeclared.resourceMeta).toBeUndefined();
+  });
+
   it("prevents shared browser response caches from bypassing instance authorization", async () => {
     const registry = createPluginSandboxRegistry();
     const handle = registry.register({ ...input, permissions: [] });

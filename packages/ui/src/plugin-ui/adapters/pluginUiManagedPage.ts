@@ -1,23 +1,13 @@
-import { getPluginUiSessionActions } from "./pluginUiSessionActions.js";
 import { logger } from "@/logger.js";
-import { createPluginUiMessagePortTransport } from "@/plugin-ui/adapters/messagePortTransport.js";
-import { createPluginUiDownloadInteraction } from "@/plugin-ui/adapters/pluginUiDownloads.js";
 import { readPluginUiStyleVariables } from "@/plugin-ui/adapters/readPluginUiStyleVariables.js";
+import { buildPluginUiControllerDeps } from "@/plugin-ui/adapters/pluginUiControllerDeps.js";
 import {
   createPluginUiHostController,
   type PluginUiHostController,
   type PluginUiHostPhase,
 } from "@/plugin-ui/app/pluginUiHostController.js";
-import { createPluginUiResourceNotificationRegistrar } from "@/plugin-ui/app/pluginUiResourceNotificationBus.js";
-import {
-  clearPluginUiWidgetState,
-  getPluginUiWidgetState,
-  setPluginUiWidgetState,
-} from "@/plugin-ui/app/pluginUiWidgetStateStore.js";
-import type {
-  McpUiAppCapabilities,
-  McpUiHostContext,
-} from "@modelcontextprotocol/ext-apps/app-bridge";
+import { clearPluginUiWidgetState } from "@/plugin-ui/app/pluginUiWidgetStateStore.js";
+import type { McpUiAppCapabilities } from "@modelcontextprotocol/ext-apps/app-bridge";
 import type { PluginSandboxHandle } from "@zody/shared/mcp-apps";
 import { buildPluginSandboxScopeId } from "@zody/shared/mcp-apps";
 import { clearPluginUiSurfaceFeed } from "../app/pluginUiSurfaceFeedStore.js";
@@ -26,7 +16,6 @@ import {
   PLUGIN_UI_CARD_MAX_HEIGHT_PX,
   PLUGIN_UI_CARD_MIN_HEIGHT_PX,
 } from "../contract.js";
-import { buildPluginUiHostCapabilities } from "../domain/buildPluginUiHostCapabilities.js";
 import { buildPluginUiHostContext } from "../domain/buildPluginUiHostContext.js";
 
 import { acquireWorkspaceConnection } from "@/v4/workspaceConnectionRegistry.js";
@@ -56,6 +45,9 @@ export function createPage(
   let disposed = false;
   let starting = false;
   let incarnation = 0;
+  // F18（上游 a60ba6a7）：回收裁决去重（并发触发合并为一次）与保留策略的活动去重键。
+  let recycling: Promise<boolean> | undefined;
+  let activityFeed = "";
   let releasing: Promise<unknown> = Promise.resolve();
   let contextInputs = "";
   let lastFeed = "";
@@ -85,8 +77,14 @@ export function createPage(
   const setHandle = (handle: PluginSandboxHandle) => {
     if (appIdentity && appIdentity !== handle.instance.appIdentity) clearPluginUiWidgetState(key);
     appIdentity = handle.instance.appIdentity;
+    // F18（上游 a60ba6a7）：句换代际变化才重报保留资格；声明只来自资源 resourceMeta，
+    // 经沙箱登记与句柄回传，无第二写入路径（docs/plugin-ui-background-execution.md §12.4）。
+    const fresh =
+      snapshot.handle?.sandboxId !== handle.sandboxId || snapshot.handle?.initId !== handle.initId;
     patch({ handle });
+    if (fresh) pluginUiPages.prepared(page, handle.resourceMeta?.backgroundRetention === true);
     plane.mount(handle);
+    syncExecution();
   };
   const setHeight = (height: number) => patch({ height });
   const setError = (error: string) => patch({ error });
@@ -96,12 +94,29 @@ export function createPage(
     onVisibility(visible) {
       if (page.visible !== visible) pluginUiPages.visibility(page, visible);
       if (visible) ensure();
+      syncExecution();
     },
     onCrash() {
       void page.suspend(true);
       patch({ phase: "error", error: "MCP App page stopped" });
     },
   });
+  /**
+   * F18（上游 a60ba6a7）：声明保留且运行中的页面隐藏时保持执行表面；启动阶段
+   * （尚未 running）也需要表面完成首次挂载。本仓不移植上游 Main 侧 guest 节流
+   * 通道（依赖上游 browserView activity 框架），执行表面由 renderer plane 承担。
+   */
+  function syncExecution() {
+    const active =
+      controller !== null && snapshot.handle?.resourceMeta?.backgroundRetention === true;
+    plane.setExecutionActive(active || (controller !== null && snapshot.phase !== "running"));
+  }
+  // F18：窗口恢复可见且有锚点时重建被回收页面；可见性切换同步执行表面。
+  const onWindowVisibility = () => {
+    if (!document.hidden && plane.hasVisibleAnchor()) void ensure();
+    syncExecution();
+  };
+  document.addEventListener("visibilitychange", onWindowVisibility);
   async function ensure() {
     if (disposed || controller || starting || snapshot.phase === "error") return;
     starting = true;
@@ -152,77 +167,21 @@ export function createPage(
     }
   }
   function createController() {
-    const initialHostContext: McpUiHostContext = buildPluginUiHostContext({
-      theme: latest.current.theme,
-      locale: latest.current.locale,
-      displayMode: latest.current.displayMode,
-      width: latest.current.width,
-      ...(latest.current.titleBar ? { titleBar: latest.current.titleBar } : {}),
-      ...(latest.current.availableDisplayModes
-        ? { availableDisplayModes: latest.current.availableDisplayModes }
-        : {}),
-      // 主题 token 随初始 hostContext 下发，主题切换时经 updateHostContext 更新。
-      styleVariables: readPluginUiStyleVariables(),
-    });
-    const scope = latest.current.scope;
-    const presentation = latest.current.presentation;
-    // 平台交互（downloadFile）与调用方注入的会话交互合成一份；能力声明按合成后的回调是否存在。
-    const platformInteractions = createPluginUiDownloadInteraction({
-      platform,
-      bridge,
-      scope,
-      presentation,
-      getInstance: () => {
-        if (!snapshot.handle) throw new Error("MCP App is not prepared");
-        return snapshot.handle.instance;
-      },
-    });
+    // F18：静态 deps（hostContext / 平台交互 / 能力声明 / 回调转发）拆至
+    // pluginUiControllerDeps 以满足架构文件行数上限；行为与拆出前一致。
     const nextController = createPluginUiHostController({
-      bridge,
-      sampling: services?.pluginUiSamplingService,
-      ...(services?.pluginUiAppToolsService ? { appTools: services.pluginUiAppToolsService } : {}),
-      createTransport: createPluginUiMessagePortTransport,
-      platform: sandboxPlatform,
-      scope,
-      presentation,
-      // 按代际登记到路由表；该会话的投影 store 收到 pluginUi.* 增量后按 (scopeId, generation) 投递。
-      resourceNotifications: createPluginUiResourceNotificationRegistrar(
-        scope,
-        presentation.serverName,
-      ),
-      initialHostContext,
-      hostVersion: latest.current.hostVersion,
-      getToolFeed: () => ({
-        ...(latest.current.toolInput ? { toolInput: { arguments: latest.current.toolInput } } : {}),
-        ...(latest.current.toolResult ? { toolResult: latest.current.toolResult } : {}),
-        ...(latest.current.toolCancelled ? { toolCancelled: true } : {}),
+      ...buildPluginUiControllerDeps({
+        bridge,
+        services,
+        platform,
+        sandboxPlatform,
+        latest,
+        surfaceKey,
+        getInstance: () => {
+          if (!snapshot.handle) throw new Error("MCP App is not prepared");
+          return snapshot.handle.instance;
+        },
       }),
-      // widgetState 初值直接读宿主内存 store（唯一 owner），不经 props 再缓存一份；
-      // 端口投递时才读，离屏回收后重建也拿到页面最近一次主动保存的值。
-      getWidgetState: () => getPluginUiWidgetState(surfaceKey),
-      getHostCapabilities: () =>
-        buildPluginUiHostCapabilities({
-          canSendFollowUpMessage: Boolean(latest.current.interactions?.onSendFollowUpMessage),
-          canUpdateModelContext: Boolean(latest.current.interactions?.onUpdateModelContext),
-          canSetWidgetState: true,
-          canSample: Boolean(services?.pluginUiSamplingService && getPluginUiSessionActions(scope)),
-          canSubscribeResources: true,
-          canDownloadFile: Boolean(platformInteractions?.onDownloadFile),
-          ...(scope.scope.kind === "surface" ? { surfaceId: scope.scope.surfaceId } : {}),
-        }),
-      ...platformInteractions,
-      // 经 latest ref 转调，回调 identity 变化不触发 controller 重建；缺省回 -32601（端口层翻译成 ProtocolError）。
-      onSendFollowUpMessage: (payload, context) =>
-        latest.current.interactions?.onSendFollowUpMessage
-          ? latest.current.interactions.onSendFollowUpMessage(payload, context)
-          : Promise.reject(Object.assign(new Error("Not supported"), { code: -32601 })),
-      onUpdateModelContext: (payload) =>
-        latest.current.interactions?.onUpdateModelContext
-          ? latest.current.interactions.onUpdateModelContext(payload)
-          : Promise.reject(Object.assign(new Error("Not supported"), { code: -32601 })),
-      onUpdateWidgetState: async (widgetState) => {
-        setPluginUiWidgetState(surfaceKey, widgetState);
-      },
       onPhase: (next, detail) => {
         if (controller !== nextController) return;
         // 生命周期事件每个沙箱只有几条，走 lifecycle 才能进主日志（排查用户现场用）。
@@ -348,17 +307,48 @@ export function createPage(
         if (next.toolResult) controller?.notifyToolResult(next.toolResult);
         if (next.toolCancelled) controller?.notifyToolCancelled();
       }
+      // F18（上游 a60ba6a7）：带工具调用的 feed 变化视为页面活动，刷新保留策略的闲置计时。
+      const activityKey = JSON.stringify([
+        next.toolCallId,
+        next.toolInput,
+        next.toolResult,
+        next.toolCancelled,
+      ]);
+      if (next.toolCallId && activityKey !== activityFeed) {
+        activityFeed = activityKey;
+        pluginUiPages.activity(page);
+      }
     },
     async suspend(force = false) {
-      const candidate = controller;
-      if (!force && (starting || (candidate && !(await candidate.tryRecycle().catch(() => false)))))
-        return false;
-      // 审批接纳与后台回收在 Agent 原子裁决；等待期间替换的 controller 不受旧结果影响。
-      if (!force && candidate !== controller) return false;
+      if (!force) {
+        // F18（上游 a60ba6a7）：回收前先经保留策略 claim 预占（默认页直接放行，声明页在
+        // 4/30 边界内被拒绝）；裁决完成或被拒后 finally 释放预占，不另建第二条裁决路径。
+        if (recycling) return recycling;
+        if (starting || !pluginUiPages.claimRecycle(page)) return false;
+        const candidate = controller;
+        const attempt = (async () => {
+          if (candidate && !(await candidate.tryRecycle().catch(() => false))) return false;
+          // Agent 原子裁决 busy/审批；等待期间被重载或删除的旧 controller 不得释放新实例。
+          if (candidate !== controller || disposed) return false;
+          await page.suspend(true);
+          // 裁决期间用户可能重新打开；旧凭证已撤销，必须从同一 owner 重建（§12.2.8）。
+          if (!document.hidden && !disposed && plane.hasVisibleAnchor()) void ensure();
+          return true;
+        })();
+        recycling = attempt;
+        try {
+          return await attempt;
+        } finally {
+          if (recycling === attempt) recycling = undefined;
+          pluginUiPages.finishRecycle(page);
+        }
+      }
       incarnation++;
       starting = false;
       const previous = controller;
       controller = null;
+      // F18：隐藏执行表面随代际撤销，不跨代继承。
+      plane.setExecutionActive(false);
       const previousHandle = snapshot.handle;
       const offFeed = releaseFeed,
         offLease = releaseLease;
@@ -376,11 +366,10 @@ export function createPage(
         pluginUiPages.released(page);
       });
       await releasing;
-      // 等待 Agent 回收答复时锚点可能重新可见；释放完成后由同一 owner 恢复，避免停在空页面。
-      if (!force && page.visible && !disposed) void ensure();
       return true;
     },
     destroy() {
+      document.removeEventListener("visibilitychange", onWindowVisibility);
       workspaceEvents.dispose();
       clearPluginUiSurfaceFeed(key);
       disposed = true;

@@ -28,8 +28,9 @@ const pool = () =>
   );
 afterEach(() => vi.useRealTimers());
 describe("MCP App page ownership", () => {
-  // I20（2026-10-24 决策）：离屏/收起不是销毁信号，旧语义是连续离屏 5 分钟后 suspend。
-  it("keeps an offscreen page executing past five minutes and reuses the same owner on return", async () => {
+  // F18（§12.1，2026-11-07 修订，上游 a60ba6a7）：未声明保留的页面沿用默认隐藏即停——
+  // 离屏 5 分钟触发回收；回收是 tryRecycle 语义（Agent 可拒绝），页面 owner 记录保留给重建。
+  it("suspends an offscreen default page after five minutes and keeps a visible page alive", async () => {
     vi.useFakeTimers();
     const owner = pool();
     const page = make("page");
@@ -37,14 +38,14 @@ describe("MCP App page ownership", () => {
     await owner.reserve(page);
     owner.visibility(page, false);
     vi.advanceTimersByTime(15 * 60_000);
-    expect(page.suspend).not.toHaveBeenCalled();
+    expect(page.suspend).toHaveBeenCalledTimes(1);
     owner.visibility(page, true);
     vi.advanceTimersByTime(600_000);
-    expect(page.suspend).not.toHaveBeenCalled();
+    expect(page.suspend).toHaveBeenCalledTimes(1);
     expect(owner.get("page")).toBe(page);
   });
-  // I20：后台结果 settle（页面工具调用/采样结束）不等于页面可回收，旧语义会立即 suspend。
-  it("keeps an unanchored page when its background result settles after the offscreen deadline", async () => {
+  // F18（§12.1）：settled 且不可见且非忙即停；忙时到点只清定时器，随后 settle 也不得回收。
+  it("suspends an idle unanchored page when its result settles but not while busy", async () => {
     vi.useFakeTimers();
     const owner = pool();
     const page = make("page");
@@ -52,16 +53,15 @@ describe("MCP App page ownership", () => {
     await owner.reserve(page);
     page.setBusy(true);
     owner.visibility(page, false);
-    // 离屏定时器在页面忙时到点只移除定时器，不回收；随后结果 settle 仍不得销毁页面。
     vi.advanceTimersByTime(5 * 60_000);
     expect(page.suspend).not.toHaveBeenCalled();
     page.setBusy(false);
     owner.settled(page);
-    expect(page.suspend).not.toHaveBeenCalled();
+    expect(page.suspend).toHaveBeenCalledTimes(1);
     expect(owner.get("page")).toBe(page);
   });
-  // I20：30 task 是硬上限，超限拒绝新页面；不得销毁无锚点的后台任务（旧语义 LRU 淘汰 first）。
-  it("rejects the thirty-first task without destroying a background page", async () => {
+  // F18（§12.1）：30 task 上限不变，但超限时按上游路径回收「不可见且非忙」的空闲任务腾位。
+  it("evicts an idle background task to admit the thirty-first task", async () => {
     const owner = pool();
     const first = make("first");
     await owner.add(first);
@@ -71,10 +71,12 @@ describe("MCP App page ownership", () => {
       await owner.add(page);
       await owner.reserve(page);
     }
-    await expect(owner.add(make("overflow"))).rejects.toThrow("capacity");
-    expect(first.destroy).not.toHaveBeenCalled();
-    expect(first.suspend).not.toHaveBeenCalled();
-    expect(owner.get("first")).toBe(first);
+    const overflow = make("overflow");
+    await owner.add(overflow);
+    expect(first.suspend).toHaveBeenCalled();
+    expect(first.destroy).toHaveBeenCalled();
+    expect(owner.get("first")).toBeUndefined();
+    expect(owner.get("overflow")).toBe(overflow);
   });
   it("rejects overflow when all 64 pages are visible or busy", async () => {
     const owner = pool();
@@ -142,8 +144,8 @@ describe("MCP App page ownership", () => {
     await expect(pendingReserve).rejects.toThrow("removed");
     expect(owner.get(page.key)).toBeUndefined();
   });
-  // I20：64 allocated 同样是硬上限；不得 suspend 无锚点的活页面来腾槽位。
-  it("rejects a sixty-fifth allocation without recycling a live background page", async () => {
+  // F18（§12.1）：64 allocated 上限不变，但超限按上游路径回收空闲隐藏页腾位。
+  it("recycles an idle hidden allocation to admit the sixty-fifth", async () => {
     const owner = pool();
     const pages = Array.from({ length: 64 }, (_, i) => make(String(i), "task"));
     for (const page of pages) {
@@ -152,10 +154,12 @@ describe("MCP App page ownership", () => {
     }
     const next = make("next");
     await owner.add(next);
-    await expect(owner.reserve(next)).rejects.toThrow("capacity");
-    for (const page of pages) expect(page.suspend).not.toHaveBeenCalled();
+    await expect(owner.reserve(next)).resolves.toBeUndefined();
+    expect(pages[0]!.suspend).toHaveBeenCalled();
+    expect(owner.get("next")).toBe(next);
   });
-  // I20：卡片与后台结果共享同一逻辑页面；并发准入只允许一个 owner，30 task 超限时拒绝新任务而不销毁现有页面。
+  // F18（§12.1）：卡片与后台结果共享同一逻辑页面键，重复 owner 仍拒绝；
+  // 超限的新任务经淘汰空闲后台任务腾位接纳。
   it("admits one owner when the card and background result race at task capacity", async () => {
     const owner = pool();
     const background = make("shared");
@@ -168,9 +172,11 @@ describe("MCP App page ownership", () => {
       owner.add(make("overflow")),
     ]);
     expect(duplicate.status).toBe("rejected");
-    expect(overflow.status).toBe("rejected");
-    expect(owner.get("shared")).toBe(background);
-    expect(background.suspend).not.toHaveBeenCalled();
-    expect(background.destroy).not.toHaveBeenCalled();
+    expect(overflow.status).toBe("fulfilled");
+    // "shared" 任务被淘汰腾位；后台页走 tryRecycle 销毁。
+    expect(background.suspend).toHaveBeenCalled();
+    expect(background.destroy).toHaveBeenCalled();
+    expect(owner.get("shared")).toBeUndefined();
+    expect(owner.get("overflow")).toBeDefined();
   });
 });
