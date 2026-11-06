@@ -3742,11 +3742,13 @@ export function SessionPane({
       );
 
       try {
+        // 修复依据（来源 a60ba6a7 fork 裁决 slice-first）：bumpRuntimeEpoch 是死参——
+        // services adapter 一直将其丢弃，从未生效；runtime 基线收敛机制全仓无写入方，
+        // 这里删除该实参，保持 workspace 级重建调用与接口一致。
         await zodyTaskService.restartWorkspaceProcess({
           workspacePath,
           workspaceIdentity,
           provider: displayProvider,
-          bumpRuntimeEpoch: true,
         });
 
         const prepareResult = await prepareWorkspaceWithZodySessionService({

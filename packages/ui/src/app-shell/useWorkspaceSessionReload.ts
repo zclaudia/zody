@@ -84,11 +84,13 @@ export function useWorkspaceSessionReload({
       }
 
       try {
+        // 修复依据（来源 a60ba6a7 fork 裁决 slice-first）：resumeTaskId 是死参——
+        // services adapter 一直将其丢弃，从未生效；任务级「重启后续接」改由
+        // restartTask 单入口承载，这里只保留 workspace 级进程重建。
         await services.zodyTaskService.restartWorkspaceProcess({
           workspacePath: workspaceAbsPath,
           ...(workspaceIdentity ? { workspaceIdentity } : {}),
           provider,
-          resumeTaskId,
         });
 
         if (shouldPrepareWorkspace) {

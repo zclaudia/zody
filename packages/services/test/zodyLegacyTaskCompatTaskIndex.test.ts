@@ -5550,3 +5550,124 @@ describe("ZCode legacy task compat task index", () => {
     expect(active).toEqual([]);
   });
 });
+
+describe("F27 restartTask 任务级重启（specs/task-restart-service-slice.md）", () => {
+  it("重启存在的任务：先换代 workspace 进程再 cold-resume 目标会话", async () => {
+    const { agent, service } = createService();
+    const task = await service.createTask({ workspacePath: "/repo", provider: "glm" });
+    vi.mocked(agent.disposeWorkspace).mockClear();
+    vi.mocked(agent.resumeSession).mockClear();
+
+    const result = await service.restartTask({
+      taskId: task.taskId,
+      workspacePath: "/repo",
+    });
+
+    expect(result).toMatchObject({
+      taskId: task.taskId,
+      workspaceKey: "/repo",
+      provider: "glm",
+      resumedFrom: "session",
+      siblingResumePolicy: "cold-resume",
+    });
+    expect(result.meta.taskId).toBe(task.taskId);
+    expect(agent.disposeWorkspace).toHaveBeenCalledWith({
+      workspacePath: "/repo",
+      workspaceIdentity: undefined,
+    });
+    expect(agent.resumeSession).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: task.taskId, workspacePath: "/repo" }),
+    );
+    // 共享进程架构：换代必须先于会话恢复，cold-resume 依赖 dispose 后的懒拉起新进程。
+    expect(agent.disposeWorkspace.mock.invocationCallOrder[0]).toBeLessThan(
+      agent.resumeSession.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("按 workspaceIdentity 隔离进程换代作用域", async () => {
+    const { agent, service } = createService();
+    const workspaceIdentity = "remote:ssh:dev:/repo";
+    const task = await service.createTask({
+      workspacePath: "/repo",
+      workspaceIdentity,
+      provider: "glm",
+    });
+    vi.mocked(agent.disposeWorkspace).mockClear();
+
+    const result = await service.restartTask({
+      taskId: task.taskId,
+      workspacePath: "/repo",
+      workspaceIdentity,
+    });
+
+    expect(agent.disposeWorkspace).toHaveBeenCalledWith({
+      workspacePath: "/repo",
+      workspaceIdentity,
+    });
+    expect(result.workspaceKey).toBe(workspaceIdentity);
+  });
+
+  it("未知 taskId 抛 ZODY_TASK_NOT_FOUND，且不回收进程、不恢复会话", async () => {
+    const { agent, service } = createService();
+    vi.mocked(agent.disposeWorkspace).mockClear();
+    vi.mocked(agent.resumeSession).mockClear();
+
+    const error = (await service
+      .restartTask({ taskId: "missing_task", workspacePath: "/repo" })
+      .catch((caught: unknown) => caught)) as { code?: string };
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.code).toBe("ZODY_TASK_NOT_FOUND");
+    // 先验存在再回收：未知任务不能触发整个 workspace 的进程换代。
+    expect(agent.disposeWorkspace).not.toHaveBeenCalled();
+    expect(agent.resumeSession).not.toHaveBeenCalled();
+  });
+
+  it("会话缺失但存在 legacy 快照时回退只读恢复（resumedFrom=legacy）", async () => {
+    const { agent, service, taskIndexRepo } = createService();
+    const workspacePath = "/repo";
+    const taskId = "legacy_restart_task";
+    await seedIndexedTask(taskIndexRepo, { taskId, provider: "glm" });
+    const snapshotPath = getLegacyTaskSessionSnapshotPath(workspacePath, taskId);
+    mkdirSync(dirname(snapshotPath), { recursive: true });
+    writeFileSync(
+      snapshotPath,
+      JSON.stringify({
+        meta: {
+          taskId,
+          traceId: "trace_legacy_restart",
+          title: "Legacy restart task",
+          workspacePath,
+          createdAt: 10,
+          updatedAt: 20,
+          mode: "yolo",
+          provider: "glm",
+        },
+        messages: [{ role: "user", content: "old prompt", timestamp: 10 }],
+      }),
+      "utf-8",
+    );
+    vi.mocked(agent.resumeSession).mockRejectedValue(new Error(`Session not found: ${taskId}`));
+
+    const result = await service.restartTask({ taskId, workspacePath });
+
+    expect(result).toMatchObject({
+      taskId,
+      resumedFrom: "legacy",
+      siblingResumePolicy: "cold-resume",
+    });
+    expect(agent.disposeWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it("进程换代后 resume 失败向上传播，workspace 停留在无进程安全态", async () => {
+    const { agent, service } = createService();
+    const task = await service.createTask({ workspacePath: "/repo", provider: "glm" });
+    vi.mocked(agent.disposeWorkspace).mockClear();
+    vi.mocked(agent.resumeSession).mockRejectedValueOnce(new Error("agent spawn failed"));
+
+    await expect(
+      service.restartTask({ taskId: task.taskId, workspacePath: "/repo" }),
+    ).rejects.toThrow("agent spawn failed");
+    expect(agent.disposeWorkspace).toHaveBeenCalledTimes(1);
+  });
+});

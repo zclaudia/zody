@@ -68,6 +68,25 @@ export interface ZodyArchivedTaskDeletionResult {
   failedTaskIds: string[];
 }
 
+/**
+ * F27 任务级重启结果（specs/task-restart-service-slice.md）。
+ * 共享进程架构下重启一个任务必然换代整个 workspace 进程：目标任务立即 cold-resume
+ * （进程内存态丢失、持久化会话与 task index 保留），同 workspace 兄弟任务不自动恢复。
+ */
+export interface ZodyTaskRestartResult {
+  taskId: string;
+  /** 进程换代作用的 workspace key（workspaceIdentity?.trim() || workspacePath）。 */
+  workspaceKey: string;
+  /** 本次重启生效的 provider：params.provider ?? task meta.provider ?? "glm"。 */
+  provider: ZodyProvider;
+  /** 目标任务恢复来源：session = CLI 持久化会话；legacy = 本地 legacy 快照回退。 */
+  resumedFrom: "session" | "legacy";
+  /** 兄弟任务续跑语义（显式契约）：不自动恢复，下次访问时按需 cold-resume。 */
+  siblingResumePolicy: "cold-resume";
+  /** 恢复后回写 task index 的最新 meta，UI 可直接用结果刷新列表。 */
+  meta: ZodyTaskMeta;
+}
+
 /** 一次模型请求里出现的消息内容片段（文本 / 工具调用 / 工具结果 / 其他原始结构）。 */
 export type ZodyModelTrajectoryContentPart =
   | { kind: "text"; text: string }
@@ -660,15 +679,30 @@ export interface IZodyTaskService {
   /**
    * 重启指定 workspace 的 Zody Agent 共享进程。
    * 配置变更需要重新读取进程环境时使用。
-   * 可选传入 resumeTaskId 在重启后立即续接当前聊天会话。
+   *
+   * 修复依据（来源 a60ba6a7 fork 裁决 slice-first）：旧声明的 resumeTaskId /
+   * bumpRuntimeEpoch 两个参数在 adapter 一直被 normalizeWorkspaceParams 丢弃（从未生效），
+   * 属于死参；「重启后续接某个任务」的语义由 restartTask 单入口承载，这里删除死参
+   * 保持 workspace 级重启的单一职责。
    */
   restartWorkspaceProcess(params: {
     workspacePath: string;
     workspaceIdentity?: string;
     provider?: ZodyProvider;
-    resumeTaskId?: string;
-    bumpRuntimeEpoch?: boolean;
   }): Promise<void>;
+
+  /**
+   * F27 任务级重启单入口（specs/task-restart-service-slice.md）。
+   * 共享进程架构下重启一个任务必然换代整个 workspace 进程：目标任务立即 cold-resume，
+   * 同 workspace 兄弟任务不自动恢复、下次访问时按需 cold-resume。
+   * 任务不存在时抛 code 为 ZODY_TASK_NOT_FOUND 的错误，且不触发进程换代。
+   */
+  restartTask(params: {
+    taskId: string;
+    workspacePath: string;
+    workspaceIdentity?: string;
+    provider?: ZodyProvider;
+  }): Promise<ZodyTaskRestartResult>;
 
   /** 将已持久化 task 标记为列表不可见；CLI session 内容继续保留 */
   deleteTask(params: {

@@ -120,6 +120,7 @@ import type {
   IZodyTaskService,
   ZodyArchivedTaskDeletionResult,
   ZodyTaskReadyOutcome,
+  ZodyTaskRestartResult,
   ZodyTaskTerminalOutcome,
 } from "../session/zodyTaskService.js";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
@@ -3006,7 +3007,65 @@ export function createZodyTaskServiceAdapter(
     },
 
     async restartWorkspaceProcess(params): Promise<void> {
+      // 修复依据（来源 a60ba6a7 fork 裁决 slice-first）：旧实现的 resumeTaskId /
+      // bumpRuntimeEpoch 参数在这里被 normalizeWorkspaceParams 整体丢弃，从未生效；
+      // 接口侧已删除死参，本实现保持只做 workspace 级进程回收的单一职责。
       await options.zodyAgentService.disposeWorkspace(normalizeWorkspaceParams(params));
+    },
+
+    async restartTask(params): Promise<ZodyTaskRestartResult> {
+      // F27（specs/task-restart-service-slice.md，来源 a60ba6a7 fork 裁决 slice-first）：
+      // 共享进程架构下「重启一个任务」= 换代整个 workspace 进程 + 目标任务立即
+      // cold-resume；同 workspace 兄弟任务不自动恢复，下次访问时按需 cold-resume。
+      const startedAt = Date.now();
+      // 先验存在再回收进程：未知 taskId 不应付出整个 workspace 的进程换代代价。
+      const persistedMeta = await taskIndexRepo.getTaskMeta(params);
+      if (!persistedMeta) {
+        throw Object.assign(
+          new Error(`Task not found: ${params.taskId}`),
+          { code: "ZODY_TASK_NOT_FOUND" },
+        );
+      }
+      const target = normalizeWorkspaceParams(params);
+      const provider = params.provider ?? persistedMeta.provider ?? GLM_PROVIDER;
+      // 进程换代：与 restartWorkspaceProcess 同一粒度（按 workspaceKey 回收 + 代际 +1），
+      // 运行中的轮次按重启语义显式中断，不等待 task-ready。
+      await options.zodyAgentService.disposeWorkspace(target);
+      // 目标任务 cold-resume：resumeSession 会懒拉起新进程并从持久化会话恢复，
+      // legacy 快照回退与 getTaskSnapshot 保持一致。
+      const restored = await resumeSnapshotOrLegacy({
+        taskId: params.taskId,
+        workspacePath: params.workspacePath,
+        workspaceIdentity: params.workspaceIdentity,
+      });
+      // 恢复成功的快照回写 task index（与 getTaskSnapshot 一致），让结果 meta 直接可用。
+      const meta =
+        restored.kind === "session"
+          ? await syncTaskIndexSnapshot(restored.snapshot)
+          : ((await taskIndexRepo.getTaskMeta(params)) ??
+            (await syncTaskIndexMeta(restored.snapshot.meta)));
+      logger.info(
+        undefined,
+        "[zody-task-service] 任务级重启完成（workspace 进程换代 + cold-resume）",
+        {
+          durationMs: Date.now() - startedAt,
+          provider,
+          resumedFrom: restored.kind,
+          siblingResumePolicy: "cold-resume",
+          taskId: params.taskId,
+          workspaceIdentity: params.workspaceIdentity ?? null,
+          workspaceKey: workspaceKey(params),
+          workspacePath: params.workspacePath,
+        },
+      );
+      return {
+        taskId: params.taskId,
+        workspaceKey: workspaceKey(params),
+        provider,
+        resumedFrom: restored.kind,
+        siblingResumePolicy: "cold-resume",
+        meta,
+      };
     },
 
     async deleteTask(params): Promise<void> {

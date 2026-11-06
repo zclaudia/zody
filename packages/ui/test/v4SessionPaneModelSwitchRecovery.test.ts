@@ -2304,7 +2304,6 @@ describe("SessionPane model switch recovery", () => {
       workspacePath: "/workspace",
       workspaceIdentity: undefined,
       provider: "glm",
-      bumpRuntimeEpoch: true,
     });
     expect(mocks.zodyTaskService.restartWorkspaceProcess.mock.invocationCallOrder[0]).toBeLessThan(
       draftConfigMock.handleDraftSelectModel.mock.invocationCallOrder[0] ?? 0,
