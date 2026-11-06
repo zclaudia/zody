@@ -3546,6 +3546,21 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 | PA158-11 | 其他任务、项目偏好与 Recent          | 不写项目默认/规则/Recent，不批量影响其他任务                 | accepted |
 | PA158-12 | 子 Agent 或旧客户端/Agent            | 不展示未支持的完整动作，不误切父任务权限                     | accepted |
 
+## PA159. 完全访问模式风险确认（YOLO 确认）
+
+产品规格见 [YOLO 模式风险确认](yolo-mode-risk-confirmation.md)（上游 v3.17.1 `a60ba6a7` 参考适配）。纯 UI 进入门槛：用户主动从非 yolo 切到 yolo 的三入口（模式菜单、cycleSessionMode 快捷键、审批框完全访问选项）先弹一次风险确认（三类风险说明 + 勾选 + 焦点落取消按钮不抢输入框）；取消/Escape/遮罩不开启；已处于 yolo（草稿或会话权威模式）时不重复弹；确认不持久化「已确认过」标记，退出后再进需重新确认。不改 runtime yolo 权限语义与 PA158 授权链路。
+
+| Case     | 前置/动作                                                                              | 预期结果                                                                                          | Review   |
+| -------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------- |
+| PA159-01 | build/guarded/edit 草稿经菜单选「完全访问」                                            | 先弹确认；勾选前确认按钮 disabled；取消后草稿不变                                                 | accepted |
+| PA159-02 | 草稿已是 yolo 再选 yolo；yolo 切回其他模式后再进                                       | 前者不弹窗（不重复弹）；后者重新弹确认                                                            | accepted |
+| PA159-03 | cycleSessionMode 快捷键（默认 Ctrl+Shift+M）循环到 yolo；确认 pending 期间按工具条热键 | 与菜单同语义先弹确认；pending 期间模式循环/思考深度/模型菜单热键均不触发动作                      | accepted |
+| PA159-04 | 审批框选完全访问（optionId=fullAccess）：取消后改选其他选项；勾选确认                  | 取消不发送应答、权限弹窗保持；确认发送 fullAccess 应答并走 PA158 链路；会话已 yolo 时直接应答不弹 | accepted |
+| PA159-05 | 确认 pending 期间目标换代（任务/草稿回调/权限请求变化）                                | 弹窗自动关闭且不应用（stale 防护）；新目标重新触发时再弹                                          | accepted |
+| PA159-06 | 手机 390/桌面 1200、深浅主题、中英文                                                   | 三类风险可读、无横向溢出、手机双列等宽触控按钮；焦点落取消按钮                                    | accepted |
+
+组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/yolo-confirmation.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过）；桌面 conversation-session 链路由 PA158 既有 pending 用例补「先确认一次」步骤（`packages/desktop` 不在本卡落点，缺口登记待协调）。automation/offpeak 表单接入剪枝，后续单独评估。accepted 表示产品合同，不代表已实现。
+
 ## CMP：Composer 压缩与 provider 身份
 
 沿用 CUA composer 七档布局契约。providerName 缺失的自定义 provider 使用菜单已有的 providerId 兜底，内置账号套餐规则不变。
