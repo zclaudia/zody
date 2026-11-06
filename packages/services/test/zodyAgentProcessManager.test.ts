@@ -786,7 +786,7 @@ describe("resolveDefaultZodyAgentCommand", () => {
     expect(commandResolver).toHaveBeenCalledTimes(2);
     expect(
       errorSpy.mock.calls.some((args) =>
-        args.some((arg) => String(arg).includes("ZCode agent process cleanup failed")),
+        args.some((arg) => String(arg).includes("Zody agent process cleanup failed")),
       ),
     ).toBe(false);
 
@@ -837,7 +837,7 @@ describe("resolveDefaultZodyAgentCommand", () => {
     }));
     const manager = new ZodyAgentProcessManager({ commandResolver });
     await expect(manager.getRuntimeIdentity({ workspacePath })).rejects.toThrow(
-      "ZCode agent runtime identity is unavailable.",
+      "Zody agent runtime identity is unavailable.",
     );
     expect(commandResolver).not.toHaveBeenCalled();
 
@@ -999,7 +999,7 @@ setInterval(() => {}, 1000);
 
     // Bugfix: app 关闭期间 warmup 仍可能卡在 command/env resolve。
     // disposeAllAndWait 之后不允许这个启动 promise 继续 spawn，否则会绕过关闭快照留下孤儿进程。
-    await expect(starting).rejects.toThrow("ZCode agent process manager is disposed.");
+    await expect(starting).rejects.toThrow("Zody agent process manager is disposed.");
     expect(existsSync(markerPath)).toBe(false);
   });
 
@@ -1633,7 +1633,7 @@ setInterval(() => {}, 1000);
       await vi.waitFor(() => expect(cleanupAttemptCount).toBe(2));
       expect(
         errorSpy.mock.calls.some((args) =>
-          args.some((arg) => String(arg).includes("ZCode agent process cleanup failed")),
+          args.some((arg) => String(arg).includes("Zody agent process cleanup failed")),
         ),
       ).toBe(false);
     } finally {
@@ -1826,7 +1826,7 @@ setInterval(() => {}, 1000);
       await vi.waitFor(() =>
         expect(errorSpy).toHaveBeenCalledWith(
           expect.any(String),
-          `ZCode agent process exited unexpectedly ${ZODY_AGENT_LIFECYCLE_LOG_MARKER}`,
+          `Zody agent process exited unexpectedly ${ZODY_AGENT_LIFECYCLE_LOG_MARKER}`,
           expect.objectContaining({
             workspaceKey: workspacePath,
             code: 1,
@@ -2046,7 +2046,7 @@ setInterval(() => {}, 1000);
       await vi.waitFor(() =>
         expect(logSpy).toHaveBeenCalledWith(
           expect.any(String),
-          "ZCode agent spawn preflight",
+          "Zody agent spawn preflight",
           expect.objectContaining({
             workspaceKey: workspacePath,
             spawnPreflight: expect.objectContaining({
@@ -2064,7 +2064,7 @@ setInterval(() => {}, 1000);
       await vi.waitFor(() =>
         expect(errorSpy).toHaveBeenCalledWith(
           expect.any(String),
-          "ZCode agent process error",
+          "Zody agent process error",
           expect.objectContaining({
             workspaceKey: workspacePath,
             errorMessage: expect.stringContaining("ENOENT"),
