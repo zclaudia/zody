@@ -115,6 +115,9 @@ export default defineConfig({
             "scripts/test/zody-rename-plugin-test-collection.test.mjs",
             "scripts/assert-safe-cua-helper-zip.test.mjs",
             "scripts/check-official-refs.test.mjs",
+            // output/ 构建树清理回归（specs/cua-output-retention.md）：纳入默认门禁，
+            // 防止保留策略回退后旧轮次构建树再次累积填满磁盘。
+            "scripts/clean-output.test.mjs",
             "scripts/ci/ci-telemetry-keyword-guard.test.mjs",
             // 本地 gateway 脚本（T0.2）：用假 gateway 验证签发、复用与不泄漏凭证，不依赖 docker。
             "scripts/dev-gateway.test.mjs",

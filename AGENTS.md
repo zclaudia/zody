@@ -14,6 +14,8 @@
 
 开工前运行 `node scripts/check-workspace-freshness.mjs` 检查基线。Node 版本以 `mise.toml` 为准。
 
+在 `output/` 落盘构建产物的测试轮次（CUA 验收等）开工时先运行 `pnpm clean:output -- --apply`，按 [CUA 测试输出保留策略](specs/cua-output-retention.md) 清理历史轮次的构建树；证据文件不会被删除，避免逐轮累积的解包产物再次填满磁盘。
+
 以下命令从仓库根目录执行：
 
 | 用途             | 命令                                      |
@@ -28,6 +30,7 @@
 | 模块阅读包       | `pnpm architecture:context <module-id>`   |
 | 未使用依赖与导出 | `pnpm knip`                               |
 | 导出引用查询     | `pnpm dep:refs --list-exports <file>`     |
+| 测试输出清理     | `pnpm clean:output`（dry-run；加 `-- --apply` 执行） |
 
 测试入口以目标包当前的 `package.json` 和实际测试文件为准，不假定存在统一的单测或 E2E 命令。
 
