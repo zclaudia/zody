@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
+import { ZODY_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
 import {
   getCapturedZodyCuaBrokerCredentials,
   ZODY_CUA_BROKER_SOCKET_ENV_KEY,
@@ -10,7 +10,7 @@ import {
 import { ZODY_CUA_OFFICIAL_PLUGIN_ID, ZODY_PLUGIN_ID_ENV_KEY } from "@zody/shared/mcp";
 import type { RunContext } from "@zody/shared-types";
 
-const HOST_USAGE = `${ZCODE_PLUGIN_HOST_COMMAND} <server-path> [-- <server-arg>...]`;
+const HOST_USAGE = `${ZODY_PLUGIN_HOST_COMMAND} <server-path> [-- <server-arg>...]`;
 
 export const ZODY_NODE_REPL_CONTROL_FLAG = "--zody-node-repl-control";
 
@@ -19,10 +19,11 @@ type HostedPluginModule = {
 };
 
 export function isPluginHostInvocation(argv: readonly string[]): boolean {
-  return argv[0] === ZCODE_PLUGIN_HOST_COMMAND;
+  // R54 硬切：只接受新命令，旧值 `__zcode-plugin-host` 不设别名。
+  return argv[0] === ZODY_PLUGIN_HOST_COMMAND;
 }
 
-// __zcode-plugin-host 在 agent 子进程里运行 official plugin 的 MCP server（server.js）。
+// __zody-plugin-host 在 agent 子进程里运行 official plugin 的 MCP server（server.js）。
 // CLI 入口 main.ts 的 applyCliRuntimeEnvSanitization 会先把 broker token 从 process.env 剔除进
 // 进程内 capture；因此这里是恢复 bearer token 的最后一道宿主边界。capture 本身只证明某个
 // Agent 进程曾收到过 Helper 凭据，不能证明当前传入的 server 就是官方 zcode-cua：
@@ -47,10 +48,7 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
       throw new Error("Plugin server file does not exist.");
     }
     const controlOnly = serverArgs.includes(ZODY_NODE_REPL_CONTROL_FLAG);
-    if (
-      controlOnly &&
-      (serverArgs.length !== 1 || serverArgs[0] !== ZODY_NODE_REPL_CONTROL_FLAG)
-    ) {
+    if (controlOnly && (serverArgs.length !== 1 || serverArgs[0] !== ZODY_NODE_REPL_CONTROL_FLAG)) {
       // control-only 只允许一个非秘密 mode flag；任何额外参数都不能被解释为脚本、路径或凭据。
       throw new Error("Control-only plugin host does not accept additional arguments.");
     }

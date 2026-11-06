@@ -611,6 +611,79 @@ describe("settingsSyncService plugins import", () => {
     expect(config.plugins?.dirs).toEqual([importedPath]);
   });
 
+  // R54：设置同步扫描与其他发现方共用“新格式优先、旧格式仅缺失回退”。
+  it("discovers plugin metadata from the new-format manifest and prefers it over legacy", async () => {
+    const home = makeTempHome();
+    const workspacePath = join(home, "workspace");
+    process.env.HOME = home;
+    const pluginsRoot = join(home, ".claude", "plugins");
+    writePlugin(
+      pluginsRoot,
+      "canonical-plugin",
+      { description: "new", name: "canonical-plugin", version: "2.0.0" },
+      ".zody-plugin",
+    );
+    writePlugin(
+      pluginsRoot,
+      "canonical-plugin",
+      { description: "legacy", name: "legacy-plugin", version: "1.0.0" },
+      ".zcode-plugin",
+    );
+    const { createSettingsSyncService } =
+      await import("../src/settings-sync/settingsSyncService.js");
+    const service = createSettingsSyncService({ settingService: createSettingService() });
+
+    const discovery = await service.detect({
+      workspacePath,
+      categories: ["plugins"],
+      intent: "manualImport",
+    });
+
+    expect(discovery.agents[0]?.categories[0]).toMatchObject({
+      discoveredCount: 1,
+      importableCount: 1,
+      sourceRoots: [
+        expect.objectContaining({
+          plugins: [
+            expect.objectContaining({
+              name: "canonical-plugin",
+              version: "2.0.0",
+            }),
+          ],
+        }),
+      ],
+    });
+  });
+
+  // R54：新格式存在但非法 → 该插件不可导入，不回退旧格式元数据。
+  it("skips a plugin whose new-format manifest is invalid instead of using legacy metadata", async () => {
+    const home = makeTempHome();
+    const workspacePath = join(home, "workspace");
+    process.env.HOME = home;
+    const pluginsRoot = join(home, ".claude", "plugins");
+    const pluginDir = join(pluginsRoot, "broken-plugin");
+    writePlugin(
+      pluginsRoot,
+      "broken-plugin",
+      { description: "legacy", name: "legacy-plugin", version: "1.0.0" },
+      ".zcode-plugin",
+    );
+    mkdirSync(join(pluginDir, ".zody-plugin"), { recursive: true });
+    writeFileSync(join(pluginDir, ".zody-plugin", "plugin.json"), "{ not json", "utf-8");
+    const { createSettingsSyncService } =
+      await import("../src/settings-sync/settingsSyncService.js");
+    const service = createSettingsSyncService({ settingService: createSettingService() });
+
+    const discovery = await service.detect({
+      workspacePath,
+      categories: ["plugins"],
+      intent: "manualImport",
+    });
+
+    // 目录里有 manifest 但新格式不可解析：没有可导入插件，也不回退旧格式。
+    expect(discovery.agents).toEqual([]);
+  });
+
   it("imports Claude-manifest plugins into the requested project target as copies", async () => {
     const home = makeTempHome();
     const workspacePath = join(home, "workspace");

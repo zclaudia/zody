@@ -7,7 +7,7 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createConfig } from "@zody/adapters/config";
 import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS } from "@zody/shared";
-import { ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts";
+import { ZODY_PLUGIN_HOST_COMMAND } from "@zody/contracts";
 import type { Logger } from "@zody/contracts";
 import { describe, expect, it, vi } from "vitest";
 import { resolveStartupPlugins } from "../src/app/startup-marks.js";
@@ -1581,6 +1581,159 @@ describe("ZCode plugins", () => {
     }
   });
 
+  // R54 升级闭环：旧缓存 marker 与当前 seed 一致，但 manifest 仍是旧隐藏命令的渲染结果。
+  // 首跑必须把重渲染结果写入 `.zody-plugin/plugin.json`，旧 `.zcode-plugin` 字节保持不变。
+  it("re-renders a legacy cached official manifest into .zody-plugin on the first run", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zody-bootstrap-plugin-manifest-upgrade-"));
+    const entryRoot = join(root, "resources", "glm");
+    const pluginStorageRoot = join(root, "plugins");
+    const pluginRoot = join(entryRoot, "packages", "android-emulator-plugin");
+    const targetRoot = join(pluginStorageRoot, OFFICIAL_ANDROID_PLUGIN_CACHE_PATH);
+    const originalEntrypoint = process.argv[1];
+
+    try {
+      await writeTestFile(join(entryRoot, "zody.cjs"), "");
+      // 种子源仍是旧格式；android-emulator 没有 requiredSeedPaths，fixture 足够轻量。
+      await writeTestFile(
+        join(pluginRoot, ".zcode-plugin", "plugin.json"),
+        JSON.stringify({
+          mcpServers: {
+            "android-emulator": {
+              args: ["dist/mcp/server.js"],
+              command: "node",
+              type: "stdio",
+            },
+          },
+          name: "android-emulator",
+          version: "0.1.0",
+        }),
+      );
+      const seedFiles = await hashFixtureSeedFiles(pluginRoot, [".zcode-plugin/plugin.json"]);
+      const legacyContents = `${JSON.stringify(
+        {
+          mcpServers: {
+            "android-emulator": {
+              args: ["zody.cjs", "__zcode-plugin-host", "dist/mcp/server.js"],
+              command: "old-node",
+              type: "stdio",
+            },
+          },
+          name: "android-emulator",
+          version: "0.1.0",
+        },
+        null,
+        2,
+      )}\n`;
+      await writeTestFile(join(targetRoot, ".zcode-plugin", "plugin.json"), legacyContents);
+      await writeTestFile(
+        join(targetRoot, ".zody-plugin-seed.json"),
+        JSON.stringify({
+          hash: hashText(
+            JSON.stringify(seedFiles.map(({ path, sha256 }) => [path, sha256, 0o644])),
+          ),
+          marketplace: "zcode-plugins-official",
+          plugin: "android-emulator",
+          pluginVersion: "0.1.0",
+          source: "filesystem",
+          version: 1,
+        }),
+      );
+
+      process.argv[1] = join(entryRoot, "zody.cjs");
+      resolveOfficialPluginRoots({ storageRoot: pluginStorageRoot });
+
+      const canonicalContents = await readFile(
+        join(targetRoot, ".zody-plugin", "plugin.json"),
+        "utf8",
+      );
+      expect(canonicalContents).toContain(ZODY_PLUGIN_HOST_COMMAND);
+      expect(canonicalContents).not.toContain("__zcode-plugin-host");
+      expect(await readFile(join(targetRoot, ".zcode-plugin", "plugin.json"), "utf8")).toBe(
+        legacyContents,
+      );
+    } finally {
+      process.argv[1] = originalEntrypoint;
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  // R54 seed 源兼容：新格式源包（不带 `.zcode-plugin`）也要被识别并原样进入缓存白名单。
+  it("seeds an official plugin that ships only the new manifest format", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zody-bootstrap-plugin-new-manifest-"));
+    const entryRoot = join(root, "resources", "glm");
+    const pluginStorageRoot = join(root, "plugins");
+    const pluginRoot = join(entryRoot, "packages", "android-emulator-plugin");
+    const targetRoot = join(pluginStorageRoot, OFFICIAL_ANDROID_PLUGIN_CACHE_PATH);
+    const originalEntrypoint = process.argv[1];
+
+    try {
+      await writeTestFile(join(entryRoot, "zody.cjs"), "");
+      await writeTestFile(
+        join(pluginRoot, ".zody-plugin", "plugin.json"),
+        JSON.stringify({ name: "android-emulator", version: "0.1.0" }),
+      );
+
+      process.argv[1] = join(entryRoot, "zody.cjs");
+      resolveOfficialPluginRoots({ storageRoot: pluginStorageRoot });
+
+      expect(existsSync(join(targetRoot, ".zody-plugin", "plugin.json"))).toBe(true);
+      expect(existsSync(join(targetRoot, ".zcode-plugin", "plugin.json"))).toBe(false);
+      expect(existsSync(join(targetRoot, ".zody-plugin-seed.json"))).toBe(true);
+    } finally {
+      process.argv[1] = originalEntrypoint;
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  // R54 新旧并存：seed 描述只取新格式，不合并旧格式字段。
+  it("prefers the new-format manifest description when both formats exist", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zody-bootstrap-plugin-both-manifests-"));
+    const entryRoot = join(root, "resources", "glm");
+    const pluginStorageRoot = join(root, "plugins");
+    const pluginRoot = join(entryRoot, "packages", "android-emulator-plugin");
+    const originalEntrypoint = process.argv[1];
+
+    try {
+      await writeTestFile(join(entryRoot, "zody.cjs"), "");
+      await writeTestFile(
+        join(pluginRoot, ".zody-plugin", "plugin.json"),
+        JSON.stringify({
+          description: "new-format-description",
+          name: "android-emulator",
+          version: "0.1.0",
+        }),
+      );
+      await writeTestFile(
+        join(pluginRoot, ".zcode-plugin", "plugin.json"),
+        JSON.stringify({
+          description: "legacy-format-description",
+          name: "android-emulator",
+          version: "0.1.0",
+        }),
+      );
+
+      process.argv[1] = join(entryRoot, "zody.cjs");
+      resolveOfficialPluginRoots({ storageRoot: pluginStorageRoot });
+
+      const marketplace = await readFile(
+        join(pluginStorageRoot, "marketplaces", "zcode-plugins-official", "marketplace.json"),
+        "utf8",
+      );
+      expect(marketplace).toContain("new-format-description");
+      expect(marketplace).not.toContain("legacy-format-description");
+      // 两个目录都随 seed 进入缓存；运行期重写只写新格式。
+      expect(
+        existsSync(join(pluginStorageRoot, OFFICIAL_ANDROID_PLUGIN_CACHE_PATH, ".zody-plugin")),
+      ).toBe(true);
+      expect(
+        existsSync(join(pluginStorageRoot, OFFICIAL_ANDROID_PLUGIN_CACHE_PATH, ".zcode-plugin")),
+      ).toBe(true);
+    } finally {
+      process.argv[1] = originalEntrypoint;
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
   it("does not ship restore-legacy-sessions as an official plugin even when enabled in config", async () => {
     // Zody 首发不再随发行提供 restore-legacy-sessions：官方定义中移除后，即使旧配置启用它也不会被解析出来。
     expect(
@@ -1672,8 +1825,8 @@ describe("ZCode plugins", () => {
           IOS_SIM_UI_BACKEND: "auto",
         },
       });
-      expect(server?.args).toContain(ZCODE_PLUGIN_HOST_COMMAND);
-      expect(server?.args?.at(-2)).toBe(ZCODE_PLUGIN_HOST_COMMAND);
+      expect(server?.args).toContain(ZODY_PLUGIN_HOST_COMMAND);
+      expect(server?.args?.at(-2)).toBe(ZODY_PLUGIN_HOST_COMMAND);
       expect(server?.args?.at(-1)).toContain(
         join(
           "cache",
@@ -1770,8 +1923,8 @@ describe("ZCode plugins", () => {
       ]) {
         expect(server?.env).not.toHaveProperty(unusedEnv);
       }
-      expect(server?.args).toContain(ZCODE_PLUGIN_HOST_COMMAND);
-      expect(server?.args?.at(-2)).toBe(ZCODE_PLUGIN_HOST_COMMAND);
+      expect(server?.args).toContain(ZODY_PLUGIN_HOST_COMMAND);
+      expect(server?.args?.at(-2)).toBe(ZODY_PLUGIN_HOST_COMMAND);
       expect(server?.args?.at(-1)).toContain(
         join(
           "cache",

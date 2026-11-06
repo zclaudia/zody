@@ -494,6 +494,91 @@ describe("NodeSkillAdapter", () => {
     },
   );
 
+  it("prefers the new-format plugin manifest over legacy formats for the skill alias", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-plugin-skills-canonical-"));
+    const pluginRoot = join(dir, "plugin");
+    const skillRoot = join(pluginRoot, "skills");
+    const skillDir = join(skillRoot, "demo");
+    const roots = [
+      {
+        path: skillRoot,
+        scope: "system" as const,
+        source: "plugin" as const,
+        priority: 0,
+      },
+    ];
+
+    try {
+      await mkdir(skillDir, { recursive: true });
+      await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+      await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+      await writeFile(
+        join(pluginRoot, ".zody-plugin", "plugin.json"),
+        JSON.stringify({ name: "new-format-plugin" }),
+      );
+      await writeFile(
+        join(pluginRoot, ".zcode-plugin", "plugin.json"),
+        JSON.stringify({ name: "legacy-format-plugin" }),
+      );
+      await writeSkill(skillDir, "demo", "Demo skill");
+
+      const adapter = createNodeSkillAdapter({ homeDirectory: join(dir, "home") });
+      const outcome = await adapter.discoverSkills({ roots, workingDirectory: dir });
+
+      expect(outcome.skills[0]).toMatchObject({
+        pluginName: "new-format-plugin",
+        qualifiedName: "new-format-plugin:demo",
+      });
+      expect(outcome.diagnostics).toEqual([]);
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
+  it("stops plugin alias ascent when the new-format manifest is invalid", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zcode-plugin-skills-canonical-invalid-"));
+    const pluginRoot = join(dir, "plugin");
+    const skillRoot = join(pluginRoot, "skills");
+    const skillDir = join(skillRoot, "demo");
+    const roots = [
+      {
+        path: skillRoot,
+        scope: "system" as const,
+        source: "plugin" as const,
+        priority: 0,
+      },
+    ];
+
+    try {
+      await mkdir(skillDir, { recursive: true });
+      await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+      await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+      // 新格式存在但非法：不得回退旧格式，也不得继续上溯更高祖先。
+      await writeFile(join(pluginRoot, ".zody-plugin", "plugin.json"), "{ not json");
+      await writeFile(
+        join(pluginRoot, ".zcode-plugin", "plugin.json"),
+        JSON.stringify({ name: "legacy-format-plugin" }),
+      );
+      await writeSkill(skillDir, "demo", "Demo skill");
+
+      const adapter = createNodeSkillAdapter({ homeDirectory: join(dir, "home") });
+      const outcome = await adapter.discoverSkills({ roots, workingDirectory: dir });
+      const skill = outcome.skills[0];
+
+      expect(skill?.pluginName).toBeUndefined();
+      expect(skill?.qualifiedName).toBeUndefined();
+      expect(outcome.diagnostics.filter((item) => item.code === "skill_scan_failed")).toEqual([
+        expect.objectContaining({
+          message: expect.stringContaining(join(pluginRoot, ".zody-plugin", "plugin.json")),
+          path: join(pluginRoot, ".zody-plugin", "plugin.json"),
+          severity: "warning",
+        }),
+      ]);
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
   it("ignores node_modules and dot directories directly under a skill root", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-skills-"));
     const skillsRoot = join(dir, ".zcode", "skills");

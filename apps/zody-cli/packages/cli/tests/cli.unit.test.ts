@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { ZODY_OFFICIAL_PLUGIN_MARKETPLACE, ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts";
+import { ZODY_OFFICIAL_PLUGIN_MARKETPLACE, ZODY_PLUGIN_HOST_COMMAND } from "@zody/contracts";
 import {
   ZODY_CUA_OFFICIAL_PLUGIN_ID,
   ZODY_CUA_NODE_REPL_HOST_ENV_KEY,
@@ -34,7 +34,7 @@ import {
 import type { CommandCenterTarget } from "../src/command-center.js";
 import { findDotenv, loadCliDotenv, prepareCliRuntimeEnv } from "../src/env.js";
 import { runPluginsCommand } from "../src/plugins-command.js";
-import { runPluginHostCommand } from "../src/plugin-host-command.js";
+import { isPluginHostInvocation, runPluginHostCommand } from "../src/plugin-host-command.js";
 import { CLI_PROCESS_NAME, setCliProcessTitle } from "../src/process-name.js";
 import { loadCliPlaywrightChromium } from "../src/sea-playwright-runtime.js";
 import { interceptKnownRuntimeWarnings } from "../src/runtime-warnings.js";
@@ -136,9 +136,7 @@ const createTestModelOption = (
 });
 
 /** 至少一个未禁用的模型，表示 Provider/账号已可用，普通 prompt 不会被登录提示拦截。 */
-const selectableTestModels = (): ZodyModelOption[] => [
-  createTestModelOption("openai", "gpt-test"),
-];
+const selectableTestModels = (): ZodyModelOption[] => [createTestModelOption("openai", "gpt-test")];
 
 /**
  * 真实 runTui 先绘制启动屏，再调用 loadStartupOptions 并把结果合并进 TUI 选项；
@@ -3820,7 +3818,7 @@ export async function main() {
     );
 
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
-    const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
+    const ctx = createContext([ZODY_PLUGIN_HOST_COMMAND, serverPath]);
     const exitCode = await run(ctx);
 
     assert.equal(exitCode, 0);
@@ -3874,7 +3872,7 @@ export async function main() {
     sanitizeZodyRuntimeEnvInPlace(process.env);
     assert.equal(process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
-    const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
+    const ctx = createContext([ZODY_PLUGIN_HOST_COMMAND, serverPath]);
     const exitCode = await runPluginHostCommand(ctx, [
       serverPath,
       "--permission-broker-socket",
@@ -3934,7 +3932,7 @@ export async function main() {
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
-    const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
+    const ctx = createContext([ZODY_PLUGIN_HOST_COMMAND, serverPath]);
     assert.equal(await runPluginHostCommand(ctx, [serverPath]), 0);
     // identity 模式：恢复给宿主的只有 socket（配 authority），没有口令。环境里那个遗留
     // token 是历史键，sanitize 会连它一起剔除，因此宿主根本看不到它 —— 否则旧版 Helper
@@ -3998,7 +3996,7 @@ export async function main() {
     resetCapturedZodyCuaBrokerCredentialsForTest();
     sanitizeZodyRuntimeEnvInPlace(process.env);
 
-    const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath]);
+    const ctx = createContext([ZODY_PLUGIN_HOST_COMMAND, serverPath]);
     assert.equal(await runPluginHostCommand(ctx, [serverPath]), 0);
     assert.deepEqual(JSON.parse(await readFile(outputPath, "utf8")), {
       socket: "/tmp/cua-broker.sock",
@@ -4049,7 +4047,7 @@ export async function main() {
     assert.equal(process.env[ZODY_CUA_PLUGIN_AUTHORITY_ENV_KEY], undefined);
 
     const ctx = createContext([
-      ZCODE_PLUGIN_HOST_COMMAND,
+      ZODY_PLUGIN_HOST_COMMAND,
       serverPath,
       "--permission-broker-socket",
       "/tmp/cua-broker.sock",
@@ -4090,7 +4088,7 @@ export async function main() {
     );
 
     process.env.ZCODE_PLUGIN_HOST_TEST_OUTPUT = outputPath;
-    const ctx = createContext([ZCODE_PLUGIN_HOST_COMMAND, serverPath, "--", "hello"]);
+    const ctx = createContext([ZODY_PLUGIN_HOST_COMMAND, serverPath, "--", "hello"]);
     const exitCode = await run(ctx);
 
     assert.equal(exitCode, 0);
@@ -4127,7 +4125,7 @@ test("plugin host stays alive past the one-shot CLI watchdog deadline", async ()
 
     child = spawn(
       process.execPath,
-      ["--import", tsxLoaderPath, cliEntryPath, ZCODE_PLUGIN_HOST_COMMAND, serverPath],
+      ["--import", tsxLoaderPath, cliEntryPath, ZODY_PLUGIN_HOST_COMMAND, serverPath],
       {
         env: process.env,
         stdio: ["pipe", "pipe", "pipe"],
@@ -4199,7 +4197,7 @@ test("failed plugin host still exits when initialization leaves stdin active", a
 
     child = spawn(
       process.execPath,
-      ["--import", tsxLoaderPath, cliEntryPath, ZCODE_PLUGIN_HOST_COMMAND, serverPath],
+      ["--import", tsxLoaderPath, cliEntryPath, ZODY_PLUGIN_HOST_COMMAND, serverPath],
       {
         env: process.env,
         stdio: ["pipe", "pipe", "pipe"],
@@ -6246,4 +6244,10 @@ test("headless rollout-off diagnostics preserve the runtime feature-disabled rea
 
   assert.equal(exitCode, 0);
   assert.match(ctx.stderr.output(), /Workspace Hooks skipped: workspace_hooks_feature_disabled/);
+});
+
+test("plugin host dispatch accepts only the new hidden command", () => {
+  // R54 硬切：父进程与同版本子进程使用同一命令，旧值不设别名。
+  assert.equal(isPluginHostInvocation([ZODY_PLUGIN_HOST_COMMAND, "server.js"]), true);
+  assert.equal(isPluginHostInvocation(["__zcode-plugin-host", "server.js"]), false);
 });

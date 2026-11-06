@@ -17187,8 +17187,50 @@
       "docs/plans/zody-full-divergence-rename-survey.md"
     ],
     "writeSet": [
-      "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
-      "docs/plans/zody-rename-execution/reports/R54.md"
+      "apps/zody-cli/packages/adapters/src/plugins/index.ts",
+      "apps/zody-cli/packages/adapters/src/plugins/marketplace.ts",
+      "apps/zody-cli/packages/adapters/src/plugins/zip-source.ts",
+      "apps/zody-cli/packages/adapters/src/skills/index.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/bundled-plugins.ts",
+      "packages/server/src/remote/zodyAgentOfficialPluginAssets.ts",
+      "packages/server/src/remote/zodyAgentDevDeploy.ts",
+      "apps/zody-cli/packages/bootstrap/src/mcp-config.ts",
+      "packages/services/src/plugin-sync/pluginSyncService.ts",
+      "packages/services/src/skills/skillsService.ts",
+      "packages/services/src/commands/commandsService.ts",
+      "packages/services/src/subagents/subagentsService.ts",
+      "packages/services/src/settings-sync/settingsSyncService.ts",
+      "apps/zody-cli/packages/contracts/src/plugins/index.ts",
+      "apps/zody-cli/packages/cli/src/plugin-host-command.ts",
+      "apps/zody-cli/packages/node-repl-host/src/subprocess-launch.ts",
+      "apps/zody-cli/packages/adapters/src/mcp/control-only-contract.ts",
+      "apps/zody-cli/packages/node-repl-host/CONTRACT.md",
+      "apps/zody-cli/docs/design/v2/plugin-compat.md",
+      "apps/zody-cli/docs/design/v2/sea-cross-target-packaging.md",
+      "apps/zody-cli/packages/bootstrap/tests/plugins.test.ts",
+      "apps/zody-cli/packages/bootstrap/tests/official-plugin-runtime.test.ts",
+      "apps/zody-cli/packages/adapters/tests/plugins.test.ts",
+      "apps/zody-cli/packages/adapters/tests/skills.test.ts",
+      "apps/zody-cli/packages/adapters/tests/control-only-launcher.test.ts",
+      "apps/zody-cli/packages/cli/tests/cli.unit.test.ts",
+      "apps/zody-cli/packages/cli/tests/zody-cua-plugin-host-authority.node-test.ts",
+      "apps/zody-cli/packages/cli/tests/process-errors.test.ts",
+      "apps/zody-cli/packages/cli/tests/plugin-host-entry.test.mjs",
+      "apps/zody-cli/packages/node-repl-host/test/subprocess-launch.test.ts",
+      "packages/services/test/pluginSyncService.test.ts",
+      "packages/services/test/skillsService.test.ts",
+      "packages/services/test/commandsService.test.ts",
+      "packages/services/test/subagentsService.test.ts",
+      "packages/services/test/settingsSyncService.test.ts",
+      "packages/server/test/remoteAssetInstaller.test.ts",
+      "specs/zody-rename-plugin-install.md",
+      "packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-install.test.ts",
+      "packages/desktop/test/e2e/fixtures/cases/plugins/zody-rename-plugin-install.json",
+      "packages/desktop/test/e2e/fixtures/upstream/plugin-management/zody-rename-plugin-install.json",
+      "docs/plans/zody-rename-execution/reports/R54.md",
+      "UI_PLUGIN.md",
+      "UI_PLUGIN.en.md"
     ],
     "excludeSet": [
       "其他任务独占文件",
@@ -17199,8 +17241,8 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R54.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已按预案落锁（2026-11-06，基线 2603092574f716ef556f77700557b270132e4760，六项裁定 O1–O6 见台账）：writeSet 取 w7-dispatch-proposal.md §2.1 全项（43 路径 = A4 manifest 发现/加载 + B5 seed/official runtime/打包 + C5 services 同步与组件发现 + D7 隐藏命令闭包 4 源 3 文档 + E16 测试 + F4 spec/E2E/fixture/报告 + G2 UI_PLUGIN 行级），另经主控升级 dwfq-378e03ba-1 增补第 44 条 `packages/desktop/test/e2e/fixtures/upstream/plugin-management/zody-rename-plugin-install.json`（`scripts/check-e2e-fixtures.mjs` 的 `fixturePaths` 固定契约要求 `upstream/plugin-management/<caseName>.json`，空 provider 最小形状 `fixtures: []`，不作为扩大其他文件的先例）。发现规则：`.zody-plugin/plugin.json` 前置探测、存在即唯一 manifest、非法按各 owner 既有语义失败且不回退，缺失才回退 `.zcode-plugin` 及其后既有顺序；旧格式字节保留（R30 preserve-legacy-discovery）。`ZCODE_PLUGIN_HOST_COMMAND → ZODY_PLUGIN_HOST_COMMAND`（值 `__zody-plugin-host`）硬切、旧值不设别名，随组 D/E 同批，升级靠 S4 重渲染写入新路径闭环。R60 冻结副本（`packages/desktop/native/macos-cua-driver-closure/**`）、dist 生成物、shared 三契约（R50 冻结）与 R55 env/模板文件不在集合；UI_PLUGIN 仅 :286 及英文对应行的 manifest 安装清单句。R54.2 结束把 official runtime（official-plugin-runtime.ts + bundled-plugins.ts）文件锁移交 R55。R54 未执行：RENAME-PLUGIN-INSTALL E2E 实跑（归 R56）、真实 sandbox、远端真实部署、Windows、跨版本混布宿主读新缓存（预案 §2.7 D 档）。scopeStatus 取现有 reviewable-dispatch-scope（主控授权可派发）；原生独立验收 PASS 见台账 W7 R54 closure 节，R54 通过不等于 R56/发布。",
     "structureScope": [
       "CLI 插件发现、bootstrap bundled/official runtime、services plugin-sync 和测试"
     ]

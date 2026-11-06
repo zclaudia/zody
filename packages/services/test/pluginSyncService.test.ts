@@ -99,6 +99,71 @@ describe("plugin sync service", () => {
     expect(result.maxArchiveBytes).toBeGreaterThan(0);
   });
 
+  // R54：同步入口与其他发现方共用“新格式优先、旧格式仅缺失回退”。
+  it("discovers inline plugins from the new-format manifest and prefers it over legacy", async () => {
+    const home = makeHome();
+    process.env.HOME = home;
+    const pluginRoot = join(home, "external", "canonical-tools");
+    await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+    await writeFile(
+      join(pluginRoot, ".zody-plugin", "plugin.json"),
+      `${JSON.stringify(
+        {
+          description: "new format",
+          name: "canonical-tools",
+          skills: "skills",
+          version: "2.0.0",
+        },
+        null,
+        2,
+      )}\n`,
+      "utf-8",
+    );
+    await writeFile(
+      join(pluginRoot, ".zcode-plugin", "plugin.json"),
+      `${JSON.stringify(
+        { description: "legacy format", name: "legacy-tools", version: "1.0.0" },
+        null,
+        2,
+      )}\n`,
+      "utf-8",
+    );
+    await writeZcodeUserConfig(home, { plugins: { dirs: [pluginRoot], enabledPlugins: {} } });
+
+    const result = await createPluginSyncService().listLocalUserPluginCandidates();
+
+    expect(result.candidates).toMatchObject([
+      {
+        description: "new format",
+        directoryName: "canonical-tools",
+        name: "canonical-tools",
+        pluginId: "canonical-tools@inline",
+        version: "2.0.0",
+      },
+    ]);
+  });
+
+  // R54：新格式存在但非法 → 该插件不可同步，不回退旧格式。
+  it("does not sync an inline plugin whose new-format manifest is invalid", async () => {
+    const home = makeHome();
+    process.env.HOME = home;
+    const pluginRoot = join(home, "external", "broken-tools");
+    await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+    await writeFile(join(pluginRoot, ".zody-plugin", "plugin.json"), "{ not json", "utf-8");
+    await writeFile(
+      join(pluginRoot, ".zcode-plugin", "plugin.json"),
+      `${JSON.stringify({ name: "legacy-tools", version: "1.0.0" })}\n`,
+      "utf-8",
+    );
+    await writeZcodeUserConfig(home, { plugins: { dirs: [pluginRoot], enabledPlugins: {} } });
+
+    const result = await createPluginSyncService().listLocalUserPluginCandidates();
+
+    expect(result.candidates).toEqual([]);
+  });
+
   it("checks remote plugin and config directory write access before sync", async () => {
     const remoteHome = makeHome();
     process.env.HOME = remoteHome;

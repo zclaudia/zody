@@ -1,8 +1,8 @@
-import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import {
   ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
-  ZCODE_PLUGIN_HOST_COMMAND,
+  ZODY_PLUGIN_HOST_COMMAND,
   type McpServerConfig,
 } from "@zody/contracts";
 import { ZODY_PLUGIN_ID_ENV_KEY } from "@zody/shared";
@@ -15,6 +15,25 @@ import {
 type SeaModule = typeof import("node:sea");
 
 const MCP_SERVER_RELATIVE_PATH = ["dist", "mcp", "server.js"] as const;
+// R54：运行期重写目标固定为新格式；旧 `.zcode-plugin/plugin.json` 只作渲染源回退，
+// 字节保留（R30 preserve-legacy-discovery）。
+const CANONICAL_PLUGIN_MANIFEST_SEGMENTS = [".zody-plugin", "plugin.json"] as const;
+const LEGACY_PLUGIN_MANIFEST_SEGMENTS = [".zcode-plugin", "plugin.json"] as const;
+
+function canonicalPluginManifestPath(rootPath: string): string {
+  return join(rootPath, ...CANONICAL_PLUGIN_MANIFEST_SEGMENTS);
+}
+
+/**
+ * 按 S1 优先规则选择渲染源：新格式存在即唯一 manifest，否则回退旧格式。
+ * 新格式存在但不可读时直接抛错，不静默改用旧格式（不合并 manifest）。
+ */
+function resolveRuntimeManifestReadPath(rootPath: string): string {
+  const canonicalPath = canonicalPluginManifestPath(rootPath);
+  return existsSync(canonicalPath)
+    ? canonicalPath
+    : join(rootPath, ...LEGACY_PLUGIN_MANIFEST_SEGMENTS);
+}
 
 export function createBundledMcpRuntimeConfig(input: {
   cwd: string;
@@ -49,13 +68,18 @@ interface OfficialRuntimeManifestInput {
 }
 
 export function writeOfficialPluginRuntimeManifest(input: OfficialRuntimeManifestInput): void {
-  const manifestPath = join(input.rootPath, ".zcode-plugin", "plugin.json");
-  const currentContents = readFileSync(manifestPath, "utf8");
+  const manifestPath = canonicalPluginManifestPath(input.rootPath);
+  // 升级首跑：旧缓存只有 `.zcode-plugin/plugin.json`（内含旧隐藏命令），此时以它为渲染源，
+  // 结果写入新路径；旧文件字节保持不动，发现层按 S1 读新路径得到重渲染后的命令。
+  const currentContents = readFileSync(resolveRuntimeManifestReadPath(input.rootPath), "utf8");
   const nextContents = renderOfficialPluginRuntimeManifest(input, currentContents);
   if (nextContents === undefined) return;
   // 启动时无条件 rename 同内容的 plugin.json 会放大 Windows 杀毒/索引器
   // 的短暂文件占用。字节完全一致时不触碰文件；真正有更新时仍保持原子的失败语义。
   if (nextContents === currentContents) return;
+  // 升级首跑时缓存里只有旧格式目录；新目标目录必须由这里补齐，否则临时文件 rename
+  // 会以 ENOENT 失败并被 seed 降级路径吞成“可用旧缓存”，重渲染永远不会发生。
+  mkdirSync(dirname(manifestPath), { recursive: true });
   writeTextFileAtomicallyWithRetry(
     manifestPath,
     nextContents,
@@ -72,7 +96,9 @@ export function isOfficialPluginRuntimeManifestCurrent(
   input: OfficialRuntimeManifestInput,
 ): boolean {
   try {
-    const manifestPath = join(input.rootPath, ".zcode-plugin", "plugin.json");
+    // 只读“目标路径”决定是否可复用：旧缓存只有 `.zcode-plugin/plugin.json` 时读新路径
+    // 必然 ENOENT → 返回 false，进入慢路径触发重渲染并写入新路径（升级闭环）。
+    const manifestPath = canonicalPluginManifestPath(input.rootPath);
     const currentContents = readFileSync(manifestPath, "utf8");
     const nextContents = renderOfficialPluginRuntimeManifest(input, currentContents);
     return nextContents === undefined || nextContents === currentContents;
@@ -120,12 +146,12 @@ function renderOfficialPluginRuntimeManifest(
 }
 
 export function officialPluginHostPrefixArgs(): string[] | undefined {
-  if (isSeaRuntime()) return [ZCODE_PLUGIN_HOST_COMMAND];
+  if (isSeaRuntime()) return [ZODY_PLUGIN_HOST_COMMAND];
 
   const entrypoint = process.argv[1];
   if (!entrypoint) return undefined;
 
-  return [...process.execArgv, resolve(entrypoint), ZCODE_PLUGIN_HOST_COMMAND];
+  return [...process.execArgv, resolve(entrypoint), ZODY_PLUGIN_HOST_COMMAND];
 }
 
 function isSeaRuntime(): boolean {

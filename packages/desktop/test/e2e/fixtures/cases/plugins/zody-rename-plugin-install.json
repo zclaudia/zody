@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "caseName": "zody-rename-plugin-install",
+  "spec": "./test/e2e/plugins/zody-rename-plugin-install.test.ts",
+  "providerFixtures": [],
+  "providerRequestPolicy": "none",
+  "fileFixtures": [
+    "runtime-generated directory marketplace under the E2E app home fixtures root: plugins with .zcode-plugin-only, .zody-plugin + .zcode-plugin, and invalid .zody-plugin + valid .zcode-plugin manifests",
+    "seeded official plugin cache under ~/.zody/cli/plugins/cache/zcode-plugins-official for the first-seed assertion"
+  ],
+  "requests": []
+}

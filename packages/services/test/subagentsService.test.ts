@@ -255,6 +255,103 @@ describe("subagent markdown helpers", () => {
     expect((await service.list({ workspacePath, provider: "glm" })).pluginAgents).toEqual([]);
   });
 
+  // R54：新格式优先；旧格式声明的 agents 不得合并进来。
+  it("reads plugin agents from the new-format manifest without merging legacy fields", async () => {
+    const home = await makeTempHome();
+    const pluginRoot = join(home, "installed", "canonical-plugin");
+    const pluginStorage = join(home, ".zody", "cli", "plugins");
+    await mkdir(join(pluginRoot, "canonical-agents"), { recursive: true });
+    await mkdir(join(pluginRoot, "legacy-agents"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+    await mkdir(pluginStorage, { recursive: true });
+    await writeFile(
+      join(pluginRoot, ".zody-plugin", "plugin.json"),
+      JSON.stringify({ agents: "canonical-agents", name: "canonical-plugin", version: "2.0.0" }),
+    );
+    await writeFile(
+      join(pluginRoot, ".zcode-plugin", "plugin.json"),
+      JSON.stringify({ agents: "legacy-agents", name: "legacy-plugin", version: "1.0.0" }),
+    );
+    await writeFile(
+      join(pluginRoot, "canonical-agents", "canonical-agent.md"),
+      "---\nname: canonical-agent\ndescription: canonical\n---\nBody",
+    );
+    await writeFile(
+      join(pluginRoot, "legacy-agents", "legacy-agent.md"),
+      "---\nname: legacy-agent\ndescription: legacy\n---\nBody",
+    );
+    await writeFile(
+      join(pluginStorage, "installed_plugins.json"),
+      JSON.stringify({
+        version: 1,
+        plugins: [
+          {
+            id: "canonical-plugin@personal",
+            installPath: pluginRoot,
+            name: "canonical-plugin",
+            scope: "user",
+          },
+        ],
+      }),
+    );
+    await writeFile(
+      join(home, ".zody", "cli", "config.json"),
+      JSON.stringify({ plugins: { enabledPlugins: { "canonical-plugin@personal": true } } }),
+    );
+
+    const service = createSubagentsService({ homeDir: home, isDesktopRuntime: true });
+    const result = await service.list({ provider: "glm", workspacePath: join(home, "workspace") });
+
+    expect(result.pluginAgents.map((agent) => agent.name)).toEqual([
+      "canonical-plugin:canonical-agent",
+    ]);
+    expect(result.pluginAgents[0]?.pluginName).toBe("canonical-plugin");
+  });
+
+  // R54：新格式存在但非法 → 该插件不贡献 agents，不回退旧格式。
+  it("does not fall back to legacy plugin agents when the new manifest is invalid", async () => {
+    const home = await makeTempHome();
+    const pluginRoot = join(home, "installed", "broken-plugin");
+    const pluginStorage = join(home, ".zody", "cli", "plugins");
+    await mkdir(join(pluginRoot, "legacy-agents"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+    await mkdir(pluginStorage, { recursive: true });
+    await writeFile(join(pluginRoot, ".zody-plugin", "plugin.json"), "{ not json");
+    await writeFile(
+      join(pluginRoot, ".zcode-plugin", "plugin.json"),
+      JSON.stringify({ agents: "legacy-agents", name: "broken-plugin", version: "1.0.0" }),
+    );
+    await writeFile(
+      join(pluginRoot, "legacy-agents", "legacy-agent.md"),
+      "---\nname: legacy-agent\ndescription: legacy\n---\nBody",
+    );
+    await writeFile(
+      join(pluginStorage, "installed_plugins.json"),
+      JSON.stringify({
+        version: 1,
+        plugins: [
+          {
+            id: "broken-plugin@personal",
+            installPath: pluginRoot,
+            name: "broken-plugin",
+            scope: "user",
+          },
+        ],
+      }),
+    );
+    await writeFile(
+      join(home, ".zody", "cli", "config.json"),
+      JSON.stringify({ plugins: { enabledPlugins: { "broken-plugin@personal": true } } }),
+    );
+
+    const service = createSubagentsService({ homeDir: home, isDesktopRuntime: true });
+    const result = await service.list({ provider: "glm", workspacePath: join(home, "workspace") });
+
+    expect(result.pluginAgents).toEqual([]);
+  });
+
   it("插件覆盖按稳定身份原子保存，别名一致，清除后回到未修改的插件默认", async () => {
     const home = await makeTempHome();
     const pluginRoot = join(home, "installed", "fixture");

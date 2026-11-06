@@ -27,7 +27,11 @@ const SAFE_FRONTMATTER_KEYS = new Set([
 ]);
 const DEFAULT_MAX_SKILL_BYTES = 100_000;
 const MAX_PLUGIN_MANIFEST_SEARCH_DEPTH = 5;
+// R54：新格式优先。各祖先层级维持既有遍历顺序（新 → Z → C → X → U）；新格式
+// 存在但非法时终止上溯，不继续探测旧格式（见 readPluginNameForSkillRoot）。
+const CANONICAL_PLUGIN_MANIFEST_RELATIVE_PATH = ".zody-plugin/plugin.json";
 const PLUGIN_MANIFEST_RELATIVE_PATHS = [
+  CANONICAL_PLUGIN_MANIFEST_RELATIVE_PATH,
   ".zcode-plugin/plugin.json",
   ".claude-plugin/plugin.json",
   ".codex-plugin/plugin.json",
@@ -42,7 +46,9 @@ export interface NodeSkillAdapterOptions extends SkillRootResolutionOptions {
 
 export class NodeSkillAdapter implements SkillPort {
   private readonly disabledPaths: ReadonlySet<string>;
-  private readonly pluginNameBySkillRoot = new Map<string, Promise<string | undefined>>();
+  private readonly pluginNameBySkillRoot = new Map<string, Promise<PluginNameResolution>>();
+  // 每个 plugin skill root 只发一次“新格式 manifest 非法”诊断，避免按 skill 数量重复。
+  private readonly reportedInvalidManifestRoots = new Set<string>();
 
   constructor(private readonly options: NodeSkillAdapterOptions = {}) {
     this.disabledPaths = new Set(
@@ -216,7 +222,7 @@ export class NodeSkillAdapter implements SkillPort {
 
     // 第三方/旧版 skill 常带 version、homepage 等扩展字段。
     // 这些字段不影响加载，不再作为 warning 暴露，只保留 safeToAutoLoad 的保守判断。
-    const pluginAlias = await this.resolvePluginSkillAlias(name, root);
+    const pluginAlias = await this.resolvePluginSkillAlias(name, root, diagnostics);
 
     return {
       name,
@@ -250,9 +256,15 @@ export class NodeSkillAdapter implements SkillPort {
   private async resolvePluginSkillAlias(
     skillName: string,
     root: SkillRoot,
+    diagnostics: SkillDiagnostic[],
   ): Promise<Pick<SkillMetadata, "pluginId" | "pluginName" | "qualifiedName"> | undefined> {
     if (root.source !== "plugin") return undefined;
-    const pluginName = await this.resolvePluginName(root.path);
+    const resolution = await this.resolvePluginName(root.path);
+    if (resolution.invalidManifestPath) {
+      this.reportInvalidPluginManifest(root.path, resolution.invalidManifestPath, diagnostics);
+      return undefined;
+    }
+    const pluginName = resolution.pluginName;
     if (!pluginName) return undefined;
 
     return {
@@ -262,7 +274,28 @@ export class NodeSkillAdapter implements SkillPort {
     };
   }
 
-  private async resolvePluginName(skillRootPath: string): Promise<string | undefined> {
+  /**
+   * R54：新格式 `.zody-plugin/plugin.json` 存在但非法时，skill 别名上溯必须终止且错误可见。
+   * adapters 此层没有插件级 PluginDiagnostic 通道，按预案 §5-O5 复用既有 SkillDiagnostic
+   * （`skill_scan_failed`），每个 plugin skill root 只记录一次，避免每个 skill 重复刷同一条诊断。
+   */
+  private reportInvalidPluginManifest(
+    skillRootPath: string,
+    manifestPath: string,
+    diagnostics: SkillDiagnostic[],
+  ): void {
+    const cacheKey = resolve(skillRootPath);
+    if (this.reportedInvalidManifestRoots.has(cacheKey)) return;
+    this.reportedInvalidManifestRoots.add(cacheKey);
+    diagnostics.push({
+      code: "skill_scan_failed",
+      severity: "warning",
+      message: `Plugin manifest is invalid and legacy formats are not used as fallback: ${manifestPath}`,
+      path: manifestPath,
+    });
+  }
+
+  private async resolvePluginName(skillRootPath: string): Promise<PluginNameResolution> {
     const resolvedRoot = resolve(skillRootPath);
     let cached = this.pluginNameBySkillRoot.get(resolvedRoot);
     if (!cached) {
@@ -417,30 +450,51 @@ function matchesSkillRequest(skill: SkillMetadata, requestName: string): boolean
   return skill.name === requestName || skill.qualifiedName === requestName;
 }
 
-async function readPluginNameForSkillRoot(skillRootPath: string): Promise<string | undefined> {
+/**
+ * 插件 manifest 名称解析结果：`invalidManifestPath` 表示新格式存在但不可用，
+ * 调用方必须终止上溯并呈现诊断，不能继续探测旧格式或更高层祖先。
+ */
+interface PluginNameResolution {
+  invalidManifestPath?: string;
+  pluginName?: string;
+}
+
+async function readPluginNameForSkillRoot(skillRootPath: string): Promise<PluginNameResolution> {
   let current = resolve(skillRootPath);
   for (let depth = 0; depth <= MAX_PLUGIN_MANIFEST_SEARCH_DEPTH; depth++) {
     for (const relativePath of PLUGIN_MANIFEST_RELATIVE_PATHS) {
-      const pluginName = await readPluginNameFromManifest(join(current, relativePath));
-      if (pluginName) return pluginName;
+      const manifestPath = join(current, relativePath);
+      const resolution = await readPluginNameFromManifest(manifestPath);
+      if (resolution.pluginName) return { pluginName: resolution.pluginName };
+      // R54：新格式存在但非法 → 终止上溯；不回退 `.zcode-plugin` 等其他格式（不合并字段）。
+      if (relativePath === CANONICAL_PLUGIN_MANIFEST_RELATIVE_PATH && resolution.exists) {
+        return { invalidManifestPath: manifestPath };
+      }
     }
 
     const parent = dirname(current);
     if (parent === current) break;
     current = parent;
   }
-  return undefined;
+  return {};
 }
 
-async function readPluginNameFromManifest(manifestPath: string): Promise<string | undefined> {
+async function readPluginNameFromManifest(
+  manifestPath: string,
+): Promise<{ exists: boolean; pluginName?: string }> {
+  let raw: string;
   try {
-    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as { name?: unknown };
-    return typeof manifest.name === "string" && manifest.name.trim().length > 0
-      ? manifest.name.trim()
-      : undefined;
+    raw = await readFile(manifestPath, "utf8");
   } catch (error) {
-    if (isNotFoundError(error)) return undefined;
-    return undefined;
+    // 只有“确实不存在”才允许继续探测其他格式；其余读取错误按存在但不可用处理。
+    return { exists: !isNotFoundError(error) };
+  }
+  try {
+    const manifest = JSON.parse(raw) as { name?: unknown };
+    const pluginName = typeof manifest.name === "string" ? manifest.name.trim() : "";
+    return pluginName.length > 0 ? { exists: true, pluginName } : { exists: true };
+  } catch {
+    return { exists: true };
   }
 }
 

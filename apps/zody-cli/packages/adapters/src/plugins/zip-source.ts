@@ -325,8 +325,10 @@ function resolveZipRoot(input: {
   return extractRoot;
 }
 
+// R54：存在性探测，不解析内容；新格式参与探测且排在旧格式之前，其余探测顺序不变。
 function hasPluginManifest(rootPath: string): boolean {
   return (
+    fileExists(join(rootPath, ".zody-plugin", "plugin.json")) ||
     fileExists(join(rootPath, ".zcode-plugin", "plugin.json")) ||
     fileExists(join(rootPath, ".claude-plugin", "plugin.json")) ||
     fileExists(join(rootPath, ".codex-plugin", "plugin.json"))

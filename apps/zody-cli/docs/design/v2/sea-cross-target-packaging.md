@@ -93,7 +93,8 @@ SEA config 必须显式写入：
   then extracted on startup into
   `~/.zcode/cli/plugins/cache/zcode-plugins-official/<plugin>/<version>/`.
   They must not be imported into the ZCode main bundle. Seeded official plugin
-  manifests are rewritten to use the hidden `__zcode-plugin-host` entrypoint so
+  manifests are rewritten into `.zody-plugin/plugin.json` to use the hidden
+  `__zody-plugin-host` entrypoint so
   the cached MCP server runs on the SEA-embedded Node.js runtime. Third-party
   plugins are not automatically rewritten and keep their own declared command.
   The bundled skill pack (`packages/bundled-skills/skills/**`, collected by

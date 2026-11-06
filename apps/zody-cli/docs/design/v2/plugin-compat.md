@@ -168,16 +168,18 @@ official cache path on first startup or when the embedded plugin hash changes.
 The MCP command must point at the seeded cache directory, not the source
 workspace and not a module compiled into the ZCode SEA main bundle.
 
-For bundled official plugins only, ZCode rewrites the seeded
-`.zcode-plugin/plugin.json` MCP server command at seed time. The rewritten
-command launches the current ZCode executable through the hidden
-`__zcode-plugin-host` entrypoint and asks it to import the cached MCP server file
+For bundled official plugins only, ZCode rewrites the seeded manifests at seed
+time into `.zody-plugin/plugin.json`. The existing `.zcode-plugin/plugin.json`
+is read as the render source when the new file is absent and is left
+byte-identical. The rewritten command launches the current ZCode executable
+through the hidden `__zody-plugin-host` entrypoint and asks it to import the
+cached MCP server file
 and call its exported `main()` function. In a SEA build this means the official
 plugin MCP servers run on the SEA-embedded Node.js runtime, but each server
 module is still loaded from
 `~/.zcode/cli/plugins/cache/zcode-plugins-official/...`.
 
-The CLI main entry dispatches `__zcode-plugin-host` before importing the Agent
+The CLI main entry dispatches `__zody-plugin-host` before importing the Agent
 command runner or provider initialization. It retains environment sanitization,
 SEA runtime tool preparation, product broker authorization, argument forwarding,
 and the existing success/failure shutdown policy. Hosted server arguments are

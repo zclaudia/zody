@@ -44,6 +44,18 @@ function writePluginManifest(pluginRoot: string, manifest: Record<string, unknow
   );
 }
 
+function writeCanonicalPluginManifest(
+  pluginRoot: string,
+  manifest: Record<string, unknown> | string,
+): void {
+  mkdirSync(join(pluginRoot, ".zody-plugin"), { recursive: true });
+  writeFileSync(
+    join(pluginRoot, ".zody-plugin", "plugin.json"),
+    typeof manifest === "string" ? manifest : JSON.stringify(manifest, null, 2),
+    "utf-8",
+  );
+}
+
 function writeClaudePluginManifest(pluginRoot: string, manifest: Record<string, unknown>): void {
   mkdirSync(join(pluginRoot, ".claude-plugin"), { recursive: true });
   writeFileSync(
@@ -425,6 +437,76 @@ describe("commandsService", () => {
       }),
     ]);
     expect(result.commands.map((command) => command.name)).toEqual(["/local-review", "/ios/dev"]);
+  });
+
+  // R54：新格式优先；旧格式声明的命令不得合并进来。
+  it("reads plugin commands declared by the new-format manifest without merging legacy fields", async () => {
+    const home = makeTempRoot();
+    const workspacePath = join(makeTempRoot(), "workspace");
+    const pluginRoot = officialPluginRoot(home, "canonical-commands");
+    mkdirSync(join(pluginRoot, "canonical"), { recursive: true });
+    mkdirSync(join(pluginRoot, "legacy"), { recursive: true });
+    writeFileSync(
+      join(pluginRoot, "canonical", "run.md"),
+      "---\ndescription: canonical command\n---\n\nRun canonical",
+      "utf-8",
+    );
+    writeFileSync(
+      join(pluginRoot, "legacy", "run.md"),
+      "---\ndescription: legacy command\n---\n\nRun legacy",
+      "utf-8",
+    );
+    writeCanonicalPluginManifest(pluginRoot, {
+      commands: "canonical",
+      name: "canonical-commands",
+      version: "0.2.0",
+    });
+    writePluginManifest(pluginRoot, {
+      commands: "legacy",
+      name: "legacy-commands",
+      version: "0.1.0",
+    });
+    writeCliConfig(home, {
+      plugins: { enabledPlugins: { "canonical-commands@zcode-plugins-official": true } },
+    });
+
+    const service = await createCommandsServiceInEnv(home);
+    const result = await service.list({ workspacePath });
+
+    expect(result.pluginCommands).toEqual([
+      expect.objectContaining({
+        description: "canonical command",
+        name: "/run",
+        pluginName: "canonical-commands",
+      }),
+    ]);
+  });
+
+  // R54：新格式存在但非法 → 该插件不贡献命令，不回退旧格式。
+  it("does not fall back to legacy plugin commands when the new manifest is invalid", async () => {
+    const home = makeTempRoot();
+    const workspacePath = join(makeTempRoot(), "workspace");
+    const pluginRoot = officialPluginRoot(home, "broken-commands");
+    mkdirSync(join(pluginRoot, "legacy"), { recursive: true });
+    writeFileSync(
+      join(pluginRoot, "legacy", "run.md"),
+      "---\ndescription: legacy command\n---\n\nRun legacy",
+      "utf-8",
+    );
+    writeCanonicalPluginManifest(pluginRoot, "{ not json");
+    writePluginManifest(pluginRoot, {
+      commands: "legacy",
+      name: "broken-commands",
+      version: "0.1.0",
+    });
+    writeCliConfig(home, {
+      plugins: { enabledPlugins: { "broken-commands@zcode-plugins-official": true } },
+    });
+
+    const service = await createCommandsServiceInEnv(home);
+    const result = await service.list({ workspacePath });
+
+    expect(result.pluginCommands).toEqual([]);
   });
 
   it("suppressed 内置插件不贡献任何命令", async () => {

@@ -41,9 +41,18 @@ const SEA_PLUGIN_ASSET_PREFIX = "zody-official-plugins/";
 const SEA_PLUGIN_MANIFEST_ASSET_KEY = `${SEA_PLUGIN_ASSET_PREFIX}manifest.json`;
 const SEED_MARKER_FILE = ".zody-plugin-seed.json";
 const SEED_LOCK_TOTAL_BUDGET_MS = 15_000;
+// R54：新格式优先、旧格式仅缺失回退。种子源与已缓存插件都按此顺序探测/解析；
+// 旧格式路径字节保留（R30 preserve-legacy-discovery）。
+const CANONICAL_PLUGIN_MANIFEST_FILE = ".zody-plugin/plugin.json";
+const LEGACY_PLUGIN_MANIFEST_FILE = ".zcode-plugin/plugin.json";
+const SEED_PLUGIN_MANIFEST_FILES = [
+  CANONICAL_PLUGIN_MANIFEST_FILE,
+  LEGACY_PLUGIN_MANIFEST_FILE,
+] as const;
 
 const includedTopLevelPaths = new Set([
   ".mcp.json",
+  ".zody-plugin",
   ".zcode-plugin",
   "README.md",
   // 官方内容插件新增 agents 后，filesystem seed 的顶层白名单未同步，目录被静默裁掉。
@@ -358,8 +367,18 @@ function resolveFilesystemPluginRoot(definition: OfficialPluginDefinition): stri
   for (const baseDir of candidateBaseDirs()) {
     for (const relativePath of definition.rootCandidates) {
       const rootPath = resolve(baseDir, relativePath);
-      if (existsSync(join(rootPath, ".zcode-plugin", "plugin.json"))) return rootPath;
+      // 源包可能是新格式或旧格式：只要求命中其一，解析优先级交给下游读取方。
+      if (resolveInstalledPluginManifestPath(rootPath)) return rootPath;
     }
+  }
+  return undefined;
+}
+
+/** 按 S1 优先规则返回已安装插件根目录里实际生效的 manifest 路径。 */
+function resolveInstalledPluginManifestPath(rootPath: string): string | undefined {
+  for (const relativePath of SEED_PLUGIN_MANIFEST_FILES) {
+    const manifestPath = join(rootPath, ...relativePath.split("/"));
+    if (existsSync(manifestPath)) return manifestPath;
   }
   return undefined;
 }
@@ -450,7 +469,9 @@ function readSeedPluginDescription(
   source: OfficialPluginSeedSource,
   plugin: OfficialPluginSeedPluginSource,
 ): string | undefined {
-  const manifestFile = plugin.files.find((file) => file.path === ".zcode-plugin/plugin.json");
+  // 展示用描述按 S1 优先规则取 manifest：新格式存在即不再看旧格式。
+  // 描述只是商店展示元数据，解析失败维持既有 undefined 降级，不影响 seed/发现结果。
+  const manifestFile = findSeedPluginManifestFile(plugin.files);
   if (!manifestFile) return undefined;
   try {
     const parsed = JSON.parse(readSeedFileBytes(source, plugin, manifestFile).toString("utf8")) as {
@@ -462,6 +483,16 @@ function readSeedPluginDescription(
   } catch {
     return undefined;
   }
+}
+
+function findSeedPluginManifestFile(
+  files: readonly OfficialPluginSeedFile[],
+): OfficialPluginSeedFile | undefined {
+  for (const relativePath of SEED_PLUGIN_MANIFEST_FILES) {
+    const manifestFile = files.find((file) => file.path === relativePath);
+    if (manifestFile) return manifestFile;
+  }
+  return undefined;
 }
 
 function isSeedCurrent(targetRoot: string, plugin: OfficialPluginSeedPluginSource): boolean {
@@ -500,10 +531,11 @@ function canReuseCommittedSeed(
  * marker hash 不匹配只表示需要升级，不能把一个可用的旧缓存当成启动失败。
  */
 function isSeedUsable(targetRoot: string, definition: OfficialPluginDefinition): boolean {
+  const manifestPath = resolveInstalledPluginManifestPath(targetRoot);
+  // 新格式存在但不可读/非法时按“不可用缓存”处理，不回退旧格式（不合并 manifest）。
+  if (!manifestPath) return false;
   try {
-    const manifest = JSON.parse(
-      readFileSync(join(targetRoot, ".zcode-plugin", "plugin.json"), "utf8"),
-    ) as { name?: unknown };
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { name?: unknown };
     if (manifest.name !== definition.name) return false;
   } catch {
     return false;

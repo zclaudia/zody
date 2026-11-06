@@ -75,7 +75,10 @@ const DEFAULT_MAX_ARCHIVE_BYTES = 50 * 1024 * 1024;
 const USER_CONFIG_FILE_MODE = 0o600;
 const MARKETPLACE_SOURCE_ROOT_DIRECTORY = "marketplace-sources";
 const MIRRORED_MARKETPLACE_PLUGIN_ROOT = "plugins";
+// R54：新格式优先；旧 `.zcode-plugin` 仅在新格式缺失时回退。读取失败继续探测，
+// 解析失败返回 null（不回退、不合并），见 readPluginManifestInfo。
 const PLUGIN_MANIFEST_RELATIVE_PATHS = [
+  [".zody-plugin", "plugin.json"],
   [".zcode-plugin", "plugin.json"],
   [".claude-plugin", "plugin.json"],
   [".codex-plugin", "plugin.json"],

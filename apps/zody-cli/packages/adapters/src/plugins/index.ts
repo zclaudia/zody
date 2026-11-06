@@ -99,6 +99,10 @@ export {
   type PluginUpdateStatus,
 } from "./version-compare.js";
 
+// R54：新格式优先。旧 `.zcode-plugin/plugin.json` 只作为缺失时的回退保留
+// （R30 preserve-legacy-discovery），常量字节不动；新格式存在但非法时由 readManifest
+// 报 plugin_manifest_invalid，不回退也不合并旧格式字段。
+const ZODY_PLUGIN_MANIFEST_PATH = join(".zody-plugin", "plugin.json");
 const ZODY_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
@@ -930,6 +934,13 @@ function loadPlugin(
 }
 
 function findManifest(rootPath: string): string | null {
+  // R54：`.zody-plugin/plugin.json` 存在即唯一 manifest；存在但非法时 readManifest
+  // 会直接报错，因此这里不能"文件在但跳过"继续探测旧格式（不合并、不回退）。
+  const canonicalPath = join(rootPath, ZODY_PLUGIN_MANIFEST_PATH);
+  if (fileExists(canonicalPath)) {
+    return canonicalPath;
+  }
+
   const zodyPath = join(rootPath, ZODY_MANIFEST_PATH);
   if (fileExists(zodyPath)) {
     return zodyPath;

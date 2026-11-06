@@ -21,6 +21,9 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES = [
 
 export const REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS = [
   ".mcp.json",
+  // R54：新格式 manifest 目录随包分发；旧 `.zcode-plugin` 保留（REQUIRED 清单仍按
+  // 上游旧格式源资产声明，见下方说明）。
+  ".zody-plugin",
   ".zcode-plugin",
   "README.md",
   // 开发态远程插件复制使用独立白名单，遗漏 agents 会只在远端丢失子代理。
@@ -99,13 +102,8 @@ export const REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS = [
   "zcode-cua-plugin/skills/computer-use/SKILL.md",
 ] as const;
 
-export function buildRemoteAgentOfficialPluginDir(
-  remoteProviderDir: string,
-): string {
-  return posix.join(
-    remoteProviderDir,
-    REMOTE_AGENT_OFFICIAL_PLUGIN_DIR_NAME,
-  );
+export function buildRemoteAgentOfficialPluginDir(remoteProviderDir: string): string {
+  return posix.join(remoteProviderDir, REMOTE_AGENT_OFFICIAL_PLUGIN_DIR_NAME);
 }
 
 export function buildRemoteAgentOfficialPluginSourceRelativePath(params: {
@@ -119,12 +117,9 @@ export function buildRemoteAgentOfficialPluginSourceRelativePath(params: {
   );
 }
 
-export function buildRemoteAgentOfficialPluginRequiredPaths(
-  remoteProviderDir: string,
-): string[] {
-  const remoteOfficialPluginDir =
-    buildRemoteAgentOfficialPluginDir(remoteProviderDir);
-  return REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.map(
-    (relativePath) => posix.join(remoteOfficialPluginDir, relativePath),
+export function buildRemoteAgentOfficialPluginRequiredPaths(remoteProviderDir: string): string[] {
+  const remoteOfficialPluginDir = buildRemoteAgentOfficialPluginDir(remoteProviderDir);
+  return REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.map((relativePath) =>
+    posix.join(remoteOfficialPluginDir, relativePath),
   );
 }

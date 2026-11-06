@@ -48,7 +48,7 @@ describe("subprocess cell launch", () => {
       }),
     ).toEqual({
       command: "/signed/node",
-      args: ["__zcode-plugin-host", "/sealed/server.mjs", CELL_RUN_FLAG],
+      args: ["__zody-plugin-host", "/sealed/server.mjs", CELL_RUN_FLAG],
     });
     expect(() =>
       resolveCellLaunch({

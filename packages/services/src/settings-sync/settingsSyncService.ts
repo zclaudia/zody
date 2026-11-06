@@ -413,6 +413,8 @@ const SUPPORTED_MCP_AGENT_SOURCES: ExternalAgentMcpPathSource[] = [
   },
 ];
 
+// R54：新格式优先，旧 `.zcode-plugin` 仅作缺失回退（常量字节保留）。
+const CANONICAL_PLUGIN_MANIFEST_PATH = [".zody-plugin", "plugin.json"] as const;
 const ZODY_PLUGIN_MANIFEST_PATH = [".zcode-plugin", "plugin.json"] as const;
 const CLAUDE_PLUGIN_MANIFEST_PATH = [".claude-plugin", "plugin.json"] as const;
 const CODEX_PLUGIN_MANIFEST_PATH = [".codex-plugin", "plugin.json"] as const;
@@ -780,6 +782,11 @@ async function collectCommandMarkdownPaths(rootPath: string): Promise<string[]> 
 }
 
 async function findPluginManifestPath(pluginPath: string): Promise<string | null> {
+  // R54：新格式存在即唯一 manifest；读取/解析失败由各调用方返回 null，不回退旧格式。
+  const canonicalManifestPath = join(pluginPath, ...CANONICAL_PLUGIN_MANIFEST_PATH);
+  if (await pathExists(canonicalManifestPath)) {
+    return canonicalManifestPath;
+  }
   const zodyManifestPath = join(pluginPath, ...ZODY_PLUGIN_MANIFEST_PATH);
   if (await pathExists(zodyManifestPath)) {
     return zodyManifestPath;

@@ -76,7 +76,7 @@ sequenceDiagram
 
 ## 子进程协议
 
-- 启动：复用现有 single bundle。SEA 下用 `process.execPath __zcode-plugin-host <server.js> --zcode-node-repl-cell`；
+- 启动：复用现有 single bundle。SEA 下用 `process.execPath __zody-plugin-host <server.js> --zody-node-repl-cell`；
   非 SEA 直接 `process.execPath <server.js> --zcode-node-repl-cell`。不新增打包清单。
   候选 factory 的 `serverPath` 必填，必须是已构建的 `.js/.mjs` server bundle；不从
   `import.meta.url` 猜默认值。旧 Worker executor 的 `workerUrl` 同理必须由 bundle 入口显式传入。
@@ -135,20 +135,20 @@ sequenceDiagram
 
 ### 所有权与入口
 
-| 责任                         | 唯一 owner                        | 说明                                                                 |
-| ---------------------------- | --------------------------------- | -------------------------------------------------------------------- |
-| controller 启动材料与密钥    | 受信 adapter launcher             | 启动前生成 controller/producer binding、两把 Ed25519 key 和 challenge |
-| child bootstrap 校验         | 本包 control-only 入口            | fd3 单行有界 JSON；缺失、EOF、超限、错 schema/key 一律失败           |
-| 控制信道认证与 replay        | `@zcode/zcode-cua/control-channel` | 第二轮 endpoint；不在此复制验签或序号状态                            |
-| producer 拒绝投影            | `@zcode/zcode-cua/producer-control` | 无 Helper 时只报 unknown/stop_pending，不生成 native fence          |
-| 默认 MCP / JS / Browser      | 现有 node_repl main               | 不读取 control flag，不获得控制 key，不创建额外 Worker/cell          |
+| 责任                      | 唯一 owner                          | 说明                                                                  |
+| ------------------------- | ----------------------------------- | --------------------------------------------------------------------- |
+| controller 启动材料与密钥 | 受信 adapter launcher               | 启动前生成 controller/producer binding、两把 Ed25519 key 和 challenge |
+| child bootstrap 校验      | 本包 control-only 入口              | fd3 单行有界 JSON；缺失、EOF、超限、错 schema/key 一律失败            |
+| 控制信道认证与 replay     | `@zcode/zcode-cua/control-channel`  | 第二轮 endpoint；不在此复制验签或序号状态                             |
+| producer 拒绝投影         | `@zcode/zcode-cua/producer-control` | 无 Helper 时只报 unknown/stop_pending，不生成 native fence            |
+| 默认 MCP / JS / Browser   | 现有 node_repl main                 | 不读取 control flag，不获得控制 key，不创建额外 Worker/cell           |
 
 ### 启动序列
 
 ```mermaid
 sequenceDiagram
   participant C as adapter controller
-  participant H as __zcode-plugin-host
+  participant H as __zody-plugin-host
   participant N as node-repl control-only
   participant P as producer owner
   C->>C: 生成 binding / controller key / producer key / challenge

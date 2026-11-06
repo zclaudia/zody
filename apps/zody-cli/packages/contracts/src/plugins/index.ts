@@ -7,12 +7,20 @@ import type { ExecutionContext, TraceContext } from "../tracing/tracer.js";
 export const ZODY_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
 export const CLAUDE_OFFICIAL_PLUGIN_MARKETPLACE = "claude-plugins-official";
 export const ZODY_INLINE_PLUGIN_MARKETPLACE = "inline";
-export const ZCODE_PLUGIN_HOST_COMMAND = "__zcode-plugin-host";
+/**
+ * 隐藏子命令：official 插件 MCP server 宿主入口（`__zody-plugin-host <server-path>`）。
+ *
+ * 父进程与同版本 SEA 子进程必须使用相同命令，旧值 `__zcode-plugin-host` 不作为别名接受。
+ * 已安装缓存里旧渲染结果由升级首跑重写闭环处理：official runtime 以旧 manifest 为渲染源，
+ * 把新命令写入 `.zody-plugin/plugin.json`，旧的 `.zcode-plugin/plugin.json` 字节保留
+ * （R54，见 specs/zody-rename-plugin-install.md §S4）。
+ */
+export const ZODY_PLUGIN_HOST_COMMAND = "__zody-plugin-host";
 /**
  * 隐藏子命令：dynamic workflow 的沙箱子进程入口（`__zody-dwf-child <entry path>`；argv 末位是
  * harness 写好的入口文件路径，payload 不过命令行）。
  *
- * 与 {@link ZCODE_PLUGIN_HOST_COMMAND} 同族、同机制：SEA 单文件二进制不解释 Node CLI 旗标，
+ * 与 {@link ZODY_PLUGIN_HOST_COMMAND} 同族、同机制：SEA 单文件二进制不解释 Node CLI 旗标，
  * 于是 harness 默认的 `node --max-old-space-size=… <entry>` spawn 在 SEA 下会把旗标交给严格
  * parseArgs 而必然失败。SEA 下改为自 re-exec 本二进制并由 `run.ts` 在 parseArgs **之前**分派。
  * 常量放在 contracts 而非 dynamic-workflow-runtime：后者刻意不依赖 contracts（app-free 证明），

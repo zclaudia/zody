@@ -1,5 +1,5 @@
 import { spawn as spawnProcess, type ChildProcess, type SpawnOptions } from "node:child_process";
-import { ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
+import { ZODY_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
 import type {
   ControlChannelAckResult,
   ControlChannelRequest,
@@ -257,7 +257,7 @@ export function resolveOfficialControlOnlyLauncher(
     args: [
       ...prefix,
       ...(cliEntryPath === undefined ? [] : [cliEntryPath]),
-      ZCODE_PLUGIN_HOST_COMMAND,
+      ZODY_PLUGIN_HOST_COMMAND,
       serverPath,
       ZODY_NODE_REPL_CONTROL_FLAG,
     ],

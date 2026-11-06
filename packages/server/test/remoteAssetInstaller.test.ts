@@ -23,6 +23,11 @@ import {
 } from "@zody/server/remote/remoteAssetInstaller.js";
 import type { RemoteSha256Tool } from "@zody/server/remote/remoteAssetPreflight.js";
 import { extractTarGzArchive } from "@zody/server/remote/localTarGz.js";
+import {
+  REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS,
+  REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES,
+  REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS,
+} from "@zody/server/remote/zodyAgentOfficialPluginAssets.js";
 
 const execFileAsync = promisify(execFile);
 const localShellCommand = resolveLocalShellCommand();
@@ -199,6 +204,22 @@ async function detectLocalShellSha256Tool(shellCommand: string): Promise<RemoteS
 }
 
 describe("remote asset installer command builders", () => {
+  // R54：新格式目录随包分发，但必需资产清单保持 legacy 字节（上游源资产仍是旧格式）。
+  it("ships the new manifest directory while required assets stay legacy", () => {
+    expect(REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS).toContain(".zody-plugin");
+    expect(REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS).toContain(".zcode-plugin");
+    expect(
+      REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.some((relativePath) =>
+        relativePath.includes(".zody-plugin/plugin.json"),
+      ),
+    ).toBe(false);
+    expect(
+      REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.filter((relativePath) =>
+        relativePath.endsWith(".zcode-plugin/plugin.json"),
+      ),
+    ).toHaveLength(REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES.length);
+  });
+
   it("quotes remote paths and URLs in download commands", () => {
     const command = buildRemoteArtifactDownloadCommand({
       tool: "curl",

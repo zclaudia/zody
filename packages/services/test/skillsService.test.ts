@@ -88,6 +88,18 @@ function writePluginManifest(pluginRoot: string, manifest: Record<string, unknow
   );
 }
 
+function writeCanonicalPluginManifest(
+  pluginRoot: string,
+  manifest: Record<string, unknown> | string,
+): void {
+  mkdirSync(join(pluginRoot, ".zody-plugin"), { recursive: true });
+  writeFileSync(
+    join(pluginRoot, ".zody-plugin", "plugin.json"),
+    typeof manifest === "string" ? manifest : JSON.stringify(manifest, null, 2),
+    "utf-8",
+  );
+}
+
 function writeClaudePluginManifest(pluginRoot: string, manifest: Record<string, unknown>): void {
   mkdirSync(join(pluginRoot, ".claude-plugin"), { recursive: true });
   writeFileSync(
@@ -757,6 +769,94 @@ amazon-body`,
         scope: "plugin",
       }),
     ]);
+  });
+
+  // R54：新格式优先；旧格式声明的技能不得合并进来。
+  it("读取新格式 manifest 声明的插件技能且不合并旧格式字段", async () => {
+    const home = makeTempHome();
+    const workspacePath = join(home, "workspace");
+    const pluginRoot = marketplacePluginRoot(home, "claude-plugins-official", "canonical-skills");
+    writeCanonicalPluginManifest(pluginRoot, {
+      name: "canonical-skills",
+      skills: "canonical-skills-root",
+      version: "2.0.0",
+    });
+    writeSkill(
+      join(pluginRoot, "canonical-skills-root"),
+      "canonical-skill",
+      `---
+name: canonical-skill
+description: canonical skill
+---
+body`,
+    );
+    writeClaudePluginManifest(pluginRoot, {
+      name: "legacy-skills",
+      skills: "legacy-skills-root",
+      version: "1.0.0",
+    });
+    writeSkill(
+      join(pluginRoot, "legacy-skills-root"),
+      "legacy-skill",
+      `---
+name: legacy-skill
+description: legacy skill
+---
+body`,
+    );
+    writeInstalledPluginRecord(home, {
+      installPath: pluginRoot,
+      marketplace: "claude-plugins-official",
+      name: "canonical-skills",
+    });
+    writeCliConfig(home, {
+      plugins: {
+        enabledPlugins: { "canonical-skills@claude-plugins-official": true },
+      },
+    });
+
+    const service = await createSkillsServiceInEnv(home, { isDesktopRuntime: true });
+    const result = await service.list({ workspacePath, provider: "glm" });
+
+    expect(result.skills.map((skill) => skill.name)).toEqual(["canonical-skill"]);
+    expect(result.skills[0]).toMatchObject({ pluginName: "canonical-skills" });
+  });
+
+  // R54：新格式存在但非法 → 该插件不贡献技能，不回退旧格式。
+  it("新格式 manifest 非法时不回退旧格式技能声明", async () => {
+    const home = makeTempHome();
+    const workspacePath = join(home, "workspace");
+    const pluginRoot = marketplacePluginRoot(home, "claude-plugins-official", "broken-skills");
+    writeCanonicalPluginManifest(pluginRoot, "{ not json");
+    writeClaudePluginManifest(pluginRoot, {
+      name: "broken-skills",
+      skills: "legacy-skills-root",
+      version: "1.0.0",
+    });
+    writeSkill(
+      join(pluginRoot, "legacy-skills-root"),
+      "legacy-skill",
+      `---
+name: legacy-skill
+description: legacy skill
+---
+body`,
+    );
+    writeInstalledPluginRecord(home, {
+      installPath: pluginRoot,
+      marketplace: "claude-plugins-official",
+      name: "broken-skills",
+    });
+    writeCliConfig(home, {
+      plugins: {
+        enabledPlugins: { "broken-skills@claude-plugins-official": true },
+      },
+    });
+
+    const service = await createSkillsServiceInEnv(home, { isDesktopRuntime: true });
+    const result = await service.list({ workspacePath, provider: "glm" });
+
+    expect(result.skills.filter((skill) => skill.scope === "plugin")).toEqual([]);
   });
 
   // Bugfix 回归（差一层目录）：Claude 插件规范里 manifest skills 数组项指向「技能目录本身」

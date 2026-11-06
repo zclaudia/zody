@@ -86,6 +86,9 @@ interface PluginAgentDiscovery {
 }
 
 const BUILT_IN_AGENT_NAMES = new Set(["general-purpose", "Explore"]);
+// R54：新格式优先；旧 `.zcode-plugin` 仅在新格式缺失时回退。新格式存在但不可读/非法时
+// 直接判定无 manifest，不继续探测旧格式（不合并、不回退）。
+const CANONICAL_PLUGIN_MANIFEST_PATH = join(".zody-plugin", "plugin.json");
 const PLUGIN_MANIFEST_PATHS = [
   join(".zcode-plugin", "plugin.json"),
   join(".claude-plugin", "plugin.json"),
@@ -506,16 +509,35 @@ async function collectPluginAgentMarkdownPaths(rootPath: string): Promise<string
 }
 
 async function readPluginManifest(rootPath: string): Promise<Record<string, unknown> | null> {
+  const canonicalPath = join(rootPath, CANONICAL_PLUGIN_MANIFEST_PATH);
+  try {
+    const raw = await readFile(canonicalPath, "utf-8");
+    const parsed = JSON.parse(raw) as unknown;
+    // 新格式存在即唯一 manifest：非法/非对象时不再探测旧格式。
+    return isRecord(parsed) ? parsed : null;
+  } catch (error) {
+    // 仅“确实不存在”才回退旧格式；读取失败按存在但不可用处理。
+    if (!isNotFoundFsError(error)) return null;
+  }
+
   for (const relativePath of PLUGIN_MANIFEST_PATHS) {
     try {
       const raw = await readFile(join(rootPath, relativePath), "utf-8");
       const parsed = JSON.parse(raw) as unknown;
       if (isRecord(parsed)) return parsed;
     } catch {
-      // Try the next supported manifest path.
+      // 旧格式维持既有“继续探测下一格式”语义。
     }
   }
   return null;
+}
+
+function isNotFoundFsError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    String((error as NodeJS.ErrnoException).code) === "ENOENT"
+  );
 }
 
 function collectPluginAgentRoots(rootPath: string, manifestAgents: unknown): string[] {

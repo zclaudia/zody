@@ -60,6 +60,10 @@ const MARKETPLACE_JSON_MAX_BYTES = 10 * 1024 * 1024;
 const MARKETPLACE_JSON_MAX_REDIRECTS = 5;
 const MARKETPLACE_JSON_TIMEOUT_MS = 180_000;
 const CLAUDE_MARKETPLACE_FILE = join(".claude-plugin", "marketplace.json");
+// R54：市场安装/更新/校验与发现共用“新格式优先、旧格式仅缺失回退”。旧常量
+// 保持 legacy 字节（R30 preserve-legacy-discovery），新格式存在但非法时
+// readPluginManifestFromRoot 抛错，不尝试旧格式。
+const ZODY_PLUGIN_MANIFEST_PATH = join(".zody-plugin", "plugin.json");
 const ZODY_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
@@ -71,12 +75,7 @@ const CLAUDE_MARKETPLACE_REFRESH_TIMEOUT_MS = 30_000;
 const MARKETPLACE_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 const PLUGIN_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 const SOURCE_SHA256_PATTERN = /^[a-f0-9]{64}$/u;
-const UNSUPPORTED_MANIFEST_FIELDS = [
-  "channels",
-  "lspServers",
-  "outputStyles",
-  "settings",
-] as const;
+const UNSUPPORTED_MANIFEST_FIELDS = ["channels", "lspServers", "outputStyles", "settings"] as const;
 
 export type MarketplaceSource =
   | { source: "url"; headers?: Record<string, string>; url: string }
@@ -404,18 +403,11 @@ export function ensureBundledOfficialMarketplaceRecordSync(
   storageRoot: string,
 ): KnownMarketplaceRecord[] {
   const known = loadKnownMarketplacesSync(storageRoot);
-  const index = known.findIndex(
-    (record) => record.id === ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
-  );
-  const manifestPath = getMarketplaceManifestPath(
-    storageRoot,
-    ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
-  );
+  const index = known.findIndex((record) => record.id === ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
+  const manifestPath = getMarketplaceManifestPath(storageRoot, ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
   if (!existsSync(manifestPath)) {
     if (index < 0) return known;
-    const next = known.filter(
-      (record) => record.id !== ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
-    );
+    const next = known.filter((record) => record.id !== ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
     writeKnownMarketplacesSync(storageRoot, next);
     return next;
   }
@@ -438,10 +430,7 @@ export function ensureBundledOfficialMarketplaceRecordSync(
 
   const current = known[index];
   if (!current) return known;
-  if (
-    current.source.source === "file" &&
-    resolve(current.source.path) === resolve(manifestPath)
-  ) {
+  if (current.source.source === "file" && resolve(current.source.path) === resolve(manifestPath)) {
     return known;
   }
   const next = [...known];
@@ -1175,7 +1164,9 @@ export async function validateLocalPluginPath(input: {
       },
     ];
   }
-  const rootPath = statSync(resolved).isDirectory() ? resolved : resolveManifestRootFromFile(resolved);
+  const rootPath = statSync(resolved).isDirectory()
+    ? resolved
+    : resolveManifestRootFromFile(resolved);
   if (findMarketplaceManifestPath(rootPath)) {
     return validateMarketplaceSource({
       signal: input.signal,
@@ -2320,7 +2311,14 @@ function findMarketplaceManifestPath(rootPath: string, explicitPath?: string): s
 }
 
 function findPluginManifestPath(rootPath: string): string | null {
-  for (const candidate of [ZODY_MANIFEST_PATH, CLAUDE_MANIFEST_PATH, CODEX_MANIFEST_PATH]) {
+  // 返回首个存在的 manifest；新格式存在即唯一 manifest。调用方解析失败时按各自
+  // 既有语义处理（校验/加载抛错、版本展示宽松回退），不得回头再取旧格式。
+  for (const candidate of [
+    ZODY_PLUGIN_MANIFEST_PATH,
+    ZODY_MANIFEST_PATH,
+    CLAUDE_MANIFEST_PATH,
+    CODEX_MANIFEST_PATH,
+  ]) {
     const path = join(rootPath, candidate);
     if (fileExists(path)) return path;
   }

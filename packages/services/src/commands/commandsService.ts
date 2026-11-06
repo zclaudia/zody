@@ -47,6 +47,8 @@ const ENABLE_OVERRIDE_KEY = "enable";
 const HOME_PREFIX = "~/";
 const ZODY_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
 const ZODY_INLINE_PLUGIN_MARKETPLACE = "inline";
+// R54：新格式优先，旧 `.zcode-plugin` 仅作缺失回退（常量字节保留）。
+const CANONICAL_PLUGIN_MANIFEST_PATH = join(".zody-plugin", "plugin.json");
 const ZODY_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_PLUGIN_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_PLUGIN_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
@@ -316,7 +318,10 @@ async function readPluginManifest(rootPath: string): Promise<PluginManifestSumma
 }
 
 async function findPluginManifestPath(rootPath: string): Promise<string | null> {
+  // R54：返回首个存在的 manifest；新格式存在即唯一 manifest，解析失败由
+  // readPluginManifest 返回 null，不回退旧格式。
   for (const manifestPath of [
+    join(rootPath, CANONICAL_PLUGIN_MANIFEST_PATH),
     join(rootPath, ZODY_PLUGIN_MANIFEST_PATH),
     join(rootPath, CLAUDE_PLUGIN_MANIFEST_PATH),
     join(rootPath, CODEX_PLUGIN_MANIFEST_PATH),

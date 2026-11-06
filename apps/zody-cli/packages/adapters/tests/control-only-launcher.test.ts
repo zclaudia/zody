@@ -133,7 +133,7 @@ describe("control-only diagnostic launcher", () => {
       "--import",
       tsxLoaderPath,
       cliEntryPath,
-      "__zcode-plugin-host",
+      "__zody-plugin-host",
       serverPath,
       ZODY_NODE_REPL_CONTROL_FLAG,
     ]);

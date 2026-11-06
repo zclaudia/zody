@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "caseName": "zody-rename-plugin-install",
+  "spec": "./test/e2e/plugins/zody-rename-plugin-install.test.ts",
+  "fixtures": []
+}

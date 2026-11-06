@@ -1,9 +1,5 @@
 /* eslint-disable max-lines -- 开发态 agent 部署包含本地打包、远端 owner staging 与 wrapper 安装，后续独立拆分上传事务。 */
-import {
-  ZODY_AGENT_PROVIDER,
-  ZODY_DATA_ROOT_DIR_NAME,
-  resolveZodyRuntimeEnv,
-} from "@zody/shared";
+import { ZODY_AGENT_PROVIDER, ZODY_DATA_ROOT_DIR_NAME, resolveZodyRuntimeEnv } from "@zody/shared";
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { cp, lstat, mkdir, mkdtemp, readdir, readFile, readlink, rm } from "node:fs/promises";
@@ -113,14 +109,38 @@ async function computeDevelopmentAgentAssetsSha256(params: {
   return hash.digest("hex");
 }
 
+// R54：开发态打包与发现/加载共用“新格式优先、旧格式缺失回退”。这里只需要判定
+// manifest 是否存在（hash/暂存按整个目录字节处理），不解析内容；内容非法由远端加载端
+// 按同一优先规则报错。REQUIRED_RELATIVE_PATHS 仍保持 legacy 字节（上游源资产格式）。
+const CANONICAL_DEVELOPMENT_PLUGIN_MANIFEST_SEGMENTS = [".zody-plugin", "plugin.json"] as const;
+const LEGACY_DEVELOPMENT_PLUGIN_MANIFEST_SEGMENTS = [".zcode-plugin", "plugin.json"] as const;
+const DEVELOPMENT_PLUGIN_MANIFEST_RELATIVE_PATHS = [
+  CANONICAL_DEVELOPMENT_PLUGIN_MANIFEST_SEGMENTS,
+  LEGACY_DEVELOPMENT_PLUGIN_MANIFEST_SEGMENTS,
+] as const;
+
+function resolveDevelopmentPluginManifestPath(packageRoot: string): string | undefined {
+  for (const segments of DEVELOPMENT_PLUGIN_MANIFEST_RELATIVE_PATHS) {
+    const manifestPath = join(packageRoot, ...segments);
+    if (existsSync(manifestPath)) return manifestPath;
+  }
+  return undefined;
+}
+
+function expectedDevelopmentPluginManifestPath(packageRoot: string): string {
+  return join(packageRoot, ...CANONICAL_DEVELOPMENT_PLUGIN_MANIFEST_SEGMENTS);
+}
+
 async function hashDevelopmentOfficialPluginPackage(
   hash: ReturnType<typeof createHash>,
   packageRoot: string,
   packageName: string,
 ): Promise<void> {
-  const manifestPath = join(packageRoot, ".zcode-plugin", "plugin.json");
-  if (!existsSync(manifestPath)) {
-    throw new Error(`[zcode-agent-deploy] missing official plugin manifest: ${manifestPath}`);
+  const manifestPath = resolveDevelopmentPluginManifestPath(packageRoot);
+  if (!manifestPath) {
+    throw new Error(
+      `[zcode-agent-deploy] missing official plugin manifest: ${expectedDevelopmentPluginManifestPath(packageRoot)}`,
+    );
   }
   assertDevelopmentOfficialPluginRequiredAssets(packageRoot, packageName);
 
@@ -266,9 +286,7 @@ async function shouldSkipDevelopmentZodyAgentDeploy(params: {
     return false;
   }
 
-  params.loggers.log(
-    `[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 开发态 zody.cjs 未变化，跳过`,
-  );
+  params.loggers.log(`[zcode-agent-deploy] ${ZODY_AGENT_PROVIDER}: 开发态 zody.cjs 未变化，跳过`);
   return true;
 }
 
@@ -279,9 +297,11 @@ async function stageDevelopmentOfficialPluginPackages(params: {
   await mkdir(params.packagesDir, { recursive: true });
   for (const packageName of REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES) {
     const sourceRoot = join(params.repoRoot, "apps", "zody-cli", "packages", packageName);
-    const manifestPath = join(sourceRoot, ".zcode-plugin", "plugin.json");
-    if (!existsSync(manifestPath)) {
-      throw new Error(`[zcode-agent-deploy] missing official plugin manifest: ${manifestPath}`);
+    const manifestPath = resolveDevelopmentPluginManifestPath(sourceRoot);
+    if (!manifestPath) {
+      throw new Error(
+        `[zcode-agent-deploy] missing official plugin manifest: ${expectedDevelopmentPluginManifestPath(sourceRoot)}`,
+      );
     }
     assertDevelopmentOfficialPluginRequiredAssets(sourceRoot, packageName);
 

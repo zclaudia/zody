@@ -15,9 +15,7 @@ import {
   ZODY_PLUGIN_ID_ENV_KEY,
 } from "@zody/shared";
 
-export {
-  ZODY_CUA_BROKER_SOCKET_ENV_KEY as ZODY_CUA_BROKER_SOCKET_ENV,
-} from "@zody/shared";
+export { ZODY_CUA_BROKER_SOCKET_ENV_KEY as ZODY_CUA_BROKER_SOCKET_ENV } from "@zody/shared";
 // 保留环境变量名供旧诊断脚本读取；迁移后的配置路径不会据此启动独立 CUA MCP。
 export const ZODY_CUA_BROKER_UNAVAILABLE_ENV = "ZODY_CUA_PERMISSION_BROKER_UNAVAILABLE";
 // CLI 入口会先清理 broker 凭据；shared node_repl 的可信配置随后从进程内捕获快照恢复它们。
@@ -30,9 +28,7 @@ function resolveZodyCuaBrokerSocket(): string | undefined {
 }
 
 function resolveZodyCuaBrokerToken(): string | undefined {
-  return (
-    undefined
-  );
+  return undefined;
 }
 
 const NODE_REPL_SERVER_NAME = "node_repl";
@@ -99,9 +95,7 @@ export function omitMcpServers(
 ): Record<string, McpServerConfig> {
   const kept = Object.fromEntries(
     Object.entries(servers).filter(
-      ([name, config]) =>
-        !omittedNames.has(name) &&
-        !isRetiredCuaMcpServer(name, config),
+      ([name, config]) => !omittedNames.has(name) && !isRetiredCuaMcpServer(name, config),
     ),
   );
 
@@ -179,13 +173,11 @@ function isZodyCuaStdioServer(
 ): config is McpStdioServerConfig {
   if (config.type !== "stdio") return false;
   if (name === "computer-use") return true;
-  // 内置 official zcode-cua plugin 的 MCP server 走 __zcode-plugin-host，command 是 Helper
-  // (非 zcode-cua)、args 是 [zody.cjs, __zcode-plugin-host, server.js]（非 zcode-cua package arg），
+  // 内置 official zcode-cua plugin 的 MCP server 走 __zody-plugin-host，command 是 Helper
+  // (非 zcode-cua)、args 是 [zody.cjs, __zody-plugin-host, server.js]（非 zcode-cua package arg），
   // 上面的 name/command/args 三条都匹配不到。_plugin id 由 adapters resolver 权威写入 env
   // （manifest/user env 不可覆盖），用它识别 official plugin server。
-  if (
-    config.env?.[ZODY_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() === ZODY_CUA_OFFICIAL_PLUGIN_ID
-  ) {
+  if (config.env?.[ZODY_PLUGIN_ID_ENV_KEY]?.trim().toLowerCase() === ZODY_CUA_OFFICIAL_PLUGIN_ID) {
     return true;
   }
   // 判定与 desktop/services 共用 @zcode/shared 的单一事实源，避免两条注入入口漂移。
@@ -196,7 +188,9 @@ function isZodyCuaStdioServer(
 function isRetiredCuaMcpServer(name: string, config: McpServerConfig | undefined): boolean {
   // node_repl is the single supported CUA host and may share the CUA plugin's
   // authority marker; all other CUA-shaped MCP entries are retired.
-  return name !== NODE_REPL_SERVER_NAME && config !== undefined && isZodyCuaStdioServer(name, config);
+  return (
+    name !== NODE_REPL_SERVER_NAME && config !== undefined && isZodyCuaStdioServer(name, config)
+  );
 }
 
 function getConfiguredServerStatus(

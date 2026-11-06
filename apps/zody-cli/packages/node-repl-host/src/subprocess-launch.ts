@@ -1,4 +1,4 @@
-import { ZCODE_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
+import { ZODY_PLUGIN_HOST_COMMAND } from "@zody/contracts/plugins";
 import { CELL_RUN_FLAG } from "./cell-protocol.js";
 
 const CELL_SCRIPT_PATTERN = /\.(?:mjs|cjs|js)$/u;
@@ -43,7 +43,7 @@ export interface CellLaunch {
 }
 
 /**
- * 复用现有 single bundle：SEA 走 __zcode-plugin-host，开发 bundle 直接执行 server.js。
+ * 复用现有 single bundle：SEA 走 __zody-plugin-host，开发 bundle 直接执行 server.js。
  * 不传 process.execArgv，避免 inspector/loader 等调试入口进入 cell。
  */
 export function resolveCellLaunch(input: {
@@ -65,16 +65,12 @@ export function resolveCellLaunch(input: {
     }
     return {
       command: input.execPath,
-      args: [ZCODE_PLUGIN_HOST_COMMAND, input.serverPath, CELL_RUN_FLAG],
+      args: [ZODY_PLUGIN_HOST_COMMAND, input.serverPath, CELL_RUN_FLAG],
     };
   }
   return {
     command: input.execPath,
-    args: [
-      ...(input.jitless ? [CELL_JITLESS_FLAG] : []),
-      input.serverPath,
-      CELL_RUN_FLAG,
-    ],
+    args: [...(input.jitless ? [CELL_JITLESS_FLAG] : []), input.serverPath, CELL_RUN_FLAG],
   };
 }
 
