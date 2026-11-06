@@ -65,6 +65,9 @@ export function installPluginSandboxHost(input: {
   const watchedOwners = new Set<number>();
   const guests = new Map<string, WebContents>();
   const stopping = new WeakMap<WebContents, Promise<void>>();
+  // §6.3（docs/plugin-ui-background-execution.md）：清理开始后迟到挂载的 guest 的停止
+  // 必须进入清理完成前的等待集合，不能 fire-and-forget（红测 clearOrder.test.ts）。
+  const lateStops = new Set<Promise<void>>();
   const partitions = new Set<string>();
   let clearing = false;
   const assets: PluginSandboxAssetSource = {
@@ -164,6 +167,8 @@ export function installPluginSandboxHost(input: {
       for (const owner of watchedOwners) registry.disposeOwner(owner);
       await Promise.all([...guests.values()].map(stopGuest));
       guests.clear();
+      // 等待清理期间迟到的 guest 停止完成；等待中新加入的迟到者由下一轮收进等待集合。
+      while (lateStops.size) await Promise.all([...lateStops]);
       const names = await readdir(join(app.getPath("sessionData"), "Partitions")).catch(
         (error: NodeJS.ErrnoException) => {
           if (error.code === "ENOENT") return [];
@@ -172,6 +177,8 @@ export function installPluginSandboxHost(input: {
       );
       for (const name of names)
         if (/^plugin-sandbox-v[12]-[a-f0-9]+$/.test(name)) partitions.add(`persist:${name}`);
+      // 清存储前再排一次：覆盖读取分区期间陆续到达的迟到挂载。
+      while (lateStops.size) await Promise.all([...lateStops]);
       await Promise.all(
         [...partitions].map(async (partition) => {
           const session = electronSession.fromPartition(partition);
@@ -219,9 +226,14 @@ export function installPluginSandboxHost(input: {
     },
     attachGuest({ guest, hostWebContents, sandboxId }) {
       if (clearing) {
-        void stopGuest(guest).catch((error: unknown) =>
+        // §6.3：撤销/清理开始后迟到挂载的 guest 必须停止并等待，清完存储前不能让旧文档继续写存储。
+        const stopped = stopGuest(guest).catch((error: unknown) =>
           input.logger?.warn("[plugin-sandbox] late guest stop failed", String(error)),
         );
+        lateStops.add(stopped);
+        void stopped.finally(() => {
+          lateStops.delete(stopped);
+        });
         return;
       }
       guests.set(sandboxId, guest);

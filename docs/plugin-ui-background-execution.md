@@ -90,7 +90,7 @@
 
 ### 6.3 迟到挂载
 
-「撤销后不复活」还要求：清理/撤销开始后到达的 guest attach 必须被停止，并纳入清理完成前的等待集合。`host.ts:220-226` 现在只 fire-and-forget 停止，不进入 `clearBrowserData` 的等待集合；实现需在 `clearStorageData` 之前等待其停止（反例见 `clearOrder.test.ts`）。
+「撤销后不复活」还要求：清理/撤销开始后到达的 guest attach 必须被停止，并纳入清理完成前的等待集合。2026-10-24 记录时 `host.ts` 只 fire-and-forget 停止、不进入 `clearBrowserData` 的等待集合；**2026-11-07（F18③ 定向验证步）已修复**：迟到停止进入 `lateStops` 等待集合，`clearBrowserData` 在 `clearStorageData` 前排空该集合（反例 `clearOrder.test.ts` 转绿；上游 a60ba6a7 同位置仍是 fire-and-forget，本修复为本仓 spec 驱动差异）。
 
 ## 7. 失败矩阵
 
