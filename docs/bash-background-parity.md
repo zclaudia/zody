@@ -20,6 +20,7 @@ BGV01–BGV06 验收见 [后台 Bash 输出详情](background-bash-output-detail
   - `status: "backgrounded"`
   - `backgroundTaskId`
   - output file path
+  - `timedOutAfterMs`（F21 规划，见 [执行输出请求级尾部规范](execution-output-request-tail-spec.md)）：因超时触发转后台时记录该次请求的前台超时毫秒数，模型文案据此告知「did not complete within its Ns timeout」；显式后台、assistant 自动转后台与手动转后台不写。
 - timeout auto-background 不设置 `assistantAutoBackgrounded`，模型看到的是普通 background task 文案，不是 assistant blocking-budget 文案。
 - 普通 Bash 在 spawn 前异步打开 canonical output 一次，stdout/stderr 继承同一个 fd；
   spawn 后关闭父 fd，子进程直接写文件。前台、显式后台、超时转后台及 subagent Bash
@@ -276,11 +277,11 @@ Desktop BG14 最终 replay `desktop-e2e-20260907-171113-863` 通过。前两次�
 RSS 增量表示相对预热后的父 Node 基线，CPU 仅计父 Node user + system：
 
 | 主机 / 并发 | 峰值 RSS 增量 MiB：旧 → 新 | heapUsed 增量 MiB：旧 → 新 | external 增量 MiB：旧 → 新 | 父 CPU ms：旧 → 新 | 耗时 ms：旧 → 新 |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Windows / 1 | 78.08 → 0.55 | 38.84 → 0.51 | 66.79 → 0.07 | 1063 → 31 | 1204 → 393 |
-| Windows / 4 | 110.49 → 0.32 | 41.39 → 1.31 | 74.67 → 0.16 | 4703 → 172 | 3787 → 665 |
-| macOS / 1 | 190.50 → 0.39 | 46.85 → 0.54 | 80.89 → 0.07 | 330 → 11 | 323 → 213 |
-| macOS / 4 | 377.03 → 1.03 | 55.61 → 1.56 | 110.11 → 0.16 | 1348 → 68 | 749 → 973 |
+| ----------- | -------------------------: | -------------------------: | -------------------------: | -----------------: | ---------------: |
+| Windows / 1 |               78.08 → 0.55 |               38.84 → 0.51 |               66.79 → 0.07 |          1063 → 31 |       1204 → 393 |
+| Windows / 4 |              110.49 → 0.32 |               41.39 → 1.31 |               74.67 → 0.16 |         4703 → 172 |       3787 → 665 |
+| macOS / 1   |              190.50 → 0.39 |               46.85 → 0.54 |               80.89 → 0.07 |           330 → 11 |        323 → 213 |
+| macOS / 4   |              377.03 → 1.03 |               55.61 → 1.56 |              110.11 → 0.16 |          1348 → 68 |        749 → 973 |
 
 本负载的父 Node 输出处理 RSS 增量下降约 99.3%–99.8%，CPU 明显减少；不是整个 Agent
 内存下降 99%，也不包含子进程或 OS 文件缓存。5ms 采样可能漏掉短暂峰值，不同内存指标
