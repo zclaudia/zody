@@ -17,6 +17,7 @@ import {
   createInMemoryHookRunner,
   sanitizeHookDisplayText,
 } from "../src/hooks/index.js";
+import { createConfiguredHookCallback } from "../src/hooks/configured-runner-callback.js";
 import {
   createPluginEnvOverlay,
   expandPluginVariables,
@@ -520,10 +521,44 @@ describe("plugin identity env and template expansion (R55)", () => {
     expect(expandPluginVariables("${ZODY_PLUGIN_NAME}", plugin, hookInput, "/workspace")).toBe(
       "${ZODY_PLUGIN_NAME}",
     );
-    // 缺少插件上下文时保持既有语义：模板字面量保留，不展开成空串。
-    expect(
-      expandPluginVariables("${ZODY_PLUGIN_ROOT}", undefined, hookInput, "/workspace"),
-    ).toBe("${ZODY_PLUGIN_ROOT}");
+  });
+
+  it.each([
+    "ZODY_PLUGIN_ROOT",
+    "ZODY_PLUGIN_DATA",
+    "ZCODE_PLUGIN_ROOT",
+    "ZCODE_PLUGIN_DATA",
+    "CLAUDE_PLUGIN_ROOT",
+    "CLAUDE_PLUGIN_DATA",
+  ])("rejects %s without plugin context before shell expansion", (key) => {
+    expect(() => expandPluginVariables(`\${${key}}`, undefined, hookInput, "/workspace")).toThrow(
+      `requires a plugin context: ${key}`,
+    );
+  });
+
+  it.each([
+    { type: "command" as const, command: 'printf %s "${ZODY_PLUGIN_ROOT}"' },
+    { type: "process" as const, command: "${ZODY_PLUGIN_ROOT}/check.mjs", args: [] },
+    { type: "process" as const, command: process.execPath, args: ["${ZODY_PLUGIN_DATA}"] },
+  ])("rejects an unbound $type hook before invoking the execution port", async (hook) => {
+    const run = vi.fn(async () => completedResult());
+    const callback = createConfiguredHookCallback(
+      {
+        config: { enabled: true, events: {}, maxOutputBytes: 1024, timeoutMs: 1000 },
+        executionPort: { run },
+        getWorkingDirectory: () => "/workspace",
+      },
+      HookEventName.UserPromptSubmit,
+      hook,
+      0,
+      0,
+      { maxOutputBytes: 1024, timeoutMs: 1000 },
+    );
+
+    await expect(callback(hookInput, { hookIndex: 0 })).rejects.toThrow(
+      "requires a plugin context",
+    );
+    expect(run).not.toHaveBeenCalled();
   });
 
   it("passes both identity groups to a configured plugin hook process", async () => {

@@ -11,6 +11,15 @@ import {
   type HookPluginContext,
 } from "@zody/contracts";
 
+const PLUGIN_CONTEXT_VARIABLES = new Set([
+  "CLAUDE_PLUGIN_DATA",
+  "CLAUDE_PLUGIN_ROOT",
+  "ZCODE_PLUGIN_DATA",
+  "ZCODE_PLUGIN_ROOT",
+  "ZODY_PLUGIN_DATA",
+  "ZODY_PLUGIN_ROOT",
+]);
+
 export async function createCompatibleHookStdin(input: HookInput): Promise<{
   cleanup: () => Promise<void>;
   value: string;
@@ -29,7 +38,6 @@ export async function createCompatibleHookStdin(input: HookInput): Promise<{
   compatible.transcriptPath = transcriptPath;
 
   if ("toolName" in input) {
-
     // 这里只补无损 alias，继续保留 ZCode camelCase 字段作为内部主契约。
     compatible.tool_name = input.toolName;
     compatible.tool_input = input.toolInput;
@@ -44,7 +52,6 @@ export async function createCompatibleHookStdin(input: HookInput): Promise<{
       compatible.tool_response = input.toolResponse;
       break;
     case HookEventName.PostToolUseFailure:
-
       compatible.error_details = input.error;
       compatible.error = input.error.message;
       compatible.is_interrupt = input.isInterrupt;
@@ -141,6 +148,14 @@ export function expandPluginVariables(
             },
             recoverable: true,
           },
+        );
+      }
+      // 保留 token 会被 shell 再次展开，进而采用宿主伪造路径或空串；必须在执行前拒绝。
+      if (!plugin && PLUGIN_CONTEXT_VARIABLES.has(key)) {
+        throw createCoreError(
+          CoreErrorType.ConfigurationError,
+          `Hook variable requires a plugin context: ${key}`,
+          { context: { hookEventName: input.hookEventName, variable: key }, recoverable: true },
         );
       }
       return replacements[key] ?? _match;
