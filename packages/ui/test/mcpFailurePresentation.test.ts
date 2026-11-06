@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
   McpFailurePresentation,
   resolveMcpFailureMessageId,
@@ -28,7 +28,7 @@ describe("MCP failure presentation", () => {
   ])("keeps diagnostics inside the click-only popover for %s", (locale, message) => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: locale },
         createElement(McpFailurePresentation, {
           error: "raw sdk error",
@@ -54,7 +54,7 @@ describe("MCP failure presentation", () => {
   ])("localizes the not-authenticated diagnosis for %s", (locale, message) => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: locale },
         createElement(McpFailurePresentation, { failureKind: "not_authenticated" }),
       ),
@@ -71,7 +71,7 @@ describe("MCP failure presentation", () => {
   ])("localizes the coding-plan diagnosis for %s", (locale, message) => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: locale },
         createElement(McpFailurePresentation, { failureKind: "coding_plan_required" }),
       ),

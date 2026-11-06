@@ -10,11 +10,12 @@ ZCode 已经支持官方插件、inline 插件、skills、commands、MCP server 
 
 插件根目录按以下顺序查找 manifest：
 
-1. `.zcode-plugin/plugin.json`
-2. `.claude-plugin/plugin.json`
-3. `.codex-plugin/plugin.json`
+1. `.zody-plugin/plugin.json`
+2. `.zcode-plugin/plugin.json`（1.0 前兼容）
+3. `.claude-plugin/plugin.json`
+4. `.codex-plugin/plugin.json`
 
-`.zcode-plugin` 始终优先；当外部插件同时包含 Claude 与 Codex manifest 时，Claude manifest 优先于 Codex manifest。这个顺序用于读取插件元数据、skills / commands / MCP / hooks 声明和插件 id。
+`.zody-plugin` 存在即为权威，非法时失败且不回退、不合并；缺失时才尝试 `.zcode-plugin`；其他格式按各发现入口既有相对顺序（包括 skills 的 Cursor）处理，详见 [owner 顺序表](plans/zody-rename-execution/contract-map.md#r54-各发现-owner-格式顺序)。这个顺序用于读取插件元数据、skills / commands / MCP / hooks 声明和插件 id。
 
 ## Hooks 发现
 
@@ -57,19 +58,16 @@ ZCode 保留现有 `process` hook，并新增兼容 `command` hook：
 
 ## 插件变量
 
-插件 hook 子进程注入以下环境变量：
+插件 hook 子进程从权威插件上下文注入以下环境变量：
 
-- `ZCODE_PLUGIN_ROOT`：当前插件安装根目录。
-- `ZCODE_PLUGIN_DATA`：当前插件持久化数据目录。
-- `ZCODE_PLUGIN_ID`：`<name>@<marketplace>`。
-- `ZCODE_PLUGIN_NAME`：插件 manifest name。
+| 新键               | 1.0 前兼容键        | 含义                   |
+| ------------------ | ------------------- | ---------------------- |
+| `ZODY_PLUGIN_ROOT` | `ZCODE_PLUGIN_ROOT` | 当前插件安装根目录     |
+| `ZODY_PLUGIN_DATA` | `ZCODE_PLUGIN_DATA` | 当前插件持久化数据目录 |
+| `ZODY_PLUGIN_ID`   | `ZCODE_PLUGIN_ID`   | `<name>@<marketplace>` |
+| `ZODY_PLUGIN_NAME` | `ZCODE_PLUGIN_NAME` | 插件 manifest name     |
 
-为兼容现有插件，同时注入并替换：
-
-- `CLAUDE_PLUGIN_ROOT`
-- `CLAUDE_PLUGIN_DATA`
-
-命令字符串中的 `${ZCODE_PLUGIN_ROOT}`、`${ZCODE_PLUGIN_DATA}`、`${CLAUDE_PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_DATA}` 在执行前替换为对应路径。替换值来自插件发现阶段解析出的 root / data path，不从用户环境读取。
+`CLAUDE_PLUGIN_ROOT` 与 `CLAUDE_PLUGIN_DATA` 保持兼容，分别与 ROOT、DATA 同源，不随 1.0 移除。`${ZODY_PLUGIN_ROOT}`、`${ZODY_PLUGIN_DATA}`、对应的 `ZCODE` 和 `CLAUDE` 模板在执行前以相同上下文展开；不承诺 ID/NAME 模板。身份键在外部和 manifest 环境合并后由上下文覆盖，不能分别伪造。1.0 移除旧 ZCODE 插件键与模板；详见 [契约映射](plans/zody-rename-execution/contract-map.md)。
 
 ## Hook stdin 兼容字段
 
@@ -126,7 +124,7 @@ Subagent 兼容的完整边界见 `docs/subagent-compatibility.md`。
 
 `superpowers` 作为官方内置插件发布：
 
-- 使用 `.zcode-plugin/plugin.json` 作为主 manifest。
+- 使用 `.zody-plugin/plugin.json` 作为主 manifest；旧入口仅在 1.0 前兼容。
 - 默认关闭；用户显式启用后才向 runtime 注入 skills/hooks。
 - 提供 `skills/` 与 `hooks/hooks.json`。
 - `SessionStart` hook 在 `startup|clear|compact` 时注入 `using-superpowers` 上下文。
@@ -154,3 +152,7 @@ Superpowers 的 plugin skills 同时支持裸名和 fully qualified alias。模�
 - official plugin 缓存中的 `hooks/run-hook.cmd` 等 hook wrapper 保持可执行。
 - `pnpm typecheck`
 - `pnpm lint`
+
+## 改名适配与退役
+
+插件 ROOT、DATA、ID、NAME 两套环境变量由同一可信插件上下文生成，ROOT/DATA 的两套模板同源，不能由外部环境分别覆盖。双键归一后相等才接受；冲突或无效拒绝并 fail-closed。新旧方法注册同一 handler，发送端每次只发一次，不在失败后盲目重发。1.0 前一个 minor 发退役警告；1.0 移除运行时旧别名与旧 manifest 发现，历史结果读取单独裁决。详见 [契约映射](plans/zody-rename-execution/contract-map.md)。

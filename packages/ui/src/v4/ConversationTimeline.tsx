@@ -18,7 +18,7 @@ import {
 import { flushSync } from "react-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ArrowDownIcon } from "lucide-react";
-import { TID_V4_TIMELINE, TID_V4_TIMELINE_BOTTOM } from "@zcode/shared";
+import { TID_V4_TIMELINE, TID_V4_TIMELINE_BOTTOM } from "@zody/shared";
 import type {
   ApiRetryState,
   AttachmentRef,
@@ -27,11 +27,11 @@ import type {
   ConversationRowTarget,
   QueueItem,
   SessionPhase,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { cn } from "@/components/lib/utils.js";
 import { runUserAction } from "@/lib/userActionTelemetry.js";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { ConversationTurnGroup } from "@/v4/ConversationTurnGroup.js";
 import {
@@ -399,7 +399,7 @@ function ConversationTimelineImpl({
   scrollToQueryActionRef,
   selectionActions,
 }: ConversationTimelineProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const scrollRef = useRef<HTMLDivElement>(null);
   // fork（F4.8）：headerSlot 高度跟踪/scrollMargin 随分享导入只读块删除。
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());

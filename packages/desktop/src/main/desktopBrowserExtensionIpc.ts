@@ -6,8 +6,8 @@ import {
   type BrowserExtensionActionResult,
   type BrowserExtensionBridgeStatus,
   type BrowserExtensionPairingTicket,
-} from "@zcode/shared";
-import { EXTENSION_BRIDGE_DEFAULT_PORT } from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared";
+import { EXTENSION_BRIDGE_DEFAULT_PORT } from "@zody/shared/browser-extension-transport";
 import type { ExtensionBridgeController } from "./extensionBridge/index.js";
 
 export interface DesktopBrowserExtensionIpcDeps {

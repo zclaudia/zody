@@ -19,13 +19,13 @@ import type {
   DropAnimation,
 } from "@dnd-kit/core";
 import type {
-  ZCodeGroupedTaskView,
-  ZCodeTaskGroupColor,
-} from "@zcode/services";
-import { type ZCodeTaskMeta } from "@zcode/shared";
+  ZodyGroupedTaskView,
+  ZodyTaskGroupColor,
+} from "@zody/services";
+import { type ZodyTaskMeta } from "@zody/shared";
 import { createPortal } from "react-dom";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { TaskRenameDialog } from "@/TaskRenameDialog.js";
 import {
   shouldHideGroupedTaskContent,
@@ -38,9 +38,9 @@ import { resolveTaskFileTreeTargetFromTabs } from "@/lib/taskFileTreeTarget.js";
 import { toast } from "@/components/ui/toast.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import {
-  selectWorkspaceZCodeState,
-  useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
+  selectWorkspaceZodyState,
+  useZodySessionStore,
+} from "@/store/zodySessionStore.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
 import { buildWorkspaceServiceLookup } from "@/lib/workspaceServiceResolver.js";
 import { applyTaskQueryCacheMutation } from "@/store/taskQueryCacheStore.js";
@@ -226,10 +226,10 @@ const groupedTaskCollisionDetection: CollisionDetection = (args) => {
 };
 
 function getGroupedTaskOverTaskPreviewView(
-  view: ZCodeGroupedTaskView,
+  view: ZodyGroupedTaskView,
   event: DragOverEvent,
   position: GroupedTaskDragDirectionPosition,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const activeTaskKey = getGroupedTaskDragTaskKey(event.active.data.current);
   const overTaskKey = getGroupedTaskDragTaskKey(event.over?.data.current);
   if (!activeTaskKey || !overTaskKey || activeTaskKey === overTaskKey) {
@@ -243,10 +243,10 @@ function getGroupedTaskOverTaskPreviewView(
 }
 
 function getGroupedTaskOverCollapsedGroupPreviewView(
-  view: ZCodeGroupedTaskView,
+  view: ZodyGroupedTaskView,
   event: DragOverEvent,
   position: GroupedTaskDragDirectionPosition,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const activeTaskKey = getGroupedTaskDragTaskKey(event.active.data.current);
   const overGroupId = getGroupedTaskCollapsedOverGroupId(
     event.over?.data.current,
@@ -262,10 +262,10 @@ function getGroupedTaskOverCollapsedGroupPreviewView(
 }
 
 function getGroupedTaskOverGroupHeaderPreviewView(
-  view: ZCodeGroupedTaskView,
+  view: ZodyGroupedTaskView,
   event: DragOverEvent,
   position: GroupedTaskDragDirectionPosition,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const activeTaskKey = getGroupedTaskDragTaskKey(event.active.data.current);
   const overGroupId = getGroupedTaskHeaderOverGroupId(event.over?.data.current);
   if (!activeTaskKey || !overGroupId) {
@@ -285,10 +285,10 @@ function getGroupedTaskOverGroupHeaderPreviewView(
 }
 
 function getGroupedTaskOverGroupFooterPreviewView(
-  view: ZCodeGroupedTaskView,
+  view: ZodyGroupedTaskView,
   event: DragOverEvent,
   position: GroupedTaskDragDirectionPosition,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const activeTaskKey = getGroupedTaskDragTaskKey(event.active.data.current);
   const overGroupId = getGroupedTaskFooterOverGroupId(event.over?.data.current);
   if (!activeTaskKey || !overGroupId) {
@@ -308,9 +308,9 @@ function getGroupedTaskOverGroupFooterPreviewView(
 }
 
 function getGroupedTaskOverEmptyDropZonePreviewView(
-  view: ZCodeGroupedTaskView,
+  view: ZodyGroupedTaskView,
   event: DragOverEvent,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const activeTaskKey = getGroupedTaskDragTaskKey(event.active.data.current);
   const overGroupId = getGroupedTaskEmptyOverGroupId(event.over?.data.current);
   if (!activeTaskKey || !overGroupId) {
@@ -323,10 +323,10 @@ function getGroupedTaskOverEmptyDropZonePreviewView(
 }
 
 function getGroupedGroupOverGroupPreviewView(
-  view: ZCodeGroupedTaskView,
+  view: ZodyGroupedTaskView,
   event: DragOverEvent,
   position: GroupedTaskDragDirectionPosition,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const activeGroupId = getGroupedTaskDragGroupId(event.active.data.current);
   const overGroupId = getGroupedGroupOverGroupId(event.over?.data.current);
   if (!activeGroupId || !overGroupId || activeGroupId === overGroupId) {
@@ -340,10 +340,10 @@ function getGroupedGroupOverGroupPreviewView(
 }
 
 function getGroupedGroupOverTaskPreviewView(
-  view: ZCodeGroupedTaskView,
+  view: ZodyGroupedTaskView,
   event: DragOverEvent,
   position: GroupedTaskDragDirectionPosition,
-): ZCodeGroupedTaskView {
+): ZodyGroupedTaskView {
   const activeGroupId = getGroupedTaskDragGroupId(event.active.data.current);
   const overTaskKey = getGroupedTaskDragTaskKey(event.over?.data.current);
   if (!activeGroupId || !overTaskKey) {
@@ -356,7 +356,7 @@ function getGroupedGroupOverTaskPreviewView(
   });
 }
 
-function getGroupedTaskViewSignature(view: ZCodeGroupedTaskView): string {
+function getGroupedTaskViewSignature(view: ZodyGroupedTaskView): string {
   return view.nodes
     .map((node) =>
       node.type === "task"
@@ -613,7 +613,7 @@ export function WorkspaceGroupedTasksSection({
   onStickyGroupHeaderChange?: (node: ReactNode | null) => void;
   // fork（F4.3）：onOpenAutomations prop（闲时分组「+」跳自动化页）随闲时任务全链路删除。
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const baseServices = useBaseWorkspaceServices();
   const sessionsById = useRemoteWorkspaceSessionStore(
     (state) => state.sessionsById,
@@ -641,32 +641,32 @@ export function WorkspaceGroupedTasksSection({
       ),
     [baseServices, serviceResolverState, workspaceTabs],
   );
-  const removeTaskState = useZCodeSessionStore(
+  const removeTaskState = useZodySessionStore(
     (state) => state.removeTaskState,
   );
-  const upsertOptimisticTaskListItem = useZCodeSessionStore(
+  const upsertOptimisticTaskListItem = useZodySessionStore(
     (state) => state.upsertOptimisticTaskListItem,
   );
-  const setTaskUnreadIndicator = useZCodeSessionStore(
+  const setTaskUnreadIndicator = useZodySessionStore(
     (state) => state.setTaskUnreadIndicator,
   );
-  const groupedDraftTask = useZCodeSessionStore(
+  const groupedDraftTask = useZodySessionStore(
     (state) =>
-      selectWorkspaceZCodeState(
+      selectWorkspaceZodyState(
         state,
         activeWorkspacePath,
         activeWorkspaceIdentity,
       ).groupedDraftTask,
   );
-  const groupedDraftFocusVersion = useZCodeSessionStore(
+  const groupedDraftFocusVersion = useZodySessionStore(
     (state) =>
-      selectWorkspaceZCodeState(
+      selectWorkspaceZodyState(
         state,
         activeWorkspacePath,
         activeWorkspaceIdentity,
       ).draftFocusVersion,
   );
-  const clearGroupedDraftTask = useZCodeSessionStore(
+  const clearGroupedDraftTask = useZodySessionStore(
     (state) => state.clearGroupedDraftTask,
   );
   const {
@@ -710,8 +710,8 @@ export function WorkspaceGroupedTasksSection({
   const renameInputRef = useRef<HTMLInputElement | null>(null);
   const groupMenuItemsRef = useRef<TaskGroupMenuItem[]>([]);
   const groupIdsRef = useRef<string[]>([]);
-  const dragOriginViewRef = useRef<ZCodeGroupedTaskView | null>(null);
-  const dragPreviewViewRef = useRef<ZCodeGroupedTaskView | null>(null);
+  const dragOriginViewRef = useRef<ZodyGroupedTaskView | null>(null);
+  const dragPreviewViewRef = useRef<ZodyGroupedTaskView | null>(null);
   const lastDragOverEventRef = useRef<DragOverEvent | null>(null);
   const createDraftContextRef = useRef({
     activeTaskId,
@@ -953,7 +953,7 @@ export function WorkspaceGroupedTasksSection({
   );
 
   const getTaskWorkspaceLabel = useCallback(
-    (task: ZCodeTaskMeta) => {
+    (task: ZodyTaskMeta) => {
       const tab = workspaceTabByKey.get(
         buildTaskWorkspaceKey(task.workspacePath, task.workspaceIdentity),
       );
@@ -983,7 +983,7 @@ export function WorkspaceGroupedTasksSection({
   }, [activeWorkspaceIdentity, activeWorkspacePath, intl, workspaceTabByKey]);
 
   const getTaskRemoteSessionId = useCallback(
-    (task: ZCodeTaskMeta) =>
+    (task: ZodyTaskMeta) =>
       workspaceServiceLookup.get(
         buildTaskWorkspaceKey(task.workspacePath, task.workspaceIdentity),
       )?.remoteSessionId,
@@ -991,7 +991,7 @@ export function WorkspaceGroupedTasksSection({
   );
 
   const handleOpenTaskFileTree = useCallback(
-    (task: ZCodeTaskMeta) => {
+    (task: ZodyTaskMeta) => {
       const target = resolveTaskFileTreeTargetFromTabs(task, workspaceTabs);
       if (!onOpenFileTree || !target) {
         return;
@@ -1046,13 +1046,13 @@ export function WorkspaceGroupedTasksSection({
     setRenameDraft("");
   }, []);
 
-  const handleStartRenameTask = useCallback((task: ZCodeTaskMeta) => {
+  const handleStartRenameTask = useCallback((task: ZodyTaskMeta) => {
     setRenamingTaskKey(taskKey(task));
     setRenameDraft(task.title ?? "");
   }, []);
 
   const handleMoveTaskToGroup = useCallback(
-    (task: ZCodeTaskMeta, groupId: string | null) => {
+    (task: ZodyTaskMeta, groupId: string | null) => {
       // archivingTaskKeys 过滤后的 view 只用于渲染；若拿它计算并持久化排序，
       // 归档请求失败前的任意结构变更都会把被隐藏任务从权威分组中永久删除。
       const nextView = moveTaskByMenu(authoritativeView, task, groupId);
@@ -1067,7 +1067,7 @@ export function WorkspaceGroupedTasksSection({
   );
 
   const handleMoveTaskToTop = useCallback(
-    (task: ZCodeTaskMeta) => {
+    (task: ZodyTaskMeta) => {
       const nextView = moveTaskToTopByMenu(authoritativeView, task);
       if (nextView === authoritativeView) {
         return;
@@ -1104,7 +1104,7 @@ export function WorkspaceGroupedTasksSection({
     }
 
     try {
-      const meta = await workspaceServices.services.zcodeTaskService.renameTask(
+      const meta = await workspaceServices.services.zodyTaskService.renameTask(
         {
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -1148,7 +1148,7 @@ export function WorkspaceGroupedTasksSection({
   ]);
 
   const handleMarkTaskAsUnread = useCallback(
-    (task: ZCodeTaskMeta) => {
+    (task: ZodyTaskMeta) => {
       const workspaceServices = workspaceServiceLookup.get(
         buildTaskWorkspaceKey(task.workspacePath, task.workspaceIdentity),
       );
@@ -1156,7 +1156,7 @@ export function WorkspaceGroupedTasksSection({
         return;
       }
 
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .setTaskUnread({
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -1199,7 +1199,7 @@ export function WorkspaceGroupedTasksSection({
   );
 
   const handleCloseTask = useCallback(
-    (task: ZCodeTaskMeta) => {
+    (task: ZodyTaskMeta) => {
       const workspaceServices = workspaceServiceLookup.get(
         buildTaskWorkspaceKey(task.workspacePath, task.workspaceIdentity),
       );
@@ -1215,7 +1215,7 @@ export function WorkspaceGroupedTasksSection({
         return new Set(current).add(closingTaskKey);
       });
 
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .archiveTask({
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -1280,7 +1280,7 @@ export function WorkspaceGroupedTasksSection({
   );
 
   const handleUpdateGroupColor = useCallback(
-    (groupId: string, color: ZCodeTaskGroupColor) => {
+    (groupId: string, color: ZodyTaskGroupColor) => {
       void updateGroupColor(groupId, color).catch(() => {
         toast(intl.formatMessage({ id: "taskGroup.colorFailed" }));
       });
@@ -1306,7 +1306,7 @@ export function WorkspaceGroupedTasksSection({
   }, []);
 
   const setViewWithGroupedTaskAnimation = useCallback(
-    (nextView: ZCodeGroupedTaskView) => {
+    (nextView: ZodyGroupedTaskView) => {
       const previousRects = collectGroupedTaskLayoutRects(
         groupedSectionRootRef.current,
       );
@@ -1703,7 +1703,7 @@ export function WorkspaceGroupedTasksSection({
   ]);
 
   const renderTopLevelNode = useCallback(
-    (node: ZCodeGroupedTaskView["nodes"][number]) =>
+    (node: ZodyGroupedTaskView["nodes"][number]) =>
       node.type === "group" ? (
         <div
           key={node.group.id}

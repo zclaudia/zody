@@ -16,12 +16,13 @@ import type {
   McpUiToolInputNotification,
   McpUiToolResultNotification,
 } from "@modelcontextprotocol/ext-apps";
-import type { McpAppsDownloadFileItem } from "@zcode/shared/mcp-apps";
+import type { McpAppsDownloadFileItem } from "@zody/shared/mcp-apps";
 import {
   MCP_APPS_SET_WIDGET_STATE_METHOD,
   MCP_APPS_WIDGET_STATE_CONTEXT_KEY,
-} from "@zcode/shared/mcp-apps";
-import type { OpenAiCompatApi, ZcodeAliasApi } from "./aliasApi.js";
+  MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL,
+} from "@zody/shared/mcp-apps";
+import type { OpenAiCompatApi, ZodyAliasApi } from "./aliasApi.js";
 import { createOpenAiCompatApi, readOpenAiGlobals } from "./openaiAlias.js";
 
 /**
@@ -70,10 +71,12 @@ export interface AliasAppLike {
   downloadFile(params: { contents: McpAppsDownloadFileItem[] }): Promise<{ isError?: boolean }>;
 }
 
-export const ZCODE_GLOBALS_EVENT = "zcode:globals";
+/** legacy `zcode:globals`（explicit-retention，见 specs/zody-rename-plugin-wire.md §1.1）；canonical 紧随其后。 */
+export const ZODY_GLOBALS_EVENT = "zcode:globals";
+export const ZODY_GLOBALS_EVENT_CANONICAL = "zody:globals";
 
 export interface PluginSandboxAliasRuntime {
-  zcode: ZcodeAliasApi;
+  zcode: ZodyAliasApi;
   openai: OpenAiCompatApi;
   /** 是否已经（或正在）握手；诊断用。 */
   readonly connecting: boolean;
@@ -147,9 +150,13 @@ export function createPluginSandboxAliasRuntime(options: {
           // widgetState 初值随握手经 hostContext 扩展键下发（宿主只在创建桥时带一次）。
           if (!widgetStateSeeded) {
             widgetStateSeeded = true;
-            const seeded = (app.getHostContext() as Record<string, unknown> | undefined)?.[
-              MCP_APPS_WIDGET_STATE_CONTEXT_KEY
-            ];
+            const context = app.getHostContext() as Record<string, unknown> | undefined;
+            // 读侧 canonical 优先、缺省回退 legacy（spec §4）；用 hasOwn 区分“未下发”与合法的 null 快照。
+            const seeded = context
+              ? Object.hasOwn(context, MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL)
+                ? context[MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL]
+                : context[MCP_APPS_WIDGET_STATE_CONTEXT_KEY]
+              : undefined;
             if (seeded !== undefined) widgetState = seeded;
           }
           notify();
@@ -165,7 +172,7 @@ export function createPluginSandboxAliasRuntime(options: {
   const whenReady = <T>(run: () => Promise<T>): Promise<T> => ready().then(run);
 
   const hostContext = () => app.getHostContext() ?? null;
-  const zcodeTarget: ZcodeAliasApi = {
+  const zodyTarget: ZodyAliasApi = {
     get toolInput() {
       return toolInput;
     },
@@ -294,11 +301,11 @@ export function createPluginSandboxAliasRuntime(options: {
         return Reflect.get(object, key, receiver);
       },
     });
-  const zcode = lazy(zcodeTarget);
-  const openai = lazy(createOpenAiCompatApi(zcodeTarget));
+  const zody = lazy(zodyTarget);
+  const openai = lazy(createOpenAiCompatApi(zodyTarget));
 
   return {
-    zcode,
+    zcode: zody,
     openai,
     get connecting() {
       return connectPromise !== null;

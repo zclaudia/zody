@@ -110,11 +110,7 @@ const optionalBackendIdSchema = z.preprocess(
   (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
   backendIdSchema.optional(),
 );
-const configRevisionSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(Number.MAX_SAFE_INTEGER);
+const configRevisionSchema = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
 const gatewayUrlSchema = z.string().trim().min(1).max(MAX_GATEWAY_URL_CHARS);
 const namespaceSchema = z.string().max(MAX_NAMESPACE_CHARS);
@@ -124,10 +120,9 @@ const credentialSchema = z.string().trim().min(1).max(MAX_CREDENTIAL_CHARS);
 export const MOBILE_UI_BRIDGE_CREDENTIAL_PREFIX = "zgd_";
 
 function credentialSchemaWithPrefix() {
-  return credentialSchema.refine(
-    (value) => value.startsWith(MOBILE_UI_BRIDGE_CREDENTIAL_PREFIX),
-    { message: `credential must start with ${MOBILE_UI_BRIDGE_CREDENTIAL_PREFIX}` },
-  );
+  return credentialSchema.refine((value) => value.startsWith(MOBILE_UI_BRIDGE_CREDENTIAL_PREFIX), {
+    message: `credential must start with ${MOBILE_UI_BRIDGE_CREDENTIAL_PREFIX}`,
+  });
 }
 
 /** 持久化的连接配置；configRevision 由原生 store 维护，页面只读后原样回传。 */
@@ -304,7 +299,11 @@ export function parseMobileShellConfig(
   }
   const normalized = normalizeShellConfig(parsed.data, options);
   return normalized
-    ? { ...normalized, schemaVersion: MOBILE_UI_BRIDGE_SCHEMA_VERSION, configRevision: parsed.data.configRevision }
+    ? {
+        ...normalized,
+        schemaVersion: MOBILE_UI_BRIDGE_SCHEMA_VERSION,
+        configRevision: parsed.data.configRevision,
+      }
     : undefined;
 }
 

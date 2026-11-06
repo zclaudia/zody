@@ -17,12 +17,12 @@ export type DynamicWorkflowMode = (typeof DYNAMIC_WORKFLOW_MODES)[number];
  *   - 打包 production：删除继承值，永不写入。
  * 没有 main 的 Web/server Host 直接读进程环境（运维/开发者设置）。
  */
-export const ZCODE_DYNAMIC_WORKFLOW_MODE_ENV = "ZCODE_DYNAMIC_WORKFLOW_MODE";
+export const ZODY_DYNAMIC_WORKFLOW_MODE_ENV = "ZODY_DYNAMIC_WORKFLOW_MODE";
 
 /**
  * fork（F2.6b，细则 D1b）：不再有服务端下发，`/api/v1/client/configs` 的 `dynamicWorkflow`
  * key 消失。提供值固定为 `onDemand`、来源记为 `default`——功能完整可用且用户可在设置里改；
- * `ZCODE_DYNAMIC_WORKFLOW_MODE` 三档覆盖规则不变（dynamic-workflow-feature 同一折叠），
+ * `ZODY_DYNAMIC_WORKFLOW_MODE` 三档覆盖规则不变（dynamic-workflow-feature 同一折叠），
  * 用户选择仍以设置 `dynamicWorkflowMode` 为准。原「请求失败 fail-closed 到 disabled」的
  * 语义随远端来源一并移除：fork 上缺省即提供，不再依赖任何远端响应。
  */
@@ -131,7 +131,7 @@ function resolveDynamicWorkflowOffer(input: {
   remote: unknown;
   env?: Record<string, string | undefined>;
 }): DynamicWorkflowClientConfig {
-  const override = normalizeDynamicWorkflowMode(input.env?.[ZCODE_DYNAMIC_WORKFLOW_MODE_ENV]);
+  const override = normalizeDynamicWorkflowMode(input.env?.[ZODY_DYNAMIC_WORKFLOW_MODE_ENV]);
   if (override) return createDynamicWorkflowClientConfig(override, "override");
   const remoteMode = normalizeDynamicWorkflowMode(
     typeof input.remote === "object" && input.remote !== null

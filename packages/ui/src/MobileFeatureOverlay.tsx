@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
-import type { MobileTargetRef, WebRemoteControlWorkspaceListResult } from "@zcode/shared";
-import { resolveWebRemoteControlWorkspaceKey } from "@zcode/shared";
+import type { MobileTargetRef, WebRemoteControlWorkspaceListResult } from "@zody/shared";
+import { resolveWebRemoteControlWorkspaceKey } from "@zody/shared";
 import { WebRemoteControlMobileSearch } from "@/WebRemoteControlMobileSearch.js";
 import {
   MobileWorkspaceFileBrowser,
@@ -9,7 +9,7 @@ import {
 } from "@/MobileWorkspaceFileBrowser.js";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 import { logger } from "@/logger.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useMobileRemoteRefreshGuard } from "@/mobileRemoteRefreshGuards.js";
 
 export type WebRemoteControlMobileFeaturePage = "search" | "files" | "notifications";
@@ -39,7 +39,7 @@ export function MobileFeatureOverlay({
   onClose: () => void;
   onSwitchingWorkspaceChange: (switching: boolean) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const containerRef = useRef<HTMLDivElement | null>(null);
   // 文件/搜索/通知全屏弹层在卸载时才解除，避免 reload 丢失当前浏览上下文。
   useMobileRemoteRefreshGuard("mobile-feature-overlay", () => "active-overlay");

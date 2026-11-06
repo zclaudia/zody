@@ -118,17 +118,17 @@ onSendReady()                       // 新 channel 可用：上层 flush 缓冲�
 
 ## 状态归属
 
-| 状态                                                                                        | 唯一所有者                                                                                                                                                                                                                    |
-| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 远程访问开关、gateway 地址、namespace                                                       | 桌面设置（`AppSettings.remoteAccess`），替代 `webRemoteControlLastEnabledContext` 和 `webRemoteControlExternalRelayDevice`；2026-10-24 起该域新增 `allowMobileOpenArbitraryPath`（缺省 true），仍是桌面设置唯一所有者，Main 只读                                                                                                    |
-| backend 凭证                                                                                | 桌面凭据存储，复用原先存 `pass_hash` 的 credential 服务。不写入 settings，也不写入日志                                                                                                                                        |
-| gateway backend 连接、epoch                                                                 | 桌面 Main 新增的 `RemoteGatewayBackend`，每个 Electron 进程一个，订阅开关和配置                                                                                                                                               |
-| 当前 channel（最多一条）及对应手机的 `clientInstanceId`                                     | App 级 runtime 的 `GatewayDeviceTransport`                                                                                                                                                                                    |
-| 各窗口的 workspace 标签页和任务索引                                                         | **事实源**是各窗口 renderer 的 tabStore 和任务列表。Main 新增 `RemoteWorkspaceDirectory`，以 `windowId` 为 key 保存每个窗口最近一次的整份快照（只读投影，每次同步整体替换），对外提供聚合列表和 `resolveWindow(workspaceKey)` |
-| bridge、rpc-frame 序号、ACK 与重放缓冲                                                      | 现有 (b)(c) 层，现状不变                                                                                                                                                                                                      |
-| 最近项目                                                                                    | 桌面设置 `recentProjects`（renderer 写入，现状不变）。Main 只读，并为每条生成本次会话内有效的不透明 id                                                                                                                        |
-| 手机端 gateway 配置、设备凭证、所选电脑，以及按 `backendId` 分别持久化的 `clientInstanceId` | Android 原生安全存储（Keystore 加密），经 JS bridge 读写。只有浏览器开发模式（`pnpm dev:mobile-remote`）允许降级为 `localStorage`；release 构建在原生桥缺失时拒绝保存凭证并报错，不得降级，避免 `zgd_` 明文落入浏览器存储     |
-| 会话与任务事实                                                                              | CLI `ConversationSnapshot`，现状不变                                                                                                                                                                                          |
+| 状态                                                                                        | 唯一所有者                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 远程访问开关、gateway 地址、namespace                                                       | 桌面设置（`AppSettings.remoteAccess`），替代 `webRemoteControlLastEnabledContext` 和 `webRemoteControlExternalRelayDevice`；2026-10-24 起该域新增 `allowMobileOpenArbitraryPath`（缺省 true），仍是桌面设置唯一所有者，Main 只读 |
+| backend 凭证                                                                                | 桌面凭据存储，复用原先存 `pass_hash` 的 credential 服务。不写入 settings，也不写入日志                                                                                                                                           |
+| gateway backend 连接、epoch                                                                 | 桌面 Main 新增的 `RemoteGatewayBackend`，每个 Electron 进程一个，订阅开关和配置                                                                                                                                                  |
+| 当前 channel（最多一条）及对应手机的 `clientInstanceId`                                     | App 级 runtime 的 `GatewayDeviceTransport`                                                                                                                                                                                       |
+| 各窗口的 workspace 标签页和任务索引                                                         | **事实源**是各窗口 renderer 的 tabStore 和任务列表。Main 新增 `RemoteWorkspaceDirectory`，以 `windowId` 为 key 保存每个窗口最近一次的整份快照（只读投影，每次同步整体替换），对外提供聚合列表和 `resolveWindow(workspaceKey)`    |
+| bridge、rpc-frame 序号、ACK 与重放缓冲                                                      | 现有 (b)(c) 层，现状不变                                                                                                                                                                                                         |
+| 最近项目                                                                                    | 桌面设置 `recentProjects`（renderer 写入，现状不变）。Main 只读，并为每条生成本次会话内有效的不透明 id                                                                                                                           |
+| 手机端 gateway 配置、设备凭证、所选电脑，以及按 `backendId` 分别持久化的 `clientInstanceId` | Android 原生安全存储（Keystore 加密），经 JS bridge 读写。只有浏览器开发模式（`pnpm dev:mobile-remote`）允许降级为 `localStorage`；release 构建在原生桥缺失时拒绝保存凭证并报错，不得降级，避免 `zgd_` 明文落入浏览器存储        |
+| 会话与任务事实                                                                              | CLI `ConversationSnapshot`，现状不变                                                                                                                                                                                             |
 
 ## App 级聚合与路由（桌面 Main）
 
@@ -151,28 +151,28 @@ onSendReady()                       // 新 channel 可用：上层 flush 缓冲�
 
 在 `packages/shared/src/web-remote-control.ts` 中扩展 `zcode_type`，全部带 strict schema：
 
-| 类型                                                           | 方向      | 语义                                                                                                                                                                                                                                                                                                                  |
-| -------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bootstrap-response` 新增字段                                  | 桌面→手机 | `desktopWindowState: "open" \| "none"`、`recentProjects: [{id, label, location}]`。`label` 是目录名，`location` 是用于展示的父路径；已经打开的项目不出现在这个列表里                                                                                                                                                  |
-| `recent-projects-updated`                                      | 桌面→手机 | 最近项目或窗口状态变化时主动推送，按签名去重                                                                                                                                                                                                                                                                          |
-| `workspace-open-request` / `workspace-open-response`           | 双向      | 手机传 `recentProjectId`。桌面校验它属于当前下发的列表，然后在主窗口新开标签页：复用 `OpenWorkspacePath` 的内部路径，不弹 deep link 的原生确认框（`confirmExternalWorkspaceOpen` 只用于外部链接）；如果没有窗口，先执行 `ensurePrimaryWindow("remote-control")`。成功的标志是该 workspace 出现在聚合列表里，10 秒超时 |
-| `desktop-window-open-request` / `desktop-window-open-response` | 双向      | 调用 `ensurePrimaryWindow("remote-control")`，沿用它已有的强制升级等 `canCreateWindow` gate                                                                                                                                                                                                                           |
-| `workspace-open-path-request` / `workspace-open-path-response`（appProtocol 4） | 双向 | 手机传 `workspacePath`（已存在的本地绝对目录）。桌面先校验 `allowMobileOpenArbitraryPath` 开关与 `isValidLocalWorkspaceDirectory`，通过后与最近项目打开共用同一打开链路和 pendingWorkspaceOpens 成功判定。规则见 [第二批 spec](mobile-remote-phase2.md) |
-| `mobile-directory-list-request` / `mobile-directory-list-response`（appProtocol 4） | 双向 | app 级目录列表（不依赖 workspace bridge）：`path` 省略 = homedir；仅目录条目、上限 1000；供手机「打开其他项目」选择器使用。规则见 [第二批 spec](mobile-remote-phase2.md) |
+| 类型                                                                                | 方向      | 语义                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bootstrap-response` 新增字段                                                       | 桌面→手机 | `desktopWindowState: "open" \| "none"`、`recentProjects: [{id, label, location}]`。`label` 是目录名，`location` 是用于展示的父路径；已经打开的项目不出现在这个列表里                                                                                                                                                  |
+| `recent-projects-updated`                                                           | 桌面→手机 | 最近项目或窗口状态变化时主动推送，按签名去重                                                                                                                                                                                                                                                                          |
+| `workspace-open-request` / `workspace-open-response`                                | 双向      | 手机传 `recentProjectId`。桌面校验它属于当前下发的列表，然后在主窗口新开标签页：复用 `OpenWorkspacePath` 的内部路径，不弹 deep link 的原生确认框（`confirmExternalWorkspaceOpen` 只用于外部链接）；如果没有窗口，先执行 `ensurePrimaryWindow("remote-control")`。成功的标志是该 workspace 出现在聚合列表里，10 秒超时 |
+| `desktop-window-open-request` / `desktop-window-open-response`                      | 双向      | 调用 `ensurePrimaryWindow("remote-control")`，沿用它已有的强制升级等 `canCreateWindow` gate                                                                                                                                                                                                                           |
+| `workspace-open-path-request` / `workspace-open-path-response`（appProtocol 4）     | 双向      | 手机传 `workspacePath`（已存在的本地绝对目录）。桌面先校验 `allowMobileOpenArbitraryPath` 开关与 `isValidLocalWorkspaceDirectory`，通过后与最近项目打开共用同一打开链路和 pendingWorkspaceOpens 成功判定。规则见 [第二批 spec](mobile-remote-phase2.md)                                                               |
+| `mobile-directory-list-request` / `mobile-directory-list-response`（appProtocol 4） | 双向      | app 级目录列表（不依赖 workspace bridge）：`path` 省略 = homedir；仅目录条目、上限 1000；供手机「打开其他项目」选择器使用。规则见 [第二批 spec](mobile-remote-phase2.md)                                                                                                                                              |
 
 ## Channel 帧协议（新增，`packages/shared`）
 
 Channel 是 gateway 的帧级中继：保序、区分 text 和 binary，gateway 不解析帧内容。单帧物理上限由 gateway 数据面的 WS `maxPayload` 决定：代码里是 64 MiB（`zclaudia-gateway/src/server.ts:1001` 的 `channelWss`），控制面是 50 MiB（同文件 L1000）。`docs/protocol-v4.md` §10.4 把两者都写成 50 MB，以代码为准。两者都远高于本层实际使用的 1 MiB。ZCode 只使用 text 帧，每帧一个 JSON。新增 `packages/shared/src/web-remote-control-channel.ts`：
 
-| 帧               | 方向                    | 字段与语义                                                                                                                                                 |
-| ---------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hello`          | 手机→桌面，channel 首帧 | `protocolVersion: 1`、`appProtocol: {min, max}`、`clientInstanceId`、`clientName`、`appVersion`。桌面 10 秒内没收到就关闭 channel                          |
-| `hello_ack`      | 桌面→手机               | `appProtocol`（协商结果）、`desktopAppVersion`。之后双方进入 ready，各自触发 `onSendReady`                                                                 |
-| `data`           | 双向                    | `{type:"data", payload, client_ts?}`，`payload` 即现有的 `WebRemoteControlAppPayload`                                                                      |
-| `ping` / `pong`  | 双向                    | `{id}`。gateway 不在数据 socket 上发 ping，所以由应用层每 15 秒发一次；45 秒没有收到任何入站帧就判定 channel 已死并关闭                                    |
-| `close`          | 双向，关闭前发出        | `reason`：`superseded`（被另一部手机替换）、`incompatible-version`、`desktop-stopping`（桌面关闭远程访问或退出）、`client-leaving`                         |
-| `close_ack`      | 手机→桌面               | 收到 `close` 后立即回，不带字段。只用于让桌面确认 `close{superseded}` 已送达（见下文），桌面不需要业务处理                                                 |
-| `protocol_error` | 双向                    | `{code, offendingType?}`。目前只有 `code: "unsupported-version"`：收到协商版本之外的类型或字段时回给对端。只用于诊断，双方都只记日志，不改变连接状态和页面 |
+| 帧               | 方向                    | 字段与语义                                                                                                                                                  |
+| ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hello`          | 手机→桌面，channel 首帧 | `protocolVersion: 2`（改名目标，当前实现为 1）、`appProtocol: {min, max}`、`clientInstanceId`、`clientName`、`appVersion`。桌面 10 秒内没收到就关闭 channel |
+| `hello_ack`      | 桌面→手机               | `appProtocol`（协商结果）、`desktopAppVersion`。之后双方进入 ready，各自触发 `onSendReady`                                                                  |
+| `data`           | 双向                    | `{type:"data", payload, client_ts?}`，`payload` 即现有的 `WebRemoteControlAppPayload`                                                                       |
+| `ping` / `pong`  | 双向                    | `{id}`。gateway 不在数据 socket 上发 ping，所以由应用层每 15 秒发一次；45 秒没有收到任何入站帧就判定 channel 已死并关闭                                     |
+| `close`          | 双向，关闭前发出        | `reason`：`superseded`（被另一部手机替换）、`incompatible-version`、`desktop-stopping`（桌面关闭远程访问或退出）、`client-leaving`                          |
+| `close_ack`      | 手机→桌面               | 收到 `close` 后立即回，不带字段。只用于让桌面确认 `close{superseded}` 已送达（见下文），桌面不需要业务处理                                                  |
+| `protocol_error` | 双向                    | `{code, offendingType?}`。目前只有 `code: "unsupported-version"`：收到协商版本之外的类型或字段时回给对端。只用于诊断，双方都只记日志，不改变连接状态和页面  |
 
 `close_ack` 和 `protocol_error` 是新增帧类型，按「未知类型一律丢弃」的规则，旧版本对端会丢掉它们（`close_ack` 走超时分支），所以不需要提升 `protocolVersion`。
 
@@ -203,7 +203,7 @@ Channel 是 gateway 的帧级中继：保序、区分 text 和 binary，gateway 
 
 现状是手机页面由官方托管（`zcode.z.ai/remote/v3|v4`），APK 只负责把那个 URL 装进 WebView，页面和桌面版本天然配套。本次改造把页面打进 APK 内置 assets（见 Android 一节），从此 APK 和桌面各自升级、不再配套，因此需要两层版本：
 
-- **`protocolVersion`**：channel 帧格式（本文的 `hello`/`data`/`ping`/`close`）。只有帧格式发生不兼容变化时才递增；不相等就直接 `close{incompatible-version}`。
+- **`protocolVersion`**：channel 帧格式（本文的 `hello`/`data`/`ping`/`close`）。本次改名明确从 1 硬切到 2；与 rename generation 同值但含义独立。不相等就直接 `close{incompatible-version}`。
 - **`appProtocol`**：应用 payload（`zcode_type` 全集及其字段），是一个整数。双方各自声明支持的区间 `[min, max]`，`max` 是当前版本：
   - 桌面取两个区间的交集里最大的值，写入 `hello_ack.appProtocol`，之后双方都按这个版本收发。
   - 交集为空时，桌面发 `close{incompatible-version, upgrade}`。`upgrade` 取值为 `mobile` 或 `desktop`，指明哪一端需要升级：手机 `max` 小于桌面 `min` 时升级手机，反之升级桌面。手机据此显示「请更新 App」或「请更新电脑端」。
@@ -520,7 +520,7 @@ sequenceDiagram
    - 首次 `connect()` 失败可以重试；
    - 凭证判定：首次 `connect()` 被 `UNAUTHORIZED` 拒绝、以及关闭后 `discoverBackends()` 返回 401/403 时才进终态；只出现 close 1008 而复核成功时按可恢复处理；
    - 新失败原因映射正确。
-7. **真实 gateway 集成测试**：通过 `ZCODE_GATEWAY_IT_URL`、`ZCODE_GATEWAY_IT_ADMIN_TOKEN` 显式开启，环境缺失时跳过并说明原因。用真实 SDK 驱动桌面和手机两端的 transport，覆盖：
+7. **真实 gateway 集成测试**：通过 `ZODY_GATEWAY_IT_URL`、`ZODY_GATEWAY_IT_ADMIN_TOKEN` 显式开启，环境缺失时跳过并说明原因。用真实 SDK 驱动桌面和手机两端的 transport，覆盖：
    - bootstrap；
    - 超过 1 MiB 的逻辑消息切片；
    - 杀掉手机控制连接后靠重放补齐；
@@ -612,3 +612,20 @@ sequenceDiagram
 - **`pnpm knip`**：命令仍以退出码 1 结束，但这是既有基线（527 个未使用文件、110 个未使用依赖等，与 T0.1 无关）。四个新增依赖先在 `knip.json` 里按 workspace 加 `ignoreDependencies`（gateway-backend/protocol 由 T3.2、桌面 E2E 的手机端用例和 T3.4 分别消费），输出中不再出现 `@zclaudia`；代码落码后应删掉这段 ignore。
 - `pnpm typecheck`、`pnpm lint`（62 条既有 warning、0 error）、`pnpm architecture:check --changed`（`architecture: OK`，violations 0）通过。
 - **未覆盖**：打包后的桌面安装包（T7.1）与真机（T7.2）未验证；Electron 校验是在 `electron /tmp/…mjs` 的裸 main 进程里跑的，不是打包后的 App，且本机 Electron 无法进入 app ready（无 GUI 会话），脚本对 `app.whenReady()` 设了 8 秒上限后照常执行——`globalThis.WebSocket`/`fetch` 与 SDK 握手不依赖 app ready。
+
+## 改名实施目标
+
+本文件描述的现有行为在全面改名时须遵守 [Zody 改名运行时契约](zody-rename-runtime-contract.md)；代际门禁、来源摘要和资源清理以该目标规格为准，尚未实现的行为不视为当前已发布。
+
+### Phone payload discriminator and admission (app protocol 5)
+
+The channel protocol remains 2; the only supported local app protocol range is `[5, 5]`. The phone application payload discriminator is `zody_type`. An own top-level `zcode_type` is invalid, including when both keys are present; nested user content and historical records are opaque and must retain their bytes. A non-array object is checked before raw dispatch or schema parsing, so a non-strict parser cannot silently strip the obsolete key.
+
+```text
+phone hello [5,5] → channel negotiation → admission → active attachment → RPC / replay
+                                  └─ incompatible → upgrade peer + close
+Desktop raw payload → own-key guard → schema → admitted business operation
+Web raw payload     → own-key guard → schema → admitted business operation
+```
+
+Peers advertising app protocol 1–4 are rejected with an actionable upgrade direction before ready, active-channel lookup or replacement, RPC, or replay. The phone also closes a malformed or stale hello acknowledgement before ready. Rejection and diagnostics may close the connection but cannot dispatch business work or replace an existing attachment. Desktop continuous delivery and phone replayable delivery retain the same existing Host attachment, identity, owner, sequence and replay rules. Existing feature introduction versions stay unchanged. Actual encoded UTF-8 bytes govern the existing physical and logical budgets; fragmentation, acknowledgement, reassembly and recovery limits are not increased.

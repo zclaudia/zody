@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { Button } from "@zcode/ui";
+import { Button } from "@zody/ui";
 import type { MobileUiReleaseControllerStatus } from "./mobileUiReleaseControllerContracts.js";
 import type { MobileUiRefreshBlockReason } from "./mobileUiRefreshGuards.js";
 import { resolveWebRemoteControlScreenLocale } from "../webRemoteControlFailureScreen.js";

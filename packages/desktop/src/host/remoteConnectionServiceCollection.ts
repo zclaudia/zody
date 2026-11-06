@@ -8,9 +8,9 @@ import {
   ISettingService,
   ICredentialService,
   IBroadcastService,
-  IZCodeTaskService,
-  IZCodeAgentService,
-  IZCodeSessionService,
+  IZodyTaskService,
+  IZodyAgentService,
+  IZodySessionService,
   IFileWatcherService,
   IClientConfigService,
   IClientScenesService,
@@ -24,15 +24,15 @@ import {
   ISettingsSyncService,
   IPromptAttachmentTransferService,
   type IServiceAccessor,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   createSettingService,
   createBroadcastService,
   createClientScenesService,
   createSettingsSyncService,
   createMediaPreviewService,
-} from "@zcode/services/node";
-import type { ApiClient } from "@zcode/shared";
+} from "@zody/services/node";
+import type { ApiClient } from "@zody/shared";
 
 export function createRemoteConnectionServiceCollection(params: {
   clientConfigService: IClientConfigService;
@@ -40,8 +40,8 @@ export function createRemoteConnectionServiceCollection(params: {
   parentPort: Parameters<typeof createBroadcastService>[0];
   credentialService: ICredentialService;
   apiClient: ApiClient;
-  remoteZCodeTaskService: IZCodeTaskService;
-  remoteZCodeSessionService: IZCodeSessionService;
+  remoteZCodeTaskService: IZodyTaskService;
+  remoteZCodeSessionService: IZodySessionService;
   promptAttachmentTransferService: IPromptAttachmentTransferService;
 }): ServiceCollection {
   // fork（F4.7）：远端连接的 OAuth 服务与账号派生 Key logout 随官方账号链删除。
@@ -62,9 +62,9 @@ export function createRemoteConnectionServiceCollection(params: {
       .register(ISettingService, createSettingService())
       .register(ICredentialService, params.credentialService)
       .register(IBroadcastService, createBroadcastService(params.parentPort))
-      .register(IZCodeTaskService, params.remoteZCodeTaskService)
-      .register(IZCodeAgentService, params.connectionServices.zcodeAgentService)
-      .register(IZCodeSessionService, params.remoteZCodeSessionService)
+      .register(IZodyTaskService, params.remoteZCodeTaskService)
+      .register(IZodyAgentService, params.connectionServices.zodyAgentService)
+      .register(IZodySessionService, params.remoteZCodeSessionService)
       .register(IPromptAttachmentTransferService, params.promptAttachmentTransferService)
       .register(IFileWatcherService, params.connectionServices.fileWatcherService)
       .register(IClientScenesService, createClientScenesService({ apiClient: params.apiClient }))

@@ -2,7 +2,7 @@ import {
   safeParseMobileUiReleaseManifest,
   type MobileSessionContext,
   type MobileUiReleaseManifest,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * Remote 启动期的发布清单校验（spec 第 4.2、9.1、10 节）。
@@ -59,9 +59,7 @@ export function resolveMobileRemoteReleaseRequestUrl(
 ): string | undefined {
   const isProduction = options.isProduction ?? import.meta.env.PROD;
   if (isProduction) {
-    const origin = trimTrailingSlashes(
-      options.origin ?? globalThis.location?.origin ?? "",
-    );
+    const origin = trimTrailingSlashes(options.origin ?? globalThis.location?.origin ?? "");
     return origin ? `${origin}${MOBILE_REMOTE_RELEASE_ENDPOINT_PATH}` : undefined;
   }
   return `${trimTrailingSlashes(options.context.gatewayUrl)}${GATEWAY_PROXY_PATH_PREFIX}${encodeURIComponent(options.context.backendId)}${MOBILE_REMOTE_RELEASE_ENDPOINT_PATH}`;

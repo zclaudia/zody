@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RemoteTarget } from "@zcode/shared";
+import type { RemoteTarget } from "@zody/shared";
 import {
   buildRemoteWorkspaceIdentity,
   buildRemoteWorkspaceSessionMutation,

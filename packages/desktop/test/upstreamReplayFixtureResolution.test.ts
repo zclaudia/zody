@@ -87,10 +87,7 @@ describe("Upstream replay fixture resolution", () => {
   });
 
   it("replays a manual-review worker when its deterministic case-local fixture exists", () => {
-    const caseFixture = join(
-      caseFixtureDir,
-      "conversation-session-agent-step-message-scope.json",
-    );
+    const caseFixture = join(caseFixtureDir, "conversation-session-agent-step-message-scope.json");
     expect(
       hasUpstreamCaseLocalReplayFixtureForWorker({
         caseFixtureDir,
@@ -105,6 +102,50 @@ describe("Upstream replay fixture resolution", () => {
         specs: [manualSpec],
       }),
     ).toBe("replay");
+  });
+
+  it("uses the renamed workspace-ignore case for replay and strict lookup", () => {
+    const spec = join(
+      "repo",
+      "packages",
+      "desktop",
+      "test",
+      "e2e",
+      "conversation-session",
+      "manual-review",
+      "pending",
+      "conversation-session-workspace-zodyignore.test.ts",
+    );
+    const oldFixture = join(caseFixtureDir, "conversation-session-workspace-zcodeignore.json");
+    const newFixture = join(caseFixtureDir, "conversation-session-workspace-zodyignore.json");
+    const newManifest = join(caseManifestDir, "conversation-session-workspace-zodyignore.json");
+    const available = hasUpstreamCaseLocalReplayFixtureForWorker({
+      caseFixtureDir,
+      specs: [spec],
+      pathExists: (path) => path === oldFixture,
+    });
+    expect(available).toBe(false);
+    expect(
+      resolveUpstreamE2EHttpModeForWorker({
+        caseLocalReplayFixtureAvailable: available,
+        explicitReplayFixture: false,
+        specs: [spec],
+      }),
+    ).toBe("capture");
+    expect(() =>
+      resolveUpstreamReplayFixturePaths({
+        ...createOptions([commonFixturePath, oldFixture]),
+        mode: "strict-case-local",
+        specs: [spec],
+      }),
+    ).toThrow(/workspace-zodyignore/);
+    expect(
+      resolveUpstreamReplayFixturePaths({
+        ...createOptions([commonFixturePath, newFixture, newManifest]),
+        mode: "strict-case-local",
+        specs: [spec],
+      }),
+    ).toEqual([commonFixturePath, newFixture]);
   });
 
   it("rejects a worker that mixes formal and manual-review specs", () => {
@@ -149,10 +190,7 @@ describe("Upstream replay fixture resolution", () => {
   });
 
   it("includes an existing manual-review case-local fixture in replay paths", () => {
-    const caseFixture = join(
-      caseFixtureDir,
-      "conversation-session-agent-step-message-scope.json",
-    );
+    const caseFixture = join(caseFixtureDir, "conversation-session-agent-step-message-scope.json");
     const paths = resolveUpstreamReplayFixturePaths({
       ...createOptions([commonFixturePath, caseFixture]),
       mode: "compatible",

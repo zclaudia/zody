@@ -1,0 +1,58 @@
+{
+  "name": "zody-cli",
+  "version": "0.16.9",
+  "private": true,
+  "description": "A cross-platform TypeScript Node.js CLI with a small TUI and optional SEA packaging.",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --dir ../.. exec turbo run build --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*}",
+    "build:sea": "pnpm --filter @zody/cli build:sea",
+    "check": "pnpm registry:check && pnpm --dir ../.. exec turbo run typecheck --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*} && pnpm test",
+    "clean": "pnpm --dir ../.. exec turbo run clean --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*}",
+    "cli:build": "pnpm --filter @zody/cli build",
+    "cli:dev": "pnpm --filter @zody/cli dev",
+    "cli:upload-sea": "pnpm --filter @zody/cli upload:sea",
+    "coverage": "pnpm --dir ../.. exec turbo run coverage --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*}",
+    "dev": "pnpm --filter @zody/cli dev",
+    "format": "oxfmt --write package.json \"packages/**/*.json\" \"packages/**/*.ts\" \"packages/**/*.mjs\"",
+    "format:check": "oxfmt --check package.json \"packages/**/*.json\" \"packages/**/*.ts\" \"packages/**/*.mjs\"",
+    "lint": "pnpm --dir ../.. exec turbo run lint --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*}",
+    "lint:count": "node scripts/count-ts-lines.mjs",
+    "lint:fix": "pnpm --dir ../.. exec turbo run lint:fix --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*}",
+    "prompt-trajectory:model-io": "pnpm --filter @zody/prompt-trajectory model-io --",
+    "prompt-trajectory:prompt": "pnpm --filter @zody/prompt-trajectory record:prompt --",
+    "prompt-trajectory:testcases": "pnpm --filter @zody/prompt-trajectory run:testcases --",
+    "registry:check": "node scripts/generate-bash-command-registry.mjs --check",
+    "registry:generate": "node scripts/generate-bash-command-registry.mjs",
+    "release": "node ../../node_modules/release-it/bin/release-it.js --config .release-it.json",
+    "release:dry": "pnpm run release --release-version",
+    "sea": "pnpm --filter @zody/cli sea",
+    "test": "pnpm --dir ../.. exec turbo run test --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*} --concurrency=2",
+    "test:e2e:memory": "pnpm --dir e2e/memory run e2e:build",
+    "test:browser-headless": "pnpm --filter @zody/browser-use-plugin... build && pnpm --filter @zody/browser-use-plugin exec vitest run test/headless-browser.e2e.test.ts",
+    "test:browser-headless:linux": "docker build --progress=plain -f packages/browser-use-plugin/e2e/headless-linux.Dockerfile ../..",
+    "typecheck": "pnpm --dir ../.. exec turbo run typecheck --filter={./apps/zody-cli/packages/*} --filter={./apps/zody-cli/tools/*}"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "proxy-agent": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^4.1.5",
+    "@withfig/autocomplete": "2.692.3",
+    "c8": "^11.0.0",
+    "esbuild": "^0.25.0",
+    "oxfmt": "^0.47.0",
+    "oxlint": "^1.62.0",
+    "postject": "^1.0.0-alpha.6",
+    "tsx": "^4.20.0",
+    "turbo": "^2.4.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.5"
+  },
+  "engines": {
+    "node": "24.14.0"
+  },
+  "packageManager": "pnpm@10.33.2"
+}

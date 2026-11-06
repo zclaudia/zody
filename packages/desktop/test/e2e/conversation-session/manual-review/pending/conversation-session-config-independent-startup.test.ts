@@ -5,7 +5,7 @@ import {
   TID_V4_SESSION_PANE,
   TID_V4_COMPOSER_INPUT,
   TID_V4_COMPOSER_SEND,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   DEFAULT_WORKSPACE,
@@ -121,7 +121,7 @@ async function configStatus(): Promise<{
   configRequests: number;
   configResponses: number;
 }> {
-  const origin = process.env.ZCODE_TEST_BASE_URL;
+  const origin = process.env.ZODY_TEST_BASE_URL;
   if (!origin) throw new Error("缺少 case-local 配置网关");
   return await (await fetch(new URL("/__scb/status", origin))).json();
 }

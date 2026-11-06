@@ -5,7 +5,7 @@ import type {
   HookEvent,
   SettingsDirectoryLocation,
   WorkspaceHookDiscoveryState,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   resolveWorkspaceHookEntries,
   type CanonicalWorkspaceHookEntryData,
@@ -14,7 +14,7 @@ import {
   type WorkspaceHookRuntimeRoot,
   type WorkspaceHookSourceInput,
   type WorkspaceHooksConfig,
-} from "@zcode/shared/workspace-hook-discovery";
+} from "@zody/shared/workspace-hook-discovery";
 
 export interface LegacyHookDefinition {
   type?: "command" | "process" | string;
@@ -192,7 +192,7 @@ export function fromProjectSnapshot(input: {
   });
 }
 
-export function fromUserZCodeSource(input: {
+export function fromUserZodySource(input: {
   source: WorkspaceHookSourceInput | undefined;
   runtimeRoot: WorkspaceHookRuntimeRoot;
   workspacePath: string;
@@ -248,7 +248,7 @@ export function fromLegacyHooksConfig(input: {
   return hooks;
 }
 
-export function toZCodeHooksEvents(hooks: Hook[]): WorkspaceHooksConfig["events"] {
+export function toZodyHooksEvents(hooks: Hook[]): WorkspaceHooksConfig["events"] {
   const events: WorkspaceHooksConfig["events"] = {};
   for (const hook of hooks) {
     const eventMatchers = events[hook.event] ?? [];

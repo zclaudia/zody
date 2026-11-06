@@ -1,8 +1,5 @@
-import {
-  installDocumentHiddenMotionPause,
-  installMobileKeyboardInsetTracker,
-} from "@zcode/ui";
-import "@zcode/ui/styles.css";
+import { installDocumentHiddenMotionPause, installMobileKeyboardInsetTracker } from "@zody/ui";
+import "@zody/ui/styles.css";
 import { applyWebThemePreference } from "../webThemePreference.js";
 import { bootstrapGatewayWebRemoteControl } from "./bootstrap.js";
 

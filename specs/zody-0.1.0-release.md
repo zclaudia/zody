@@ -203,3 +203,5 @@ Z10 的许可、测试与安全缺口应在涉及模块实施时同步处理，�
 - [CLI/Web 自包含发行与 draft Release 规格](zody-cli-distribution-release.md)。
 
 旧规划中的调查日期、行号、未完成条目和工作量估算不能当成当前实现状态；执行各任务时重新用检出源码和验证证据核对。
+
+Saved workflow serialization writes `/* zody-workflow`; existing saved files with `/* zcode-workflow` remain readable under the existing legacy project read policy. Explicit legacy metadata update makes a no-replace canonical copy without altering legacy bytes; see `zody-rename-workflow-sentinel.md` for exact scope and failure semantics.

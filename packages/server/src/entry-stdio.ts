@@ -1,19 +1,19 @@
-import { disposeServiceResourcesAndWait, getAppConfigDir } from "@zcode/services/node";
+import { disposeServiceResourcesAndWait, getAppConfigDir } from "@zody/services/node";
 import {
-  ZCODE_VERSION,
+  ZODY_VERSION,
   SERVICE_AUTHORITY_MODE_ENV,
   formatLogPrefix,
-  formatZodError,
-  helloAckMessageSchema,
-} from "@zcode/shared";
-import type { HelloMessage, HelloAckMessage } from "@zcode/shared";
+  ZODY_RENAME_GENERATION,
+} from "@zody/shared";
+import type { HelloMessage } from "@zody/shared";
+import { waitForStdioAck } from "./stdioHandshake.js";
 import { createStdioServer } from "./stdio.js";
 import { registerStdioProcessLifecycle } from "./stdio-lifecycle.js";
 import { createStdioServices } from "./stdioServices.js";
 import {
-  materializeBundledZCodeBuiltinProviderConfig,
-  readBundledZCodeBuiltinProviderConfig,
-} from "./bundledZCodeBuiltinProviderConfig.js";
+  materializeBundledZodyBuiltinProviderConfig,
+  readBundledZodyBuiltinProviderConfig,
+} from "./bundledZodyBuiltinProviderConfig.js";
 
 // In stdio mode, all logging goes to stderr
 const log = (...args: unknown[]) =>
@@ -31,15 +31,16 @@ console.debug = stderrConsoleLog;
 
 // --version flag: print version and exit (used by deploy version check)
 if (process.argv.includes("--version")) {
-  process.stdout.write(ZCODE_VERSION + "\n");
+  process.stdout.write(ZODY_VERSION + "\n");
   process.exit(0);
 }
 
 async function main() {
   // Phase 1: Send hello message
   const hello: HelloMessage = {
-    type: "zcode-hello",
-    version: ZCODE_VERSION,
+    type: "zody-hello",
+    generation: ZODY_RENAME_GENERATION,
+    version: ZODY_VERSION,
     platform: process.platform,
     arch: process.arch,
     pid: process.pid,
@@ -47,7 +48,7 @@ async function main() {
   process.stdout.write(JSON.stringify(hello) + "\n");
 
   // Phase 2: Wait for hello-ack
-  const ack = await waitForAck();
+  const ack = await waitForStdioAck(process.stdin);
   log(`client connected: ${ack.clientId} (v${ack.version})`);
 
   // fork（F4.11）：远端 server 启动时的 deviceMid 预生成随 X-Device-Mid 停发（F2.10）
@@ -57,13 +58,13 @@ async function main() {
   // Phase 3: Initialize services and start stdio RPC server
   // fork（bot channels 移除）：TOPIC_RESOURCE_RELAY_CHANNEL 反向频道（Desktop topic resource
   // 回传链）随第三方 IM bot channels 整体删除；stdio 的 onReverseClientReady 结构保留但无注入方。
-  const zcodeBuiltinProviderConfigFilePath = await materializeBundledZCodeBuiltinProviderConfig({
+  const zodyBuiltinProviderConfigFilePath = await materializeBundledZodyBuiltinProviderConfig({
     environmentConfigRoot: getAppConfigDir(),
-    content: readBundledZCodeBuiltinProviderConfig(),
+    content: readBundledZodyBuiltinProviderConfig(),
   });
   const { authorityModeParseResult, services } = createStdioServices({
     env: process.env,
-    zcodeBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath,
   });
   if (authorityModeParseResult.invalidRawValue) {
     log(
@@ -71,6 +72,8 @@ async function main() {
     );
   }
   const stdioServer = createStdioServer(services);
+  // RPC 监听器全部注册后才恢复输入，避免握手与服务装配间丢帧。
+  process.stdin.resume();
   registerStdioProcessLifecycle({
     stdin: process.stdin,
     signalSource: process,
@@ -85,46 +88,6 @@ async function main() {
   // ready 日志必须在退出监听注册之后；否则 SSH 恰好在 ready 后断开时，
   // SIGHUP/SIGTERM 仍可能落入 Node 默认处理并绕过 Agent cleanup。
   log("stdio mode ready");
-}
-
-function waitForAck(): Promise<HelloAckMessage> {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error("Handshake timeout: no hello-ack received within 10s"));
-    }, 10_000);
-
-    let buffer = "";
-    const onData = (chunk: Buffer) => {
-      buffer += chunk.toString("utf-8");
-      const newlineIdx = buffer.indexOf("\n");
-      if (newlineIdx !== -1) {
-        const line = buffer.slice(0, newlineIdx).trim();
-        // Remove listener — remaining data in buffer will be consumed by RPC
-        process.stdin.removeListener("data", onData);
-        clearTimeout(timeout);
-
-        try {
-          const rawValue = JSON.parse(line);
-          const result = helloAckMessageSchema.safeParse(rawValue);
-          if (!result.success) {
-            reject(new Error(`Invalid hello-ack: ${formatZodError(result.error)}`));
-            return;
-          }
-          const msg = result.data as HelloAckMessage;
-          // If there's remaining data after the newline, push it back
-          const remaining = buffer.slice(newlineIdx + 1);
-          if (remaining.length > 0) {
-            process.stdin.unshift(Buffer.from(remaining, "utf-8"));
-          }
-          resolve(msg);
-        } catch (err) {
-          reject(new Error(`Failed to parse hello-ack: ${err}`));
-        }
-      }
-    };
-
-    process.stdin.on("data", onData);
-  });
 }
 
 main().catch((err) => {

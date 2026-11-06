@@ -1,6 +1,6 @@
-import { ZCODE_AGENT_PROVIDER, type ZCodeProvider } from "@zcode/shared";
+import { ZODY_AGENT_PROVIDER, type ZodyProvider } from "@zody/shared";
 import { buildPromptTelemetryExtraDetail } from "@/lib/messageTelemetry.js";
-import { encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
+import { encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 import {
   legacyTelemetryModelValue,
   legacyTelemetryProviderId,
@@ -12,7 +12,7 @@ export function resolveLegacyConversationModelValue(params: {
 }): string | null | undefined {
   const configProvider = params.configProvider?.trim();
   const modelName = params.modelName?.trim();
-  if (!configProvider || !modelName || configProvider === ZCODE_AGENT_PROVIDER) {
+  if (!configProvider || !modelName || configProvider === ZODY_AGENT_PROVIDER) {
     return params.modelName;
   }
   // 修复原因：V4 config 把 provider/model 拆开保存，直接上报 model 会丢失旧 UI
@@ -26,7 +26,7 @@ export function resolveLegacyRuntimeModelValue(params: {
 }): string | null | undefined {
   const configProvider = params.configProvider?.trim();
   const modelName = params.modelName?.trim();
-  if (!configProvider || !modelName || configProvider === ZCODE_AGENT_PROVIDER) {
+  if (!configProvider || !modelName || configProvider === ZODY_AGENT_PROVIDER) {
     return params.modelName;
   }
   if (modelName.startsWith(`${configProvider}/`)) return legacyTelemetryModelValue(modelName);
@@ -35,13 +35,13 @@ export function resolveLegacyRuntimeModelValue(params: {
 
 /** V4 config.provider 是实际模型 provider id；agentProvider 表示 ZCode 运行时。 */
 export function buildV4ConversationPromptTelemetryExtraDetail(params: {
-  agentProvider?: ZCodeProvider;
+  agentProvider?: ZodyProvider;
   configProvider?: string | null;
   modelName?: string | null;
   askMode?: string | null;
   providerBaseURL?: string | null;
 }): Record<string, string> {
-  const agentProvider = params.agentProvider ?? ZCODE_AGENT_PROVIDER;
+  const agentProvider = params.agentProvider ?? ZODY_AGENT_PROVIDER;
   const base = buildPromptTelemetryExtraDetail({
     askMode: params.askMode,
     modelName: resolveLegacyConversationModelValue(params),

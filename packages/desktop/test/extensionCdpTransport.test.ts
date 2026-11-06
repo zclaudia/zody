@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ExtensionCdpTransport } from "../src/browser-core/extensionCdpTransport.js";
-import type { ExtensionTargetRef } from "@zcode/shared/browser-extension-transport";
+import type { ExtensionTargetRef } from "@zody/shared/browser-extension-transport";
 
 const targetRef: ExtensionTargetRef = {
   browserId: "extension:profile-instance-1234567890",

@@ -4,7 +4,7 @@ import { dirname, isAbsolute, join } from "node:path";
 import type {
   WebRemoteControlMobileDirectoryEntry,
   WebRemoteControlMobileDirectoryListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * 手机「打开其他项目」目录选择器的 Main 侧 bounded 列表（第二批 E3）。

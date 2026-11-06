@@ -19,11 +19,11 @@ import {
   resolveWebRemoteControlWorkspaceKey,
   type WebRemoteControlWorkspaceListResult,
   type WebRemoteControlTaskTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   applyWebRemoteControlTaskMembershipUpdate,
   buildWebRemoteControlTaskIndexModel,
@@ -40,7 +40,7 @@ import {
 import { logger } from "@/logger.js";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 import { useRemoteWorkspaceSessionStore } from "@/store/remoteWorkspaceSessionStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import { WebRemoteControlTaskIndexRow } from "@/WebRemoteControlTaskIndexRow.js";
 import { DeleteAllArchivedTasksButton } from "@/DeleteAllArchivedTasksButton.js";
 
@@ -92,10 +92,10 @@ export function WebRemoteControlTaskIndex({
   onTaskOpen?: (options: { crossWorkspace: boolean }) => void;
   onCrossWorkspaceSwitchingChange?: (switching: boolean) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const confirmDialog = useConfirmDialog();
   const baseServices = useBaseWorkspaceServices();
-  const removeTaskState = useZCodeSessionStore((state) => state.removeTaskState);
+  const removeTaskState = useZodySessionStore((state) => state.removeTaskState);
   const sessionsById = useRemoteWorkspaceSessionStore((state) => state.sessionsById);
   const sessionIdByWorkspaceIdentity = useRemoteWorkspaceSessionStore(
     (state) => state.sessionIdByWorkspaceIdentity,
@@ -289,7 +289,7 @@ export function WebRemoteControlTaskIndex({
       const pinned = !task.pinned;
       setPendingArchiveTaskKey(null);
       setMutatingTaskKey(rowKey);
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .setTaskPinned({
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -333,7 +333,7 @@ export function WebRemoteControlTaskIndex({
 
       setPendingArchiveTaskKey(null);
       setMutatingTaskKey(rowKey);
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .archiveTask({
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -375,7 +375,7 @@ export function WebRemoteControlTaskIndex({
       const rowKey = buildWebRemoteControlTaskRowKey(task);
       setPendingArchiveTaskKey(null);
       setMutatingTaskKey(rowKey);
-      void workspaceServices.services.zcodeTaskService
+      void workspaceServices.services.zodyTaskService
         .unarchiveTask({
           taskId: task.taskId,
           workspacePath: task.workspacePath,
@@ -424,7 +424,7 @@ export function WebRemoteControlTaskIndex({
         setPendingArchiveTaskKey(null);
         setMutatingTaskKey(rowKey);
         try {
-          await workspaceServices.services.zcodeTaskService.deleteTask({
+          await workspaceServices.services.zodyTaskService.deleteTask({
             taskId: task.taskId,
             workspacePath: task.workspacePath,
             ...(task.workspaceIdentity ? { workspaceIdentity: task.workspaceIdentity } : {}),
@@ -513,7 +513,7 @@ export function WebRemoteControlTaskIndex({
               workspace.connectionState === "reconnecting"
                 ? undefined
                 : workspaceServiceLookup.get(resolveWebRemoteControlWorkspaceKey(workspace))
-                    ?.services.zcodeTaskService,
+                    ?.services.zodyTaskService,
           }))}
           onDeleted={(target) => {
             setResult((current) => ({

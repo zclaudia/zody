@@ -3,7 +3,7 @@
 import { createElement, type ReactNode } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE } from "@zcode/shared";
+import { MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE } from "@zody/shared";
 import { WebRemoteControlMobileSettingsScreen } from "@/WebRemoteControlMobileSettingsScreen.js";
 import { WebRemoteControlMobileBackendPicker } from "@/WebRemoteControlMobileBackendPicker.js";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/WebRemoteControlRecentProjects.js";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     locale: "zh-CN",
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, string | number>) =>

@@ -6,30 +6,30 @@ import {
   assertDistributionVersion,
   parseDistributionArgs,
   supportedDistributionTargets,
-} from "./zcode-distribution/targets.mjs";
+} from "./zody-distribution/targets.mjs";
 import {
   assessReleaseAssets,
   decideExistingAsset,
   rejectUnexpectedExistingAssets,
   verifyCliArchiveChecksum,
-} from "./zcode-distribution/release-assets.mjs";
-import { buildLaunchCommand } from "./zcode-distribution/command.mjs";
-import { seaBuildSteps } from "./zcode-distribution/sea-build-steps.mjs";
-import { waitForWebResponse } from "./zcode-distribution/http-smoke.mjs";
+} from "./zody-distribution/release-assets.mjs";
+import { buildLaunchCommand } from "./zody-distribution/command.mjs";
+import { seaBuildSteps } from "./zody-distribution/sea-build-steps.mjs";
+import { waitForWebResponse } from "./zody-distribution/http-smoke.mjs";
 
 test("CLI SEA packaging builds browser plugin runtime assets before collecting them", () => {
   assert.deepEqual(
     seaBuildSteps({
-      cliRoot: "/repo/apps/zcode-cli/packages/cli",
+      cliRoot: "/repo/apps/zody-cli/packages/cli",
       target: "darwin-arm64",
       nodeExecutable: "/tools/node",
     }),
     [
-      { command: "pnpm", args: ["--filter", "@zcode/browser-use-plugin...", "build"] },
+      { command: "pnpm", args: ["--filter", "@zody/browser-use-plugin...", "build"] },
       {
         command: "/tools/node",
         args: [
-          "/repo/apps/zcode-cli/packages/cli/scripts/build-sea.mjs",
+          "/repo/apps/zody-cli/packages/cli/scripts/build-sea.mjs",
           "--target",
           "darwin-arm64",
         ],

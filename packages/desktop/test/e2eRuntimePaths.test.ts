@@ -45,15 +45,15 @@ describe("Desktop E2E runtime paths", () => {
     expect(
       resolveE2EHomeDir({
         cwd: resolve("root", "desktop"),
-        env: { ZCODE_DATA_BASE_DIR: resolve("root", "data-base") },
+        env: { ZODY_DATA_BASE_DIR: resolve("root", "data-base") },
       }),
     ).toBe(resolve("root", "data-base"));
     expect(
       resolveE2EHomeDir({
         cwd: resolve("root", "desktop"),
         env: {
-          ZCODE_DATA_BASE_DIR: resolve("root", "data-base"),
-          ZCODE_E2E_HOME_DIR: resolve("root", "explicit-home"),
+          ZODY_DATA_BASE_DIR: resolve("root", "data-base"),
+          ZODY_E2E_HOME_DIR: resolve("root", "explicit-home"),
         },
       }),
     ).toBe(resolve("root", "explicit-home"));

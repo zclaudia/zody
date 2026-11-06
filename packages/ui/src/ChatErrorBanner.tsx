@@ -11,9 +11,9 @@ import {
   TID_CHAT_ERROR_DETAILS_BUTTON,
   TID_CHAT_ERROR_BANNER,
   TID_CHAT_ERROR_HOOK_ICON,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { AnchorIcon, CopyIcon, InfoIcon, SettingsIcon, X } from "lucide-react";
-import { useZCodeIntl } from "./i18n/IntlProvider.js";
+import { useZodyIntl } from "./i18n/IntlProvider.js";
 import type { IntlInstance } from "./i18n/IntlProvider.js";
 import { Button } from "./components/ui/button.js";
 import {
@@ -32,7 +32,7 @@ import {
   isSuspiciousEmptyModelResultMessage,
   resolveRequestVerificationBusinessCode,
 } from "@/lib/providerBusinessError.js";
-import type { ZCodeUiError } from "@/lib/zcodeUiError.js";
+import type { ZodyUiError } from "@/lib/zodyUiError.js";
 
 const HISTORICAL_MODEL_UNAVAILABLE_MESSAGES = [
   "历史任务使用的模型已不可用",
@@ -49,7 +49,7 @@ const LOCALIZED_ERROR_CODES = new Set([
   MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE_ERROR_CODE,
   // 服务层错误 message 是跨进程兜底，不能作为最终 UI 语言来源。
   // 历史任务模型不可用要按稳定 code 本地化，避免英文界面显示中文提示。
-  "ZCODE_RUNTIME_MODEL_UNAVAILABLE",
+  "ZODY_RUNTIME_MODEL_UNAVAILABLE",
   "ZCODE_BIGMODEL_TEAM_PLAN_MEMBER_REQUIRED",
 ]);
 
@@ -59,7 +59,7 @@ const MODEL_CONFIG_MISSING_CODES = new Set([
   "ModelConfigMissing",
 ]);
 
-function isModelConfigMissingError(error: Pick<ZCodeUiError, "code" | "message">): boolean {
+function isModelConfigMissingError(error: Pick<ZodyUiError, "code" | "message">): boolean {
   // Bugfix: 桌面端发送前 registry 为空时，agent 会退回 CLI config 并抛 Model config is missing。
   // 真实原因是“当前没有可用模型”，不能把 CLI 配置路径直接暴露给桌面用户。
   // 这里只按结构化 code 识别，避免 UNKNOWN/SEND_FAILED 等包装错误的可读 message
@@ -83,7 +83,7 @@ function parseClaudeUnknownCommandMessage(message: string): {
 }
 
 export function resolveChatErrorBannerDisplayMessage(
-  error: ZCodeUiError,
+  error: ZodyUiError,
   intl: IntlInstance,
 ): string {
   if (isModelConfigMissingError(error)) {
@@ -100,11 +100,11 @@ export function resolveChatErrorBannerDisplayMessage(
     // 重新本地化，否则英文界面会混入中文错误提示。
     return parsed.args
       ? intl.formatMessage(
-          { id: "zcode.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS" },
+          { id: "zody.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS" },
           { command: parsed.command, args: parsed.args },
         )
       : intl.formatMessage(
-          { id: "zcode.error.CLAUDE_UNKNOWN_COMMAND" },
+          { id: "zody.error.CLAUDE_UNKNOWN_COMMAND" },
           { command: parsed.command },
         );
   }
@@ -118,21 +118,21 @@ export function resolveChatErrorBannerDisplayMessage(
   }
 
   if (isSuspiciousEmptyModelResultMessage(error.message)) {
-    return intl.formatMessage({ id: "zcode.error.modelSuspiciousEmpty" });
+    return intl.formatMessage({ id: "zody.error.modelSuspiciousEmpty" });
   }
 
   return error.code && LOCALIZED_ERROR_CODES.has(error.code)
-    ? intl.formatMessage({ id: `zcode.error.${error.code}` })
+    ? intl.formatMessage({ id: `zody.error.${error.code}` })
     : error.message;
 }
 
 export function shouldSuppressChatErrorBanner(
-  error: Pick<ZCodeUiError, "code" | "message">,
+  error: Pick<ZodyUiError, "code" | "message">,
 ): boolean {
   // 只有历史恢复残留的模型不可用提示才隐藏；当前发送/草稿报错需要展示，
   // 否则 registry 移除模型后用户会看到“请求没返回”而没有任何可操作反馈。
   return Boolean(
-    error.code === "ZCODE_RUNTIME_MODEL_UNAVAILABLE" &&
+    error.code === "ZODY_RUNTIME_MODEL_UNAVAILABLE" &&
     HISTORICAL_MODEL_UNAVAILABLE_MESSAGES.some((message) => error.message.includes(message)),
   );
 }
@@ -145,14 +145,14 @@ export function ChatErrorBanner({
   onDismiss,
   onOpenModelSettings,
 }: {
-  error: ZCodeUiError;
+  error: ZodyUiError;
   onRetry?: () => void;
   retryLabel?: string;
   retryDisabled?: boolean;
   onDismiss?: () => void;
   onOpenModelSettings?: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const openFeedbackSubmit = useFeedbackStore((state) => state.openSubmit);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const actionButtonClassName = "shrink-0";

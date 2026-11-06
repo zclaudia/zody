@@ -17,7 +17,7 @@ vi.mock("node:child_process", () => ({
   spawn: mocks.spawn,
 }));
 
-vi.mock("@zcode/server/remote/wsl-detect.js", () => ({
+vi.mock("@zody/server/remote/wsl-detect.js", () => ({
   isWSLAvailable: mocks.isWSLAvailable,
   listWSLDistros: mocks.listWSLDistros,
 }));
@@ -67,11 +67,7 @@ beforeEach(() => {
     ) => {
       const child = new EventEmitter();
       queueMicrotask(() => {
-        callback(
-          null,
-          Buffer.from("Ubuntu-24.04\ntester\n/home/tester"),
-          Buffer.alloc(0),
-        );
+        callback(null, Buffer.from("Ubuntu-24.04\ntester\n/home/tester"), Buffer.alloc(0));
         child.emit("close", 0);
       });
       return child as never;
@@ -170,7 +166,9 @@ describe("buildWslArgs", () => {
       await disposing;
 
       expect(child.kill).toHaveBeenCalledTimes(1);
-      await expect(detectionError).resolves.toMatchObject({ message: "WSL backend 已释放，无法启动新命令" });
+      await expect(detectionError).resolves.toMatchObject({
+        message: "WSL backend 已释放，无法启动新命令",
+      });
     } finally {
       vi.useRealTimers();
     }

@@ -10,7 +10,7 @@ import {
   encodeWebRemoteControlRpcTransportMessage,
   type WebRemoteControlAppPayload,
   type WebRemoteControlRpcTransportPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   createGatewayDeviceTransport,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_BUFFERED_BYTES,
@@ -157,17 +157,16 @@ function createHarness(
   const rawPayloads: WebRemoteControlRpcTransportPayload[] = [];
   const sendReady = vi.fn();
   const rawFault = vi.fn();
+  const rawPayload = vi.fn((payload: unknown) => {
+    if ((payload as { zody_type?: string }).zody_type !== "rpc-frame") return false;
+    rawPayloads.push(payload as WebRemoteControlRpcTransportPayload);
+    return true;
+  });
   const session = transport.createSession({
     onStateChange: (state) => states.push(state),
     onPayload: (payload) => payloads.push(payload),
-    onRawTransportPayload: (payload) => {
-      if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") {
-        return false;
-      }
-      rawPayloads.push(payload as WebRemoteControlRpcTransportPayload);
-      return true;
-    },
     onRawTransportFault: rawFault,
+    onRawTransportPayload: rawPayload,
     onSendReady: sendReady,
   });
   if (sessionOptions.session) {
@@ -182,6 +181,7 @@ function createHarness(
     rawPayloads,
     sendReady,
     rawFault,
+    rawPayload,
     socketUrls,
   };
 }
@@ -253,6 +253,7 @@ describe("GatewayDeviceTransport", () => {
 
     expect(channel.frames()).toContainEqual({
       type: "hello_ack",
+      protocolVersion: 2,
       appProtocol: WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION,
       desktopAppVersion: "9.9.9",
     });
@@ -262,12 +263,32 @@ describe("GatewayDeviceTransport", () => {
 
   it("negotiates the highest common appProtocol with the mobile range", () => {
     const harness = createHarness();
-    const { channel } = attachClient(harness, { appProtocol: { min: 1, max: 3 } });
+    const { channel } = attachClient(harness, { appProtocol: { min: 5, max: 6 } });
 
     expect(channel.frames()).toContainEqual(
-      expect.objectContaining({ type: "hello_ack", appProtocol: 3 }),
+      expect.objectContaining({ type: "hello_ack", protocolVersion: 2, appProtocol: 5 }),
     );
   });
+
+  it.each([undefined, "2", 1])(
+    "rejects invalid or old hello version %s before readiness",
+    (version) => {
+      const harness = createHarness();
+      const channel = new FakeChannel("bad-generation");
+      harness.transport.handleChannel(channel, {
+        channelId: "bad-generation",
+        kind: "zcode-remote",
+      });
+      channel.deliver({ ...hello(), protocolVersion: version });
+      expect(channel.frames()).toContainEqual({
+        type: "close",
+        reason: "incompatible-version",
+        upgrade: "mobile",
+      });
+      expect(harness.sendReady).not.toHaveBeenCalled();
+      expect(channel.isOpen).toBe(false);
+    },
+  );
 
   it("rejects a protocolVersion mismatch with close{incompatible-version}", () => {
     const harness = createHarness();
@@ -289,7 +310,7 @@ describe("GatewayDeviceTransport", () => {
   });
 
   it("points upgrade at the mobile app when the mobile max is below the desktop min", () => {
-    const harness = createHarness({ appProtocolRange: { min: 2, max: 2 } });
+    const harness = createHarness();
     const { channel } = attachClient(harness, { appProtocol: { min: 1, max: 1 } });
 
     expect(channel.frames()).toEqual([
@@ -300,7 +321,7 @@ describe("GatewayDeviceTransport", () => {
 
   it("points upgrade at the desktop when the mobile min is above the desktop max", () => {
     const harness = createHarness();
-    const { channel } = attachClient(harness, { appProtocol: { min: 5, max: 6 } });
+    const { channel } = attachClient(harness, { appProtocol: { min: 6, max: 6 } });
 
     expect(channel.frames()).toEqual([
       { type: "close", reason: "incompatible-version", upgrade: "desktop" },
@@ -319,6 +340,26 @@ describe("GatewayDeviceTransport", () => {
     vi.advanceTimersByTime(1);
     expect(channel.isOpen).toBe(false);
     expect(harness.states).toEqual(["waiting_terminal"]);
+  });
+
+  it.each([1, 2, 3, 4])("old peer %i cannot replace the active attachment", (version) => {
+    const harness = createHarness();
+    const first = attachClient(harness, { channelId: "active", clientInstanceId: "current" });
+    first.channel.sent.length = 0;
+    const readyCount = harness.sendReady.mock.calls.length;
+    const old = attachClient(harness, {
+      channelId: "old",
+      clientInstanceId: "other",
+      appProtocol: { min: version, max: version },
+    });
+    expect(old.channel.frames()).toContainEqual({
+      type: "close",
+      reason: "incompatible-version",
+      upgrade: "mobile",
+    });
+    expect(first.channel.frames()).toEqual([]);
+    expect(first.channel.isOpen).toBe(true);
+    expect(harness.sendReady).toHaveBeenCalledTimes(readyCount);
   });
 
   it("sends close{superseded} to a different client and attaches the new channel before the ack", () => {
@@ -383,17 +424,17 @@ describe("GatewayDeviceTransport", () => {
     first.channel.sent.length = 0;
     const payloadCount = harness.payloads.length;
 
-    first.channel.deliver(dataFrame({ zcode_type: "bootstrap-request", requestId: "req-1" }));
+    first.channel.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "req-1" }));
     first.channel.deliver(
       dataFrame({
-        zcode_type: "workspace-open-request",
+        zody_type: "workspace-open-request",
         requestId: "req-2",
         recentProjectId: "project-1",
       }),
     );
     first.channel.deliver(
       dataFrame({
-        zcode_type: "platform-request",
+        zody_type: "platform-request",
         requestId: "req-3",
         method: "isDockerAvailable",
         args: undefined,
@@ -414,7 +455,7 @@ describe("GatewayDeviceTransport", () => {
     second.channel.sent.length = 0;
 
     const result = harness.session.sendPayloadResult({
-      zcode_type: "workspace-list-request",
+      zody_type: "workspace-list-request",
       requestId: "req-outbound",
     });
 
@@ -422,7 +463,7 @@ describe("GatewayDeviceTransport", () => {
     expect(second.channel.frames()).toEqual([
       {
         type: "data",
-        payload: { zcode_type: "workspace-list-request", requestId: "req-outbound" },
+        payload: { zody_type: "workspace-list-request", requestId: "req-outbound" },
       },
     ]);
     expect(first.channel.frames()).toEqual([]);
@@ -467,7 +508,7 @@ describe("GatewayDeviceTransport", () => {
     for (let index = 0; index < 100; index += 1) {
       channel.deliver(
         dataFrame({
-          zcode_type: "app-error",
+          zody_type: "app-error",
           reason: "unexpected-error",
           error: `stream-${index}`,
         }),
@@ -499,7 +540,7 @@ describe("GatewayDeviceTransport", () => {
     expect(harness.states.at(-1)).toBe("waiting_terminal");
     expect(
       harness.session.sendPayloadResult({
-        zcode_type: "workspace-list-request",
+        zody_type: "workspace-list-request",
         requestId: "after-close",
       }),
     ).toEqual({ kind: "unavailable" });
@@ -558,7 +599,7 @@ describe("GatewayDeviceTransport", () => {
     channel.isOpen = false;
 
     const result = harness.session.sendPayloadResult({
-      zcode_type: "workspace-list-request",
+      zody_type: "workspace-list-request",
       requestId: "closed-channel",
     });
 
@@ -573,7 +614,7 @@ describe("GatewayDeviceTransport", () => {
     socket.bufferedAmount = WEB_REMOTE_CONTROL_CHANNEL_MAX_BUFFERED_BYTES + 1;
 
     const result = harness.session.sendPayloadResult({
-      zcode_type: "workspace-list-request",
+      zody_type: "workspace-list-request",
       requestId: "backpressure",
     });
 
@@ -585,7 +626,7 @@ describe("GatewayDeviceTransport", () => {
     socket.bufferedAmount = WEB_REMOTE_CONTROL_CHANNEL_MAX_BUFFERED_BYTES;
     expect(
       harness.session.sendPayloadResult({
-        zcode_type: "workspace-list-request",
+        zody_type: "workspace-list-request",
         requestId: "at-threshold",
       }).kind,
     ).toBe("sent");
@@ -597,7 +638,7 @@ describe("GatewayDeviceTransport", () => {
     channel.sent.length = 0;
 
     const result = harness.session.sendPayloadResult({
-      zcode_type: "app-error",
+      zody_type: "app-error",
       reason: "unexpected-error",
       error: "x".repeat(WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES + 1),
     });
@@ -605,6 +646,20 @@ describe("GatewayDeviceTransport", () => {
     expect(result.kind).toBe("oversize");
     expect(channel.sent).toEqual([]);
   });
+
+  it.each(["rpc-frame", "rpc-frame-ack"])(
+    "rejects mixed old and new raw %s before dispatch",
+    (type) => {
+      const harness = createHarness();
+      const { channel } = attachClient(harness);
+      channel.deliver(dataFrame({ zody_type: type, zcode_type: type }));
+      channel.deliver(dataFrame({ zcode_type: type }));
+      expect(harness.rawPayload).not.toHaveBeenCalled();
+      expect(harness.payloads).toEqual([]);
+      channel.deliver(dataFrame({ zody_type: type }));
+      expect(harness.rawPayload).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it("drops an oversize inbound frame and reports a raw transport fault", () => {
     const harness = createHarness();
@@ -618,53 +673,26 @@ describe("GatewayDeviceTransport", () => {
     expect(channel.isOpen).toBe(true);
   });
 
-  it("answers data outside the negotiated appProtocol with protocol_error instead of delivering it", () => {
+  it.each([1, 2, 3, 4])("rejects old app protocol %i before payload dispatch", (version) => {
     const harness = createHarness();
-    const { channel } = attachClient(harness, { appProtocol: { min: 1, max: 1 } });
-    channel.sent.length = 0;
-
+    const { channel } = attachClient(harness, { appProtocol: { min: version, max: version } });
+    expect(channel.frames()).toContainEqual({
+      type: "close",
+      reason: "incompatible-version",
+      upgrade: "mobile",
+    });
     channel.deliver(
       dataFrame({
-        zcode_type: "recent-projects-updated",
+        zody_type: "recent-projects-updated",
         result: { desktopWindowState: "open", recentProjects: [] },
       }),
     );
-
     expect(harness.payloads).toEqual([]);
-    expect(channel.frames()).toContainEqual({
-      type: "protocol_error",
-      code: "unsupported-version",
-      offendingType: "recent-projects-updated",
-    });
-    expect(channel.isOpen).toBe(true);
+    expect(harness.sendReady).not.toHaveBeenCalled();
   });
 
-  it("omits appProtocol 2 fields when the negotiated version is 1", () => {
-    const harness = createHarness();
-    const { channel } = attachClient(harness, { appProtocol: { min: 1, max: 1 } });
-    channel.sent.length = 0;
-
-    const result = harness.session.sendPayloadResult({
-      zcode_type: "bootstrap-response",
-      requestId: "bootstrap-1",
-      success: true,
-      result: {
-        windowControlSessionId: "window-1",
-        workspaces: [],
-        tasks: [],
-        desktopWindowState: "open",
-        recentProjects: [{ id: "project-1", label: "demo", location: "/workspace" }],
-      },
-    });
-
-    expect(result.kind).toBe("sent");
-    const dataFrames = channel.frames().filter((frame) => frame.type === "data");
-    const payload = dataFrames[0]!.payload as {
-      result: Record<string, unknown>;
-    };
-    expect(payload.result.desktopWindowState).toBeUndefined();
-    expect(payload.result.recentProjects).toBeUndefined();
-    expect(payload.result.windowControlSessionId).toBe("window-1");
+  it("rejects an injected local range other than 5", () => {
+    expect(() => createHarness({ appProtocolRange: { min: 1, max: 4 } })).toThrow();
   });
 
   it("does not send appProtocol 2 payload types to a v1 client", () => {
@@ -673,7 +701,7 @@ describe("GatewayDeviceTransport", () => {
     channel.sent.length = 0;
 
     const result = harness.session.sendPayloadResult({
-      zcode_type: "recent-projects-updated",
+      zody_type: "recent-projects-updated",
       result: { desktopWindowState: "open", recentProjects: [] },
     });
 
@@ -686,13 +714,13 @@ describe("GatewayDeviceTransport", () => {
     attachClient(harness);
 
     const bytes = harness.session.measurePayloadBytes({
-      zcode_type: "workspace-list-request",
+      zody_type: "workspace-list-request",
       requestId: "measure",
     });
 
     expect(bytes).toBe(
       Buffer.byteLength(
-        JSON.stringify(dataFrame({ zcode_type: "workspace-list-request", requestId: "measure" })),
+        JSON.stringify(dataFrame({ zody_type: "workspace-list-request", requestId: "measure" })),
         "utf8",
       ),
     );
@@ -708,7 +736,7 @@ describe("GatewayDeviceTransport", () => {
     expect(channel.isOpen).toBe(false);
     expect(
       harness.session.sendPayloadResult({
-        zcode_type: "workspace-list-request",
+        zody_type: "workspace-list-request",
         requestId: "after-dispose",
       }),
     ).toEqual({ kind: "unavailable" });

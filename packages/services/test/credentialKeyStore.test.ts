@@ -53,8 +53,8 @@ describe("Zody credential key ownership", () => {
     const { directory, file } = await temporaryStore();
     await writeFile(join(directory, "credentials.key"), "broken");
     await expect(createStoredCredentialCipher(file, {})).rejects.toThrow("invalid");
-    const a = await createStoredCredentialCipher(file, { ZCODE_CREDENTIAL_SECRET: "explicit" });
-    const b = await createStoredCredentialCipher(file, { ZCODE_CREDENTIAL_SECRET: "explicit" });
+    const a = await createStoredCredentialCipher(file, { ZODY_CREDENTIAL_SECRET: "explicit" });
+    const b = await createStoredCredentialCipher(file, { ZODY_CREDENTIAL_SECRET: "explicit" });
     expect(b.decrypt(a.encrypt("secret"))).toBe("secret");
   });
 });

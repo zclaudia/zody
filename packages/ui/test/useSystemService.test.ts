@@ -3,7 +3,7 @@ import {
   INTRANET_MACHINE_HOST,
   INTRANET_PROBE_SERVICE_PORT,
   type IntranetProbeRequest,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   createIntranetProbeRequestStableKey,
   shouldApplyIntranetProbeRunResult,

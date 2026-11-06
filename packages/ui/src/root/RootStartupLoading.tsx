@@ -20,18 +20,18 @@ export function RootStartupLoading({ label, children, busy = true }: RootStartup
       aria-label={label}
       data-testid="root-startup-loading"
     >
-      <ZCodeStartupLogoBadge />
+      <ZodyStartupLogoBadge />
       {children}
     </div>
   );
 }
 
 /** 初始化与引导共用应用图标。图标文件自带圆角底板，不再套旧的深色 Z 标壳。 */
-export function ZCodeStartupLogoBadge({ animated = true }: { animated?: boolean }) {
-  return <ZCodeStartupLogo className="size-24" animated={animated} />;
+export function ZodyStartupLogoBadge({ animated = true }: { animated?: boolean }) {
+  return <ZodyStartupLogo className="size-24" animated={animated} />;
 }
 
-export function ZCodeStartupLogo({
+export function ZodyStartupLogo({
   className,
   animated = true,
 }: {

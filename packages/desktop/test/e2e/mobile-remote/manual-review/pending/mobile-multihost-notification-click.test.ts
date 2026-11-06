@@ -9,7 +9,7 @@ import {
   buildRemoteWorkspaceIdentity,
   resolveWorkspaceKey,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   seedSettings,
@@ -70,20 +70,20 @@ type NotificationRow = {
 type HandoffLabel = "A" | "B" | "revoked" | "recovered";
 
 const marker = "E2E_MOBILE_P8_MULTIHOST_NOTIFICATION";
-const workspacePath = process.env.ZCODE_E2E_P8_MULTIHOST_WORKSPACE_PATH?.trim() ?? "";
+const workspacePath = process.env.ZODY_E2E_P8_MULTIHOST_WORKSPACE_PATH?.trim() ?? "";
 const sshPorts = [
-  Number(process.env.ZCODE_E2E_P8_MULTIHOST_A_PORT),
-  Number(process.env.ZCODE_E2E_P8_MULTIHOST_B_PORT),
+  Number(process.env.ZODY_E2E_P8_MULTIHOST_A_PORT),
+  Number(process.env.ZODY_E2E_P8_MULTIHOST_B_PORT),
 ] as const;
 const passwordFiles = [
-  process.env.ZCODE_E2E_P8_MULTIHOST_A_PASSWORD_FILE?.trim() ?? "",
-  process.env.ZCODE_E2E_P8_MULTIHOST_B_PASSWORD_FILE?.trim() ?? "",
+  process.env.ZODY_E2E_P8_MULTIHOST_A_PASSWORD_FILE?.trim() ?? "",
+  process.env.ZODY_E2E_P8_MULTIHOST_B_PASSWORD_FILE?.trim() ?? "",
 ] as const;
 const sharedDir = resolve(
-  process.env.ZCODE_P8_MULTIHOST_HANDOFF_DIR?.trim() ||
+  process.env.ZODY_P8_MULTIHOST_HANDOFF_DIR?.trim() ||
     join(process.cwd(), "../../.tmp/mobile-remote-p8-multihost-click"),
 );
-const credentialPath = process.env.ZCODE_P8_CREDENTIAL_FILE?.trim();
+const credentialPath = process.env.ZODY_P8_CREDENTIAL_FILE?.trim();
 const readyPath = join(sharedDir, "ready.json");
 const releasePath = join(sharedDir, "release.json");
 const resultPath = (label: HandoffLabel) => join(sharedDir, `result-${label}.json`);

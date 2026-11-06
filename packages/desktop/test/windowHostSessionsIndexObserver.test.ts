@@ -1,9 +1,9 @@
-import { Emitter } from "@zcode/rpc";
-import type { IZCodeAgentService, ZCodeAgentRuntimeLifecycleEvent } from "@zcode/services";
+import { Emitter } from "@zody/rpc";
+import type { IZodyAgentService, ZodyAgentRuntimeLifecycleEvent } from "@zody/services";
 import type {
   SessionsIndexTopicWireCandidate,
   SessionSummary,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { describe, expect, it, vi } from "vitest";
 import { createWindowHostSessionsIndexObserver } from "../src/host/windowHostSessionsIndexObserver.js";
 
@@ -22,9 +22,48 @@ function summary(overrides: Partial<SessionSummary> = {}): SessionSummary {
 }
 
 describe("WindowHostSessionsIndexObserver", () => {
+  it.each([
+    ["ZODY_AGENT_RUNTIME_UNAVAILABLE", false],
+    ["ZCODE_AGENT_RUNTIME_UNAVAILABLE", true],
+  ])("classifies only current runtime unavailable code %s", async (code, reportError) => {
+    const frames = new Emitter<SessionsIndexTopicWireCandidate>();
+    const lifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
+    const failure = Object.assign(new Error("unavailable"), { code });
+    const onError = vi.fn();
+    const subscribeSessionsIndexV4 = vi.fn(async () => {
+      throw failure;
+    });
+    const agentService = {
+      onDynamicSessionsIndexFrame: vi.fn(() => frames.event),
+      onAgentRuntimeLifecycle: lifecycle.event,
+      onAgentRuntimeRestarted: vi.fn(() => ({ dispose: vi.fn() })),
+      subscribeSessionsIndexV4,
+      resyncSessionsIndexV4: vi.fn(),
+      unsubscribeSessionsIndexV4: vi.fn(),
+    } as unknown as IZodyAgentService;
+    const observer = createWindowHostSessionsIndexObserver({
+      agentService,
+      target: { workspacePath: "/work/demo" },
+      onSessionsChange: vi.fn(),
+      onError,
+    });
+    try {
+      await observer.start();
+      expect(subscribeSessionsIndexV4).toHaveBeenCalledWith(
+        expect.objectContaining({ runtimePolicy: "existing-only" }),
+      );
+      if (reportError) expect(onError).toHaveBeenCalledWith(failure);
+      else expect(onError).not.toHaveBeenCalled();
+    } finally {
+      observer.dispose();
+      frames.dispose();
+      lifecycle.dispose();
+    }
+  });
+
   it("runtime available 在 subscribe ACK 前到达时不会递归创建第二条订阅", async () => {
     const frames = new Emitter<SessionsIndexTopicWireCandidate>();
-    const lifecycle = new Emitter<ZCodeAgentRuntimeLifecycleEvent>();
+    const lifecycle = new Emitter<ZodyAgentRuntimeLifecycleEvent>();
     const subscribeSessionsIndexV4 = vi.fn(async () => {
       lifecycle.fire({
         workspaceKey: "/work/demo",
@@ -45,7 +84,7 @@ describe("WindowHostSessionsIndexObserver", () => {
       subscribeSessionsIndexV4,
       resyncSessionsIndexV4: vi.fn(),
       unsubscribeSessionsIndexV4: vi.fn(async () => undefined),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const observer = createWindowHostSessionsIndexObserver({
       agentService,
       target: { workspacePath: "/work/demo" },
@@ -95,7 +134,7 @@ describe("WindowHostSessionsIndexObserver", () => {
       }),
       resyncSessionsIndexV4: vi.fn(),
       unsubscribeSessionsIndexV4,
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const observer = createWindowHostSessionsIndexObserver({
       agentService,
       target: { workspacePath: "/work/demo" },

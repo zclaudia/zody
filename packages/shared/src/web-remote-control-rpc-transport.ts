@@ -1,11 +1,11 @@
 /* eslint-disable max-lines -- raw RPC 的 schema、精确计量、编码与单 assembly 状态机共享同一组物理不变量。 */
 import { z } from "zod";
-import { PROTOCOL_V4_LIMITS } from "./zcode-protocol-v4/core.js";
+import { PROTOCOL_V4_LIMITS } from "./zody-protocol-v4/core.js";
 import {
   crc32WireBytes,
   decodeWireBase64,
   encodeWireBytesBase64,
-} from "./zcode-protocol-v4/wire-binary.js";
+} from "./zody-protocol-v4/wire-binary.js";
 
 export const WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS = {
   maxPhysicalFrameBytes: PROTOCOL_V4_LIMITS.maxFrameBytes,
@@ -59,7 +59,7 @@ function isCanonicalBase64(value: string): boolean {
 
 export const webRemoteControlRpcTransportFrameSchema = z
   .object({
-    zcode_type: z.literal("rpc-frame"),
+    zody_type: z.literal("rpc-frame"),
     bridgeSessionId: webRemoteControlRpcTransportIdSchema,
     bridgeGeneration: nonnegativeSafeIntegerSchema.optional(),
     recoveryId: webRemoteControlRpcTransportIdSchema.optional(),
@@ -111,7 +111,7 @@ export type WebRemoteControlRpcTransportFramePayload = z.infer<
 
 export const webRemoteControlRpcTransportAckSchema = z
   .object({
-    zcode_type: z.literal("rpc-frame-ack"),
+    zody_type: z.literal("rpc-frame-ack"),
     bridgeSessionId: webRemoteControlRpcTransportIdSchema,
     bridgeGeneration: nonnegativeSafeIntegerSchema.optional(),
     recoveryId: webRemoteControlRpcTransportIdSchema.optional(),
@@ -195,9 +195,20 @@ function boundedPositive(value: number | undefined, maximum: number, reasonCode:
   return Math.min(resolved, maximum);
 }
 
+// 非严格 schema 会抹去混入的旧键，必须先检查顶层自身属性。
+export function hasObsoleteWebRemoteControlDiscriminator(value: unknown): boolean {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    Object.prototype.hasOwnProperty.call(value, "zcode_type")
+  );
+}
+
 export function parseWebRemoteControlRpcTransportPayload(
   value: unknown,
 ): WebRemoteControlRpcTransportPayload | null {
+  if (hasObsoleteWebRemoteControlDiscriminator(value)) return null;
   const result = webRemoteControlRpcTransportPayloadSchema.safeParse(value);
   return result.success ? result.data : null;
 }
@@ -301,7 +312,7 @@ function frameShell(params: {
   dataBase64: string;
 }): WebRemoteControlRpcTransportFramePayload {
   return {
-    zcode_type: "rpc-frame",
+    zody_type: "rpc-frame",
     ...params.identity,
     seq: params.seq,
     messageSeq: params.messageSeq,

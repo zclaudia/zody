@@ -1,23 +1,18 @@
 import type {
-  ZCodeMcpReadResourceResult,
-  ZCodeMcpUiCallToolResult,
-  ZCodeMcpUiCancelCallResult,
-  ZCodeMcpUiListResourceTemplatesResult,
-  ZCodeMcpUiListResourcesResult,
-  ZCodeMcpUiReadResourceResult,
-  ZCodePluginsListUiSurfacesResult,
-} from "@zcode/shared";
-import type {
-  McpAppResourceMeta,
-  PluginSandboxHandle,
-  PluginSandboxRegisterInput,
-} from "@zcode/shared/mcp-apps";
+  ZodyMcpReadResourceResult,
+  ZodyMcpUiCallToolResult,
+  ZodyMcpUiCancelCallResult,
+  ZodyMcpUiListResourceTemplatesResult,
+  ZodyMcpUiListResourcesResult,
+  ZodyMcpUiReadResourceResult,
+  ZodyPluginsListUiSurfacesResult,
+} from "@zody/shared";
+import type { PluginSandboxHandle, PluginSandboxRegisterInput } from "@zody/shared/mcp-apps";
 import {
   MCP_APPS_HTML_MAX_BYTES,
   MCP_APPS_HTML_MIME_TYPES,
   MCP_APPS_UI_READ_RESOURCE_MAX_BYTES,
-  normalizeMcpAppResourceMeta,
-} from "@zcode/shared/mcp-apps";
+} from "@zody/shared/mcp-apps";
 import { createServiceLogger } from "../logger/serviceLogger.js";
 import type {
   IPluginUiBridgeService,
@@ -29,13 +24,18 @@ import type {
   PluginUiResourceSubscriptionParams,
   PluginUiWorkspaceTarget,
 } from "./contract.js";
+import {
+  readListLevelResourceMeta,
+  readResourceMetaBoundary,
+  type ResourceMetaBoundaryResult,
+} from "./resourceMetaBoundary.js";
 
 export interface PluginUiBridgeServiceDependencies {
   recycleInstance?: (params: import("./contract.js").PluginUiPluginScope) => Promise<boolean>;
   validateInstance?: (params: import("./contract.js").PluginUiPluginScope) => Promise<void>;
   openInstance?: (
     params: PluginUiPrepareSandboxParams,
-  ) => Promise<import("@zcode/shared/mcp-apps").McpAppInstance>;
+  ) => Promise<import("@zody/shared/mcp-apps").McpAppInstance>;
   closeInstance?: (params: import("./contract.js").PluginUiPluginScope) => Promise<void>;
 
   readMcpResource?: (params: {
@@ -45,34 +45,34 @@ export interface PluginUiBridgeServiceDependencies {
     pluginId: string;
     serverName: string;
     uri: string;
-    instance: import("@zcode/shared/mcp-apps").McpAppInstance;
-  }) => Promise<ZCodeMcpReadResourceResult>;
+    instance: import("@zody/shared/mcp-apps").McpAppInstance;
+  }) => Promise<ZodyMcpReadResourceResult>;
   callMcpToolForUi?: (
     params: PluginUiCallToolParams,
     options?: { signal?: AbortSignal },
-  ) => Promise<ZCodeMcpUiCallToolResult>;
+  ) => Promise<ZodyMcpUiCallToolResult>;
   /** 取消带 callId 的进行中调用。 */
   cancelMcpToolCallForUi?: (
     params: PluginUiCancelToolCallParams,
-  ) => Promise<ZCodeMcpUiCancelCallResult>;
+  ) => Promise<ZodyMcpUiCancelCallResult>;
   /** 页面发起的 `resources/read`，agent 侧 `mcp/uiReadResource` 做归属与 mimeType 校验。 */
   readMcpResourceForUi?: (
     params: PluginUiReadResourceParams,
-  ) => Promise<ZCodeMcpUiReadResourceResult>;
+  ) => Promise<ZodyMcpUiReadResourceResult>;
   /** 资源列表 / 模板 / 订阅代理；缺省（web / 远程）时对应方法抛 unavailable。 */
   listMcpResourcesForUi?: (
     params: PluginUiListResourcesParams,
-  ) => Promise<ZCodeMcpUiListResourcesResult>;
+  ) => Promise<ZodyMcpUiListResourcesResult>;
   listMcpResourceTemplatesForUi?: (
     params: PluginUiListResourcesParams,
-  ) => Promise<ZCodeMcpUiListResourceTemplatesResult>;
+  ) => Promise<ZodyMcpUiListResourceTemplatesResult>;
   subscribeMcpResourceForUi?: (params: PluginUiResourceSubscriptionParams) => Promise<unknown>;
   unsubscribeMcpResourceForUi?: (params: PluginUiResourceSubscriptionParams) => Promise<unknown>;
   registerSandbox?: (input: PluginSandboxRegisterInput) => Promise<PluginSandboxHandle>;
   /** 工作区级 `plugins/listUiSurfaces`。 */
   listPluginUiSurfaces?: (
     params: PluginUiWorkspaceTarget,
-  ) => Promise<ZCodePluginsListUiSurfacesResult>;
+  ) => Promise<ZodyPluginsListUiSurfacesResult>;
   /** 由 display.ui 提供的 CSP / prefersBorder 在 prepare 时随 params 传入；这里只做透传。 */
 }
 
@@ -83,7 +83,9 @@ export class PluginUiBridgeError extends Error {
       | "resource_not_found"
       | "resource_too_large"
       | "unsupported_mime_type"
-      | "invalid_server_uri",
+      | "invalid_server_uri"
+      /** 资源 `_meta` 双键冲突：可见错误 + 拒绝应用该声明（CSP fail-closed，见 R50 spec §2.4）。 */
+      | "resource_meta_conflict",
     message: string,
   ) {
     super(message);
@@ -106,7 +108,7 @@ export function createPluginUiBridgeService(
   const preparing = new Map<string, Promise<PluginSandboxHandle>>();
   const prepareSandboxOnce = async (
     params: PluginUiPrepareSandboxParams,
-    instance: import("@zcode/shared/mcp-apps").McpAppInstance,
+    instance: import("@zody/shared/mcp-apps").McpAppInstance,
   ) => {
     if (
       !dependencies.readMcpResource ||
@@ -126,7 +128,7 @@ export function createPluginUiBridgeService(
       scopeId: params.scopeId,
       resourceUri: params.resourceUri,
     });
-    let result: ZCodeMcpReadResourceResult;
+    let result: ZodyMcpReadResourceResult;
     try {
       result = await dependencies.readMcpResource({ ...bound, uri: params.resourceUri });
     } catch (error) {
@@ -145,8 +147,13 @@ export function createPluginUiBridgeService(
       // 资源级 _meta 是权威：先看 resources/read 选中的 HTML 项，缺省再回退到 resources/list 条目
       // （规范把 csp / prefersBorder 放在列表条目的 _meta 上，官方 SDK 的 registerAppResource 也只写那里）；
       // 工具级声明只在资源两处都没有对应字段时兜底；csp 整体取舍，不逐域并集。
-      const meta =
-        picked.meta ?? (await readListLevelResourceMeta(dependencies.listMcpResourcesForUi, bound));
+      const pickedBoundary = readResourceMetaBoundary(picked.meta);
+      const boundary =
+        pickedBoundary.meta || pickedBoundary.conflict
+          ? pickedBoundary
+          : await readListLevelResourceMeta(dependencies.listMcpResourcesForUi, bound);
+      assertNoResourceMetaConflict(boundary, params.scopeId, log);
+      const meta = boundary.meta;
       const csp = meta?.csp ?? params.csp;
       const prefersBorder = meta?.prefersBorder ?? params.prefersBorder;
       log.info("prepareSandbox resource ready", {
@@ -287,7 +294,7 @@ function unavailable(feature: string): PluginUiBridgeError {
  * 8 MiB 总量守卫：结果经 MessagePort 结构化克隆进沙箱，
  * agent 侧已按同一常量限流，这里再算一次解码后大小（text 按 UTF-8、blob 按 base64 解码长度）防止旧 agent 漏检。
  */
-export function assertUiReadResourceSize(result: ZCodeMcpUiReadResourceResult, uri: string): void {
+export function assertUiReadResourceSize(result: ZodyMcpUiReadResourceResult, uri: string): void {
   let total = 0;
   for (const content of result.contents) {
     if (typeof content.text === "string") total += Buffer.byteLength(content.text, "utf8");
@@ -309,55 +316,39 @@ function decodedBase64Length(value: string): number {
 }
 
 /** 兼容旧调用：只要 HTML 文本。 */
-export function pickHtmlContent(result: ZCodeMcpReadResourceResult, uri: string): string {
+export function pickHtmlContent(result: ZodyMcpReadResourceResult, uri: string): string {
   return pickHtmlResource(result, uri).html;
 }
 
-const LIST_LEVEL_META_MAX_PAGES = 8;
-
 /**
- * resources/read 的 HTML 项没带 `_meta` 时，翻 resources/list 找同 uri 条目的 `_meta`（最多 8 页）。
- * 列表不可用、翻页失败或找不到都视为"没有声明"，不阻塞沙箱准备。
+ * 资源 `_meta` 双键冲突（R52）：可见错误 + 拒绝整个资源准备（R50 spec §2.3/§2.4）。
+ * 依据：CSP 属 fail-closed 家族，冲突声明不可信，必须拒绝整个声明，绝不合并两侧或取更宽的一侧。
+ * 桥契约没有非致命诊断通道，`prepareSandbox` 抛错是调用方（插件卡片）能看到的唯一可见面；
+ * 抛出发生在登记沙箱之前，因此不会产生任何放宽或半登记状态。
  */
-async function readListLevelResourceMeta(
-  list: PluginUiBridgeServiceDependencies["listMcpResourcesForUi"],
-  params: PluginUiPrepareSandboxParams & {
-    instance: import("@zcode/shared/mcp-apps").McpAppInstance;
-  },
-): Promise<McpAppResourceMeta | null> {
-  if (!list) return null;
-  const scope = {
-    instance: params.instance,
-    workspacePath: params.workspacePath,
-    ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
-    sessionId: params.sessionId,
-    pluginId: params.pluginId,
-    serverName: params.serverName,
-  };
-  let cursor: string | undefined;
-  try {
-    for (let page = 0; page < LIST_LEVEL_META_MAX_PAGES; page += 1) {
-      const result = await list({ ...scope, ...(cursor ? { cursor } : {}) });
-      const entry = result.resources.find((item) => item.uri === params.resourceUri);
-      if (entry) return normalizeMcpAppResourceMeta(entry._meta);
-      if (!result.nextCursor) return null;
-      cursor = result.nextCursor;
-    }
-  } catch {
-    return null;
-  }
-  return null;
+function assertNoResourceMetaConflict(
+  boundary: ResourceMetaBoundaryResult,
+  scopeId: string,
+  log: ReturnType<typeof createServiceLogger>,
+): void {
+  const conflict = boundary.conflict;
+  if (!conflict) return;
+  log.warn("resource _meta conflict", { scopeId, ...conflict });
+  throw new PluginUiBridgeError(
+    "resource_meta_conflict",
+    `MCP resource _meta declares conflicting ${conflict.canonicalKey} and ${conflict.legacyKey}; refusing to apply either (CSP is fail-closed)`,
+  );
 }
 
 /**
  * 选中实际使用的 HTML 项：遍历 contents，取第一个 mimeType 在 HTML 白名单内的项
- * （同 uri 的优先）；从**该项**的 `_meta` 读资源级 csp / prefersBorder / 尺寸提示。
+ * （同 uri 的优先）；返回**该项**的原始 `_meta`，由 `readResourceMetaBoundary` 按 R50 双键规则解析。
  * blob、超限一律拒绝，不降级、不截断；没有任何 HTML 项时按第一项的 mimeType 报错。
  */
 export function pickHtmlResource(
-  result: ZCodeMcpReadResourceResult,
+  result: ZodyMcpReadResourceResult,
   uri: string,
-): { html: string; meta: McpAppResourceMeta | null } {
+): { html: string; meta: unknown } {
   if (result.contents.length === 0) {
     throw new PluginUiBridgeError("resource_not_found", `MCP resource has no contents: ${uri}`);
   }
@@ -389,7 +380,7 @@ export function pickHtmlResource(
       `MCP resource exceeds ${MCP_APPS_HTML_MAX_BYTES} bytes`,
     );
   }
-  return { html: content.text, meta: normalizeMcpAppResourceMeta(content._meta) };
+  return { html: content.text, meta: content._meta };
 }
 
 function normalizeMimeType(value: string | undefined): string | null {

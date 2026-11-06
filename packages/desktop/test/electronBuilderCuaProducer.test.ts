@@ -24,8 +24,8 @@ afterEach(async () => {
 
 describe("electron-builder CUA koffi producer gate", () => {
   it("开源占位包不要求已删除 producer 插件的 koffi 资源", async () => {
-    vi.stubEnv("ZCODE_TARGET_OS", "linux");
-    vi.stubEnv("ZCODE_TARGET_ARCH", "x64");
+    vi.stubEnv("ZODY_TARGET_OS", "linux");
+    vi.stubEnv("ZODY_TARGET_ARCH", "x64");
     const { assertPackagedCuaKoffi } = await import("../electron-builder.config.js");
     const { verifyStagedKoffi } = await import("../scripts/koffi-package-assets.mjs");
     let verificationCalls = 0;
@@ -42,8 +42,8 @@ describe("electron-builder CUA koffi producer gate", () => {
   });
 
   it("真实 producer 缺少 koffi 资源时仍然严格失败", async () => {
-    vi.stubEnv("ZCODE_TARGET_OS", "linux");
-    vi.stubEnv("ZCODE_TARGET_ARCH", "x64");
+    vi.stubEnv("ZODY_TARGET_OS", "linux");
+    vi.stubEnv("ZODY_TARGET_ARCH", "x64");
     const { assertPackagedCuaKoffi } = await import("../electron-builder.config.js");
     const { verifyStagedKoffi } = await import("../scripts/koffi-package-assets.mjs");
     let verificationCalls = 0;

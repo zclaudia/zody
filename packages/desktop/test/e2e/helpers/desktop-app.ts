@@ -6,19 +6,19 @@ import {
   type ModelConfig,
   type ProviderConfig,
   type ProviderConfigLayerSnapshot,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
   PERSONAL_PROVIDER_CONFIG_FILE_NAME,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 import {
   TID_COMPOSER_WORKSPACE_TRIGGER,
   TID_V4_SESSION_PANE,
   TID_WORKSPACE_ITEM,
   TID_WORKSPACE_PATH,
   testId,
-} from "@zcode/shared";
-import type { AppSettings } from "@zcode/shared";
+} from "@zody/shared";
+import type { AppSettings } from "@zody/shared";
 import { collectWindowsE2EProcessTreePids } from "./e2e-process-cleanup.js";
 import {
   collectE2EWebDriverPageHandleCandidates,
@@ -29,9 +29,9 @@ import { sel } from "./selectors.js";
 
 const DEFAULT_E2E_HOME_DIR = resolve(process.cwd(), ".e2e-home");
 const E2E_HOME_DIR =
-  process.env.ZCODE_E2E_HOME_DIR?.trim() ||
-  process.env.ZCODE_DATA_BASE_DIR?.trim() ||
-  process.env.ZCODE_DESKTOP_HOME_DIR?.trim() ||
+  process.env.ZODY_E2E_HOME_DIR?.trim() ||
+  process.env.ZODY_DATA_BASE_DIR?.trim() ||
+  process.env.ZODY_DESKTOP_HOME_DIR?.trim() ||
   // 修复原因：WDIO worker 环境不稳定时，helper 曾回落到真实 HOME，
   // 导致 provider 诊断和清理读写开发者本机配置，而不是当前 e2e sandbox。
   DEFAULT_E2E_HOME_DIR;
@@ -552,7 +552,7 @@ export function getE2EAppDataPaths() {
 }
 
 export async function clearAppData() {
-  if (process.env.ZCODE_E2E_DEFER_APP_DATA_CLEANUP === "1") {
+  if (process.env.ZODY_E2E_DEFER_APP_DATA_CLEANUP === "1") {
     // 修复原因：普通 spec 的 after hook 先 app.quit 会抢在 ChromeDriver
     // deleteSession 前销毁 browsing context，导致每个 worker 都支付断连超时。
     // WDIO afterSession 会在进程退出后删除 app data，此处只交还关闭所有权。
@@ -612,7 +612,7 @@ async function removeAppDataWithRetry() {
       if (!isRetryableRemoveError(error) || attempt === REMOVE_APP_DATA_MAX_ATTEMPTS) {
         if (
           !isRetryableRemoveError(error) ||
-          process.env.ZCODE_E2E_STRICT_APP_DATA_CLEANUP === "1"
+          process.env.ZODY_E2E_STRICT_APP_DATA_CLEANUP === "1"
         ) {
           throw error;
         } else {
@@ -682,7 +682,7 @@ function listWindowsLeftoverE2EProcessPids() {
     return collectWindowsE2EProcessTreePids(output, {
       currentPid: process.pid,
       homeDir: E2E_HOME_DIR,
-      runId: process.env.ZCODE_E2E_RUN_ID,
+      runId: process.env.ZODY_E2E_RUN_ID,
     });
   } catch {
     return [];

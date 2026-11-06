@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { delimiter, dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY,
-  readZCodeToolEnvPassthroughEnv,
-} from "@zcode/shared";
+  ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY,
+  readZodyToolEnvPassthroughEnv,
+} from "@zody/shared";
 import {
   buildLoginShellEnvPatch,
   buildRuntimeProcessEnvPatch,
@@ -40,8 +40,8 @@ describe("runtimeCommandEnv", () => {
     expect(patch.HTTP_PROXY).toBeUndefined();
     expect(patch.NODE_ENV).toBeUndefined();
     expect(patch.NODE_EXTRA_CA_CERTS).toBeUndefined();
-    expect(patch[ZCODE_TOOL_ENV_PASSTHROUGH_ENV_KEY]).toBeDefined();
-    expect(readZCodeToolEnvPassthroughEnv(patch)).toMatchObject({
+    expect(patch[ZODY_TOOL_ENV_PASSTHROUGH_ENV_KEY]).toBeDefined();
+    expect(readZodyToolEnvPassthroughEnv(patch)).toMatchObject({
       HTTP_PROXY: "http://shell-proxy:8080",
       NODE_EXTRA_CA_CERTS: "/tmp/shell-ca.pem",
       npm_config_proxy: "http://npm-proxy:8080",
@@ -71,9 +71,9 @@ describe("runtimeCommandEnv", () => {
     const systemBin = join(root, "system-bin");
     const binarySuffix = process.platform === "win32" ? ".exe" : "";
     const runtimeBinaries = {
-      ZCODE_BFS_BINARY: join(root, "runtime", "bfs", `bfs${binarySuffix}`),
-      ZCODE_RG_BINARY: join(root, "runtime", "ripgrep", `rg${binarySuffix}`),
-      ZCODE_UGREP_BINARY: join(root, "runtime", "ugrep", `ugrep${binarySuffix}`),
+      ZODY_BFS_BINARY: join(root, "runtime", "bfs", `bfs${binarySuffix}`),
+      ZODY_RG_BINARY: join(root, "runtime", "ripgrep", `rg${binarySuffix}`),
+      ZODY_UGREP_BINARY: join(root, "runtime", "ugrep", `ugrep${binarySuffix}`),
     } as const;
 
     try {
@@ -175,22 +175,35 @@ describe("runtimeCommandEnv", () => {
     });
     expect(patch.HTTP_PROXY).toBeUndefined();
     expect(patch.NODE_OPTIONS).toBeUndefined();
-    const passthrough = readZCodeToolEnvPassthroughEnv(patch);
+    const passthrough = readZodyToolEnvPassthroughEnv(patch);
     expect(passthrough).toMatchObject({
       HTTP_PROXY: "http://shell-proxy:8080",
     });
     expect(passthrough.NODE_OPTIONS).toBeUndefined();
   });
 
+  it.each([
+    "__ZCODE_LOGIN_ENV_START__\0PATH=/synthetic\0__ZCODE_LOGIN_ENV_END__\0",
+    "__ZODY_LOGIN_ENV_START__\0PATH=/synthetic\0",
+    "PATH=/synthetic\0__ZODY_LOGIN_ENV_END__\0",
+    "__ZODY_LOGIN_ENV_START__\0PATH=/synthetic\0__ZCODE_LOGIN_ENV_END__\0",
+  ])("does not parse old, missing or mismatched login frames", async (output) => {
+    const result = await captureLoginShellEnvSnapshot({
+      baseEnv: { PATH: "/usr/bin:/bin" }, platform: "darwin", shellPath: "/bin/zsh",
+      executeShell: vi.fn(async () => output),
+    });
+    expect(result).toBeNull();
+  });
+
   it("captures PATH and inherited fields with one asynchronous login shell call", async () => {
     const executeShell = vi.fn(async () =>
       [
         "shell startup chatter",
-        "__ZCODE_LOGIN_ENV_START__\0",
+        "__ZODY_LOGIN_ENV_START__\0",
         "PATH=/Users/dev/.local/bin:/usr/bin:/bin\0",
         "FNM_DIR=/Users/dev/.fnm\0",
         "HTTP_PROXY=http://shell-proxy:8080\0",
-        "__ZCODE_LOGIN_ENV_END__\0",
+        "__ZODY_LOGIN_ENV_END__\0",
       ].join(""),
     );
 
@@ -279,7 +292,7 @@ describe("runtimeCommandEnv", () => {
     expect(captureSnapshot).toHaveBeenCalledTimes(1);
     expect(patch.PATH?.split(delimiter)[0]).toBe("/Users/dev/.local/bin");
     expect(patch.FNM_DIR).toBe("/Users/dev/.fnm");
-    expect(readZCodeToolEnvPassthroughEnv(patch)).toMatchObject({
+    expect(readZodyToolEnvPassthroughEnv(patch)).toMatchObject({
       HTTP_PROXY: "http://shell-proxy:8080",
     });
   });

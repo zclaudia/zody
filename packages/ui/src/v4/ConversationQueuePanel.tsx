@@ -23,13 +23,13 @@ import {
   TID_V4_QUEUE_PAUSED_BANNER,
   TID_V4_QUEUE_RESUME,
   testId,
-} from "@zcode/shared";
-import type { QueueState } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared";
+import type { QueueState } from "@zody/shared/zody-protocol-v4";
 import { ArrowUpFromLine, GripVertical, PencilIcon, Trash2Icon } from "lucide-react";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { runUserAction, runUserActionAsync } from "@/lib/userActionTelemetry.js";
 
 export interface ConversationQueuePanelProps {
@@ -116,7 +116,7 @@ const restrictQueueDragToPanel: Modifier = ({
 interface QueueRowProps {
   item: QueueItem;
   index: number;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   sortable: boolean;
   onDeleteItem?: (queueItemId: string) => void;
   onEditItem?: (queueItemId: string) => Promise<void> | void;
@@ -306,7 +306,7 @@ function ConversationQueuePanelImpl({
   onMoveItem,
   onResume,
 }: ConversationQueuePanelProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [resumePending, setResumePending] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, {

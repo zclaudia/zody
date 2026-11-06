@@ -1,9 +1,9 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ILegacyTaskService } from "@zcode/services";
+import type { ILegacyTaskService } from "@zody/services";
 import {
-  resolveWorkspaceProviderConfigZCodeService,
+  resolveWorkspaceProviderConfigZodyService,
   useWorkspaceProviderConfigFile,
 } from "@/hooks/useWorkspaceProviderConfigFile.js";
 
@@ -13,8 +13,8 @@ const { stableWorkspaceZCodeService } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/hooks/useZCodeTaskService.js", () => ({
-  useZCodeTaskService: () => stableWorkspaceZCodeService,
+vi.mock("@/hooks/useZodyTaskService.js", () => ({
+  useZodyTaskService: () => stableWorkspaceZCodeService,
 }));
 
 vi.mock("@/hooks/useResolvedRemoteWorkspaceSessionId.js", () => ({
@@ -110,40 +110,40 @@ describe("resolveWorkspaceProviderConfigZCodeService", () => {
   });
 
   it("workspace 作用域始终使用 workspace ZCode session service", () => {
-    const workspaceZCodeService = createMockZCodeService("workspace");
-    const baseZCodeService = createMockZCodeService("base");
+    const workspaceZodyService = createMockZCodeService("workspace");
+    const baseZodyService = createMockZCodeService("base");
 
-    const resolved = resolveWorkspaceProviderConfigZCodeService({
+    const resolved = resolveWorkspaceProviderConfigZodyService({
       configuredServiceScope: "workspace",
-      workspaceZCodeService,
-      baseZCodeService,
+      workspaceZodyService,
+      baseZodyService,
       remoteSessionId: "remote-session-1",
     });
 
-    expect(resolved).toBe(workspaceZCodeService);
+    expect(resolved).toBe(workspaceZodyService);
   });
 
   it("base 作用域优先使用 base ZCode session service", () => {
-    const workspaceZCodeService = createMockZCodeService("workspace");
-    const baseZCodeService = createMockZCodeService("base");
+    const workspaceZodyService = createMockZCodeService("workspace");
+    const baseZodyService = createMockZCodeService("base");
 
-    const resolved = resolveWorkspaceProviderConfigZCodeService({
+    const resolved = resolveWorkspaceProviderConfigZodyService({
       configuredServiceScope: "base",
-      workspaceZCodeService,
-      baseZCodeService,
+      workspaceZodyService,
+      baseZodyService,
       remoteSessionId: "remote-session-1",
     });
 
-    expect(resolved).toBe(baseZCodeService);
+    expect(resolved).toBe(baseZodyService);
   });
 
   it("base 作用域在远程会话且 base service 缺失时返回 null，避免误回退远程路径", () => {
-    const workspaceZCodeService = createMockZCodeService("workspace");
+    const workspaceZodyService = createMockZCodeService("workspace");
 
-    const resolved = resolveWorkspaceProviderConfigZCodeService({
+    const resolved = resolveWorkspaceProviderConfigZodyService({
       configuredServiceScope: "base",
-      workspaceZCodeService,
-      baseZCodeService: null,
+      workspaceZodyService,
+      baseZodyService: null,
       remoteSessionId: "remote-session-1",
     });
 
@@ -151,16 +151,16 @@ describe("resolveWorkspaceProviderConfigZCodeService", () => {
   });
 
   it("base 作用域在本地会话且 base service 缺失时回退 workspace service", () => {
-    const workspaceZCodeService = createMockZCodeService("workspace");
+    const workspaceZodyService = createMockZCodeService("workspace");
 
-    const resolved = resolveWorkspaceProviderConfigZCodeService({
+    const resolved = resolveWorkspaceProviderConfigZodyService({
       configuredServiceScope: "base",
-      workspaceZCodeService,
-      baseZCodeService: null,
+      workspaceZodyService,
+      baseZodyService: null,
       remoteSessionId: null,
     });
 
-    expect(resolved).toBe(workspaceZCodeService);
+    expect(resolved).toBe(workspaceZodyService);
   });
 
   it("memoizes the returned provider config object across parent rerenders when fields are unchanged", () => {

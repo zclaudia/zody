@@ -2524,11 +2524,11 @@ WFA01：pending，`manual-review/pending/workflow-face-motion.test.mjs`。独立
 灰度档位由 case-local 配置网关 `packages/desktop/test/e2e/helpers/dynamic-workflow-config-mock-server.ts` 提供：
 它复用 `packages/desktop/test/e2e/fixtures/coding-plan-client-configs.json`，只改写 `dynamicWorkflow` 这一个键，
 并按 spec 文件名选档（与 `model-context-budget-config-mock-server.ts` 同一套路），在 wdio 的 `beforeSession` 注入
-`ZCODE_BASE_URL` / `ZCODE_TEST_BASE_URL` / `ZCODE_ENDPOINT_ORIGIN`。disabled 与 alwaysOn 两档 spec 必须分属不同 worker；
+`ZODY_BASE_URL` / `ZODY_TEST_BASE_URL` / `ZODY_ENDPOINT_ORIGIN`。disabled 与 alwaysOn 两档 spec 必须分属不同 worker；
 用户选择 spec 的文件名含 always-on 档片段，与 DWG-08-B 同档。
 两档共用的定位与观测原语在 `packages/desktop/test/e2e/helpers/dynamic-workflow-gray.ts`。
 
-不覆盖：`onDemand` 档位、本地 `ZCODE_DYNAMIC_WORKFLOW_MODE` 覆盖、已存在 run 的渲染与 Resume 收回、
+不覆盖：`onDemand` 档位、本地 `ZODY_DYNAMIC_WORKFLOW_MODE` 覆盖、已存在 run 的渲染与 Resume 收回、
 手机远控与远端 Host；这些由 DWG-01～DWG-07 的单测承担。
 
 ## SHARE. 会话分享与继续工作覆盖
@@ -2835,3 +2835,5 @@ PA158 合并最新 staging 后 Linux Electron 复跑 1/1 通过，run `desktop-e
 | LOCAL-02 | Windows + distro/user → WSL UI 连接与选择目录 → Linux runtime 启动、原 Host 未重复创建、workspace 可用 | 新增 pending `conversation-session-wsl-local-runtime.test.ts`；需 Windows 原生验证 |
 
 剪枝：不把认证方式、Provider/model 与所有组件做笛卡尔积；部署来源的 HTTP 零调用、损坏归档、固定 SHA、缓存修复由 server 单测证明。Desktop continuous 与手机 replayable 保持隔离，不以 Desktop 证据声称手机链路已验证。新增 pending 用例未经 review 不晋升。
+
+2026-11-04：R45-ART01 纳入 manual-review/pending。验证真实新媒体发送、冷重开和预览，以及在 Host 停止后构造的合成旧 URI 会话重开、文本和旧引用保留；旧媒体不可用交真实 runner 证明，真实执行、人工评审和 fixture 重放尚未完成。跨 session 授权、无缓存/Host 读取另须结合 focused 回归证据，不能以模拟事件替代真实 Agent。

@@ -3,7 +3,7 @@ import {
   type IPlatformService,
   type SaveFileRequest,
   type SaveFileResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   parseMobileRemoteBridgeEnvelope,
   requireMobileRemoteBridgeObject,
@@ -206,9 +206,7 @@ export async function saveMobileRemoteFile(
       token = undefined;
       if (bridge.openFile) {
         try {
-          parseMobileRemoteBridgeEnvelope(
-            bridge.openFile(sessionId, saved.uri, mimeType),
-          );
+          parseMobileRemoteBridgeEnvelope(bridge.openFile(sessionId, saved.uri, mimeType));
         } catch {
           // Bugfix: 保存已经成功，系统没有可打开该类型的应用时不能把保存结果改成失败。
         }
@@ -247,8 +245,7 @@ export function createMobileRemoteFileCapabilities(
     maxAttachmentBytes: options.maxAttachmentBytes ?? MOBILE_REMOTE_MAX_ATTACHMENT_BYTES,
     ...(bridge
       ? {
-          saveFile: (payload) =>
-            saveMobileRemoteFile(bridge, options.sessionId, payload),
+          saveFile: (payload) => saveMobileRemoteFile(bridge, options.sessionId, payload),
         }
       : {}),
   };

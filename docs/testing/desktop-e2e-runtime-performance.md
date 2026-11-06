@@ -161,7 +161,7 @@ session/清理不稳定，因此当前默认收敛为 1 shard；需要性能并�
 
 父 runner 的 agent build 默认使用已有 Turbo 内容缓存：冷缓存仍按依赖图完整构建，
 warm cache 实测从约一分钟级降到 `1,664 ms`。显式
-`ZCODE_DESKTOP_AGENT_BUILD_MODE` 继续可以覆盖该默认值。
+`ZODY_DESKTOP_AGENT_BUILD_MODE` 继续可以覆盖该默认值。
 
 后续完整轮次：
 
@@ -242,7 +242,7 @@ workspace 依赖图源码 ─┐
 Git HEAD / lock / config ┘
 ```
 
-回归测试必须分别证明切换 `ZCODE_E2E_COVERAGE`、修改 `packages/server/src` 和修改
+回归测试必须分别证明切换 `ZODY_E2E_COVERAGE`、修改 `packages/server/src` 和修改
 根目录 `.env` 会改变 fingerprint；不能以“同一 commit”作为未提交源码或环境切换的替代。
 
 共享 build cache 还必须把“检查、构建、产物校验、stamp 提交”收敛为同一个跨进程

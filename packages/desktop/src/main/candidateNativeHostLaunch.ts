@@ -30,14 +30,14 @@ export type CandidateNativeHostLaunchConfig =
  * argv, Renderer messages, or a runtime JSON file: those are routing inputs, not a
  * signature/audit-token proof.
  */
-declare const __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__:
+declare const __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__:
   | CandidateNativeHostLaunchConfig
   | undefined;
 
 function readCompileTimeCandidate(): CandidateNativeHostLaunchConfig | undefined {
-  return typeof __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__ === "undefined"
+  return typeof __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__ === "undefined"
     ? undefined
-    : __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__;
+    : __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__;
 }
 
 function isPackagedNativeHostLaunchConfig(

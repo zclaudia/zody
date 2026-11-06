@@ -1,4 +1,4 @@
-import { createUuid } from "@zcode/shared";
+import { createUuid } from "@zody/shared";
 
 export type WhiteboardTool = "pen" | "eraser";
 

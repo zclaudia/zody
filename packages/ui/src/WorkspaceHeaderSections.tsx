@@ -6,8 +6,8 @@ import {
   TID_WORKSPACE_PATH,
   TID_WORKSPACE_TITLE,
   type RemoteTarget,
-  type ZCodeTaskMeta,
-} from "@zcode/shared";
+  type ZodyTaskMeta,
+} from "@zody/shared";
 import { useMemo, useRef, useState } from "react";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { cn } from "@/components/lib/utils.js";
@@ -28,7 +28,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   formatRemoteWorkspaceDisplayLabel,
   formatRemoteWorkspaceHeaderHostLabel,
@@ -44,7 +44,7 @@ import type {
   WorkspaceHeaderTitleSectionProps,
 } from "@/WorkspaceHeaderSections/shared.js";
 import { applyTaskQueryCacheMutation } from "@/store/taskQueryCacheStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import { useRemotePinnedTaskStore } from "@/store/remotePinnedTaskStore.js";
 import { useRemoteTimelineTaskStore } from "@/store/remoteTimelineTaskStore.js";
 import { TaskRenameDialog } from "@/TaskRenameDialog.js";
@@ -53,7 +53,7 @@ import {
   RemoteSyncMenuItems,
   shouldShowRemoteSyncActions,
 } from "@/settings/RemoteSyncActions.js";
-import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zcodeDraftSkillInvalidation.js";
+import { invalidateDeferredDraftSessionForSkillChange } from "@/lib/zodyDraftSkillInvalidation.js";
 import { refreshSharedSkillStoreForWorkspace } from "@/lib/skillStoreRefresh.js";
 import { refreshWorkspacePluginCapabilitiesAfterRemoteSync } from "@/lib/remotePluginSyncRefresh.js";
 import { useMcpStore } from "@/store/mcpStore.js";
@@ -110,7 +110,7 @@ export function WorkspaceHeaderTitleSection({
   simplifyForNarrowRemote = false,
   compact = false,
 }: WorkspaceHeaderTitleSectionProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const openFeedbackSubmit = useFeedbackStore((state) => state.openSubmit);
   const confirmDialog = useConfirmDialog();
   const services = useWorkspaceServices(
@@ -119,16 +119,16 @@ export function WorkspaceHeaderTitleSection({
     workspaceIdentity,
   );
   const baseServices = useBaseWorkspaceServices();
-  const removeTaskState = useZCodeSessionStore(
+  const removeTaskState = useZodySessionStore(
     (state) => state.removeTaskState,
   );
-  const upsertOptimisticTaskListItem = useZCodeSessionStore(
+  const upsertOptimisticTaskListItem = useZodySessionStore(
     (state) => state.upsertOptimisticTaskListItem,
   );
-  const removeOptimisticTaskListItem = useZCodeSessionStore(
+  const removeOptimisticTaskListItem = useZodySessionStore(
     (state) => state.removeOptimisticTaskListItem,
   );
-  const setTaskUnreadIndicator = useZCodeSessionStore(
+  const setTaskUnreadIndicator = useZodySessionStore(
     (state) => state.setTaskUnreadIndicator,
   );
   const [taskMenuOpen, setTaskMenuOpen] = useState(false);
@@ -294,9 +294,9 @@ export function WorkspaceHeaderTitleSection({
   };
 
   const buildHeaderTaskSnapshot = (
-    fallbackTask: ZCodeTaskMeta,
-    overrides?: Partial<ZCodeTaskMeta>,
-  ): ZCodeTaskMeta => {
+    fallbackTask: ZodyTaskMeta,
+    overrides?: Partial<ZodyTaskMeta>,
+  ): ZodyTaskMeta => {
     if (activeTaskMeta) {
       return {
         ...activeTaskMeta,
@@ -324,7 +324,7 @@ export function WorkspaceHeaderTitleSection({
     }
 
     try {
-      const renamedTask = await services.zcodeTaskService.renameTask({
+      const renamedTask = await services.zodyTaskService.renameTask({
         taskId: renamingTaskId,
         workspacePath: workspaceAbsPath,
         title: normalizedTitle,
@@ -382,7 +382,7 @@ export function WorkspaceHeaderTitleSection({
     }
 
     handleCancelRenameTask();
-    void services.zcodeTaskService
+    void services.zodyTaskService
       .archiveTask({
         taskId: resolvedTaskActionTaskId,
         workspacePath: workspaceAbsPath,
@@ -601,7 +601,7 @@ export function WorkspaceHeaderTitleSection({
                     nextState: { pinned: !isPinned, archived: false },
                   });
                 }
-                void services.zcodeTaskService
+                void services.zodyTaskService
                   .setTaskPinned({
                     taskId: resolvedTaskActionTaskId,
                     workspacePath: workspaceAbsPath,
@@ -685,7 +685,7 @@ export function WorkspaceHeaderTitleSection({
                 if (!resolvedTaskActionTaskId) {
                   return;
                 }
-                void services.zcodeTaskService
+                void services.zodyTaskService
                   .setTaskUnread({
                     taskId: resolvedTaskActionTaskId,
                     workspacePath: workspaceAbsPath,
@@ -784,8 +784,8 @@ export function WorkspaceHeaderTitleSection({
           remoteMcpSyncService={services.mcpSyncService}
           localPluginSyncService={baseServices.pluginSyncService}
           remotePluginSyncService={services.pluginSyncService}
-          localZCodeAgentService={baseServices.zcodeAgentService}
-          remoteZCodeAgentService={services.zcodeAgentService}
+          localZCodeAgentService={baseServices.zodyAgentService}
+          remoteZCodeAgentService={services.zodyAgentService}
           remoteTarget={remoteTarget}
           skillWorkspacePath={workspaceAbsPath}
           mcpWorkspacePath={workspaceAbsPath}
@@ -795,7 +795,7 @@ export function WorkspaceHeaderTitleSection({
           workspaceIdentity={workspaceIdentity}
           onSkillsSynced={async () => {
             await invalidateDeferredDraftSessionForSkillChange({
-              zcodeSessionService: services.zcodeSessionService,
+              zodySessionService: services.zodySessionService,
               workspacePath: workspaceAbsPath,
               workspaceIdentity,
               reason: "header-remote-skill-sync",
@@ -823,8 +823,8 @@ export function WorkspaceHeaderTitleSection({
               skillsService: services.skillsService,
               workspaceIdentity,
               workspacePath: workspaceAbsPath,
-              zcodeAgentService: services.zcodeAgentService,
-              zcodeSessionService: services.zcodeSessionService,
+              zodyAgentService: services.zodyAgentService,
+              zodySessionService: services.zodySessionService,
             });
           }}
         />

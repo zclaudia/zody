@@ -1,17 +1,17 @@
-import type { IHooksService } from "@zcode/services";
-import type { Hook } from "@zcode/shared";
+import type { IHooksService } from "@zody/services";
+import type { Hook } from "@zody/shared";
 import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { HookForm } from "@/settings/HookForm.js";
 import { HooksList, groupHookSections } from "@/settings/HooksList.js";
 import {
   buildPluginHookRows,
   filterPluginHooksByScope,
-  isReadOnlyZCodeHook,
+  isReadOnlyZodyHook,
   resolveLatestReviewScopeTarget,
 } from "@/settings/HooksSection.js";
 import { useHooksStore } from "@/store/hooksStore.js";
@@ -272,7 +272,7 @@ describe("Hooks settings page", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           TooltipProvider,
@@ -351,7 +351,7 @@ describe("Hooks settings page", () => {
     };
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           TooltipProvider,
@@ -378,7 +378,7 @@ describe("Hooks settings page", () => {
   it("renders an existing status message as an editable typed field", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(HookForm, {
           hook: {
@@ -439,7 +439,7 @@ describe("Hooks settings page", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           TooltipProvider,
@@ -474,7 +474,7 @@ describe("Hooks settings page", () => {
     const untrustedConfiguredOn = workspaceConfiguredHook("pending_trust");
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           TooltipProvider,
@@ -504,7 +504,7 @@ describe("Hooks settings page", () => {
   it("持久信任后隐藏 Trust，并恢复配置开关的真实值与可操作性", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           TooltipProvider,
@@ -543,12 +543,12 @@ describe("Hooks settings page", () => {
         projectPath: "/workspace",
       },
     };
-    expect(isReadOnlyZCodeHook(readOnlyHook)).toBe(true);
-    expect(isReadOnlyZCodeHook(workspaceConfiguredHook("pending_trust"))).toBe(false);
+    expect(isReadOnlyZodyHook(readOnlyHook)).toBe(true);
+    expect(isReadOnlyZodyHook(workspaceConfiguredHook("pending_trust"))).toBe(false);
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(
           TooltipProvider,

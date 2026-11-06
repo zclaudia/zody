@@ -1,4 +1,4 @@
-import type { ZCodeWorkspaceTaskListChanged } from "@zcode/shared";
+import type { ZodyWorkspaceTaskListChanged } from "@zody/shared";
 import {
   getTaskMetaWorkspaceEventSyncMode,
   isTaskListDeletionWorkspaceEvent,
@@ -43,7 +43,7 @@ function pruneCoordinatedResults(currentTime: number): void {
   }
 }
 
-function buildCoordinatedEventKey(event: ZCodeWorkspaceTaskListChanged): string | null {
+function buildCoordinatedEventKey(event: ZodyWorkspaceTaskListChanged): string | null {
   const taskId = event.taskId ?? event.taskMeta?.taskId;
   if (!taskId) {
     return null;
@@ -79,7 +79,7 @@ function cacheResult(
 }
 
 export function handleTaskListWorkspaceEventCacheSync(
-  event: ZCodeWorkspaceTaskListChanged,
+  event: ZodyWorkspaceTaskListChanged,
 ): TaskListWorkspaceEventCacheSyncResult {
   if (shouldApplyTaskMetaFromWorkspaceEvent(event)) {
     const syncMode = getTaskMetaWorkspaceEventSyncMode(event);

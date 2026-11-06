@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import { join, posix } from "node:path";
-import { TID_WORKSPACE_HEADER, TID_WORKSPACE_MORE_BUTTON, TID_WORKSPACE_PATH } from "@zcode/shared";
+import { TID_WORKSPACE_HEADER, TID_WORKSPACE_MORE_BUTTON, TID_WORKSPACE_PATH } from "@zody/shared";
 import { clearAppData, getE2EAppDataPaths } from "../../../helpers/desktop-app.js";
 import {
   addMarketplaceSourceThroughAgent,

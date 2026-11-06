@@ -5,7 +5,7 @@ import {
 } from "../../../helpers/subagent-refresh-conversation.js";
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { TID_PROJECT_ADD } from "@zcode/shared";
+import { TID_PROJECT_ADD } from "@zody/shared";
 import { clearAppData, getE2EAppDataPaths } from "../../../helpers/desktop-app.js";
 import {
   saveRefreshProfile,

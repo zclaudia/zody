@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Hook } from "@zcode/shared";
-import type { IHooksService } from "@zcode/services";
+import type { Hook } from "@zody/shared";
+import type { IHooksService } from "@zody/services";
 import { toast } from "@/components/ui/toast.js";
 import { useServices } from "@/hooks/useServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { useHooksStore } from "@/store/hooksStore.js";
 import {
-  findWorkspaceHookCommandBinding,
   findWorkspaceHookReviewBinding,
+  resolveWorkspaceHookCommandBinding,
+  resolveWorkspaceHookReviewBinding,
   useWorkspaceHookReviewStore,
 } from "@/store/workspaceHookReviewStore.js";
 import { trustWorkspaceHookWithReview } from "./workspaceHookReviewCommands.js";
@@ -21,10 +22,11 @@ import {
 export function useWorkspaceHookInlineTrust(input: {
   workspacePath?: string | null;
   workspaceIdentity?: string;
+  remoteSessionId?: string;
   hooksService?: IHooksService;
   rpcReady?: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const contextServices = useServices();
   // Settings 的 PluginScopeMenu 可以选中非当前激活的（远程）workspace。
   // 信任后的列表刷新与 settings 预信任回退若走 useServices() 的 context 服务（指向激活
@@ -40,26 +42,41 @@ export function useWorkspaceHookInlineTrust(input: {
   const refreshHooks = useHooksStore((state) => state.refresh);
   const [trustingHookId, setTrustingHookId] = useState<string | null>(null);
   const activeReview = useWorkspaceHookReviewStore((state) =>
-    findWorkspaceHookReviewBinding(state.bindings, input.workspacePath, input.workspaceIdentity),
+    findWorkspaceHookReviewBinding(state.bindings, input.workspacePath, input.workspaceIdentity, {
+      remoteSessionId: input.remoteSessionId,
+    }),
   );
   const activeReviewInteractionId = activeReview?.request.interactionId;
   const hasWorkspaceGrantAuthority =
     canUseHooksService && Boolean(hooksService!.grantWorkspaceHookTrust);
-  const trustActionAvailable = useWorkspaceHookReviewStore(
-    (state) =>
-      hasWorkspaceGrantAuthority ||
-      Boolean(
-        findWorkspaceHookReviewBinding(
-          state.bindings,
-          input.workspacePath,
-          input.workspaceIdentity,
-        ) ??
-        findWorkspaceHookCommandBinding(
-          state.commandBindings,
-          input.workspacePath,
-          input.workspaceIdentity,
-        ),
-      ),
+  const trustActionAvailable = useWorkspaceHookReviewStore((state) => {
+    // remote-waiting 时 service 尚未绑定；此时不能把旧 binding 暴露成可操作目标。
+    if (input.rpcReady === false) return false;
+    const route = {
+      workspacePath: input.workspacePath,
+      workspaceIdentity: input.workspaceIdentity,
+      remoteSessionId: input.remoteSessionId,
+    };
+    const reviewResolution = resolveWorkspaceHookReviewBinding(state.bindings, route);
+    const commandResolution = resolveWorkspaceHookCommandBinding(state.commandBindings, route);
+    // 歧义路由连 workspace grant 也不能作为绕过路径，因此不展示可操作目标。
+    if (reviewResolution.status === "ambiguous" || commandResolution.status === "ambiguous") {
+      return false;
+    }
+    return (
+      reviewResolution.status === "matched" ||
+      commandResolution.status === "matched" ||
+      hasWorkspaceGrantAuthority
+    );
+  });
+  const trustAbortController = useRef<AbortController | null>(null);
+
+  // R47：Settings scope / remote route 变化时中止旧等待，旧 flow 不能借新通道继续授权。
+  useEffect(
+    () => () => {
+      trustAbortController.current?.abort();
+    },
+    [input.remoteSessionId, input.workspaceIdentity, input.workspacePath],
   );
 
   // 审核绑定结束后刷新列表，避免 Trust 已落盘但行内按钮仍停留在旧快照。
@@ -91,12 +108,17 @@ export function useWorkspaceHookInlineTrust(input: {
     async (hook: Hook) => {
       if (!canUseHooksService) return;
       const service = hooksService!;
+      trustAbortController.current?.abort();
+      const abortController = new AbortController();
+      trustAbortController.current = abortController;
       setTrustingHookId(hook.id);
       try {
         const result = await trustWorkspaceHookWithReview({
           hook,
           workspacePath: input.workspacePath,
           workspaceIdentity: input.workspaceIdentity,
+          remoteSessionId: input.remoteSessionId,
+          signal: abortController.signal,
           ...(service.grantWorkspaceHookTrust
             ? {
                 grantWithoutSession: (target) => service.grantWorkspaceHookTrust!(target),
@@ -108,6 +130,7 @@ export function useWorkspaceHookInlineTrust(input: {
             useWorkspaceHookReviewStore.getState().bindings,
             input.workspacePath,
             input.workspaceIdentity,
+            { remoteSessionId: input.remoteSessionId },
           );
           const hasLivePendingBinding = Boolean(currentBinding);
           if (
@@ -133,12 +156,16 @@ export function useWorkspaceHookInlineTrust(input: {
         logger.error("[workspace-hook-trust] 行内信任命令失败", { cause });
         toast(cause instanceof Error ? cause.message : String(cause));
       } finally {
-        setTrustingHookId(null);
+        if (trustAbortController.current === abortController) {
+          trustAbortController.current = null;
+          setTrustingHookId(null);
+        }
       }
     },
     [
       canUseHooksService,
       hooksService,
+      input.remoteSessionId,
       input.workspaceIdentity,
       input.workspacePath,
       intl,

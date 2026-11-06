@@ -229,7 +229,7 @@ Git 服务现在和 `file/system/terminal` 一样走统一 RPC 链路。
 
 `GitEnvironmentProvider` 会按顺序探测：
 
-1. `ZCODE_GIT_BINARY`
+1. `ZODY_GIT_BINARY`
 2. `git`
 3. Windows 下的常见 Git 安装路径
 

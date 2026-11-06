@@ -12,7 +12,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { isAbsolute, join, relative, sep } from "node:path";
-import { ZCODE_VERSION, type RemoteAssetSource } from "@zcode/shared";
+import { ZODY_VERSION, type RemoteAssetSource } from "@zody/shared";
 import { extractTarGzArchive } from "./localTarGz.js";
 import {
   parseRemoteAssetManifestFromResponse,
@@ -33,7 +33,7 @@ export async function prepareLocalRemoteAssets(
   platformArch: string,
   cacheDir: string,
   signal?: AbortSignal,
-  appVersion = ZCODE_VERSION,
+  appVersion = ZODY_VERSION,
 ): Promise<PreparedLocalRemoteAssets> {
   signal?.throwIfAborted();
   const rootDir = await realpath(source.rootDir);

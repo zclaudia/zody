@@ -1,6 +1,6 @@
-import type { FeedbackDeviceInfo } from "@zcode/shared";
-import { ZCODE_BUILD_TIME, ZCODE_COMMIT, ZCODE_VERSION } from "@zcode/shared";
-import { Emitter } from "@zcode/rpc";
+import type { FeedbackDeviceInfo } from "@zody/shared";
+import { ZODY_BUILD_TIME, ZODY_COMMIT, ZODY_VERSION } from "@zody/shared";
+import { Emitter } from "@zody/rpc";
 import { arch, platform, release, type as osType } from "node:os";
 
 import type { FeedbackUploadProgress, IFeedbackService } from "./feedback.js";
@@ -29,9 +29,9 @@ const OFFICIAL_SUBMISSION_DISABLED_MESSAGE =
 
 function buildDeviceSnapshot(): FeedbackDeviceInfo {
   return {
-    appVersion: ZCODE_VERSION,
-    buildCommitId: ZCODE_COMMIT,
-    buildTime: ZCODE_BUILD_TIME,
+    appVersion: ZODY_VERSION,
+    buildCommitId: ZODY_COMMIT,
+    buildTime: ZODY_BUILD_TIME,
     nodeVersion: process.version,
     osType: osType(),
     osPlatform: platform(),

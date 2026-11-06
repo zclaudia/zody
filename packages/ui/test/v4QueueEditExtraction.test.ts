@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
 import {
   applyExternalTextInsertRequestToComposer,
   applyComposerRestoreRequestToComposer,

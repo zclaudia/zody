@@ -7,7 +7,7 @@ import {
   TID_REMOTE_KIND_WSL,
   TID_SSH_DIALOG,
   TID_SSH_HOST_INPUT,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, clickTestIdByWebDriver } from "../../../helpers/desktop-app.js";
 import { prepareV4ConversationE2E } from "../../../helpers/v4-conversation.js";
 import { clickLastEnabledSSHDialogButton } from "../../../helpers/ssh-remote-p0.js";

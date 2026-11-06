@@ -4,8 +4,8 @@ Status: implemented. This document describes what the model and the user see whe
 workflow is written: the facade the script is written against, the `/workflow` command and
 the authoring skill, the prompts a subagent receives, the artifact channel, `world.run`, and
 the snippet tool. The analyzer that checks the script is in
-`apps/zcode-cli/packages/dynamic-workflow/docs/analysis.md`; what happens after the script
-is accepted is in `apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md`; the
+`apps/zody-cli/packages/dynamic-workflow/docs/analysis.md`; what happens after the script
+is accepted is in `apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md`; the
 tools that submit and confirm a run are in `docs/dynamic-workflow/launch.md`.
 
 ## The authoring surface
@@ -578,7 +578,7 @@ teaching material now have the same lifetime.
 | Asset                     | Where it lives                                                                                       | How it ships                      |
 | ------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------- |
 | `/workflow`               | `bootstrap/src/builtin-workflow-command.ts`, expanded by `builtin-prompt-command.ts` next to `/init` | compiled into the CLI             |
-| `dynamic-workflows` skill | `apps/zcode-cli/packages/bundled-skills/skills/dynamic-workflows/`                                   | the **bundled skill pack**, below |
+| `dynamic-workflows` skill | `apps/zody-cli/packages/bundled-skills/skills/dynamic-workflows/`                                   | the **bundled skill pack**, below |
 
 The bundled skill pack (`bootstrap/src/app/bundled-skills.ts`) is a skill root with
 `source: "bundled"` and `scope: "system"`, injected next to the plugin skill roots wherever
@@ -596,11 +596,11 @@ How the pack reaches each runtime:
 - Development and the Electron desktop resolve `packages/bundled-skills` on disk next to the
   CLI entry, through the same candidate-directory walk official plugins use, and read it in
   place; nothing is copied. `packages/desktop/scripts/prepare-agent-node-bundle.mjs` stages
-  it beside `resources/glm/zcode.cjs`; `scripts/prepare-prebuilds.mjs` stages it for remote
+  it beside `resources/glm/zody.cjs`; `scripts/prepare-prebuilds.mjs` stages it for remote
   hosts.
-- SEA binaries embed `skills/**` under the `zcode-bundled-skills/` asset prefix
+- SEA binaries embed `skills/**` under the `zody-bundled-skills/` asset prefix
   (`cli/scripts/sea-bundled-skill-assets.mjs`) with a manifest whose hash covers every file.
-  On start the CLI extracts the pack once into `~/.zcode/cli/bundled-skills/<hash>/`; the
+  On start the CLI extracts the pack once into `~/.zody/cli/bundled-skills/<hash>/`; the
   directory name is the content identity, so restarts are idempotent and concurrent starts
   have exactly one winner. A hash mismatch refuses the pack and falls back to the newest
   complete extraction.
@@ -1313,7 +1313,7 @@ already cumulative; a cache hit adds nothing, since its cost is inside the inher
 resumed run continues its own count. In both cases the engine re-emits the carried total right
 after `run-started`, so a card never shows zero for a run that has already cost something.
 The predecessor keeps its own figure; it is the successor that reports the whole
-(`apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md`, "Usage across the lineage").
+(`apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md`, "Usage across the lineage").
 
 ## Alternatives not taken
 

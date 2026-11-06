@@ -1,9 +1,9 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import {
   TID_CHAT_CONTEXT_USAGE_TRIGGER,
-  type ZCodeContextUsageBreakdownItem,
-  type ZCodeProvider,
-} from "@zcode/shared";
+  type ZodyContextUsageBreakdownItem,
+  type ZodyProvider,
+} from "@zody/shared";
 import {
   Context,
   ContextContentBody,
@@ -12,7 +12,7 @@ import {
 } from "@/components/ai-elements/context.js";
 import { cn } from "@/components/lib/utils.js";
 import { Progress } from "@/components/ui/progress.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { formatCompactTokenNumber } from "@/lib/tokenNumberFormat.js";
 
 /**
@@ -20,7 +20,7 @@ import { formatCompactTokenNumber } from "@/lib/tokenNumberFormat.js";
  * 本文件只保留上下文窗口占用（context usage）展示。
  */
 
-type ContextUsageBreakdownSource = ZCodeContextUsageBreakdownItem["source"];
+type ContextUsageBreakdownSource = ZodyContextUsageBreakdownItem["source"];
 
 interface ContextUsageBreakdownSegment {
   chars: number;
@@ -124,7 +124,7 @@ const BREAKDOWN_SOURCE_ORDER: Record<ContextUsageBreakdownSource, number> = {
 };
 
 export function buildContextUsageBreakdownSegments(
-  breakdown: readonly ZCodeContextUsageBreakdownItem[] | undefined,
+  breakdown: readonly ZodyContextUsageBreakdownItem[] | undefined,
 ): ContextUsageBreakdownSegment[] {
   const charsBySource = new Map<ContextUsageBreakdownSource, number>();
   for (const item of breakdown ?? []) {
@@ -190,7 +190,7 @@ export function getRenderableTaskUsage<
   return taskUsage;
 }
 
-export function getContextCompressionCommand(_provider: ZCodeProvider): string {
+export function getContextCompressionCommand(_provider: ZodyProvider): string {
   return "/compact";
 }
 
@@ -213,10 +213,10 @@ export function ChatContextUsage({
     used: number;
     size: number;
     cache?: { hitRate: number | null };
-    breakdown?: ZCodeContextUsageBreakdownItem[];
+    breakdown?: ZodyContextUsageBreakdownItem[];
   } | null;
-  selectedProvider: ZCodeProvider;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  selectedProvider: ZodyProvider;
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   locale: string;
 }) {
   const [contextOpen, setContextOpen] = useState(false);

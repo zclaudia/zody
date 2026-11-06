@@ -1,12 +1,12 @@
 import { resolve } from "node:path";
-import type { ModelSelection } from "@zcode/shared";
+import type { ModelSelection } from "@zody/shared";
 import type {
-  ZCodeAgentCommandResolverContext,
-  ZCodeAgentNativeRuntimeConfig,
-  ZCodeAgentNativeRuntimeResolver,
-  ZCodeAgentNativeRuntimeResolverContext,
-  ZCodeAgentNativeRuntimeStartupContext,
-} from "@zcode/services/node";
+  ZodyAgentCommandResolverContext,
+  ZodyAgentNativeRuntimeConfig,
+  ZodyAgentNativeRuntimeResolver,
+  ZodyAgentNativeRuntimeResolverContext,
+  ZodyAgentNativeRuntimeStartupContext,
+} from "@zody/services/node";
 import {
   digestCuaNarrowNetworkConfig,
   normalizeCuaNarrowSelection,
@@ -61,7 +61,7 @@ export interface CuaNarrowDecisionEvent {
   readonly workspacePath?: string;
   readonly snapshotSource: "build-profile" | "existing-host-services";
   readonly taskTimeProviderGuard: false;
-  // 中文注释：字段旧名前缀撞上 M2 已退出标识，更名详见 ZCodeAgentNativeRuntimeStartupContext
+  // 中文注释：字段旧名前缀撞上 M2 已退出标识，更名详见 ZodyAgentNativeRuntimeStartupContext
   // 处注释；语义是对 provider 配置快照的 SHA-256 digest，与同事件 networkDigestSha256 命名对齐。
   readonly providerDigestSha256?: string;
   readonly selection?: ModelSelection | null;
@@ -71,7 +71,7 @@ export interface CuaNarrowDecisionEvent {
 export interface CuaNarrowAgentRuntime {
   readonly launcherPath: string;
   readonly profile: CuaNarrowAgentBuildProfile;
-  readonly resolve: ZCodeAgentNativeRuntimeResolver;
+  readonly resolve: ZodyAgentNativeRuntimeResolver;
 }
 
 export type CuaNarrowPrepareResult =
@@ -91,7 +91,7 @@ export interface PrepareCuaNarrowAgentRuntimeOptions {
   resourcesPath?: string;
   preparedWorkspacePaths?: readonly string[];
   /** Actual facts read once from the existing Host services before services are published. */
-  startupContext?: ZCodeAgentNativeRuntimeStartupContext;
+  startupContext?: ZodyAgentNativeRuntimeStartupContext;
   report?: (event: CuaNarrowDecisionEvent) => void;
   deps?: CuaNarrowRuntimeFileDependencies;
 }
@@ -108,7 +108,7 @@ function selectionDigest(selection: ModelSelection | null | undefined): string {
 
 function compareStartupContext(
   profile: CuaNarrowAgentBuildProfile,
-  context: ZCodeAgentNativeRuntimeStartupContext | undefined,
+  context: ZodyAgentNativeRuntimeStartupContext | undefined,
 ): StartupMismatchReason | null {
   if (!context) return "startup-context-unavailable";
   if (context.providerDigestSha256 !== profile.provider.revisionSha256) {
@@ -261,11 +261,11 @@ export async function prepareCuaNarrowAgentRuntime(
     taskTimeProviderGuard: false,
   });
 
-  const resolveWorkspace: ZCodeAgentNativeRuntimeResolver = async (
-    context: ZCodeAgentCommandResolverContext,
-    runtimeContext?: ZCodeAgentNativeRuntimeResolverContext,
-  ): Promise<ZCodeAgentNativeRuntimeConfig | null> => {
-    let spawnContext: ZCodeAgentNativeRuntimeStartupContext;
+  const resolveWorkspace: ZodyAgentNativeRuntimeResolver = async (
+    context: ZodyAgentCommandResolverContext,
+    runtimeContext?: ZodyAgentNativeRuntimeResolverContext,
+  ): Promise<ZodyAgentNativeRuntimeConfig | null> => {
+    let spawnContext: ZodyAgentNativeRuntimeStartupContext;
     try {
       if (!runtimeContext) throw new Error("startup context reader unavailable");
       spawnContext = await runtimeContext.readStartupContext();

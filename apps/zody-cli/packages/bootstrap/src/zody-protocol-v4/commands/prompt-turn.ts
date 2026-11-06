@@ -1,0 +1,224 @@
+// 原生 prompt turn 运行器。
+//
+// Core admission 只负责接受输入并建立 session-scoped reservation；本文件不再拥有
+// activeAbortController，也不等待 projection commit。这样 TurnStarted 之后的任意 Core
+// starting/active 状态都会继续挡住同一 session 的第二次 start。
+import { type TurnBackgroundAttribution, type TurnInputIntentMetadata } from "@zody/contracts";
+import type { TurnAttachment } from "@zody/core";
+import type { SendInputOptions, SendInputResult } from "../../app/types.js";
+import { runWithSessionResidencyFinalization } from "../../session-residency-lease.js";
+import type { V4CommandCoreHost, V4SessionRecordView } from "./types.js";
+
+export interface StartPromptTurnParamsBase {
+  content: string;
+  /** v4 锚点：inputId=queryId=commandId（权威数据 sourceCommandId 对账）。 */
+  inputId: string;
+  inputPresentation?: SendInputOptions["inputPresentation"];
+  /** 附件命令面：AttachmentRef 已在 handler 层映射为 core TurnAttachment。 */
+  attachments?: TurnAttachment[];
+  browserAmbientContext?: SendInputOptions["browserAmbientContext"];
+  intent?: TurnInputIntentMetadata;
+  /** 标准 Selection 的单次执行约束；不会改写 Session Selection。 */
+  modelExecution?: SendInputOptions["modelExecution"];
+  sharedContextRefs?: SendInputOptions["sharedContextRefs"];
+  toolDisallowlist?: readonly string[];
+  /** 当前输入必须保留为未来独立 turn，不能因 admission 瞬间转为空闲而直接启动。 */
+  requireQueue?: boolean;
+  /** sendQueuedNow 已持有 Core promotion lease，要求这次 admission 只能占用空闲位。 */
+  requireIdle?: boolean;
+  // fork（bots 移除）：botDeliveryTarget（Bot 入站 turn 的回推地址，供 CronCreate 读取）
+  // 随 bot channels 全量删除（specs/bot-channels-removal.md）。
+}
+
+export type StartPromptTurnParams = StartPromptTurnParamsBase & TurnBackgroundAttribution;
+
+export interface PromptTurnStartResult {
+  /** Core admission 已完成；不等待 TurnStarted 或 projection commit。 */
+  turnStarted: Promise<void>;
+  /** Core 真实完成 promise，仅供生命周期清理使用，不属于 ACK 边界。 */
+  completion?: Promise<unknown>;
+  admission: SendInputResult;
+  /** 兼容旧调用方；初始 ACK 不再依赖 messageId。 */
+  messageId?: string;
+}
+
+export class V4PromptRejectedError extends Error {
+  readonly turnStartUncertain = false;
+
+  constructor(
+    readonly reasonCode: "restoreWarning" | "activePrompt",
+    message: string,
+  ) {
+    super(message);
+    this.name = "V4PromptRejectedError";
+  }
+}
+
+/** 旧 queue promotion 兼容谓词：新的 Core admission 不再产生 projection authority 不确定态。 */
+export function isPromptTurnStartUncertainFailure(_error: unknown): boolean {
+  return false;
+}
+
+/**
+ * 入口只做模型/持久化前置校验，然后调用 app -> Core admission。Core 返回 started 时，
+ * 后台生命周期等待 completion 清理 turn 归因和广播状态；RPC 本身立即返回 admission receipt。
+ */
+export async function startPromptTurn(
+  host: V4CommandCoreHost,
+  record: V4SessionRecordView,
+  params: StartPromptTurnParams,
+): Promise<PromptTurnStartResult> {
+  const usesExecutionSelection = params.modelExecution?.selectionScope === "execution";
+  if (!usesExecutionSelection && record.restoreWarning) {
+    // app 重启后冷恢复可能跑在 provider registry 推送
+    // 之前，record 创建时判「模型不可解析」挂上告警；registry 随后到达时 runtime
+    // 早已可服务，但这个一次性标志没人回来清——发送被永久拒（用户只能手动切模型
+    // 解锁）。闸前经宿主能力重评：已有可用目标则清除过期告警，随后仍由
+    // ensureModelReady 校验当前选择；不能在这里兜底换模型或清空持久选择。
+    // 仍无可用模型/宿主不支持 → 维持拒绝。
+    if (host.hasUsableRuntimeModelTarget?.(record) === true) {
+      host.logger?.info?.("v4 restoreWarning cleared by model catalog recovery", {
+        sessionId: record.app.sessionId,
+        warningType: record.restoreWarning.type,
+      });
+      record.restoreWarning = undefined;
+    }
+  }
+  if (!usesExecutionSelection && record.restoreWarning) {
+    throw new V4PromptRejectedError("restoreWarning", record.restoreWarning.message);
+  }
+  if (!usesExecutionSelection) {
+    await host.ensureModelReady?.(record);
+  }
+  if (record.persistence === "deferred") record.persistence = "immediate";
+
+  const previousAutomationId = record.activeAutomationId;
+  const activeAutomationId = resolveTurnAutomationId(params);
+  const turnToolDisallowlist = buildTurnToolDisallowlist(params, activeAutomationId);
+  if (activeAutomationId) record.activeAutomationId = activeAutomationId;
+  // fork（F4.3）：activeOffPeakTaskId 标记随闲时任务全链路删除。
+  // fork（bots 移除）：record.activeBotDeliveryTarget 暂存随 bot channels 全量删除
+  // （specs/bot-channels-removal.md）。
+
+  let admission: SendInputResult;
+  try {
+    admission = await record.app.sendInput(
+      {
+        text: params.content,
+        ...(params.attachments ? { attachments: params.attachments } : {}),
+      },
+      {
+        // Bootstrap controller 曾经被当成 Core busy 真相，并由 projection watchdog
+        // 清理它；现在 Core admission 自己持有 reservation，Stop 也直接调用 Core execution。
+        delivery: "start_turn",
+        ...(params.intent?.requestedDelivery === "guide"
+          ? { queueDelivery: "guide" as const }
+          : {}),
+        ...(params.browserAmbientContext
+          ? { browserAmbientContext: params.browserAmbientContext }
+          : {}),
+        inputId: params.inputId,
+        ...(params.inputPresentation ? { inputPresentation: params.inputPresentation } : {}),
+        ...turnBackgroundAttributionOf({
+          automationId: activeAutomationId,
+          // fork（F4.3）：offPeakTaskId/offPeakRunType 归因随闲时任务全链路删除。
+        }),
+        intent: params.intent,
+        ...(params.modelExecution ? { modelExecution: params.modelExecution } : {}),
+        ...(params.sharedContextRefs ? { sharedContextRefs: params.sharedContextRefs } : {}),
+        ...(turnToolDisallowlist ? { toolDisallowlist: turnToolDisallowlist } : {}),
+        ...(params.requireQueue ? { requireQueue: true } : {}),
+        ...(params.requireIdle ? { requireIdle: true } : {}),
+        queryId: params.inputId as SendInputOptions["queryId"],
+      },
+    );
+  } catch (error) {
+    clearPromptRecordState(record, previousAutomationId);
+    await host.afterLegacyStateMutation?.(record, "prompt_failed");
+    throw error;
+  }
+
+  if (admission.kind === "rejected") {
+    clearPromptRecordState(record, previousAutomationId);
+    throw new V4PromptRejectedError(
+      "activePrompt",
+      `Core prompt admission rejected: ${admission.reason}`,
+    );
+  }
+
+  if (admission.kind === "queued") {
+    clearPromptRecordState(record, previousAutomationId);
+    return { admission, turnStarted: Promise.resolve() };
+  }
+
+  const completion = runWithSessionResidencyFinalization(record, async () => {
+    let mutationReason = "prompt_completed";
+    try {
+      await admission.completion;
+    } catch (error) {
+      mutationReason = "prompt_failed";
+      host.logger?.warn?.("v4 background turn failed", {
+        error: error instanceof Error ? error.message : String(error),
+        inputId: params.inputId,
+        sessionId: record.app.sessionId,
+      });
+    } finally {
+      clearPromptRecordState(record, previousAutomationId);
+      await host.afterLegacyStateMutation?.(record, mutationReason);
+    }
+  });
+  void completion.catch(() => undefined);
+  host.logger?.info?.("v4 prompt admitted", {
+    attachmentCount: params.attachments?.length ?? 0,
+    inputId: params.inputId,
+    sessionId: record.app.sessionId,
+    textLength: params.content.length,
+  });
+  return { admission, completion, turnStarted: Promise.resolve() };
+}
+
+function clearPromptRecordState(
+  record: V4SessionRecordView,
+  previousAutomationId: string | undefined,
+): void {
+  record.activeAutomationId = previousAutomationId;
+  // fork（F4.3）：activeOffPeakTaskId 还原随闲时任务全链路删除。
+  // fork（bots 移除）：activeBotDeliveryTarget 还原随 bot channels 全量删除。
+}
+
+export function buildTurnToolDisallowlist(
+  params: Pick<StartPromptTurnParams, "automationId" | "toolDisallowlist">,
+  activeAutomationId = params.automationId,
+): readonly string[] | undefined {
+  const tools = new Set(params.toolDisallowlist ?? []);
+  if (activeAutomationId) {
+    // automation 派发漏传身份时，后续 model step 会重新暴露 Cron 写工具。
+    for (const toolName of AUTOMATION_MUTATION_TOOL_NAMES) tools.add(toolName);
+  }
+  // fork（F4.3）：activeOffPeakTaskId 分支（闲时轮 deny 名单）随闲时任务全链路删除。
+  return tools.size > 0 ? [...tools] : undefined;
+}
+
+export function resolveTurnAutomationId(
+  params: Pick<StartPromptTurnParams, "automationId" | "inputId">,
+): string | undefined {
+  const explicit = params.automationId?.trim();
+  if (explicit) return explicit;
+  const inputId = params.inputId.trim();
+  if (!inputId.startsWith(AUTOMATION_INPUT_ID_PREFIX)) return undefined;
+  const separatorIndex = inputId.indexOf(":");
+  const automationId = separatorIndex >= 0 ? inputId.slice(0, separatorIndex) : inputId;
+  return automationId.length > AUTOMATION_INPUT_ID_PREFIX.length ? automationId : undefined;
+}
+
+export function turnBackgroundAttributionOf(params: {
+  automationId?: string;
+}): TurnBackgroundAttribution {
+  if (params.automationId) return { automationId: params.automationId };
+  // fork（F4.3）：offPeakTaskId/offPeakRunType 归因分支随闲时任务全链路删除。
+  return {};
+}
+
+const AUTOMATION_INPUT_ID_PREFIX = "automation-";
+const AUTOMATION_MUTATION_TOOL_NAMES = ["CronCreate", "CronUpdate", "CronDelete"] as const;
+// fork（F4.3）：OFF_PEAK_INPUT_ID_PREFIX / OFF_PEAK_MUTATION_TOOL_NAMES 随闲时任务全链路删除。

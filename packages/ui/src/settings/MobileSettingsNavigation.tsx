@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronRight, Rocket, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type { SettingsSectionId } from "@/lib/settingsNavigation.js";
 
 interface MobileSettingsSection {
@@ -24,7 +24,7 @@ function MobileSettingsTopBar({
   onBack?: () => void;
   backLabelId?: string;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div className="zcode-safe-area-top shrink-0 border-b border-border bg-header">
       <div className="flex h-11 items-center gap-1 px-2">
@@ -57,7 +57,7 @@ export function MobileSettingsIndex({
   onBack?: () => void;
   onOpenOnboarding: () => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <section
       className="flex h-full min-h-0 flex-col bg-background text-foreground"

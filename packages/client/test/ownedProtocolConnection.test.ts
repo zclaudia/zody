@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { ChannelServer, createQueuePair, Event } from "@zcode/rpc";
-import { IMobileNotificationReader } from "@zcode/services";
+import { ChannelServer, createQueuePair, Event } from "@zody/rpc";
+import { IMobileNotificationReader } from "@zody/services";
 import { connectViaProtocolOwned } from "../src/index.js";
 
 describe("owned protocol connection", () => {

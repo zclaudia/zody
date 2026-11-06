@@ -4,7 +4,7 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { TID_BROWSER_ADDRESS_INPUT, TID_BROWSER_WEBVIEW, TID_PREVIEW_PANE } from "@zcode/shared";
+import { TID_BROWSER_ADDRESS_INPUT, TID_BROWSER_WEBVIEW, TID_PREVIEW_PANE } from "@zody/shared";
 import { clearAppData, DEFAULT_WORKSPACE } from "../helpers/desktop-app.js";
 import { restartIntoWorkspacePreservingProfile } from "../helpers/model-provider-restart.js";
 import {
@@ -635,7 +635,7 @@ async function materializeStaleSourceFiles() {
 }
 
 async function assertLocalMediaPreviewLogs(snapshot: Map<string, number>): Promise<void> {
-  const runtimeLogDir = process.env.ZCODE_E2E_RUNTIME_LOG_DIR?.trim();
+  const runtimeLogDir = process.env.ZODY_E2E_RUNTIME_LOG_DIR?.trim();
   if (!runtimeLogDir) {
     throw new Error("当前 E2E worker 没有配置 desktop runtime log 目录");
   }
@@ -659,7 +659,7 @@ async function assertLocalMediaPreviewLogs(snapshot: Map<string, number>): Promi
 }
 
 async function snapshotDesktopRuntimeLogs(): Promise<Map<string, number>> {
-  const runtimeLogDir = process.env.ZCODE_E2E_RUNTIME_LOG_DIR?.trim();
+  const runtimeLogDir = process.env.ZODY_E2E_RUNTIME_LOG_DIR?.trim();
   if (!runtimeLogDir) {
     throw new Error("当前 E2E worker 没有配置 desktop runtime log 目录");
   }

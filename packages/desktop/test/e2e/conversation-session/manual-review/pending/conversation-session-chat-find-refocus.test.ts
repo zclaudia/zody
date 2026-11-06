@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { TID_CHAT_MESSAGES, TID_GIT_PANE } from "@zcode/shared";
+import { TID_CHAT_MESSAGES, TID_GIT_PANE } from "@zody/shared";
 import { Key } from "webdriverio";
 import {
   DEFAULT_WORKSPACE,
@@ -13,7 +13,7 @@ const FIND_MARKER = "E2E_CHAT_FIND_REFOCUS_NEEDLE";
 const FILE_CHANGE_FIND_MARKER = "E2E_FILE_CHANGE_FIND_REFOCUS_NEEDLE";
 const FILE_CHANGE_FIXTURE_NAME = "chat-find-refocus.txt";
 const FILE_CHANGE_FIXTURE_PATH = join(DEFAULT_WORKSPACE, FILE_CHANGE_FIXTURE_NAME);
-const GIT_BINARY = process.env.ZCODE_GIT_BINARY?.trim() || "git";
+const GIT_BINARY = process.env.ZODY_GIT_BINARY?.trim() || "git";
 const CONVERSATION_FIND_PLACEHOLDERS = ["Search messages...", "搜索消息..."];
 const FILE_CHANGE_FIND_PLACEHOLDERS = ["Search file changes...", "搜索文件变更..."];
 const FIND_PLACEHOLDERS = [

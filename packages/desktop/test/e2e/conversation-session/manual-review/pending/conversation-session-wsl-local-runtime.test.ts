@@ -6,7 +6,7 @@ import {
   TID_SSH_DIALOG,
   TID_WSL_USER_INPUT,
   type RemoteTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByWebDriver,
@@ -33,10 +33,10 @@ import {
 
     it("LOCAL-02: 本地 Linux 资源部署后工作区可用且只有一个窗口 Host", async function () {
       this.timeout(15 * 60_000);
-      const workspacePath = process.env.ZCODE_E2E_WSL_WORKSPACE_PATH;
+      const workspacePath = process.env.ZODY_E2E_WSL_WORKSPACE_PATH;
       if (!workspacePath?.startsWith("/"))
-        throw new Error("LOCAL-02 requires ZCODE_E2E_WSL_WORKSPACE_PATH on the default WSL distro");
-      const user = process.env.ZCODE_E2E_WSL_USER?.trim() || undefined;
+        throw new Error("LOCAL-02 requires ZODY_E2E_WSL_WORKSPACE_PATH on the default WSL distro");
+      const user = process.env.ZODY_E2E_WSL_USER?.trim() || undefined;
       await prepareV4ConversationE2E({ skipProvider: true });
       const hosts = await readHostProcesses();
       expect(hosts).toHaveLength(1);

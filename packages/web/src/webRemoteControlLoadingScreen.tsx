@@ -1,4 +1,4 @@
-import type { WebRemoteControlTerminalTransportState } from "@zcode/ui";
+import type { WebRemoteControlTerminalTransportState } from "@zody/ui";
 
 /**
  * 手机远控启动壳（T1.2）的连接加载页。当前全仓唯一消费方是手机入口的

@@ -7,7 +7,7 @@ import type {
 } from "react";
 import type { PanelImperativeHandle } from "react-resizable-panels";
 import { GripHorizontal, LoaderIcon } from "lucide-react";
-import { TID_APP_HEADER } from "@zcode/shared";
+import { TID_APP_HEADER } from "@zody/shared";
 // 保活：workspace tab 真正关闭时，按 workspaceKey 回收 side pane terminal 的常驻 PTY/xterm。
 // 对称下侧 Terminal.tsx 的 openWorkspaceKeys 回收。
 import { sidePaneTerminalSessionRegistry } from "@/terminal/sidePaneTerminalSessionRegistry.js";
@@ -81,7 +81,7 @@ import { Button } from "@/components/ui/button.js";
 import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable.js";
 import { toast } from "@/components/ui/toast.js";
 import { getGitDirtyFileCount } from "@/git-branch-switcher/display.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useBaseWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
 import { getPathLeaf, toFileUrl } from "@/lib/path.js";
 import { shouldOpenAssistantHtmlInBrowser } from "@/lib/assistantPreviewCards.js";
@@ -106,8 +106,8 @@ import {
 import type { WorkspaceShellLayoutProps } from "@/app-shell/types.js";
 import { useTabStoreApi } from "@/store/TabStoreProvider.js";
 import { useWebRemoteControlMobileViewport } from "@/hooks/useWebRemoteControlMobileViewport.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
-import type { ComposerMentionPrefill } from "@/store/zcodeSessionStoreTypes.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
+import type { ComposerMentionPrefill } from "@/store/zodySessionStoreTypes.js";
 
 const WEB_REMOTE_CONTROL_COLLAPSE_ONCE_SESSION_KEY =
   "zody:web-remote-control:collapse-navigation-once";
@@ -293,7 +293,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   isDesktop,
   isMacDesktop,
   isWindowsDesktop,
-  workspaceShellZCodeState,
+  workspaceShellZodyState,
   theme,
   isMacFullscreen,
   desktopWindowChromeState,
@@ -402,7 +402,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   setGitSelectedSourceId,
   taskFindDialogProps,
 }: WorkspaceShellLayoutProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const isOfficeMode = useIsOfficeMode();
   const baseServices = useBaseWorkspaceServices();
   const tabStoreApi = useTabStoreApi();
@@ -460,7 +460,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   usePaneSessionPersistence({
     workspaceKey,
     activeSessionId: activeTaskId,
-    draftFocusVersion: workspaceShellZCodeState.draftFocusVersion,
+    draftFocusVersion: workspaceShellZodyState.draftFocusVersion,
     enabled: !isWebRemoteControlShell,
     selectSession: (sessionId) => handleSelectTask(workspaceAbsPath, sessionId, workspaceIdentity),
   });
@@ -1375,8 +1375,8 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
     (
       targetWorkspacePath: string,
       targetWorkspaceIdentity?: string,
-      targetWorkspacePurpose?: import("@zcode/shared").WorkspacePurpose,
-      createSource?: import("@zcode/shared").SessionCreateSource,
+      targetWorkspacePurpose?: import("@zody/shared").WorkspacePurpose,
+      createSource?: import("@zody/shared").SessionCreateSource,
     ) => {
       showChatMainView();
       handleStartDraftInWorkspace(
@@ -1428,7 +1428,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
   ]);
   const handleSelectComposerPlugin = useCallback(
     (mention: ComposerMentionPrefill) => {
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .requestComposerTextInsert(
           workspaceAbsPath,
@@ -1870,7 +1870,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                   providerWorkspaceConfigPath={providerConfigFile.path}
                   providerWorkspaceConfigExists={providerConfigFile.exists}
                   providerWorkspaceConfigLoading={providerConfigFile.loading}
-                  workspaceHeaderState={workspaceShellZCodeState}
+                  workspaceHeaderState={workspaceShellZodyState}
                   gitSummary={gitState.summary}
                   gitDirtyFileCount={gitDirtyFileCount}
                   isMacDesktop={isMacDesktop}
@@ -2295,7 +2295,7 @@ export const WorkspaceShellLayout = memo(function WorkspaceShellLayoutComponent(
                             providerWorkspaceConfigPath={providerConfigFile.path}
                             providerWorkspaceConfigExists={providerConfigFile.exists}
                             providerWorkspaceConfigLoading={providerConfigFile.loading}
-                            workspaceHeaderState={workspaceShellZCodeState}
+                            workspaceHeaderState={workspaceShellZodyState}
                             gitSummary={gitState.summary}
                             gitDirtyFileCount={gitDirtyFileCount}
                             isMacDesktop={isMacDesktop}

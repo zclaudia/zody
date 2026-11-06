@@ -23,7 +23,7 @@ ZCode CUA 的 macOS product 权限主体必须是外置 `ZCode Computer Use.app`
 
 ## 边界
 
-- 授权目标固定为 `${ZCODE_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app`。
+- 授权目标固定为 `${ZODY_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app`。
 - Python、Terminal、`uvx`、local checkout 或 legacy `ZCode.app` broker 不得显示 product
   onboarding。
 - `zcode-cua` 通过 namespaced `_meta["zcode.cua/request-access-status-v1"]` 提供最小权限快照，

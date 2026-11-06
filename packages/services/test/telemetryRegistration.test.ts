@@ -44,9 +44,9 @@ describe("telemetry service registration", () => {
     ]);
 
     const services = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: resolve(
+      zodyBuiltinProviderConfigFilePath: resolve(
         import.meta.dirname,
-        "../../../config/provider/zcode-builtin.json",
+        "../../../config/provider/zody-builtin.json",
       ),
     });
     const telemetryDescriptor = createServiceDescriptor<{

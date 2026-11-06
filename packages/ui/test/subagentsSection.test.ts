@@ -5,8 +5,8 @@ import { createElement, type ChangeEvent } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_SUBAGENT_BUILT_IN_MODEL_TRIGGER, TID_SUBAGENT_ROW, testId } from "@zcode/shared";
-import { encodeCustomModelValue } from "../src/lib/zcodeCustomModelValue.js";
+import { TID_SUBAGENT_BUILT_IN_MODEL_TRIGGER, TID_SUBAGENT_ROW, testId } from "@zody/shared";
+import { encodeCustomModelValue } from "../src/lib/zodyCustomModelValue.js";
 
 const capturedButtons: Array<Record<string, unknown>> = [];
 const capturedModelConfigSelects: Array<Record<string, unknown>> = [];
@@ -317,7 +317,7 @@ vi.mock("@/hooks/useModelSelectionView.js", () => {
   };
 });
 
-vi.mock("@/hooks/useZCodeConfig.js", () => ({
+vi.mock("@/hooks/useZodyConfig.js", () => ({
   useToolbarConfigOptions: () => ({
     configOptions: mockToolbarConfigState.configOptions,
     loading: mockToolbarConfigState.status === "loading",
@@ -327,7 +327,7 @@ vi.mock("@/hooks/useZCodeConfig.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, string | number>) => {
         const messages: Record<string, string> = {

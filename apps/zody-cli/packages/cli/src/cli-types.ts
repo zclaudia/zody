@@ -1,0 +1,123 @@
+import type { TuiReadClipboardImage, TuiWriteClipboardText } from "@zody/tui";
+import type { UiLocale } from "@zody/i18n";
+import type { Logger } from "@zody/contracts";
+import type {
+  createManagedCdpBrowserRuntime,
+  ManagedCdpBrowserRuntimeOptions,
+} from "@zody/adapters/browser";
+import type {
+  createModelAdapter,
+  createZodyApp,
+  CreateModelAdapterOptions,
+  inspectZodySkill,
+  inspectWorkspaceHookTrust,
+  grantWorkspaceHookTrust,
+  revokeWorkspaceHookTrustCli,
+  inspectZodyCustomCommand,
+  InspectZodyCustomCommandOptions,
+  InspectZodySkillOptions,
+  listZodyCustomCommands,
+  ListZodyCustomCommandsOptions,
+  loadZodyCustomCommand,
+  listZodySessions,
+  listZodySkills,
+  ListZodySessionsOptions,
+  ListZodySkillsOptions,
+  resolveLatestSession,
+  ResolveLatestSessionOptions,
+  RunZodyProtocolAgentOptions,
+  prepareZodyTelemetryEnv,
+  startProcessProviderRegistryRuntime,
+  shutdownZodyTelemetry,
+  ZodyAppOptions,
+} from "@zody/bootstrap";
+import type { CliEnv, DotenvLoadResult, LoadCliDotenvOptions } from "./env.js";
+import type { PluginsCommandOverrides } from "./plugins-command.js";
+import type { CliShutdownProcess } from "./shutdown.js";
+import type { resolveWorkspaceGitBranch } from "./tui-workspace-git.js";
+
+export type BootstrapModule = typeof import("@zody/bootstrap");
+
+export interface RunDependencies extends PluginsCommandOverrides {
+  protocolLifecycle?: RunZodyProtocolAgentOptions["lifecycle"];
+  protocolInput?: NodeJS.ReadableStream;
+  createManagedCdpBrowserRuntime?: (
+    options?: ManagedCdpBrowserRuntimeOptions,
+  ) => ReturnType<typeof createManagedCdpBrowserRuntime>;
+  createModelAdapter?: (
+    options?: CreateModelAdapterOptions,
+  ) => ReturnType<typeof createModelAdapter>;
+  createZodyApp?: (
+    options?: ZodyAppOptions,
+  ) => Awaited<ReturnType<typeof createZodyApp>> | ReturnType<typeof createZodyApp>;
+  /**
+   * Session-event shaper for --output-format stream-json. Defaults to the
+   * bootstrap module's, which is also what the protocol server uses; injectable
+   * so a caller that supplies its own `createZodyApp` (tests, embedders) can
+   * still stream, since the bootstrap module is not loaded on that path.
+   */
+  mapSessionEvent?: BootstrapModule["mapSessionEvent"];
+  cwd?: () => string;
+  env?: CliEnv;
+  inspectSkill?: (options: InspectZodySkillOptions) => ReturnType<typeof inspectZodySkill>;
+  inspectWorkspaceHookTrust?: typeof inspectWorkspaceHookTrust;
+  grantWorkspaceHookTrust?: typeof grantWorkspaceHookTrust;
+  revokeWorkspaceHookTrustCli?: typeof revokeWorkspaceHookTrustCli;
+  inspectCustomCommand?: (
+    options: InspectZodyCustomCommandOptions,
+  ) => ReturnType<typeof inspectZodyCustomCommand>;
+  loadDotenv?: (options?: LoadCliDotenvOptions) => DotenvLoadResult;
+  prepareZodyTelemetryEnv?: typeof prepareZodyTelemetryEnv;
+  projectConfigPath?: string;
+  listSessions?: (options: ListZodySessionsOptions) => ReturnType<typeof listZodySessions>;
+  listCustomCommands?: (
+    options: ListZodyCustomCommandsOptions,
+  ) => ReturnType<typeof listZodyCustomCommands>;
+  loadCustomCommand?: (
+    options: InspectZodyCustomCommandOptions,
+  ) => ReturnType<typeof loadZodyCustomCommand>;
+  // headless slash 路由要和 app facade 的保留名 gate 用同一个判据；默认取 bootstrap 的，
+  // 注入点只为让单测不必拉起整个 bootstrap 模块。见 prompt-command.ts。
+  isReservedSlashCommandName?: BootstrapModule["isReservedZodySlashCommandName"];
+  listSkills?: (options: ListZodySkillsOptions) => ReturnType<typeof listZodySkills>;
+  logger?: Logger;
+  readClipboardImage?: TuiReadClipboardImage;
+  writeClipboardText?: TuiWriteClipboardText;
+  resolveLatestSession?: (
+    options: ResolveLatestSessionOptions,
+  ) => ReturnType<typeof resolveLatestSession>;
+  resolveWorkspaceGitBranch?: typeof resolveWorkspaceGitBranch;
+  runZodyProtocolAgent?: (options?: RunZodyProtocolAgentOptions) => Promise<void>;
+  runTui?: typeof import("@zody/tui").runTui;
+  skipUserConfig?: boolean;
+  userConfigPath?: string;
+  exitProcess?: (code: number) => void;
+  shutdownCleanupTimeoutMs?: number;
+  shutdownProcess?: CliShutdownProcess;
+  startProcessProviderRegistryRuntime?: typeof startProcessProviderRegistryRuntime;
+  shutdownZodyTelemetry?: typeof shutdownZodyTelemetry;
+}
+
+export type CliPermissionMode = "build" | "plan" | "edit" | "yolo" | "guarded";
+export type CliRuntimeMode = CliPermissionMode | "auto";
+
+export interface CliModeState {
+  current?: CliRuntimeMode;
+  override?: CliPermissionMode;
+}
+
+export interface CliTargetRequest {
+  objective: string;
+  replaceExisting: boolean;
+}
+
+export type ModeCapableApp = Awaited<ReturnType<typeof createZodyApp>> & {
+  getMode?: () => CliRuntimeMode;
+  setLocale?: (locale: UiLocale) => Promise<{ locale: "en-US" | "zh-CN" }>;
+  setMode?: (mode: CliRuntimeMode) => Promise<{ mode: CliRuntimeMode }>;
+};
+
+export interface CliResumeRequest {
+  continueSession: boolean;
+  resumeSessionId?: string;
+}

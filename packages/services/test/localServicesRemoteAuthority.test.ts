@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ChannelClient, ChannelServer, createQueuePair } from "@zcode/rpc";
+import { ChannelClient, ChannelServer, createQueuePair } from "@zody/rpc";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const originalHome = process.env.HOME;
@@ -109,7 +109,7 @@ describe("createLocalServices remote authority", () => {
     const [{ createLocalServices, disposeServiceResources }, { IModelSelectionService }] =
       await Promise.all([import("../src/node.js"), import("../src/index.js")]);
     const services = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+      zodyBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
       serviceAuthorityMode: "desktop-attached-remote",
     });
 
@@ -133,7 +133,7 @@ describe("createLocalServices remote authority", () => {
 
     const { createLocalServices, disposeServiceResources } = await import("../src/node.js");
     const services = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+      zodyBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
       serviceAuthorityMode: "desktop-attached-remote",
     });
 
@@ -151,7 +151,7 @@ describe("createLocalServices remote authority", () => {
   it("provider runtime services do not refresh legacy model presets on startup", async () => {
     const home = makeTempHome();
     process.env.HOME = home;
-    const zcodeBuiltinProviderConfigFilePath = writeZCodeBuiltinProviderConfig(home);
+    const zodyBuiltinProviderConfigFilePath = writeZCodeBuiltinProviderConfig(home);
     const fetchImpl = vi.fn(
       async () =>
         new Response(JSON.stringify({ code: 0, data: { configs: {} } }), {
@@ -162,7 +162,7 @@ describe("createLocalServices remote authority", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(fetchImpl);
 
     const { createLocalServices, disposeServiceResources } = await import("../src/node.js");
-    const services = createLocalServices({ zcodeBuiltinProviderConfigFilePath });
+    const services = createLocalServices({ zodyBuiltinProviderConfigFilePath });
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -177,19 +177,19 @@ describe("createLocalServices remote authority", () => {
   it("desktop-attached remote 使用远端 Registry 的就绪状态，不等待 Desktop 推送", async () => {
     const home = makeTempHome();
     process.env.HOME = home;
-    const zcodeBuiltinProviderConfigFilePath = writeZCodeBuiltinProviderConfig(home);
+    const zodyBuiltinProviderConfigFilePath = writeZCodeBuiltinProviderConfig(home);
     const commandResolver = vi.fn(() => null);
-    const [{ createLocalServices, disposeServiceResources }, { IZCodeAgentService }] =
+    const [{ createLocalServices, disposeServiceResources }, { IZodyAgentService }] =
       await Promise.all([import("../src/node.js"), import("../src/index.js")]);
     const services = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath,
+      zodyBuiltinProviderConfigFilePath,
       serviceAuthorityMode: "desktop-attached-remote",
-      zcodeAgentCommandResolver: commandResolver,
+      zodyAgentCommandResolver: commandResolver,
     });
 
     try {
       await expect(
-        services.get(IZCodeAgentService).initialize({ workspacePath: "/remote/workspace" }),
+        services.get(IZodyAgentService).initialize({ workspacePath: "/remote/workspace" }),
       ).resolves.toMatchObject({ available: false });
       expect(commandResolver).not.toHaveBeenCalled();
     } finally {
@@ -203,11 +203,11 @@ describe("createLocalServices remote authority", () => {
     const { createLocalServices, disposeServiceResources } = await import("../src/node.js");
     const { IProviderProvisioningTargetService } = await import("../src/index.js");
     const remoteServices = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+      zodyBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
       serviceAuthorityMode: "desktop-attached-remote",
     });
     const localServices = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+      zodyBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
       serviceAuthorityMode: "desktop-local",
     });
 
@@ -228,7 +228,7 @@ describe("createLocalServices remote authority", () => {
     const [{ createLocalServices, disposeServiceResources }, serviceDescriptors] =
       await Promise.all([import("../src/node.js"), import("../src/index.js")]);
     const services = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+      zodyBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
       onProviderProvisioningSourceChanged,
     });
 
@@ -258,7 +258,7 @@ describe("createLocalServices remote authority", () => {
 
   it("复用 Host 注入的网络 transport 并由 ServiceCollection 释放", async () => {
     // 无 endpoint 时 scenes 已按规格关闭；transport 验证须显式配置测试服务。
-    vi.stubEnv("ZCODE_BASE_URL", "https://scenes.example.test");
+    vi.stubEnv("ZODY_BASE_URL", "https://scenes.example.test");
     vi.resetModules();
     const home = makeTempHome();
     process.env.HOME = home;
@@ -299,7 +299,7 @@ describe("createLocalServices remote authority", () => {
     const [{ createLocalServices, disposeServiceResources }, { IPluginSyncService }] =
       await Promise.all([import("../src/node.js"), import("../src/index.js")]);
     const services = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+      zodyBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
       serviceAuthorityMode: "desktop-attached-remote",
     });
     const [clientProtocol, serverProtocol] = createQueuePair();
@@ -333,7 +333,7 @@ describe("createLocalServices remote authority", () => {
       { IGitService, IMediaPreviewService },
     ] = await Promise.all([import("../src/node.js"), import("../src/index.js")]);
     const services = createLocalServices({
-      zcodeBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
+      zodyBuiltinProviderConfigFilePath: writeZCodeBuiltinProviderConfig(home),
     });
 
     try {

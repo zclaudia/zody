@@ -1,6 +1,6 @@
 # Zody 全面改名：子代理实施任务计划
 
-状态：任务定义，执行状态以对应工作区账本为准。编制日期：2026-11-02；子任务细化：2026-11-03。本次只修订实施计划，不启动产品改名、远端部署、签名或发布。
+状态：实施中。编制日期：2026-11-02；子任务细化：2026-11-03。各任务真实状态以 [任务账本](zody-rename-execution/task-ledger.md) 为准；实施中不代表远端部署、签名或发布已完成。
 
 产品规则以 [改名设计与调查](zody-full-divergence-rename-survey.md) 为输入；本文负责执行顺序、文件所有权、任务交付与验收。遇到设计缺口先回到 spec，不允许子代理自行改变硬切、不迁移、插件 1.0 退役或 CUA 信任根等已定规则。
 
@@ -29,15 +29,14 @@
 | ------------------------------------------------ | ----------------------------------------------------------------------- |
 | 任务账本、派发 `writeSet`、总验收结论            | 主控；子代理只写自己的报告                                              |
 | 全仓目录移动、包名和 import 重写                 | R20 独占；所有其他产品源码写者停止                                      |
-| 根与 CLI 独立工作区的 `pnpm-lock.yaml`           | R21；其他任务只提出 manifest 需求，不自行 install 改锁                  |
+| 根工作区 `pnpm-lock.yaml`                         | R21；根为唯一安装 owner，其他任务不自行 install 改锁                   |
 | feature graph                                    | R21 更新路径；需要语义变更时由主控串行交接，不并行重写                  |
 | 根 package.json、workspace/CI/toolchain 配置     | R10 → R20 → R30 串行接力；各自只改所属阶段                              |
 | shared wire/schema/exports                       | R40 先固定接口，R41/R42/R44 只消费；后续 R45/R47/R50 分批取得对应文件锁 |
 | `remote/connect.ts`、远端部署配置                | R43；R41 交付握手函数接口，不并行改调用端                               |
 | `bootstrap/src/app/official-plugin-runtime.ts`   | R54 → R55 串行交接                                                      |
 | 公共测试 helper、WDIO 配置、共享 replay fixture  | 由主控指派单一写者；禁止多个子任务顺手修 helper                         |
-| CUA 活跃源码入口与冻结证据                       | R00 分别列清单；R20 仅修改获授的活跃入口引用，历史证据不替换            |
-| `output/cua-*`、封存资源、demo-defaults pins      | R02 只读/备份活动输入，R60 才写新资源；备份永不覆盖                     |
+| `output/cua-*`、原生冻结目录、demo-defaults pins | R02 只读/备份活动输入，R60 才写新资源；备份永不覆盖                     |
 
 R00 将广义文件范围展开为具体清单，包含生产文件、测试、生成输入/输出和旧→新路径。路径表、公共接口表、测试 runner 未明确时，只能领取调查/设计任务，不能直接启动对应写任务。
 
@@ -56,6 +55,19 @@ R00 将广义文件范围展开为具体清单，包含生产文件、测试、�
 | 隔离的证据/产物目录                                      | 对应验收者                    | 日志、录屏、fixture、制品和摘要；Git 文档只引用可验证位置，不保存凭据/真实用户数据 |
 
 状态按 `planned → ready → running → review → integrated → verified` 推进；`blocked` 必须说明具体输入/资源缺口，`failed` 必须保留失败证据。真实发布状态单独维护。下列 26 项是任务定义，首次创建账本时初始状态为 `planned`；本文不替代已有执行记录。
+
+### 1.4 阶段验收后的空间回收
+
+2026-11-04 用户补充：每次阶段验收结束，由主控完成空间回收并登记结果，再交接下一阶段。此项与代码、测试和审查一起构成阶段收尾，不等到磁盘告急再处理。
+
+- **保留集合**：当前源码与未提交修改、可追溯的 Git 提交、原始日志和失败证据、每类最新有效产物及其输入/输出摘要、后续验收需要的真实旧版本与 R02 冻结/回滚材料。新产物尚未通过对应验收时，不能删除最后一份有效产物。
+- **清理集合**：本任务重复安装的依赖、临时 pnpm/工具下载缓存、被新有效产物替代的旧构建目录和解包副本。删除前列出确切路径、归属、保留/删除理由；待删目录中的独有日志和小型校验元数据先搬存并核验摘要。不能用全仓 `git clean` 或笼统通配符代替清单。
+- **worktree 与分支**：仅处理本任务创建且已不承担实施、验证、旧新混布或恢复职责的工作树。先核对 HEAD/tree、与集成分支的祖先关系、tracked/untracked/ignored 修改、独有证据、依赖链接和在运行进程。所需内容全部保全后使用 `git worktree remove`；分支仅在提交已保留、无 worktree 使用时用 `git branch -d` 移除。不强制删除有独有提交或未保存修改的树/分支，不处理其他任务的工作区。
+- **控制新增占用**：复用固定 Node/pnpm 工具及缓存，隔离测试 HOME 与数据目录不应反复下载包管理器。默认保留一个当前验证工作树；新建额外工作树、完整安装或全平台构建前记录必要性与空间预算。独立审查优先使用固定提交和已有证据，确需重跑时只重跑受影响检查。
+- **清理验收**：确认关联进程退出、保留产物摘要一致和源码修改未丢失；记录删除路径、搬存证据、清理前后同一磁盘卷的可用空间及实际差额。目录大小可作参考，不能当作实际释放量。清理失败保留明确清单，不把失败或中断的产品验证改记为通过。
+- **保留清单与持久位置**：每阶段维护 `retention.json`，逐项记录产物位置、来源 commit/tree、SHA 或文件摘要清单、后续消费者、有效范围和释放条件；临时目录中的最新有效产物在清理前搬到任务持久证据目录，验证摘要并记录旧→新位置。搬存不构成在新位置重新运行成功的证据。
+
+首次清理记录：`output/zody-rename-cleanup-20261104/report.md`，实际释放 11.62 GiB；当时保留所有源码工作树。后续无用 worktree 按本节新增授权逐一核销。
 
 ## 2. 依赖与派发波次
 
@@ -117,7 +129,6 @@ flowchart TD
 - **写范围**：新增 `manifest.json`、`file-assignments.json`、`reports/R00.md`；不改产品源码、现有 spec、lock 或 `.gitignore`。R00 在报告中提供初版任务状态建议，`task-ledger.md` 始终由主控创建和维护。
 - **操作**：固定包含最新设计修订的实施基线；展开包/目录/脚本/资产/env/wire/插件/持久化各类别，特别列出 builtin、两套 bootstrap/shared protocol 副本、CUA 18 处引用；给每项分配唯一任务。记录已完成 endpoint 改名，防止重复实施。
 - **交付**：每个任务的精确 `readSet/writeSet/excludeSet`；每个重命名的旧/新路径；全部保留项和来源证据；重叠文件的串行顺序。数量重新统计，不复制旧调查数作为验收值。
-- **安装基线交接**：记录改名前的根/CLI workspace、manifest、lock 与工具链摘要；R02 在隔离旧基线中验证安装入口并保存失步诊断，供 R21 比较。不得等目录已移动后把新工作树当作旧基线。
 - **验收**：所有生产残留均有任务或明确例外，待定项有 owner；并行 writeSet 交集为空；不以泛化 `zcode*` 豁免代替逐项分类。缺口仅阻止关联任务。
 
 ### R01 — 固化领域 spec、共享接口与验收案例
@@ -140,7 +151,6 @@ flowchart TD
 - **依赖**：R01；可与 R02 并行。
 - **写范围**：manifest 列出的 `scripts/zcode-distribution/`、17 个命名脚本、所有直接调用者/对应测试、CI 与三份过时文档；不改包 scope、env、wire、lock、冻结资源。
 - **操作**：以入口和调用者为原子集合移动脚本；更新 package scripts/CI 指向；修复现行路径说明，历史文档保留原作事实。
-- **碰撞处理**：`scripts/zcode-distribution.test.mjs` 改为 `scripts/zody-distribution-runner.test.mjs`；已有的 `scripts/zody-distribution.test.mjs` 保留并同步 imports。两者内容和用途不同，不能覆盖；两个 node:test 文件均须执行。
 - **验收/交付**：RENAME-PATH 中脚本链目标测试、G、CI 准备检查；返回旧→新脚本映射与未改的 P2/P3 条目。dry-run 不记为真实产包。
 
 ### R20 — P2 全仓目录、包身份与内部符号改名
@@ -155,9 +165,10 @@ flowchart TD
 ### R21 — P2 lock、生成物与 feature graph 收口
 
 - **依赖/锁**：R20 写入停止；唯一 lock/graph 写者。
-- **写范围**：根 `pnpm-lock.yaml`、当前 `apps/zcode-cli/pnpm-lock.yaml`（P2 后按新路径）、`third-party/inventory.json` 及其同源生成 notices 的必要变化、feature graph 路径和同源生成物，以及报告；不改包 manifest/生产实现，不改第三方作者归属。生成物路径由 R00 展开，不能自行扩展到全部 NOTICE/LICENSE。根与 CLI 的 `skills-lock.json` 纳入残留审计，只有实际引用需要变化时才由主控授予写权限，不因包名改动重生成外部技能来源/hash。
-- **操作**：按当前 mise/packageManager 固定 Node/pnpm；先诊断根和 CLI 的 manifest、workspace 与锁是否在改名前一致，再基于旧 lock 增量更新，审查第三方版本/integrity/peer 差异。改名前即存在的失步应独立复现；删除嵌套 workspace/lock、改变安装 owner 或重新解析第三方依赖均不是机械改名，须先明确方案和文件授权，不能为通过 frozen install 顺手实施。按真实现有工具生成 inventory；graph 保持节点 ID 和产品语义，仅映射已移动 codeSeeds/docs。若图为手工维护则按现有校验方式更新，不臆造“再生成”命令。
-- **验收**：主控先把 R20+R21 的完整结果制成临时集成提交，记录 commit/tree SHA；从该提交建立干净验证工作树，在根和移动后的 CLI 独立工作区分别运行 `pnpm install --frozen-lockfile`（如已批准更改安装 owner，则按修订后的唯一入口及 CLI 子目录脚本场景验收），不得检出未包含改动的旧 HEAD 代验。检查实际 workspace symlink 的目标、包名及 bin，而非只检查锁文件文本。不存在无关依赖升级；图路径与 exports 校验通过。R22 通过后以相同内容原子合入，修复改变内容时重新建立并验证集成版本。包 manifest 需要修正时交回 R20，禁止这里临时扩权。
+- **写范围**：根 `pnpm-lock.yaml`、根 workspace / Turbo 和 CLI 开发入口、对应测试、CI/容器、安装文档、`third-party/inventory.json` 与同源 notices 的必要变化、feature graph 和报告；精确文件由主控交接，第三方作者归属不变。CLI `skills-lock.json` 是外部来源证据，不因安装 owner 改动重生成。
+- **图路径合同**：R21 将 `.agents/skills/feature-boundary-planner/references/zcode-feature-graph.yaml` 原字节移动为同目录 `zody-feature-graph.yaml`，同步登记的现行读取者；节点、边和 ID 不因路径移动变化，历史材料保留原文。
+- **操作**：用户已决定根工作区为唯一安装 owner，移除 CLI 嵌套 workspace 与旧锁，保留 `pnpm --dir apps/zody-cli …`。根锁维持现有第三方解析，不删除重解析或升级；CLI Turbo 入口限定其 packages/tools，真实依赖闭包可含根包。按真实工具生成 inventory；图仅作已授权路径映射。
+- **验收**：主控将完整候选制成临时集成提交，记录 commit/tree SHA，在该提交的干净工作树从根执行 `pnpm install --frozen-lockfile`；核对成员、CLI 入口、Turbo 选择范围及依赖闭包、本地链接真实目标、包名及实际 bin。不得出现无关第三方版本/integrity/peer 漂移；图与 exports 校验另行执行。R22 通过后以相同内容原子合入，内容变化时重新建立并验证集成版本。
 
 ### R22 — P2 集成与构建门禁
 
@@ -185,24 +196,25 @@ flowchart TD
 ### R41 — stdio 握手双端接入
 
 - **依赖**：R40；可与 R42/R44 并行。
-- **写范围**：`packages/server/src/entry-stdio.ts`、`remote/handshake.ts`、services 的 Agent stdio transport、CLI stdio 对端及对应测试；不写 shared、rpc、`remote/connect.ts`、HTTP 或插件沙箱。
+- **写范围**：`packages/server/src/entry-stdio.ts`、`remote/handshake.ts`、services 的 Agent stdio transport、CLI stdio 对端及对应测试；不写 shared、rpc、HTTP 或插件沙箱。`remote/connect.ts` 仅交 R41 接入既有取消信号和握手字节移交：先装配协议/客户端读监听，再恢复 stdout，不能在等待 RPC 响应之后才恢复；部署、路由和运行版本检查仍归 R43。
 - **操作**：接入 R40 门禁，新旧两向不进入业务；明确握手失败、EOF、取消与残余数据处理，关闭所属流/进程，不用延迟绕过同步问题。
-- **协议边界**：RemoteServer 的 `entry-stdio.ts` / `remote/handshake.ts` 使用 hello/ack；Agent 的 `app-server --stdio` / `zcodeStdioTransport.ts` 使用独立 NDJSON 协议。R01 必须分别登记发起端、接收端、是否需要代际检查及对应拒绝位置；不能把 RemoteServer hello/ack 强加给 Agent，也不能用 Agent transport 测试证明 RemoteServer 握手通过。现有 CUA startup runtimeIdentity 语义保持不变。
-- **测试 seed**：`packages/server/test/{stdioLifecycle,remoteConnect}.test.ts`、`packages/services/test/zcodeStdioTransport.test.ts`。`remoteConnect.test.ts` 在本任务结束后交 R43，不允许并行编辑。
+- **测试 seed**：`packages/server/test/{stdioLifecycle,remoteConnect}.test.ts`、`packages/services/test/zcodeStdioTransport.test.ts`；R41 独写新增 `packages/server/test/stdioHandshake.test.ts`，覆盖 server strict ack、新旧、EOF/取消和剩余缓冲。RemoteServer hello/ack 与 Agent LF JSON 协议分别处理，不给 Agent 套用该 schema。`remoteConnect.test.ts` 在本任务结束后交 R43，不允许并行编辑。
 - **验收**：同代成功、双向不兼容可见拒绝、零 admission/业务写入、资源释放；真实旧产物组合留 R48 集成执行。返回调用接口给 R43。
+
+W4 文件交接：`entry-stdio.ts` 由 R41 唯一写入，同时消费 R44 的 `zodyBuiltinProviderConfigFilePath` 字段。CLI bootstrap 的 `tests/zody-protocol.test.ts` 全文件交 R44，同步当前协议名称 fixture 与 builtin 字段；R41 使用独立 transport 测试，不并行写该文件。
 
 ### R42 — HTTP/Web/手机 attachment 门禁
 
 - **依赖**：R40；W4 并行候选。
-- **写范围**：`packages/server/src/http.ts`、当前 `packages/zcode-server-cli/src/server-core/http.ts`、`packages/desktop/src/host/serverRemoteConnection.ts`、manifest 中 Web/手机连接和 attachment 入口、相应测试；不写 shared、stdio、部署代码或 R44 主桥文件。两套 HTTP 实现与各自发行启动入口必须在 R00/R01 分别登记，P2 后映射到新目录。
+- **写范围**：`packages/server/src/http.ts`、当前 `packages/zcode-server-cli/src/server-core/http.ts`、`packages/desktop/src/host/serverRemoteConnection.ts`、`packages/client/src/websocket.ts`、`packages/web/src/main.tsx`、`packages/web/src/mobile-remote/gatewayTerminalTransport.ts`、`packages/desktop/src/main/remote-access/gatewayDeviceTransportHello.ts` 及相应测试；不写 shared、stdio、部署代码或 R44 主桥文件。两套 HTTP 实现与各自发行启动入口必须在 R00/R01 分别登记，P2 后映射到新目录。
 - **操作**：在 `/ws/host` 和 `/ws` 各自业务通道前校验兼容；认证/capability 单次消费继续有效；新客户端对旧 Server 也须在业务前拒绝。手机连接已有 Host attachment，不为版本检测创建第二套 runtime。
-- **测试 seed**：`packages/desktop/test/serverRemoteConnection.test.ts`、当前 `packages/zcode-server-cli/test/coreHttp.test.ts`；手机 E2E 从 `docs/testing/mobile-remote-phase2-e2e-plan.md` 与本次 test-map 领取。
+- **测试 seed**：`packages/desktop/test/serverRemoteConnection.test.ts`、当前 `packages/zcode-server-cli/test/coreHttp.test.ts`、`packages/web/test/mobileRemoteGatewayTerminalTransport.test.ts`；planned `packages/client/test/zodyRenameWebsocket.test.ts`、`packages/web/test/zodyRenameBootstrap.test.ts` 由 R42 独写；手机 E2E 从 `docs/testing/mobile-remote-phase2-e2e-plan.md` 与本次 test-map 领取。
 - **验收**：连续与可重放模式分别覆盖同代连接、旧缓存页、双向混布、断线恢复和清理；字段/token/身份伪造不能提升成 trusted host。测试真实组合由 R48 收口。
 
 ### R43 — 部署、启动与运行版本验证
 
 - **依赖**：R41、R42、R30；W4 对应写入已停止。
-- **写范围**：`packages/server/src/remote/{connect,deploy,serverBundleDeployCheck}.ts`、manifest 的部署调用者/配置、相关测试及本次发布 runbook；不再修改 shared 或握手函数实现。
+- **写范围**：`packages/server/src/remote/{connect,deploy,serverBundleDeployCheck}.ts`、manifest 的部署调用者/配置、相关测试及本次发布 runbook；不修改 shared。R41 验收后仅将 `remote/handshake.ts` 和 `stdioHandshake.test.ts` 的运行版本检查交 R43：必须在严格代际校验后、发送 ack 前验证期望版本，保留字节交接和生命周期处理。在 connect 等待握手返回后才拒绝，不能证明远端尚未初始化。
 - **操作**：保留连接时部署机制但增加计划要求的运行版本/能力验证；`skipDeploy` 不绕过门禁。补并发、中断、旧部署者尝试、离线重连和环境配置一致性场景；marker 仅是静态线索。
 - **测试 seed**：`packages/server/test/{remoteDeploy,remoteDeployLock,remoteConnect}.test.ts`。
 - **验收**：失败不开放业务，不遗留错误可复用状态；目标清点/暂停旧自动部署/逐个验证/回退步骤写成 runbook。只在隔离测试目标演练，不把本任务当作生产远端部署授权。
@@ -212,6 +224,8 @@ flowchart TD
 - **依赖**：R40；W4 并行候选。
 - **写范围**：manifest 的 preload 主桥、client globals、desktopPlatform 消费端、Main IPC handlers、内部 scheme/debug globals、provider-node builtin 剩余属性和相应测试；排除 iframe/plugin bridge、R42 HTTP/attachment、shared 常量。
 - **操作**：统一使用 R40 channel 名称，主桥两端同版本切换；endpoint/title 已完成项只回归。内部 URI/调试入口按清单处理，不触碰 artifact（R45）或外部插件命名空间。
+
+R40 验收后仅将两个 shared builtin 字段锁交 R44：Host 初始化 `zcodeBuiltinProviderConfigFilePath` → `zodyBuiltinProviderConfigFilePath`，Account Provider Snapshot 的 `basedOnZCodeBuiltinRevision` → `basedOnZodyBuiltinRevision`。生产、消费及测试同批，R41 独写入口的对应构造由 R41 同步；不得修改冻结的代际/握手/权限 schema、外部 JSON、既有持久文件名或 revision 内容。遇到整体 snapshot 序列化须追清实际存储边界，不能凭字段名搜索推断没有持久化。
 - **验收**：主应用平台操作、IPC 请求/响应/事件路径的目标测试和真实 Desktop 冒烟；builtin 配置构建与读取同源；平台适配仍走 IPlatformService。若发现与 R42 同文件，先交主控拆分或串行。
 
 ### R45 — artifact URI 硬切与历史会话可加载
@@ -281,7 +295,7 @@ flowchart TD
 ### R54 — manifest 发现、同步、seed 与安装升级
 
 - **依赖**：R51/R52/R53 已集成；独占插件发现与 official runtime。
-- **写范围**：CLI adapters 的 `plugins/{index,zip-source,marketplace}.ts`、skills 发现引用；bootstrap `app/{bundled-plugins,official-plugin-runtime}.ts`；services `plugin-sync/`、内置 seed/打包调用者及测试。独占 R01 分配的 RENAME-PLUGIN-INSTALL 交互 spec 与 case-local fixture；排除 R51 的 wire spec、插件 `mcp.ts` 和 core hook env。
+- **写范围**：CLI adapters 的 `plugins/{index,zip-source,marketplace}.ts`、skills 发现引用；bootstrap `app/{bundled-plugins,official-plugin-runtime}.ts`；services `plugin-sync/pluginSyncService.ts`、`skills/skillsService.ts`、`commands/commandsService.ts`、`subagents/subagentsService.ts`、`settings-sync/settingsSyncService.ts`、内置 seed/打包调用者及测试。独占 R01 分配的 RENAME-PLUGIN-INSTALL 交互 spec 与 case-local fixture；排除 R51 的 wire spec、插件 `mcp.ts` 和 core hook env。
 - **操作**：新 manifest 优先；新文件存在但非法直接失败；仅缺失才回退旧格式，其余格式相对顺序保持、不合并字段。发现/同步/seed/打包/安装升级使用同一优先规则。
 - **测试 seed**：bootstrap `plugins.test.ts`、`official-plugin-runtime.test.ts`、Server `remoteAssetInstaller.test.ts` 及 plugin-sync 测试。
 - **验收**：新旧并存、非法新清单、仅旧清单、更新/重装、内置插件首次 seed 都覆盖；市场 id、外部 CUA 名、签名/来源信息不变。交付 official runtime 文件锁给 R55。
@@ -290,7 +304,7 @@ flowchart TD
 
 - **依赖**：R54、R30；不可与 R54 并行。
 - **写范围**：CLI adapters `plugins/mcp.ts`、core `hooks/configured-runner-input.ts`、bootstrap `custom-command-shell-expansion.ts` 与 `app/{official-plugin-runtime,built-in-node-repl}.ts` 及测试；`UI_PLUGIN.md`、`UI_PLUGIN.en.md` 的插件 env/模板条款；独占 R01 分配的 RENAME-PLUGIN-ENV 交互 spec 与 case-local fixture/manifest。R00/R01 须逐项列明实际文件，不允许覆盖 R51/R54 的用例或公共 fixture。
-- **操作**：从权威插件上下文生成两组 ROOT/DATA/ID；模板识别设计登记的新旧前缀，外部 env 不能分别覆盖两组身份值。保留原模板支持范围，不把所有 ZCODE env 重新兼容。
+- **操作**：从权威插件上下文生成两组 ROOT/DATA/ID/NAME，保留 CLAUDE 的 ROOT/DATA；模板识别设计登记的新旧前缀，外部 env 不能分别覆盖两组身份值。保留原模板支持范围，不把所有 ZCODE env 重新兼容。
 - **测试 seed**：bootstrap `plugin-runtime-features.test.ts`；现有 `plugin-runtime-env-agent-projection` pending E2E 只作为输入，不能当作已准入/已通过。
 - **验收**：插件子进程、hook、模板中的两组值一致，真实 env 覆盖顺序有断言；普通 B 组旧变量仍无效；公开文档与 fixture 同步。
 

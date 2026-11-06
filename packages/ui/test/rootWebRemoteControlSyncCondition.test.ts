@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IPlatformService } from "@zcode/shared";
+import type { IPlatformService } from "@zody/shared";
 import type { WindowTabState } from "@/store/tabStore.js";
 import { useRootPlatformEffects } from "@/root/useRootPlatformEffects.js";
 

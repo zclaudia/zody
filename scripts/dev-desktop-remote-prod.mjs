@@ -14,7 +14,7 @@ function pathApiForPlatform(platform) {
  * `{dataBaseDir}/.zody/desktop/<应用名>`（见 packages/desktop/src/main/desktopRuntimeEnv.ts 的
  * runtimeUserDataPath），cache 位于其下的 `remote-assets-cache`，各平台一致。这里按默认
  * dataBaseDir（用户 home）与正式应用名 `Zody` 推导；正式版配置了自定义 dataBaseDir 时，
- * 用 ZCODE_REMOTE_ASSET_CACHE_DIR 显式指定。
+ * 用 ZODY_REMOTE_ASSET_CACHE_DIR 显式指定。
  */
 export function resolveProductionRemoteAssetCacheDir(
   _env = process.env,
@@ -31,14 +31,14 @@ export function buildDesktopRemoteProdEnv(
   homeDir = homedir(),
 ) {
   const cacheDir =
-    baseEnv.ZCODE_REMOTE_ASSET_CACHE_DIR?.trim() ||
+    baseEnv.ZODY_REMOTE_ASSET_CACHE_DIR?.trim() ||
     resolveProductionRemoteAssetCacheDir(baseEnv, platform, homeDir);
 
   return {
     ...baseEnv,
     // Desktop 已固定 local-only；该命令只复用生产环境与可写 cache，不再启用 CDN 下载。
-    ZCODE_ENV: "production",
-    ZCODE_REMOTE_ASSET_CACHE_DIR: cacheDir,
+    ZODY_ENV: "production",
+    ZODY_REMOTE_ASSET_CACHE_DIR: cacheDir,
   };
 }
 
@@ -48,7 +48,7 @@ export function resolvePnpmCommand(platform = process.platform) {
 
 export function runDesktopRemoteProdDev() {
   const repoRoot = resolve(import.meta.dirname, "..");
-  const child = spawn(resolvePnpmCommand(), ["--filter", "@zcode/desktop", "dev"], {
+  const child = spawn(resolvePnpmCommand(), ["--filter", "@zody/desktop", "dev"], {
     cwd: repoRoot,
     stdio: "inherit",
     env: buildDesktopRemoteProdEnv(),

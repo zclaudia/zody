@@ -2,8 +2,8 @@ import type {
   WebRemoteControlTaskDisplayStatus,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
-import { resolveWebRemoteControlWorkspaceKey } from "@zcode/shared";
+} from "@zody/shared";
+import { resolveWebRemoteControlWorkspaceKey } from "@zody/shared";
 import {
   groupWebRemoteControlTasksByWorkspace,
   sortWebRemoteControlTasksByTime,

@@ -3,7 +3,7 @@ import type {
   BrowserViewScreenshotSurfacePreparePayload,
   BrowserViewScreenshotSurfaceReleasePayload,
   BrowserViewSurfaceScaleMode,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const VIEWPORT_TOLERANCE_PX = 1;
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AppUsageSnapshot } from "@zcode/shared";
+import type { AppUsageSnapshot } from "@zody/shared";
 import { createUsageStatsService } from "../src/usage-stats/usageStatsService.js";
 
 // fork（F4.5）：官方 Coding Plan / Start Plan 额度与用量 monitor 链路已删除，
@@ -44,7 +44,7 @@ describe("createUsageStatsService（App Usage）", () => {
   it("经 ZCode Protocol 读取 agent 数据库统计", async () => {
     const getAppUsageStats = vi.fn(async () => createAppUsageSnapshot());
     const service = createUsageStatsService({
-      zcodeAgentService: { getAppUsageStats },
+      zodyAgentService: { getAppUsageStats },
     });
 
     const snapshot = await service.getAppUsageSnapshot({
@@ -64,7 +64,7 @@ describe("createUsageStatsService（App Usage）", () => {
   it("7d range 原样透传", async () => {
     const getAppUsageStats = vi.fn(async () => createAppUsageSnapshot("7d"));
     const service = createUsageStatsService({
-      zcodeAgentService: { getAppUsageStats },
+      zodyAgentService: { getAppUsageStats },
     });
 
     const snapshot = await service.getAppUsageSnapshot({
@@ -82,7 +82,7 @@ describe("createUsageStatsService（App Usage）", () => {
   it("全量概览用 all range 与调用端时区透传", async () => {
     const getAppUsageStats = vi.fn(async () => createAppUsageSnapshot("all"));
     const service = createUsageStatsService({
-      zcodeAgentService: { getAppUsageStats },
+      zodyAgentService: { getAppUsageStats },
     });
 
     const snapshot = await service.getAppUsageSnapshot({

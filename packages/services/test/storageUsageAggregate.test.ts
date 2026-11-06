@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createStorageUsageAccumulator } from "../src/storage/domain/usageAggregate.js";
-import { STORAGE_CATEGORY_IDS, STORAGE_MORE_ENTRIES_PATH } from "@zcode/shared";
+import { STORAGE_CATEGORY_IDS, STORAGE_MORE_ENTRIES_PATH } from "@zody/shared";
 
 const spec = { id: "home" as const, path: "/h/.zody", hasCustomDataBaseDir: false };
 

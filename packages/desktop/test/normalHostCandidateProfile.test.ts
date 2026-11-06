@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  digestZCodeAgentNativeRuntimeNetwork,
-  digestZCodeAgentNativeRuntimeProviderSnapshot,
-} from "@zcode/services/node";
+  digestZodyAgentNativeRuntimeNetwork,
+  digestZodyAgentNativeRuntimeProviderSnapshot,
+} from "@zody/services/node";
 import {
   CUA_NARROW_APP_NAME,
   CUA_NARROW_LAUNCHER_RELATIVE_PATH,
@@ -180,9 +180,9 @@ describe("normal Host candidate startup profile", () => {
       caCertPath: "/tmp/zody-test-ca.pem",
     };
     expect(digestNormalHostProviderSnapshot(providerView())).toBe(
-      digestZCodeAgentNativeRuntimeProviderSnapshot(providerView()),
+      digestZodyAgentNativeRuntimeProviderSnapshot(providerView()),
     );
-    expect(digestNormalHostNetwork(network)).toBe(digestZCodeAgentNativeRuntimeNetwork(network));
+    expect(digestNormalHostNetwork(network)).toBe(digestZodyAgentNativeRuntimeNetwork(network));
   });
 
   it("uses a bounded Host startup snapshot without archiving raw provider/network data", async () => {
@@ -300,7 +300,7 @@ describe("normal Host candidate startup profile", () => {
     );
     writeFileSync(
       packageJsonPath,
-      JSON.stringify({ name: "@zcode/desktop", main: "out/main/index.js" }),
+      JSON.stringify({ name: "@zody/desktop", main: "out/main/index.js" }),
     );
     const plutilCalls: string[][] = [];
     const helperRenameCalls: Array<[string, string, { sourceApplicationName: string }]> = [];

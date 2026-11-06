@@ -1,7 +1,7 @@
 import { createElement, isValidElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { IMcpSyncService } from "@zcode/services";
+import type { IMcpSyncService } from "@zody/services";
 import {
   buildRemoteMcpSyncRows,
   buildRemoteMcpSyncImportParams,
@@ -76,7 +76,7 @@ vi.mock("@/components/ui/dialog.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: (
         { id }: { id: string },

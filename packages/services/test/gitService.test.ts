@@ -18,7 +18,7 @@ import type {
   GitDiffResult,
   GitFileChange,
   GitRepositorySummary,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { GitCommitMessageGenerator } from "../src/git/gitCommitMessageGenerator.js";
 import { createGitService } from "../src/git/gitService.js";
 import type { GitCliRepo } from "../src/git/repo/gitCliRepo.js";

@@ -5,7 +5,7 @@
  * 本机路径、邮箱、完整 URL 和凭据。这里提供纯函数实现，供 desktop main 的 `beforeReport` 与
  * renderer 侧埋点共用，避免每个埋点各写一份模式。
  *
- * 模式与 CLI 的 `apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts` 保持一致；两者位于不同
+ * 模式与 CLI 的 `apps/zody-cli/packages/telemetry/src/error-sanitizer.ts` 保持一致；两者位于不同
  * workspace 且不允许互相依赖，扩展任一侧时必须同步另一侧。
  */
 

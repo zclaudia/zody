@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { setDataBaseDir } from "#src/paths.js";
 import { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 
@@ -27,7 +27,7 @@ function task(params: {
   taskId: string;
   workspaceIdentity: string;
   title?: string;
-}): ZCodeTaskMeta {
+}): ZodyTaskMeta {
   return {
     taskId: params.taskId,
     traceId: `trace-${params.taskId}`,
@@ -57,8 +57,8 @@ function getRepoDatabase(target: TaskIndexRepo): {
   ).getDatabase();
 }
 
-function metaJsonWithoutWorkspaceIdentity(meta: ZCodeTaskMeta): string {
-  const legacyMeta: Partial<ZCodeTaskMeta> = { ...meta };
+function metaJsonWithoutWorkspaceIdentity(meta: ZodyTaskMeta): string {
+  const legacyMeta: Partial<ZodyTaskMeta> = { ...meta };
   delete legacyMeta.workspaceIdentity;
   return JSON.stringify(legacyMeta);
 }

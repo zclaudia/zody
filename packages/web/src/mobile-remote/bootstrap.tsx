@@ -4,17 +4,17 @@ import {
   Root,
   WebRemoteControlMobileStartPage,
   WebRemoteControlStandaloneStoreProvider,
-  ZCodeIntlProvider,
+  ZodyIntlProvider,
   setStreamClientId,
   setWebRemoteControlTerminalTransportState,
   type WebRemoteControlTerminalTransportState as UiWebRemoteControlTerminalTransportState,
   type WebRemoteControlMobileSettingsDraft,
-} from "@zcode/ui";
+} from "@zody/ui";
 import {
   connectViaProtocol,
   connectViaProtocolOwned,
   createAcknowledgedWebRemoteControlRelayProtocol,
-} from "@zcode/client";
+} from "@zody/client";
 import {
   WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS,
   resolveWebRemoteControlInitialWorkspaceSelection,
@@ -39,7 +39,7 @@ import {
   type WebRemoteControlWindowBootstrapResult,
   type WebRemoteControlWorkspaceListResult,
   type WebRemoteControlWorkspaceSwitchOptions,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   createMobileNotificationPlatform,
   mobileNotificationTargetKey,
@@ -175,19 +175,13 @@ function pickMobileRemotePlatformCapabilities(
   | "mobileNotifications"
 > {
   return {
-    ...(platform.mobileNotifications
-      ? { mobileNotifications: platform.mobileNotifications }
-      : {}),
+    ...(platform.mobileNotifications ? { mobileNotifications: platform.mobileNotifications } : {}),
     ...(platform.onAppLifecycleChange
       ? { onAppLifecycleChange: platform.onAppLifecycleChange }
       : {}),
-    ...(platform.onBackPressed
-      ? { onBackPressed: platform.onBackPressed }
-      : {}),
+    ...(platform.onBackPressed ? { onBackPressed: platform.onBackPressed } : {}),
     ...(platform.saveFile ? { saveFile: platform.saveFile } : {}),
-    ...(platform.maxAttachmentBytes
-      ? { maxAttachmentBytes: platform.maxAttachmentBytes }
-      : {}),
+    ...(platform.maxAttachmentBytes ? { maxAttachmentBytes: platform.maxAttachmentBytes } : {}),
   };
 }
 
@@ -205,9 +199,7 @@ function createWebRemoteControlRequestId(prefix: string): string {
   return `${prefix}-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`}`;
 }
 
-function renderWebRemoteControlLoading(
-  state: UiWebRemoteControlTerminalTransportState,
-): void {
+function renderWebRemoteControlLoading(state: UiWebRemoteControlTerminalTransportState): void {
   document.title = "Zody - Web Remote Control";
   webEntryRoot.render(<WebRemoteControlLoadingScreen state={state} />);
 }
@@ -233,15 +225,11 @@ function toUiTerminalTransportState(
 }
 
 /** 可恢复失败不卸载页面：transport 继续监听 registry，电脑恢复在线后自动重连。 */
-function isRecoverableGatewayFailure(
-  reason: WebRemoteControlFailureReason,
-): boolean {
+function isRecoverableGatewayFailure(reason: WebRemoteControlFailureReason): boolean {
   return reason === "gateway-unreachable" || reason === "desktop-disconnected";
 }
 
-function mapSessionContextErrorToFailure(
-  error: unknown,
-): WebRemoteControlFailure {
+function mapSessionContextErrorToFailure(error: unknown): WebRemoteControlFailure {
   if (error instanceof MobileRemoteSessionContextError) {
     switch (error.code) {
       case "native-bridge-unavailable":
@@ -271,18 +259,15 @@ export async function bootstrapGatewayWebRemoteControl(
   params: URLSearchParams,
   options: BootstrapGatewayWebRemoteControlOptions = {},
 ): Promise<void> {
-  seedWebRemoteControlThemePreference(
-    resolveWebRemoteControlThemeFromSearchParams(params),
-  );
+  seedWebRemoteControlThemePreference(resolveWebRemoteControlThemeFromSearchParams(params));
 
   const isProduction = options.isProduction ?? import.meta.env.PROD;
   let bridge = options.bridge;
   if (!bridge && !isProduction && !import.meta.env.PROD) {
     // 浏览器开发模式的 Shell 会写入 handoff；这里把 handoff 模拟成原生桥。
     // `import.meta.env.PROD` 在 release 构建被常量折叠，开发适配器不会进入产物。
-    const { installDevelopmentMobileRemoteBridge } = await import(
-      "./mobileRemoteDevelopmentBridge.js"
-    );
+    const { installDevelopmentMobileRemoteBridge } =
+      await import("./mobileRemoteDevelopmentBridge.js");
     bridge = installDevelopmentMobileRemoteBridge();
   }
 
@@ -353,10 +338,7 @@ export async function bootstrapGatewayWebRemoteControl(
     // 首次加载无法确认发布清单时按 spec 第 10 节返回 Shell；页面同时保留可手动重试的
     // 失败页，避免原生 returnShell 尚未完成时出现白屏。
     renderWebRemoteControlFailure(
-      toWebRemoteControlFailure(
-        "gateway-unreachable",
-        "Unable to verify the desktop UI release.",
-      ),
+      toWebRemoteControlFailure("gateway-unreachable", "Unable to verify the desktop UI release."),
       {
         onRetry: () => window.location.reload(),
         onOpenSettings: () => requestReturnShell("settings"),
@@ -374,10 +356,9 @@ export async function bootstrapGatewayWebRemoteControl(
     bridge: session.bridge,
   });
   // T6.3：文件桥与事件桥共用同一个注入对象；每次调用携带 sessionId。
-  const fileCapabilities = createMobileRemoteFileCapabilities(
-    resolveMobileRemoteFileBridge(),
-    { sessionId: session.context.sessionId },
-  );
+  const fileCapabilities = createMobileRemoteFileCapabilities(resolveMobileRemoteFileBridge(), {
+    sessionId: session.context.sessionId,
+  });
   // 不展开注入的平台对象：桌面/测试实现可能是带原型方法的实例。
   const platform =
     options.platform ??
@@ -385,9 +366,7 @@ export async function bootstrapGatewayWebRemoteControl(
       ...fileCapabilities,
       mobileNotifications: createMobileNotificationPlatform(globalThis, {
         sessionId: session.context.sessionId,
-        ...(nativeHost
-          ? { subscribePermission: nativeHost.onNotificationPermissionChanged }
-          : {}),
+        ...(nativeHost ? { subscribePermission: nativeHost.onNotificationPermissionChanged } : {}),
       }),
       ...(nativeHost
         ? {
@@ -412,9 +391,7 @@ export async function bootstrapGatewayWebRemoteControl(
   await startGatewaySession(context);
 }
 
-async function startGatewaySession(
-  context: GatewaySessionContext,
-): Promise<void> {
+async function startGatewaySession(context: GatewaySessionContext): Promise<void> {
   const gatewayConfig = context.session;
 
   // M3-T2：整个文档只创建一个 release controller/guard 注册表。注册表先安装，
@@ -431,9 +408,7 @@ async function startGatewaySession(
   const disposeReleaseNotice = showMobileUiReleaseNotice(releaseRuntime.controller);
 
   const navigationOwner = createMobileNavigationOwner();
-  let mobileCapabilities:
-    | import("@zcode/shared").MobileCapabilities
-    | undefined;
+  let mobileCapabilities: import("@zody/shared").MobileCapabilities | undefined;
   // 第二批 E1：协商出的 appProtocol；低于 4 的桌面隐藏「打开其他项目」入口（不发未知 payload）。
   let negotiatedAppProtocol: number | undefined;
   let renderCurrentExternalRelayRoot: (() => void) | undefined;
@@ -441,16 +416,12 @@ async function startGatewaySession(
   // 旧 mobile versionGuard 已由 release controller 替代；bootstrap 仍需要按连接代际
   // 丢弃迟到的 desktop bootstrap 响应，避免旧结果参与新 Root 挂载。
   let bootstrapCheckGeneration = 0;
-  let pendingVersionCheck:
-    | Promise<WebRemoteControlWindowBootstrapResult | undefined>
-    | undefined;
+  let pendingVersionCheck: Promise<WebRemoteControlWindowBootstrapResult | undefined> | undefined;
   const invalidateBootstrapCheck = (): void => {
     bootstrapCheckGeneration += 1;
     pendingVersionCheck = undefined;
   };
-  let notificationServices:
-    | Awaited<ReturnType<typeof connectViaProtocol>>
-    | undefined;
+  let notificationServices: Awaited<ReturnType<typeof connectViaProtocol>> | undefined;
   let notificationMounted:
     | {
         navigationId: number;
@@ -498,9 +469,7 @@ async function startGatewaySession(
       return;
     }
     try {
-      parseMobileRemoteBridgeEnvelope(
-        markReady.call(bridge, gatewayConfig.sessionId),
-      );
+      parseMobileRemoteBridgeEnvelope(markReady.call(bridge, gatewayConfig.sessionId));
     } catch {
       // 原生可能已在导航/重建期间淘汰当前 session；保持页面 fail closed，不重试也不写配置。
     }
@@ -526,18 +495,14 @@ async function startGatewaySession(
   let sendMobileDiagnosticPayload:
     | ((
         payload: WebRemoteControlAppPayload & {
-          zcode_type: "mobile-diagnostic";
+          zody_type: "mobile-diagnostic";
         },
       ) => void)
     | undefined;
-  const workspaceListUpdateListeners =
-    new Set<WebRemoteControlWorkspaceListUpdateListener>();
-  const recentProjectsUpdateListeners =
-    new Set<WebRemoteControlRecentProjectsUpdateListener>();
+  const workspaceListUpdateListeners = new Set<WebRemoteControlWorkspaceListUpdateListener>();
+  const recentProjectsUpdateListeners = new Set<WebRemoteControlRecentProjectsUpdateListener>();
 
-  const subscribeWorkspaceListUpdates = (
-    listener: WebRemoteControlWorkspaceListUpdateListener,
-  ) => {
+  const subscribeWorkspaceListUpdates = (listener: WebRemoteControlWorkspaceListUpdateListener) => {
     workspaceListUpdateListeners.add(listener);
     return () => {
       workspaceListUpdateListeners.delete(listener);
@@ -553,9 +518,7 @@ async function startGatewaySession(
     };
   };
 
-  const applyRecentProjectsResult = (
-    result: WebRemoteControlRecentProjectsResult,
-  ) => {
+  const applyRecentProjectsResult = (result: WebRemoteControlRecentProjectsResult) => {
     latestRecentProjects = {
       desktopWindowState: result.desktopWindowState,
       recentProjects: result.recentProjects,
@@ -565,13 +528,8 @@ async function startGatewaySession(
     }
   };
 
-  const applyRecentProjectsFromBootstrap = (
-    result: WebRemoteControlWindowBootstrapResult,
-  ) => {
-    if (
-      result.desktopWindowState === undefined &&
-      result.recentProjects === undefined
-    ) {
+  const applyRecentProjectsFromBootstrap = (result: WebRemoteControlWindowBootstrapResult) => {
+    if (result.desktopWindowState === undefined && result.recentProjects === undefined) {
       return;
     }
     applyRecentProjectsResult({
@@ -588,20 +546,16 @@ async function startGatewaySession(
     activeTaskId: result.activeTaskId ?? currentTaskId,
   });
 
-  const applyWorkspaceListUpdated = (
-    result: WebRemoteControlWorkspaceListResult,
-  ) => {
+  const applyWorkspaceListUpdated = (result: WebRemoteControlWorkspaceListResult) => {
     const normalized = normalizeWorkspaceListResult(result);
     for (const listener of workspaceListUpdateListeners) {
       listener(normalized);
     }
   };
 
-  const sendMobileDiagnostic = (
-    diagnostic: GatewayTerminalTransportDiagnostic,
-  ) => {
+  const sendMobileDiagnostic = (diagnostic: GatewayTerminalTransportDiagnostic) => {
     const base = {
-      zcode_type: "mobile-diagnostic" as const,
+      zody_type: "mobile-diagnostic" as const,
       timestamp: diagnostic.timestamp,
       state: diagnostic.state,
       visibilityState: diagnostic.visibilityState,
@@ -645,7 +599,7 @@ async function startGatewaySession(
 
   const sendMobileFailureDiagnostic = (failure: WebRemoteControlFailure) => {
     sendMobileDiagnosticPayload?.({
-      zcode_type: "mobile-diagnostic",
+      zody_type: "mobile-diagnostic",
       event: "failure",
       timestamp: Date.now(),
       state: terminalTransportState,
@@ -656,9 +610,7 @@ async function startGatewaySession(
     });
   };
 
-  const mapBootstrapUnknownErrorToFailure = (
-    error: unknown,
-  ): WebRemoteControlFailure => {
+  const mapBootstrapUnknownErrorToFailure = (error: unknown): WebRemoteControlFailure => {
     if (error && typeof error === "object" && "reason" in error) {
       return error as WebRemoteControlFailure;
     }
@@ -728,17 +680,11 @@ async function startGatewaySession(
   };
 
   let bootstrapPairedSession:
-    | ((options?: {
-        preferredWorkspaceKey?: string;
-        preferredTaskId?: string;
-      }) => Promise<void>)
+    | ((options?: { preferredWorkspaceKey?: string; preferredTaskId?: string }) => Promise<void>)
     | undefined;
 
   const isLifecycleRecoveryReason = (reason: string): boolean =>
-    reason === "visible" ||
-    reason === "pageshow" ||
-    reason === "online" ||
-    reason === "resume";
+    reason === "visible" || reason === "pageshow" || reason === "online" || reason === "resume";
 
   const recoverVisibleSession = async (reason: string): Promise<void> => {
     if (recovering || isPageUnloading || terminated) {
@@ -750,8 +696,7 @@ async function startGatewaySession(
     currentRecoveryId = createWebRemoteControlRequestId("recovery");
     let recoveryReady = false;
     const requiresBridgeRebuild =
-      !isLifecycleRecoveryReason(reason) ||
-      activeRelayProtocol?.isDegraded() === true;
+      !isLifecycleRecoveryReason(reason) || activeRelayProtocol?.isDegraded() === true;
     if (requiresBridgeRebuild) {
       activeRelayProtocol?.markDegraded();
     }
@@ -766,11 +711,7 @@ async function startGatewaySession(
         });
       }
       await transport.recoverConnection();
-      if (
-        !requiresBridgeRebuild &&
-        activeRelayProtocol &&
-        !activeRelayProtocol.isDegraded()
-      ) {
+      if (!requiresBridgeRebuild && activeRelayProtocol && !activeRelayProtocol.isDegraded()) {
         try {
           await checkDesktopVersion();
         } catch (error) {
@@ -829,8 +770,7 @@ async function startGatewaySession(
     clientInstanceId: gatewayConfig.clientInstanceId,
     clientName: "Zody Mobile",
     appVersion: gatewayConfig.appVersion,
-    onRawTransportPayload: (payload) =>
-      activeRelayProtocol?.acceptPayload(payload) ?? false,
+    onRawTransportPayload: (payload) => activeRelayProtocol?.acceptPayload(payload) ?? false,
     onRawTransportFault: (reasonCode) => {
       activeRelayProtocol?.markDegraded(reasonCode);
     },
@@ -838,37 +778,30 @@ async function startGatewaySession(
       if (terminated) {
         return;
       }
-      if (
-        payload.zcode_type === "rpc-frame" ||
-        payload.zcode_type === "rpc-frame-ack"
-      ) {
+      if (payload.zody_type === "rpc-frame" || payload.zody_type === "rpc-frame-ack") {
         activeRelayProtocol?.acceptPayload(payload);
         return;
       }
       if (requester.acceptPayload(payload)) {
         return;
       }
-      if (payload.zcode_type === "workspace-list-updated") {
+      if (payload.zody_type === "workspace-list-updated") {
         applyWorkspaceListUpdated(payload.result);
         return;
       }
-      if (payload.zcode_type === "recent-projects-updated") {
+      if (payload.zody_type === "recent-projects-updated") {
         applyRecentProjectsResult(payload.result);
         return;
       }
-      if (payload.zcode_type === "bridge-degraded") {
-        if (
-          payload.bridgeSessionId === activeRelayProtocol?.getBridgeSessionId()
-        ) {
+      if (payload.zody_type === "bridge-degraded") {
+        if (payload.bridgeSessionId === activeRelayProtocol?.getBridgeSessionId()) {
           activeRelayProtocol?.markDegraded();
           void recoverVisibleSession(payload.reason);
         }
         return;
       }
-      if (payload.zcode_type === "workspace-bridge-error") {
-        if (
-          payload.bridgeSessionId === activeRelayProtocol?.getBridgeSessionId()
-        ) {
+      if (payload.zody_type === "workspace-bridge-error") {
+        if (payload.bridgeSessionId === activeRelayProtocol?.getBridgeSessionId()) {
           // Bugfix: 远程 session 关闭会异步通知当前 bridge 失效，不对应任何 pending request。
           // 这里按硬恢复重建视图，让断开的远程 workspace 回到 home-only/reconnect 状态。
           activeRelayProtocol?.markDegraded();
@@ -876,10 +809,8 @@ async function startGatewaySession(
         }
         return;
       }
-      if (payload.zcode_type === "app-error") {
-        renderBootstrapFailure(
-          toWebRemoteControlFailure(payload.reason, payload.error),
-        );
+      if (payload.zody_type === "app-error") {
+        renderBootstrapFailure(toWebRemoteControlFailure(payload.reason, payload.error));
       }
     },
     onStateChange: (state) => {
@@ -899,10 +830,7 @@ async function startGatewaySession(
       // 已有校验操作自行跨重连消费一次重试；配对事件不能启动另一个恢复 owner。
       if (bootstrapping && pendingVersionCheck) return;
       // healthy bridge 与在途初始化都不能并发新建 bridge，但新配对仍必须检查桌面版本。
-      if (
-        (activeRelayProtocol && !activeRelayProtocol.isDegraded()) ||
-        bootstrapping
-      ) {
+      if ((activeRelayProtocol && !activeRelayProtocol.isDegraded()) || bootstrapping) {
         // T4.2：版本检查不再阻塞业务；这里只观察桌面版本变化（版本化 URL 已删除）。
         void checkDesktopVersion().catch((error) => {
           // 版本读取失败沿用恢复链路，不卸载已挂载页面和草稿。
@@ -949,10 +877,7 @@ async function startGatewaySession(
     },
     onError: (error) => {
       if (!import.meta.env.PROD) {
-        console.warn(
-          "[web-remote-control] terminal transport error",
-          error.message,
-        );
+        console.warn("[web-remote-control] terminal transport error", error.message);
       }
     },
     onDiagnostic: (diagnostic) => {
@@ -989,42 +914,32 @@ async function startGatewaySession(
   });
 
   const requestAppPayload = requester.requestAppPayload;
-  const requestWithRelayRecovery = createWebRemoteControlRelayRequestRecovery(
-    () => transport.recoverConnection(),
+  const requestWithRelayRecovery = createWebRemoteControlRelayRequestRecovery(() =>
+    transport.recoverConnection(),
   );
 
-  const requestBootstrap =
-    async (): Promise<WebRemoteControlWindowBootstrapResult> => {
-      const requestGeneration = connectionGeneration;
-      const requestId = createWebRemoteControlRequestId("bootstrap");
-      const response = await requestAppPayload(
-        { zcode_type: "bootstrap-request", requestId },
-        (
-          payload,
-        ): payload is Extract<
-          WebRemoteControlAppPayload,
-          { zcode_type: "bootstrap-response" }
-        > =>
-          payload.zcode_type === "bootstrap-response" &&
-          payload.requestId === requestId,
-      );
-      if (requestGeneration === connectionGeneration && !terminated) {
-        const previousCapabilities = mobileCapabilities;
-        mobileCapabilities = response.result.mobileCapabilities;
-        if (
-          JSON.stringify(previousCapabilities ?? {}) !==
-          JSON.stringify(mobileCapabilities ?? {})
-        ) {
-          renderCurrentExternalRelayRoot?.();
-        }
-        applyRecentProjectsFromBootstrap(response.result);
+  const requestBootstrap = async (): Promise<WebRemoteControlWindowBootstrapResult> => {
+    const requestGeneration = connectionGeneration;
+    const requestId = createWebRemoteControlRequestId("bootstrap");
+    const response = await requestAppPayload(
+      { zody_type: "bootstrap-request", requestId },
+      (
+        payload,
+      ): payload is Extract<WebRemoteControlAppPayload, { zody_type: "bootstrap-response" }> =>
+        payload.zody_type === "bootstrap-response" && payload.requestId === requestId,
+    );
+    if (requestGeneration === connectionGeneration && !terminated) {
+      const previousCapabilities = mobileCapabilities;
+      mobileCapabilities = response.result.mobileCapabilities;
+      if (JSON.stringify(previousCapabilities ?? {}) !== JSON.stringify(mobileCapabilities ?? {})) {
+        renderCurrentExternalRelayRoot?.();
       }
-      return response.result;
-    };
+      applyRecentProjectsFromBootstrap(response.result);
+    }
+    return response.result;
+  };
 
-  const checkDesktopVersion = (): Promise<
-    WebRemoteControlWindowBootstrapResult | undefined
-  > => {
+  const checkDesktopVersion = (): Promise<WebRemoteControlWindowBootstrapResult | undefined> => {
     if (pendingVersionCheck) return pendingVersionCheck;
     // T4.2：版本不匹配不会返回 undefined。这里只在明确发生连接代际变化、且新 channel
     // 已 ready 时继续原 caller 的 bootstrap；普通网络失败和释放状态不会触发重试。
@@ -1037,9 +952,7 @@ async function startGatewaySession(
         const result = await requestWithRelayRecovery(() => requestBootstrap(), {
           recoverTimeout: true,
         });
-        return terminated || requestGeneration !== bootstrapCheckGeneration
-          ? undefined
-          : result;
+        return terminated || requestGeneration !== bootstrapCheckGeneration ? undefined : result;
       },
       getConnectionGeneration: () => connectionGeneration,
       isChannelReady: () => terminalTransportState === "paired",
@@ -1051,16 +964,14 @@ async function startGatewaySession(
     return request;
   };
 
-  const requestPlatformMethod = async <
-    K extends WebRemoteControlPlatformMethod,
-  >(
+  const requestPlatformMethod = async <K extends WebRemoteControlPlatformMethod>(
     method: K,
     args?: WebRemoteControlPlatformMethodArgsMap[K],
   ): Promise<WebRemoteControlPlatformMethodResultMap[K]> => {
     const response = await requestWithRelayRecovery(() => {
       const requestId = createWebRemoteControlRequestId("platform");
       const request = {
-        zcode_type: "platform-request",
+        zody_type: "platform-request",
         requestId,
         method,
         args,
@@ -1071,51 +982,41 @@ async function startGatewaySession(
           payload,
         ): payload is Extract<
           WebRemoteControlPlatformResponsePayload,
-          { zcode_type: "platform-response" }
+          { zody_type: "platform-response" }
         > =>
-          payload.zcode_type === "platform-response" &&
+          payload.zody_type === "platform-response" &&
           payload.requestId === requestId &&
           payload.method === method,
       );
     });
-    const platformResponse =
-      response as WebRemoteControlPlatformResponsePayload;
+    const platformResponse = response as WebRemoteControlPlatformResponsePayload;
     if (!platformResponse.success) {
       throw new Error(platformResponse.error);
     }
     return platformResponse.result as WebRemoteControlPlatformMethodResultMap[K];
   };
-  const listWorkspaces =
-    async (): Promise<WebRemoteControlWorkspaceListResult> => {
-      const requestWorkspaceList = async () => {
-        const requestId = createWebRemoteControlRequestId("workspace-list");
-        return requestAppPayload(
-          { zcode_type: "workspace-list-request", requestId },
-          (
-            payload,
-          ): payload is Extract<
-            WebRemoteControlAppPayload,
-            { zcode_type: "workspace-list-response" }
-          > =>
-            payload.zcode_type === "workspace-list-response" &&
-            payload.requestId === requestId,
-        );
-      };
-      const response = await requestWithRelayRecovery(
-        () => requestWorkspaceList(),
-        {
-          // Bugfix: 外部 relay 偶发只保留手机到 desktop 的单向通路，或请求发生在重连/suspect 窗口导致未发送。
-          // 首页列表是幂等请求，失败后重建 terminal socket 并重试一次，比直接展示 0 个任务更稳。
-          recoverTimeout: true,
-        },
+  const listWorkspaces = async (): Promise<WebRemoteControlWorkspaceListResult> => {
+    const requestWorkspaceList = async () => {
+      const requestId = createWebRemoteControlRequestId("workspace-list");
+      return requestAppPayload(
+        { zody_type: "workspace-list-request", requestId },
+        (
+          payload,
+        ): payload is Extract<
+          WebRemoteControlAppPayload,
+          { zody_type: "workspace-list-response" }
+        > => payload.zody_type === "workspace-list-response" && payload.requestId === requestId,
       );
-      return normalizeWorkspaceListResult(response.result);
     };
+    const response = await requestWithRelayRecovery(() => requestWorkspaceList(), {
+      // Bugfix: 外部 relay 偶发只保留手机到 desktop 的单向通路，或请求发生在重连/suspect 窗口导致未发送。
+      // 首页列表是幂等请求，失败后重建 terminal socket 并重试一次，比直接展示 0 个任务更稳。
+      recoverTimeout: true,
+    });
+    return normalizeWorkspaceListResult(response.result);
+  };
 
-  const updateMobileViewState = async (
-    workspaceKey: string,
-    taskId?: string,
-  ): Promise<void> => {
+  const updateMobileViewState = async (workspaceKey: string, taskId?: string): Promise<void> => {
     currentWorkspaceKey = workspaceKey;
     currentTaskId = taskId;
     const viewGeneration = ++notificationViewGeneration;
@@ -1130,9 +1031,7 @@ async function startGatewaySession(
             taskId,
           );
           if (viewGeneration === notificationViewGeneration && !terminated)
-            await context.platform.mobileNotifications.setActiveTarget(
-              targetKey,
-            );
+            await context.platform.mobileNotifications.setActiveTarget(targetKey);
         }
       } catch {
         /* Optional OS display support cannot break the workspace transport. */
@@ -1140,7 +1039,7 @@ async function startGatewaySession(
     }
     if (viewGeneration !== notificationViewGeneration || terminated) return;
     transport.sendPayload({
-      zcode_type: "mobile-view-state-update",
+      zody_type: "mobile-view-state-update",
       viewState: {
         activeWorkspaceKey: workspaceKey,
         ...(taskId ? { activeTaskId: taskId } : {}),
@@ -1157,7 +1056,7 @@ async function startGatewaySession(
       const requestId = createWebRemoteControlRequestId("workspace-reconnect");
       return requestAppPayload(
         {
-          zcode_type: "workspace-reconnect-request",
+          zody_type: "workspace-reconnect-request",
           requestId,
           workspaceKey,
         },
@@ -1165,9 +1064,9 @@ async function startGatewaySession(
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-reconnect-response" }
+          { zody_type: "workspace-reconnect-response" }
         > =>
-          payload.zcode_type === "workspace-reconnect-response" &&
+          payload.zody_type === "workspace-reconnect-response" &&
           payload.requestId === requestId &&
           payload.workspaceKey === workspaceKey,
         {
@@ -1182,21 +1081,17 @@ async function startGatewaySession(
   };
 
   /** 方案「新增应用 payload」：手机只能传最近项目 id，路径由桌面解析。 */
-  const requestOpenRecentProject = async (
-    recentProjectId: string,
-  ): Promise<string> => {
+  const requestOpenRecentProject = async (recentProjectId: string): Promise<string> => {
     const requestId = createWebRemoteControlRequestId("workspace-open");
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
-        { zcode_type: "workspace-open-request", requestId, recentProjectId },
+        { zody_type: "workspace-open-request", requestId, recentProjectId },
         (
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-open-response" }
-        > =>
-          payload.zcode_type === "workspace-open-response" &&
-          payload.requestId === requestId,
+          { zody_type: "workspace-open-response" }
+        > => payload.zody_type === "workspace-open-response" && payload.requestId === requestId,
         {
           // 桌面侧以「workspace 出现在聚合列表」为成功标志，自身超时 10 秒；
           // 这里留出响应回传余量，避免两端同时超时。
@@ -1214,15 +1109,14 @@ async function startGatewaySession(
     const requestId = createWebRemoteControlRequestId("desktop-window-open");
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
-        { zcode_type: "desktop-window-open-request", requestId },
+        { zody_type: "desktop-window-open-request", requestId },
         (
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "desktop-window-open-response" }
+          { zody_type: "desktop-window-open-response" }
         > =>
-          payload.zcode_type === "desktop-window-open-response" &&
-          payload.requestId === requestId,
+          payload.zody_type === "desktop-window-open-response" && payload.requestId === requestId,
         { timeoutMs: 15_000 },
       ),
     );
@@ -1239,15 +1133,14 @@ async function startGatewaySession(
     const requestId = createWebRemoteControlRequestId("workspace-open-path");
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
-        { zcode_type: "workspace-open-path-request", requestId, workspacePath },
+        { zody_type: "workspace-open-path-request", requestId, workspacePath },
         (
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-open-path-response" }
+          { zody_type: "workspace-open-path-response" }
         > =>
-          payload.zcode_type === "workspace-open-path-response" &&
-          payload.requestId === requestId,
+          payload.zody_type === "workspace-open-path-response" && payload.requestId === requestId,
         {
           // 与最近项目打开一致：桌面 10 秒 + 回传余量。
           timeoutMs: 12_000,
@@ -1266,15 +1159,14 @@ async function startGatewaySession(
   ): Promise<WebRemoteControlMobileDirectoryListResult> => {
     const requestId = createWebRemoteControlRequestId("mobile-directory-list");
     const response = await requestAppPayload(
-      { zcode_type: "mobile-directory-list-request", requestId, ...(path ? { path } : {}) },
+      { zody_type: "mobile-directory-list-request", requestId, ...(path ? { path } : {}) },
       (
         payload,
       ): payload is Extract<
         WebRemoteControlAppPayload,
-        { zcode_type: "mobile-directory-list-response" }
+        { zody_type: "mobile-directory-list-response" }
       > =>
-        payload.zcode_type === "mobile-directory-list-response" &&
-        payload.requestId === requestId,
+        payload.zody_type === "mobile-directory-list-response" && payload.requestId === requestId,
       { timeoutMs: 10_000 },
     );
     return response.success
@@ -1300,13 +1192,10 @@ async function startGatewaySession(
     const clearAbandonedRequest = () => {
       if (navigationOwner.isCurrent(requestNavigation.id)) {
         navigationOwner.acknowledge(requestNavigation.id);
-        if (readerBridgeGeneration === bridgeClientGeneration)
-          renderCurrentExternalRelayRoot?.();
+        if (readerBridgeGeneration === bridgeClientGeneration) renderCurrentExternalRelayRoot?.();
       }
     };
-    let notification: Awaited<
-      ReturnType<typeof resolveMobileNotificationNavigation>
-    >;
+    let notification: Awaited<ReturnType<typeof resolveMobileNotificationNavigation>>;
     try {
       notification = await resolveMobileNotificationNavigation({
         backendId: gatewayConfig.backendId,
@@ -1316,10 +1205,7 @@ async function startGatewaySession(
       });
     } catch (error) {
       clearAbandonedRequest();
-      if (
-        readerBridgeGeneration !== bridgeClientGeneration ||
-        generation !== connectionGeneration
-      )
+      if (readerBridgeGeneration !== bridgeClientGeneration || generation !== connectionGeneration)
         throw new Error("stale-notification");
       throw error;
     }
@@ -1350,10 +1236,7 @@ async function startGatewaySession(
       !terminated;
     if (!isCurrentTarget()) throw new Error("stale-notification");
     try {
-      await validateMobileNotificationTask(
-        result.services,
-        notification.target,
-      );
+      await validateMobileNotificationTask(result.services, notification.target);
     } catch (error) {
       // 目标已删除才回到首页；旧 owner 的 RPC reject 不能冒充任务已删除并覆盖新 Root。
       if (!isCurrentTarget()) throw new Error("stale-notification");
@@ -1373,9 +1256,7 @@ async function startGatewaySession(
         await result.services.mobileNotificationReaderService?.markRead({
           notificationId,
         });
-        await context.platform.mobileNotifications?.acknowledgeClick(
-          notificationId,
-        );
+        await context.platform.mobileNotifications?.acknowledgeClick(notificationId);
       },
     };
     searchHighlight = undefined;
@@ -1388,9 +1269,7 @@ async function startGatewaySession(
    * 但收尾是提交 `respondPermission`（收敛 V4 resolveInteraction，duplicate/noop 幂等成功）
    * 而不是停在交互 UI；成功后 markRead + acknowledgeAction + 原生取消卡片，仍渲染目标任务。
    */
-  const openNotificationAction = async (
-    action: MobileNotificationActionClick,
-  ): Promise<void> => {
+  const openNotificationAction = async (action: MobileNotificationActionClick): Promise<void> => {
     const reader = notificationServices?.mobileNotificationReaderService;
     if (!reader || mobileCapabilities?.notificationFeed !== 1)
       throw new Error("notification-unavailable");
@@ -1442,7 +1321,7 @@ async function startGatewaySession(
       throw error;
     }
     try {
-      await result.services.zcodeTaskService.respondPermission({
+      await result.services.zodyTaskService.respondPermission({
         taskId: notification.target.taskId,
         requestId: notification.interactionId,
         optionId: action.optionId,
@@ -1485,9 +1364,7 @@ async function startGatewaySession(
         await result.services.mobileNotificationReaderService?.markRead({
           notificationId: action.notificationId,
         });
-        await context.platform.mobileNotifications?.acknowledgeAction?.(
-          action.notificationId,
-        );
+        await context.platform.mobileNotifications?.acknowledgeAction?.(action.notificationId);
       },
     };
     searchHighlight = undefined;
@@ -1502,8 +1379,7 @@ async function startGatewaySession(
     }
   };
   const nativeClickQueue = createMobileNotificationClickQueue({
-    readPending: async () =>
-      context.platform.mobileNotifications?.getPendingClick(),
+    readPending: async () => context.platform.mobileNotifications?.getPendingClick(),
     open: async (pending) => {
       disposeNotificationNotice?.();
       disposeNotificationNotice = undefined;
@@ -1516,11 +1392,7 @@ async function startGatewaySession(
       await openNotification(pending.notificationId);
     },
     onError: (error, pending) => {
-      if (
-        terminated ||
-        (error instanceof Error && error.message === "stale-notification")
-      )
-        return;
+      if (terminated || (error instanceof Error && error.message === "stale-notification")) return;
       disposeNotificationNotice?.();
       disposeNotificationNotice = showMobileNotificationNotice({
         onBackPressed: context.platform.onBackPressed,
@@ -1540,8 +1412,7 @@ async function startGatewaySession(
   retryPendingNotificationClick = nativeClickQueue.retryPending;
   const consumeNativeNotification = nativeClickQueue.enqueue;
   const nativeActionQueue = createMobileNotificationActionQueue({
-    readPending: async () =>
-      context.platform.mobileNotifications?.getPendingAction?.() ?? null,
+    readPending: async () => context.platform.mobileNotifications?.getPendingAction?.() ?? null,
     open: async (pending) => {
       disposeNotificationNotice?.();
       disposeNotificationNotice = undefined;
@@ -1553,11 +1424,7 @@ async function startGatewaySession(
       await openNotificationAction(pending);
     },
     onError: (error, pending) => {
-      if (
-        terminated ||
-        (error instanceof Error && error.message === "stale-notification")
-      )
-        return;
+      if (terminated || (error instanceof Error && error.message === "stale-notification")) return;
       disposeNotificationNotice?.();
       disposeNotificationNotice = showMobileNotificationNotice({
         onBackPressed: context.platform.onBackPressed,
@@ -1594,9 +1461,7 @@ async function startGatewaySession(
       backendId: gatewayConfig.backendId,
       connectionGeneration,
     }),
-    searchMobileHistory: async (
-      request: import("@zcode/shared").MobileHistorySearchRequest,
-    ) => {
+    searchMobileHistory: async (request: import("@zody/shared").MobileHistorySearchRequest) => {
       if (
         mobileCapabilities?.historySearch !== 1 ||
         request.context.backendId !== gatewayConfig.backendId ||
@@ -1605,10 +1470,8 @@ async function startGatewaySession(
         throw new Error("unsupported-or-stale-search");
       const response = await requestAppPayload(
         request,
-        (
-          payload,
-        ): payload is import("@zcode/shared").MobileHistorySearchOutcome =>
-          payload.zcode_type === "mobile-history-search-outcome" &&
+        (payload): payload is import("@zody/shared").MobileHistorySearchOutcome =>
+          payload.zody_type === "mobile-history-search-outcome" &&
           payload.context.requestId === request.context.requestId,
       );
       if (request.context.connectionGeneration !== connectionGeneration)
@@ -1619,12 +1482,11 @@ async function startGatewaySession(
     acknowledgeSearchHighlight: (requestId: number) => {
       if (searchHighlight?.requestId === requestId) searchHighlight = undefined;
     },
-    getRecentProjects:
-      async (): Promise<WebRemoteControlRecentProjectsResult> =>
-        latestRecentProjects ?? {
-          desktopWindowState: "open",
-          recentProjects: [],
-        },
+    getRecentProjects: async (): Promise<WebRemoteControlRecentProjectsResult> =>
+      latestRecentProjects ?? {
+        desktopWindowState: "open",
+        recentProjects: [],
+      },
     onRecentProjectsUpdated: subscribeRecentProjectsUpdates,
     openRecentProject: requestOpenRecentProject,
     openDesktopWindow: requestOpenDesktopWindow,
@@ -1639,16 +1501,14 @@ async function startGatewaySession(
   ): Promise<{
     bridge: WebRemoteControlExternalWorkspaceBridge;
     services: Awaited<ReturnType<typeof connectViaProtocol>>;
-    relayProtocol: ReturnType<
-      typeof createAcknowledgedWebRemoteControlRelayProtocol
-    >;
+    relayProtocol: ReturnType<typeof createAcknowledgedWebRemoteControlRelayProtocol>;
   }> => {
     const bridgeSessionId = createWebRemoteControlRequestId("bridge");
     const bridgeGeneration = ++nextBridgeGeneration;
     const response = await requestWithRelayRecovery(() =>
       requestAppPayload(
         {
-          zcode_type: "workspace-bridge-open",
+          zody_type: "workspace-bridge-open",
           requestId: createWebRemoteControlRequestId("workspace-bridge"),
           bridgeSessionId,
           bridgeGeneration,
@@ -1660,18 +1520,16 @@ async function startGatewaySession(
           payload,
         ): payload is Extract<
           WebRemoteControlAppPayload,
-          { zcode_type: "workspace-bridge-ready" }
+          { zody_type: "workspace-bridge-ready" }
         > =>
-          payload.zcode_type === "workspace-bridge-ready" &&
+          payload.zody_type === "workspace-bridge-ready" &&
           payload.bridgeSessionId === bridgeSessionId,
       ),
     );
     currentRecoveryId = undefined;
     if (terminated || bridgeGeneration !== nextBridgeGeneration) {
       // 旧 bridge 响应不得替换用户较晚选择的 workspace。
-      throw new Error(
-        "Web remote control workspace bridge was superseded or closed.",
-      );
+      throw new Error("Web remote control workspace bridge was superseded or closed.");
     }
     const relayProtocol = createAcknowledgedWebRemoteControlRelayProtocol({
       bridgeSessionId: response.bridge.bridgeSessionId,
@@ -1698,11 +1556,10 @@ async function startGatewaySession(
     });
     const ownedConnection = connectViaProtocolOwned(relayProtocol.protocol);
     const services = ownedConnection.services;
-    const bridgeServiceRegistration =
-      registerWebRemoteControlWorkspaceBridgeServices({
-        bridge: response.bridge,
-        services,
-      });
+    const bridgeServiceRegistration = registerWebRemoteControlWorkspaceBridgeServices({
+      bridge: response.bridge,
+      services,
+    });
     // 已读写入是打开 task 的伴随动作，不等待它完成，避免慢磁盘/远程 IO 阻塞 bridge 切换。
     void markOpenedWebRemoteControlBridgeTaskRead({
       bridge: response.bridge,
@@ -1723,10 +1580,7 @@ async function startGatewaySession(
     previousRelayProtocol?.dispose();
     currentWorkspaceKey = response.bridge.workspaceKey;
     currentTaskId = response.bridge.initialTaskId;
-    await updateMobileViewState(
-      response.bridge.workspaceKey,
-      response.bridge.initialTaskId,
-    );
+    await updateMobileViewState(response.bridge.workspaceKey, response.bridge.initialTaskId);
     return { bridge: response.bridge, services, relayProtocol };
   };
 
@@ -1774,7 +1628,7 @@ async function startGatewaySession(
     document.title = "Zody - Web Remote Control";
     webEntryRoot.render(
       <AppErrorBoundary key={bridge.bridgeSessionId}>
-        <ZCodeIntlProvider
+        <ZodyIntlProvider
           settingService={services.settingService}
           broadcastService={services.broadcastService}
           preferSettingServiceLocale
@@ -1788,7 +1642,7 @@ async function startGatewaySession(
                   const parsed = sessionCreateTelemetrySchema.safeParse(event);
                   if (parsed.success)
                     transport.sendPayload({
-                      zcode_type: "telemetry-report",
+                      zody_type: "telemetry-report",
                       event: parsed.data,
                     });
                 },
@@ -1804,14 +1658,10 @@ async function startGatewaySession(
               bridge.kind === "remote" ? bridge.workspaceIdentity : undefined
             }
             initialTaskId={bridge.initialTaskId}
-            initialWebRemoteControlMobileNavigationIntent={
-              initialNavigationIntent
-            }
+            initialWebRemoteControlMobileNavigationIntent={initialNavigationIntent}
             webRemoteControlTerminalTransportState={terminalTransportState}
             webRemoteControlMobileConnectionSettings={mobileConnectionSettings}
-            initialWorkspaceLoadingFallback={
-              <WebRemoteControlLoadingScreen state="paired" />
-            }
+            initialWorkspaceLoadingFallback={<WebRemoteControlLoadingScreen state="paired" />}
             restoreSession={false}
             allowOpenWorkspace={false}
             webRemoteControlWorkspaceSwitcher={{
@@ -1848,16 +1698,9 @@ async function startGatewaySession(
                 }),
               startDraft: async (workspaceKey, options) => {
                 const initialNavigationIntent = options?.mobileNavigationIntent;
-                const result = await openWorkspaceBridge(
-                  workspaceKey,
-                  undefined,
-                );
+                const result = await openWorkspaceBridge(workspaceKey, undefined);
                 await updateMobileViewState(result.bridge.workspaceKey);
-                renderExternalRelayRoot(
-                  result.services,
-                  result.bridge,
-                  initialNavigationIntent,
-                );
+                renderExternalRelayRoot(result.services, result.bridge, initialNavigationIntent);
               },
               reconnectWorkspace,
               updateMobileViewState,
@@ -1867,7 +1710,7 @@ async function startGatewaySession(
             supportsEmbeddedBrowser={false}
             allowRemoteWorkspace={false}
           />
-        </ZCodeIntlProvider>
+        </ZodyIntlProvider>
       </AppErrorBoundary>,
     );
     renderCurrentExternalRelayRoot = () => {
@@ -1898,7 +1741,7 @@ async function startGatewaySession(
     disposeStartPageRecentSubscription = undefined;
     webEntryRoot.render(
       <AppErrorBoundary key={`home-only-${workspaceKey}`}>
-        <ZCodeIntlProvider>
+        <ZodyIntlProvider>
           <Root
             services={createHomeOnlyWebRemoteControlServices()}
             platform={createWebPlatform({
@@ -1908,7 +1751,7 @@ async function startGatewaySession(
                   const parsed = sessionCreateTelemetrySchema.safeParse(event);
                   if (parsed.success)
                     transport.sendPayload({
-                      zcode_type: "telemetry-report",
+                      zody_type: "telemetry-report",
                       event: parsed.data,
                     });
                 },
@@ -1920,9 +1763,7 @@ async function startGatewaySession(
             initialWebRemoteControlMobileNavigationIntent={undefined}
             webRemoteControlTerminalTransportState={terminalTransportState}
             webRemoteControlMobileConnectionSettings={mobileConnectionSettings}
-            initialWorkspaceLoadingFallback={
-              <WebRemoteControlLoadingScreen state="paired" />
-            }
+            initialWorkspaceLoadingFallback={<WebRemoteControlLoadingScreen state="paired" />}
             restoreSession={false}
             allowOpenWorkspace={false}
             webRemoteControlWorkspaceSwitcher={{
@@ -1937,16 +1778,9 @@ async function startGatewaySession(
               },
               startDraft: async (nextWorkspaceKey, options) => {
                 const initialNavigationIntent = options?.mobileNavigationIntent;
-                const result = await openWorkspaceBridge(
-                  nextWorkspaceKey,
-                  undefined,
-                );
+                const result = await openWorkspaceBridge(nextWorkspaceKey, undefined);
                 await updateMobileViewState(result.bridge.workspaceKey);
-                renderExternalRelayRoot(
-                  result.services,
-                  result.bridge,
-                  initialNavigationIntent,
-                );
+                renderExternalRelayRoot(result.services, result.bridge, initialNavigationIntent);
               },
               reconnectWorkspace,
               updateMobileViewState,
@@ -1957,7 +1791,7 @@ async function startGatewaySession(
             allowRemoteWorkspace={false}
             initialWebRemoteControlWorkspaceList={initialResult}
           />
-        </ZCodeIntlProvider>
+        </ZodyIntlProvider>
       </AppErrorBoundary>,
     );
   };
@@ -1990,86 +1824,80 @@ async function startGatewaySession(
         recentProjects: [],
       };
       webEntryRoot.render(
-        <ZCodeIntlProvider>
+        <ZodyIntlProvider>
           {/* 空态页头部 ThemeMenu 需要 store 上下文；修复 A-MO-01 的 StartPage 白屏崩溃。 */}
           <WebRemoteControlStandaloneStoreProvider>
-          <WebRemoteControlMobileStartPage
-            desktopWindowState={recent.desktopWindowState}
-            recentProjects={recent.recentProjects}
-            openingProjectId={openingProjectId}
-            openingWindow={openingWindow}
-            error={error}
-            onOpenRecentProject={(projectId) => {
-              if (openingProjectId || openingWindow) {
-                return;
-              }
-              openingProjectId = projectId;
-              error = null;
-              render();
-              void (async () => {
-                try {
-                  await requestOpenRecentProject(projectId);
-                } catch (openError) {
-                  error =
-                    openError instanceof Error
-                      ? openError.message
-                      : String(openError);
-                } finally {
-                  openingProjectId = null;
-                  // 打开成功后桌面会推送 workspace 列表；这里也主动 bootstrap 一次，
-                  // 避免列表推送晚于响应时停留在空态。失败时保留错误提示，不重建页面。
-                  if (!error) {
-                    void bootstrapPairedSession?.().catch((bootstrapError) => {
-                      error =
-                        bootstrapError instanceof Error
-                          ? bootstrapError.message
-                          : String(bootstrapError);
-                      render();
-                    });
-                  }
-                  render();
+            <WebRemoteControlMobileStartPage
+              desktopWindowState={recent.desktopWindowState}
+              recentProjects={recent.recentProjects}
+              openingProjectId={openingProjectId}
+              openingWindow={openingWindow}
+              error={error}
+              onOpenRecentProject={(projectId) => {
+                if (openingProjectId || openingWindow) {
+                  return;
                 }
-              })();
-            }}
-            onOpenDesktopWindow={() => {
-              if (openingProjectId || openingWindow) {
-                return;
-              }
-              openingWindow = true;
-              error = null;
-              render();
-              void (async () => {
-                try {
-                  await requestOpenDesktopWindow();
-                } catch (openError) {
-                  error =
-                    openError instanceof Error
-                      ? openError.message
-                      : String(openError);
-                } finally {
-                  openingWindow = false;
-                  // 新窗口的 tab 恢复是异步的，等 workspace-list-updated 再进入任务首页。
-                  render();
-                }
-              })();
-            }}
-            onOpenSettings={() => context.requestReturnShell("settings")}
-            openOtherProject={
-              (negotiatedAppProtocol ?? 1) >= 4
-                ? {
-                    listDirectory: mobileDirectoryList,
-                    openWorkspacePath: requestOpenWorkspacePath,
-                    onOpened: async () => {
-                      // 与最近项目打开同一条离开空态的路径：聚合列表出现 workspace 后
-                      // 既有订阅会重新 bootstrap；这里主动触发一次加速收敛。
-                      await bootstrapPairedSession?.();
-                    },
+                openingProjectId = projectId;
+                error = null;
+                render();
+                void (async () => {
+                  try {
+                    await requestOpenRecentProject(projectId);
+                  } catch (openError) {
+                    error = openError instanceof Error ? openError.message : String(openError);
+                  } finally {
+                    openingProjectId = null;
+                    // 打开成功后桌面会推送 workspace 列表；这里也主动 bootstrap 一次，
+                    // 避免列表推送晚于响应时停留在空态。失败时保留错误提示，不重建页面。
+                    if (!error) {
+                      void bootstrapPairedSession?.().catch((bootstrapError) => {
+                        error =
+                          bootstrapError instanceof Error
+                            ? bootstrapError.message
+                            : String(bootstrapError);
+                        render();
+                      });
+                    }
+                    render();
                   }
-                : undefined
-            }
-          />
+                })();
+              }}
+              onOpenDesktopWindow={() => {
+                if (openingProjectId || openingWindow) {
+                  return;
+                }
+                openingWindow = true;
+                error = null;
+                render();
+                void (async () => {
+                  try {
+                    await requestOpenDesktopWindow();
+                  } catch (openError) {
+                    error = openError instanceof Error ? openError.message : String(openError);
+                  } finally {
+                    openingWindow = false;
+                    // 新窗口的 tab 恢复是异步的，等 workspace-list-updated 再进入任务首页。
+                    render();
+                  }
+                })();
+              }}
+              onOpenSettings={() => context.requestReturnShell("settings")}
+              openOtherProject={
+                (negotiatedAppProtocol ?? 1) >= 4
+                  ? {
+                      listDirectory: mobileDirectoryList,
+                      openWorkspacePath: requestOpenWorkspacePath,
+                      onOpened: async () => {
+                        // 与最近项目打开同一条离开空态的路径：聚合列表出现 workspace 后
+                        // 既有订阅会重新 bootstrap；这里主动触发一次加速收敛。
+                        await bootstrapPairedSession?.();
+                      },
+                    }
+                  : undefined
+              }
+            />
           </WebRemoteControlStandaloneStoreProvider>
-        </ZCodeIntlProvider>,
+        </ZodyIntlProvider>,
       );
     };
 
@@ -2077,25 +1905,21 @@ async function startGatewaySession(
     disposeStartPageWorkspaceSubscription?.();
     disposeStartPageRecentSubscription?.();
     // 最近项目和窗口状态由桌面主动推送；空态页面需要跟着刷新。
-    disposeStartPageRecentSubscription = subscribeRecentProjectsUpdates(() =>
-      render(),
-    );
+    disposeStartPageRecentSubscription = subscribeRecentProjectsUpdates(() => render());
     // 窗口恢复/最近项目打开后，桌面会推送聚合列表；出现 workspace 就离开空态。
-    disposeStartPageWorkspaceSubscription = subscribeWorkspaceListUpdates(
-      (next) => {
-        if (terminated || next.workspaces.length === 0) {
-          return;
-        }
-        disposeStartPageWorkspaceSubscription?.();
-        disposeStartPageWorkspaceSubscription = undefined;
-        disposeStartPageRecentSubscription?.();
-        disposeStartPageRecentSubscription = undefined;
-        renderStartPageIfActive = undefined;
-        void bootstrapPairedSession?.().catch((bootstrapError) => {
-          renderBootstrapError(bootstrapError);
-        });
-      },
-    );
+    disposeStartPageWorkspaceSubscription = subscribeWorkspaceListUpdates((next) => {
+      if (terminated || next.workspaces.length === 0) {
+        return;
+      }
+      disposeStartPageWorkspaceSubscription?.();
+      disposeStartPageWorkspaceSubscription = undefined;
+      disposeStartPageRecentSubscription?.();
+      disposeStartPageRecentSubscription = undefined;
+      renderStartPageIfActive = undefined;
+      void bootstrapPairedSession?.().catch((bootstrapError) => {
+        renderBootstrapError(bootstrapError);
+      });
+    });
     render();
   };
 
@@ -2113,8 +1937,7 @@ async function startGatewaySession(
         backendId: gatewayConfig.backendId,
         credential: gatewayConfig.credential,
         platform: context.platform.mobileNotifications,
-        isCurrent: () =>
-          !terminated && subscriptionGeneration === connectionGeneration,
+        isCurrent: () => !terminated && subscriptionGeneration === connectionGeneration,
       }).catch(() => {});
     }
     if (bootstrapResult.workspaces.length === 0) {
@@ -2128,8 +1951,7 @@ async function startGatewaySession(
     const preferredWorkspace = options?.preferredWorkspaceKey
       ? bootstrapResult.workspaces.find(
           (workspace) =>
-            resolveWebRemoteControlWorkspaceKey(workspace) ===
-            options.preferredWorkspaceKey,
+            resolveWebRemoteControlWorkspaceKey(workspace) === options.preferredWorkspaceKey,
         )
       : undefined;
     const selectedWorkspace = preferredWorkspace
@@ -2138,10 +1960,7 @@ async function startGatewaySession(
           taskId: options?.preferredTaskId,
           canBridge:
             preferredWorkspace.kind !== "remote" ||
-            Boolean(
-              preferredWorkspace.workspaceIdentity &&
-              preferredWorkspace.remoteSessionId,
-            ),
+            Boolean(preferredWorkspace.workspaceIdentity && preferredWorkspace.remoteSessionId),
         }
       : resolveWebRemoteControlInitialWorkspaceSelection(bootstrapResult);
     if (!selectedWorkspace) {
@@ -2202,15 +2021,13 @@ async function startGatewaySession(
 
   // T6.2：Android 壳按 Activity ON_START/ON_STOP 派发前后台。复用 document 事件的同一套
   // suspended 状态机，避免两路事件各自恢复导致重复建连；后台暂停连接，回前台走完整恢复。
-  const disposeNativeAppLifecycle = context.platform.onAppLifecycleChange?.(
-    (state) => {
-      if (state === "background") {
-        lifecycle.suspend();
-        return;
-      }
-      lifecycle.recover("resume");
-    },
-  );
+  const disposeNativeAppLifecycle = context.platform.onAppLifecycleChange?.((state) => {
+    if (state === "background") {
+      lifecycle.suspend();
+      return;
+    }
+    lifecycle.recover("resume");
+  });
 
   disposeSession = () => {
     if (disposed) {
@@ -2222,9 +2039,7 @@ async function startGatewaySession(
     notificationServices = undefined;
     renderCurrentExternalRelayRoot = undefined;
     notificationViewGeneration += 1;
-    void context.platform.mobileNotifications
-      ?.setActiveTarget?.(null)
-      .catch(() => {});
+    void context.platform.mobileNotifications?.setActiveTarget?.(null).catch(() => {});
     notificationMounted = undefined;
     disposeNativeNotification?.();
     nativeClickQueue.dispose();

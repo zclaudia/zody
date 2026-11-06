@@ -7,10 +7,8 @@
 
 ## 上游维护
 
-- 上游审查与移植遵循 [定期审查、按需合入规则](docs/fork/upstream-sync-policy.md)，进度登记在 [审查与移植台账](docs/fork/upstream-review-ledger.md)。
-- 保持 Zody 独立主线；上游新版本纳入审查，持续活跃时每周集中检查，严重缺陷及时评估。按功能裁决和移植，不默认整版合并或 rebase 主线。
-- 分开记录比较起点、完整审查游标和已接入/已发布功能；抽样探索不能推进完整游标，相似入口或同名模块不能直接判为等价。
-- 移植先更新领域 spec 和验收场景，保留来源 SHA/路径、适配理由和真实验证；已删除业务、身份与状态所有者边界继续以本仓现行规则为准。
+- Zody 独立发展，不再常规审查或移植上游；按需评估安全修复，保留来源 SHA、路径、适配理由与验证。
+- 按 [上游维护规则](docs/fork/upstream-sync-policy.md) 执行；不默认整版合并或 rebase。
 
 ## 命令与仓库结构
 
@@ -38,7 +36,7 @@
 - `packages/ui`：共享 React 组件、hooks 与 Zustand store。
 - `packages/services`：业务服务；`packages/rpc`：RPC 框架。
 - `packages/shared`：共享协议与类型；`packages/client`：Agent 客户端 SDK。
-- `apps/zcode-cli`：Agent CLI 与运行时。
+- `apps/zody-cli`：Agent CLI 与运行时。
 - `CONTEXT.md`：插件商店领域词汇；修改相关 UI 前阅读。
 - `DESIGN.md`：UI 设计规范；修改 UI 前阅读。
 
@@ -63,7 +61,7 @@
 
 ## 进程、协议与远程控制
 
-- Desktop app 通过 stdio 与 Agent 通信。协议改动同步更新 `packages/shared/src/zcode-protocol/index.ts`，提供严格类型与运行时校验。
+- Desktop app 通过 stdio 与 Agent 通信。协议改动同步更新 `packages/shared/src/zody-protocol/index.ts`，提供严格类型与运行时校验。
 - Main 负责窗口、原生操作、进程调度和消息转发，不承载 task/session 业务状态。
 - 每个窗口使用一个 window-scoped Local Host；本地 workspace 共享该 Host。远程 workspace 由窗口内的连接注册表管理，不另建 Desktop Remote Host。
 - 手机远控连接桌面已有 Host attachment，复用会话运行时；不为手机另起 Agent、Local Host 或远程会话。

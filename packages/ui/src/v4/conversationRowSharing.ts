@@ -4,7 +4,7 @@
 // snapshot 之间零共享；SessionPane 闭包链又会留住上百份历史 snapshot，同一个 200KB
 // 工具 inputText 因此在 heap 里存了一百多份。这里在 UI store 层把“值深相等”的部分换回
 // 旧引用，只复用身份、不改语义，所以不进 @zcode/shared 的 apply（客户端 apply 不加语义分支）。
-import type { ConversationRow } from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationRow } from "@zody/shared/zody-protocol-v4";
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (value === null || typeof value !== "object") return false;

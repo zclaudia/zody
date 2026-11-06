@@ -28,11 +28,11 @@ describe("desktop e2e reporting lifecycle", () => {
   it("compacts completed process coverage after each case instead of waiting for worker exit", async () => {
     const artifactsDir = await createArtifactsDir();
     const previous = {
-      coverage: process.env.ZCODE_E2E_COVERAGE,
-      artifacts: process.env.ZCODE_E2E_ARTIFACT_DIR,
+      coverage: process.env.ZODY_E2E_COVERAGE,
+      artifacts: process.env.ZODY_E2E_ARTIFACT_DIR,
     };
-    process.env.ZCODE_E2E_COVERAGE = "1";
-    process.env.ZCODE_E2E_ARTIFACT_DIR = artifactsDir;
+    process.env.ZODY_E2E_COVERAGE = "1";
+    process.env.ZODY_E2E_ARTIFACT_DIR = artifactsDir;
     try {
       const reporter = createE2EReporter({
         containerE2E: false,
@@ -55,8 +55,8 @@ describe("desktop e2e reporting lifecycle", () => {
       expect(result.passed).toBe(true);
     } finally {
       for (const [name, value] of [
-        ["ZCODE_E2E_COVERAGE", previous.coverage],
-        ["ZCODE_E2E_ARTIFACT_DIR", previous.artifacts],
+        ["ZODY_E2E_COVERAGE", previous.coverage],
+        ["ZODY_E2E_ARTIFACT_DIR", previous.artifacts],
       ]) {
         if (value === undefined) delete process.env[name!];
         else process.env[name!] = value;
@@ -66,7 +66,7 @@ describe("desktop e2e reporting lifecycle", () => {
 
   it("appends lifecycle ndjson and aggregates by phase", async () => {
     const artifactsDir = await createArtifactsDir();
-    process.env.ZCODE_E2E_ARTIFACT_DIR = artifactsDir;
+    process.env.ZODY_E2E_ARTIFACT_DIR = artifactsDir;
     const reporter = createE2EReporter({
       containerE2E: false,
       desktopDir: artifactsDir,
@@ -151,7 +151,7 @@ describe("desktop e2e reporting lifecycle", () => {
 
   it("keeps lifecycle events even when summary is never written", async () => {
     const artifactsDir = await createArtifactsDir();
-    process.env.ZCODE_E2E_ARTIFACT_DIR = artifactsDir;
+    process.env.ZODY_E2E_ARTIFACT_DIR = artifactsDir;
     const reporter = createE2EReporter({
       containerE2E: false,
       desktopDir: artifactsDir,
@@ -190,7 +190,7 @@ describe("desktop e2e reporting lifecycle", () => {
 
   it("records bounded failure-artifact collection errors without replacing the test result", async () => {
     const artifactsDir = await createArtifactsDir();
-    process.env.ZCODE_E2E_ARTIFACT_DIR = artifactsDir;
+    process.env.ZODY_E2E_ARTIFACT_DIR = artifactsDir;
     const reporter = createE2EReporter({
       containerE2E: false,
       desktopDir: artifactsDir,

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Laptop, LoaderCircle, RefreshCw, ShieldAlert } from "lucide-react";
-import type { WebRemoteControlFailure } from "@zcode/shared";
+import type { WebRemoteControlFailure } from "@zody/shared";
 import {
   isRemoteAccessMobileBackendSelectable,
   type RemoteAccessMobileBackendOption,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 /**
  * 选电脑页（T4.2）。
@@ -47,7 +47,7 @@ export function WebRemoteControlMobileBackendPicker({
   onSelect,
   onBackToSettings,
 }: WebRemoteControlMobileBackendPickerProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const defaultBackendId = useMemo(() => {
     if (selectedBackendId) {
       return selectedBackendId;

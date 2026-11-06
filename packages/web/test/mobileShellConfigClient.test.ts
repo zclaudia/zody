@@ -4,7 +4,7 @@ import {
   type MobileShellBridge,
   type MobileShellConfig,
   type PlatformSecureStore,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   MOBILE_SHELL_DEVELOPMENT_CONFIG_REVISION_KEY,
   MobileShellBridgeError,
@@ -52,9 +52,7 @@ function createMemoryDevelopmentStorage(
 }
 
 function readHandoff(storage: MobileRemoteDevelopmentStorage) {
-  const raw = storage.getItem(
-    `${MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX}remote-handoff`,
-  );
+  const raw = storage.getItem(`${MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX}remote-handoff`);
   return raw ? (JSON.parse(raw) as Record<string, unknown>) : null;
 }
 

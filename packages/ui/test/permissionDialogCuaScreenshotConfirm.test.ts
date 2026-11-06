@@ -8,9 +8,9 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ZCodePermissionOption, ZCodePermissionRequest } from "@zcode/shared";
+import type { ZodyPermissionOption, ZodyPermissionRequest } from "@zody/shared";
 import { PermissionDialog } from "../src/PermissionDialog.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import {
   getCuaScreenshotConfirmOptionLabelMessageId,
   getCuaScreenshotConfirmTarget,
@@ -21,7 +21,7 @@ const WORKSPACE_PATH = "/Users/dev/ZCodeProject/demo";
 const CUA_REASON = "Screenshot TextEdit window";
 
 /** v4 投影后的标准选项集：allowOnce + allowAlways（项目规则）+ deny。 */
-function standardCuaScreenshotConfirmOptions(): ZCodePermissionOption[] {
+function standardCuaScreenshotConfirmOptions(): ZodyPermissionOption[] {
   return [
     {
       optionId: "allowOnce",
@@ -54,8 +54,8 @@ function standardCuaScreenshotConfirmOptions(): ZCodePermissionOption[] {
 }
 
 function createCuaScreenshotConfirmRequest(
-  overrides: Partial<ZCodePermissionRequest> = {},
-): ZCodePermissionRequest {
+  overrides: Partial<ZodyPermissionRequest> = {},
+): ZodyPermissionRequest {
   return {
     type: "permission_request",
     taskId: "task-cua-confirm",
@@ -111,13 +111,13 @@ function installAnimationFrameController() {
 }
 
 function renderPermissionDialog(
-  request: ZCodePermissionRequest,
-  onRespond: (requestId: string, option: ZCodePermissionOption) => void,
+  request: ZodyPermissionRequest,
+  onRespond: (requestId: string, option: ZodyPermissionOption) => void,
 ) {
   const animationFrame = installAnimationFrameController();
   const view = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(PermissionDialog, {
         request,

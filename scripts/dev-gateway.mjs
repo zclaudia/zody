@@ -2,7 +2,7 @@
 /**
  * T0.2 本地 gateway 测试环境：给集成测试（T3.5）、桌面 E2E 和日常开发提供可复现的 zclaudia-gateway。
  *
- * 1. 起实例：设置 `ZCODE_GATEWAY_IT_URL` 时直接使用该已有实例；否则用 zclaudia-gateway 仓库的
+ * 1. 起实例：设置 `ZODY_GATEWAY_IT_URL` 时直接使用该已有实例；否则用 zclaudia-gateway 仓库的
  *    `docker-compose.yml` 起本地实例（目录用 `ZCLAUDIA_GATEWAY_DIR` 覆盖，默认 `../zclaudia-gateway`）。
  * 2. 签凭证：用管理令牌在 `zody` namespace 下签发一张 backend 凭证（桌面）和一张 device 凭证（手机）。
  *    读回本地配置里仍然有效的凭证直接复用，所以脚本可以重复执行，不会越签越多。
@@ -17,12 +17,12 @@
  *
  * 环境变量：
  *   ZCLAUDIA_GATEWAY_DIR                 zclaudia-gateway 检出目录（默认 ../zclaudia-gateway）
- *   ZCODE_GATEWAY_IT_URL                 已有实例地址；设置后不启动 docker
- *   ZCODE_GATEWAY_IT_ADMIN_TOKEN         已有实例的管理令牌（优先）
+ *   ZODY_GATEWAY_IT_URL                 已有实例地址；设置后不启动 docker
+ *   ZODY_GATEWAY_IT_ADMIN_TOKEN         已有实例的管理令牌（优先）
  *   GATEWAY_ADMIN_TOKEN                  管理令牌；本地实例模式下也用于启动 docker compose
  *   GATEWAY_PORT                         本地实例端口（默认取网关仓库 .env，再默认 3200）
- *   ZCODE_GATEWAY_NAMESPACE              凭证 namespace（默认 zody，与 DEFAULT_REMOTE_ACCESS_NAMESPACE 一致）
- *   ZCODE_GATEWAY_ENV_FILE               本地配置写入路径（默认 .env.gateway.local；测试与多 worktree 并行用）
+ *   ZODY_GATEWAY_NAMESPACE              凭证 namespace（默认 zody，与 DEFAULT_REMOTE_ACCESS_NAMESPACE 一致）
+ *   ZODY_GATEWAY_ENV_FILE               本地配置写入路径（默认 .env.gateway.local；测试与多 worktree 并行用）
  */
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -33,7 +33,7 @@ import process from "node:process";
 import { parseEnv } from "node:util";
 
 const repoRoot = resolve(import.meta.dirname, "..");
-const envFileOverride = process.env.ZCODE_GATEWAY_ENV_FILE?.trim();
+const envFileOverride = process.env.ZODY_GATEWAY_ENV_FILE?.trim();
 const stateFile = envFileOverride
   ? resolve(envFileOverride)
   : resolve(repoRoot, ".env.gateway.local");
@@ -110,26 +110,26 @@ async function credentialStatus(url, token) {
   return result.status;
 }
 
-const externalUrl = envValue("ZCODE_GATEWAY_IT_URL");
+const externalUrl = envValue("ZODY_GATEWAY_IT_URL");
 const gatewayDir = envValue("ZCLAUDIA_GATEWAY_DIR") ?? resolve(repoRoot, "..", "zclaudia-gateway");
 const composeFile = resolve(gatewayDir, "docker-compose.yml");
 const gatewayEnvFile = externalUrl ? {} : await readEnvFile(resolve(gatewayDir, ".env"));
 const port = envValue("GATEWAY_PORT") ?? gatewayEnvFile.GATEWAY_PORT ?? "3200";
 const url = externalUrl ? externalUrl.replace(/\/+$/, "") : `http://127.0.0.1:${port}`;
-const namespace = envValue("ZCODE_GATEWAY_NAMESPACE") ?? "zody";
+const namespace = envValue("ZODY_GATEWAY_NAMESPACE") ?? "zody";
 const stored = await readEnvFile(stateFile);
-const storedMatchesUrl = stored.ZCODE_GATEWAY_IT_URL === url;
+const storedMatchesUrl = stored.ZODY_GATEWAY_IT_URL === url;
 
 // 管理令牌优先级：命令行环境 > 网关仓库 .env > 上一次写入的本地配置 > 新生成（仅本地实例模式）。
 let adminToken =
-  envValue("ZCODE_GATEWAY_IT_ADMIN_TOKEN") ??
+  envValue("ZODY_GATEWAY_IT_ADMIN_TOKEN") ??
   envValue("GATEWAY_ADMIN_TOKEN") ??
   gatewayEnvFile.GATEWAY_ADMIN_TOKEN;
-if (!adminToken && storedMatchesUrl) adminToken = stored.ZCODE_GATEWAY_IT_ADMIN_TOKEN;
+if (!adminToken && storedMatchesUrl) adminToken = stored.ZODY_GATEWAY_IT_ADMIN_TOKEN;
 if (!adminToken) {
   if (externalUrl) {
     fail(
-      `使用已有实例 ${url} 需要管理令牌才能签发凭证，请设置 ZCODE_GATEWAY_IT_ADMIN_TOKEN 或 GATEWAY_ADMIN_TOKEN。`,
+      `使用已有实例 ${url} 需要管理令牌才能签发凭证，请设置 ZODY_GATEWAY_IT_ADMIN_TOKEN 或 GATEWAY_ADMIN_TOKEN。`,
     );
   }
   adminToken = randomBytes(24).toString("hex");
@@ -139,11 +139,11 @@ if (!adminToken) {
 if (await isHealthy(url)) {
   log(`${url} 上已有 gateway 实例响应 /health${externalUrl ? "" : "，跳过 docker compose"}。`);
 } else if (externalUrl) {
-  fail(`ZCODE_GATEWAY_IT_URL 指向的实例 ${url} 无响应（/health 探测失败）。`);
+  fail(`ZODY_GATEWAY_IT_URL 指向的实例 ${url} 无响应（/health 探测失败）。`);
 } else {
   if (!existsSync(composeFile)) {
     fail(
-      `找不到 ${composeFile}；请用 ZCLAUDIA_GATEWAY_DIR 指向 zclaudia-gateway 检出目录，或用 ZCODE_GATEWAY_IT_URL 指向已有实例。`,
+      `找不到 ${composeFile}；请用 ZCLAUDIA_GATEWAY_DIR 指向 zclaudia-gateway 检出目录，或用 ZODY_GATEWAY_IT_URL 指向已有实例。`,
     );
   }
   log(`用 docker compose 启动本地 gateway（首次构建镜像可能需要几分钟）：${composeFile}`);
@@ -155,7 +155,7 @@ if (await isHealthy(url)) {
     });
   } catch (error) {
     if (error.code === "ENOENT") {
-      fail("找不到 docker 命令；请安装 Docker，或用 ZCODE_GATEWAY_IT_URL 指向已有实例。");
+      fail("找不到 docker 命令；请安装 Docker，或用 ZODY_GATEWAY_IT_URL 指向已有实例。");
     }
     throw error;
   }
@@ -173,7 +173,7 @@ async function issueCredential(type, name) {
     const code = result.body?.error?.code ?? `HTTP ${result.status}`;
     if (result.status === 401 || result.status === 403) {
       const hint = externalUrl
-        ? "请确认 ZCODE_GATEWAY_IT_ADMIN_TOKEN 与实例的 GATEWAY_ADMIN_TOKEN 一致。"
+        ? "请确认 ZODY_GATEWAY_IT_ADMIN_TOKEN 与实例的 GATEWAY_ADMIN_TOKEN 一致。"
         : `本机已运行的实例可能用了另一个管理令牌：设置 GATEWAY_ADMIN_TOKEN，或先 \`docker compose -f ${composeFile} down\` 停掉旧实例。`;
       fail(`管理令牌被拒绝（${code}）。${hint}`);
     }
@@ -203,23 +203,23 @@ async function ensureCredential(type, name, tokenKey, idKey) {
   return issueCredential(type, name);
 }
 
-if (!storedMatchesUrl && stored.ZCODE_GATEWAY_IT_URL) {
+if (!storedMatchesUrl && stored.ZODY_GATEWAY_IT_URL) {
   log(
-    `本地配置里的地址是 ${stored.ZCODE_GATEWAY_IT_URL}，与当前 ${url} 不同，按当前地址重新签发凭证。`,
+    `本地配置里的地址是 ${stored.ZODY_GATEWAY_IT_URL}，与当前 ${url} 不同，按当前地址重新签发凭证。`,
   );
 }
 
 const backend = await ensureCredential(
   "backend",
   backendCredentialName,
-  "ZCODE_GATEWAY_BACKEND_CREDENTIAL",
-  "ZCODE_GATEWAY_BACKEND_CREDENTIAL_ID",
+  "ZODY_GATEWAY_BACKEND_CREDENTIAL",
+  "ZODY_GATEWAY_BACKEND_CREDENTIAL_ID",
 );
 const device = await ensureCredential(
   "device",
   deviceCredentialName,
-  "ZCODE_GATEWAY_DEVICE_CREDENTIAL",
-  "ZCODE_GATEWAY_DEVICE_CREDENTIAL_ID",
+  "ZODY_GATEWAY_DEVICE_CREDENTIAL",
+  "ZODY_GATEWAY_DEVICE_CREDENTIAL_ID",
 );
 
 /** 用单引号包裹值；引号本身和换行会破坏 dotenv 与 `source` 的解析，凭证值不该出现这些字符。 */
@@ -231,13 +231,13 @@ function quote(value) {
 }
 
 const values = {
-  ZCODE_GATEWAY_IT_URL: url,
-  ZCODE_GATEWAY_IT_ADMIN_TOKEN: adminToken,
-  ZCODE_GATEWAY_NAMESPACE: namespace,
-  ZCODE_GATEWAY_BACKEND_CREDENTIAL: backend.token,
-  ZCODE_GATEWAY_BACKEND_CREDENTIAL_ID: backend.id,
-  ZCODE_GATEWAY_DEVICE_CREDENTIAL: device.token,
-  ZCODE_GATEWAY_DEVICE_CREDENTIAL_ID: device.id,
+  ZODY_GATEWAY_IT_URL: url,
+  ZODY_GATEWAY_IT_ADMIN_TOKEN: adminToken,
+  ZODY_GATEWAY_NAMESPACE: namespace,
+  ZODY_GATEWAY_BACKEND_CREDENTIAL: backend.token,
+  ZODY_GATEWAY_BACKEND_CREDENTIAL_ID: backend.id,
+  ZODY_GATEWAY_DEVICE_CREDENTIAL: device.token,
+  ZODY_GATEWAY_DEVICE_CREDENTIAL_ID: device.id,
 };
 
 const lines = [

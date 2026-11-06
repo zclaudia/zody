@@ -1,7 +1,7 @@
 import { app } from "electron";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { resolveLocalHelpAppConfig, type HelpAppConfig } from "@zcode/shared";
+import { resolveLocalHelpAppConfig, type HelpAppConfig } from "@zody/shared";
 
 /**
  * 内置 config/default.json 的解析路径：正式包中 electron-builder 把它放在

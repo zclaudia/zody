@@ -35,8 +35,8 @@ describe("desktop renderer Vite dependency aliases", () => {
   (isWindows ? it.skip : it)(
     "injects the selected ZCode endpoint origin into renderer env",
     async () => {
-      vi.stubEnv("ZCODE_ENV", "test");
-      vi.stubEnv("ZCODE_BASE_URL", "");
+      vi.stubEnv("ZODY_ENV", "test");
+      vi.stubEnv("ZODY_BASE_URL", "");
       const desktopRoot = resolve(import.meta.dirname, "..");
       const configFile = resolve(desktopRoot, "vite.config.ts");
       const result = await loadConfigFromFile(
@@ -55,13 +55,13 @@ describe("desktop renderer Vite dependency aliases", () => {
         // fork（F3.1）：test 环境未显式配置时使用 example.invalid 占位，不再指向官方域名。
         "import.meta.env.VITE_ZCODE_BASE_URL": JSON.stringify("https://example.invalid"),
         "import.meta.env.VITE_ZCODE_ENDPOINT_ORIGIN": JSON.stringify("https://example.invalid"),
-        __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__: JSON.stringify(false),
+        __ZODY_LOCAL_DEVELOPMENT_RUNTIME__: JSON.stringify(false),
       });
     },
   );
 
   it("marks non-production renderer builds as local development runtime", async () => {
-    vi.stubEnv("ZCODE_ENV", "production");
+    vi.stubEnv("ZODY_ENV", "production");
     const desktopRoot = resolve(import.meta.dirname, "..");
     const configFile = resolve(desktopRoot, "vite.config.ts");
     const result = await loadConfigFromFile(
@@ -77,10 +77,10 @@ describe("desktop renderer Vite dependency aliases", () => {
     );
 
     expect(result?.config.define).toMatchObject({
-      __ZCODE_ENV__: JSON.stringify("production"),
-      __ZCODE_PRODUCT_FLAVOR__: JSON.stringify("production"),
-      __ZCODE_LOCAL_DEVELOPMENT_RUNTIME__: JSON.stringify(true),
-      "import.meta.env.VITE_ZCODE_E2E_STORE_BRIDGE": JSON.stringify(""),
+      __ZODY_ENV__: JSON.stringify("production"),
+      __ZODY_PRODUCT_FLAVOR__: JSON.stringify("production"),
+      __ZODY_LOCAL_DEVELOPMENT_RUNTIME__: JSON.stringify(true),
+      "import.meta.env.VITE_ZODY_E2E_STORE_BRIDGE": JSON.stringify(""),
     });
   });
 
@@ -105,8 +105,8 @@ describe("desktop renderer Vite dependency aliases", () => {
   });
 
   it("injects the E2E store bridge only from the runner flag", async () => {
-    vi.stubEnv("ZCODE_ENV", "test");
-    vi.stubEnv("VITE_ZCODE_E2E_STORE_BRIDGE", "1");
+    vi.stubEnv("ZODY_ENV", "test");
+    vi.stubEnv("VITE_ZODY_E2E_STORE_BRIDGE", "1");
     const desktopRoot = resolve(import.meta.dirname, "..");
     const configFile = resolve(desktopRoot, "vite.config.ts");
     const result = await loadConfigFromFile(
@@ -122,15 +122,15 @@ describe("desktop renderer Vite dependency aliases", () => {
     );
 
     expect(result?.config.define).toMatchObject({
-      __ZCODE_ENV__: JSON.stringify("test"),
-      __ZCODE_PRODUCT_FLAVOR__: JSON.stringify("preview"),
-      "import.meta.env.VITE_ZCODE_E2E_STORE_BRIDGE": JSON.stringify("1"),
+      __ZODY_ENV__: JSON.stringify("test"),
+      __ZODY_PRODUCT_FLAVOR__: JSON.stringify("preview"),
+      "import.meta.env.VITE_ZODY_E2E_STORE_BRIDGE": JSON.stringify("1"),
     });
   });
 
-  it("ZCODE_PREVIEW_IDENTITY=1 让生产后端的 renderer 编译成 Preview 身份", async () => {
-    vi.stubEnv("ZCODE_ENV", "production");
-    vi.stubEnv("ZCODE_PREVIEW_IDENTITY", "1");
+  it("ZODY_PREVIEW_IDENTITY=1 让生产后端的 renderer 编译成 Preview 身份", async () => {
+    vi.stubEnv("ZODY_ENV", "production");
+    vi.stubEnv("ZODY_PREVIEW_IDENTITY", "1");
     const desktopRoot = resolve(import.meta.dirname, "..");
     const configFile = resolve(desktopRoot, "vite.config.ts");
     const result = await loadConfigFromFile(
@@ -146,8 +146,8 @@ describe("desktop renderer Vite dependency aliases", () => {
     );
 
     expect(result?.config.define).toMatchObject({
-      __ZCODE_ENV__: JSON.stringify("production"),
-      __ZCODE_PRODUCT_FLAVOR__: JSON.stringify("preview"),
+      __ZODY_ENV__: JSON.stringify("production"),
+      __ZODY_PRODUCT_FLAVOR__: JSON.stringify("preview"),
     });
   });
 });

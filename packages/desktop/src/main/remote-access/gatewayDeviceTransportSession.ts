@@ -2,7 +2,7 @@ import {
   createWebRemoteControlChannelDataFrame,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { RemoteGatewayChannel } from "./remoteGatewayBackendTypes.js";
 import { measureUtf8Bytes, prepareOutboundPayload } from "./gatewayDeviceTransportSupport.js";
 import type {
@@ -52,7 +52,7 @@ export function sendGatewayDevicePayload(
   }
   const prepared = prepareOutboundPayload(payload, target.appProtocol);
   if (!prepared) {
-    host.logUnsupportedPayload(payload.zcode_type, target.appProtocol);
+    host.logUnsupportedPayload(payload.zody_type, target.appProtocol);
     return { kind: "unavailable" };
   }
   const json = JSON.stringify(createWebRemoteControlChannelDataFrame(prepared));
@@ -68,7 +68,7 @@ export function sendGatewayDevicePayload(
   try {
     target.channel.send(json);
   } catch (error) {
-    host.logSendFailure(payload.zcode_type, target.channel.channelId, error);
+    host.logSendFailure(payload.zody_type, target.channel.channelId, error);
     return { kind: "unavailable" };
   }
   return { kind: "sent", bytes };

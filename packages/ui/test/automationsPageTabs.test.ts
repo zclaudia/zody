@@ -5,8 +5,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { TID_AUTOMATIONS_PAGE_TAB, testId } from "@zcode/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { TID_AUTOMATIONS_PAGE_TAB, testId } from "@zody/shared";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   AutomationsPageTitleSwitch,
   type AutomationsPageTab,
@@ -19,7 +19,7 @@ import {
 function Harness({ initial = "automation" }: { initial?: AutomationsPageTab }) {
   const [tab, setTab] = useState<AutomationsPageTab>(initial);
   return createElement(
-    ZCodeIntlProvider,
+    ZodyIntlProvider,
     { initialLocale: "zh-CN" },
     createElement(AutomationsPageTitleSwitch, { value: tab, onValueChange: setTab }),
   );

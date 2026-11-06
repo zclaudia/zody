@@ -1,5 +1,5 @@
 /* eslint-disable max-lines -- 失败页中英文文案与按失败原因/upgrade 分派的渲染逻辑集中在一处，拆分会引入两套文案来源。 */
-import type { WebRemoteControlFailure, WebRemoteControlFailureReason } from "@zcode/shared";
+import type { WebRemoteControlFailure, WebRemoteControlFailureReason } from "@zody/shared";
 
 type WebRemoteControlScreenLocale = "zh-CN" | "en-US";
 

@@ -1,5 +1,5 @@
-import type { IFileService } from "@zcode/services";
-import type { FileStat, IPlatformService, SaveFileResult } from "@zcode/shared";
+import type { IFileService } from "@zody/services";
+import type { FileStat, IPlatformService, SaveFileResult } from "@zody/shared";
 
 export const MOBILE_FILE_SAVE_MAX_BYTES = 16 * 1024 * 1024;
 export const MOBILE_FILE_SAVE_RANGE_BYTES = 1024 * 1024;

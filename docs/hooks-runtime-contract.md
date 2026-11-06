@@ -261,3 +261,7 @@ Hooks 设置页必须在 desktop 和 Web UI 使用同一组件，并满足：
 完整窗口级 suite 使用 `HK-LC-01`、`HK-EF-01`、`HK-ST-01`、`HK-UP-01`，定义在
 `docs/testing/hooks-e2e-coverage-matrix.md`。其中父级取消保留在 core 的确定性 AbortSignal
 测试；窗口级验证 async command 真实启动/完成且其 stdout 决策不会反向改变已继续的事件。
+
+## 改名实施目标
+
+本文件描述的现有行为在全面改名时须遵守 [Zody 改名运行时契约](../specs/zody-rename-runtime-contract.md)；代际门禁、来源摘要和资源清理以该目标规格为准，尚未实现的行为不视为当前已发布。

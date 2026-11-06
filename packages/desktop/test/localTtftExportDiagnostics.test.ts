@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { once } from "node:events";
 import { expect, it } from "vitest";
 import { createLocalTtftExporter } from "../src/main/localTtftExporter.js";
-import type { LocalTtftRecord } from "@zcode/shared";
+import type { LocalTtftRecord } from "@zody/shared";
 
 it("最终 OTLP：根未结束也有阶段，重复乱序不重复样本，失败不进入成功分布", async () => {
   const receiver = spawn(
@@ -63,7 +63,9 @@ it("最终 OTLP：根未结束也有阶段，重复乱序不重复样本，失�
   type Data = {
     data: {
       resourceSpans?: Array<{
+        resource?: { attributes?: Array<{ key: string; value?: { stringValue?: string; intValue?: string } }> };
         scopeSpans: Array<{
+          scope?: { name?: string };
           spans: {
             name: string;
             spanId: string;
@@ -72,7 +74,9 @@ it("最终 OTLP：根未结束也有阶段，重复乱序不重复样本，失�
         }>;
       }>;
       resourceMetrics?: Array<{
+        resource?: { attributes?: Array<{ key: string; value?: { stringValue?: string; intValue?: string } }> };
         scopeMetrics: Array<{
+          scope?: { name?: string };
           metrics: { name: string; histogram?: { dataPoints: { count: string }[] } }[];
         }>;
       }>;
@@ -104,6 +108,22 @@ it("最终 OTLP：根未结束也有阶段，重复乱序不重复样本，失�
         timeout: 10000,
       })
       .toBe(true);
+    const records = await read();
+    const traceResources = records.flatMap((record) => record.data.resourceSpans ?? []);
+    const metricResources = records.flatMap((record) => record.data.resourceMetrics ?? []);
+    expect(traceResources.length).toBeGreaterThan(0);
+    expect(metricResources.length).toBeGreaterThan(0);
+    for (const resource of [...traceResources, ...metricResources]) {
+      const attributes = resource.resource?.attributes ?? [];
+      expect(attributes.find((attribute) => attribute.key === "service.name")?.value?.stringValue).toBe("zody-local-ttft");
+      expect(Number(attributes.find((attribute) => attribute.key === "zody.telemetry.schema_version")?.value?.intValue)).toBe(1);
+      expect(attributes.some((attribute) => attribute.key.startsWith("zcode."))).toBe(false);
+    }
+    const traceScopes = traceResources.flatMap((resource) => resource.scopeSpans).map((scope) => scope.scope?.name);
+    const metricScopes = metricResources.flatMap((resource) => resource.scopeMetrics).map((scope) => scope.scope?.name);
+    expect(traceScopes.every((name) => name === "@zody/local-ttft")).toBe(true);
+    expect(metricScopes.every((name) => name === "@zody/local-ttft")).toBe(true);
+    expect([...traceScopes, ...metricScopes]).not.toContain("@zcode/local-ttft");
     const exported = await spans();
     expect(exported.filter((span) => span.name === "local_ttft")).toHaveLength(1);
     const unexplained = exported
@@ -116,7 +136,7 @@ it("最终 OTLP：根未结束也有阶段，重复乱序不重复样本，失�
       .flatMap((r) => r.data.resourceMetrics ?? [])
       .flatMap((r) => r.scopeMetrics)
       .flatMap((r) => r.metrics)
-      .filter((m) => m.name === "zcode.local_ttft.duration");
+      .filter((m) => m.name === "zody.local_ttft.duration");
     expect(
       histograms
         .flatMap((h) => h.histogram?.dataPoints ?? [])

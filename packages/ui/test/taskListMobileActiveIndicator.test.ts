@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { MemoTaskItem as TaskItem } from "@/TaskListItem.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 
@@ -9,13 +9,13 @@ const { workspaceStateByPath } = vi.hoisted(() => ({
   workspaceStateByPath: new Map<string, unknown>(),
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", async () => {
-  const actual = await vi.importActual<typeof import("@/store/zcodeSessionStore.js")>(
-    "@/store/zcodeSessionStore.js",
+vi.mock("@/store/zodySessionStore.js", async () => {
+  const actual = await vi.importActual<typeof import("@/store/zodySessionStore.js")>(
+    "@/store/zodySessionStore.js",
   );
   return {
     ...actual,
-    useZCodeSessionStore: (selector: (state: { workspaces: Record<string, unknown> }) => unknown) =>
+    useZodySessionStore: (selector: (state: { workspaces: Record<string, unknown> }) => unknown) =>
       selector({ workspaces: Object.fromEntries(workspaceStateByPath) }),
   };
 });
@@ -37,7 +37,7 @@ beforeEach(() => {
   workspaceStateByPath.clear();
 });
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: "mobile-active-task",
     traceId: "trace-mobile-active-task",
@@ -87,7 +87,7 @@ function renderTaskItem({
   isMobileActive = true,
   legacyUnread = Boolean(task.unreadAt),
 }: {
-  task?: ZCodeTaskMeta;
+  task?: ZodyTaskMeta;
   isPinned?: boolean;
   isMobileActive?: boolean;
   legacyUnread?: boolean;

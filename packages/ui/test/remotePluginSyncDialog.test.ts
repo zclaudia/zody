@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type {
   PluginSyncCandidate,
   PluginSyncRemoteStatus,
-  ZCodePluginInfo,
-  ZCodePluginsOverviewResult,
-} from "@zcode/shared";
+  ZodyPluginInfo,
+  ZodyPluginsOverviewResult,
+} from "@zody/shared";
 import {
   buildMarketplaceRemotePluginStatuses,
   buildMarketplaceRemotePluginSyncCandidates,
@@ -40,13 +40,13 @@ function makeCandidate(
 }
 
 function makeOverview(
-  installed: ZCodePluginsOverviewResult["installedPlugins"],
-  source: ZCodePluginsOverviewResult["marketplaces"][number]["source"] = {
+  installed: ZodyPluginsOverviewResult["installedPlugins"],
+  source: ZodyPluginsOverviewResult["marketplaces"][number]["source"] = {
     source: "github",
     repo: "example/team-plugins",
     ref: "main",
   },
-): ZCodePluginsOverviewResult {
+): ZodyPluginsOverviewResult {
   return {
     marketplaces: [
       {
@@ -95,8 +95,8 @@ function makeMarketplaceRow(name: string): RemotePluginSyncRow {
 }
 
 function makePluginInfo(
-  overrides: Partial<ZCodePluginInfo>,
-): ZCodePluginInfo {
+  overrides: Partial<ZodyPluginInfo>,
+): ZodyPluginInfo {
   return {
     id: "formatter@team-market",
     name: "formatter",

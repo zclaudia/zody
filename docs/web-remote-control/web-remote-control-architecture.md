@@ -417,8 +417,8 @@ pnpm dev:mobile-remote
 ```
 
 `pnpm dev:gateway` 不会把凭证打印到 stdout，只输出写入的 `.env.gateway.local` 路径；脚本可重复
-执行，仍有效的凭证会复用。已有 gateway 实例时用 `ZCODE_GATEWAY_IT_URL` 和
-`ZCODE_GATEWAY_IT_ADMIN_TOKEN` 跳过 docker。
+执行，仍有效的凭证会复用。已有 gateway 实例时用 `ZODY_GATEWAY_IT_URL` 和
+`ZODY_GATEWAY_IT_ADMIN_TOKEN` 跳过 docker。
 
 手机浏览器开发模式从 Shell 入口 `http://localhost:5173/mobile-shell.html` 开始，在配对页填写
 本地 gateway 地址、namespace 和 `zgd_` 凭证；`openRemote` 后开发 handoff 进入
@@ -449,7 +449,7 @@ pnpm check:mobile-web-isolation
 
 ```bash
 # 真实 gateway 集成测试（环境缺失时跳过）
-ZCODE_GATEWAY_IT_URL=... ZCODE_GATEWAY_IT_ADMIN_TOKEN=... pnpm vitest run packages/desktop/test/mobileRemoteGatewayIntegration.test.ts
+ZODY_GATEWAY_IT_URL=... ZODY_GATEWAY_IT_ADMIN_TOKEN=... pnpm vitest run packages/desktop/test/mobileRemoteGatewayIntegration.test.ts
 
 # 两侧 transport / backend / 目录单测
 pnpm vitest run packages/desktop/test/gatewayDeviceTransport.test.ts \

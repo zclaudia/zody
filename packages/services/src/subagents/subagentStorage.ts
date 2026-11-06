@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
-import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { resolveProjectResourcePaths } from "@zody/shared/zody-paths";
 
 const HOME_PREFIX = "~/";
 
@@ -19,7 +19,7 @@ export function resolveUserHomeDir(options?: SubagentStorageOptions): string {
 }
 
 export async function resolveUserSubagentRoot(options?: SubagentStorageOptions): Promise<string> {
-  return join(await resolveZCodeStorageRoot(options), "agents");
+  return join(await resolveZodyStorageRoot(options), "agents");
 }
 
 export function resolveWorkspaceSubagentRoot(workspacePath: string): string {
@@ -31,17 +31,17 @@ export function resolveWorkspaceLegacySubagentRoot(workspacePath: string): strin
 }
 
 export async function resolveSubagentStateFile(options?: SubagentStorageOptions): Promise<string> {
-  return join(await resolveZCodeStorageRoot(options), "v2", "agents-state.json");
+  return join(await resolveZodyStorageRoot(options), "v2", "agents-state.json");
 }
 
-export async function resolveZCodeStorageRoot(options?: SubagentStorageOptions): Promise<string> {
+export async function resolveZodyStorageRoot(options?: SubagentStorageOptions): Promise<string> {
   const config = await readUserCliConfig(options);
   const storage = isObjectRecord(config.storage) ? config.storage : {};
   const storageDir =
     typeof storage.dir === "string" && storage.dir.trim().length > 0
       ? storage.dir.trim()
       : // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-        `~/${ZCODE_DATA_ROOT_DIR_NAME}`;
+        `~/${ZODY_DATA_ROOT_DIR_NAME}`;
   return resolveConfigPath(storageDir, options);
 }
 
@@ -57,7 +57,7 @@ async function readUserCliConfig(
 ): Promise<Record<string, unknown>> {
   try {
     const raw = await readFile(
-      join(resolveUserHomeDir(options), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json"),
+      join(resolveUserHomeDir(options), ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json"),
       "utf8",
     );
     const parsed = JSON.parse(raw) as unknown;

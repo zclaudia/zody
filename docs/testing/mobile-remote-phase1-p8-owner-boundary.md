@@ -26,8 +26,8 @@ sequenceDiagram
 ## 执行入口
 
 - WDIO case：`packages/desktop/test/e2e/mobile-remote/manual-review/pending/mobile-notification-owner-boundary.test.ts`（单 SSH 容器、同 identity 双窗口）。
-- Runner：`ZCODE_P8_CREDENTIAL_FILE=<push-harness 凭据> node scripts/run-mobile-p8-notification-owner-boundary-e2e.mjs`。
-- Android 操作 driver：`ZCODE_P8_CREDENTIAL_FILE=<同上> node scripts/mobile-remote-p8-owner-boundary-android-driver.mjs <backup|setup|click <label>|release|status|restore>`。
+- Runner：`ZODY_P8_CREDENTIAL_FILE=<push-harness 凭据> node scripts/run-mobile-p8-notification-owner-boundary-e2e.mjs`。
+- Android 操作 driver：`ZODY_P8_CREDENTIAL_FILE=<同上> node scripts/mobile-remote-p8-owner-boundary-android-driver.mjs <backup|setup|click <label>|release|status|restore>`。
 - 设备端 ntfy-bridge daemon：推送 `ntfy-bridge/dist/module/bin/ntfy-bridged` 后以 root 运行 `-listen 127.0.0.1:9595`。
 
 阶段：owner（真实 runtime turn → 系统卡 → 点击 → 经 owner 打开任务 → receipt=1）→ taskdeleted（归档+真实删除后点旧卡 → 失败弹窗 → receipt=0）→ workspaceclosed（移除 workspace tab 后点旧卡 → 拒绝 → receipt=0）→ Host PID 集合终检 → release。

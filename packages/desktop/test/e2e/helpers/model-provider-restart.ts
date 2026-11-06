@@ -5,10 +5,10 @@ import {
   BUILTIN_PROVIDER_TEMPLATE_IDS,
   TID_CHAT_MODEL_SELECT_TRIGGER,
   TID_V4_MODEL_CONFIG,
-  ZCODE_AGENT_PROVIDER,
+  ZODY_AGENT_PROVIDER,
   encodeCustomModelValue,
   type ProviderFamilyConnectionSelection,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { getE2EAppDataPaths } from "./desktop-app.js";
 import { getUpstreamApiKey } from "./upstream-provider.js";
 import { waitForSqliteTable } from "./e2e-sqlite-readiness.js";
@@ -149,7 +149,7 @@ export async function seedPersistedModelSelection(params: {
     paths.workspace,
     MODEL_SELECTION_RECENT_KEY_PREFIX,
     params,
-    ZCODE_AGENT_PROVIDER,
+    ZODY_AGENT_PROVIDER,
   );
 }
 

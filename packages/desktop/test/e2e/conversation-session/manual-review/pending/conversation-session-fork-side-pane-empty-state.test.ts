@@ -1,4 +1,4 @@
-import { TID_V4_COMPOSER_INPUT, TID_V4_SESSION_PANE } from "@zcode/shared";
+import { TID_V4_COMPOSER_INPUT, TID_V4_SESSION_PANE } from "@zody/shared";
 import { clearAppData } from "../../../helpers/desktop-app.js";
 import {
   clickFirstV4Fork,

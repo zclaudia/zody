@@ -27,7 +27,7 @@ const REMOTE_WORKBENCH_MARKERS = [
   "bootstrapGatewayWebRemoteControl",
   "GatewayTerminalTransport",
   "createAcknowledgedWebRemoteControlRelayProtocol",
-  // `@zcode/ui/mobile-shell` 子入口若意外回退到根入口，会把 PDF/Office 预览重新带进来。
+  // `@zody/ui/mobile-shell` 子入口若意外回退到根入口，会把 PDF/Office 预览重新带进来。
   "pdfjs-dist",
   "react-pdf",
   "pptxRendererPreviewEngine",

@@ -15,30 +15,59 @@ import {
   ChannelClient,
   LoggingChannelServer,
   type ISocket,
-} from "@zcode/rpc";
+} from "@zody/rpc";
 import {
   ServiceCollection,
-  IZCodeAgentService,
-  createZCodeAgentConnectionScope,
+  IZodyAgentService,
+  createZodyAgentConnectionScope,
   IFileService,
   IGitService,
   ISystemService,
   ITerminalService,
   IProviderProvisioningTargetService,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   formatLogPrefix,
   formatZodError,
   remoteTargetSchema,
   SERVER_REMOTE_PROTOCOL_VERSION,
-  ZCODE_RPC_HOST_CAPABILITY_HEADER,
-  ZCODE_VERSION,
+  ZODY_RENAME_GENERATION,
+  ZODY_RENAME_GENERATION_HEADER,
+  ZODY_RENAME_WEBSOCKET_PROTOCOL,
+  checkRenameGeneration,
+  ZODY_RPC_HOST_CAPABILITY_HEADER,
+  ZODY_VERSION,
   type ServerRemoteInfo,
   type ServerRemoteWorkspaceInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { connectRemote, createRemoteBackend, type RemoteConnection } from "./remote/index.js";
 import { createHostCapabilityStore } from "./hostCapability.js";
 import { isAllowedHttpRequest, resolveHttpBinding } from "./httpSecurity.js";
+
+// 原始 header 必须恰为单个规范值，不能把重复或宽松数字形式转换成代际 2。
+const generationGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header(ZODY_RENAME_GENERATION_HEADER);
+  if (
+    !checkRenameGeneration(
+      raw === String(ZODY_RENAME_GENERATION) ? ZODY_RENAME_GENERATION : undefined,
+    ).ok
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
+const browserProtocolGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header("sec-websocket-protocol");
+  const protocols = raw?.split(",").map((part) => part.trim()) ?? [];
+  if (
+    !protocols.includes(ZODY_RENAME_WEBSOCKET_PROTOCOL) ||
+    protocols.some((part) => !/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(part)) ||
+    new Set(protocols).size !== protocols.length
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
 
 function wrapWebSocket(ws: WebSocket): ISocket {
   const onData = new Emitter<VSBuffer>();
@@ -92,14 +121,14 @@ function setupChannelServer(
   const rawServer = new ChannelServer(protocol, "server");
   // 用日志中间件包装，统一记录所有 RPC 调用
   const server = new LoggingChannelServer(rawServer, log);
-  const agentService = services.getOptional(IZCodeAgentService);
+  const agentService = services.getOptional(IZodyAgentService);
   // fork（bot channels 移除）：第三方 IM bot 的 topic-resource relay 注册（TopicResourcePeers
   // attach + wrapAgent）随 bot channels 整体删除；desktop-continuous 受信 Host 连接仍保留
   // 反向 ChannelClient 结构（Server→Host 方向的通道客户端），仅不再挂载 relay 频道。
   const reverseClient =
     clientMode === "desktop-continuous" ? new ChannelClient(protocol) : undefined;
   const connectionScope = agentService
-    ? createZCodeAgentConnectionScope(agentService, {
+    ? createZodyAgentConnectionScope(agentService, {
         connectionId: `server-ws-${randomUUID()}`,
         clientMode,
         role: clientMode === "desktop-continuous" ? "trusted-host-relay" : "terminal-client",
@@ -107,7 +136,7 @@ function setupChannelServer(
     : undefined;
   const overrides = new Map<string, unknown>();
   if (connectionScope) {
-    overrides.set(IZCodeAgentService.channelName, connectionScope.service);
+    overrides.set(IZodyAgentService.channelName, connectionScope.service);
   }
   // Provisioning 携带跨 Environment 凭据，只允许 Desktop trusted host 使用；普通 Web
   // remote/replayable 客户端即使知道频道名，也不能获得 target 写入接口。
@@ -154,7 +183,7 @@ function readTrimmedEnv(name: string): string | undefined {
 
 function resolveServerId(options: HttpServerOptions): string {
   return (
-    options.serverId?.trim() || readTrimmedEnv("ZCODE_SERVER_ID") || hostname() || "zody-server"
+    options.serverId?.trim() || readTrimmedEnv("ZODY_SERVER_ID") || hostname() || "zody-server"
   );
 }
 
@@ -162,7 +191,7 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
   if (options.workspaces) {
     return options.workspaces;
   }
-  const workspacePath = readTrimmedEnv("ZCODE_SERVER_WORKSPACE") || process.cwd();
+  const workspacePath = readTrimmedEnv("ZODY_SERVER_WORKSPACE") || process.cwd();
   return [
     {
       path: workspacePath,
@@ -174,10 +203,10 @@ function resolveServerWorkspaces(options: HttpServerOptions): ServerRemoteWorksp
 function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
   return {
     serverId: resolveServerId(options),
-    ...(options.name?.trim() || readTrimmedEnv("ZCODE_SERVER_NAME")
-      ? { name: options.name?.trim() || readTrimmedEnv("ZCODE_SERVER_NAME") }
+    ...(options.name?.trim() || readTrimmedEnv("ZODY_SERVER_NAME")
+      ? { name: options.name?.trim() || readTrimmedEnv("ZODY_SERVER_NAME") }
       : {}),
-    version: ZCODE_VERSION,
+    version: ZODY_VERSION,
     protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
     authRequired: Boolean(options.authToken?.trim()),
     workspaces: resolveServerWorkspaces(options),
@@ -189,7 +218,7 @@ function createServerInfo(options: HttpServerOptions): ServerRemoteInfo {
   };
 }
 
-const zcodeLiteTokenCookieName = "zody_lite_token";
+const zodyLiteTokenCookieName = "zody_lite_token";
 
 const staticMimeTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -234,11 +263,11 @@ function hasValidLiteToken(c: Context, token: string): boolean {
   if (url.searchParams.get("token") === token) {
     c.header(
       "Set-Cookie",
-      `${zcodeLiteTokenCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax`,
+      `${zodyLiteTokenCookieName}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax`,
     );
     return true;
   }
-  return parseCookieHeader(c.req.header("cookie")).get(zcodeLiteTokenCookieName) === token;
+  return parseCookieHeader(c.req.header("cookie")).get(zodyLiteTokenCookieName) === token;
 }
 
 function isTokenProtectedPath(pathname: string): boolean {
@@ -307,7 +336,15 @@ export function createHttpServer(
 ) {
   const binding = resolveHttpBinding(options);
   const app = new Hono();
-  const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
+  const { injectWebSocket, upgradeWebSocket, wss } = createNodeWebSocket({ app });
+  // 子协议的默认实现选择首项；浏览器可能先提出其他协议，必须选中代际协议。
+  wss.options.handleProtocols = (protocols, request) => {
+    const path = new URL(request.url ?? "/", "http://localhost").pathname;
+    if (path === "/ws" || path.startsWith("/ws/remote/")) {
+      return protocols.has(ZODY_RENAME_WEBSOCKET_PROTOCOL) ? ZODY_RENAME_WEBSOCKET_PROTOCOL : false;
+    }
+    return protocols.values().next().value ?? false;
+  };
   const hostCapabilities = createHostCapabilityStore();
 
   const authToken = binding.authToken;
@@ -338,7 +375,13 @@ export function createHttpServer(
     });
   }
 
-  app.get("/api/server-info", (c) => c.json(createServerInfo(options)));
+  app.get("/api/server-info", (c) =>
+    c.json({ ...createServerInfo(options), renameGeneration: ZODY_RENAME_GENERATION }),
+  );
+  app.use("/api/rpc-host-capability", generationGate);
+  app.use("/ws/host", generationGate);
+  app.use("/ws", browserProtocolGate);
+  app.use("/ws/remote/*", browserProtocolGate);
   app.post("/api/rpc-host-capability", (c) => c.json(hostCapabilities.issue()));
 
   // 普通 `/ws` 永远是 terminal-client；浏览器/任意客户端设置旧 mode header
@@ -359,7 +402,7 @@ export function createHttpServer(
     },
   }));
   app.use("/ws/host", async (c, next) => {
-    const capability = c.req.header(ZCODE_RPC_HOST_CAPABILITY_HEADER);
+    const capability = c.req.header(ZODY_RPC_HOST_CAPABILITY_HEADER);
     if (!hostCapabilities.consume(capability)) {
       return c.json({ error: "Invalid or expired host capability" }, 401);
     }

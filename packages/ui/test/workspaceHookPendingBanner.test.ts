@@ -5,12 +5,12 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import {
   TID_V4_WORKSPACE_HOOK_PENDING_BANNER,
   TID_V4_WORKSPACE_HOOK_PENDING_DISMISS,
   TID_V4_WORKSPACE_HOOK_PENDING_REVIEW,
-} from "@zcode/shared";
+} from "@zody/shared";
 import enUS from "@/i18n/locales/en-US.js";
 import zhCN from "@/i18n/locales/zh-CN.js";
 import {
@@ -34,33 +34,62 @@ vi.mock("@/store/TabStoreProvider.js", () => ({
   useOptionalTabStore: () => openSettingsTabMock,
 }));
 
-// 模拟 workspaceHookReviewStore 的 findWorkspaceHookCommandBinding
-const sendCommandMock = vi.hoisted(() => vi.fn(async () => ({ status: "accepted" })));
-const onCommandSettledMock = vi.hoisted(() => vi.fn());
-
-vi.mock("@/store/workspaceHookReviewStore.js", () => ({
-  useWorkspaceHookReviewStore: () => ({
-    commandBindings: {
+// 模拟 workspaceHookReviewStore 的 command registry；resolver 走与生产相同的严格路由语义。
+const storeMock = vi.hoisted(() => {
+  const sendCommand = vi.fn(async () => ({ status: "accepted" }));
+  return {
+    sendCommand,
+    onCommandSettled: vi.fn(),
+    bindings: {
       "sess-1": {
         sessionId: "sess-1",
         workspacePath: "/workspace",
         workspaceIdentity: "/workspace",
-        sendCommand: sendCommandMock,
-        onCommandSettled: onCommandSettledMock,
+        sendCommand,
+        onCommandSettled: vi.fn(),
       },
+    } as Record<
+      string,
+      {
+        sessionId: string;
+        workspacePath: string;
+        workspaceIdentity?: string;
+        remoteSessionId?: string;
+        sendCommand: typeof sendCommand;
+        onCommandSettled: ReturnType<typeof vi.fn>;
+      }
+    >,
+  };
+});
+const sendCommandMock = storeMock.sendCommand;
+const onCommandSettledMock = storeMock.bindings["sess-1"]!.onCommandSettled;
+
+vi.mock("@/store/workspaceHookReviewStore.js", () => ({
+  useWorkspaceHookReviewStore: (selector: (state: { commandBindings: unknown }) => unknown) =>
+    selector({ commandBindings: storeMock.bindings }),
+  resolveWorkspaceHookCommandBinding: (
+    bindings: typeof storeMock.bindings,
+    target: {
+      workspacePath?: string | null;
+      workspaceIdentity?: string;
+      remoteSessionId?: string;
+      taskSessionId?: string;
     },
-  }),
-  findWorkspaceHookCommandBinding: (
-    _bindings: unknown,
-    _workspacePath?: string | null,
-    _workspaceIdentity?: string,
-  ) => ({
-    sessionId: "sess-1",
-    workspacePath: "/workspace",
-    workspaceIdentity: "/workspace",
-    sendCommand: sendCommandMock,
-    onCommandSettled: onCommandSettledMock,
-  }),
+  ) => {
+    const workspaceKey = target.workspaceIdentity?.trim() || target.workspacePath;
+    const remote = target.remoteSessionId?.trim() || undefined;
+    const matches = Object.values(bindings).filter((binding) => {
+      const bindingIdentity = binding.workspaceIdentity?.trim();
+      if (bindingIdentity ? bindingIdentity !== workspaceKey : target.workspaceIdentity?.trim()) {
+        return false;
+      }
+      if (bindingIdentity ? false : binding.workspacePath !== target.workspacePath) return false;
+      if ((binding.remoteSessionId?.trim() || undefined) !== remote) return false;
+      return !target.taskSessionId || binding.sessionId === target.taskSessionId;
+    });
+    if (matches.length === 1) return { status: "matched" as const, binding: matches[0]! };
+    return { status: matches.length === 0 ? ("missing" as const) : ("ambiguous" as const) };
+  },
 }));
 
 // 模拟 V4ConversationContext 的 sendCommand
@@ -71,9 +100,7 @@ vi.mock("@/v4/V4ConversationContext.js", () => ({
 }));
 
 // 模拟 workspaceHookReviewCommands 的 sendWorkspaceHookCommand
-const sendWorkspaceHookCommandMock = vi.hoisted(() =>
-  vi.fn(async () => ({ accepted: true })),
-);
+const sendWorkspaceHookCommandMock = vi.hoisted(() => vi.fn(async () => ({ accepted: true })));
 
 vi.mock("@/settings/workspaceHookReviewCommands.js", () => ({
   sendWorkspaceHookCommand: sendWorkspaceHookCommandMock,
@@ -98,6 +125,18 @@ const sampleAdmission = {
   workspaceIdentity: "/workspace",
 };
 
+function resetDefaultCommandBindings(): void {
+  storeMock.bindings = {
+    "sess-1": {
+      sessionId: "sess-1",
+      workspacePath: "/workspace",
+      workspaceIdentity: "/workspace",
+      sendCommand: sendCommandMock,
+      onCommandSettled: onCommandSettledMock,
+    },
+  };
+}
+
 function renderBanner(props: {
   sessionId?: string;
   workspacePath?: string;
@@ -108,7 +147,7 @@ function renderBanner(props: {
 }) {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(WorkspaceHookPendingBanner, {
         sessionId: props.sessionId ?? "sess-1",
@@ -125,7 +164,7 @@ function renderBanner(props: {
 function renderInteractiveBanner(admission = sampleAdmission) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(WorkspaceHookPendingBanner, {
         sessionId: "sess-1",
@@ -138,6 +177,7 @@ function renderInteractiveBanner(admission = sampleAdmission) {
 
 describe("WorkspaceHookPendingBanner（软门禁 D4）", () => {
   beforeEach(() => {
+    resetDefaultCommandBindings();
     workspaceHookPendingDismissStore.clear();
     settingsIntentMock.setPendingSettingsSectionIntent.mockClear();
     openSettingsTabMock.mockClear();
@@ -196,7 +236,7 @@ describe("WorkspaceHookPendingBanner（软门禁 D4）", () => {
 
     view.rerender(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(WorkspaceHookPendingBanner, {
           sessionId: "sess-1",
@@ -249,5 +289,116 @@ describe("WorkspaceHookPendingBanner（软门禁 D4）", () => {
 
   it("en-US 文案包含 count 参数占位", () => {
     expect(enUS["chat.workspaceHookPending.message"]).toContain("{count}");
+  });
+
+  it("同 identity 双 remote 时只向当前 session 的 remote channel 发 request", async () => {
+    const oldSend = vi.fn(async () => ({ status: "accepted" }));
+    const selectedSend = vi.fn(async () => ({ status: "accepted" }));
+    storeMock.bindings = {
+      "task-old": {
+        sessionId: "task-old",
+        workspacePath: "/workspace",
+        workspaceIdentity: "remote:workspace",
+        remoteSessionId: "remote-old",
+        sendCommand: oldSend,
+        onCommandSettled: vi.fn(),
+      },
+      "task-selected": {
+        sessionId: "task-selected",
+        workspacePath: "/workspace",
+        workspaceIdentity: "remote:workspace",
+        remoteSessionId: "remote-selected",
+        sendCommand: selectedSend,
+        onCommandSettled: vi.fn(),
+      },
+    };
+    render(
+      createElement(
+        ZodyIntlProvider,
+        { initialLocale: "zh-CN" },
+        createElement(WorkspaceHookPendingBanner, {
+          sessionId: "task-selected",
+          workspacePath: "/workspace",
+          workspaceIdentity: "remote:workspace",
+          remoteSessionId: "remote-selected",
+          admission: { ...sampleAdmission, workspaceIdentity: "remote:workspace" },
+        }),
+      ),
+    );
+
+    fireEvent.click(screen.getByTestId(TID_V4_WORKSPACE_HOOK_PENDING_REVIEW));
+
+    await waitFor(() => expect(sendWorkspaceHookCommandMock).toHaveBeenCalledTimes(1));
+    expect(sendWorkspaceHookCommandMock.mock.calls[0]?.[0]).toMatchObject({
+      sendCommand: selectedSend,
+    });
+    expect(sendWorkspaceHookCommandMock.mock.calls[0]?.[1]).toBe("task-selected");
+    expect(sendWorkspaceHookCommandMock.mock.calls[0]?.[3]).toEqual(
+      expect.objectContaining({
+        sessionId: "task-selected",
+        remoteSessionId: "remote-selected",
+        workspaceIdentity: "remote:workspace",
+      }),
+    );
+    expect(oldSend).not.toHaveBeenCalled();
+  });
+
+  it("当前 remote 没有匹配 channel 时不借其他 remote，但仍允许导航设置页", async () => {
+    storeMock.bindings = {
+      "task-old": {
+        sessionId: "task-old",
+        workspacePath: "/workspace",
+        workspaceIdentity: "remote:workspace",
+        remoteSessionId: "remote-old",
+        sendCommand: vi.fn(async () => ({ status: "accepted" })),
+        onCommandSettled: vi.fn(),
+      },
+    };
+    render(
+      createElement(
+        ZodyIntlProvider,
+        { initialLocale: "zh-CN" },
+        createElement(WorkspaceHookPendingBanner, {
+          sessionId: "task-selected",
+          workspacePath: "/workspace",
+          workspaceIdentity: "remote:workspace",
+          remoteSessionId: "remote-selected",
+          admission: { ...sampleAdmission, workspaceIdentity: "remote:workspace" },
+        }),
+      ),
+    );
+
+    fireEvent.click(screen.getByTestId(TID_V4_WORKSPACE_HOOK_PENDING_REVIEW));
+
+    expect(openSettingsTabMock).toHaveBeenCalled();
+    expect(sendWorkspaceHookCommandMock).not.toHaveBeenCalled();
+    expect(loggerMock.warn).toHaveBeenCalledWith(
+      "[workspace-hook-pending] 未找到唯一匹配的 review command channel，未发送请求",
+      expect.objectContaining({ sessionId: "task-selected", remoteSessionId: "remote-selected" }),
+    );
+  });
+
+  it("admission identity 与当前路由不一致时不发送 request", () => {
+    render(
+      createElement(
+        ZodyIntlProvider,
+        { initialLocale: "zh-CN" },
+        createElement(WorkspaceHookPendingBanner, {
+          sessionId: "sess-1",
+          workspacePath: "/workspace",
+          workspaceIdentity: "/workspace",
+          admission: { ...sampleAdmission, workspaceIdentity: "remote:stale-workspace" },
+        }),
+      ),
+    );
+
+    fireEvent.click(screen.getByTestId(TID_V4_WORKSPACE_HOOK_PENDING_REVIEW));
+
+    expect(openSettingsTabMock).toHaveBeenCalled();
+    expect(sendWorkspaceHookCommandMock).not.toHaveBeenCalled();
+    expect(loggerMock.warn).toHaveBeenCalledWith(
+      "[workspace-hook-pending] admission 与当前 workspace 路由不一致，未发送请求",
+      expect.objectContaining({ sessionId: "sess-1" }),
+    );
   });
 });

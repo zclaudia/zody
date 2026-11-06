@@ -1,4 +1,4 @@
-import { MOBILE_UI_RELEASE_ID_PATTERN } from "@zcode/shared";
+import { MOBILE_UI_RELEASE_ID_PATTERN } from "@zody/shared";
 import {
   readMobileUiReleaseMetaReleaseId,
   type MobileUiReleaseObservation,

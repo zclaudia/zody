@@ -3,9 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import { PlatformProvider } from "@/hooks/usePlatform.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { RemoteConnectionFields } from "@/RemoteConnectionFields.js";
-import type { IPlatformService } from "@zcode/shared";
+import type { IPlatformService } from "@zody/shared";
 
 const platform: IPlatformService = {
   activateOrSetWorkspace: vi.fn(),
@@ -34,7 +34,7 @@ function renderRemoteConnectionFields(kind: "ssh" | "docker") {
       PlatformProvider,
       { platform },
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(RemoteConnectionFields, {
           kind,

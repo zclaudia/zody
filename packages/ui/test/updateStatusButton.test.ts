@@ -14,13 +14,13 @@ import {
 } from "@/updateReleaseNotes.js";
 import enUS from "@/i18n/locales/en-US.js";
 import zhCN from "@/i18n/locales/zh-CN.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import type { IntlInstance } from "@/i18n/IntlProvider.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
-import type { IServiceAccessor } from "@zcode/services";
-import type { IPlatformService, UpdateStatePayload } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { IPlatformService, UpdateStatePayload } from "@zody/shared";
 
 const noopPlatform = {
   openExternal: () => undefined,
@@ -56,7 +56,7 @@ function renderUpdateStatusButton(
           PlatformProvider,
           { platform: noopPlatform },
           createElement(
-            ZCodeIntlProvider,
+            ZodyIntlProvider,
             { initialLocale: "zh-CN" },
             createElement(UpdateStatusButton, {
               platform: noopPlatform,

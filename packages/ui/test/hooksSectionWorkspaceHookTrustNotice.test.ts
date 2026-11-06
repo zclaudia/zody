@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 
-import type { Hook } from "@zcode/shared";
+import type { Hook } from "@zody/shared";
 import { createElement } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { HooksSection } from "@/settings/HooksSection.js";
 
 const hooksStateMock = vi.hoisted(() => ({
@@ -36,7 +36,10 @@ const pluginStoreStateMock = vi.hoisted(() => ({
 
 const serviceResolutionMock = vi.hoisted(() => ({
   rpcReady: true,
+  remoteSessionId: "remote-selected" as string | null,
 }));
+
+const inlineTrustInputMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/store/hooksStore.js", () => ({
   useHooksStore: () => hooksStateMock,
@@ -50,6 +53,7 @@ vi.mock("@/store/pluginManagementStore.js", () => ({
 vi.mock("@/hooks/useWorkspaceServices.js", () => ({
   useWorkspaceServicesResolution: () => ({
     rpcReady: serviceResolutionMock.rpcReady,
+    remoteSessionId: serviceResolutionMock.remoteSessionId,
     services: {
       hooksService: {},
       pluginManagementService: {},
@@ -61,8 +65,8 @@ vi.mock("@/hooks/useConfirmDialog.js", () => ({
   useConfirmDialog: () => vi.fn(async () => false),
 }));
 
-vi.mock("@/hooks/useZCodeSessionService.js", () => ({
-  useZCodeSessionService: () => undefined,
+vi.mock("@/hooks/useZodySessionService.js", () => ({
+  useZodySessionService: () => undefined,
 }));
 
 vi.mock("@/store/TabStoreProvider.js", () => ({
@@ -70,16 +74,20 @@ vi.mock("@/store/TabStoreProvider.js", () => ({
 }));
 
 vi.mock("@/store/workspaceHookReviewStore.js", () => ({
-  useWorkspaceHookReviewStore: (selector: (state: { bindings: Record<string, never> }) => unknown) =>
-    selector({ bindings: {} }),
+  useWorkspaceHookReviewStore: (
+    selector: (state: { bindings: Record<string, never> }) => unknown,
+  ) => selector({ bindings: {} }),
 }));
 
 vi.mock("@/settings/useWorkspaceHookInlineTrust.js", () => ({
-  useWorkspaceHookInlineTrust: () => ({
-    trustActionAvailable: false,
-    trustingHookId: null,
-    trustHook: vi.fn(async () => undefined),
-  }),
+  useWorkspaceHookInlineTrust: (input: unknown) => {
+    inlineTrustInputMock(input);
+    return {
+      trustActionAvailable: false,
+      trustingHookId: null,
+      trustHook: vi.fn(async () => undefined),
+    };
+  },
 }));
 
 vi.mock("@/settings/SettingsSearchInput.js", () => ({
@@ -103,15 +111,21 @@ vi.mock("@/settings/PluginScopeMenu.js", async (importOriginal) => ({
 }));
 
 vi.mock("@/settings/HookForm.js", () => ({ HookForm: () => null }));
-vi.mock("@/settings/SettingsHeaderBreadcrumb.js", () => ({ SettingsBreadcrumbReporter: () => null }));
-vi.mock("@/settings/SettingsResourceHeaderActions.js", () => ({ SettingsResourceHeaderActions: () => null }));
+vi.mock("@/settings/SettingsHeaderBreadcrumb.js", () => ({
+  SettingsBreadcrumbReporter: () => null,
+}));
+vi.mock("@/settings/SettingsResourceHeaderActions.js", () => ({
+  SettingsResourceHeaderActions: () => null,
+}));
 vi.mock("@/settings/HooksList.js", () => ({ HooksList: () => null }));
-vi.mock("@/settings/pluginStoreListing.js", () => ({ formatCanonicalPluginName: (name: string) => name }));
+vi.mock("@/settings/pluginStoreListing.js", () => ({
+  formatCanonicalPluginName: (name: string) => name,
+}));
 vi.mock("@/components/ui/button.js", () => ({
   Button: ({ children }: { children?: unknown }) => createElement("button", null, children),
 }));
 vi.mock("@/components/ui/toast.js", () => ({ toast: vi.fn() }));
-vi.mock("@/lib/zcodeDraftSkillInvalidation.js", () => ({
+vi.mock("@/lib/zodyDraftSkillInvalidation.js", () => ({
   invalidateDeferredDraftSessionForRuntimeChange: vi.fn(async () => undefined),
 }));
 vi.mock("@/settings/PluginInstallEmptyState.js", () => ({
@@ -152,7 +166,7 @@ function workspaceHook(): Hook {
 function renderHooksSection() {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "en-US" },
       createElement(HooksSection, { workspacePath: hooksStateMock.workspacePath }),
     ),
@@ -168,6 +182,8 @@ describe("HooksSection workspace Hook Trust notice", () => {
     hooksStateMock.loading = false;
     hooksStateMock.error = null;
     serviceResolutionMock.rpcReady = true;
+    serviceResolutionMock.remoteSessionId = "remote-selected";
+    inlineTrustInputMock.mockClear();
   });
 
   afterEach(() => cleanup());
@@ -192,5 +208,17 @@ describe("HooksSection workspace Hook Trust notice", () => {
     renderHooksSection();
 
     expect(screen.queryByTestId("workspace-hook-trust-notice")).toBeNull();
+  });
+
+  it("passes the resolved remoteSessionId into inline trust routing", () => {
+    renderHooksSection();
+
+    expect(inlineTrustInputMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspacePath: "/workspace-a",
+        remoteSessionId: "remote-selected",
+        rpcReady: true,
+      }),
+    );
   });
 });

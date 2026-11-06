@@ -20,9 +20,9 @@ import type {
   SettingsSyncSourceScope,
   SettingsSyncSourceRootSummary,
   SettingsSyncTaskImportResult,
-} from "@zcode/shared";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
-import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
+} from "@zody/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
+import { resolveProjectResourcePaths } from "@zody/shared/zody-paths";
 import {
   copyFile,
   cp,
@@ -413,7 +413,9 @@ const SUPPORTED_MCP_AGENT_SOURCES: ExternalAgentMcpPathSource[] = [
   },
 ];
 
-const ZCODE_PLUGIN_MANIFEST_PATH = [".zcode-plugin", "plugin.json"] as const;
+// R54：新格式优先，旧 `.zcode-plugin` 仅作缺失回退（常量字节保留）。
+const CANONICAL_PLUGIN_MANIFEST_PATH = [".zody-plugin", "plugin.json"] as const;
+const ZODY_PLUGIN_MANIFEST_PATH = [".zcode-plugin", "plugin.json"] as const;
 const CLAUDE_PLUGIN_MANIFEST_PATH = [".claude-plugin", "plugin.json"] as const;
 const CODEX_PLUGIN_MANIFEST_PATH = [".codex-plugin", "plugin.json"] as const;
 const INLINE_PLUGIN_MARKETPLACE = "inline";
@@ -423,35 +425,35 @@ function resolveUserHomeDir(): string {
   return envHome && envHome.length > 0 ? envHome : homedir();
 }
 
-function getWorkspaceZcodeSkillRoot(workspacePath: string): string {
+function getWorkspaceZodySkillRoot(workspacePath: string): string {
   return resolveProjectResourcePaths(workspacePath, "skills").writePath;
 }
 
-function getUserZcodeSkillRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "skills");
+function getUserZodySkillRoot(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "skills");
 }
 
-function getWorkspaceZcodeCommandRoot(workspacePath: string): string {
+function getWorkspaceZodyCommandRoot(workspacePath: string): string {
   return resolveProjectResourcePaths(workspacePath, "commands").writePath;
 }
 
-function getUserZcodeCommandRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "commands");
+function getUserZodyCommandRoot(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "commands");
 }
 
-function getWorkspaceZcodePluginRoot(workspacePath: string): string {
+function getWorkspaceZodyPluginRoot(workspacePath: string): string {
   return resolveProjectResourcePaths(workspacePath, "plugins").writePath;
 }
 
-function getUserZcodePluginRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "plugins");
+function getUserZodyPluginRoot(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "plugins");
 }
 
-function getUserZcodeCliConfigPath(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
+function getUserZodyCliConfigPath(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json");
 }
 
-function getWorkspaceZcodeConfigPath(workspacePath: string): string {
+function getWorkspaceZodyConfigPath(workspacePath: string): string {
   return resolveProjectResourcePaths(workspacePath, "config.json").writePath;
 }
 
@@ -459,8 +461,8 @@ function getClaudeUserAgentsFileSourcePath(): string {
   return join(resolveUserHomeDir(), ".claude", "CLAUDE.md");
 }
 
-function getUserZcodeAgentsFilePath(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "AGENTS.md");
+function getUserZodyAgentsFilePath(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "AGENTS.md");
 }
 
 function resolveTargetRootForScope(
@@ -468,9 +470,9 @@ function resolveTargetRootForScope(
   workspacePath: string | undefined,
 ): string | null {
   if (targetScope === "global") {
-    return getUserZcodeSkillRoot();
+    return getUserZodySkillRoot();
   }
-  return workspacePath ? getWorkspaceZcodeSkillRoot(workspacePath) : null;
+  return workspacePath ? getWorkspaceZodySkillRoot(workspacePath) : null;
 }
 
 function resolveCandidateTargetRoot(
@@ -479,9 +481,9 @@ function resolveCandidateTargetRoot(
 ): string | null {
   return sourceScope === "workspace"
     ? workspacePath
-      ? getWorkspaceZcodeSkillRoot(workspacePath)
+      ? getWorkspaceZodySkillRoot(workspacePath)
       : null
-    : getUserZcodeSkillRoot();
+    : getUserZodySkillRoot();
 }
 
 function resolveCommandTargetRootForScope(
@@ -489,9 +491,9 @@ function resolveCommandTargetRootForScope(
   workspacePath: string | undefined,
 ): string | null {
   if (targetScope === "global") {
-    return getUserZcodeCommandRoot();
+    return getUserZodyCommandRoot();
   }
-  return workspacePath ? getWorkspaceZcodeCommandRoot(workspacePath) : null;
+  return workspacePath ? getWorkspaceZodyCommandRoot(workspacePath) : null;
 }
 
 function resolveCommandCandidateTargetRoot(
@@ -500,9 +502,9 @@ function resolveCommandCandidateTargetRoot(
 ): string | null {
   return sourceScope === "workspace"
     ? workspacePath
-      ? getWorkspaceZcodeCommandRoot(workspacePath)
+      ? getWorkspaceZodyCommandRoot(workspacePath)
       : null
-    : getUserZcodeCommandRoot();
+    : getUserZodyCommandRoot();
 }
 
 function resolvePluginTargetRootForScope(
@@ -510,9 +512,9 @@ function resolvePluginTargetRootForScope(
   workspacePath: string | undefined,
 ): string | null {
   if (targetScope === "global") {
-    return getUserZcodePluginRoot();
+    return getUserZodyPluginRoot();
   }
-  return workspacePath ? getWorkspaceZcodePluginRoot(workspacePath) : null;
+  return workspacePath ? getWorkspaceZodyPluginRoot(workspacePath) : null;
 }
 
 function resolvePluginCandidateTargetRoot(
@@ -521,9 +523,9 @@ function resolvePluginCandidateTargetRoot(
 ): string | null {
   return sourceScope === "workspace"
     ? workspacePath
-      ? getWorkspaceZcodePluginRoot(workspacePath)
+      ? getWorkspaceZodyPluginRoot(workspacePath)
       : null
-    : getUserZcodePluginRoot();
+    : getUserZodyPluginRoot();
 }
 
 function resolvePluginConfigPathForScope(
@@ -531,9 +533,9 @@ function resolvePluginConfigPathForScope(
   workspacePath: string | undefined,
 ): string | null {
   if (targetScope === "global") {
-    return getUserZcodeCliConfigPath();
+    return getUserZodyCliConfigPath();
   }
-  return workspacePath ? getWorkspaceZcodeConfigPath(workspacePath) : null;
+  return workspacePath ? getWorkspaceZodyConfigPath(workspacePath) : null;
 }
 
 function resolveMcpConfigPathForScope(
@@ -541,9 +543,9 @@ function resolveMcpConfigPathForScope(
   workspacePath: string | undefined,
 ): string | null {
   if (targetScope === "global") {
-    return getUserZcodeCliConfigPath();
+    return getUserZodyCliConfigPath();
   }
-  return workspacePath ? getWorkspaceZcodeConfigPath(workspacePath) : null;
+  return workspacePath ? getWorkspaceZodyConfigPath(workspacePath) : null;
 }
 
 async function importSkillDirectory(
@@ -780,9 +782,14 @@ async function collectCommandMarkdownPaths(rootPath: string): Promise<string[]> 
 }
 
 async function findPluginManifestPath(pluginPath: string): Promise<string | null> {
-  const zcodeManifestPath = join(pluginPath, ...ZCODE_PLUGIN_MANIFEST_PATH);
-  if (await pathExists(zcodeManifestPath)) {
-    return zcodeManifestPath;
+  // R54：新格式存在即唯一 manifest；读取/解析失败由各调用方返回 null，不回退旧格式。
+  const canonicalManifestPath = join(pluginPath, ...CANONICAL_PLUGIN_MANIFEST_PATH);
+  if (await pathExists(canonicalManifestPath)) {
+    return canonicalManifestPath;
+  }
+  const zodyManifestPath = join(pluginPath, ...ZODY_PLUGIN_MANIFEST_PATH);
+  if (await pathExists(zodyManifestPath)) {
+    return zodyManifestPath;
   }
   const claudeManifestPath = join(pluginPath, ...CLAUDE_PLUGIN_MANIFEST_PATH);
   if (await pathExists(claudeManifestPath)) {
@@ -1023,7 +1030,7 @@ function stripExternalMcpTimeoutFields(config: McpServerConfig): McpServerConfig
   return rest as McpServerConfig;
 }
 
-function readZcodeMcpServers(parsed: Record<string, unknown>): Record<string, McpServerConfig> {
+function readZodyMcpServers(parsed: Record<string, unknown>): Record<string, McpServerConfig> {
   if (!isRecord(parsed.mcp)) {
     return {};
   }
@@ -1098,7 +1105,7 @@ async function collectExistingMcpServerNameKeys(
   const targetConfigPath = resolveMcpConfigPathForScope(targetScope, workspacePath);
   if (targetConfigPath) {
     for (const name of Object.keys(
-      readZcodeMcpServers(await readJsonFileOrEmpty(targetConfigPath)),
+      readZodyMcpServers(await readJsonFileOrEmpty(targetConfigPath)),
     )) {
       nameKeys.add(normalizeMcpServerNameKey(name));
     }
@@ -1106,14 +1113,14 @@ async function collectExistingMcpServerNameKeys(
   return nameKeys;
 }
 
-async function addMcpServerToZcodeConfig(
+async function addMcpServerToZodyConfig(
   filePath: string,
   name: string,
   config: McpServerConfig,
 ): Promise<void> {
   const parsed = await readJsonFileOrEmpty(filePath);
   const currentMcp = isRecord(parsed.mcp) ? parsed.mcp : {};
-  const servers = readZcodeMcpServers(parsed);
+  const servers = readZodyMcpServers(parsed);
   await writeJsonFile(filePath, {
     ...parsed,
     mcp: {
@@ -2142,7 +2149,7 @@ async function importMcpServersForAgent(
       continue;
     }
     try {
-      await addMcpServerToZcodeConfig(selectedConfigPath, candidate.name, candidate.config);
+      await addMcpServerToZodyConfig(selectedConfigPath, candidate.name, candidate.config);
       importedCount += 1;
       const existingNameKeys = existingNameKeysByTargetScope.get(selectedTargetScope);
       if (existingNameKeys) {
@@ -2207,7 +2214,7 @@ function shouldScanMcpServers(request: {
 async function getClaudeAgentsFileMigrationStatus(): Promise<SettingsSyncClaudeAgentsFileMigrationStatus> {
   const sourcePath = getClaudeUserAgentsFileSourcePath();
   const sourceExists = await pathExists(sourcePath);
-  const targetPath = getUserZcodeAgentsFilePath();
+  const targetPath = getUserZodyAgentsFilePath();
   const targetExists = await pathExists(targetPath);
 
   return {
@@ -2220,11 +2227,11 @@ async function getClaudeAgentsFileMigrationStatus(): Promise<SettingsSyncClaudeA
   };
 }
 
-async function copyClaudeAgentsFileToZcodeAgentsFile(params: {
+async function copyClaudeAgentsFileToZodyAgentsFile(params: {
   overwrite?: boolean;
 }): Promise<SettingsSyncClaudeAgentsFileCopyResult> {
   const sourcePath = getClaudeUserAgentsFileSourcePath();
-  const targetPath = getUserZcodeAgentsFilePath();
+  const targetPath = getUserZodyAgentsFilePath();
   const sourceExists = await pathExists(sourcePath);
   const targetExists = await pathExists(targetPath);
 
@@ -2277,10 +2284,10 @@ export function createSettingsSyncService(
       return getClaudeAgentsFileMigrationStatus();
     },
 
-    async copyClaudeAgentsFileToZcodeAgentsFile(
+    async copyClaudeAgentsFileToZodyAgentsFile(
       request = {},
     ): Promise<SettingsSyncClaudeAgentsFileCopyResult> {
-      const result = await copyClaudeAgentsFileToZcodeAgentsFile({
+      const result = await copyClaudeAgentsFileToZodyAgentsFile({
         overwrite: request.overwrite,
       });
       log.info("[settings-sync] Claude AGENTS.md migration completed", {

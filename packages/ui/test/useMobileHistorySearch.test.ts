@@ -6,12 +6,12 @@ import type {
   MobileHistorySearchItem,
   MobileHistorySearchOutcome,
   MobileHistorySearchRequest,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearMobileHistorySearchSessionForTest,
   useMobileHistorySearch,
 } from "../src/hooks/useMobileHistorySearch.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import { WebRemoteControlMobileSearch } from "../src/WebRemoteControlMobileSearch.js";
 
 function workspace(index: number) {
@@ -43,7 +43,7 @@ function response(
   items: MobileHistorySearchItem[] = [],
 ): MobileHistorySearchOutcome {
   return {
-    zcode_type: "mobile-history-search-outcome",
+    zody_type: "mobile-history-search-outcome",
     requestId: request.requestId,
     context: request.context,
     queryGeneration: request.queryGeneration,
@@ -702,7 +702,7 @@ describe("useMobileHistorySearch", () => {
     });
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(WebRemoteControlMobileSearch, {
           workspaces: [workspace(1), workspace(2)],

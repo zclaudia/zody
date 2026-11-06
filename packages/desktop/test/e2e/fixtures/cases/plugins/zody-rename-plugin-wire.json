@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "caseName": "zody-rename-plugin-wire",
+  "spec": "./test/e2e/plugins/zody-rename-plugin-wire.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/plugin-management/zody-rename-plugin-wire.json"
+  ],
+  "fileFixtures": [
+    "runtime-generated Gen UI fragments under the E2E app data visualizations root: rename-wire-old.html, rename-wire-new.html, rename-wire-migrated.html"
+  ],
+  "requests": [
+    {
+      "id": "rename-wire-old",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Render the legacy-named Gen UI page so the real sandbox emits exactly one save and one follow-up through window.zcode."
+    },
+    {
+      "id": "rename-wire-new",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Render the canonical-named Gen UI page so the real sandbox emits exactly one save and one follow-up through window.zody."
+    },
+    {
+      "id": "rename-wire-migrated",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Render the migrated Gen UI page that listens to both event names and proves one projection fans out to legacy and canonical listeners."
+    }
+  ]
+}

@@ -12,7 +12,7 @@
 // producer 只拥有 type contract；VALUE descriptor 继续由 services 的
 // createServiceDescriptor 创建，避免 producer 反向依赖 RPC/service registry。
 
-import { ServiceChannels } from "@zcode/shared";
+import { ServiceChannels } from "@zody/shared";
 
 import { createServiceDescriptor } from "../descriptors.js";
 
@@ -27,7 +27,7 @@ import type {
   CuaPermissionRestartResult,
   CuaPermissionRestartOptions,
   ICuaPermissionService as BrokerICuaPermissionService,
-} from "@zcode/zcode-cua/broker";
+} from "@zody/zody-cua/broker";
 
 // Re-export types for consumers.
 export type {
@@ -46,7 +46,7 @@ export type {
 export {
   isCuaPermissionStatusAvailable,
   shouldRunCuaScreenCaptureProbe,
-} from "@zcode/zcode-cua/broker/ports";
+} from "@zody/zody-cua/broker/ports";
 
 export interface ICuaPermissionService extends BrokerICuaPermissionService {}
 

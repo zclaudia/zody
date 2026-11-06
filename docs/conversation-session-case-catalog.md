@@ -3335,7 +3335,7 @@ WFS03（accepted）：Snippet 运行→完成/失败；运行摘要计时且代�
 两档共用同一组动作、相反断言。`goal` 不参与灰度，两档都必须在场，作为「CLI catalog 已送达」的正向对照；
 `disabled` 档额外要求在观察窗内标签不会迟到出现，避免把「还没渲染」读成「已关闭」。
 不扩展 `onDemand`（本版本行为与 `alwaysOn` 相同，由 `isDynamicWorkflowModeEnabled` 单测覆盖）、
-本地 `ZCODE_DYNAMIC_WORKFLOW_MODE` 覆盖档位、手机远控与 SSH/WSL/Docker 远端 Host。
+本地 `ZODY_DYNAMIC_WORKFLOW_MODE` 覆盖档位、手机远控与 SSH/WSL/Docker 远端 Host。
 
 ## SHARE. 会话分享与继续工作
 
@@ -3579,3 +3579,5 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 | LOCAL-02 | Windows + distro/user → WSL UI 连接与选择目录 → Linux runtime 启动、原 Host 未重复创建、workspace 可用 | 新增 pending `conversation-session-wsl-local-runtime.test.ts`；需 Windows 原生验证 |
 
 剪枝：不把认证方式、Provider/model 与所有组件做笛卡尔积；部署来源的 HTTP 零调用、损坏归档、固定 SHA、缓存修复由 server 单测证明。Desktop continuous 与手机 replayable 保持隔离，不以 Desktop 证据声称手机链路已验证。新增 pending 用例未经 review 不晋升。
+
+2026-11-04：接受 R45-ART01（manual-review/pending）：真实 Agent 新媒体发送与重启后预览；进程退出后仅将合成会话媒体引用改为旧 scheme，再重启确认会话正文保留且旧引用记录不迁移；旧媒体不可读不由本 case 的即时 UI 状态推断。跨 session、旧媒体不可读与缓存/Host 拒绝由 focused 回归和真实 runner 共同覆盖；不得将主桥 smoke 冒充媒体证据。实际执行与人工评审结果待记录。

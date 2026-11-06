@@ -1,0 +1,79 @@
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildZodySourceHeadersFromContext,
+  ZODY_SOURCE_HEADERS,
+  ZODY_SOURCE_REFERER_URL,
+  ZODY_SOURCE_TITLE,
+} from "../src/zody-source-headers.js";
+
+describe("buildZodySourceHeadersFromContext", () => {
+  it("默认只发基础上下文头，停发来源标识与设备标识（F2.10：D5 未决取中性值）", () => {
+    expect(
+      buildZodySourceHeadersFromContext({
+        appVersion: " 2.14.0 ",
+        arch: "arm64",
+        clientLanguage: "zh-CN",
+        clientTimezone: "Asia/Shanghai",
+        osVersion: "Darwin 25.0.0",
+        platform: "darwin",
+        releaseChannel: "test",
+        sourceTitle: "cli",
+      }),
+    ).toEqual({
+      ...ZODY_SOURCE_HEADERS,
+      "User-Agent": "Zody/2.14.0",
+      "X-Zody-App-Version": "2.14.0",
+      "X-Platform": "darwin-arm64",
+      "X-Release-Channel": "test",
+      "X-Client-Language": "zh-CN",
+      "X-Client-Timezone": "Asia/Shanghai",
+      "X-Os-Category": "macos",
+      "X-Os-Version": "Darwin 25.0.0",
+    });
+  });
+
+  it("drops invalid optional values without emitting malformed headers", () => {
+    const headers = buildZodySourceHeadersFromContext({
+      appVersion: "bad\nversion",
+      clientLanguage: "\n",
+      clientTimezone: "",
+      platform: "win32",
+      sourceTitle: "electron",
+    });
+
+    expect(headers).toMatchObject({
+      "User-Agent": "Zody/unknown",
+      "X-Client-Language": "unknown",
+      "X-Client-Timezone": "unknown",
+      "X-Os-Category": "windows",
+    });
+    expect(headers).not.toHaveProperty("X-Device-Mid");
+    expect(headers).not.toHaveProperty("X-Zody-App-Version");
+    expect(headers).not.toHaveProperty("HTTP-Referer");
+    expect(headers).not.toHaveProperty("X-Title");
+  });
+
+  it("未注入构建期 define 时来源标识常量为空，即默认不发", () => {
+    expect(ZODY_SOURCE_HEADERS).toEqual({ "User-Agent": "Zody/unknown" });
+    expect(ZODY_SOURCE_REFERER_URL).toBe("");
+    expect(ZODY_SOURCE_TITLE).toBe("");
+  });
+
+  it("构建期注入来源标识后才发送 HTTP-Referer 与 X-Title", async () => {
+    vi.stubGlobal("__ZODY_SOURCE_REFERER_URL__", "https://fork.example.dev");
+    vi.stubGlobal("__ZODY_SOURCE_TITLE__", "ForkCode");
+    try {
+      // 带 query 强制 vitest 重新执行模块，模拟 bundler define 注入后的构建产物。
+      const injected = await import("../src/zody-source-headers.js?build-time-injected");
+      const headers = injected.buildZodySourceHeadersFromContext({
+        appVersion: "2.14.0",
+        platform: "darwin",
+        sourceTitle: "cli",
+      });
+      expect(headers["HTTP-Referer"]).toBe("https://fork.example.dev");
+      expect(headers["X-Title"]).toBe("ForkCode@cli");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});

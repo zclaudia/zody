@@ -171,7 +171,7 @@ describe("native click owner", () => {
 });
 
 import { createMobileNotificationActionQueue } from "../src/mobile-remote/mobileNotificationClickQueue.js";
-import type { MobileNotificationActionClick } from "@zcode/shared";
+import type { MobileNotificationActionClick } from "@zody/shared";
 
 describe("mobile notification action queue (E4)", () => {
   it("serializes action intents and re-reads the durable native slot once", async () => {

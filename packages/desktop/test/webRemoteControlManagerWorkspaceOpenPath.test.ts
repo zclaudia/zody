@@ -2,7 +2,7 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { WebRemoteControlAppPayload, WebRemoteControlWorkspaceTarget } from "@zcode/shared";
+import type { WebRemoteControlAppPayload, WebRemoteControlWorkspaceTarget } from "@zody/shared";
 import { createWebRemoteControlManager } from "../src/main/webRemoteControlManager.js";
 import { createWebRemoteControlFeatureGate } from "../src/main/webRemoteControlFeatureGate.js";
 import { createRemoteWorkspaceDirectory } from "../src/main/remote-access/remoteWorkspaceDirectory.js";
@@ -97,10 +97,14 @@ function createHarness(options: { allowArbitraryPath?: boolean } = {}) {
 function findResponse(
   payloads: WebRemoteControlAppPayload[],
   requestId: string,
-): Extract<WebRemoteControlAppPayload, { zcode_type: "workspace-open-path-response" }> | undefined {
+): Extract<WebRemoteControlAppPayload, { zody_type: "workspace-open-path-response" }> | undefined {
   return payloads.find(
-    (payload): payload is Extract<WebRemoteControlAppPayload, { zcode_type: "workspace-open-path-response" }> =>
-      payload.zcode_type === "workspace-open-path-response" && payload.requestId === requestId,
+    (
+      payload,
+    ): payload is Extract<
+      WebRemoteControlAppPayload,
+      { zody_type: "workspace-open-path-response" }
+    > => payload.zody_type === "workspace-open-path-response" && payload.requestId === requestId,
   );
 }
 
@@ -115,7 +119,7 @@ describe("webRemoteControlManager workspace-open-path", () => {
     harness.sentPayloads.length = 0;
 
     harness.deliver({
-      zcode_type: "workspace-open-path-request",
+      zody_type: "workspace-open-path-request",
       requestId: "open-1",
       workspacePath: "/workspace/demo",
     });
@@ -135,12 +139,12 @@ describe("webRemoteControlManager workspace-open-path", () => {
     harness.sentPayloads.length = 0;
 
     harness.deliver({
-      zcode_type: "workspace-open-path-request",
+      zody_type: "workspace-open-path-request",
       requestId: "open-relative",
       workspacePath: "relative/path",
     });
     harness.deliver({
-      zcode_type: "workspace-open-path-request",
+      zody_type: "workspace-open-path-request",
       requestId: "open-missing",
       workspacePath: "/nonexistent-zody-mobile-open-path",
     });
@@ -169,7 +173,7 @@ describe("webRemoteControlManager workspace-open-path", () => {
     harness.sentPayloads.length = 0;
 
     harness.deliver({
-      zcode_type: "workspace-open-path-request",
+      zody_type: "workspace-open-path-request",
       requestId: "open-real",
       workspacePath: realDirectory,
     });
@@ -180,7 +184,7 @@ describe("webRemoteControlManager workspace-open-path", () => {
     harness.manager.syncAvailableWorkspaces(1, [workspace]);
     await vi.waitFor(() => {
       expect(findResponse(harness.sentPayloads, "open-real")).toEqual({
-        zcode_type: "workspace-open-path-response",
+        zody_type: "workspace-open-path-response",
         requestId: "open-real",
         success: true,
         workspaceKey: realDirectory,
@@ -196,7 +200,7 @@ describe("webRemoteControlManager workspace-open-path", () => {
     harness.sentPayloads.length = 0;
 
     harness.deliver({
-      zcode_type: "workspace-open-path-request",
+      zody_type: "workspace-open-path-request",
       requestId: "open-timeout",
       workspacePath: realDirectory,
     });
@@ -220,14 +224,14 @@ describe("webRemoteControlManager workspace-open-path", () => {
     harness.sentPayloads.length = 0;
 
     harness.deliver({
-      zcode_type: "mobile-directory-list-request",
+      zody_type: "mobile-directory-list-request",
       requestId: "list-1",
       path: "/workspace",
     });
     await vi.waitFor(() => {
       expect(harness.listMobileDirectory).toHaveBeenCalledWith("/workspace");
       const response = harness.sentPayloads.find(
-        (payload) => payload.zcode_type === "mobile-directory-list-response",
+        (payload) => payload.zody_type === "mobile-directory-list-response",
       );
       expect(response).toMatchObject({ requestId: "list-1", success: false, error: "too-large" });
     });

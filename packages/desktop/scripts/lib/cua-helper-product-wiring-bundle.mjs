@@ -10,6 +10,7 @@ import {
   ProductWiringBuildError,
   REPO_ROOT,
 } from "./cua-helper-product-wiring-config.mjs";
+import { moduleSpecifiers } from "./cua-module-specifiers.mjs";
 import { run, sha256File } from "./cua-helper-product-wiring-toolchain.mjs";
 
 const BUILTINS = new Set([...builtinModules, ...builtinModules.map((name) => `node:${name}`)]);
@@ -127,14 +128,6 @@ export async function inventoryLicenses({ metafile, destination }) {
   return summary;
 }
 
-function staticImportSpecifiers(text) {
-  const specifiers = [];
-  for (const match of text.matchAll(/^import\s+(?:[^"'();]*?\s+from\s+)?["']([^"']+)["'];?/gm)) {
-    specifiers.push(match[1]);
-  }
-  return specifiers;
-}
-
 export async function auditSealedBundle({
   output,
   metafilePath,
@@ -150,19 +143,21 @@ export async function auditSealedBundle({
     );
   }
   const text = await readFile(output, "utf8");
-  if (/(?:^import[^"'();]*from\s+|import\()["']@zcode\//m.test(text)) {
+  // 修复原因：两个 workspace scope 的真实导入或 require 均不能留在封装结果中。
+  const references = moduleSpecifiers(text);
+  if (
+    [
+      ...references.imports,
+      ...references.dynamic,
+      ...references.requires.map(({ specifier }) => specifier),
+    ].some((specifier) => /^@(?:zcode|zody)\//.test(specifier))
+  ) {
     throw new ProductWiringBuildError(
       "bundle-external-package",
-      "sealed bundle kept a runtime @zcode import",
+      "sealed bundle kept a runtime workspace reference",
     );
   }
-  if (/\bfrom\s*["']@zcode\//.test(text) || /\bimport\s*\(\s*["']@zcode\//.test(text)) {
-    throw new ProductWiringBuildError(
-      "bundle-external-package",
-      "sealed bundle kept a runtime @zcode reference",
-    );
-  }
-  const imports = [...new Set(staticImportSpecifiers(text))];
+  const imports = [...new Set(references.imports)];
   const nonBuiltinImports = imports.filter((specifier) => !BUILTINS.has(specifier));
   if (nonBuiltinImports.length > 0) {
     throw new ProductWiringBuildError(
@@ -212,7 +207,7 @@ export async function auditSealedBundle({
       name: "ripgrep",
       reason:
         "fs adapter 的 worker 源码字符串内 lazy import；held-model fixture 不执行搜索工具，非 bundle 静态依赖",
-      evidence: "apps/zcode-cli/packages/adapters/src/fs/index.ts",
+      evidence: "apps/zody-cli/packages/adapters/src/fs/index.ts",
     });
   }
 

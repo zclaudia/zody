@@ -1,6 +1,6 @@
-import type { ZCodeProvider } from "@zcode/shared";
+import type { ZodyProvider } from "@zody/shared";
 
-export const ZCODE_MODE_OPTION_LABEL_IDS: Record<ZCodeProvider, Record<string, string>> = {
+export const ZODY_MODE_OPTION_LABEL_IDS: Record<ZodyProvider, Record<string, string>> = {
   glm: {
     default: "mode.label.glm.default",
     build: "mode.label.glm.build",
@@ -11,7 +11,7 @@ export const ZCODE_MODE_OPTION_LABEL_IDS: Record<ZCodeProvider, Record<string, s
   },
 };
 
-export const ZCODE_MODE_OPTION_DESCRIPTION_IDS: Record<ZCodeProvider, Record<string, string>> = {
+export const ZODY_MODE_OPTION_DESCRIPTION_IDS: Record<ZodyProvider, Record<string, string>> = {
   glm: {
     default: "mode.description.glm.default",
     build: "mode.description.glm.build",

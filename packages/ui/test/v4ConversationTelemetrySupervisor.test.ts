@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { IPlatformService } from "@zcode/shared";
-import type { ConversationTelemetryFact } from "@zcode/shared/zcode-protocol-v4";
+import type { IPlatformService } from "@zody/shared";
+import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
 import { resetMessageTelemetryForTest } from "@/lib/messageTelemetry.js";
 import {
   clearUiPerfArmsReporterForTest,
@@ -3741,7 +3741,7 @@ describe("ConversationTelemetrySupervisor", () => {
   });
 });
 
-describe("workflow subagent：动态工作流子代理的 token 埋点（apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md「Token telemetry for subagents」）", () => {
+describe("workflow subagent：动态工作流子代理的 token 埋点（apps/zody-cli/packages/dynamic-workflow/docs/execution-engine.md「Token telemetry for subagents」）", () => {
   const CHILD = "sess_dwf-run-1-worker_1";
 
   function spawnWorkflowActor(

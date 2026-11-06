@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type {
-  ZCodeAvailablePluginSummary,
-  ZCodeInstalledPluginSummary,
-  ZCodePluginInfo,
-  ZCodePluginMarketplaceSummary,
-} from "@zcode/shared";
+  ZodyAvailablePluginSummary,
+  ZodyInstalledPluginSummary,
+  ZodyPluginInfo,
+  ZodyPluginMarketplaceSummary,
+} from "@zody/shared";
 import {
   buildStoreItems,
   canUpdatePluginItem,
@@ -23,8 +23,8 @@ import {
 } from "../src/settings/pluginStoreListing.js";
 
 function makeSummary(
-  overrides: Partial<ZCodeAvailablePluginSummary> & { id: string },
-): ZCodeAvailablePluginSummary {
+  overrides: Partial<ZodyAvailablePluginSummary> & { id: string },
+): ZodyAvailablePluginSummary {
   const [name = "", marketplace = ""] = overrides.id.split("@");
   return {
     name,
@@ -34,7 +34,7 @@ function makeSummary(
   };
 }
 
-function makeInfo(overrides: Partial<ZCodePluginInfo> & { id: string }): ZCodePluginInfo {
+function makeInfo(overrides: Partial<ZodyPluginInfo> & { id: string }): ZodyPluginInfo {
   const [name = "", marketplace = ""] = overrides.id.split("@");
   return {
     name,
@@ -50,8 +50,8 @@ function makeInfo(overrides: Partial<ZCodePluginInfo> & { id: string }): ZCodePl
 }
 
 function makeMarketplace(
-  overrides: Partial<ZCodePluginMarketplaceSummary> & { id: string },
-): ZCodePluginMarketplaceSummary {
+  overrides: Partial<ZodyPluginMarketplaceSummary> & { id: string },
+): ZodyPluginMarketplaceSummary {
   return {
     name: overrides.id,
     source: {},
@@ -137,7 +137,7 @@ describe("pluginStoreListing", () => {
           marketplace: "zcode-plugins-official",
           enabled: true,
           scope: "user",
-        } as ZCodeInstalledPluginSummary,
+        } as ZodyInstalledPluginSummary,
       ],
       plugins: [
         makeInfo({ id: "a@zcode-plugins-official" }),
@@ -245,7 +245,7 @@ describe("pluginStoreListing", () => {
           marketplace: "zcode-plugins-official",
           enabled: true,
           scope: "user",
-        } as ZCodeInstalledPluginSummary,
+        } as ZodyInstalledPluginSummary,
       ],
       plugins: [makeInfo({ id: "document-skills@zcode-plugins-official", enabled: true })],
       restorableBuiltins: [makeSummary({ id: "document-skills@zcode-plugins-official" })],
@@ -273,7 +273,7 @@ describe("pluginStoreListing", () => {
           enabled: true,
           scope: "user",
           updateStatus: "update-available",
-        } as ZCodeInstalledPluginSummary,
+        } as ZodyInstalledPluginSummary,
       ],
       plugins: [makeInfo({ id: "orphan@personal-market" })],
       restorableBuiltins: [],
@@ -288,7 +288,7 @@ describe("pluginStoreListing", () => {
   });
 
   it("does not infer orphaned from a missing catalog listing when the source still exists", () => {
-    const installedMeta: ZCodeInstalledPluginSummary = {
+    const installedMeta: ZodyInstalledPluginSummary = {
       id: "installed@personal-market",
       name: "installed",
       marketplace: "personal-market",
@@ -353,7 +353,7 @@ describe("pluginStoreListing", () => {
   });
 
   it("allows updates only when the installed item still has a marketplace source", () => {
-    const installedMeta: ZCodeInstalledPluginSummary = {
+    const installedMeta: ZodyInstalledPluginSummary = {
       id: "plugin@personal-market",
       name: "plugin",
       marketplace: "personal-market",
@@ -488,7 +488,7 @@ describe("pluginStoreListing", () => {
           enabled: true,
           scope: "user",
           installedAt: "2026-01-01T00:00:00Z",
-        } as ZCodeInstalledPluginSummary,
+        } as ZodyInstalledPluginSummary,
         {
           id: "new@m",
           name: "new",
@@ -496,7 +496,7 @@ describe("pluginStoreListing", () => {
           enabled: true,
           scope: "user",
           installedAt: "2026-07-01T00:00:00Z",
-        } as ZCodeInstalledPluginSummary,
+        } as ZodyInstalledPluginSummary,
         {
           id: "builtin@zcode-plugins-official",
           name: "builtin",
@@ -504,7 +504,7 @@ describe("pluginStoreListing", () => {
           enabled: true,
           scope: "user",
           installedAt: "2025-01-01T00:00:00Z",
-        } as ZCodeInstalledPluginSummary,
+        } as ZodyInstalledPluginSummary,
       ],
       plugins: [
         makeInfo({ id: "old@m" }),

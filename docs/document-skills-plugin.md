@@ -29,7 +29,7 @@ Bootstrap 官方 definition 是内置目录与默认启用的权威来源；Sett
 
 每个插件提供 `agents/visual-judge.md`，使用 `<插件名>:visual-judge` 限定名。
 原 `judge` 名称不再由内置插件提供。每个插件只携带自己的格式 skill；四个插件本身不再声明
-`image_search` MCP，图片搜索由默认启用的 `image-search` 插件提供，版本为 `0.1.1`，通过既有官方 JWT 认证访问 `${ZCODE_BASE_URL}/api/v1/mcp/server/image_search`；不新增本地 MCP runtime。
+`image_search` MCP，图片搜索由默认启用的 `image-search` 插件提供，版本为 `0.1.1`，通过既有官方 JWT 认证访问 `${ZODY_BASE_URL}/api/v1/mcp/server/image_search`；不新增本地 MCP runtime。
 `image-search` 缓存路径为 `~/.zcode/cli/plugins/cache/zcode-plugins-official/image-search/0.1.1/`。
 
 ## 打包与验收

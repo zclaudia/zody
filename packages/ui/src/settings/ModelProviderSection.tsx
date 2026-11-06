@@ -3,7 +3,7 @@
  * 编排已删除；设置页只保留 BYOK（自定义 provider）的增删改、排序与连通性测试。
  */
 import { useCallback, useRef, useState } from "react";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { Button } from "@/components/ui/button.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useModelProviders } from "@/hooks/useModelProviders.js";
@@ -19,7 +19,7 @@ import { useModelProviderNavigation } from "./model-provider-section/useModelPro
 import { confirmAndDeleteModelProvider } from "./model-provider-section/modelProviderActions.js";
 import { createCustomProviderNodeKey } from "./model-provider-section/utils.js";
 import type { ModelProviderNavItem } from "./model-provider-section/constants.js";
-import type { ModelConnectivityResult } from "@zcode/shared";
+import type { ModelConnectivityResult } from "@zody/shared";
 import type { ProviderSettingsFormProvider } from "@/lib/providerSettingsFormTypes.js";
 
 // 端点建议/模糊匹配的纯函数由本模块对外转发（既有消费方从设置页入口导入）。
@@ -45,7 +45,7 @@ export function ModelProviderSection({
   pendingModelProviderTarget?: SettingsModelProviderTarget;
   onConsumePendingModelProviderTarget?: () => void;
 } = {}) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const confirmDialog = useConfirmDialog();
   const platform = usePlatform();
   const {

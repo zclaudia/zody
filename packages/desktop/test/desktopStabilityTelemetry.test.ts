@@ -22,8 +22,8 @@ vi.mock("@arms/rum-electron", () => ({
   },
 }));
 
-vi.mock("@zcode/shared", () => ({
-  mapZCodeEnvToArmsRumEnv: vi.fn(() => "local"),
+vi.mock("@zody/shared", () => ({
+  mapZodyEnvToArmsRumEnv: vi.fn(() => "local"),
 }));
 
 vi.mock("../src/main/desktopCrashCapture.js", () => ({

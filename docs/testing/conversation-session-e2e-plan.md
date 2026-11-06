@@ -37,7 +37,7 @@ conversation 主路径 spec 先统一放在 `packages/desktop/test/e2e/conversat
 3. 产品预期确认后，补充确定性断言和需要的 `data-testid` / 协议 / 日志 / 抓包 / snapshot 校验。
 4. 断言稳定后，把 spec 移回 `packages/desktop/test/e2e/conversation-session/`，并同步更新 [conversation-session-e2e-coverage-matrix.md](./conversation-session-e2e-coverage-matrix.md)。
 
-WDIO 默认全量 E2E 会排除 `manual-review`；显式传入 `manual-review` spec 或设置 `ZCODE_E2E_MANUAL_REVIEW=1` 时才运行这些人工 review case。`ZCODE_E2E_MANUAL_REVIEW=1` 且没有显式 `--spec` 时，默认只运行 `manual-review/**/*.test.ts`。
+WDIO 默认全量 E2E 会排除 `manual-review`；显式传入 `manual-review` spec 或设置 `ZODY_E2E_MANUAL_REVIEW=1` 时才运行这些人工 review case。`ZODY_E2E_MANUAL_REVIEW=1` 且没有显式 `--spec` 时，默认只运行 `manual-review/**/*.test.ts`。
 
 ## Spec 拆分
 

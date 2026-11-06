@@ -65,14 +65,14 @@ describe("desktop tsup chunk isolation", () => {
 
   it("main/host/scheduler 应内联 CUA producer，安装包不能依赖被排除的 @zcode node_modules", () => {
     for (const configName of ["main", "host", "scheduler"]) {
-      expect(getNoExternal(configName)).toContain("@zcode/zcode-cua");
+      expect(getNoExternal(configName)).toContain("@zody/zody-cua");
     }
   });
 
   it("main/host/scheduler 应内联 Provider workspace 包，Electron 不能直接加载 TypeScript 源码", () => {
     for (const configName of ["main", "host", "scheduler"]) {
-      expect(getNoExternal(configName)).toContain("@zcode/provider");
-      expect(getNoExternal(configName)).toContain("@zcode/provider-node");
+      expect(getNoExternal(configName)).toContain("@zody/provider");
+      expect(getNoExternal(configName)).toContain("@zody/provider-node");
     }
   });
 
@@ -96,7 +96,7 @@ describe("desktop tsup chunk isolation", () => {
     expect(
       resolveDesktopTsupBundleSecurityOptions({
         NODE_ENV: "production",
-        ZCODE_E2E_COVERAGE: "1",
+        ZODY_E2E_COVERAGE: "1",
       }),
     ).toEqual({
       keepNames: false,
@@ -141,9 +141,9 @@ describe("desktop tsup chunk isolation", () => {
       }),
     ).toEqual({});
     for (const key of [
-      "ZCODE_PACKAGED_AGENT_OTEL_ENDPOINT",
-      "ZCODE_PACKAGED_AGENT_OTEL_HEADERS",
-      "ZCODE_PACKAGED_AGENT_OTEL_SERVICE_NAME",
+      "ZODY_PACKAGED_AGENT_OTEL_ENDPOINT",
+      "ZODY_PACKAGED_AGENT_OTEL_HEADERS",
+      "ZODY_PACKAGED_AGENT_OTEL_SERVICE_NAME",
     ]) {
       expect(() => resolveBuildPackagedAgentTelemetryEnv({ [key]: "configured" })).toThrow(
         `${key} is disabled for Zody release builds`,
@@ -152,19 +152,19 @@ describe("desktop tsup chunk isolation", () => {
   });
 
   it("安装包身份与后端环境作为两个编译期常量注入每个 bundle", () => {
-    // 打包后的应用不能依赖机器环境变量：ZCODE_PREVIEW_IDENTITY 在构建时折叠成 __ZCODE_PRODUCT_FLAVOR__。
+    // 打包后的应用不能依赖机器环境变量：ZODY_PREVIEW_IDENTITY 在构建时折叠成 __ZODY_PRODUCT_FLAVOR__。
     for (const entry of ["main", "host", "preload"] as const) {
       const defines = getDefines(entry);
-      expect(defines).toHaveProperty("__ZCODE_ENV__");
-      expect(defines).toHaveProperty("__ZCODE_PRODUCT_FLAVOR__");
-      expect(['"production"', '"preview"']).toContain(defines.__ZCODE_PRODUCT_FLAVOR__);
+      expect(defines).toHaveProperty("__ZODY_ENV__");
+      expect(defines).toHaveProperty("__ZODY_PRODUCT_FLAVOR__");
+      expect(['"production"', '"preview"']).toContain(defines.__ZODY_PRODUCT_FLAVOR__);
     }
   });
 
   it("Agent OTLP 部署默认值只应编译进 Main bundle", () => {
-    expect(getDefines("main")).toHaveProperty("__ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__");
-    expect(getDefines("host")).not.toHaveProperty("__ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__");
-    expect(getDefines("preload")).not.toHaveProperty("__ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__");
+    expect(getDefines("main")).toHaveProperty("__ZODY_PACKAGED_AGENT_TELEMETRY_ENV__");
+    expect(getDefines("host")).not.toHaveProperty("__ZODY_PACKAGED_AGENT_TELEMETRY_ENV__");
+    expect(getDefines("preload")).not.toHaveProperty("__ZODY_PACKAGED_AGENT_TELEMETRY_ENV__");
   });
 
   it("所有 tsup 子构建都应关闭 esbuild legal comments 输出", () => {

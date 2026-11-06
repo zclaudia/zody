@@ -1,8 +1,8 @@
 import { act, createElement, useEffect, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { TabStoreProvider } from "@/store/TabStoreProvider.js";
@@ -95,7 +95,7 @@ function installMinimalDom() {
 function makeServices(id: string): IServiceAccessor {
   return {
     __testId: id,
-    zcodeAgentService: {
+    zodyAgentService: {
       onDynamicConversationFrame: () => () => ({ dispose: () => {} }),
       onAgentRuntimeRestarted: () => ({ dispose: () => {} }),
     },
@@ -107,7 +107,7 @@ function makeObservableServices(id: string) {
   return {
     services: {
       __testId: id,
-      zcodeAgentService: {
+      zodyAgentService: {
         onDynamicConversationFrame,
         onAgentRuntimeRestarted: () => ({ dispose: () => {} }),
       },
@@ -131,7 +131,7 @@ function makePreviewServices(id: string) {
   return {
     services: {
       __testId: id,
-      zcodeAgentService: {
+      zodyAgentService: {
         helloConversationV4: vi.fn(async () => ({
           kind: "hello" as const,
           protocolVersion: 3 as const,

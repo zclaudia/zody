@@ -7,7 +7,7 @@ import {
   HostMessageTypes,
   HostResponseTypes,
   type DatabaseStartupState,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { MessagePortMain } from "electron";
 import type { HostInitMessage } from "../src/main/desktopHostProcess.js";
 import {
@@ -27,7 +27,7 @@ export interface NativeHostInitProbeOptions {
   workspacePath: string;
   workspaceIdentity?: string;
   agentSpawnFallbackCwd?: string;
-  zcodeBuiltinProviderConfigFilePath: string;
+  zodyBuiltinProviderConfigFilePath: string;
   deviceMid?: string;
   runtimeProcessEnvPatch?: Record<string, string>;
   timeoutMs?: number;
@@ -79,7 +79,7 @@ function hostInitMessage(
     workspacePath: options.workspacePath,
     ...(options.workspaceIdentity ? { workspaceIdentity: options.workspaceIdentity } : {}),
     agentSpawnFallbackCwd: options.agentSpawnFallbackCwd ?? options.workspacePath,
-    zcodeBuiltinProviderConfigFilePath: options.zcodeBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath: options.zodyBuiltinProviderConfigFilePath,
     ...(options.deviceMid ? { deviceMid: options.deviceMid } : {}),
     ...(options.runtimeProcessEnvPatch
       ? { runtimeProcessEnvPatch: options.runtimeProcessEnvPatch }
@@ -209,11 +209,11 @@ function parseProbeArgs(argv: string[]): NativeHostInitProbeOptions {
   const launcherPath = required("--launcher");
   const launcherCwd = required("--launcher-cwd");
   const workspacePath = required("--workspace");
-  const zcodeBuiltinProviderConfigFilePath = required("--builtin-config");
+  const zodyBuiltinProviderConfigFilePath = required("--builtin-config");
   if (!isAbsolute(launcherPath) || !isAbsolute(launcherCwd) || !isAbsolute(workspacePath)) {
     throw new Error("--launcher, --launcher-cwd and --workspace must be absolute paths");
   }
-  if (!isAbsolute(zcodeBuiltinProviderConfigFilePath)) {
+  if (!isAbsolute(zodyBuiltinProviderConfigFilePath)) {
     throw new Error("--builtin-config must be an absolute path");
   }
   const timeout = values.get("--timeout-ms");
@@ -227,7 +227,7 @@ function parseProbeArgs(argv: string[]): NativeHostInitProbeOptions {
       ? { agentSpawnFallbackCwd: values.get("--fallback-cwd") }
       : {}),
     ...(values.get("--device-mid") ? { deviceMid: values.get("--device-mid") } : {}),
-    zcodeBuiltinProviderConfigFilePath,
+    zodyBuiltinProviderConfigFilePath: zodyBuiltinProviderConfigFilePath,
     ...(timeout ? { timeoutMs: Number(timeout) } : {}),
   };
 }
@@ -236,7 +236,7 @@ const USAGE = `Usage: node --import tsx packages/desktop/scripts/hostInitProbe.t
   --launcher <absolute native launcher> \\
   --launcher-cwd <absolute launcher cwd> \\
   --workspace <absolute workspace> \\
-  --builtin-config <absolute zcode-builtin.json> \\
+  --builtin-config <absolute zody-builtin.json> \\
   [--workspace-identity <identity>] [--fallback-cwd <absolute path>] \\
   [--device-mid <id>] [--timeout-ms <ms>]`;
 

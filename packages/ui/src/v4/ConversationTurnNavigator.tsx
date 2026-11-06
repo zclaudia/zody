@@ -5,14 +5,14 @@ import {
   TID_V4_TURN_NAVIGATOR_ITEM,
   TID_V4_TURN_NAVIGATOR_TOOLTIP,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   buildConversationTurnNavigatorItems,
   resolveConversationTurnNavigatorActiveUnitIndex,
@@ -61,7 +61,7 @@ function ConversationTurnNavigatorImpl({
   isHydratingDirectory = false,
   onJumpToQuery,
 }: ConversationTurnNavigatorProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const prefersReducedMotion = usePrefersReducedMotion();
   const [interactionItemIndex, setInteractionItemIndex] = useState<number | undefined>(
     undefined,

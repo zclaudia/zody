@@ -81,7 +81,7 @@ phase-1 的判定是"`URL.origin` === 运行时 ZCode API origin"。stdio 没有
 targetOrigin := resolveRuntimeZCodeEndpointOrigin(env)     # 客户端自行解析，不读任何插件配置
 ```
 
-口径与 `zcode-protocol-entrypoint.ts` 现有的 4 处调用一致（`ZCODE_BASE_URL` 由宿主
+口径与 `zcode-protocol-entrypoint.ts` 现有的 4 处调用一致（`ZODY_BASE_URL` 由宿主
 `resolveSpawnEnv` 下发权威值，见 commit `9c9d1683`）。
 
 **为什么这比 http 路径更严**：http 路径下插件能写 url，判定的作用是"把它挡回官方 origin"；

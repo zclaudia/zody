@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FileEntry, WebRemoteControlMobileDirectoryListResult } from "@zcode/shared";
+import type { FileEntry, WebRemoteControlMobileDirectoryListResult } from "@zody/shared";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { useMobileRemoteRefreshGuard } from "@/mobileRemoteRefreshGuards.js";
 
@@ -33,7 +33,7 @@ export function MobileWorkspacePicker({
   /** 打开成功后由宿主切换 workspace（回调参数是聚合列表里的 workspaceKey）。 */
   onOpened(workspaceKey: string): void | Promise<void>;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   // 目录选择器是活动弹层；关闭/打开完成卸载后解除刷新阻塞。
   useMobileRemoteRefreshGuard("mobile-workspace-picker", () => "active-overlay");
   const [initialResult, setInitialResult] = useState<{ resolvedPath: string } | "failed" | null>(

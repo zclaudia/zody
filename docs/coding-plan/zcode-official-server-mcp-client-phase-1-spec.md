@@ -206,7 +206,7 @@ export interface McpHttpServerConfig extends McpServerConfigBase {
    host 代发请求、凭证永不出 host，属更大的设计改动，不在本阶段。因此当前设计的定位是
    **防御纵深**（防 agent 侧 bug、防未走 wrapper 的新代码），不是防已被攻破的 agent。
    顺带纠正一处曾经写错的推论（SG-03）：targetOrigin 校验**挡不住"知道该 origin 的请求方"**
-   ——agent 经 `ZCODE_BASE_URL` 就知道它，插件也能在配置里写出它。它的作用只是把凭证的
+   ——agent 经 `ZODY_BASE_URL` 就知道它，插件也能在配置里写出它。它的作用只是把凭证的
    **流向**钉死在 ZCode origin；
 4. **没有用户可见的授权确认**。插件声明官方鉴权、宿主发放身份头，全程用户无感。补一次性确认
    是收紧方向（见 `isOfficialMcpOriginTrusted` 末段），属产品决策，未做；

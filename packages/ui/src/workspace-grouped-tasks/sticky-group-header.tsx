@@ -1,4 +1,4 @@
-import type { ZCodeGroupedTaskViewNode, ZCodeTaskGroupColor } from "@zcode/services";
+import type { ZodyGroupedTaskViewNode, ZodyTaskGroupColor } from "@zody/services";
 import { ChevronDownIcon, ChevronRightIcon, MessageCirclePlus } from "lucide-react";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
@@ -21,8 +21,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { CRON_DEFAULT_GROUP_ID } from "@zcode/shared";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { CRON_DEFAULT_GROUP_ID } from "@zody/shared";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { getTaskGroupDisplayTitle } from "@/workspace-grouped-tasks/group-title.js";
 import {
   TASK_GROUP_COLORS,
@@ -30,7 +30,7 @@ import {
   TaskGroupColorMark,
 } from "@/workspace-grouped-tasks/shared.js";
 
-type StickyGroupNode = Extract<ZCodeGroupedTaskViewNode, { type: "group" }>;
+type StickyGroupNode = Extract<ZodyGroupedTaskViewNode, { type: "group" }>;
 
 export function StickyGroupHeader({
   node,
@@ -46,10 +46,10 @@ export function StickyGroupHeader({
   tooltipsDisabled?: boolean;
   onCreateTask: () => void;
   onToggleCollapsed: (groupId: string) => void;
-  onUpdateGroupColor: (groupId: string, color: ZCodeTaskGroupColor) => void;
+  onUpdateGroupColor: (groupId: string, color: ZodyTaskGroupColor) => void;
   onUngroupGroup: (groupId: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const taskCount = node.tasks.length;
   // 系统分组（cron）标题按语言环境本地化展示，与 GroupItem 保持一致。
   // fork（F4.3）：offPeak 标题与 isSystemGroup 的 OFF_PEAK 分支随闲时任务全链路删除。
@@ -61,7 +61,7 @@ export function StickyGroupHeader({
   const isSystemGroup = node.group.id === CRON_DEFAULT_GROUP_ID;
   const handleToggle = () => onToggleCollapsed(node.group.id);
   const handleGroupColorChange = (color: string) => {
-    onUpdateGroupColor(node.group.id, color as ZCodeTaskGroupColor);
+    onUpdateGroupColor(node.group.id, color as ZodyTaskGroupColor);
   };
   const newTaskButton = (
     <Button

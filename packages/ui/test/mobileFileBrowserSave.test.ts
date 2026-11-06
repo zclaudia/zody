@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { IFileService } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import type { IFileService } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 import {
   MOBILE_FILE_SAVE_MAX_BYTES,
   MOBILE_FILE_SAVE_RANGE_BYTES,

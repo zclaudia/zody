@@ -2,7 +2,7 @@ import type {
   ExtensionBridgeClientMessage,
   ExtensionBridgeFailure,
   ExtensionBridgeServerMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import type { TabsListPayload, WorkerRequest, WorkerResponse } from "./workerProtocol.js";
 
 export interface HostCommandRouterDeps {

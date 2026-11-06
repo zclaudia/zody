@@ -7,7 +7,7 @@ import {
 } from "@/hooks/useMobileHistorySearch.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 export interface WebRemoteControlMobileSearchProps {
   workspaces: readonly MobileHistorySearchWorkspace[];
@@ -56,7 +56,7 @@ export function WebRemoteControlMobileSearch({
   onSelectTask,
   onBack,
 }: WebRemoteControlMobileSearchProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const search = useMobileHistorySearch({ workspaces, connection, send, createRequestId });
   const knownScopes = useMemo(
     () => new Set(search.outcomes.map((outcome) => outcome.context.workspaceKey)),

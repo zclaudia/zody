@@ -9,11 +9,11 @@ import { join } from "node:path";
 import {
   DEFAULT_LOCALE,
   type Locale,
-  ZCODE_BUILD_TIME,
-  ZCODE_COMMIT,
-  ZCODE_ENV,
-  ZCODE_VERSION,
-} from "@zcode/shared";
+  ZODY_BUILD_TIME,
+  ZODY_COMMIT,
+  ZODY_ENV,
+  ZODY_VERSION,
+} from "@zody/shared";
 import { createCustomAboutDialogHtml } from "./aboutWindow.js";
 
 interface DesktopBuildMetadata {
@@ -154,10 +154,10 @@ export function createAboutSnapshot(options: AboutSnapshotOptions = {}): AboutSn
   };
 
   return {
-    appVersion: normalizeValue(options.appVersion ?? buildMetadata?.appVersion ?? ZCODE_VERSION),
-    buildCommitId: normalizeValue(buildMetadata?.buildCommitId ?? ZCODE_COMMIT),
-    buildTime: normalizeValue(buildMetadata?.buildTime ?? ZCODE_BUILD_TIME),
-    environment: normalizeValue(options.environment ?? ZCODE_ENV),
+    appVersion: normalizeValue(options.appVersion ?? buildMetadata?.appVersion ?? ZODY_VERSION),
+    buildCommitId: normalizeValue(buildMetadata?.buildCommitId ?? ZODY_COMMIT),
+    buildTime: normalizeValue(buildMetadata?.buildTime ?? ZODY_BUILD_TIME),
+    environment: normalizeValue(options.environment ?? ZODY_ENV),
     electronVersion: normalizeValue(runtimeVersions.electron),
     electronBuilderVersion: resolveElectronBuilderVersion(buildMetadata),
     chromiumVersion: normalizeValue(runtimeVersions.chrome),

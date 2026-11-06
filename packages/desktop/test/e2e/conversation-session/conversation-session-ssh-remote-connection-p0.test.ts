@@ -1,4 +1,4 @@
-import { buildRemoteWorkspaceIdentity, type RemoteTarget } from "@zcode/shared";
+import { buildRemoteWorkspaceIdentity, type RemoteTarget } from "@zody/shared";
 import { clearAppData, waitForWorkspaceApp } from "../helpers/desktop-app.js";
 import { prepareV4ConversationE2E } from "../helpers/v4-conversation.js";
 import {

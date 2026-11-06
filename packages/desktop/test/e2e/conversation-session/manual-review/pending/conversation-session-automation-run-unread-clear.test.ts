@@ -16,7 +16,7 @@ import {
   TID_TASK_ITEM,
   encodeCustomModelValue,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_CONVERSATION_WORKSPACE,
   clearAppData,

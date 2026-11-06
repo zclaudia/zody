@@ -3,7 +3,7 @@ import { mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
-import { prepareProtocolStartupStorage } from "../../../apps/zcode-cli/packages/bootstrap/src/zcode-protocol/storage-startup.js";
+import { prepareProtocolStartupStorage } from "../../../apps/zody-cli/packages/bootstrap/src/zody-protocol/storage-startup.js";
 
 it("waits for path observation before opening storage and exits without business startup", async () => {
   const dir = await mkdtemp(join(tmpdir(), "zcode-storage-only-"));

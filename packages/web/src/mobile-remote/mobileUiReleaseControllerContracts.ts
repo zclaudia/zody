@@ -2,7 +2,7 @@ import type {
   MobileRemotePrepareReloadResult,
   MobileRemotePrepareReloadResultKind,
   MobileUiReleaseManifest,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   MobileUiReleaseFailureReason,
   MobileUiReleaseObservation,

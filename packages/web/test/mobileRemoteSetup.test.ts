@@ -2,7 +2,7 @@
 
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { PlatformSecureStore } from "@zcode/shared";
+import type { PlatformSecureStore } from "@zody/shared";
 import { saveMobileRemoteSettingsDraft } from "../src/mobile-remote/mobileRemoteSettingsDraft.js";
 
 /**

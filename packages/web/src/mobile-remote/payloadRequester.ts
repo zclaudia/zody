@@ -1,4 +1,4 @@
-import type { WebRemoteControlAppPayload, WebRemoteControlFailure } from "@zcode/shared";
+import type { WebRemoteControlAppPayload, WebRemoteControlFailure } from "@zody/shared";
 
 /**
  * 手机远控的应用 payload 请求层：把 requestId 等待、超时收敛和错误消费从 transport 里拆出来，
@@ -80,7 +80,7 @@ export function createWebRemoteControlAppPayloadRequester({
 
     acceptPayload(payload: WebRemoteControlAppPayload): boolean {
       if (
-        (payload.zcode_type === "app-error" || payload.zcode_type === "workspace-bridge-error") &&
+        (payload.zody_type === "app-error" || payload.zody_type === "workspace-bridge-error") &&
         payload.requestId
       ) {
         // Bugfix: remote session 关闭这类异步 bridge error 会带合成 requestId，

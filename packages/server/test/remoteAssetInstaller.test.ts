@@ -7,22 +7,27 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { PassThrough } from "node:stream";
-import type { IDisposable, Event } from "@zcode/rpc";
+import type { IDisposable, Event } from "@zody/rpc";
 import type {
   IRemoteBackend,
   RemoteUploadOptions,
   StdioStream,
-} from "@zcode/server/remote/backend.js";
-import { ZCODE_VERSION } from "@zcode/shared";
+} from "@zody/server/remote/backend.js";
+import { ZODY_VERSION } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import {
   LocalUploadAssetInstaller,
   RemoteDownloadAssetInstaller,
   buildRemoteArtifactDownloadCommand,
   buildRemoteChecksumCommand,
-} from "@zcode/server/remote/remoteAssetInstaller.js";
-import type { RemoteSha256Tool } from "@zcode/server/remote/remoteAssetPreflight.js";
-import { extractTarGzArchive } from "@zcode/server/remote/localTarGz.js";
+} from "@zody/server/remote/remoteAssetInstaller.js";
+import type { RemoteSha256Tool } from "@zody/server/remote/remoteAssetPreflight.js";
+import { extractTarGzArchive } from "@zody/server/remote/localTarGz.js";
+import {
+  REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS,
+  REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES,
+  REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS,
+} from "@zody/server/remote/zodyAgentOfficialPluginAssets.js";
 
 const execFileAsync = promisify(execFile);
 const localShellCommand = resolveLocalShellCommand();
@@ -141,7 +146,7 @@ function stubManifestAndHeadFetch(manifest: unknown, contentLength: number): voi
 
 const validManifest = {
   schemaVersion: 1,
-  appVersion: ZCODE_VERSION,
+  appVersion: ZODY_VERSION,
   platformArch: "linux-x64",
   components: [
     {
@@ -199,6 +204,22 @@ async function detectLocalShellSha256Tool(shellCommand: string): Promise<RemoteS
 }
 
 describe("remote asset installer command builders", () => {
+  // R54：新格式目录随包分发，但必需资产清单保持 legacy 字节（上游源资产仍是旧格式）。
+  it("ships the new manifest directory while required assets stay legacy", () => {
+    expect(REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS).toContain(".zody-plugin");
+    expect(REMOTE_AGENT_OFFICIAL_PLUGIN_INCLUDED_TOP_LEVEL_PATHS).toContain(".zcode-plugin");
+    expect(
+      REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.some((relativePath) =>
+        relativePath.includes(".zody-plugin/plugin.json"),
+      ),
+    ).toBe(false);
+    expect(
+      REMOTE_AGENT_OFFICIAL_PLUGIN_REQUIRED_RELATIVE_PATHS.filter((relativePath) =>
+        relativePath.endsWith(".zcode-plugin/plugin.json"),
+      ),
+    ).toHaveLength(REMOTE_AGENT_OFFICIAL_PLUGIN_PACKAGE_NAMES.length);
+  });
+
   it("quotes remote paths and URLs in download commands", () => {
     const command = buildRemoteArtifactDownloadCommand({
       tool: "curl",
@@ -284,7 +305,7 @@ describe("LocalUploadAssetInstaller", () => {
   it("已取消连接不得开始写入远端 staging", async () => {
     const releaseDir = await mkdtemp(join(tmpdir(), "zcode-installer-pre-cancel-test-"));
     await mkdir(join(releaseDir, "server"), { recursive: true });
-    await writeFile(join(releaseDir, "server", "zcode-server.cjs"), "server", "utf8");
+    await writeFile(join(releaseDir, "server", "zody-server.cjs"), "server", "utf8");
     const controller = new AbortController();
     controller.abort();
     const backend = new InstallerBackend();
@@ -310,8 +331,8 @@ describe("LocalUploadAssetInstaller", () => {
     await expect(
       installer.installFile({
         componentId: "server-bundle",
-        sourceRelativePath: "server/zcode-server.cjs",
-        remotePath: "~/.zody/server/zcode-server.cjs",
+        sourceRelativePath: "server/zody-server.cjs",
+        remotePath: "~/.zody/server/zody-server.cjs",
       }),
     ).rejects.toMatchObject({ name: "AbortError" });
 
@@ -322,7 +343,7 @@ describe("LocalUploadAssetInstaller", () => {
   it("把连接取消信号传给远端文件上传", async () => {
     const releaseDir = await mkdtemp(join(tmpdir(), "zcode-installer-abort-test-"));
     await mkdir(join(releaseDir, "server"), { recursive: true });
-    await writeFile(join(releaseDir, "server", "zcode-server.cjs"), "server", "utf8");
+    await writeFile(join(releaseDir, "server", "zody-server.cjs"), "server", "utf8");
     const controller = new AbortController();
     const backend = new InstallerBackend();
     const installer = new LocalUploadAssetInstaller(
@@ -337,8 +358,8 @@ describe("LocalUploadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
 
     expect(backend.uploads[0]?.signal).toBe(controller.signal);
@@ -347,7 +368,7 @@ describe("LocalUploadAssetInstaller", () => {
   it("新的 SSH 文件上传会先清理超过 24 小时的同路径 owner staging", async () => {
     const releaseDir = await mkdtemp(join(tmpdir(), "zcode-installer-stale-file-test-"));
     await mkdir(join(releaseDir, "server"), { recursive: true });
-    await writeFile(join(releaseDir, "server", "zcode-server.cjs"), "server", "utf8");
+    await writeFile(join(releaseDir, "server", "zody-server.cjs"), "server", "utf8");
     const controller = new AbortController();
     const backend = new InstallerBackend();
     const installer = new LocalUploadAssetInstaller(
@@ -362,12 +383,12 @@ describe("LocalUploadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
 
     expect(backend.commands[0]).toContain("find");
-    expect(backend.commands[0]).toContain("zcode-server.cjs.new-");
+    expect(backend.commands[0]).toContain("zody-server.cjs.new-");
     expect(backend.commands[0]).toContain("-mtime +0");
     expect(backend.commands[0]).toContain("-exec rm -rf");
   });
@@ -379,8 +400,8 @@ describe("LocalUploadAssetInstaller", () => {
       const remoteDir = join(rootDir, "remote");
       await mkdir(join(releaseDir, "server"), { recursive: true });
       await mkdir(remoteDir, { recursive: true });
-      await writeFile(join(releaseDir, "server", "zcode-server.cjs"), "server", "utf8");
-      const targetPath = join(remoteDir, "zcode-server.cjs");
+      await writeFile(join(releaseDir, "server", "zody-server.cjs"), "server", "utf8");
+      const targetPath = join(remoteDir, "zody-server.cjs");
       const stalePath = `${targetPath}.new-stale`;
       const freshPath = `${targetPath}.new-fresh`;
       await writeFile(targetPath, "final", "utf8");
@@ -402,7 +423,7 @@ describe("LocalUploadAssetInstaller", () => {
 
       await installer.installFile({
         componentId: "server-bundle",
-        sourceRelativePath: "server/zcode-server.cjs",
+        sourceRelativePath: "server/zody-server.cjs",
         remotePath: toLocalShellPath(targetPath),
       });
       await execFileAsync(localShellCommand!, ["-c", backend.commands[0]!]);
@@ -418,7 +439,7 @@ describe("LocalUploadAssetInstaller", () => {
   it("文件上传取消后不再执行正式文件替换", async () => {
     const releaseDir = await mkdtemp(join(tmpdir(), "zcode-installer-cancel-test-"));
     await mkdir(join(releaseDir, "server"), { recursive: true });
-    await writeFile(join(releaseDir, "server", "zcode-server.cjs"), "server", "utf8");
+    await writeFile(join(releaseDir, "server", "zody-server.cjs"), "server", "utf8");
     const controller = new AbortController();
     const backend = new InstallerBackend();
     let markUploadStarted!: () => void;
@@ -452,8 +473,8 @@ describe("LocalUploadAssetInstaller", () => {
 
     const installing = installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
     await uploadStarted;
     controller.abort();
@@ -570,7 +591,7 @@ describe("LocalUploadAssetInstaller", () => {
   it("uses a unique staging path for each uploaded file replacement", async () => {
     const releaseDir = await mkdtemp(join(tmpdir(), "zcode-installer-test-"));
     await mkdir(join(releaseDir, "server"), { recursive: true });
-    await writeFile(join(releaseDir, "server", "zcode-server.cjs"), "server", "utf8");
+    await writeFile(join(releaseDir, "server", "zody-server.cjs"), "server", "utf8");
     const backend = new InstallerBackend();
     const installer = new LocalUploadAssetInstaller(
       backend,
@@ -580,12 +601,12 @@ describe("LocalUploadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
 
     expect(backend.uploads[0]?.remotePath).toMatch(
-      /^~\/\.zody\/server\/zcode-server\.cjs\.new-[\w-]+$/u,
+      /^~\/\.zody\/server\/zody-server\.cjs\.new-[\w-]+$/u,
     );
     expect(backend.commands.join("\n")).toContain(backend.uploads[0]!.remotePath.split("/").at(-1));
     expect(backend.commands[0]).not.toContain("find");
@@ -623,7 +644,7 @@ describe("LocalUploadAssetInstaller", () => {
       join(releaseDir, "manifest-linux-x64.json"),
       JSON.stringify({
         schemaVersion: 1,
-        appVersion: ZCODE_VERSION,
+        appVersion: ZODY_VERSION,
         platformArch: "linux-x64",
         components: [
           {
@@ -669,10 +690,10 @@ describe("LocalUploadAssetInstaller", () => {
     ).resolves.toBeNull();
 
     await mkdir(join(releaseDir, "server"), { recursive: true });
-    await writeFile(join(releaseDir, "server", "zcode-server.cjs"), "server");
+    await writeFile(join(releaseDir, "server", "zody-server.cjs"), "server");
     await expect(
-      installer.tryResolveLocalPath(["server-bundle"], "server/zcode-server.cjs"),
-    ).resolves.toBe(join(releaseDir, "server", "zcode-server.cjs"));
+      installer.tryResolveLocalPath(["server-bundle"], "server/zody-server.cjs"),
+    ).resolves.toBe(join(releaseDir, "server", "zody-server.cjs"));
   });
 
   it("creates directory upload archives without relying on local system tar", async () => {
@@ -744,7 +765,7 @@ describe("LocalUploadAssetInstaller", () => {
       {
         releaseDir: staleReleaseDir,
         platformArch: "linux-x64",
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         remoteCacheDir: rootDir,
         remoteCdnBaseUrl: "https://cdn.example.test/releases",
       },
@@ -783,7 +804,7 @@ describe("LocalUploadAssetInstaller", () => {
       {
         releaseDir,
         platformArch: "linux-x64",
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         remoteCacheDir: join(releaseDir, "cache"),
         remoteCdnBaseUrl: "https://cdn.example.test/releases",
         manifestRequestTimeoutMs: 25,
@@ -793,7 +814,7 @@ describe("LocalUploadAssetInstaller", () => {
 
     const startedAt = Date.now();
     await expect(
-      installer.tryResolveLocalPath(["glm"], "glm/linux-x64/missing-zcode.cjs"),
+      installer.tryResolveLocalPath(["glm"], "glm/linux-x64/missing-zody.cjs"),
     ).resolves.toBeNull();
     expect(Date.now() - startedAt).toBeLessThan(1_000);
     expect(fetchMock).toHaveBeenCalled();
@@ -810,7 +831,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
         signal: controller.signal,
@@ -822,8 +843,8 @@ describe("RemoteDownloadAssetInstaller", () => {
     await expect(
       installer.installFile({
         componentId: "server-bundle",
-        sourceRelativePath: "server/zcode-server.cjs",
-        remotePath: "~/.zody/server/zcode-server.cjs",
+        sourceRelativePath: "server/zody-server.cjs",
+        remotePath: "~/.zody/server/zody-server.cjs",
       }),
     ).rejects.toMatchObject({ name: "AbortError" });
 
@@ -847,7 +868,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
         remoteAssetNetwork: { fetch: remoteAssetFetch },
@@ -859,8 +880,8 @@ describe("RemoteDownloadAssetInstaller", () => {
     try {
       await installer.installFile({
         componentId: "server-bundle",
-        sourceRelativePath: "server/zcode-server.cjs",
-        remotePath: "~/.zody/server/zcode-server.cjs",
+        sourceRelativePath: "server/zody-server.cjs",
+        remotePath: "~/.zody/server/zody-server.cjs",
       });
 
       expect(directFetch).not.toHaveBeenCalled();
@@ -894,7 +915,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
         signal: controller.signal,
@@ -905,8 +926,8 @@ describe("RemoteDownloadAssetInstaller", () => {
 
     const installing = installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
     await headStarted;
     controller.abort();
@@ -928,7 +949,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -938,8 +959,8 @@ describe("RemoteDownloadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
 
     const command = backend.commands.join("\n");
@@ -953,7 +974,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     );
     expect(command).toContain('kill "$lock_heartbeat_pid"');
     expect(command).toMatch(/\.new-[^\s']+/u);
-    expect(command).toMatch(/zcode-server\.cjs\.new-[\w-]+/u);
+    expect(command).toMatch(/zody-server\.cjs\.new-[\w-]+/u);
     expect(command).toContain("curl -fL");
     expect(command).toContain("sha256sum");
     vi.unstubAllGlobals();
@@ -969,7 +990,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -982,8 +1003,8 @@ describe("RemoteDownloadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
 
     expect(logs).toContain(
@@ -999,7 +1020,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -1009,8 +1030,8 @@ describe("RemoteDownloadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
 
     expect(backend.commands.join("\n")).toContain("total=2097152");
@@ -1040,7 +1061,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -1053,8 +1074,8 @@ describe("RemoteDownloadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "server-bundle",
-      sourceRelativePath: "server/zcode-server.cjs",
-      remotePath: "~/.zody/server/zcode-server.cjs",
+      sourceRelativePath: "server/zody-server.cjs",
+      remotePath: "~/.zody/server/zody-server.cjs",
     });
 
     const commands = backend.commands.join("\n");
@@ -1094,7 +1115,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       backend,
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -1107,8 +1128,8 @@ describe("RemoteDownloadAssetInstaller", () => {
 
     await installer.installFile({
       componentId: "glm",
-      sourceRelativePath: "glm/linux-x64/zcode.cjs",
-      remotePath: "~/.zody/server/agents/glm/zcode.cjs",
+      sourceRelativePath: "glm/linux-x64/zody.cjs",
+      remotePath: "~/.zody/server/agents/glm/zody.cjs",
     });
 
     const commands = backend.commands.join("\n");
@@ -1132,7 +1153,7 @@ describe("RemoteDownloadAssetInstaller", () => {
     const installer = new RemoteDownloadAssetInstaller(
       new InstallerBackend(),
       {
-        version: ZCODE_VERSION,
+        version: ZODY_VERSION,
         platformArch: "linux-x64",
         remoteCdnBaseUrls: ["https://cdn.example.test/releases"],
       },
@@ -1143,8 +1164,8 @@ describe("RemoteDownloadAssetInstaller", () => {
     await expect(
       installer.installFile({
         componentId: "server-bundle",
-        sourceRelativePath: "server/zcode-server.cjs",
-        remotePath: "~/.zody/server/zcode-server.cjs",
+        sourceRelativePath: "server/zody-server.cjs",
+        remotePath: "~/.zody/server/zody-server.cjs",
       }),
     ).rejects.toThrow("sha256 is invalid");
     vi.unstubAllGlobals();

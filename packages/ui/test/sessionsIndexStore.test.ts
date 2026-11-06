@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import { ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE } from "@zcode/shared";
+import { ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE } from "@zody/shared";
 import type {
   SessionSummary,
   SessionsIndexTopicFrame,
   TopicFrameDeliveryKind,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   PROTOCOL_V4_LIMITS,
   SUBSCRIPTION_CONTENT_REJECTED,
   WIRE_FAULT_INVALID_PAYLOAD,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import type { SessionsIndexTransport } from "@/v4/agentSessionsIndexTransport.js";
 import { logger } from "@/logger.js";
 import {
@@ -669,6 +669,28 @@ describe("SessionsIndexStore", () => {
     }
   });
 
+  it.each(["ZCODE_AGENT_RUNTIME_UNAVAILABLE", "ZCODE_FILE_LOCK_TIMEOUT"])(
+    "does not classify the old live code %s by itself",
+    async (code) => {
+      vi.useFakeTimers();
+      try {
+        const store = new SessionsIndexStore();
+        const { transport } = mockTransport({
+          subscribe: vi.fn(async () => {
+            throw Object.assign(new Error("unclassified"), { code });
+          }),
+        });
+        await store.connect(transport, { forceSnapshot: true });
+        expect(store.getStatus()).toBe("error");
+        await vi.advanceTimersByTimeAsync(1_000);
+        expect(transport.subscribe).toHaveBeenCalledTimes(1);
+        store.close();
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
+
   it("runtime 缺失进入 dormant，不轮询；available 自动恢复，unavailable 清空 live 投影", async () => {
     vi.useFakeTimers();
     try {
@@ -681,7 +703,7 @@ describe("SessionsIndexStore", () => {
             attempts += 1;
             if (attempts === 1) {
               throw Object.assign(new Error("agent runtime is unavailable"), {
-                code: "ZCODE_AGENT_RUNTIME_UNAVAILABLE",
+                code: "ZODY_AGENT_RUNTIME_UNAVAILABLE",
               });
             }
             return {
@@ -790,7 +812,7 @@ describe("SessionsIndexStore", () => {
           attempts += 1;
           if (attempts === 1) {
             throw Object.assign(new Error("lock timeout without a path"), {
-              code: ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE,
+              code: ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE,
             });
           }
           return {

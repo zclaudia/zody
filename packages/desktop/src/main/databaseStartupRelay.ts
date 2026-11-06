@@ -5,7 +5,7 @@ import {
   InternalChannels,
   databaseStartupControlSchema,
   type DatabaseStartupState,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { reportDatabaseStartupState } from "./databaseStartupTelemetry.js";
 import type { HostProcessHandle } from "./hostProcessHandle.js";
 

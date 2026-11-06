@@ -42,7 +42,7 @@ vi.mock("@/hooks/useProviderSettingsView.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: (
         { id }: { id: string },
@@ -54,7 +54,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: unknown) => unknown) =>
+  useZodyStore: (selector: (state: unknown) => unknown) =>
     selector({
       user: null,
       markApiKeyLoginSuccess: vi.fn(),

@@ -3,10 +3,10 @@
  * 添加入口只在页头保留一个，空状态内不再重复主按钮。
  */
 import { BoxesIcon } from "lucide-react";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 
 export function ModelProviderEmptyState() {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   return (
     <div

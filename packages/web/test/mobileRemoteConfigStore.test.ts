@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE,
   type PlatformSecureStore,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   MobileRemoteConfigStore,
   parseMobileRemoteGatewayConfig,

@@ -6,7 +6,7 @@ import type {
   ClientSceneConfig,
   ClientScenesResponse,
   IClientScenesService,
-} from "@zcode/services";
+} from "@zody/services";
 import { useAutomationTemplates } from "@/settings/useAutomationTemplates.js";
 
 const loggerWarn = vi.hoisted(() => vi.fn());

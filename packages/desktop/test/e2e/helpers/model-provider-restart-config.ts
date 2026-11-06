@@ -6,9 +6,9 @@ import {
   ProviderApiConfig,
   ProviderConfig,
   type ProviderApiType,
-} from "@zcode/provider";
-import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
-import type { ModelSelection } from "@zcode/shared/model-selection";
+} from "@zody/provider";
+import { NodePersonalProviderConfigRepository } from "@zody/provider-node";
+import type { ModelSelection } from "@zody/shared/model-selection";
 
 const DEFAULT_CONTEXT_WINDOW = 200_000;
 const DEFAULT_MAX_OUTPUT_TOKENS = 32_000;

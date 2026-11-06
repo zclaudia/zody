@@ -3,7 +3,7 @@ import {
   BROWSER_VIEW_RESTORE_BOOTSTRAP_URL,
   TID_BROWSER_WEBVIEW,
   type BrowserViewportSize,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { TriangleAlertIcon } from "lucide-react";
 import { ResponsiveBrowserViewport } from "@/browser-use/ResponsiveBrowserViewport.js";
 import {

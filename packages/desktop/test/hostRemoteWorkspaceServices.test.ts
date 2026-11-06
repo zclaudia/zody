@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel } from "@zcode/rpc";
+import { ChannelClient, ChannelServer, createQueuePair, Emitter, ProxyChannel } from "@zody/rpc";
 import {
   ServiceCollection,
   IFileService,
@@ -14,9 +14,9 @@ import {
   IOnboardingRecordService,
   ICredentialService,
   IBroadcastService,
-  IZCodeAgentService,
-  IZCodeSessionService,
-  IZCodeTaskService,
+  IZodyAgentService,
+  IZodySessionService,
+  IZodyTaskService,
   IFileWatcherService,
   IModelSelectionService,
   IProviderSettingsService,
@@ -30,15 +30,15 @@ import {
   ISubagentsService,
   ICommandsService,
   ISettingsSyncService,
-  type ZCodeAgentSessionRuntimePreferencesRequest,
-} from "@zcode/services";
+  type ZodyAgentSessionRuntimePreferencesRequest,
+} from "@zody/services";
 import {
   type ApiClient,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createRemoteConnectionServiceCollection } from "../src/host/remoteConnectionServiceCollection.js";
 import { createRemotePromptAttachmentTaskService } from "../src/host/remotePromptAttachments.js";
-import { setDataBaseDir } from "@zcode/services/node";
-import * as nodeServices from "@zcode/services/node";
+import { setDataBaseDir } from "@zody/services/node";
+import * as nodeServices from "@zody/services/node";
 import {
   createRemoteWorkspaceServiceCollection,
   createServerRemoteWorkspaceServiceCollection,
@@ -100,7 +100,7 @@ function createPresetFetchMock(modelContextBudgetStrategy: "legacy" | "preflight
 }
 
 function makeRemoteServices() {
-  const runtimePreferencesEmitter = new Emitter<ZCodeAgentSessionRuntimePreferencesRequest>();
+  const runtimePreferencesEmitter = new Emitter<ZodyAgentSessionRuntimePreferencesRequest>();
 
   return {
     fileService: { remote: "file" },
@@ -108,13 +108,13 @@ function makeRemoteServices() {
     gitCheckpointService: { remote: "git-checkpoint" },
     systemService: { remote: "system" },
     terminalService: { remote: "terminal" },
-    zcodeAgentService: {
+    zodyAgentService: {
       onDynamicSessionRuntimePreferencesRequest: vi.fn(() => runtimePreferencesEmitter.event),
       respondSessionRuntimePreferences: vi.fn(async () => undefined),
     },
     runtimePreferencesEmitter,
-    zcodeTaskService: { sendPrompt: vi.fn() },
-    zcodeSessionService: { remote: "zcode-session" },
+    zodyTaskService: { sendPrompt: vi.fn() },
+    zodySessionService: { remote: "zcode-session" },
     fileWatcherService: { remote: "file-watcher" },
     skillsService: { remote: "skills" },
     skillSyncService: { remote: "skill-sync" },
@@ -175,7 +175,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => ({ wrapped: service }) as never,
+      createReportingRemoteZodyTaskService: (service) => ({ wrapped: service }) as never,
     });
 
     expect(services.get(IFileService)).toBe(remoteServices.fileService);
@@ -184,11 +184,11 @@ describe("remote workspace host service wiring", () => {
     expect(services.get(ISystemService)).toBe(remoteServices.systemService);
     expect(services.get(ITerminalService)).toBe(remoteServices.terminalService);
     expect(services.get(IFileWatcherService)).toBe(remoteServices.fileWatcherService);
-    expect(services.get(IZCodeTaskService)).toEqual({
-      wrapped: remoteServices.zcodeTaskService,
+    expect(services.get(IZodyTaskService)).toEqual({
+      wrapped: remoteServices.zodyTaskService,
     });
-    expect(services.get(IZCodeAgentService)).toBe(remoteServices.zcodeAgentService);
-    expect(services.get(IZCodeSessionService)).toBe(remoteServices.zcodeSessionService);
+    expect(services.get(IZodyAgentService)).toBe(remoteServices.zodyAgentService);
+    expect(services.get(IZodySessionService)).toBe(remoteServices.zodySessionService);
 
     expect(services.get(IClientConfigService)).toBe(clientConfigService);
     expect(services.get(ISettingService)).toBeTruthy();
@@ -241,7 +241,7 @@ describe("remote workspace host service wiring", () => {
               parentPort: null,
               createRemotePromptAttachmentTaskService: passthroughService,
               createRemotePromptAttachmentSessionService: passthroughService,
-              createReportingRemoteZCodeTaskService: passthroughService,
+              createReportingRemoteZodyTaskService: passthroughService,
             });
       const [serverProtocol, clientProtocol] = createQueuePair();
       const server = new ChannelServer(serverProtocol, "mobile-onboarding", 50);
@@ -290,7 +290,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => service,
+      createReportingRemoteZodyTaskService: (service) => service,
     });
     try {
       await services.get(ISettingService).update({
@@ -312,10 +312,10 @@ describe("remote workspace host service wiring", () => {
 
       await vi.waitFor(() => {
         expect(
-          remoteServices.zcodeAgentService.onDynamicSessionRuntimePreferencesRequest,
+          remoteServices.zodyAgentService.onDynamicSessionRuntimePreferencesRequest,
         ).toHaveBeenCalledWith();
         expect(
-          remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+          remoteServices.zodyAgentService.respondSessionRuntimePreferences,
         ).toHaveBeenCalledWith({
           requestId: "request-runtime-preferences",
           resolution: {
@@ -337,7 +337,7 @@ describe("remote workspace host service wiring", () => {
 
       await vi.waitFor(() => {
         expect(
-          remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+          remoteServices.zodyAgentService.respondSessionRuntimePreferences,
         ).toHaveBeenCalledWith({
           requestId: "request-user-execution-preferences",
           resolution: {
@@ -369,7 +369,7 @@ describe("remote workspace host service wiring", () => {
     const remoteServices = makeRemoteServices();
     const transportError = new Error("transport closed");
     const onError = vi.fn();
-    remoteServices.zcodeAgentService.respondSessionRuntimePreferences.mockRejectedValueOnce(
+    remoteServices.zodyAgentService.respondSessionRuntimePreferences.mockRejectedValueOnce(
       transportError,
     );
     const services = createRemoteWorkspaceServiceCollection({
@@ -379,7 +379,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => service,
+      createReportingRemoteZodyTaskService: (service) => service,
     });
 
     try {
@@ -399,10 +399,10 @@ describe("remote workspace host service wiring", () => {
       });
       expect(onError).toHaveBeenCalledWith(transportError);
       expect(
-        remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+        remoteServices.zodyAgentService.respondSessionRuntimePreferences,
       ).toHaveBeenCalledOnce();
       expect(
-        remoteServices.zcodeAgentService.respondSessionRuntimePreferences,
+        remoteServices.zodyAgentService.respondSessionRuntimePreferences,
       ).toHaveBeenCalledWith({
         requestId: "request-closed-transport",
         resolution: {
@@ -432,7 +432,7 @@ describe("remote workspace host service wiring", () => {
       parentPort: null,
       createRemotePromptAttachmentTaskService: passthroughService,
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) => service,
+      createReportingRemoteZodyTaskService: (service) => service,
     });
 
     try {
@@ -520,7 +520,7 @@ describe("remote workspace host service wiring", () => {
     const observedByReporting: unknown[] = [];
     const remoteServices = {
       ...makeRemoteServices(),
-      zcodeTaskService: { sendPrompt: rawSendPrompt },
+      zodyTaskService: { sendPrompt: rawSendPrompt },
     } as never;
     const services = createRemoteWorkspaceServiceCollection({
       clientConfigService,
@@ -535,7 +535,7 @@ describe("remote workspace host service wiring", () => {
           }),
         }),
       createRemotePromptAttachmentSessionService: passthroughService,
-      createReportingRemoteZCodeTaskService: (service) =>
+      createReportingRemoteZodyTaskService: (service) =>
         new Proxy(service, {
           get(target, property, receiver) {
             const value = Reflect.get(target, property, receiver);
@@ -550,7 +550,7 @@ describe("remote workspace host service wiring", () => {
         }) as never,
     });
 
-    await services.get(IZCodeTaskService).sendPrompt({
+    await services.get(IZodyTaskService).sendPrompt({
       taskId: "task-1",
       traceId: "input-1",
       content: "read /tmp/host-paste.txt",

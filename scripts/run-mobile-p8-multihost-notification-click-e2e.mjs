@@ -6,9 +6,9 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const repoRoot = process.cwd();
-const credentialsPath = process.env.ZCODE_P8_CREDENTIAL_FILE?.trim();
+const credentialsPath = process.env.ZODY_P8_CREDENTIAL_FILE?.trim();
 if (!credentialsPath)
-  throw new Error("Set ZCODE_P8_CREDENTIAL_FILE to the private push-harness credential file");
+  throw new Error("Set ZODY_P8_CREDENTIAL_FILE to the private push-harness credential file");
 const pushStatePath = resolve(repoRoot, ".tmp/mobile-remote-p8-push/state.json");
 const sharedDir = resolve(repoRoot, ".tmp/mobile-remote-p8-multihost-click");
 const runId = randomBytes(5).toString("hex");
@@ -84,7 +84,7 @@ async function main() {
     await (await import("node:fs/promises")).readFile(pushStatePath, "utf8"),
   );
   if (pushState.credentialsPath !== credentialsPath) {
-    throw new Error("ZCODE_P8_CREDENTIAL_FILE does not match the active push-harness state");
+    throw new Error("ZODY_P8_CREDENTIAL_FILE does not match the active push-harness state");
   }
   // 清掉上次手工交接文件后再启动 Desktop，避免设备操作人员误把旧 ready/trigger 当成本轮状态。
   const handoffLabels = ["A", "B", "revoked", "recovered"];
@@ -121,10 +121,10 @@ async function main() {
 
   const env = { ...process.env };
   Object.assign(env, {
-    ZCODE_P8_CREDENTIAL_FILE: credentialsPath,
-    ZCODE_P8_MULTIHOST_HANDOFF_DIR: sharedDir,
-    ZCODE_E2E_HOME_DIR: e2eHome,
-    ZCODE_E2E_REQUESTED_UPSTREAM_HTTP_MODE: "replay",
+    ZODY_P8_CREDENTIAL_FILE: credentialsPath,
+    ZODY_P8_MULTIHOST_HANDOFF_DIR: sharedDir,
+    ZODY_E2E_HOME_DIR: e2eHome,
+    ZODY_E2E_REQUESTED_UPSTREAM_HTTP_MODE: "replay",
     E2E_PROVIDER_REPLAY_FIXTURE_PATH: [
       resolve(repoRoot, "packages/desktop/test/e2e/fixtures/upstream/common.json"),
       resolve(
@@ -132,27 +132,27 @@ async function main() {
         "packages/desktop/test/e2e/fixtures/upstream/mobile-remote/mobile-multihost-notification-click.json",
       ),
     ].join(","),
-    ZCODE_E2E_P8_MULTIHOST_WORKSPACE_PATH: "/workspace/p8-multihost-notification",
-    ZCODE_E2E_P8_MULTIHOST_A_PORT: String(ports[0]),
-    ZCODE_E2E_P8_MULTIHOST_B_PORT: String(ports[1]),
-    ZCODE_E2E_P8_MULTIHOST_A_PASSWORD_FILE: passwordFiles[0],
-    ZCODE_E2E_P8_MULTIHOST_B_PASSWORD_FILE: passwordFiles[1],
+    ZODY_E2E_P8_MULTIHOST_WORKSPACE_PATH: "/workspace/p8-multihost-notification",
+    ZODY_E2E_P8_MULTIHOST_A_PORT: String(ports[0]),
+    ZODY_E2E_P8_MULTIHOST_B_PORT: String(ports[1]),
+    ZODY_E2E_P8_MULTIHOST_A_PASSWORD_FILE: passwordFiles[0],
+    ZODY_E2E_P8_MULTIHOST_B_PASSWORD_FILE: passwordFiles[1],
     // Let onPrepare stage this run's current SSH runtime assets before either host connects.
-    ZCODE_E2E_SSH_HOST: "127.0.0.1",
-    ZCODE_E2E_SSH_PORT: String(ports[0]),
-    ZCODE_E2E_SSH_USERNAME: "root",
-    ZCODE_E2E_SSH_PASSWORD: sshPasswords[0],
-    ZCODE_E2E_SSH_WORKSPACE_PATH: "/workspace/p8-multihost-notification",
-    ZCODE_E2E_SSH_A_HOST: "127.0.0.1",
-    ZCODE_E2E_SSH_A_PORT: String(ports[0]),
-    ZCODE_E2E_SSH_A_USERNAME: "root",
-    ZCODE_E2E_SSH_A_PASSWORD: sshPasswords[0],
-    ZCODE_E2E_SSH_B_HOST: "127.0.0.1",
-    ZCODE_E2E_SSH_B_PORT: String(ports[1]),
-    ZCODE_E2E_SSH_B_USERNAME: "root",
-    ZCODE_E2E_SSH_B_PASSWORD: sshPasswords[1],
-    ZCODE_E2E_SKIP_AGENT_BUILD: "1",
-    ZCODE_E2E_MANUAL_REVIEW_HOLD_MS: "5400000",
+    ZODY_E2E_SSH_HOST: "127.0.0.1",
+    ZODY_E2E_SSH_PORT: String(ports[0]),
+    ZODY_E2E_SSH_USERNAME: "root",
+    ZODY_E2E_SSH_PASSWORD: sshPasswords[0],
+    ZODY_E2E_SSH_WORKSPACE_PATH: "/workspace/p8-multihost-notification",
+    ZODY_E2E_SSH_A_HOST: "127.0.0.1",
+    ZODY_E2E_SSH_A_PORT: String(ports[0]),
+    ZODY_E2E_SSH_A_USERNAME: "root",
+    ZODY_E2E_SSH_A_PASSWORD: sshPasswords[0],
+    ZODY_E2E_SSH_B_HOST: "127.0.0.1",
+    ZODY_E2E_SSH_B_PORT: String(ports[1]),
+    ZODY_E2E_SSH_B_USERNAME: "root",
+    ZODY_E2E_SSH_B_PASSWORD: sshPasswords[1],
+    ZODY_E2E_SKIP_AGENT_BUILD: "1",
+    ZODY_E2E_MANUAL_REVIEW_HOLD_MS: "5400000",
     DOCKER_HOST: dockerHost,
   });
   console.log(
@@ -170,7 +170,7 @@ async function main() {
       "--using=24.14.0",
       "pnpm",
       "--filter",
-      "@zcode/desktop",
+      "@zody/desktop",
       "exec",
       "wdio",
       "run",
@@ -184,11 +184,11 @@ async function main() {
 
 try {
   process.exitCode = Number(await main());
-  preserveDiagnostics = process.exitCode !== 0 && process.env.ZCODE_P8_MULTIHOST_PRESERVE_DIAGNOSTICS === "1";
+  preserveDiagnostics = process.exitCode !== 0 && process.env.ZODY_P8_MULTIHOST_PRESERVE_DIAGNOSTICS === "1";
 } catch (error) {
   console.error(error instanceof Error ? error.message : "P8 multi-Host notification setup failed");
   process.exitCode = 1;
-  preserveDiagnostics = process.env.ZCODE_P8_MULTIHOST_PRESERVE_DIAGNOSTICS === "1";
+  preserveDiagnostics = process.env.ZODY_P8_MULTIHOST_PRESERVE_DIAGNOSTICS === "1";
 } finally {
   if (preserveDiagnostics) {
     console.error(`Preserving isolated SSH targets and private E2E home for diagnosis: ${workDir}`);

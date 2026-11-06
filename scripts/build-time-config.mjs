@@ -13,7 +13,7 @@ export const PRIVATE_BUILD_DEFAULTS_PATH = resolve(
 );
 
 const ENABLED_VALUES = new Set(["1", "true", "yes"]);
-const TELEMETRY_ENDPOINT_KEYS = ["ZCODE_ARMS_RUM_ENDPOINT", "ZCODE_TELEMETRY_REPORT_ENDPOINT"];
+const TELEMETRY_ENDPOINT_KEYS = ["ZODY_ARMS_RUM_ENDPOINT", "ZODY_TELEMETRY_REPORT_ENDPOINT"];
 
 async function readPrivateDefaults(path) {
   try {
@@ -81,10 +81,10 @@ export async function resolveBuildTimeConfig(
     }
   }
   // 构建护栏（阶段 2 细则「自动更新」规则 4）：fork 采用手动更新，自有更新源（feed、签名、manifest 服务）落地前，
-  // ZCODE_AUTO_UPDATE 为真一律让构建失败，避免构建意外启用指向官方 manifest 的更新器（安装包可能被官方包原地替换）。
-  if (ENABLED_VALUES.has(pickValue(env, defaults, "ZCODE_AUTO_UPDATE").toLowerCase())) {
+  // ZODY_AUTO_UPDATE 为真一律让构建失败，避免构建意外启用指向官方 manifest 的更新器（安装包可能被官方包原地替换）。
+  if (ENABLED_VALUES.has(pickValue(env, defaults, "ZODY_AUTO_UPDATE").toLowerCase())) {
     throw new Error(
-      "ZCODE_AUTO_UPDATE 已启用：fork 尚无自有自动更新源，启用会把更新请求指向官方 manifest。" +
+      "ZODY_AUTO_UPDATE 已启用：fork 尚无自有自动更新源，启用会把更新请求指向官方 manifest。" +
         "fork 构建禁止设置该变量（环境变量与 config/private/build-defaults.json 均不可），规则见" +
         " specs/fork-official-backend-runtime-dependencies.md「自动更新」。",
     );
@@ -95,24 +95,24 @@ export async function resolveBuildTimeConfig(
     // 上方护栏保证此处恒为 false；运行时由 @zcode/shared 的 isDesktopAutoUpdateActive() 统一判定
     autoUpdateEnabled: false,
     downloadPageUrl: resolveExternalPageUrl(
-      pickValue(env, defaults, "ZCODE_DOWNLOAD_PAGE_URL"),
-      "ZCODE_DOWNLOAD_PAGE_URL",
+      pickValue(env, defaults, "ZODY_DOWNLOAD_PAGE_URL"),
+      "ZODY_DOWNLOAD_PAGE_URL",
     ),
     // fork（F2.9，决策门 D7）：反馈本地化后，官方工单提交停用，反馈入口改为
     // 「导出日志 + 打开 fork 问题反馈地址」；地址未配置时入口不显示。
     feedbackIssueUrl: resolveExternalPageUrl(
-      pickValue(env, defaults, "ZCODE_FEEDBACK_ISSUE_URL"),
-      "ZCODE_FEEDBACK_ISSUE_URL",
+      pickValue(env, defaults, "ZODY_FEEDBACK_ISSUE_URL"),
+      "ZODY_FEEDBACK_ISSUE_URL",
     ),
   };
 }
 
 export function createBuildTimeConfigDefines(config) {
   return {
-    __ZCODE_ARMS_RUM_ENDPOINT__: JSON.stringify(config.armsRumEndpoint),
-    __ZCODE_TELEMETRY_REPORT_ENDPOINT__: JSON.stringify(config.telemetryReportEndpoint),
-    __ZCODE_AUTO_UPDATE_ENABLED__: JSON.stringify(config.autoUpdateEnabled),
-    __ZCODE_DOWNLOAD_PAGE_URL__: JSON.stringify(config.downloadPageUrl),
-    __ZCODE_FEEDBACK_ISSUE_URL__: JSON.stringify(config.feedbackIssueUrl),
+    __ZODY_ARMS_RUM_ENDPOINT__: JSON.stringify(config.armsRumEndpoint),
+    __ZODY_TELEMETRY_REPORT_ENDPOINT__: JSON.stringify(config.telemetryReportEndpoint),
+    __ZODY_AUTO_UPDATE_ENABLED__: JSON.stringify(config.autoUpdateEnabled),
+    __ZODY_DOWNLOAD_PAGE_URL__: JSON.stringify(config.downloadPageUrl),
+    __ZODY_FEEDBACK_ISSUE_URL__: JSON.stringify(config.feedbackIssueUrl),
   };
 }

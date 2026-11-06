@@ -2,7 +2,7 @@
 
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { RemoteAccessStatus } from "@zcode/shared";
+import type { RemoteAccessStatus } from "@zody/shared";
 import { useRemoteAccessStatus } from "@/hooks/useRemoteAccessStatus.js";
 
 const platformMock = vi.hoisted(() => ({

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON } from "@zcode/shared";
+import { TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import type { ModelProviderNavGroup } from "@/settings/model-provider-section/constants.js";
 import { ModelProviderSectionNavigation } from "@/settings/model-provider-section/Navigation.js";

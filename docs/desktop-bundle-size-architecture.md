@@ -25,20 +25,20 @@
 - Main 在打包态提供随包目录，开发态提供本地 mock-cdn 目录，均注入 `assetSource: { kind: "local-only", rootDir }`。Host 复用现有部署事务与本机上传安装器。
 - 缓存以 manifest 内容身份和不可变 generation 隔离，验证真实文件内容后复用；原子切换指针，不删除其他窗口仍在使用的 generation。
 - 缺件、损坏、错误版本或平台直接失败。旧 remote-download 选择、CDN 环境变量和开发态 CDN 开关均不能改变 Desktop 的本地来源策略。
-- `ZCODE_REMOTE_ASSET_CACHE_DIR` 仍可覆盖可写缓存目录；shell 优先于本地 env 文件。`pnpm dev:desktop:remote-prod` 仅用于复用生产态 cache，不再启用资源网络下载。
+- `ZODY_REMOTE_ASSET_CACHE_DIR` 仍可覆盖可写缓存目录；shell 优先于本地 env 文件。`pnpm dev:desktop:remote-prod` 仅用于复用生产态 cache，不再启用资源网络下载。
 - 独立 server 的显式 CDN 安装器仍保留，Desktop SSH/WSL 不调用该来源；不能把独立后端的测试当作 Desktop 的资源规则。
 
 ## agent 准备链路
 
-当前 desktop 与 remote 默认都使用编译后的 `zcode.cjs`，不再按平台下载内嵌 Node 的原生
+当前 desktop 与 remote 默认都使用编译后的 `zody.cjs`，不再按平台下载内嵌 Node 的原生
 `zcode-agent`：
 
-1. `scripts/build-desktop-agent-cli.mjs` 构建 `apps/zcode-cli/packages/cli/dist/zcode.cjs`，并构建、校验
+1. `scripts/build-desktop-agent-cli.mjs` 构建 `apps/zody-cli/packages/cli/dist/zody.cjs`，并构建、校验
    CUA 等 Dev 必需的官方插件 runtime。`pnpm dev:desktop` 在 `pre-dev` 后执行该脚本，开发态 resolver
    优先直接使用 workspace 内的 bundle。
-2. 桌面打包的 `prepare:agent-bundle` 将 `zcode.cjs` 和官方插件 seed 资源写入
+2. 桌面打包的 `prepare:agent-bundle` 将 `zody.cjs` 和官方插件 seed 资源写入
    `packages/desktop/bundled-agents/<platform>/glm/`，再由 electron-builder 复制到安装包。
-3. remote 资产的 `prepare-prebuilds.mjs` 复用同一份 `zcode.cjs`，写入各平台
+3. remote 资产的 `prepare-prebuilds.mjs` 复用同一份 `zody.cjs`，写入各平台
    `packages/desktop/mock-cdn/releases/<version>/glm/<platform>/` 后产出 component artifact；远端使用已部署的
    Node 执行该 bundle。
 
@@ -92,4 +92,4 @@ asar 内容审计必须由 Node 直接调用项目锁定版本的 `@electron/asa
 获取待解析输出，避免 workspace engine warning 等 pnpm 诊断信息混入 stdout 后被误判为 asar 条目。
 
 `pnpm-workspace.yaml#supportedArchitectures` 只控制工作区安装阶段允许准备哪些平台依赖，不能作为安装包
-资源边界。最终安装包资源集合必须由 `ZCODE_TARGET_OS` / `ZCODE_TARGET_ARCH` 决定。
+资源边界。最终安装包资源集合必须由 `ZODY_TARGET_OS` / `ZODY_TARGET_ARCH` 决定。

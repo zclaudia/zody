@@ -141,11 +141,9 @@ describe.runIf(existsSync(resolve(REMOTE_DIST, "index.html")))(
       expect(themeScript).not.toBeNull();
       const themeHref = themeScript!.getAttribute("src")!;
       expect(themeHref.startsWith("/assets/remote/")).toBe(true);
-      expect(
-        existsSync(
-          resolve(REMOTE_DIST, themeHref.slice("/assets/remote/".length)),
-        ),
-      ).toBe(true);
+      expect(existsSync(resolve(REMOTE_DIST, themeHref.slice("/assets/remote/".length)))).toBe(
+        true,
+      );
 
       const themeIndex = html.indexOf(`src="${themeHref}"`);
       const moduleIndex = html.search(/<script type="module"[^>]*src="[^"]+"/u);
@@ -154,13 +152,11 @@ describe.runIf(existsSync(resolve(REMOTE_DIST, "index.html")))(
 
     it("M1 release meta 已注入且与 release.json 一致", () => {
       const html = readFileSync(resolve(REMOTE_DIST, "index.html"), "utf8");
-      const release = JSON.parse(
-        readFileSync(resolve(REMOTE_DIST, "release.json"), "utf8"),
-      ) as { releaseId?: unknown };
+      const release = JSON.parse(readFileSync(resolve(REMOTE_DIST, "release.json"), "utf8")) as {
+        releaseId?: unknown;
+      };
       const document = new DOMParser().parseFromString(html, "text/html");
-      const meta = document.querySelector<HTMLMetaElement>(
-        'meta[name="zody-mobile-ui-release"]',
-      );
+      const meta = document.querySelector<HTMLMetaElement>('meta[name="zody-mobile-ui-release"]');
 
       expect(typeof release.releaseId).toBe("string");
       expect(meta?.content).toBe(release.releaseId);

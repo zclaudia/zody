@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE } from "@zcode/shared";
+import { MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE } from "@zody/shared";
 import {
   createDevelopmentMobileRemoteSecureStore,
   createMobileRemoteSecureStore,

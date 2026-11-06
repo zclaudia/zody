@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { ZCODE_VERSION } from "@zcode/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import { clearAppData, seedSettings } from "../../../helpers/desktop-app.js";
 import { prepareV4ConversationE2E } from "../../../helpers/v4-conversation.js";
 import {
@@ -33,7 +33,7 @@ const PROXY_NO_PROXY = [
 const REMOTE_ASSET_ENV_KEYS = [
   "ZCODE_DEV_REMOTE_ASSET_USE_CDN",
   "ZCODE_REMOTE_ASSET_CDN_BASE_URL",
-  "ZCODE_REMOTE_ASSET_CACHE_DIR",
+  "ZODY_REMOTE_ASSET_CACHE_DIR",
 ] as const;
 
 // Desktop local-only 不再发起资源 HTTP 请求，本代理下载场景按 LOCAL-01 网络零调用规则剪枝。
@@ -75,7 +75,7 @@ describe.skip(`${CASE_MARKER}: SSH 本地下载遵循应用代理`, () => {
 
     process.env.ZCODE_DEV_REMOTE_ASSET_USE_CDN = "1";
     process.env.ZCODE_REMOTE_ASSET_CDN_BASE_URL = `http://${FAKE_CDN_HOST}`;
-    process.env.ZCODE_REMOTE_ASSET_CACHE_DIR = cacheDir;
+    process.env.ZODY_REMOTE_ASSET_CACHE_DIR = cacheDir;
     await seedSettings({
       httpProxy: proxy.proxyUrl,
       httpProxyNoProxy: PROXY_NO_PROXY,
@@ -98,8 +98,8 @@ describe.skip(`${CASE_MARKER}: SSH 本地下载遵循应用代理`, () => {
     expect(
       proxy.requestPaths.some(
         (path) =>
-          path.endsWith(`/${ZCODE_VERSION}/manifest-linux-x64.json`) ||
-          path.endsWith(`/${ZCODE_VERSION}/manifest-linux-arm64.json`),
+          path.endsWith(`/${ZODY_VERSION}/manifest-linux-x64.json`) ||
+          path.endsWith(`/${ZODY_VERSION}/manifest-linux-arm64.json`),
       ),
     ).toBe(true);
     expect(await readHostProcesses()).toEqual(initialHosts);

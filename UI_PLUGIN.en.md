@@ -11,7 +11,7 @@ Start with Excalidraw to see how UI Plugins let the Agent and the user edit and 
 - [Add a UI to your plugin](#adding-a-ui-to-your-plugin)
 - [Explore the other examples](#other-example-plugins)
 
-This guide focuses on testing plugins with the host in this repository ([zclaudia/zody](https://github.com/zclaudia/zody)). The plugins bundled with this repository live in `apps/zcode-cli/packages/*-plugin`. The source of the five UI Plugin examples below comes from a separate plugin repository from the upstream ZCode era; Zody does not currently have a corresponding public plugin repository and does not distribute these examples. To test with the host, bring your own plugin repository checkout organized the same way (referred to below as "the plugin repository").
+This guide focuses on testing plugins with the host in this repository ([zclaudia/zody](https://github.com/zclaudia/zody)). The plugins bundled with this repository live in `apps/zody-cli/packages/*-plugin`. The source of the five UI Plugin examples below comes from a separate plugin repository from the upstream ZCode era; Zody does not currently have a corresponding public plugin repository and does not distribute these examples. To test with the host, bring your own plugin repository checkout organized the same way (referred to below as "the plugin repository").
 
 ## What UI Plugins Can Do
 
@@ -173,7 +173,7 @@ The desktop host supplies the Agent with a dedicated output directory for the cu
 
 The Excalidraw screenshots above show a **UI Plugin**. Use **Gen UI** for a page with adjustable parameters generated around the current question. Develop a UI Plugin to distribute a reusable tool with server operations and document management. Both may expose `window.zcode`, but their methods and state structures differ and are not interchangeable. See [Development and Debugging](#development-and-debugging) and the [Page API Reference](#page-api-reference) for UI Plugin details.
 
-Implementation and page examples: [Gen UI contract](packages/ui/src/gen-ui/CONTRACT.md), [page API examples](apps/zcode-cli/packages/visualize-plugin/skills/visualize/references/api.md), and [Tweak guide](apps/zcode-cli/packages/visualize-plugin/skills/visualize/tweak.md). The desktop integration entry is `node packages/desktop/scripts/gen-ui-e2e.mjs`.
+Implementation and page examples: [Gen UI contract](packages/ui/src/gen-ui/CONTRACT.md), [page API examples](apps/zody-cli/packages/visualize-plugin/skills/visualize/references/api.md), and [Tweak guide](apps/zody-cli/packages/visualize-plugin/skills/visualize/tweak.md). The desktop integration entry is `node packages/desktop/scripts/gen-ui-e2e.mjs`.
 
 ## Other Example Plugins
 
@@ -218,10 +218,10 @@ pnpm build
 
 # Use the CLI built from source (or `zody plugins …` when the `zody` CLI is installed) to install into the same development profile.
 cd "$ZCODE_REPO"
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins enable excalidraw@zcode-plugins-local --scope user
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins list --json
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins enable excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins list --json
 pnpm dev:desktop
 ```
 
@@ -235,8 +235,8 @@ If you are using an existing desktop client, build the plugin repository and ins
 cd "$PLUGINS_REPO"
 pnpm build
 cd "$ZCODE_REPO"
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins marketplace update zcode-plugins-local
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace update zcode-plugins-local
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
 ```
 
 Restart the corresponding desktop instance and verify in a new session. Source watching does not automatically copy plugin repository changes into installed plugins. Refreshing a source updates the catalogue; reinstalling updates the installed code. During development, reinstalling the same version copies the files again. Changes to distributed content still require version bumps in the plugin manifest, marketplace entry, and source package.
@@ -259,7 +259,7 @@ Run `pnpm build` before testing pages. Browser tests require Chrome, or Chromium
 
 ```sh
 cd "$ZCODE_REPO"
-ZCODE_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
+ZODY_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
   node packages/desktop/scripts/mcp-apps-host-e2e.mjs --showcase-only
 ```
 
@@ -294,11 +294,11 @@ Use the ordinary plugin installation directory and marketplace entry. Source pac
     "app": {
       "type": "stdio",
       "command": "node",
-      "args": ["${ZCODE_PLUGIN_ROOT}/dist/server.mjs"],
+      "args": ["${ZODY_PLUGIN_ROOT}/dist/server.mjs"],
       "cwd": "${ZCODE_PROJECT_DIR}",
       "env": {
         "ZCODE_WORKSPACE_ROOT": "${ZCODE_PROJECT_DIR}",
-        "ZCODE_PLUGIN_DATA": "${ZCODE_PLUGIN_DATA}"
+        "ZODY_PLUGIN_DATA": "${ZODY_PLUGIN_DATA}"
       }
     }
   },
@@ -318,7 +318,7 @@ Use the ordinary plugin installation directory and marketplace entry. Source pac
 
 The server must register the `ui://my-panel/editor.html` resource and return it as `text/html;profile=mcp-app`. To use this panel for a tool result, set `_meta.ui.resourceUri` and `_meta.ui.surface: "editor"` on the tool definition. `_meta.ui.visibility: ["model", "app"]` allows both model and App calls; use `["app"]` for App-only tools. `ui.surfaces` is optional: tool metadata can still provide an inline page without it.
 
-Locate plugin files with `${ZCODE_PLUGIN_ROOT}`, perform workspace file operations under `${ZCODE_PROJECT_DIR}`, and store persistent data under `${ZCODE_PLUGIN_DATA}`. Define user configuration through manifest `userConfig`, then reference it in the server configuration with `${user_config.<key>}`. Pages perform file operations through the server; they do not access the main application's source or Node APIs directly.
+Locate plugin files with `${ZODY_PLUGIN_ROOT}`, perform workspace file operations under `${ZCODE_PROJECT_DIR}`, and store persistent data under `${ZODY_PLUGIN_DATA}`. Plugin subprocesses, hooks, and custom commands receive both `ZODY_PLUGIN_ROOT/DATA/ID/NAME` and `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` with identical values; `CLAUDE_PLUGIN_ROOT/DATA` remains available, and `${ZCODE_PLUGIN_ROOT}`, `${ZCODE_PLUGIN_DATA}`, `${CLAUDE_PLUGIN_ROOT}`, and `${CLAUDE_PLUGIN_DATA}` keep expanding from the same plugin context until 1.0. Define user configuration through manifest `userConfig`, then reference it in the server configuration with `${user_config.<key>}`. Pages perform file operations through the server; they do not access the main application's source or Node APIs directly.
 
 ## Page API Reference
 

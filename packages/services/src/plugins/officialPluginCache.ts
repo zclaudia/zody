@@ -1,10 +1,10 @@
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-export const ZCODE_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
+export const ZODY_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
 
 /**
- * 与 apps/zcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts 的 defaultEnabled 保持一致。
+ * 与 apps/zody-cli/packages/bootstrap/src/app/official-plugin-definitions.ts 的 defaultEnabled 保持一致。
  * services 侧（skills / commands / subagents）共用这一份，避免再出现 zcode-guide 那样某一处漏掉的分叉。
  */
 export const DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS: ReadonlySet<string> = new Set([
@@ -32,7 +32,7 @@ export interface OfficialPluginCacheRoot {
 export async function scanOfficialPluginCacheRoots(
   pluginStorageRoot: string,
 ): Promise<OfficialPluginCacheRoot[]> {
-  const cacheRoot = join(pluginStorageRoot, "cache", ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
+  const cacheRoot = join(pluginStorageRoot, "cache", ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
   let pluginEntries;
   try {
     pluginEntries = await readdir(cacheRoot, { withFileTypes: true });

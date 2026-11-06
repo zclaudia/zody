@@ -1,4 +1,4 @@
-import type { ExtensionProfileInstanceId } from "@zcode/shared/browser-extension-transport";
+import type { ExtensionProfileInstanceId } from "@zody/shared/browser-extension-transport";
 
 export const STORAGE_KEYS = {
   profileInstanceId: "zody.profileInstanceId",

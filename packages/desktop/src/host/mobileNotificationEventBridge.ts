@@ -1,8 +1,8 @@
-import type { IZCodeAgentService, IZCodeTaskService } from "@zcode/services";
-import type { IMobileNotificationService } from "@zcode/services/mobile-notifications/node";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { SessionSummary } from "@zcode/shared/zcode-protocol-v4";
-import { extractMobileNotificationPushActions, resolveWorkspaceKey } from "@zcode/shared";
+import type { IZodyAgentService, IZodyTaskService } from "@zody/services";
+import type { IMobileNotificationService } from "@zody/services/mobile-notifications/node";
+import type { ZodyTaskMeta } from "@zody/shared";
+import type { SessionSummary } from "@zody/shared/zody-protocol-v4";
+import { extractMobileNotificationPushActions, resolveWorkspaceKey } from "@zody/shared";
 
 export type WindowHostControllerSourceScope =
   | { kind: "local"; workspacePath: string; workspaceIdentity?: string }
@@ -15,8 +15,8 @@ type MobileNotificationCaptureDiagnostic =
   | { kind: "session-message"; messageKind: string };
 
 type CapturableSessionSummary = Pick<SessionSummary, "sessionId" | "title" | "lastActivityAt">;
-type CapturableTask = Pick<ZCodeTaskMeta, "taskId" | "title" | "updatedAt"> &
-  Pick<ZCodeTaskMeta, "pendingInteraction">;
+type CapturableTask = Pick<ZodyTaskMeta, "taskId" | "title" | "updatedAt"> &
+  Pick<ZodyTaskMeta, "pendingInteraction">;
 
 const MAX_QUEUED_TERMINALS = 256;
 const MAX_CACHED_PERMISSION_ACTIONS = 256;
@@ -24,8 +24,8 @@ const MAX_CACHED_PERMISSION_ACTIONS = 256;
 /** Captures raw session event envelopes before task-list projection discards eventId. */
 export function createMobileNotificationEventBridge(params: {
   scope: WindowHostControllerSourceScope;
-  agentService: Pick<IZCodeAgentService, "onDynamicSessionEvent">;
-  taskService: Pick<IZCodeTaskService, "listTasks" | "onDynamicWorkspaceEvent">;
+  agentService: Pick<IZodyAgentService, "onDynamicSessionEvent">;
+  taskService: Pick<IZodyTaskService, "listTasks" | "onDynamicWorkspaceEvent">;
   notificationService: Pick<IMobileNotificationService, "record" | "resolveInteraction">;
   getBackendId(): string | undefined;
   onTerminalCaptureResult?: (sourceKind: "turn.completed" | "turn.failed", result: "accepted" | "failed") => void;
@@ -49,11 +49,11 @@ export function createMobileNotificationEventBridge(params: {
   // pendingInteraction 是轻量投影拿不到 options，所以在这里按 requestId 缓存、record 时查。
   const permissionRequestActions = new Map<
     string,
-    import("@zcode/shared").MobileNotificationPushAction[]
+    import("@zody/shared").MobileNotificationPushAction[]
   >();
   const resolvedInteractionIds = new Set<string>();
   let tasksBySessionId = new Map<string, CapturableTask>();
-  let indexedTasksBySessionId = new Map<string, ZCodeTaskMeta>();
+  let indexedTasksBySessionId = new Map<string, ZodyTaskMeta>();
   let sessionSummariesById = new Map<string, CapturableSessionSummary>();
   let disposed = false;
   let initialTaskSnapshot = true;
@@ -61,11 +61,11 @@ export function createMobileNotificationEventBridge(params: {
   let lastTaskCount: number | undefined;
   const reportedMessageKinds = new Set<string>();
 
-  type ZCodeSessionTerminalEvent = Extract<
-    import("@zcode/shared").ZCodeSessionEvent,
+  type ZodySessionTerminalEvent = Extract<
+    import("@zody/shared").ZodySessionEvent,
     { type: "turn.completed" | "turn.failed" }
   >;
-  type CapturedTerminalEvent = ZCodeSessionTerminalEvent & { recovered?: boolean };
+  type CapturedTerminalEvent = ZodySessionTerminalEvent & { recovered?: boolean };
 
   const currentBackendId = () => params.getBackendId();
   const rebuildCaptureTasks = () => {
@@ -145,9 +145,9 @@ export function createMobileNotificationEventBridge(params: {
           : {}),
       });
       if (disposed || generation !== refreshGeneration) return;
-      const nextTasksBySessionId = new Map<string, ZCodeTaskMeta>();
+      const nextTasksBySessionId = new Map<string, ZodyTaskMeta>();
       for (const task of tasks) {
-        // ZCodeTaskMeta explicitly defines taskId as the ZCode sessionId; the adapter builds it
+        // ZodyTaskMeta explicitly defines taskId as the ZCode sessionId; the adapter builds it
         // from snapshot.session.sessionId. Keep the lookup explicit so a future divergent mapping
         // cannot route a terminal event to a guessed task.
         const sessionId = task.taskId;

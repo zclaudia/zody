@@ -1,4 +1,4 @@
-import { InternalChannels, PlatformChannels } from "@zcode/shared";
+import { InternalChannels, PlatformChannels } from "@zody/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -29,7 +29,9 @@ const mockWebFrame = {
   getZoomFactor: vi.fn(() => 1),
 };
 
+const exposedNames: string[] = [];
 let exposedApi: Record<string, (...args: unknown[]) => unknown> = {};
+let panelApi: Record<string, (...args: unknown[]) => unknown> = {};
 const originalPlatform = process.platform;
 
 function stubProcessPlatform(platform: NodeJS.Platform): void {
@@ -41,9 +43,12 @@ function stubProcessPlatform(platform: NodeJS.Platform): void {
 
 vi.mock("electron", () => ({
   contextBridge: {
-    // preload 还会暴露插件 UI 沙箱的 zcodePluginSandbox；这里只截获 window.zcode 本身。
+    // preload 还会暴露插件 UI 沙箱的 zcodePluginSandbox；这里只截获 window.zody 本身。
     exposeInMainWorld: (name: string, api: Record<string, unknown>) => {
-      if (name === "zcode") exposedApi = api as Record<string, (...args: unknown[]) => unknown>;
+      exposedNames.push(name);
+      if (name === "zody") exposedApi = api as Record<string, (...args: unknown[]) => unknown>;
+      if (name === "cuaPermissionPanel")
+        panelApi = api as Record<string, (...args: unknown[]) => unknown>;
     },
     executeInMainWorld: () => false,
   },
@@ -72,6 +77,8 @@ beforeEach(() => {
   mockWebFrame.getZoomFactor.mockReturnValue(1);
   vi.mocked(window.addEventListener).mockClear();
   exposedApi = {};
+  panelApi = {};
+  exposedNames.length = 0;
 });
 
 describe("preload IPC disposer", () => {
@@ -82,6 +89,55 @@ describe("preload IPC disposer", () => {
     await import("../src/preload/index.js");
     return exposedApi;
   }
+
+  it("exposes only the new main bridge name", async () => {
+    const api = await loadPreload();
+    expect(typeof api.onFocusTab).toBe("function");
+    expect(exposedNames).toContain("zody");
+    expect(exposedNames).toContain("zcodePluginSandbox");
+    expect(exposedNames).toContain("__ZODY_DEVICE_ID__");
+    expect(exposedNames).not.toContain("zcode");
+    expect(exposedNames).not.toContain("__ZCODE_DEVICE_ID__");
+  });
+
+  it("连接主进程权限面板状态与 preload 监听并可取消", async () => {
+    vi.resetModules();
+    await import("../src/preload/cuaPermissionPanel.js");
+    const { createCuaPermissionDragPanel } = await import("../src/main/cuaPermissionDragPanel.js");
+    let ready: (() => void) | undefined;
+    const sent = vi.fn((channel: string, payload: unknown) => {
+      for (const listener of listeners.get(channel) ?? []) listener({}, payload);
+    });
+    const panel = createCuaPermissionDragPanel({
+      createWindow: () => ({
+        onceReadyToShow: (callback) => {
+          ready = callback;
+        },
+        setBounds: vi.fn(),
+        showInactive: vi.fn(),
+        hide: vi.fn(),
+        destroy: vi.fn(),
+        isDestroyed: () => false,
+        send: sent,
+      }),
+      getDisplayWorkArea: () => ({ x: 0, y: 0, width: 1200, height: 800 }),
+      getLocale: () => "en-US",
+      logger: { info: vi.fn(), warn: vi.fn() },
+    });
+    const callback = vi.fn();
+    const dispose = panelApi.onState(callback) as () => void;
+    panel.show("accessibility");
+    ready?.();
+    expect(sent).toHaveBeenCalledWith(
+      "zody:cua-permission-panel-state",
+      expect.objectContaining({ permission: "accessibility" }),
+    );
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ permission: "accessibility" }));
+    expect(listeners.has("zcode:cua-permission-panel-state")).toBe(false);
+    dispose();
+    expect(listeners.get("zody:cua-permission-panel-state")?.size).toBe(0);
+    panel.destroy();
+  });
 
   it("onFocusTab 返回 disposer，调用后移除 ipcRenderer 监听", async () => {
     const api = await loadPreload();
@@ -103,7 +159,7 @@ describe("preload IPC disposer", () => {
 
     await loadPreload();
 
-    expect(mockIpcSend).toHaveBeenCalledWith("zcode:window-controls-overlay-ready", {
+    expect(mockIpcSend).toHaveBeenCalledWith("zody:window-controls-overlay-ready", {
       zoomLevel: 2,
       metrics: { leftPaddingPx: 79 },
     });
@@ -115,7 +171,7 @@ describe("preload IPC disposer", () => {
 
     await loadPreload();
 
-    expect(mockIpcSend).toHaveBeenCalledWith("zcode:window-controls-overlay-ready", {
+    expect(mockIpcSend).toHaveBeenCalledWith("zody:window-controls-overlay-ready", {
       zoomLevel: 2,
       metrics: { rightPaddingPx: 112, titleBarHeightPx: 58 },
     });
@@ -222,10 +278,12 @@ describe("preload IPC disposer", () => {
       releaseHandler,
     );
 
-    for (const handler of listeners.get(PlatformChannels.BrowserViewScreenshotSurfacePrepare) ?? []) {
+    for (const handler of listeners.get(PlatformChannels.BrowserViewScreenshotSurfacePrepare) ??
+      []) {
       handler({}, payload);
     }
-    for (const handler of listeners.get(PlatformChannels.BrowserViewScreenshotSurfaceRelease) ?? []) {
+    for (const handler of listeners.get(PlatformChannels.BrowserViewScreenshotSurfaceRelease) ??
+      []) {
       handler({}, releasePayload);
     }
     expect(prepare).toHaveBeenCalledTimes(1);

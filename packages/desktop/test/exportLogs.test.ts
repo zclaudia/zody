@@ -1062,7 +1062,7 @@ describe("export logs archive", () => {
       const result = await exportLogs({
         ...createExportLogTestDirs(tempDir),
         now: () => new Date("2026-04-20T01:02:03"),
-        getZCodeDataDir: () => sourceDir,
+        getZodyDataDir: () => sourceDir,
         createLogArchiveArtifacts: async () => {
           await rm(transientFile, { force: true });
           return {
@@ -1145,7 +1145,7 @@ describe("export logs archive", () => {
         const result = await exportLogs({
           ...createExportLogTestDirs(tempDir),
           now: () => new Date("2026-04-20T01:02:03"),
-          getZCodeDataDir: () => sourceDir,
+          getZodyDataDir: () => sourceDir,
         });
 
         expect(result.success).toBe(true);
@@ -1211,7 +1211,7 @@ describe("export logs archive", () => {
         const result = await exportLogs({
           ...createExportLogTestDirs(tempDir),
           now: () => new Date("2026-04-20T01:02:03"),
-          getZCodeDataDir: () => sourceDir,
+          getZodyDataDir: () => sourceDir,
           createLogArchiveArtifacts: async () => ({
             files: [
               { absolutePath: stableFile, archivePath: "logs/stable.log" },
@@ -1265,7 +1265,7 @@ describe("export logs archive", () => {
       const result = await exportLogs({
         ...createExportLogTestDirs(tempDir),
         now: () => new Date("2026-04-20T01:02:03"),
-        getZCodeDataDir: () => sourceDir,
+        getZodyDataDir: () => sourceDir,
         createLogArchiveArtifacts: async () => ({
           files: [{ absolutePath: sourceFile, archivePath: "logs/main.log" }],
           aboutContent: "about-fallback",

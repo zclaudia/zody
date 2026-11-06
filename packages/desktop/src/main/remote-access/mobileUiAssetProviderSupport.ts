@@ -1,7 +1,7 @@
 import { constants as fsConstants } from "node:fs";
 import { lstat, open, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
-import { MOBILE_UI_RELEASE_MANIFEST_FILE, MOBILE_UI_REMOTE_BASE_PATH } from "@zcode/shared";
+import { MOBILE_UI_RELEASE_MANIFEST_FILE, MOBILE_UI_REMOTE_BASE_PATH } from "@zody/shared";
 
 /**
  * MobileUiAssetProvider 的纯辅助逻辑：URL → 制品路径映射、MIME、缓存头、CSP 与文件读取。

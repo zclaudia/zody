@@ -3,7 +3,7 @@ import {
   type MobileNotificationActionClick,
   type MobileNotificationClick,
   type PlatformAppLifecycleState,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   parseMobileNotificationAction,
   parseMobileNotificationClick,

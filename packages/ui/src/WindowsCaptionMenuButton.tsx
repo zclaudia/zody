@@ -1,8 +1,8 @@
-import { DesktopCommandIds } from "@zcode/shared";
+import { DesktopCommandIds } from "@zody/shared";
 import { useCallback, useEffect, useState } from "react";
 import { useFeedbackStore } from "@/feedback/feedbackStore.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { createHelpMenuActionHandlers } from "@/lib/helpMenuActions.js";
 import { ZODY_RELEASES_URL } from "@/lib/productDocs.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
@@ -48,7 +48,7 @@ export function WindowsCaptionMenuButton({
   useWindowsCaptionSpacing?: boolean;
 }) {
   const platform = usePlatform();
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const newTaskShortcutLabel = useShortcutCommandLabel("newTask");
   const openWorkspaceShortcutLabel = useShortcutCommandLabel("openWorkspace");
   const openFeatureRequest = useFeedbackStore((state) => state.openFeatureRequest);
@@ -60,13 +60,13 @@ export function WindowsCaptionMenuButton({
   const showDesktopUpdateEntry = true;
 
   const syncStdioTapDevState = useCallback(async () => {
-    if (!platform.getZCodeStdioTapDevState) {
+    if (!platform.getZodyStdioTapDevState) {
       setStdioTapDevState({ enabled: false, visible: false });
       return;
     }
 
     try {
-      const state = await platform.getZCodeStdioTapDevState();
+      const state = await platform.getZodyStdioTapDevState();
       setStdioTapDevState({ enabled: state.enabled, visible: state.visible });
     } catch (error) {
       logger.warn("[WindowsCaptionMenuButton] 同步 stdio tap 状态失败", { error });
@@ -96,7 +96,7 @@ export function WindowsCaptionMenuButton({
 
   const handleToggleStdioTapDevProxy = () => {
     void (async () => {
-      await platform.executeDesktopCommand(DesktopCommandIds.ToggleZCodeStdioTapDevProxy);
+      await platform.executeDesktopCommand(DesktopCommandIds.ToggleZodyStdioTapDevProxy);
       await syncStdioTapDevState();
     })();
   };

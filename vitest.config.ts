@@ -3,10 +3,10 @@ import { defineConfig } from "vitest/config";
 
 const processLifecycleTests = [
   "packages/services/test/processTreeTerminator.test.ts",
-  "packages/services/test/zcodeAgentService.test.ts",
-  "packages/services/test/zcodeAgentService.v4.test.ts",
-  "packages/services/test/zcodeAgentProcessManager.test.ts",
-  "packages/services/test/zcodeStdioTransport.test.ts",
+  "packages/services/test/zodyAgentService.test.ts",
+  "packages/services/test/zodyAgentService.v4.test.ts",
+  "packages/services/test/zodyAgentProcessManager.test.ts",
+  "packages/services/test/zodyStdioTransport.test.ts",
 ];
 const forkIsolatedTests = [
   ...processLifecycleTests,
@@ -39,7 +39,7 @@ const forkIsolatedTests = [
   "packages/services/test/runtimeToolResolver.test.ts",
   // 该集成测试会真实启动 tsx、Supervisor 与多代 Core；放在普通 threads 中时，
   // 并行 worker 的进程启动压力会让 15 秒 ready barrier 偶发超时。
-  "packages/zcode-server-cli/test/runtimeUpdateIntegration.test.ts",
+  "packages/zody-server-cli/test/runtimeUpdateIntegration.test.ts",
   // Bugfix: pdfjs-dist legacy build 在 threads worker 内偶发原生崩溃（0xC0000005，
   // 测试自身通过、worker 收尾时崩，会把整场全量跑拦腰截断）。隔离到 fork 池后崩溃
   // 波及面收敛到本文件，其余测试结果可完整收集；崩溃根因见
@@ -51,7 +51,8 @@ export default defineConfig({
   // 测试固定注入事件上报端点，使遥测上报链路在单测中可验证；真实构建由 scripts/build-time-config.mjs 决定。
   // fork（F3.2）：端点改用 RFC 2606 保留域名 example.invalid，单测漏配也不会命中官方服务。
   define: {
-    __ZCODE_TELEMETRY_REPORT_ENDPOINT__: JSON.stringify(
+    // 修复原因：运行时代际已改用 ZODY define，旧名称使测试端点为空而跳过上报。
+    __ZODY_TELEMETRY_REPORT_ENDPOINT__: JSON.stringify(
       "https://example.invalid/api/v1/event/report",
     ),
   },
@@ -106,6 +107,12 @@ export default defineConfig({
             // Gen UI 目录回归位于源码旁，默认入口也必须执行，避免只在手动定向运行时生效。
             "packages/shared/src/node/genUiPaths.test.ts",
             "packages/services/src/gen-ui/**/*.test.ts",
+            // 修复依据：插件源码旁回归曾被默认/affected 门禁漏收，related 还能无测试绿灯。
+            "packages/ui/src/gen-ui/**/*.test.ts",
+            "packages/ui/src/plugin-ui/**/*.test.ts",
+            "packages/desktop/src/renderer/src/plugin-sandbox/**/*.test.ts",
+            // 收集回归自身也进入默认门禁，防止只靠人工执行后再次漏收。
+            "scripts/test/zody-rename-plugin-test-collection.test.mjs",
             "scripts/assert-safe-cua-helper-zip.test.mjs",
             "scripts/check-official-refs.test.mjs",
             "scripts/ci/ci-telemetry-keyword-guard.test.mjs",

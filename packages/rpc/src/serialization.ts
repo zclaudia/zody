@@ -133,7 +133,7 @@ const BufferPresets = {
   Int: createOneByteBuffer(DataType.Int),
 };
 
-const RPC_NESTED_UINT8_ARRAY_MARKER = "__zcode_rpc_nested_uint8array_v1";
+const RPC_NESTED_UINT8_ARRAY_MARKER = "__zody_rpc_nested_uint8array_v1";
 const RPC_NESTED_UINT8_ARRAY_BASE64_KEY = "base64";
 
 // ============================================================================
@@ -218,7 +218,7 @@ export function deserialize(reader: IReader): any {
 }
 
 function encodeRpcJsonValue(this: unknown, key: string, value: unknown): unknown {
-  // Bug 根因（上游 ZCode v3.17.1 a60ba6a7 packages/rpc/src/serialization.ts）：JSON.stringify 先调用
+  // Bug 根因（上游 Zody v3.17.1 a60ba6a7 packages/rpc/src/serialization.ts）：JSON.stringify 先调用
   // toJSON 再调用 replacer。Node Buffer（Uint8Array 子类，技能 / 插件归档都是 gzip 产出的 Buffer）
   // 到这里已被展开成 {type:"Buffer",data:[...]}，旧逻辑按普通对象编码：体积约 3.6 倍，每一跳解码
   // 上百万个数字的数组，大插件还会超出远端 WebSocket 单条消息上限；接收端拿到的是普通对象，

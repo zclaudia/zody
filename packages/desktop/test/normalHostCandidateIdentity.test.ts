@@ -114,7 +114,7 @@ describe("normal Host candidate Chromium helper identity", () => {
       });
       const packageJsonPath = join(contentsDir, "Resources", "package.json");
       mkdirSync(join(packageJsonPath, ".."), { recursive: true });
-      writeFileSync(packageJsonPath, JSON.stringify({ name: "@zcode/desktop" }));
+      writeFileSync(packageJsonPath, JSON.stringify({ name: "@zody/desktop" }));
 
       const identity = await rewriteNormalHostCandidateAppIdentity({
         infoPlistPath,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StorageRootUsage } from "@zcode/shared";
+import type { StorageRootUsage } from "@zody/shared";
 import {
   buildStorageLegend,
   joinStoragePath,

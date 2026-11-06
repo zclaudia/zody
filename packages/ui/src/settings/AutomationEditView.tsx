@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- 定时任务编辑整页集中维护 Settings/History 两个 tab、cron builder、项目/模型选择器与运行历史，集中更利于交互一致。 */
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { completeNewModelSelection } from "@zcode/provider";
+import { completeNewModelSelection } from "@zody/provider";
 import {
   ArrowLeft,
   ArrowRight,
@@ -36,11 +36,11 @@ import {
   TID_AUTOMATION_YEAR_DAY_OPTION,
   TID_AUTOMATION_YEAR_MONTH_OPTION,
   TID_AUTOMATION_YEAR_MONTHDAY,
-  ZCODE_AGENT_PROVIDER,
-  type ZCodeAutomation,
-  type ZCodeAutomationRun,
-  type ZCodeAutomationScheduleRule,
-} from "@zcode/shared";
+  ZODY_AGENT_PROVIDER,
+  type ZodyAutomation,
+  type ZodyAutomationRun,
+  type ZodyAutomationScheduleRule,
+} from "@zody/shared";
 import {
   AutomationAddScheduleIcon,
   AutomationChevronDownIcon,
@@ -123,13 +123,13 @@ import {
   resolveAutomationEditRequiredFieldErrors,
   type AutomationEditRequiredField,
 } from "@/settings/automationEditValidation.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useAutomationProjectOptions } from "@/hooks/useAutomationProjectOptions.js";
 import { useModelSelectionView } from "@/hooks/useModelSelectionView.js";
 import { resolveModelThoughtOption } from "@/lib/modelThoughtOption.js";
-import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
-import { parseModelPickerValue } from "@/lib/zcodeSessionProjection.js";
+import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
+import { parseModelPickerValue } from "@/lib/zodySessionProjection.js";
 import { startUserAction } from "@/lib/userActionTelemetry.js";
 import { logger } from "@/logger.js";
 import {
@@ -374,7 +374,7 @@ function MonthDayPicker({
 }: {
   month: number;
   day: number;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   onChange: (month: number, day: number) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -432,7 +432,7 @@ function WeekdayPicker({
   onChange,
 }: {
   weekdays: number[];
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   onChange: (weekdays: number[]) => void;
 }) {
   const label = WEEKDAY_ORDER.filter((day) => weekdays.includes(day))
@@ -511,7 +511,7 @@ function EndDatePicker({
   value,
 }: {
   disabled: boolean;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   min: string;
   onChange: (value: string) => void;
   value: string;
@@ -637,7 +637,7 @@ function CustomRepeatDialog({
 }: {
   builder: CronBuilderState;
   endAt: number | undefined;
-  intl: ReturnType<typeof useZCodeIntl>["intl"];
+  intl: ReturnType<typeof useZodyIntl>["intl"];
   onConfirm: (value: {
     interval: number;
     unit: CustomRepeatUnit;
@@ -1066,7 +1066,7 @@ export interface AutomationEditSubmit {
 
 export interface AutomationEditViewProps {
   /** null = 新建；否则编辑。 */
-  editing: ZCodeAutomation | null;
+  editing: ZodyAutomation | null;
   /** 新建预填(来自 More ideas 模板)。 */
   initialDraft?: { title: string; cronExpr: string; prompt: string } | null;
   /** 当前列表所在项目,作为新建的默认目标项目。 */
@@ -1077,9 +1077,9 @@ export interface AutomationEditViewProps {
   onSubmit: (params: AutomationEditSubmit) => Promise<boolean>;
   onBack: () => void;
   /** 编辑态:立即运行 / 启停 / 删除。 */
-  onRunNow?: (automation: ZCodeAutomation) => Promise<void> | void;
-  onToggle?: (automation: ZCodeAutomation, enabled: boolean) => void;
-  onDelete?: (automation: ZCodeAutomation) => void;
+  onRunNow?: (automation: ZodyAutomation) => Promise<void> | void;
+  onToggle?: (automation: ZodyAutomation, enabled: boolean) => void;
+  onDelete?: (automation: ZodyAutomation) => void;
   /** History tab 运行历史。 */
   runsEntry?: AutomationRunsEntry;
   onLoadRuns?: () => void;
@@ -1114,7 +1114,7 @@ function defaultBuilder(): CronBuilderState {
 }
 
 function initialBuilder(
-  editing: ZCodeAutomation | null,
+  editing: ZodyAutomation | null,
   initialDraft?: { title: string; cronExpr: string; prompt: string } | null,
 ): CronBuilderState {
   if (!editing) {
@@ -1141,7 +1141,7 @@ function initialBuilder(
 
 // ---- 运行历史状态映射(与 AutomationRunsDialog 保持一致) ----
 type RunStatusKind = "running" | "succeeded" | "failed" | "stopped" | "skipped";
-function resolveRunStatus(run: ZCodeAutomationRun): RunStatusKind {
+function resolveRunStatus(run: ZodyAutomationRun): RunStatusKind {
   if (run.dispatchStatus === "skipped") return "skipped";
   if (run.dispatchStatus === "failed_to_dispatch") return "failed";
   switch (run.outcome) {
@@ -1179,7 +1179,7 @@ const AUTOMATION_STATUS_DOT_CLASS: Record<AutomationStatusKind, string> = {
 };
 
 function normalizeAutomationScheduleRule(
-  rule: ZCodeAutomationScheduleRule | null | undefined,
+  rule: ZodyAutomationScheduleRule | null | undefined,
 ): Record<string, unknown> | null {
   if (!rule) return null;
   return {
@@ -1212,7 +1212,7 @@ export function AutomationEditView({
   onDeleteRun,
   onOpenSession,
 }: AutomationEditViewProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const confirmDialog = useConfirmDialog();
   const [tab, setTab] = useState<AutomationSettingsHistoryTab>("settings");
   const [runsPage, setRunsPage] = useState(1);
@@ -1485,7 +1485,7 @@ export function AutomationEditView({
   const modelSelectGroups = useMemo(() => {
     if (!modelSelectionView) return [];
     return buildAutomationModelSelectGroups({
-      selectedProvider: ZCODE_AGENT_PROVIDER,
+      selectedProvider: ZODY_AGENT_PROVIDER,
       labels: {
         apiKeyLabel: intl.formatMessage({ id: "settings.modelProvider.apiKey" }),
         apiKeyBadgeLabel: intl.formatMessage({
@@ -1665,7 +1665,7 @@ export function AutomationEditView({
     [editing?.automationId, requiredFieldErrors],
   );
 
-  const currentScheduleRule = useMemo<ZCodeAutomationScheduleRule | undefined>(
+  const currentScheduleRule = useMemo<ZodyAutomationScheduleRule | undefined>(
     () =>
       builder.frequency === "custom"
         ? {
@@ -2650,7 +2650,7 @@ export function AutomationEditView({
                         "w-fit max-w-56 min-w-0 shrink justify-start gap-1 px-2",
                       )}
                       labelVisibilityClassName="inline-flex min-w-0 truncate text-left"
-                      provider={ZCODE_AGENT_PROVIDER}
+                      provider={ZODY_AGENT_PROVIDER}
                       restoreFocusSelector={null}
                     />
                   </div>
@@ -2697,7 +2697,7 @@ export function AutomationEditView({
                       <ThoughtLevelCycleControl
                         intl={intl}
                         option={thoughtLevelOption}
-                        provider={ZCODE_AGENT_PROVIDER}
+                        provider={ZODY_AGENT_PROVIDER}
                         triggerRef={thoughtTriggerRef}
                         indicatorClassName="hidden @xl/composer:block"
                         triggerClassName={cn(

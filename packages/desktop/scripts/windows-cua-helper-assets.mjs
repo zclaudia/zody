@@ -16,7 +16,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { collectRuntimeModuleClosureEntries } from "./runtime-dependency-closure.mjs";
 import { resolveSharpRuntimePackageNames } from "./sharp-package-assets.mjs";
 
-const EXPECTED_PACKAGE_NAME = "@zcode/zcode-cua";
+const EXPECTED_PACKAGE_NAME = "@zody/zody-cua";
 const RUNTIME_MANIFEST = "runtime-manifest.json";
 const MODULE_TYPE_PACKAGE_JSON = "package.json";
 const REMOVE_DIRECTORY_OPTIONS = {
@@ -722,8 +722,8 @@ export async function resolveWindowsCuaHelperSourceRoot({
   if (explicitRoot) {
     if (!isAbsolute(explicitRoot)) {
       const variableName = explicitRuntimePackageDir
-        ? "ZCODE_CUA_HELPER_RUNTIME_PACKAGE_DIR"
-        : "ZCODE_CUA_DEV_ROOT";
+        ? "ZODY_CUA_HELPER_RUNTIME_PACKAGE_DIR"
+        : "ZODY_CUA_DEV_ROOT";
       throw new Error(`[windows-cua-helper-assets] ${variableName} must be absolute`);
     }
     return realpath(explicitRoot);
@@ -751,7 +751,7 @@ export async function resolveWindowsCuaHelperSourceRoot({
     );
   }
 
-  const packagePathSegments = ["node_modules", "@zcode", "zcode-cua"];
+  const packagePathSegments = ["node_modules", "@zody", "zody-cua"];
   const packageCandidates = [
     resolve(servicesPackageRoot, ...packagePathSegments),
     resolve(workspaceRoot, ...packagePathSegments),
@@ -963,7 +963,7 @@ export async function prepareWindowsCuaHelperAssets({
     // package.json 都会禁用探测，fork 将以 SyntaxError exit 1 变成 broker_unavailable。
     // 在运行时根落一份显式 module 声明，让 entry 的模块类型不依赖探测、不受外部目录影响。
     const moduleTypePackageJson = {
-      name: "@zcode/zcode-cua-helper-runtime",
+      name: "@zody/zody-cua-helper-runtime",
       version: producerContract.packageVersion,
       type: "module",
       private: true,

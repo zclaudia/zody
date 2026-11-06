@@ -16,7 +16,7 @@
  * 真实 BrowserWindow 通过 `createWindow` 注入，使生命周期与定位逻辑可以脱离 Electron 单测。
  */
 
-import type { CuaPermissionKind, Locale } from "@zcode/shared";
+import type { CuaPermissionKind, Locale } from "@zody/shared";
 import { resolvePanelBounds, type PanelSize, type Rect } from "./cuaPermissionPanelPositioner.js";
 
 /** 浮窗需要的最小窗口能力面，便于测试替身实现。 */
@@ -63,7 +63,7 @@ export interface CuaPermissionDragPanel {
   destroy(): void;
 }
 
-export const CUA_PERMISSION_PANEL_STATE_CHANNEL = "zcode:cua-permission-panel-state";
+export const CUA_PERMISSION_PANEL_STATE_CHANNEL = "zody:cua-permission-panel-state";
 
 const DEFAULT_PANEL_SIZE: PanelSize = { width: 560, height: 124 };
 // 使用 0.15 秒跟踪间隔，兼顾位置同步开销与设置页拖动时的面板响应。

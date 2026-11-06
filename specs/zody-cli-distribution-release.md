@@ -15,7 +15,7 @@
 
 ## 构建与输出接口
 
-- `node scripts/build-zcode.mjs --target <target>` 构建一个支持目标；`--all` 构建上述四个目标；`--skip-build` 仅复用当前源码构建产物。
+- `node scripts/build-zody.mjs --target <target>` 构建一个支持目标；`--all` 构建上述四个目标；`--skip-build` 仅复用当前源码构建产物。
 - `--version <version>`、`--out-dir <path>` 可用于可重复的本地构建。未传版本时读根 `package.json`。
 - 版本值必须是严格 SemVer（含可选 prerelease/build 标识），CLI 参数和根 `package.json` 版本均在任何输出清理前验证；无效版本不得参与目录路径或归档文件名构造。
 - 每个目标生成独立归档及对应 SHA-256 文件；候选目录不直接公开。CI 收集四个归档、摘要、第三方声明和发行说明到版本 tag 对应的草稿 Release。
@@ -25,7 +25,7 @@
 
 ## 状态所有者和事件顺序
 
-- `scripts/build-zcode.mjs` 是归档组装的唯一所有者；SEA / Node asset collectors 是目标运行时文件与校验来源的唯一所有者。
+- `scripts/build-zody.mjs` 是归档组装的唯一所有者；SEA / Node asset collectors 是目标运行时文件与校验来源的唯一所有者。
 - CLI 只准备本归档需要的目标原生搜索工具，复用 `scripts/prepare-native-search-tools.mjs` 与 SEA collectors；Desktop 的既有 `prepare:runtime-assets` 负责其本地随包 SSH/WSL 资源，不作为 CLI/Web-only 构建前置。
 - GitHub Actions tag workflow 是候选状态和草稿 Release 的唯一写入方；开发者人工下载验收后，在 GitHub 上手动公开 Release。
 
@@ -50,6 +50,7 @@ sequenceDiagram
 - Web server 与 Agent 启动参数使用包内 Node；安装目录或 workspace 路径含空格时仍可运行。
 - 每个包的 Node 版本、目标、归档文件名、SHA-256、原生资源架构及许可证材料一致；伪造或缺失 checksum 必须失败。
 - 归档不含其它架构二进制；目标不受支持时在生成包之前失败。
+- 仓库外 smoke 解压发行归档后从 `zody/bin/zody.mjs` 运行；以该布局的 fixture 验证入口解析。
 - 非 SemVer 版本（包含路径片段、路径分隔符或空白）在输出目录清理前被拒绝，不修改任何文件。
 - tag 与根版本不一致、发行许可材料未解决、Android 签名 Secret 缺失时 workflow 失败且不创建 draft Release。仅供本地核验的未解决材料包必须带 `verificationOnly` 标记。
 - workflow 首次执行创建草稿，失败后重试可安全续传；不会自动公开，不会覆盖已公开版本。

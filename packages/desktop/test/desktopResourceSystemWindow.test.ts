@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ARMS_CUSTOM_EVENT_PROPERTY_LIMIT } from "@zcode/shared";
+import { ARMS_CUSTOM_EVENT_PROPERTY_LIMIT } from "@zody/shared";
 
 /**
  * 设备级 `perf_system_window`（票 02，spec：docs/monitoring/process-resource-telemetry.md）。
@@ -265,7 +265,7 @@ describe("desktopResourceTelemetry perf_system_window", () => {
       expect(Number(event?.properties.telemetry_self_ms)).toBeGreaterThanOrEqual(0);
       expect(Number(event?.properties.app_uptime_minutes)).toBeGreaterThanOrEqual(0);
 
-      const { checkProcessResourceEventProperties } = await import("@zcode/shared");
+      const { checkProcessResourceEventProperties } = await import("@zody/shared");
       expect(
         checkProcessResourceEventProperties(SYSTEM_WINDOW_EVENT, event?.properties ?? {}),
       ).toMatchObject({ ok: true, count: 17 });

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { HelperHealth } from "@zcode/zcode-cua/broker";
+import type { HelperHealth } from "@zody/zody-cua/broker";
 
 import type { ServiceLogger } from "../src/logger/serviceLogger.js";
 import { WindowsCuaHelperHost } from "../src/cua-permission-broker/windowsCuaDevHelperHost.js";

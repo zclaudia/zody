@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setDataBaseDir } from "../src/paths.js";
 import { createNodeApiClient } from "../src/providers/api/nodeApiClient.js";
-import { buildZCodeSourceHeaders } from "../src/providers/sourceHeaders.js";
+import { buildZodySourceHeaders } from "../src/providers/sourceHeaders.js";
 
 const TEST_ZCODE_ORIGIN = "https://zcode.endpoint.test";
 
@@ -22,7 +22,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => "http://localhost:3030",
+      resolveZodyEndpointOrigin: async () => "http://localhost:3030",
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/event/report?x=1`);
@@ -43,7 +43,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
+      resolveZodyEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/client/configs`);
@@ -80,7 +80,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
+      resolveZodyEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/oauth/token`, {
@@ -121,7 +121,7 @@ describe("NodeApiClient endpoint rewriting", () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const client = createNodeApiClient({
       fetchImpl: fetchImpl as typeof fetch,
-      resolveZCodeEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
+      resolveZodyEndpointOrigin: async () => TEST_ZCODE_ORIGIN,
     });
 
     await client.request(`${TEST_ZCODE_ORIGIN}/api/v1/client/configs`);
@@ -132,7 +132,7 @@ describe("NodeApiClient endpoint rewriting", () => {
   });
 
   it("统一来源 headers 支持可控的客户端上下文字段", () => {
-    const headers = buildZCodeSourceHeaders({
+    const headers = buildZodySourceHeaders({
       appVersion: "2.14.0",
       arch: "arm64",
       clientLanguage: "zh-CN",

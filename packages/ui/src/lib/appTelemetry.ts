@@ -2,7 +2,7 @@ import {
   collectTelemetryRendererContext,
   sanitizeTelemetryEventDetail,
   type IPlatformService,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { logger } from "@/logger.js";
 
 // fork（F4.7）：resolveProviderTelemetryLabel 仅服务 OAuth 登录成功遥测，随账号链删除。

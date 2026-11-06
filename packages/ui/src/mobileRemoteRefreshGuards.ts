@@ -1,4 +1,4 @@
-import { DEFAULT_REMOTE_ACCESS_NAMESPACE } from "@zcode/shared";
+import { DEFAULT_REMOTE_ACCESS_NAMESPACE } from "@zody/shared";
 import { useEffect, useRef, useState } from "react";
 
 /**

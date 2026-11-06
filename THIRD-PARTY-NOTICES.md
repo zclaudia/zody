@@ -1092,6 +1092,8 @@ Original copyright, license and NOTICE text is retained below. Identical text is
 
 - dayjs@1.11.20 — MIT
 
+- debug@4.4.3 — MIT
+
 - decamelize@1.2.0 — MIT
 
 - decimal.js-light@2.5.1 — MIT
@@ -2482,15 +2484,15 @@ The original import revisions of copied components are not recorded in the curre
 
 - ai-elements (Apache-2.0): packages/ui/src/components/ai-elements, .agents/skills/ai-elements. License reference: https://raw.githubusercontent.com/vercel/ai-elements/6a9d5b1822ffb10bba4bd97175f01edd7d8651cd/LICENSE. Original import revision: not recorded.
 
-- Fig autocomplete registry (MIT): apps/zcode-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts. License reference: https://raw.githubusercontent.com/withfig/autocomplete/aef52acff84c45edde61ae610cc2c964802b9a38/LICENSE. Original import revision: not recorded.
+- Fig autocomplete registry (MIT): apps/zody-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts. License reference: https://raw.githubusercontent.com/withfig/autocomplete/aef52acff84c45edde61ae610cc2c964802b9a38/LICENSE. Original import revision: not recorded.
 
 - Material Icon Theme (MIT): packages/desktop/src/renderer/public/material-icons, packages/web/public/material-icons. License reference: https://raw.githubusercontent.com/material-extensions/vscode-material-icon-theme/cb1dfb6d9cb73b15681a93939983d75dbba7bf5b/LICENSE. Original import revision: not recorded.
 
 - agent-browser skills (including dogfood and electron) (Apache-2.0): .agents/skills/agent-browser, .agents/skills/dogfood, .agents/skills/electron. License reference: https://raw.githubusercontent.com/vercel-labs/agent-browser/99c732c18810494593ead9dd96ab6f5f0c78b729/LICENSE. Original import revision: not recorded.
 
-- Visual Studio Code IPC and common utilities (MIT): packages/rpc/src, packages/rpc/examples, packages/shared/src/zcode-protocol-v4/wire-codec.ts. License reference: https://raw.githubusercontent.com/microsoft/vscode/44825207bf4389c3bd17c92d3ec28cf784c324cc/LICENSE.txt. Original import revision: not recorded.
+- Visual Studio Code IPC and common utilities (MIT): packages/rpc/src, packages/rpc/examples, packages/shared/src/zody-protocol-v4/wire-codec.ts. License reference: https://raw.githubusercontent.com/microsoft/vscode/44825207bf4389c3bd17c92d3ec28cf784c324cc/LICENSE.txt. Original import revision: not recorded.
 
-- Superpowers skill description adaptations (MIT): packages/ui/src/lib/builtinSkillI18n.ts, apps/zcode-cli/packages/superpowers-plugin/LICENSE. License reference: https://raw.githubusercontent.com/obra/superpowers/f2cbfbefebbfef77321e4c9abc9e949826bea9d7/LICENSE. Original import revision: not recorded.
+- Superpowers skill description adaptations (MIT): packages/ui/src/lib/builtinSkillI18n.ts, apps/zody-cli/packages/superpowers-plugin/LICENSE. License reference: https://raw.githubusercontent.com/obra/superpowers/f2cbfbefebbfef77321e4c9abc9e949826bea9d7/LICENSE. Original import revision: not recorded.
 
 - React Best Practices skill (MIT): .agents/skills/react-best-practices. License reference: https://github.com/vercel-labs/agent-skills/tree/063bee94c3f4df8453406c830b0a7df0f2860278. Original import revision: not recorded. Review required: Pinned upstream README and skill declare MIT, but a complete original copyright/license notice has not been obtained.
 
@@ -13158,6 +13160,71 @@ SOFTWARE.
 ## License
 
 Day.js is licensed under a [MIT License](./LICENSE).
+
+````
+
+### Notice 3a61c6c96caf5c1d9b623fb9b04c822b783dfcb78aa7e49c76a3f643e6ed7f95
+
+- debug@4.4.3: LICENSE
+
+
+
+````text
+(The MIT License)
+
+Copyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2018-2021 Josh Junon
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the 'Software'), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial
+portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+````
+
+### Notice d6f83842cafbe3a73d4f9db8731524aa09ea74d0709ee3287f3ab7c01e749835
+
+- debug@4.4.3: README.md (license section)
+
+
+
+````text
+## License
+
+(The MIT License)
+
+Copyright (c) 2014-2017 TJ Holowaychuk &lt;tj@vision-media.ca&gt;
+Copyright (c) 2018-2021 Josh Junon
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ````
 

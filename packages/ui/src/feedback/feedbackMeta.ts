@@ -3,7 +3,7 @@ import type {
   FeedbackTicketSeverity,
   FeedbackTicketStatus,
   FeedbackTicketType,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { ComponentType, SVGProps } from "react";
 import {
   FeedbackBugIcon,

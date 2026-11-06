@@ -1,4 +1,4 @@
-import type { RendererTelemetryEventPayload } from "@zcode/shared";
+import type { RendererTelemetryEventPayload } from "@zody/shared";
 /* eslint-disable max-lines -- Web 远程控制 manager 承担 gateway app payload 路由与 workspace bridge 编排。 */
 import type { MessagePortMain } from "electron";
 import type { HostProcessHandle } from "./hostProcessHandle.js";
@@ -8,12 +8,12 @@ import {
   ProxyChannel,
   type MessagePortLike,
   type MessagePortPayload,
-} from "@zcode/rpc";
+} from "@zody/rpc";
 import {
   createAcknowledgedWebRemoteControlRelayProtocol,
   type AcknowledgedWebRemoteControlRelayProtocolAdapter,
   type WebRemoteControlPayloadSendResult,
-} from "@zcode/client";
+} from "@zody/client";
 import {
   buildWebRemoteControlBridgeResultTelemetry,
   buildWebRemoteControlPairResultTelemetry,
@@ -52,11 +52,11 @@ import {
   type RemoteUsageRemoteKind,
   type TelemetryEventPayload,
   measureWebRemoteControlRpcRelayEnvelopeBytes,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   IWindowControllerService,
   type IWindowControllerService as IWindowControllerServiceType,
-} from "@zcode/services";
+} from "@zody/services";
 import type {
   GatewayDeviceTransportSession,
   GatewayDeviceTransportSessionOptions,
@@ -439,7 +439,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       reasonCode,
     });
     sendAppPayload(runtime, {
-      zcode_type: "bridge-degraded",
+      zody_type: "bridge-degraded",
       bridgeSessionId: bridge.bridgeSessionId,
       ...(bridge.bridgeGeneration === undefined
         ? {}
@@ -560,7 +560,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       if (result.kind === "oversize") {
         // Bugfix：永久 oversize 不能伪装成临时不可发送后反复进入 50 项 buffer。
         dependencies.logger.warn("[web-remote-control] dropped oversize app payload", {
-          zcodeType: payload.zcode_type,
+          zcodeType: payload.zody_type,
           bytes: result.bytes,
           maxBytes: result.maxBytes,
         });
@@ -582,7 +582,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     }
     if (result.kind === "oversize") {
       dependencies.logger.warn("[web-remote-control] rejected oversize app payload", {
-        zcodeType: payload.zcode_type,
+        zcodeType: payload.zody_type,
         bytes: result.bytes,
         maxBytes: result.maxBytes,
       });
@@ -600,7 +600,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     }
 
     sendAppPayload(runtime, {
-      zcode_type: "app-error",
+      zody_type: "app-error",
       reason: "desktop-disconnected",
       error: "Desktop disconnected this Web remote control session.",
     });
@@ -748,7 +748,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     }
     pushedRecentProjectsSignature = signature;
     sendAppPayload(runtime, {
-      zcode_type: "recent-projects-updated",
+      zody_type: "recent-projects-updated",
       result,
     });
   }
@@ -803,7 +803,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         error: outcome.error,
       });
       sendAppPayload(runtime, {
-        zcode_type: pending.responseType,
+        zody_type: pending.responseType,
         requestId: pending.requestId,
         success: false,
         error: outcome.error,
@@ -822,7 +822,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       label: getPathLabel(pending.workspacePath),
     });
     sendAppPayload(runtime, {
-      zcode_type: pending.responseType,
+      zody_type: pending.responseType,
       requestId: pending.requestId,
       success: true,
       workspaceKey,
@@ -944,7 +944,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
 
     pushedWorkspaceListSignature = signature;
     sendAppPayload(runtime, {
-      zcode_type: "workspace-list-updated",
+      zody_type: "workspace-list-updated",
       result,
     });
   }
@@ -958,7 +958,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     try {
       const result = await dependencies.platformHandlers[request.method](request.args as never);
       response = {
-        zcode_type: "platform-response",
+        zody_type: "platform-response",
         requestId: request.requestId,
         method: request.method,
         success: true,
@@ -970,7 +970,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         `[web-remote-control] platform request failed method=${request.method} error=${message}`,
       );
       response = {
-        zcode_type: "platform-response",
+        zody_type: "platform-response",
         requestId: request.requestId,
         method: request.method,
         success: false,
@@ -1155,7 +1155,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     try {
       const bridge = await createWorkspaceBridge(runtime, request);
       sendAppPayload(runtime, {
-        zcode_type: "workspace-bridge-ready",
+        zody_type: "workspace-bridge-ready",
         requestId: request.requestId,
         bridgeSessionId: request.bridgeSessionId,
         ...(request.bridgeGeneration !== undefined
@@ -1179,7 +1179,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         `[web-remote-control] workspace bridge failed workspaceKey=${request.workspaceKey} error=${message}`,
       );
       sendAppPayload(runtime, {
-        zcode_type: "workspace-bridge-error",
+        zody_type: "workspace-bridge-error",
         requestId: request.requestId,
         bridgeSessionId: request.bridgeSessionId,
         ...(request.bridgeGeneration !== undefined
@@ -1209,7 +1209,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
 
   async function respondToWorkspaceReconnectRequest(
     runtime: AppControlRuntime,
-    request: Extract<WebRemoteControlAppPayload, { zcode_type: "workspace-reconnect-request" }>,
+    request: Extract<WebRemoteControlAppPayload, { zody_type: "workspace-reconnect-request" }>,
   ): Promise<void> {
     try {
       const windowId = resolveRequestWindow(runtime, request.workspaceKey);
@@ -1218,14 +1218,14 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       }
       await dependencies.reconnectWorkspace(windowId, request.workspaceKey);
       sendAppPayload(runtime, {
-        zcode_type: "workspace-reconnect-response",
+        zody_type: "workspace-reconnect-response",
         requestId: request.requestId,
         workspaceKey: request.workspaceKey,
         success: true,
       });
     } catch (error) {
       sendAppPayload(runtime, {
-        zcode_type: "workspace-reconnect-response",
+        zody_type: "workspace-reconnect-response",
         requestId: request.requestId,
         workspaceKey: request.workspaceKey,
         success: false,
@@ -1326,7 +1326,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       });
       if (isCurrentRuntime(runtime)) {
         sendAppPayload(runtime, {
-          zcode_type: "workspace-open-response",
+          zody_type: "workspace-open-response",
           requestId: request.requestId,
           success: false,
           error: message,
@@ -1347,7 +1347,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     const fail = (error: string) => {
       if (isCurrentRuntime(runtime)) {
         sendAppPayload(runtime, {
-          zcode_type: "workspace-open-path-response",
+          zody_type: "workspace-open-path-response",
           requestId: request.requestId,
           success: false,
           error,
@@ -1406,7 +1406,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       runtime,
       result.ok
         ? {
-            zcode_type: "mobile-directory-list-response",
+            zody_type: "mobile-directory-list-response",
             requestId: request.requestId,
             success: true,
             resolvedPath: result.resolvedPath,
@@ -1414,7 +1414,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
             entries: result.entries,
           }
         : {
-            zcode_type: "mobile-directory-list-response",
+            zody_type: "mobile-directory-list-response",
             requestId: request.requestId,
             success: false,
             error: result.error,
@@ -1443,7 +1443,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
         requestId: request.requestId,
       });
       sendAppPayload(runtime, {
-        zcode_type: "desktop-window-open-response",
+        zody_type: "desktop-window-open-response",
         requestId: request.requestId,
         success: true,
       });
@@ -1457,7 +1457,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       });
       if (isCurrentRuntime(runtime)) {
         sendAppPayload(runtime, {
-          zcode_type: "desktop-window-open-response",
+          zody_type: "desktop-window-open-response",
           requestId: request.requestId,
           success: false,
           error: message,
@@ -1493,7 +1493,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
 
   function logMobileDiagnostic(
     runtime: AppControlRuntime,
-    payload: Extract<WebRemoteControlAppPayload, { zcode_type: "mobile-diagnostic" }>,
+    payload: Extract<WebRemoteControlAppPayload, { zody_type: "mobile-diagnostic" }>,
   ): void {
     dependencies.logger.info("[web-remote-control] mobile diagnostic", {
       originWindow: runtime.originWindowId,
@@ -1518,7 +1518,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     if (!isCurrentRuntime(runtime)) {
       return;
     }
-    switch (payload.zcode_type) {
+    switch (payload.zody_type) {
       case "bootstrap-request": {
         const result = buildBootstrapResult(runtime);
         // bootstrap 响应已经携带最近项目快照，把它记为已推送基线，避免紧接着重复推送。
@@ -1527,7 +1527,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
           recentProjects: result.recentProjects ?? [],
         });
         sendAppPayload(runtime, {
-          zcode_type: "bootstrap-response",
+          zody_type: "bootstrap-response",
           requestId: payload.requestId,
           success: true,
           result,
@@ -1536,7 +1536,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       }
       case "workspace-list-request":
         sendAppPayload(runtime, {
-          zcode_type: "workspace-list-response",
+          zody_type: "workspace-list-response",
           requestId: payload.requestId,
           success: true,
           result: buildWorkspaceListResult(runtime),
@@ -1590,7 +1590,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
     request: MobileHistorySearchRequest,
   ): Promise<void> {
     const outcomeBase = {
-      zcode_type: "mobile-history-search-outcome" as const,
+      zody_type: "mobile-history-search-outcome" as const,
       requestId: request.requestId,
       context: request.context,
       queryGeneration: request.queryGeneration,
@@ -2006,7 +2006,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       const bridge = runtime.currentBridge;
       if (bridge) {
         sendAppPayload(runtime, {
-          zcode_type: "workspace-bridge-error",
+          zody_type: "workspace-bridge-error",
           requestId: `disconnect-remote-client:${bridge.bridgeSessionId}`,
           bridgeSessionId: bridge.bridgeSessionId,
           ...(bridge.bridgeGeneration !== undefined
@@ -2066,7 +2066,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
       if (runtime && bridge?.windowId === windowId) {
         disposeRuntimeBridgeResources(runtime);
         sendAppPayload(runtime, {
-          zcode_type: "workspace-bridge-error",
+          zody_type: "workspace-bridge-error",
           requestId: `window-disposed:${bridge.bridgeSessionId}`,
           bridgeSessionId: bridge.bridgeSessionId,
           ...(bridge.bridgeGeneration !== undefined
@@ -2113,7 +2113,7 @@ export function createWebRemoteControlManager(dependencies: WebRemoteControlMana
           // App 级远控 device WS 失败；否则单个远端空闲退出会错误关闭电脑端全局远控入口。
           disposeRuntimeBridgeResources(runtime);
           sendAppPayload(runtime, {
-            zcode_type: "workspace-bridge-error",
+            zody_type: "workspace-bridge-error",
             bridgeSessionId: bridge.bridgeSessionId,
             ...(bridge.bridgeGeneration !== undefined
               ? { bridgeGeneration: bridge.bridgeGeneration }

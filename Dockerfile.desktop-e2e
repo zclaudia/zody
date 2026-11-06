@@ -15,8 +15,8 @@ ENV CI=1 \
     PNPM_STORE_DIR=/pnpm/store \
     XDG_CACHE_HOME=/workspace/.cache \
     WDIO_BROWSER_DRIVER_CACHE_DIR=/workspace/.cache/wdio-browser-drivers \
-    ZCODE_E2E_CONTAINER=1 \
-    ZCODE_E2E_SPEC=./test/e2e/container-boot.test.ts,./test/e2e/smoke.test.ts,./test/e2e/e2ecase-regression.test.ts,./test/e2e/upstream-provider.test.ts \
+    ZODY_E2E_CONTAINER=1 \
+    ZODY_E2E_SPEC=./test/e2e/container-boot.test.ts,./test/e2e/smoke.test.ts,./test/e2e/e2ecase-regression.test.ts,./test/e2e/upstream-provider.test.ts \
     ELECTRON_DISABLE_SECURITY_WARNINGS=1 \
     TURBO_TELEMETRY_DISABLED=1
 

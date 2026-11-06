@@ -1,5 +1,5 @@
-import { sessionCreateTelemetrySchema, type RendererTelemetryEventPayload } from "@zcode/shared";
-import { playTaskNotificationSound } from "@zcode/ui";
+import { sessionCreateTelemetrySchema, type RendererTelemetryEventPayload } from "@zody/shared";
+import { playTaskNotificationSound } from "@zody/ui";
 import type {
   IPlatformService,
   RemoteTarget,
@@ -7,7 +7,7 @@ import type {
   WebRemoteControlPlatformMethodArgsMap,
   WebRemoteControlPlatformMethodResultMap,
   WebRemoteControlStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { resolveWebCommunityUrl, resolveWebHelpConfig } from "./communityUrl.js";
 
 /**
@@ -79,7 +79,7 @@ export function createWebPlatform(options?: {
       _context?: {
         workspacePath: string;
         workspaceIdentity?: string;
-        connectTrigger?: import("@zcode/shared").RemoteWorkspaceConnectTrigger;
+        connectTrigger?: import("@zody/shared").RemoteWorkspaceConnectTrigger;
       },
     ) {
       if (platformProxy) {

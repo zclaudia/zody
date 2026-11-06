@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IPlatformService } from "@zcode/shared";
+import type { IPlatformService } from "@zody/shared";
 
 const { setPendingSettingsSectionMock } = vi.hoisted(() => ({
   setPendingSettingsSectionMock: vi.fn(),
@@ -120,7 +120,7 @@ vi.mock("@/hooks/useWorkspaceTaskLists.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -129,14 +129,14 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
   }),
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
-  selectWorkspaceZCodeState: () => ({ activeTaskId: "task-1" }),
-  useZCodeSessionStore: (selector: (state: { selectDraftProvider: () => void }) => unknown) =>
+vi.mock("@/store/zodySessionStore.js", () => ({
+  selectWorkspaceZodyState: () => ({ activeTaskId: "task-1" }),
+  useZodySessionStore: (selector: (state: { selectDraftProvider: () => void }) => unknown) =>
     selector({ selectDraftProvider: vi.fn() }),
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: { setTheme: () => void }) => unknown) =>
+  useZodyStore: (selector: (state: { setTheme: () => void }) => unknown) =>
     selector({ setTheme: vi.fn() }),
 }));
 

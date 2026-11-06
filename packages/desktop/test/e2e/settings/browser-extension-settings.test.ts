@@ -8,13 +8,13 @@ import {
   serializeExtensionBridgeMessage,
   type ExtensionBridgeClientMessage,
   type ExtensionBridgeServerMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   TID_SETTINGS_PAGE,
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   setInputValueByTestIdDom,
@@ -194,13 +194,13 @@ describe("Chrome extension browser settings E2E", () => {
     const browserId = await browser.execute(async () => {
       const bridge = (
         window as Window & {
-          zcode?: {
+          zody?: {
             getBrowserExtensionStatus?: () => Promise<{
               profiles: Array<{ browserId: string }>;
             } | null>;
           };
         }
-      ).zcode;
+      ).zody;
       const status = await bridge?.getBrowserExtensionStatus?.();
       return status?.profiles[0]?.browserId ?? null;
     });
@@ -212,13 +212,13 @@ describe("Chrome extension browser settings E2E", () => {
         (await browser.execute(async () => {
           const bridge = (
             window as Window & {
-              zcode?: {
+              zody?: {
                 getBrowserExtensionStatus?: () => Promise<{
                   defaultBrowserId?: string;
                 } | null>;
               };
             }
-          ).zcode;
+          ).zody;
           return (await bridge?.getBrowserExtensionStatus?.())?.defaultBrowserId;
         })) === browserId,
       { timeout: 15000, timeoutMsg: "窗口默认 backend 没有写回 Main" },
@@ -229,13 +229,13 @@ describe("Chrome extension browser settings E2E", () => {
     const afterReload = await browser.execute(async () => {
       const bridge = (
         window as Window & {
-          zcode?: {
+          zody?: {
             getBrowserExtensionStatus?: () => Promise<{
               defaultBrowserId?: string;
             } | null>;
           };
         }
-      ).zcode;
+      ).zody;
       return (await bridge?.getBrowserExtensionStatus?.())?.defaultBrowserId;
     });
     expect(afterReload).toBe(browserId);
@@ -257,13 +257,13 @@ describe("Chrome extension browser settings E2E", () => {
     const defaultAfterRevoke = await browser.execute(async () => {
       const bridge = (
         window as Window & {
-          zcode?: {
+          zody?: {
             getBrowserExtensionStatus?: () => Promise<{
               defaultBrowserId?: string;
             } | null>;
           };
         }
-      ).zcode;
+      ).zody;
       return (await bridge?.getBrowserExtensionStatus?.())?.defaultBrowserId;
     });
     // WebDriver 把 undefined 序列化为 null。

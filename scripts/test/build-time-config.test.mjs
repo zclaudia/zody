@@ -28,26 +28,26 @@ test("没有私有默认配置也没有环境变量时能力全部关闭、下�
 
 test("私有默认配置包含 ARMS 或事件上报端点时构建失败", async () => {
   const defaultsPath = await writeDefaults("defaults.json", {
-    ZCODE_ARMS_RUM_ENDPOINT: " https://rum.example.com/x ",
+    ZODY_ARMS_RUM_ENDPOINT: " https://rum.example.com/x ",
   });
   await assert.rejects(
     resolveBuildTimeConfig({}, { defaultsPath }),
-    /ZCODE_ARMS_RUM_ENDPOINT is disabled for Zody release builds/,
+    /ZODY_ARMS_RUM_ENDPOINT is disabled for Zody release builds/,
   );
   await assert.rejects(
     resolveBuildTimeConfig(
-      { ZCODE_TELEMETRY_REPORT_ENDPOINT: "https://report.example.com/event" },
+      { ZODY_TELEMETRY_REPORT_ENDPOINT: "https://report.example.com/event" },
       { defaultsPath: join(dir, "missing.json") },
     ),
-    /ZCODE_TELEMETRY_REPORT_ENDPOINT is disabled for Zody release builds/,
+    /ZODY_TELEMETRY_REPORT_ENDPOINT is disabled for Zody release builds/,
   );
 });
 
 // 构建护栏（specs/fork-official-backend-runtime-dependencies.md「自动更新」规则 4）：
-// fork 尚无自有更新源，ZCODE_AUTO_UPDATE 为真会让构建意外启用指向官方 manifest 的更新器，必须直接报错。
-test("私有默认配置把 ZCODE_AUTO_UPDATE 配为真值时直接报错", async () => {
+// fork 尚无自有更新源，ZODY_AUTO_UPDATE 为真会让构建意外启用指向官方 manifest 的更新器，必须直接报错。
+test("私有默认配置把 ZODY_AUTO_UPDATE 配为真值时直接报错", async () => {
   const defaultsPath = await writeDefaults("auto-update-defaults.json", {
-    ZCODE_AUTO_UPDATE: "1",
+    ZODY_AUTO_UPDATE: "1",
   });
   await assert.rejects(
     resolveBuildTimeConfig({}, { defaultsPath }),
@@ -55,26 +55,26 @@ test("私有默认配置把 ZCODE_AUTO_UPDATE 配为真值时直接报错", asyn
   );
 });
 
-test("环境变量 ZCODE_AUTO_UPDATE=1 时直接报错并指向阶段 2 细则", async () => {
+test("环境变量 ZODY_AUTO_UPDATE=1 时直接报错并指向阶段 2 细则", async () => {
   await assert.rejects(
-    resolveBuildTimeConfig({ ZCODE_AUTO_UPDATE: "1" }, { defaultsPath: join(dir, "missing.json") }),
+    resolveBuildTimeConfig({ ZODY_AUTO_UPDATE: "1" }, { defaultsPath: join(dir, "missing.json") }),
     /specs\/fork-official-backend-runtime-dependencies\.md/,
   );
 });
 
 test("私有默认遥测 endpoint 即使被环境变量置空也会 fail-fast", async () => {
   const defaultsPath = await writeDefaults("override.json", {
-    ZCODE_ARMS_RUM_ENDPOINT: "https://rum.example.com/x",
-    ZCODE_TELEMETRY_REPORT_ENDPOINT: "https://report.example.com/event",
+    ZODY_ARMS_RUM_ENDPOINT: "https://rum.example.com/x",
+    ZODY_TELEMETRY_REPORT_ENDPOINT: "https://report.example.com/event",
     // defaults 里的真值被环境变量 "0" 覆盖后不再触发护栏
-    ZCODE_AUTO_UPDATE: "true",
+    ZODY_AUTO_UPDATE: "true",
   });
   await assert.rejects(
     resolveBuildTimeConfig(
       {
-        ZCODE_ARMS_RUM_ENDPOINT: "",
-        ZCODE_TELEMETRY_REPORT_ENDPOINT: "",
-        ZCODE_AUTO_UPDATE: "0",
+        ZODY_ARMS_RUM_ENDPOINT: "",
+        ZODY_TELEMETRY_REPORT_ENDPOINT: "",
+        ZODY_AUTO_UPDATE: "0",
       },
       { defaultsPath },
     ),
@@ -82,25 +82,25 @@ test("私有默认遥测 endpoint 即使被环境变量置空也会 fail-fast", 
   );
 });
 
-test("ZCODE_DOWNLOAD_PAGE_URL 合法 https 地址按配置返回", async () => {
+test("ZODY_DOWNLOAD_PAGE_URL 合法 https 地址按配置返回", async () => {
   const config = await resolveBuildTimeConfig(
-    { ZCODE_DOWNLOAD_PAGE_URL: " https://example.com/download " },
+    { ZODY_DOWNLOAD_PAGE_URL: " https://example.com/download " },
     { defaultsPath: join(dir, "missing.json") },
   );
   assert.equal(config.downloadPageUrl, "https://example.com/download");
 });
 
-test("ZCODE_DOWNLOAD_PAGE_URL 非 loopback 的 http 地址构建失败", async () => {
+test("ZODY_DOWNLOAD_PAGE_URL 非 loopback 的 http 地址构建失败", async () => {
   await assert.rejects(
     resolveBuildTimeConfig(
-      { ZCODE_DOWNLOAD_PAGE_URL: "http://example.com" },
+      { ZODY_DOWNLOAD_PAGE_URL: "http://example.com" },
       { defaultsPath: join(dir, "missing.json") },
     ),
     /仅 loopback 允许 http/,
   );
 });
 
-test("ZCODE_DOWNLOAD_PAGE_URL loopback 允许 http，仅用于本机测试", async () => {
+test("ZODY_DOWNLOAD_PAGE_URL loopback 允许 http，仅用于本机测试", async () => {
   for (const url of [
     "http://127.0.0.1:3000/download",
     "http://localhost:8080/",
@@ -108,17 +108,17 @@ test("ZCODE_DOWNLOAD_PAGE_URL loopback 允许 http，仅用于本机测试", asy
     "http://127.0.0.2/download",
   ]) {
     const config = await resolveBuildTimeConfig(
-      { ZCODE_DOWNLOAD_PAGE_URL: url },
+      { ZODY_DOWNLOAD_PAGE_URL: url },
       { defaultsPath: join(dir, "missing.json") },
     );
     assert.equal(config.downloadPageUrl, url);
   }
 });
 
-test("ZCODE_DOWNLOAD_PAGE_URL 非法 URL 构建失败", async () => {
+test("ZODY_DOWNLOAD_PAGE_URL 非法 URL 构建失败", async () => {
   await assert.rejects(
     resolveBuildTimeConfig(
-      { ZCODE_DOWNLOAD_PAGE_URL: "not a url" },
+      { ZODY_DOWNLOAD_PAGE_URL: "not a url" },
       { defaultsPath: join(dir, "missing.json") },
     ),
     /不是合法 URL/,
@@ -126,39 +126,39 @@ test("ZCODE_DOWNLOAD_PAGE_URL 非法 URL 构建失败", async () => {
 });
 
 // fork（F2.9）：问题反馈地址与下载页共用同一校验规则；未配置为空串，反馈入口不显示。
-test("ZCODE_FEEDBACK_ISSUE_URL 合法 https 地址按配置返回", async () => {
+test("ZODY_FEEDBACK_ISSUE_URL 合法 https 地址按配置返回", async () => {
   const config = await resolveBuildTimeConfig(
-    { ZCODE_FEEDBACK_ISSUE_URL: " https://example.com/feedback " },
+    { ZODY_FEEDBACK_ISSUE_URL: " https://example.com/feedback " },
     { defaultsPath: join(dir, "missing.json") },
   );
   assert.equal(config.feedbackIssueUrl, "https://example.com/feedback");
 });
 
-test("ZCODE_FEEDBACK_ISSUE_URL 非 loopback 的 http 地址构建失败", async () => {
+test("ZODY_FEEDBACK_ISSUE_URL 非 loopback 的 http 地址构建失败", async () => {
   await assert.rejects(
     resolveBuildTimeConfig(
-      { ZCODE_FEEDBACK_ISSUE_URL: "http://example.com/issues" },
+      { ZODY_FEEDBACK_ISSUE_URL: "http://example.com/issues" },
       { defaultsPath: join(dir, "missing.json") },
     ),
-    /ZCODE_FEEDBACK_ISSUE_URL 必须是完整 https URL/,
+    /ZODY_FEEDBACK_ISSUE_URL 必须是完整 https URL/,
   );
 });
 
-test("ZCODE_FEEDBACK_ISSUE_URL loopback 允许 http，仅用于本机测试", async () => {
+test("ZODY_FEEDBACK_ISSUE_URL loopback 允许 http，仅用于本机测试", async () => {
   const config = await resolveBuildTimeConfig(
-    { ZCODE_FEEDBACK_ISSUE_URL: "http://127.0.0.1:3000/issues" },
+    { ZODY_FEEDBACK_ISSUE_URL: "http://127.0.0.1:3000/issues" },
     { defaultsPath: join(dir, "missing.json") },
   );
   assert.equal(config.feedbackIssueUrl, "http://127.0.0.1:3000/issues");
 });
 
-test("ZCODE_FEEDBACK_ISSUE_URL 非法 URL 构建失败", async () => {
+test("ZODY_FEEDBACK_ISSUE_URL 非法 URL 构建失败", async () => {
   await assert.rejects(
     resolveBuildTimeConfig(
-      { ZCODE_FEEDBACK_ISSUE_URL: "not a url" },
+      { ZODY_FEEDBACK_ISSUE_URL: "not a url" },
       { defaultsPath: join(dir, "missing.json") },
     ),
-    /ZCODE_FEEDBACK_ISSUE_URL 不是合法 URL/,
+    /ZODY_FEEDBACK_ISSUE_URL 不是合法 URL/,
   );
 });
 
@@ -177,11 +177,11 @@ test("define 以 JSON 字面量注入", () => {
       feedbackIssueUrl: "https://example.com/feedback",
     }),
     {
-      __ZCODE_ARMS_RUM_ENDPOINT__: '"https://rum.example.com/x"',
-      __ZCODE_TELEMETRY_REPORT_ENDPOINT__: '""',
-      __ZCODE_AUTO_UPDATE_ENABLED__: "true",
-      __ZCODE_DOWNLOAD_PAGE_URL__: '"https://example.com/download"',
-      __ZCODE_FEEDBACK_ISSUE_URL__: '"https://example.com/feedback"',
+      __ZODY_ARMS_RUM_ENDPOINT__: '"https://rum.example.com/x"',
+      __ZODY_TELEMETRY_REPORT_ENDPOINT__: '""',
+      __ZODY_AUTO_UPDATE_ENABLED__: "true",
+      __ZODY_DOWNLOAD_PAGE_URL__: '"https://example.com/download"',
+      __ZODY_FEEDBACK_ISSUE_URL__: '"https://example.com/feedback"',
     },
   );
 });

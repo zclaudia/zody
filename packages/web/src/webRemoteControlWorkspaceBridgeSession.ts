@@ -1,4 +1,4 @@
-import type { WebRemoteControlExternalWorkspaceBridge } from "@zcode/shared";
+import type { WebRemoteControlExternalWorkspaceBridge } from "@zody/shared";
 import {
   bindRemoteWorkspaceIdentity,
   bindRemoteWorkspacePath,
@@ -6,7 +6,7 @@ import {
   registerRemoteWorkspaceSession,
   unregisterRemoteWorkspaceSession,
   type RemoteWorkspaceSession,
-} from "@zcode/ui/remote-workspace-session-store";
+} from "@zody/ui/remote-workspace-session-store";
 
 export interface WebRemoteControlWorkspaceBridgeServiceRegistration {
   dispose: () => void;

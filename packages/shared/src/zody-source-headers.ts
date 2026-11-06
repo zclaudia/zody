@@ -1,0 +1,77 @@
+// fork（F2.10）：来源标识 HTTP-Referer / X-Title 不再指向官方域。
+// D5（产品名、域名、渠道）未决期间取中性值——默认不发；构建期可通过 bundler define
+// 注入 __ZODY_SOURCE_REFERER_URL__ / __ZODY_SOURCE_TITLE__ 启用（D5 决定后在 F7.1 替换取值）。
+declare const __ZODY_SOURCE_REFERER_URL__: string;
+declare const __ZODY_SOURCE_TITLE__: string;
+
+/** 构建期 HTTP-Referer；为空时不发送。 */
+export const ZODY_SOURCE_REFERER_URL: string =
+  typeof __ZODY_SOURCE_REFERER_URL__ !== "undefined" ? __ZODY_SOURCE_REFERER_URL__ : "";
+/** 构建期 X-Title 基名（实际发送 `${基名}@${sourceTitle}`）；为空时不发送。 */
+export const ZODY_SOURCE_TITLE: string =
+  typeof __ZODY_SOURCE_TITLE__ !== "undefined" ? __ZODY_SOURCE_TITLE__ : "";
+
+// fork（F2.10）：设备标识 X-Device-Mid 与官方来源标识不再进入默认基础头。
+export const ZODY_SOURCE_HEADERS = {
+  "User-Agent": "Zody/unknown",
+} as const;
+
+export interface BuildZodySourceHeadersFromContextOptions {
+  appVersion?: string;
+  arch?: string;
+  clientLanguage?: string;
+  clientTimezone?: string;
+  osVersion?: string;
+  platform?: string;
+  releaseChannel?: string;
+  sourceTitle?: string;
+}
+
+export function normalizeZodySourceHeaderValue(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed || !/^[\x20-\x7e]+$/.test(trimmed)) {
+    return undefined;
+  }
+  return trimmed;
+}
+
+export function buildZodySourceHeadersFromContext(
+  options: BuildZodySourceHeadersFromContextOptions = {},
+): Record<string, string> {
+  const appVersion = normalizeZodySourceHeaderValue(options.appVersion);
+  const arch = normalizeZodySourceHeaderValue(options.arch);
+  const clientLanguage = normalizeZodySourceHeaderValue(options.clientLanguage) ?? "unknown";
+  const clientTimezone = normalizeZodySourceHeaderValue(options.clientTimezone) ?? "unknown";
+  const osVersion = normalizeZodySourceHeaderValue(options.osVersion);
+  const platform = normalizeZodySourceHeaderValue(options.platform);
+  const releaseChannel = normalizeZodySourceHeaderValue(options.releaseChannel);
+  const sourceTitle = normalizeZodySourceHeaderValue(options.sourceTitle) ?? "electron";
+  // 构建期注入值同样经过合法性校验；为空或含非法字符时一律不发。
+  const sourceRefererUrl = normalizeZodySourceHeaderValue(ZODY_SOURCE_REFERER_URL);
+  const sourceTitleBase = normalizeZodySourceHeaderValue(ZODY_SOURCE_TITLE);
+
+  return {
+    ...ZODY_SOURCE_HEADERS,
+    "User-Agent": `Zody/${appVersion ?? "unknown"}`,
+    ...(appVersion ? { "X-Zody-App-Version": appVersion } : {}),
+    ...(sourceRefererUrl ? { "HTTP-Referer": sourceRefererUrl } : {}),
+    ...(sourceTitleBase ? { "X-Title": `${sourceTitleBase}@${sourceTitle}` } : {}),
+    ...(platform && arch ? { "X-Platform": `${platform}-${arch}` } : {}),
+    ...(releaseChannel ? { "X-Release-Channel": releaseChannel } : {}),
+    "X-Client-Language": clientLanguage,
+    "X-Client-Timezone": clientTimezone,
+    ...(platform ? { "X-Os-Category": normalizeOsCategory(platform) } : {}),
+    ...(osVersion ? { "X-Os-Version": osVersion } : {}),
+  };
+}
+
+function normalizeOsCategory(platform: string): string {
+  switch (platform) {
+    case "darwin":
+      return "macos";
+    case "win32":
+      return "windows";
+    default:
+      return "linux";
+  }
+}

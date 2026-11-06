@@ -6,7 +6,7 @@ import {
   type RemoteAssetSource,
   type WindowHostAttachmentScope,
   type WindowHostRemoteWorkspaceDescriptor,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export interface WindowRemoteAssetDirs {
   assetSource?: RemoteAssetSource;

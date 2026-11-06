@@ -15,11 +15,11 @@ import {
   TID_WORKFLOW_ARTIFACT_CHIP,
   TID_WORKFLOW_RUN_ROW,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
-  type ZCodeWorkflowsGetResult,
-} from "@zcode/shared";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
+  type ZodyWorkflowsGetResult,
+} from "@zody/shared";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 const toastMock = vi.fn();
 vi.mock("@/components/ui/toast.js", () => ({ toast: (...args: unknown[]) => toastMock(...args) }));
@@ -40,7 +40,7 @@ const { SavedWorkflowDetailView } =
   await import("@/settings/saved-workflows/SavedWorkflowDetailView.js");
 
 const SCRIPT = 'export default async ({ agent }) => {\n  await agent("检查发布");\n};\n';
-const ENTRY: ZCodeSavedWorkflowEntry = {
+const ENTRY: ZodySavedWorkflowEntry = {
   name: "release-check",
   description: "发布前检查",
   whenToUse: "发版前",
@@ -48,7 +48,7 @@ const ENTRY: ZCodeSavedWorkflowEntry = {
   path: "/repo/.zcode/workflows/release-check.dwf.ts",
   args: { branch: { type: "string", required: true } },
 };
-const detailResult: { current: ZCodeWorkflowsGetResult } = {
+const detailResult: { current: ZodyWorkflowsGetResult } = {
   current: {
     ok: true,
     name: "release-check",
@@ -68,7 +68,7 @@ const agentService = {
 };
 
 const NOW = 1_700_000_000_000;
-const RUNS: ZCodeSavedWorkflowRun[] = [
+const RUNS: ZodySavedWorkflowRun[] = [
   {
     runId: "r-open",
     name: "release-check",
@@ -115,7 +115,7 @@ function mount(overrides: Partial<Parameters<typeof SavedWorkflowDetailView>[0]>
   };
   render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(SavedWorkflowDetailView, props),
     ),
@@ -191,6 +191,13 @@ describe("SavedWorkflowDetailView", () => {
   });
 
   it("保存：只送 meta（说明 / 使用时机 / 参数声明），成功后重新拉取并通知列表", async () => {
+    agentService.updateSavedWorkflowMeta.mockImplementationOnce(async () => {
+      detailResult.current = {
+        ...detailResult.current,
+        path: "/repo/.zody/workflows/release-check.dwf.ts",
+      } as ZodyWorkflowsGetResult;
+      return { ok: true as const, path: "/repo/.zody/workflows/release-check.dwf.ts" };
+    });
     const props = mount();
     const description = (await screen.findByTestId(
       TID_WORKFLOW_DETAIL_DESCRIPTION,
@@ -209,7 +216,24 @@ describe("SavedWorkflowDetailView", () => {
     );
     await waitFor(() => expect(props.onMetaSaved).toHaveBeenCalledTimes(1));
     expect(agentService.getSavedWorkflow).toHaveBeenCalledTimes(2);
+    expect(detailResult.current).toMatchObject({
+      path: "/repo/.zody/workflows/release-check.dwf.ts",
+    });
     expect(toastMock).toHaveBeenCalledWith("已保存元数据");
+  });
+
+  it("failed canonical publication does not reload or notify success", async () => {
+    agentService.updateSavedWorkflowMeta.mockRejectedValueOnce(new Error("EEXIST"));
+    const props = mount();
+    const description = (await screen.findByTestId(
+      TID_WORKFLOW_DETAIL_DESCRIPTION,
+    )) as HTMLTextAreaElement;
+    fireEvent.change(description, { target: { value: "new description" } });
+    fireEvent.click(screen.getByTestId(TID_WORKFLOW_META_SAVE));
+    await waitFor(() => expect(toastMock).toHaveBeenCalledWith(expect.stringContaining("EEXIST")));
+    expect(props.onMetaSaved).not.toHaveBeenCalled();
+    expect(agentService.getSavedWorkflow).toHaveBeenCalledTimes(1);
+    expect(toastMock).not.toHaveBeenCalledWith("已保存元数据");
   });
 
   it("说明清空时拒绝保存并提示", async () => {
@@ -267,7 +291,7 @@ describe("SavedWorkflowDetailView", () => {
   });
 
   it("resolveRunProject 在每行渲染项目列，并按行 canOpen 控制「查看实例」", async () => {
-    const resolveRunProject = vi.fn((run: ZCodeSavedWorkflowRun) =>
+    const resolveRunProject = vi.fn((run: ZodySavedWorkflowRun) =>
       run.runId === "r-open"
         ? { label: "Alpha", title: "/repo/alpha", canOpen: true }
         : { label: "Beta", title: "/repo/beta", canOpen: false },
@@ -306,7 +330,7 @@ describe("SavedWorkflowDetailView", () => {
 
   // ── 产物（docs/dynamic-workflow/authoring.md「How the user sees them」）──
   // ⚠ 术语：这里的「产物」是脚本经 `artifact.*` 交付给用户的产出，不是脚本的顶层返回值。
-  const ARTIFACT_RUNS: ZCodeSavedWorkflowRun[] = [
+  const ARTIFACT_RUNS: ZodySavedWorkflowRun[] = [
     {
       runId: "r-latest",
       name: "release-check",

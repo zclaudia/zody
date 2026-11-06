@@ -3,10 +3,10 @@ import { FolderOpen, FolderPlus, LoaderCircle, MonitorUp, Plus, Settings } from 
 import type {
   WebRemoteControlDesktopWindowState,
   WebRemoteControlRecentProjectTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { MobileWorkspacePicker } from "@/MobileWorkspacePicker.js";
 import { useWebRemoteControlTerminalTransportState } from "@/webRemoteControlTerminalTransportState.js";
 import { WebRemoteControlThemeMenu } from "@/WebRemoteControlThemeMenu.js";
@@ -61,7 +61,7 @@ export const WebRemoteControlRecentProjectsSection = memo(
     actionsDisabled = false,
     className,
   }: WebRemoteControlRecentProjectsSectionProps) {
-    const { intl } = useZCodeIntl();
+    const { intl } = useZodyIntl();
     const busy = Boolean(openingProjectId) || openingWindow || actionsDisabled;
 
     return (
@@ -226,7 +226,7 @@ export interface WebRemoteControlMobileStartPageProps {
   openOtherProject?: {
     listDirectory(
       path?: string,
-    ): Promise<import("@zcode/shared").WebRemoteControlMobileDirectoryListResult>;
+    ): Promise<import("@zody/shared").WebRemoteControlMobileDirectoryListResult>;
     openWorkspacePath(workspacePath: string): Promise<string>;
     onOpened(workspaceKey: string): void | Promise<void>;
   };
@@ -251,7 +251,7 @@ export function WebRemoteControlMobileStartPage({
   onOpenSettings,
   openOtherProject,
 }: WebRemoteControlMobileStartPageProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [otherProjectOpen, setOtherProjectOpen] = useState(false);
   // home-7 修复：副标题之前固定渲染「已连接到 gateway」，与真实连接态无关；
   // 弱网/桌面断线期间（可恢复失败且页面已 ready）页面不做任何提示。

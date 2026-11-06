@@ -1,7 +1,7 @@
 import {
   MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE,
   type PlatformSecureStore,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * Shell 浏览器开发模式的本地配置存储。

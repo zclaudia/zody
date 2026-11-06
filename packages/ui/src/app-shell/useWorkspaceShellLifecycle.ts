@@ -1,13 +1,13 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from "react";
-import type { IServiceAccessor } from "@zcode/services";
+import type { IServiceAccessor } from "@zody/services";
 import type { TaskChatMessage as TestChatMessage } from "@/lib/taskChatMessageTypes.js";
 import type { BrowserNavigationRequest } from "@/hooks/useAppPanels.js";
 import { logger } from "@/logger.js";
 import {
   getWorkspaceDisplayedTaskState,
   getWorkspaceInitState,
-  useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
+  useZodySessionStore,
+} from "@/store/zodySessionStore.js";
 
 export function useWorkspaceShellLifecycle({
   workspaceAbsPath,
@@ -43,7 +43,7 @@ export function useWorkspaceShellLifecycle({
 
   useEffect(() => {
     return () => {
-      const currentWorkspaceState = useZCodeSessionStore
+      const currentWorkspaceState = useZodySessionStore
         .getState()
         .getWorkspaceState(workspaceAbsPath);
       const displayedTaskState = getWorkspaceDisplayedTaskState(currentWorkspaceState);
@@ -69,14 +69,14 @@ export function useWorkspaceShellLifecycle({
       logger.info(
         `[App] 回退 workspace 预热状态 workspace=${workspaceAbsPath} provider=${provider}`,
       );
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .setWorkspaceInitAttempts(workspaceAbsPath, 0, workspaceIdentity);
-      useZCodeSessionStore
+      useZodySessionStore
         .getState()
         .setWorkspaceInitState(workspaceAbsPath, "idle", null, workspaceIdentity);
 
-      void services.zcodeTaskService
+      void services.zodyTaskService
         .releaseWorkspacePreparation({
           workspacePath: workspaceAbsPath,
           ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -89,5 +89,5 @@ export function useWorkspaceShellLifecycle({
           );
         });
     };
-  }, [services.zcodeTaskService, workspaceIdentity, workspaceAbsPath]);
+  }, [services.zodyTaskService, workspaceIdentity, workspaceAbsPath]);
 }

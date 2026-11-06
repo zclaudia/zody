@@ -1,4 +1,4 @@
-import { WEB_REMOTE_CONTROL_CHANNEL_KIND } from "@zcode/shared";
+import { WEB_REMOTE_CONTROL_CHANNEL_KIND } from "@zody/shared";
 import type {
   RemoteGatewayBackendLogger,
   RemoteGatewayBackendSdkLike,

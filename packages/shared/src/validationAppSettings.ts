@@ -3,9 +3,9 @@ import { z } from "zod";
 import { REMOTE_ASSET_INSTALL_MODES } from "./remoteAssetInstallMode.js";
 import { isKnownRemoteResourcePackageId } from "./remoteResourcePackages.js";
 import { wslUserSchema } from "./wslUserValidation.js";
-import { ZCODE_ENABLED_AGENT_PROVIDERS } from "./zcode-agent-policy.js";
+import { ZODY_ENABLED_AGENT_PROVIDERS } from "./zody-agent-policy.js";
 import { DYNAMIC_WORKFLOW_MODES } from "./dynamic-workflow-feature.js";
-import { normalizeZCodeEndpointOrigin } from "./zcodeEndpoint.js";
+import { normalizeZodyEndpointOrigin } from "./zodyEndpoint.js";
 import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   remoteAccessSettingsPatchSchema,
@@ -40,7 +40,7 @@ const nonEmptyStringSchema = z.string().trim().min(1);
 
 export const localeSchema = z.enum(["zh-CN", "en-US"]);
 export const localePreferenceSchema = z.enum(["system", "zh-CN", "en-US"]);
-const zcodeInteractionBehaviorSchema = z.enum(["queue", "guide"]);
+const zodyInteractionBehaviorSchema = z.enum(["queue", "guide"]);
 // launch.md「The user's choice」：读文件时未知取值（降级后读到新版本写的值）按「跟随」处理，
 // 不能让一个偏好字段把整份设置读坏。
 const dynamicWorkflowModeSettingSchema = z.enum(DYNAMIC_WORKFLOW_MODES).optional().catch(undefined);
@@ -66,7 +66,7 @@ export const integratedTerminalShellSelectionSchema = z.discriminatedUnion("mode
 const enabledBuiltinAgentCliProvidersSchema = z
   // 兼容旧 settings：历史列表可能残留三方 CLI provider，解析后统一归一为 ZCode Agent。
   .array(z.enum(["claude", "opencode", "gemini", "codex", "glm"]))
-  .transform(() => [...ZCODE_ENABLED_AGENT_PROVIDERS]);
+  .transform(() => [...ZODY_ENABLED_AGENT_PROVIDERS]);
 const providerFamilyDomainSchema = z.enum(["zai", "bigmodel"]);
 
 export const postUpdateReleaseNotesPayloadSchema = z.object({
@@ -155,7 +155,7 @@ const zodyEndpointOriginSchema = z.preprocess((value) => {
     return undefined;
   }
   try {
-    return normalizeZCodeEndpointOrigin(trimmed);
+    return normalizeZodyEndpointOrigin(trimmed);
   } catch {
     return undefined;
   }
@@ -298,7 +298,7 @@ function migrateLegacyBuiltinAgentCliProviders(value: unknown): unknown {
   // 这里在 schema 入口统一归一到 ZCode Agent，让核心 provider 状态只有一个事实源。
   return {
     ...raw,
-    enabledBuiltinAgentCliProviders: [...ZCODE_ENABLED_AGENT_PROVIDERS],
+    enabledBuiltinAgentCliProviders: [...ZODY_ENABLED_AGENT_PROVIDERS],
   };
 }
 
@@ -530,12 +530,12 @@ const appSettingsObjectSchema = z.object({
   toolGroupingExploreEnabled: z.boolean().default(true),
   toolGroupingTerminalEnabled: z.boolean().default(true),
   toolGroupingChangesEnabled: z.boolean().default(false),
-  zcodeInteractionBehavior: zcodeInteractionBehaviorSchema.default("queue"),
+  zcodeInteractionBehavior: zodyInteractionBehaviorSchema.default("queue"),
   askUserQuestionAutoResolutionEnabled: z.boolean().default(true),
   modelIoFullRetentionEnabled: z.boolean().default(false),
   dynamicWorkflowMode: dynamicWorkflowModeSettingSchema,
   enabledBuiltinAgentCliProviders: enabledBuiltinAgentCliProvidersSchema.default([
-    ...ZCODE_ENABLED_AGENT_PROVIDERS,
+    ...ZODY_ENABLED_AGENT_PROVIDERS,
   ]),
   startPlanRecommendationDismissed: z.boolean().default(false),
   // fork（F4.11）：providerFamily* 是官方账号时代的存量设置；官方账号链路删除后运行时不读取，
@@ -621,7 +621,7 @@ export const appSettingsPatchSchema = z.object({
   toolGroupingExploreEnabled: z.boolean().optional(),
   toolGroupingTerminalEnabled: z.boolean().optional(),
   toolGroupingChangesEnabled: z.boolean().optional(),
-  zcodeInteractionBehavior: zcodeInteractionBehaviorSchema.optional(),
+  zcodeInteractionBehavior: zodyInteractionBehaviorSchema.optional(),
   askUserQuestionAutoResolutionEnabled: z.boolean().optional(),
   modelIoFullRetentionEnabled: z.boolean().optional(),
   // 空串是「删除选择、回到跟随」的哨兵：RPC 会吞掉 undefined，normalizeSettingsPatch 把它归一成删除。

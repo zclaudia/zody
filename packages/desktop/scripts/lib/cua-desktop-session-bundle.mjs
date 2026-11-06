@@ -4,6 +4,7 @@ import { builtinModules } from "node:module";
 import { copyFile, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { build } from "esbuild";
+import { moduleSpecifiers } from "./cua-module-specifiers.mjs";
 import {
   DesktopSessionBuildError,
   ENTRY_NAMES,
@@ -77,9 +78,7 @@ export async function bundleEntry({
       });
     },
   };
-  const selectedDefines = moduleUrl
-    ? { ...defines, "import.meta.url": "__cuaModuleUrl" }
-    : defines;
+  const selectedDefines = moduleUrl ? { ...defines, "import.meta.url": "__cuaModuleUrl" } : defines;
   const banner = moduleUrl
     ? `import { pathToFileURL as __cuaPathToFileURL } from "node:url";\n${ESM_BANNER}\nconst __cuaModuleUrl = __cuaPathToFileURL(process.execPath).href;`
     : ESM_BANNER;
@@ -106,9 +105,10 @@ export async function bundleEntry({
   } catch (error) {
     throw new DesktopSessionBuildError("bundle-failed", "esbuild sealed entry failed", {
       entry,
-      stderr: `${error?.message ?? String(error)}\n${error?.errors ? JSON.stringify(error.errors) : ""}`.slice(
-        -16_000,
-      ),
+      stderr:
+        `${error?.message ?? String(error)}\n${error?.errors ? JSON.stringify(error.errors) : ""}`.slice(
+          -16_000,
+        ),
     });
   }
 }
@@ -188,24 +188,6 @@ export async function inventoryLicenses({ metafile, destination }) {
     summary.saved.push(entry);
   }
   return summary;
-}
-
-function staticImportSpecifiers(text) {
-  const specifiers = [];
-  for (const match of text.matchAll(/^import\s+(?:[^"'();]*?\s+from\s+)?["']([^"']+)["'];?/gm)) {
-    specifiers.push(match[1]);
-  }
-  return specifiers;
-}
-
-function runtimeRequireSpecifiers(text) {
-  // 只检查 esbuild 实际留下的 __require("literal") 调用；ajv 等 codegen 中的
-  // 字符串字面量不是运行时解析，不能用宽泛 require 正则误报。
-  return [
-    ...new Set(
-      [...text.matchAll(/\b__require\s*\(\s*["']([^"']+)["']\s*\)/g)].map((match) => match[1]),
-    ),
-  ];
 }
 
 export function findWebAssemblyReferences(text) {
@@ -297,18 +279,23 @@ export async function auditEntry({
     );
   }
   const text = await readFile(output, "utf8");
-  if (/\bfrom\s*["']@zcode\//.test(text) || /\bimport\s*\(\s*["']@zcode\//.test(text)) {
+  // 修复原因：旧正则遗漏裸 import 和 require，并会误读注释/字符串；按语法树检查真实引用。
+  const references = moduleSpecifiers(text);
+  if (
+    [
+      ...references.imports,
+      ...references.dynamic,
+      ...references.requires.map(({ specifier }) => specifier),
+    ].some((specifier) => /^@(?:zcode|zody)\//.test(specifier))
+  ) {
     throw new DesktopSessionBuildError(
       "entry-external-package",
-      `sealed entry ${name} kept a runtime @zcode import`,
+      `sealed entry ${name} kept a runtime workspace import`,
     );
   }
-  // 中文原因：入口可以是真正的 Host/CLI bundle，但它不能靠未封装的外部
-  // require 假装闭包；只允许 manifest 明确声明的懒加载 runtime external。
-  const imports = [...new Set(staticImportSpecifiers(text))];
-  const nonBuiltinStaticImports = imports.filter(
-    (specifier) => !BUILTINS.has(specifier),
-  );
+  // 其他静态导入仍只允许 Node 内建模块。
+  const imports = [...new Set(references.imports)];
+  const nonBuiltinStaticImports = imports.filter((specifier) => !BUILTINS.has(specifier));
   if (nonBuiltinStaticImports.length > 0) {
     throw new DesktopSessionBuildError(
       "entry-external-import",
@@ -316,10 +303,14 @@ export async function auditEntry({
       { nonBuiltinStaticImports },
     );
   }
-  const runtimeRequires = runtimeRequireSpecifiers(text);
-  const nonBuiltinRuntimeRequires = runtimeRequires.filter(
-    (specifier) => !BUILTINS.has(specifier),
-  );
+  const runtimeRequires = [
+    ...new Set(
+      references.requires
+        .filter(({ kind }) => kind === "__require")
+        .map(({ specifier }) => specifier),
+    ),
+  ];
+  const nonBuiltinRuntimeRequires = runtimeRequires.filter((specifier) => !BUILTINS.has(specifier));
   if (nonBuiltinRuntimeRequires.length > 0) {
     throw new DesktopSessionBuildError(
       "entry-runtime-require",
@@ -372,9 +363,7 @@ export async function auditEntry({
     staticImports: imports,
     nonBuiltinStaticImports,
     runtimeRequires: runtimeRequires.filter((specifier) => BUILTINS.has(specifier)),
-    runtimeExternals: [...outputExternal]
-      .filter((specifier) => !BUILTINS.has(specifier))
-      .sort(),
+    runtimeExternals: [...outputExternal].filter((specifier) => !BUILTINS.has(specifier)).sort(),
     webAssemblyReferences: webAssembly,
     inputHashes,
     licenses,
@@ -388,10 +377,8 @@ export async function writeEntryAudit(dir, audit) {
     `${JSON.stringify(inputHashes, null, 2)}\n`,
     { mode: 0o600 },
   );
-  await writeFile(
-    join(dir, `${audit.name}.audit.json`),
-    `${JSON.stringify(rest, null, 2)}\n`,
-    { mode: 0o600 },
-  );
+  await writeFile(join(dir, `${audit.name}.audit.json`), `${JSON.stringify(rest, null, 2)}\n`, {
+    mode: 0o600,
+  });
   return { inputCount: Object.keys(inputHashes).length };
 }

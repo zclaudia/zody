@@ -11,7 +11,7 @@
 - [给自己的插件接入 UI](#给自己的插件接入-ui)
 - [其他示例](#其他示例插件)
 
-本篇面向本仓库（[zclaudia/zody](https://github.com/zclaudia/zody)）的宿主联调。本仓库内置的插件位于 `apps/zcode-cli/packages/*-plugin`；下文五个 UI Plugin 示例的源码来自上游 ZCode 时期的独立插件仓库，Zody 目前没有对应的公开插件仓库，也不随本仓库分发这些示例。联调时需自备按相同结构组织的插件仓库检出（下称“插件仓库”）。
+本篇面向本仓库（[zclaudia/zody](https://github.com/zclaudia/zody)）的宿主联调。本仓库内置的插件位于 `apps/zody-cli/packages/*-plugin`；下文五个 UI Plugin 示例的源码来自上游 ZCode 时期的独立插件仓库，Zody 目前没有对应的公开插件仓库，也不随本仓库分发这些示例。联调时需自备按相同结构组织的插件仓库检出（下称“插件仓库”）。
 
 ## UI Plugin 能做什么
 
@@ -173,7 +173,7 @@ flowchart LR
 
 上面的 Excalidraw 截图展示的是 **UI Plugin**。如果需要按当前问题生成一个可调参数的小页面，使用 **Gen UI**；如果要分发一个长期使用、带服务和文档管理的工具，开发 UI Plugin。两者虽都可能出现 `window.zcode`，可用方法和状态结构不同，不能混用。UI Plugin 的开发与 API 见[开发与调试](#开发与调试)和[页面 API 速查](#页面-api-速查)。
 
-实现与页面示例：[Gen UI 契约](packages/ui/src/gen-ui/CONTRACT.md)、[页面 API 示例](apps/zcode-cli/packages/visualize-plugin/skills/visualize/references/api.md)、[Tweak 指南](apps/zcode-cli/packages/visualize-plugin/skills/visualize/tweak.md)。桌面集成验证入口为 `node packages/desktop/scripts/gen-ui-e2e.mjs`。
+实现与页面示例：[Gen UI 契约](packages/ui/src/gen-ui/CONTRACT.md)、[页面 API 示例](apps/zody-cli/packages/visualize-plugin/skills/visualize/references/api.md)、[Tweak 指南](apps/zody-cli/packages/visualize-plugin/skills/visualize/tweak.md)。桌面集成验证入口为 `node packages/desktop/scripts/gen-ui-e2e.mjs`。
 
 ## 其他示例插件
 
@@ -218,10 +218,10 @@ pnpm build
 
 # 主仓库：使用从源码构建的 CLI（已安装 `zody` 时可直接用 `zody plugins …`），将插件装进同一个开发配置。
 cd "$ZCODE_REPO"
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins enable excalidraw@zcode-plugins-local --scope user
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins list --json
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace add "$PLUGINS_REPO/dist/local-marketplace" --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins enable excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins list --json
 pnpm dev:desktop
 ```
 
@@ -235,8 +235,8 @@ pnpm dev:desktop
 cd "$PLUGINS_REPO"
 pnpm build
 cd "$ZCODE_REPO"
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins marketplace update zcode-plugins-local
-node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode-plugins-local --scope user
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins marketplace update zcode-plugins-local
+node apps/zody-cli/packages/cli/dist/zody.cjs plugins install excalidraw@zcode-plugins-local --scope user
 ```
 
 随后重启对应桌面实例，打开新会话验证。源码监听不会把插件仓库的修改自动复制到已安装插件；刷新来源只刷新目录，重新安装才更新代码副本。开发时同版本重装会重新复制；正式分发内容变化仍需升级插件清单、marketplace 和源码包版本。
@@ -259,7 +259,7 @@ node apps/zcode-cli/packages/cli/dist/zcode.cjs plugins install excalidraw@zcode
 
 ```sh
 cd "$ZCODE_REPO"
-ZCODE_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
+ZODY_SHOWCASE_SERVER="$PLUGINS_REPO/plugins/showcase/dist/server.mjs" \
   node packages/desktop/scripts/mcp-apps-host-e2e.mjs --showcase-only
 ```
 
@@ -294,11 +294,11 @@ stdio MCP 服务的 stdout 只输出协议消息，调试日志写 stderr。定�
     "app": {
       "type": "stdio",
       "command": "node",
-      "args": ["${ZCODE_PLUGIN_ROOT}/dist/server.mjs"],
+      "args": ["${ZODY_PLUGIN_ROOT}/dist/server.mjs"],
       "cwd": "${ZCODE_PROJECT_DIR}",
       "env": {
         "ZCODE_WORKSPACE_ROOT": "${ZCODE_PROJECT_DIR}",
-        "ZCODE_PLUGIN_DATA": "${ZCODE_PLUGIN_DATA}"
+        "ZODY_PLUGIN_DATA": "${ZODY_PLUGIN_DATA}"
       }
     }
   },
@@ -318,7 +318,7 @@ stdio MCP 服务的 stdout 只输出协议消息，调试日志写 stderr。定�
 
 服务端需要实际注册 `ui://my-panel/editor.html` 资源并返回 `text/html;profile=mcp-app`。让工具结果使用该面板时，在工具定义中设置 `_meta.ui.resourceUri` 和 `_meta.ui.surface: "editor"`；`_meta.ui.visibility: ["model", "app"]` 允许模型与页面调用，仅页面工具使用 `["app"]`。`ui.surfaces` 可省略，此时仍可通过工具元数据提供内联页面。
 
-插件文件使用 `${ZCODE_PLUGIN_ROOT}` 定位，工作区文件操作使用 `${ZCODE_PROJECT_DIR}`，持久数据使用 `${ZCODE_PLUGIN_DATA}`。用户配置通过清单 `userConfig` 定义，并在服务配置里用 `${user_config.<key>}` 引用。页面通过服务执行文件操作，不直接访问主应用源码或 Node API。
+插件文件使用 `${ZODY_PLUGIN_ROOT}` 定位，工作区文件操作使用 `${ZCODE_PROJECT_DIR}`，持久数据使用 `${ZODY_PLUGIN_DATA}`。插件子进程、hook 与自定义命令同时获得 `ZODY_PLUGIN_ROOT/DATA/ID/NAME` 和 `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` 两套同源 env，`CLAUDE_PLUGIN_ROOT/DATA` 继续可用；`${ZCODE_PLUGIN_ROOT}`、`${ZCODE_PLUGIN_DATA}`、`${CLAUDE_PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_DATA}` 在 1.0 前仍按同一插件上下文展开。用户配置通过清单 `userConfig` 定义，并在服务配置里用 `${user_config.<key>}` 引用。页面通过服务执行文件操作，不直接访问主应用源码或 Node API。
 
 ## 页面 API 速查
 

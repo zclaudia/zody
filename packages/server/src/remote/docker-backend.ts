@@ -1,28 +1,28 @@
 import { spawn, execFile } from "node:child_process";
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
-import type { DockerConnectOptions } from "@zcode/shared";
+import type { DockerConnectOptions } from "@zody/shared";
 import type {
   IRemoteBackend,
   RemoteEnvironment,
   RemoteUploadOptions,
   StdioStream,
-} from "@zcode/server/remote/backend.js";
+} from "@zody/server/remote/backend.js";
 import {
   createCloseEventController,
   resolveRemoteExitCode,
-} from "@zcode/server/remote/closeEvent.js";
+} from "@zody/server/remote/closeEvent.js";
 import {
   listDockerContainers,
   probeDockerDaemon,
   resolveDockerCommand,
   type DockerContainerInfo,
-} from "@zcode/server/remote/docker-detect.js";
+} from "@zody/server/remote/docker-detect.js";
 import {
   normalizeRemoteArch,
   normalizeRemotePlatform,
   resolveRemotePlatform,
-} from "@zcode/server/remote/detectEnv.js";
+} from "@zody/server/remote/detectEnv.js";
 
 interface ResolvedDockerInfo {
   containerName: string;
@@ -245,7 +245,7 @@ export class DockerBackend implements IRemoteBackend {
   }
 
   private async ensureAvailable(): Promise<void> {
-    // Bug 原因（上游 ZCode a60ba6a7）：经 isDockerAvailable 只拿到 false，连接错误只剩“未检测到可用的
+    // Bug 原因（上游 Zody a60ba6a7）：经 isDockerAvailable 只拿到 false，连接错误只剩“未检测到可用的
     // Docker 环境”，无法区分 docker 未安装、daemon 未启动与 socket 权限不足。连接路径改用
     // probeDockerDaemon 保留 docker CLI 的原始原因；入口展示等布尔判断仍走 isDockerAvailable。
     try {

@@ -2,10 +2,10 @@ import { useRef, useState, type FormEvent, type RefObject } from "react";
 import {
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   MOBILE_REMOTE_SECURE_STORE_UNAVAILABLE_MESSAGE,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   resolveUnsavedSettingsBlockReason,
   useMobileRemoteRefreshGuard,
@@ -89,7 +89,7 @@ export function useWebRemoteControlMobileSettingsForm<T>({
   onSubmit,
   formatError,
 }: WebRemoteControlMobileSettingsFormOptions<T>): WebRemoteControlMobileSettingsFormController<T> {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [gatewayUrl, setGatewayUrl] = useState(initial?.gatewayUrl ?? "");
   const [namespace, setNamespace] = useState(initial?.namespace ?? DEFAULT_REMOTE_ACCESS_NAMESPACE);
   const [credential, setCredential] = useState("");
@@ -221,7 +221,7 @@ export function WebRemoteControlMobileSettingsFields({
   onNamespaceChange(value: string): void;
   onCredentialChange(value: string): void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div className="rounded-xl border border-card-border bg-card">
       <div className="divide-y divide-border">

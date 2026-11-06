@@ -44,12 +44,12 @@ describe("notification click resolution", () => {
   });
   it("rejects a same-path task from another identity and missing tasks", async () => {
     const services = {
-      zcodeTaskService: {
+      zodyTaskService: {
         getTaskMeta: vi.fn().mockResolvedValue({ ...target, workspaceIdentity: "ssh:b:/repo" }),
       },
     };
     await expect(validateMobileNotificationTask(services as any, target)).rejects.toThrow();
-    services.zcodeTaskService.getTaskMeta.mockResolvedValue(null as any);
+    services.zodyTaskService.getTaskMeta.mockResolvedValue(null as any);
     await expect(validateMobileNotificationTask(services as any, target)).rejects.toThrow();
   });
   it("rejects a remote workspace whose attachment is no longer attached", async () => {

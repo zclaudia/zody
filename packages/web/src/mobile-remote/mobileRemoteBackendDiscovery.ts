@@ -5,13 +5,13 @@ import {
   WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY,
   type RemoteAccessMobileBackendOption,
   type WebRemoteControlFailure,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * 选电脑页的数据源（T4.2）。
  *
  * 方案「产品规则 · 手机」：先用 `discoverBackends` 列出设备凭证可见的电脑，再结合 registry
- * 的 `capabilities` 判断是否支持 ZCode 远控。discovery 不返回 capabilities，registry 是
+ * 的 `capabilities` 判断是否支持 Zody 远控。discovery 不返回 capabilities，registry 是
  * liveness 视图（离线电脑不在里面），所以：
  * - 在线且 registry 明确缺少 `zcode-remote-control` → `supported: false`，列表置灰；
  * - 离线电脑保留可选项，等它上线后由 registry 更新能力位；

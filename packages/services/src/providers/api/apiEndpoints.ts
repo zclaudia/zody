@@ -1,8 +1,8 @@
-import { buildRuntimeZCodeApiUrl } from "@zcode/shared";
+import { buildRuntimeZodyApiUrl } from "@zody/shared";
 
-// fork（F3.1）：端点未配置时 buildRuntimeZCodeApiUrl 返回空字符串；
+// fork（F3.1）：端点未配置时 buildRuntimeZodyApiUrl 返回空字符串；
 // clientScenesService 据此关闭动态能力并返回空数据（UI 回落内置内容）。
-export const ZCODE_CLIENT_SCENES_URL = buildRuntimeZCodeApiUrl(
+export const ZODY_CLIENT_SCENES_URL = buildRuntimeZodyApiUrl(
   process.env,
   "/api/v1/client/scenes",
 );

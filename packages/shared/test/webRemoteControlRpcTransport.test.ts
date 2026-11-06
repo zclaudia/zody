@@ -6,6 +6,7 @@ import {
   encodeWebRemoteControlRpcTransportMessage,
   measureWebRemoteControlRpcRelayEnvelopeBytes,
   parseWebRemoteControlRpcRelayEnvelopeJson,
+  parseWebRemoteControlRpcTransportPayload,
   webRemoteControlRpcRelayEnvelopeSchema,
   webRemoteControlRpcTransportAckSchema,
   webRemoteControlRpcTransportFrameSchema,
@@ -24,7 +25,7 @@ function frame(
   overrides: Partial<WebRemoteControlRpcTransportFramePayload> = {},
 ): WebRemoteControlRpcTransportFramePayload {
   return {
-    zcode_type: "rpc-frame",
+    zody_type: "rpc-frame",
     ...identity,
     seq: 1,
     messageSeq: 1,
@@ -62,7 +63,7 @@ describe("mobile raw RPC transport schemas", () => {
     expect(webRemoteControlRpcTransportFrameSchema.safeParse(frame()).success).toBe(true);
     expect(
       webRemoteControlRpcTransportAckSchema.safeParse({
-        zcode_type: "rpc-frame-ack",
+        zody_type: "rpc-frame-ack",
         ...identity,
         ackMessageSeq: 1,
       }).success,
@@ -94,11 +95,27 @@ describe("mobile raw RPC transport schemas", () => {
     }
     expect(
       webRemoteControlRpcTransportAckSchema.safeParse({
-        zcode_type: "rpc-frame-ack",
+        zody_type: "rpc-frame-ack",
         ...identity,
         ackMessageSeq: Number.MAX_SAFE_INTEGER + 1,
       }).success,
     ).toBe(false);
+  });
+
+  it("rejects old and mixed discriminators on frame and acknowledgement", () => {
+    for (const payload of [
+      frame(),
+      { zody_type: "rpc-frame-ack", ...identity, ackMessageSeq: 1 },
+    ]) {
+      expect(parseWebRemoteControlRpcTransportPayload(payload)).not.toBeNull();
+      expect(
+        parseWebRemoteControlRpcTransportPayload({ ...payload, zcode_type: payload.zody_type }),
+      ).toBeNull();
+      const { zody_type, ...rest } = payload;
+      expect(
+        parseWebRemoteControlRpcTransportPayload({ ...rest, zcode_type: zody_type }),
+      ).toBeNull();
+    }
   });
 
   it("transport identity 只接受 1..256 个 JSON-safe ASCII 字符", () => {

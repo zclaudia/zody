@@ -3,7 +3,7 @@
 import { createElement } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { WebRemoteControlMobileConnectionSettingsSection } from "@/settings/WebRemoteControlMobileConnectionSettingsSection.js";
 import type { WebRemoteControlMobileConnectionSettingsApi } from "@/settings/WebRemoteControlMobileConnectionSettingsSection.js";
 
@@ -33,7 +33,7 @@ function renderSection(overrides: Partial<WebRemoteControlMobileConnectionSettin
 
   const view = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "en-US" },
       createElement(WebRemoteControlMobileConnectionSettingsSection, {
         settings,

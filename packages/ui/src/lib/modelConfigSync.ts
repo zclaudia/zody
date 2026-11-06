@@ -3,24 +3,24 @@ import {
   GHOST_SUPPLIER_KEY_PREFIX,
   buildNativeSupplierKey,
   resolveSupplierKeyFromModelDisplayValue,
-  type ZCodeConfigOption,
-  type ZCodeProvider,
-  type ZCodeTaskMeta,
-} from "@zcode/shared";
-import { decodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
+  type ZodyConfigOption,
+  type ZodyProvider,
+  type ZodyTaskMeta,
+} from "@zody/shared";
+import { decodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 
 interface ModelConfigSyncScope {
-  provider: ZCodeProvider;
+  provider: ZodyProvider;
   supplierKey: string;
 }
 
 export interface ModelConfigSyncWorkspaceSnapshot {
   activeTaskId: string | null;
-  selectedProvider: ZCodeProvider;
+  selectedProvider: ZodyProvider;
   selectedSupplierKey: string;
-  configOptions: ZCodeConfigOption[] | null;
-  optimisticTaskListByTaskId: Record<string, Pick<ZCodeTaskMeta, "provider">>;
-  taskListCache: ZCodeTaskMeta[] | null;
+  configOptions: ZodyConfigOption[] | null;
+  optimisticTaskListByTaskId: Record<string, Pick<ZodyTaskMeta, "provider">>;
+  taskListCache: ZodyTaskMeta[] | null;
 }
 
 export function parseCustomProviderIdFromSupplierKey(supplierKey: string): string | null {
@@ -70,8 +70,8 @@ function isCustomSupplierKey(supplierKey: string): boolean {
 }
 
 function resolveModelSupplierKeyFromConfigOptions(
-  configOptions: ZCodeConfigOption[] | null,
-  provider: ZCodeProvider,
+  configOptions: ZodyConfigOption[] | null,
+  provider: ZodyProvider,
 ): string | null {
   const modelValue = resolveModelValueFromConfigOptions(configOptions);
   if (!modelValue) {
@@ -83,7 +83,7 @@ function resolveModelSupplierKeyFromConfigOptions(
 
 function resolveActiveTaskProvider(
   snapshot: ModelConfigSyncWorkspaceSnapshot,
-): ZCodeProvider | null {
+): ZodyProvider | null {
   const activeTaskId = snapshot.activeTaskId?.trim();
   if (!activeTaskId) {
     return null;
@@ -143,7 +143,7 @@ export function resolveWorkspaceModelConfigSyncScope(
 }
 
 function resolveModelValueFromConfigOptions(
-  configOptions: ZCodeConfigOption[] | null,
+  configOptions: ZodyConfigOption[] | null,
 ): string | null {
   const modelOption = configOptions?.find(
     (option) => option.category === "model" && option.type === "select",
@@ -161,8 +161,8 @@ function resolveModelValueFromConfigOptions(
 }
 
 export function resolveModelNameForConfigSync(params: {
-  configOptions: ZCodeConfigOption[] | null;
-  selectedProvider: ZCodeProvider;
+  configOptions: ZodyConfigOption[] | null;
+  selectedProvider: ZodyProvider;
   providerId: string;
   providerModels: string[];
 }): string | undefined {

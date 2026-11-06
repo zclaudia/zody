@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { WebRemoteControlWorkspaceListResult } from "@zcode/shared";
+import type { WebRemoteControlWorkspaceListResult } from "@zody/shared";
 import {
   WebRemoteControlMobileTaskHome,
   resetWebRemoteControlMobileTaskHomeExpandedWorkspaceKeysForTests,
@@ -13,7 +13,7 @@ import {
 import { WebRemoteControlThemeMenu } from "@/WebRemoteControlThemeMenu.js";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     locale: "zh-CN",
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, string | number>) =>
@@ -30,7 +30,7 @@ vi.mock("@/logger.js", () => ({
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (
+  useZodyStore: (
     selector: (state: { theme: string; setTheme: (theme: string) => void }) => unknown,
   ) => selector({ theme: "dark", setTheme: vi.fn() }),
 }));

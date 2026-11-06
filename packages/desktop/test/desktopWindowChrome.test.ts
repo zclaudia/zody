@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { join } from "node:path";
-import { PlatformChannels } from "@zcode/shared";
+import { PlatformChannels } from "@zody/shared";
 
 const electronMocks = vi.hoisted(() => {
   const browserWindowConstructor = vi.fn();

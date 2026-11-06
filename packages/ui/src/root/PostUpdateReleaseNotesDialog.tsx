@@ -1,11 +1,11 @@
-import type { PostUpdateReleaseNotesPayload } from "@zcode/shared";
+import type { PostUpdateReleaseNotesPayload } from "@zody/shared";
 import { MessageResponse } from "@/components/ai-elements/message.js";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
 import { GlmMonochromeIcon } from "@/components/ui/GlmMonochromeIcon.js";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { useZCodeStoreWithDefault } from "@/store/StoreProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
+import { useZodyStoreWithDefault } from "@/store/StoreProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 
 interface PostUpdateReleaseNotesDialogProps {
@@ -19,10 +19,10 @@ export function PostUpdateReleaseNotesDialog({
   onAcknowledge,
   onOpenExternalUrl,
 }: PostUpdateReleaseNotesDialogProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   // M5②.5 store 耦合剥离：MessageResponse 不再自取 store，主题/代码预览设置由调用方传入。
-  const theme = useZCodeStoreWithDefault((state) => state.theme, "system");
-  const codePreviewSettings = useZCodeStoreWithDefault(
+  const theme = useZodyStoreWithDefault((state) => state.theme, "system");
+  const codePreviewSettings = useZodyStoreWithDefault(
     (state) => state.codePreviewSettings,
     DEFAULT_CODE_PREVIEW_SETTINGS,
   );

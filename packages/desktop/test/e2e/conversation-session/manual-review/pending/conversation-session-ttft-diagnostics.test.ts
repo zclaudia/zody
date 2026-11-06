@@ -6,7 +6,7 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_SETTINGS_BACK_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clickTestIdByDom,
@@ -168,7 +168,7 @@ describe("TTFT02 真实发送诊断到最终 OTLP", () => {
     });
     const processes = await browser.electron.execute((electron) => electron.app.getAppMetrics());
     runtimeEvidence.push({ renderer, processes });
-    const artifactDir = process.env.ZCODE_E2E_ARTIFACT_DIR;
+    const artifactDir = process.env.ZODY_E2E_ARTIFACT_DIR;
     if (artifactDir)
       await writeFile(
         join(artifactDir, "ttft-diagnostics-performance.json"),
@@ -230,11 +230,11 @@ describe("TTFT02 真实发送诊断到最终 OTLP", () => {
           .flatMap((record) => record.data.resourceMetrics ?? [])
           .flatMap((resource) => resource.scopeMetrics)
           .flatMap((scope) => scope.metrics)
-          .filter((metric) => metric.name.startsWith("zcode.local_ttft."));
+          .filter((metric) => metric.name.startsWith("zody.local_ttft."));
       };
       const count = async () =>
         (await metrics())
-          .filter((metric) => metric.name === "zcode.local_ttft.duration")
+          .filter((metric) => metric.name === "zody.local_ttft.duration")
           .flatMap((metric) => metric.histogram?.dataPoints ?? [])
           .reduce((sum, point) => sum + Number(point.count ?? 0), 0);
       await browser.waitUntil(async () => (await count()) >= roots.length, {
@@ -264,7 +264,7 @@ describe("TTFT02 真实发送诊断到最终 OTLP", () => {
           .flatMap((point) => point.attributes ?? [])
           .some((attribute) => forbidden.has(attribute.key)),
       ).toBe(false);
-      const artifactDir = process.env.ZCODE_E2E_ARTIFACT_DIR;
+      const artifactDir = process.env.ZODY_E2E_ARTIFACT_DIR;
       if (artifactDir)
         await writeFile(
           join(artifactDir, "ttft-diagnostics-otlp.json"),

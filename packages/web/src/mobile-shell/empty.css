@@ -1,7 +1,7 @@
 /*
  * Shell 构建的空 CSS 替身。
  *
- * `@zcode/ui/styles.css` 同时服务 Remote/桌面，里面包含 xterm 与 KaTeX 样式。Shell 只做
+ * `@zody/ui/styles.css` 同时服务 Remote/桌面，里面包含 xterm 与 KaTeX 样式。Shell 只做
  * 配对、设置和选电脑，不需要终端或公式；Vite 在 mobile-shell mode 下把这两条 import
  * 指向本文件，避免把 KaTeX 字体等资源复制进 APK。普通 Web 与 Remote 不受影响。
  */

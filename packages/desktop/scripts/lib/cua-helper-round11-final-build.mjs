@@ -20,12 +20,25 @@ import { dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
+import { moduleSpecifiers } from "./cua-module-specifiers.mjs";
+
+export function assertAuthorityWorkspaceClosed(text) {
+  const refs = moduleSpecifiers(text);
+  if (
+    [...refs.imports, ...refs.dynamic, ...refs.requires.map(({ specifier }) => specifier)].some(
+      (specifier) => /^@(?:zcode|zody)\//.test(specifier),
+    )
+  ) {
+    throw new Round11FinalBuildError(
+      "authority-external-package",
+      "authority bundle kept a workspace reference",
+    );
+  }
+}
+
 const execFileAsync = promisify(execFile);
 
-export const REPO_ROOT = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  "../../../..",
-);
+export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 export const NATIVE_ROOT = join(
   REPO_ROOT,
   "packages",
@@ -40,17 +53,8 @@ export const R10_NATIVE_ROOT = join(
   "native",
   "macos-cua-peer-diagnostic",
 );
-export const CORE_ROOT = join(
-  REPO_ROOT,
-  "apps",
-  "zcode-cli",
-  "packages",
-  "core",
-);
-export const DEFAULT_OUTPUT_ROOT = join(
-  REPO_ROOT,
-  "output/cua-helper-round11/worker-final",
-);
+export const CORE_ROOT = join(REPO_ROOT, "apps", "zody-cli", "packages", "core");
+export const DEFAULT_OUTPUT_ROOT = join(REPO_ROOT, "output/cua-helper-round11/worker-final");
 export const DEFAULT_VISUAL_ROOT = join(
   REPO_ROOT,
   "output/cua-helper-round11/controller-visual-final",
@@ -85,12 +89,7 @@ const R11_SOURCES = [
   "r11_pins.mm",
   "r11_self_identity.mm",
 ];
-const R10_SOURCES = [
-  "peer_socket.mm",
-  "peer_frame.mm",
-  "security_identity.mm",
-  "profile.mm",
-];
+const R10_SOURCES = ["peer_socket.mm", "peer_frame.mm", "security_identity.mm", "profile.mm"];
 
 export class Round11FinalBuildError extends Error {
   constructor(code, message, details) {
@@ -145,24 +144,15 @@ async function probeToolchain() {
       `R11 final build requires darwin arm64, got ${process.platform} ${process.arch}`,
     );
   }
-  const sdkPath = await xcrun(
-    ["--sdk", FIXED_SDK, "--show-sdk-path"],
-    "SDK path probe",
-  );
-  const sdkVersion = await xcrun(
-    ["--sdk", FIXED_SDK, "--show-sdk-version"],
-    "SDK version probe",
-  );
+  const sdkPath = await xcrun(["--sdk", FIXED_SDK, "--show-sdk-path"], "SDK path probe");
+  const sdkVersion = await xcrun(["--sdk", FIXED_SDK, "--show-sdk-version"], "SDK version probe");
   if (sdkVersion !== FIXED_SDK_VERSION) {
     throw new Round11FinalBuildError(
       "sdk-version-mismatch",
       `expected SDK ${FIXED_SDK} ${FIXED_SDK_VERSION}, got ${sdkVersion}`,
     );
   }
-  const compiler = await xcrun(
-    ["--sdk", FIXED_SDK, "--find", "clang++"],
-    "clang++ probe",
-  );
+  const compiler = await xcrun(["--sdk", FIXED_SDK, "--find", "clang++"], "clang++ probe");
   const version = await run(compiler, ["--version"], { timeoutMs: 30_000 });
   if (version.code !== 0 || !version.stdout.includes("Apple clang version")) {
     throw new Round11FinalBuildError(
@@ -202,11 +192,9 @@ function cString(value) {
         break;
       default:
         if (code < 0x20 || code > 0x7e) {
-          throw new Round11FinalBuildError(
-            "pin-encoding",
-            "pin values must stay printable ASCII",
-            { value },
-          );
+          throw new Round11FinalBuildError("pin-encoding", "pin values must stay printable ASCII", {
+            value,
+          });
         }
         escaped += character;
     }
@@ -224,25 +212,16 @@ const IDENTITY_PIN_FIELDS = [
 ];
 
 function normalizeIdentityPins(identityPins = {}) {
-  if (
-    identityPins === null ||
-    typeof identityPins !== "object" ||
-    Array.isArray(identityPins)
-  ) {
-    throw new Round11FinalBuildError(
-      "identity-pins",
-      "identityPins must be an object",
-    );
+  if (identityPins === null || typeof identityPins !== "object" || Array.isArray(identityPins)) {
+    throw new Round11FinalBuildError("identity-pins", "identityPins must be an object");
   }
   const normalized = {};
   for (const field of IDENTITY_PIN_FIELDS) {
     const value = identityPins[field] ?? "";
     if (typeof value !== "string") {
-      throw new Round11FinalBuildError(
-        "identity-pins",
-        `identityPins.${field} must be a string`,
-        { field },
-      );
+      throw new Round11FinalBuildError("identity-pins", `identityPins.${field} must be a string`, {
+        field,
+      });
     }
     normalized[field] = value;
   }
@@ -368,15 +347,11 @@ async function compile(toolchain, args, label, cwd) {
     timeoutMs: 300_000,
   });
   if (result.code !== 0) {
-    throw new Round11FinalBuildError(
-      `${label}-compile`,
-      `${label} compile failed`,
-      {
-        command: [toolchain.compiler.path, ...args].join(" "),
-        stdout: result.stdout.slice(-8_000),
-        stderr: result.stderr.slice(-16_000),
-      },
-    );
+    throw new Round11FinalBuildError(`${label}-compile`, `${label} compile failed`, {
+      command: [toolchain.compiler.path, ...args].join(" "),
+      stdout: result.stdout.slice(-8_000),
+      stderr: result.stderr.slice(-16_000),
+    });
   }
   return result;
 }
@@ -384,23 +359,14 @@ async function compile(toolchain, args, label, cwd) {
 async function inspectMachO(path, { requireSwiftRpath = true } = {}) {
   const lipo = await run("/usr/bin/lipo", ["-archs", path]);
   if (lipo.code !== 0 || lipo.stdout.trim() !== FIXED_ARCH) {
-    throw new Round11FinalBuildError(
-      "architecture",
-      `${path} is not arm64`,
-      lipo,
-    );
+    throw new Round11FinalBuildError("architecture", `${path} is not arm64`, lipo);
   }
   const otoolL = await run("/usr/bin/otool", ["-l", path]);
-  const minos = [...otoolL.stdout.matchAll(/^\s*minos\s+([0-9.]+)\s*$/gm)].map(
+  const minos = [...otoolL.stdout.matchAll(/^\s*minos\s+([0-9.]+)\s*$/gm)].map((match) => match[1]);
+  const rpaths = [...otoolL.stdout.matchAll(/^\s*path\s+(.+?)\s+\(offset \d+\)\s*$/gm)].map(
     (match) => match[1],
   );
-  const rpaths = [
-    ...otoolL.stdout.matchAll(/^\s*path\s+(.+?)\s+\(offset \d+\)\s*$/gm),
-  ].map((match) => match[1]);
-  if (
-    minos.length === 0 ||
-    minos.some((value) => value !== FIXED_DEPLOYMENT_TARGET)
-  ) {
+  if (minos.length === 0 || minos.some((value) => value !== FIXED_DEPLOYMENT_TARGET)) {
     throw new Round11FinalBuildError(
       "deployment-target",
       `${path} minimum macOS is not ${FIXED_DEPLOYMENT_TARGET}`,
@@ -408,11 +374,7 @@ async function inspectMachO(path, { requireSwiftRpath = true } = {}) {
     );
   }
   if (requireSwiftRpath && !rpaths.includes("/usr/lib/swift")) {
-    throw new Round11FinalBuildError(
-      "rpath",
-      `${path} is missing /usr/lib/swift`,
-      { rpaths },
-    );
+    throw new Round11FinalBuildError("rpath", `${path} is missing /usr/lib/swift`, { rpaths });
   }
   const linked = await run("/usr/bin/otool", ["-L", path]);
   return { architectures: [FIXED_ARCH], minos, rpaths, linked: linked.stdout };
@@ -422,12 +384,11 @@ async function resolveCoreSubmissionExport() {
   const packagePath = join(CORE_ROOT, "package.json");
   const packageJson = JSON.parse(await readFile(packagePath, "utf8"));
   const entry = packageJson.exports?.["./cua-submission"];
-  const target =
-    typeof entry === "string" ? entry : (entry?.import ?? entry?.default);
+  const target = typeof entry === "string" ? entry : (entry?.import ?? entry?.default);
   if (typeof target !== "string") {
     throw new Round11FinalBuildError(
       "authority-export",
-      "@zcode/core package.json has no ./cua-submission import export",
+      "@zody/core package.json has no ./cua-submission import export",
       { packagePath },
     );
   }
@@ -440,26 +401,17 @@ async function refreshCoreDist() {
     timeoutMs: 300_000,
   });
   if (result.code !== 0) {
-    throw new Round11FinalBuildError(
-      "authority-tsc",
-      "@zcode/core tsc refresh failed",
-      {
-        command: [DEFAULT_NODE_PATH, TSC_PATH, "-p", CORE_ROOT].join(" "),
-        stdout: result.stdout.slice(-8_000),
-        stderr: result.stderr.slice(-16_000),
-      },
-    );
+    throw new Round11FinalBuildError("authority-tsc", "@zody/core tsc refresh failed", {
+      command: [DEFAULT_NODE_PATH, TSC_PATH, "-p", CORE_ROOT].join(" "),
+      stdout: result.stdout.slice(-8_000),
+      stderr: result.stderr.slice(-16_000),
+    });
   }
   await access(submission.distEntry, fsConstants.R_OK);
   return submission;
 }
 
-async function bundleAuthority(
-  esbuildPath,
-  resourceRoot,
-  buildRoot,
-  distEntry,
-) {
+async function bundleAuthority(esbuildPath, resourceRoot, buildRoot, distEntry) {
   const entry = join(NATIVE_ROOT, "authority-entry.mjs");
   await access(distEntry, fsConstants.R_OK);
   const output = join(resourceRoot, "authority-entry.mjs");
@@ -472,35 +424,20 @@ async function bundleAuthority(
     "--target=node24",
     "--legal-comments=eof",
     "--external:node:*",
-    `--alias:@zcode/core/cua-submission=${distEntry}`,
+    `--alias:@zody/core/cua-submission=${distEntry}`,
     `--metafile=${metafilePath}`,
     `--outfile=${output}`,
   ];
   const result = await run(esbuildPath, args, { timeoutMs: 180_000 });
   if (result.code !== 0) {
-    throw new Round11FinalBuildError(
-      "authority-bundle",
-      "esbuild authority bundle failed",
-      {
-        command: [esbuildPath, ...args].join(" "),
-        stdout: result.stdout,
-        stderr: result.stderr,
-      },
-    );
+    throw new Round11FinalBuildError("authority-bundle", "esbuild authority bundle failed", {
+      command: [esbuildPath, ...args].join(" "),
+      stdout: result.stdout,
+      stderr: result.stderr,
+    });
   }
   const text = await readFile(output, "utf8");
-  if (/(?:from|import)\s*\(?\s*["']@zcode\//.test(text)) {
-    throw new Round11FinalBuildError(
-      "authority-external-package",
-      "authority bundle kept an external @zcode package",
-    );
-  }
-  if (/\brequire\s*\(\s*["']@zcode\//.test(text)) {
-    throw new Round11FinalBuildError(
-      "authority-external-package",
-      "authority bundle kept a require(@zcode) call",
-    );
-  }
+  assertAuthorityWorkspaceClosed(text);
   const metafile = JSON.parse(await readFile(metafilePath, "utf8"));
   const inputs = {};
   for (const input of Object.keys(metafile.inputs ?? {}).sort()) {
@@ -595,33 +532,14 @@ export async function buildRound11Helper(options = {}) {
     );
 
     const stagedAppBinary = join(appMacOS, APP_BINARY_NAME);
-    const appArgs = appCompileArgs(
-      toolchain,
-      buildRoot,
-      visualRoot,
-      stagedAppBinary,
-    );
-    const appCompile = await compile(
-      toolchain,
-      appArgs,
-      "helper app",
-      NATIVE_ROOT,
-    );
+    const appArgs = appCompileArgs(toolchain, buildRoot, visualRoot, stagedAppBinary);
+    const appCompile = await compile(toolchain, appArgs, "helper app", NATIVE_ROOT);
     const appArtifact = await inspectMachO(stagedAppBinary);
-    const codesign = await run("/usr/bin/codesign", [
-      "-dv",
-      "--verbose=4",
-      stagedAppBinary,
-    ]);
+    const codesign = await run("/usr/bin/codesign", ["-dv", "--verbose=4", stagedAppBinary]);
 
     const stagedLeaseTest = join(staging, LEASE_TEST_NAME);
     const leaseArgs = leaseTestCompileArgs(toolchain, stagedLeaseTest);
-    const leaseCompile = await compile(
-      toolchain,
-      leaseArgs,
-      "lease test",
-      NATIVE_ROOT,
-    );
+    const leaseCompile = await compile(toolchain, leaseArgs, "lease test", NATIVE_ROOT);
     const leaseArtifact = await inspectMachO(stagedLeaseTest, {
       requireSwiftRpath: false,
     });
@@ -649,9 +567,7 @@ export async function buildRound11Helper(options = {}) {
     ]) {
       for (const name of await readdir(join(root, "src"))) {
         if (!name.endsWith(".h")) continue;
-        sourceHashes[`${prefix}/src/${name}`] = await sha256File(
-          join(root, "src", name),
-        );
+        sourceHashes[`${prefix}/src/${name}`] = await sha256File(join(root, "src", name));
       }
     }
     const appCommand = [toolchain.compiler.path, ...appArgs].join(" ");
@@ -686,10 +602,7 @@ export async function buildRound11Helper(options = {}) {
           version: nodeVersion,
           license: {
             ...node.license,
-            path: join(
-              appFinal,
-              "Contents/Resources/licenses/node-LICENSE.txt",
-            ),
+            path: join(appFinal, "Contents/Resources/licenses/node-LICENSE.txt"),
             originalPath: DEFAULT_NODE_LICENSE,
             originalSha256: node.license.sha256,
           },
@@ -774,18 +687,10 @@ export async function buildRound11Helper(options = {}) {
         mode: 0o600,
       },
     );
-    await writeFile(
-      join(buildRoot, "app-compile-command.txt"),
-      `${appCommand}\n`,
-      { mode: 0o600 },
-    );
-    await writeFile(
-      join(buildRoot, "lease-test-compile-command.txt"),
-      `${leaseCommand}\n`,
-      {
-        mode: 0o600,
-      },
-    );
+    await writeFile(join(buildRoot, "app-compile-command.txt"), `${appCommand}\n`, { mode: 0o600 });
+    await writeFile(join(buildRoot, "lease-test-compile-command.txt"), `${leaseCommand}\n`, {
+      mode: 0o600,
+    });
     return manifest;
   } finally {
     await rm(staging, { recursive: true, force: true });

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import {
-  ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
+  ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
   type IMcpSyncService,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   buildMcpOAuthAuthorizationStatusRefreshOptions,
   buildPluginMcpServerStatusListKey,
@@ -237,7 +237,7 @@ describe("McpSettingsSection status list", () => {
     const mergeServerStatusSnapshots = vi.fn();
     const listWorkspaceMcpServerStatuses = vi.fn(async () => {
       throw Object.assign(new Error("status-only unsupported"), {
-        code: ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
+        code: ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
       });
     });
     const mcpSyncService = {
@@ -327,7 +327,7 @@ describe("McpSettingsSection status list", () => {
     currentWorkspaceKey = "ssh://dev/remote/workspace-b";
     rejectWorkspaceA(
       Object.assign(new Error("status-only unsupported"), {
-        code: ZCODE_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
+        code: ZODY_AGENT_MCP_STATUS_MODE_UNSUPPORTED_ERROR_CODE,
       }),
     );
 

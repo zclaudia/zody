@@ -6,6 +6,28 @@ import {
   buildGenUiModelContext,
   stripGenUiModelContext,
   genUiTweakSchema,
+  GEN_UI_GLOBALS_EVENT,
+  GEN_UI_STATE_CONTEXT_KEY,
+  GEN_UI_TWEAK_CONTEXT_KEY,
+  GEN_UI_STATE_METHOD,
+  GEN_UI_FOLLOW_UP_METHOD,
+  GEN_UI_TWEAK_METHOD,
+  GEN_UI_PRESENTATION_METHOD,
+  GEN_UI_GLOBALS_EVENT_CANONICAL,
+  GEN_UI_STATE_CONTEXT_KEY_CANONICAL,
+  GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL,
+  GEN_UI_STATE_METHOD_CANONICAL,
+  GEN_UI_FOLLOW_UP_METHOD_CANONICAL,
+  GEN_UI_TWEAK_METHOD_CANONICAL,
+  GEN_UI_PRESENTATION_METHOD_CANONICAL,
+  GEN_UI_EXPERIMENTAL_CAPABILITY_KEY,
+  GEN_UI_EXPERIMENTAL_CAPABILITY_KEY_LEGACY,
+  GEN_UI_METHOD_ALIASES,
+  genUiMethodNames,
+  pickGenUiMethodName,
+  buildGenUiExperimentalCapability,
+  projectGenUiContextEntries,
+  type GenUiMethodNameCanonical,
 } from "./contract.js";
 
 describe("Gen UI boundaries", () => {
@@ -82,5 +104,129 @@ describe("Gen UI boundaries", () => {
       Array.from({ length: 13 }, (_, i) => ({ ...control, id: `size${i}` })),
     ])
       expect(genUiTweakSchema.safeParse({ title: "Design", controls }).success).toBe(false);
+  });
+});
+
+const GEN_UI_LEGACY_WIRE_CASES: ReadonlyArray<readonly [string, string, string]> = [
+  ["GEN_UI_GLOBALS_EVENT", GEN_UI_GLOBALS_EVENT, "zcode:set_globals"],
+  ["GEN_UI_STATE_CONTEXT_KEY", GEN_UI_STATE_CONTEXT_KEY, "zcode/genUiState"],
+  ["GEN_UI_TWEAK_CONTEXT_KEY", GEN_UI_TWEAK_CONTEXT_KEY, "zcode/genUiTweaks"],
+  ["GEN_UI_STATE_METHOD", GEN_UI_STATE_METHOD, "zcode/gen-ui/state"],
+  ["GEN_UI_FOLLOW_UP_METHOD", GEN_UI_FOLLOW_UP_METHOD, "zcode/gen-ui/follow-up"],
+  ["GEN_UI_TWEAK_METHOD", GEN_UI_TWEAK_METHOD, "zcode/gen-ui/tweak"],
+  ["GEN_UI_PRESENTATION_METHOD", GEN_UI_PRESENTATION_METHOD, "zcode/gen-ui/presentation"],
+  [
+    "GEN_UI_EXPERIMENTAL_CAPABILITY_KEY_LEGACY",
+    GEN_UI_EXPERIMENTAL_CAPABILITY_KEY_LEGACY,
+    "zcode/gen-ui",
+  ],
+];
+
+const GEN_UI_CANONICAL_WIRE_CASES: ReadonlyArray<readonly [string, string, string]> = [
+  ["GEN_UI_GLOBALS_EVENT_CANONICAL", GEN_UI_GLOBALS_EVENT_CANONICAL, "zody:set_globals"],
+  ["GEN_UI_STATE_CONTEXT_KEY_CANONICAL", GEN_UI_STATE_CONTEXT_KEY_CANONICAL, "zody/genUiState"],
+  ["GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL", GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL, "zody/genUiTweaks"],
+  ["GEN_UI_STATE_METHOD_CANONICAL", GEN_UI_STATE_METHOD_CANONICAL, "zody/gen-ui/state"],
+  ["GEN_UI_FOLLOW_UP_METHOD_CANONICAL", GEN_UI_FOLLOW_UP_METHOD_CANONICAL, "zody/gen-ui/follow-up"],
+  ["GEN_UI_TWEAK_METHOD_CANONICAL", GEN_UI_TWEAK_METHOD_CANONICAL, "zody/gen-ui/tweak"],
+  [
+    "GEN_UI_PRESENTATION_METHOD_CANONICAL",
+    GEN_UI_PRESENTATION_METHOD_CANONICAL,
+    "zody/gen-ui/presentation",
+  ],
+  ["GEN_UI_EXPERIMENTAL_CAPABILITY_KEY", GEN_UI_EXPERIMENTAL_CAPABILITY_KEY, "zody/gen-ui"],
+];
+
+const GEN_UI_METHOD_NAMES: readonly GenUiMethodNameCanonical[] = [
+  GEN_UI_STATE_METHOD_CANONICAL,
+  GEN_UI_FOLLOW_UP_METHOD_CANONICAL,
+  GEN_UI_TWEAK_METHOD_CANONICAL,
+  GEN_UI_PRESENTATION_METHOD_CANONICAL,
+];
+
+describe("Gen UI 双命名空间兼容（R50）", () => {
+  it.each(GEN_UI_LEGACY_WIRE_CASES)("legacy wire 字面值字节锁定：%s", (_name, actual, expected) => {
+    expect(actual).toBe(expected);
+  });
+
+  it.each(GEN_UI_CANONICAL_WIRE_CASES)(
+    "canonical wire 字面值锁定：%s",
+    (_name, actual, expected) => {
+      expect(actual).toBe(expected);
+    },
+  );
+
+  it("方法别名表覆盖全部 canonical 方法且 legacy 侧与常量一致", () => {
+    expect(Object.keys(GEN_UI_METHOD_ALIASES).sort()).toEqual([...GEN_UI_METHOD_NAMES].sort());
+    const legacyByCanonical: Record<string, string> = {
+      [GEN_UI_STATE_METHOD_CANONICAL]: GEN_UI_STATE_METHOD,
+      [GEN_UI_FOLLOW_UP_METHOD_CANONICAL]: GEN_UI_FOLLOW_UP_METHOD,
+      [GEN_UI_TWEAK_METHOD_CANONICAL]: GEN_UI_TWEAK_METHOD,
+      [GEN_UI_PRESENTATION_METHOD_CANONICAL]: GEN_UI_PRESENTATION_METHOD,
+    };
+    for (const canonical of GEN_UI_METHOD_NAMES) {
+      expect(GEN_UI_METHOD_ALIASES[canonical]).toBe(legacyByCanonical[canonical]);
+      expect(genUiMethodNames(canonical)).toEqual([canonical, legacyByCanonical[canonical]]);
+    }
+  });
+
+  it("pickGenUiMethodName 按能力宣告四态单选，每个方法逐一核对", () => {
+    const canonicalOnly = { experimental: { [GEN_UI_EXPERIMENTAL_CAPABILITY_KEY]: {} } };
+    const legacyOnly = { experimental: { [GEN_UI_EXPERIMENTAL_CAPABILITY_KEY_LEGACY]: {} } };
+    const both = {
+      experimental: {
+        [GEN_UI_EXPERIMENTAL_CAPABILITY_KEY]: {},
+        [GEN_UI_EXPERIMENTAL_CAPABILITY_KEY_LEGACY]: {},
+      },
+    };
+    for (const canonical of GEN_UI_METHOD_NAMES) {
+      // 双宣告是宿主自己的出站事实，选 canonical；仅旧键才发旧名。
+      expect(pickGenUiMethodName(both, canonical)).toBe(canonical);
+      expect(pickGenUiMethodName(canonicalOnly, canonical)).toBe(canonical);
+      expect(pickGenUiMethodName(legacyOnly, canonical)).toBe(GEN_UI_METHOD_ALIASES[canonical]);
+      // 无宣告返回 undefined：调用方不得发送，也不得改用另一名称重发。
+      expect(pickGenUiMethodName({ experimental: {} }, canonical)).toBeUndefined();
+      expect(pickGenUiMethodName({}, canonical)).toBeUndefined();
+      expect(pickGenUiMethodName(undefined, canonical)).toBeUndefined();
+    }
+  });
+
+  it("hostContext 双键引用同一投影，快照不被改写", () => {
+    const state = { modelContent: { month: 6 }, privateContent: { tab: "chart" } };
+    const tweaks = { active: true, selection: null, changes: [] };
+    const snapshot = structuredClone({ state, tweaks });
+    const entries = projectGenUiContextEntries(state, tweaks);
+    expect(Object.keys(entries).sort()).toEqual(
+      [
+        GEN_UI_STATE_CONTEXT_KEY_CANONICAL,
+        GEN_UI_STATE_CONTEXT_KEY,
+        GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL,
+        GEN_UI_TWEAK_CONTEXT_KEY,
+      ].sort(),
+    );
+    expect(entries[GEN_UI_STATE_CONTEXT_KEY_CANONICAL]).toBe(state);
+    expect(entries[GEN_UI_STATE_CONTEXT_KEY]).toBe(state);
+    expect(entries[GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL]).toBe(tweaks);
+    expect(entries[GEN_UI_TWEAK_CONTEXT_KEY]).toBe(tweaks);
+    expect(Object.isFrozen(entries)).toBe(true);
+    expect({ state, tweaks }).toEqual(snapshot);
+    expect(() => {
+      (entries as Record<string, unknown>)[GEN_UI_STATE_CONTEXT_KEY] = null;
+    }).toThrow(TypeError);
+    expect(projectGenUiContextEntries(null, null)).toEqual({
+      [GEN_UI_STATE_CONTEXT_KEY_CANONICAL]: null,
+      [GEN_UI_STATE_CONTEXT_KEY]: null,
+      [GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL]: null,
+      [GEN_UI_TWEAK_CONTEXT_KEY]: null,
+    });
+  });
+
+  it("experimental 能力双宣告恰含 canonical 与 legacy 两键", () => {
+    const capability = buildGenUiExperimentalCapability();
+    expect(Object.keys(capability).sort()).toEqual(
+      [GEN_UI_EXPERIMENTAL_CAPABILITY_KEY, GEN_UI_EXPERIMENTAL_CAPABILITY_KEY_LEGACY].sort(),
+    );
+    expect(capability[GEN_UI_EXPERIMENTAL_CAPABILITY_KEY]).toEqual({});
+    expect(capability[GEN_UI_EXPERIMENTAL_CAPABILITY_KEY_LEGACY]).toEqual({});
   });
 });

@@ -79,7 +79,7 @@ export function seedProviderReadinessHistoryFixture(
         ...process.env,
         HOME: options.e2eHomeDir,
         USERPROFILE: options.e2eHomeDir,
-        ZCODE_DATA_BASE_DIR: options.e2eHomeDir,
+        ZODY_DATA_BASE_DIR: options.e2eHomeDir,
       },
       input: "",
       timeout: 30_000,

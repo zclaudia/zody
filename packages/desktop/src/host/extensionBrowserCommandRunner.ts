@@ -1,11 +1,11 @@
 /* eslint-disable max-lines -- P2 单 tab 命令分派、dialog 生命周期与共享 Playwright 入口必须共享同一串行队列语义。 */
-import { EXTENSION_BRIDGE_MAX_RESULT_BYTES } from "@zcode/shared/browser-extension-transport";
+import { EXTENSION_BRIDGE_MAX_RESULT_BYTES } from "@zody/shared/browser-extension-transport";
 import type {
   BrowserCommand,
   BrowserCommandResult,
   BrowserPageState,
   BrowserPlaywrightAction,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   modifiersBitmask,
   dispatchKeyOnPage,

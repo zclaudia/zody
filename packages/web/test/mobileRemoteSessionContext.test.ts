@@ -56,9 +56,7 @@ describe("Remote 只读 session context", () => {
   });
 
   it("缺少 bridge 时 fail closed，不使用 URL/localStorage 降级", () => {
-    expect(() =>
-      readMobileRemoteSessionContext({ target: {}, isProduction: true }),
-    ).toThrowError(
+    expect(() => readMobileRemoteSessionContext({ target: {}, isProduction: true })).toThrowError(
       expect.objectContaining({
         name: "MobileRemoteSessionContextError",
         code: "native-bridge-unavailable",
@@ -93,9 +91,9 @@ describe("Remote 只读 session context", () => {
       error: { code: "stale-session" },
     });
 
-    expect(() =>
-      readMobileRemoteSessionContext({ bridge, isProduction: true }),
-    ).toThrowError(expect.objectContaining({ code: "stale-session" }));
+    expect(() => readMobileRemoteSessionContext({ bridge, isProduction: true })).toThrowError(
+      expect.objectContaining({ code: "stale-session" }),
+    );
   });
 
   it("bridgeVersion 与当前页面不兼容时要求升级 APK", () => {
@@ -112,9 +110,9 @@ describe("Remote 只读 session context", () => {
       }),
     });
 
-    expect(() =>
-      readMobileRemoteSessionContext({ bridge, isProduction: true }),
-    ).toThrowError(expect.objectContaining({ code: "bridge-version-unsupported" }));
+    expect(() => readMobileRemoteSessionContext({ bridge, isProduction: true })).toThrowError(
+      expect.objectContaining({ code: "bridge-version-unsupported" }),
+    );
   });
 
   it("缺少 session-context 能力时 fail closed", () => {
@@ -131,9 +129,9 @@ describe("Remote 只读 session context", () => {
       }),
     });
 
-    expect(() =>
-      readMobileRemoteSessionContext({ bridge, isProduction: true }),
-    ).toThrowError(expect.objectContaining({ code: "unsupported-capability" }));
+    expect(() => readMobileRemoteSessionContext({ bridge, isProduction: true })).toThrowError(
+      expect.objectContaining({ code: "unsupported-capability" }),
+    );
   });
 
   it("Release 构建拒绝 HTTP Gateway；Debug capability 是唯一放宽来源", () => {

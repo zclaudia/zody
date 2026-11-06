@@ -5,7 +5,7 @@ import { spawn } from "node:child_process";
 import process from "node:process";
 
 const DEFAULT_WEB_DEV_ORIGIN = "http://localhost:5173";
-const webDevOrigin = process.env.ZCODE_MOBILE_WEB_DEV_ORIGIN?.trim() || DEFAULT_WEB_DEV_ORIGIN;
+const webDevOrigin = process.env.ZODY_MOBILE_WEB_DEV_ORIGIN?.trim() || DEFAULT_WEB_DEV_ORIGIN;
 const mobilePageUrl = `${webDevOrigin}/mobile-shell.html`;
 
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
@@ -48,5 +48,5 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 
 console.info(`[dev:mobile-remote] 手机入口 ${mobilePageUrl}`);
 
-start(pnpmCommand, ["--filter", "@zcode/web", "exec", "vite", "dev", "--strictPort"]);
-start(pnpmCommand, ["--filter", "@zcode/desktop", "dev:local-cli"]);
+start(pnpmCommand, ["--filter", "@zody/web", "exec", "vite", "dev", "--strictPort"]);
+start(pnpmCommand, ["--filter", "@zody/desktop", "dev:local-cli"]);

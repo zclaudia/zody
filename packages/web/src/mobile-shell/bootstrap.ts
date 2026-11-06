@@ -4,7 +4,7 @@ import {
   type MobileBridgeFailure,
   type MobileShellBridge,
   type PlatformSecureStore,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { resolveWebRemoteControlThemeFromSearchParams } from "../mobile-remote/gatewayBootstrapConfig.js";
 import {
   resolveMobileRemoteConnection,
@@ -91,9 +91,7 @@ export async function bootstrapMobileShell(
   params: URLSearchParams,
   options: BootstrapMobileShellOptions = {},
 ): Promise<void> {
-  seedWebRemoteControlThemePreference(
-    resolveWebRemoteControlThemeFromSearchParams(params),
-  );
+  seedWebRemoteControlThemePreference(resolveWebRemoteControlThemeFromSearchParams(params));
 
   const isProduction = options.isProduction ?? import.meta.env.PROD;
   const bridge = options.bridge ?? resolveMobileShellBridge();

@@ -1,19 +1,17 @@
 import { WebSocket, type RawData } from "ws";
-import { connectViaProtocol } from "@zcode/client";
+import { connectViaProtocol } from "@zody/client";
+import { Emitter, SocketProtocol, VSBuffer, type ISocket } from "@zody/rpc";
+import type { IServiceAccessor } from "@zody/services";
 import {
-  Emitter,
-  SocketProtocol,
-  VSBuffer,
-  type ISocket,
-} from "@zcode/rpc";
-import type { IServiceAccessor } from "@zcode/services";
-import {
-  ZCODE_RPC_HOST_CAPABILITY_HEADER,
+  ZODY_RPC_HOST_CAPABILITY_HEADER,
+  ZODY_RENAME_GENERATION,
+  ZODY_RENAME_GENERATION_HEADER,
+  checkRenameGeneration,
   serverRemoteHostCapabilitySchema,
   serverRemoteInfoSchema,
   type ServerConnectOptions,
   type ServerRemoteInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export interface ServerRemoteEndpoints {
   infoUrl: string;
@@ -167,12 +165,20 @@ async function fetchServerInfo(
 ): Promise<ServerRemoteInfo> {
   const token = target.token?.trim();
   const response = await fetchImpl(authenticatedUrl(infoUrl, target), {
+    cache: "no-store",
     headers: token ? { authorization: `Bearer ${token}` } : undefined,
   });
   if (!response.ok) {
     throw new Error(`Server info request failed: ${response.status}`);
   }
   const rawBody = await response.json();
+  if (
+    !rawBody ||
+    typeof rawBody !== "object" ||
+    !checkRenameGeneration((rawBody as Record<string, unknown>).renameGeneration).ok
+  ) {
+    throw new Error("Server incompatible generation");
+  }
   const parsed = serverRemoteInfoSchema.safeParse(rawBody);
   if (!parsed.success) {
     throw new Error("Server info response is invalid");
@@ -187,6 +193,7 @@ async function fetchHostCapability(
 ): Promise<string> {
   const response = await fetchImpl(authenticatedUrl(capabilityUrl, target), {
     method: "POST",
+    headers: { [ZODY_RENAME_GENERATION_HEADER]: String(ZODY_RENAME_GENERATION) },
   });
   if (!response.ok) {
     throw new Error(`Host capability request failed: ${response.status}`);
@@ -209,7 +216,8 @@ function connectNodeWebSocket(
     const socket = new WebSocket(authenticatedUrl(wsUrl, target), {
       headers: {
         ...(token ? { authorization: `Bearer ${token}` } : {}),
-        [ZCODE_RPC_HOST_CAPABILITY_HEADER]: capability,
+        [ZODY_RPC_HOST_CAPABILITY_HEADER]: capability,
+        [ZODY_RENAME_GENERATION_HEADER]: String(ZODY_RENAME_GENERATION),
       },
     });
     let settled = false;

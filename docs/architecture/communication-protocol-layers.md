@@ -128,15 +128,15 @@ Main 与 Host 之间传递的是进程和连接控制，例如：
 
 ## 各链路对应关系
 
-| 链路 | 第 3 层：内容 | 第 2 层：信封 | 第 1 层：通道 |
-| --- | --- | --- | --- |
-| Renderer → Host | Service API、V4 命令/查询/订阅 | `@zcode/rpc` | `MessagePort` |
-| Renderer → Main | 平台操作 | Electron IPC channel | Electron IPC |
-| Main → Host | Host 控制消息 | typed `{ type, ... }` | `postMessage` |
-| Host → 本地 CLI | V4、少量 legacy 操作 | ZCode Protocol JSON | stdio NDJSON |
-| Host → `zcode-server` | 远程 Service API，参数可携带 V4 | `@zcode/rpc` | SSH stdio 或 WebSocket |
-| `zcode-server` → 远端 CLI | V4、少量 legacy 操作 | ZCode Protocol JSON | stdio NDJSON |
-| 手机 → Relay → Main | 远控 Service/V4 调用 | relay envelope + `rpc-frame` | WebSocket |
+| 链路                      | 第 3 层：内容                   | 第 2 层：信封                | 第 1 层：通道          |
+| ------------------------- | ------------------------------- | ---------------------------- | ---------------------- |
+| Renderer → Host           | Service API、V4 命令/查询/订阅  | `@zcode/rpc`                 | `MessagePort`          |
+| Renderer → Main           | 平台操作                        | Electron IPC channel         | Electron IPC           |
+| Main → Host               | Host 控制消息                   | typed `{ type, ... }`        | `postMessage`          |
+| Host → 本地 CLI           | V4、少量 legacy 操作            | ZCode Protocol JSON          | stdio NDJSON           |
+| Host → `zcode-server`     | 远程 Service API，参数可携带 V4 | `@zcode/rpc`                 | SSH stdio 或 WebSocket |
+| `zcode-server` → 远端 CLI | V4、少量 legacy 操作            | ZCode Protocol JSON          | stdio NDJSON           |
+| 手机 → Relay → Main       | 远控 Service/V4 调用            | relay envelope + `rpc-frame` | WebSocket              |
 
 手机远控还会通过 shared-host attachment 进入已有 Window Host；Relay 和 Main 只负责鉴权、配对、心跳、frame 透传与 attachment 调度，不持有 conversation/task/stream 业务状态。
 
@@ -186,3 +186,7 @@ V4 调用 = 调用 Service API，把这条命令送到下一跳
 - [远程 RPC 连接](../../packages/server/src/remote/connect.ts)
 - [zcode-server stdio RPC server](../../packages/server/src/stdio.ts)
 - [Agent ZCode Protocol client](../../packages/services/src/zcode-agent/zcodeProtocolClient.ts)
+
+## 改名实施目标
+
+本文件描述的现有行为在全面改名时须遵守 [Zody 改名运行时契约](../../specs/zody-rename-runtime-contract.md)；代际门禁、来源摘要和资源清理以该目标规格为准，尚未实现的行为不视为当前已发布。

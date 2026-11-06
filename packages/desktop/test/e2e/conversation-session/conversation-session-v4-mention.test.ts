@@ -13,7 +13,7 @@ import {
   getE2EAppDataPaths,
   setInputValueByTestIdDom,
 } from "../helpers/desktop-app.js";
-import { TID_CHAT_ATTACHMENT_BUTTON, TID_V4_COMPOSER_INPUT } from "@zcode/shared";
+import { TID_CHAT_ATTACHMENT_BUTTON, TID_V4_COMPOSER_INPUT } from "@zody/shared";
 import {
   clickV4SlashOption,
   getV4ComposerText,

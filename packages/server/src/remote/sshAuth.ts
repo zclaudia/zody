@@ -70,7 +70,7 @@ export function createKeyboardInteractiveResponder(
     prompts: Array<{ prompt: string; echo: boolean }>,
     finish: (responses: string[]) => void,
   ) => {
-    // Bug 原因（上游 ZCode a60ba6a7）：2FA 主机会在密码之后再要动态口令。这里只回答同一个密码，
+    // Bug 原因（上游 Zody a60ba6a7）：2FA 主机会在密码之后再要动态口令。这里只回答同一个密码，
     // 认证失败后只能提示“检查密码”，用户无法知道是不支持二次验证。旧逻辑把“多于一个提示或一轮”当作证据，
     // 重复问 Password 的主机输错密码也被判成二次验证；计数还挂在 backend 生命周期上，自动恢复重连时第一轮提示
     // 就被误判。现在只认提示文字，responder 不再保存状态。仍按原样回答，避免改变“多次询问同一密码”主机的成功路径。
@@ -124,7 +124,7 @@ export function normalizeSSHConnectError(
     (error as { level?: string }).level === "client-timeout"
   ) {
     if (options.established) {
-      // Bug 原因（上游 ZCode a60ba6a7）：ssh2 的 Keepalive timeout 与握手超时同为 client-timeout，
+      // Bug 原因（上游 Zody a60ba6a7）：ssh2 的 Keepalive timeout 与握手超时同为 client-timeout，
       // 只有 message 不同。旧逻辑统一写成“握手超时”，已运行数小时的连接断开也被记成首次握手失败。
       // 连接 ready 之后只有 Keepalive 会产生 client-timeout，所以按连接阶段区分，不依赖 ssh2 的英文 message。
       return new Error(

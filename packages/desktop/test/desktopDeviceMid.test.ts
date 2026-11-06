@@ -96,7 +96,7 @@ describe("ensureDesktopDeviceMidSync", () => {
       "utf-8",
     );
 
-    const { createTelemetryCore } = await import("@zcode/services/node");
+    const { createTelemetryCore } = await import("@zody/services/node");
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }));
     const service = createTelemetryCore({
       homeDir: home,

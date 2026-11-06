@@ -1,7 +1,7 @@
 import {
   NodeModelSelectionConfigRepository,
   createNodeModelSelectionFacade,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 import {
   ProviderRegistryService,
   ProviderSettingsFacade,
@@ -10,7 +10,7 @@ import {
   type ProviderConfigSnapshot,
   type ProviderSettingsMutationTarget,
   type ProviderSource,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   createProviderConfigRuntime,
   type ProviderConfigRuntime,
@@ -86,7 +86,7 @@ export class ProviderRuntime {
         this.configService.read(),
         accountSource.read(),
       ]);
-      if (!this.#disposed && config.zcodeBuiltinRevision !== account.basedOnZCodeBuiltinRevision) {
+      if (!this.#disposed && config.zodyBuiltinRevision !== account.basedOnZodyBuiltinRevision) {
         await accountSource.refresh?.("builtin-account-recovery");
       }
     });

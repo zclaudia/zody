@@ -4,7 +4,7 @@ import type {
   BrowserExtensionBridgeStatus,
   BrowserExtensionPairingTicket,
   BrowserExtensionProfileStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {
@@ -32,13 +32,13 @@ import {
 import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { logger } from "@/logger.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { SettingsGroupCard, SettingsRow } from "@/settings/SettingsPageParts.js";
 
 const PAIRING_POLL_MS = 1_500;
 
 export function BrowserExtensionSettingsSection({ isDesktop }: { isDesktop: boolean }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const platform = usePlatform();
   const [status, setStatus] = useState<BrowserExtensionBridgeStatus | null>(null);
   const [pairingTicket, setPairingTicket] = useState<BrowserExtensionPairingTicket | null>(null);

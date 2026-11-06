@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ConversationSnapshot, SessionSummary } from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationSnapshot, SessionSummary } from "@zody/shared/zody-protocol-v4";
 import {
   collectPendingInteractionNotificationPayloads,
   collectTerminalTaskNotificationPayloads,

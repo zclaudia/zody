@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeMcpServer } from "@zcode/shared";
+import type { ZodyMcpServer } from "@zody/shared";
 import {
   SOURCE_META,
   MCP_SECTIONS,
@@ -31,7 +31,7 @@ describe("MCP Settings Shared", () => {
 
   describe("serverToForm", () => {
     it("应正确转换 streamableHttp 类型", () => {
-      const server: ZCodeMcpServer = {
+      const server: ZodyMcpServer = {
         id: "test-id",
         name: "test-server",
         source: "zcodeagentmcp",
@@ -51,7 +51,7 @@ describe("MCP Settings Shared", () => {
     });
 
     it("应正确转换 workspace scope", () => {
-      const server: ZCodeMcpServer = {
+      const server: ZodyMcpServer = {
         id: "test-id",
         name: "test-server",
         source: "zcodeagentmcp",
@@ -68,7 +68,7 @@ describe("MCP Settings Shared", () => {
     });
 
     it("应正确转换 http 类型", () => {
-      const server: ZCodeMcpServer = {
+      const server: ZodyMcpServer = {
         id: "test-id",
         name: "test-server",
         source: "zcodeagentmcp",
@@ -87,7 +87,7 @@ describe("MCP Settings Shared", () => {
     });
 
     it("应正确转换 sse 类型", () => {
-      const server: ZCodeMcpServer = {
+      const server: ZodyMcpServer = {
         id: "test-id",
         name: "test-server",
         source: "zcodeagentmcp",
@@ -106,7 +106,7 @@ describe("MCP Settings Shared", () => {
     });
 
     it("应正确转换 stdio 类型", () => {
-      const server: ZCodeMcpServer = {
+      const server: ZodyMcpServer = {
         id: "test-id",
         name: "test-server",
         source: "zcodeagentmcp",
@@ -127,7 +127,7 @@ describe("MCP Settings Shared", () => {
     });
 
     it("应保留 MCP timeoutMs", () => {
-      const server: ZCodeMcpServer = {
+      const server: ZodyMcpServer = {
         id: "test-id",
         name: "test-server",
         source: "zcodeagentmcp",

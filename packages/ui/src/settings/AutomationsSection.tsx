@@ -17,8 +17,8 @@ import {
   TID_AUTOMATIONS_STATUS_FILTER,
   isAutomationCreateLimitError,
   resolveWorkspaceKey,
-  type ZCodeAutomation,
-} from "@zcode/shared";
+  type ZodyAutomation,
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import {
   DropdownMenu,
@@ -32,7 +32,7 @@ import { toast as showToast, type ToastOptions } from "@/components/ui/toast.js"
 import { cn } from "@/components/lib/utils.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
 import { AutomationScheduledTemplateIcon } from "@/settings/AutomationScheduledTemplateIcon.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
@@ -157,7 +157,7 @@ export interface AutomationDraft {
 type AutomationsView =
   | { mode: "list" }
   | { mode: "create"; draft: AutomationDraft | null }
-  | { mode: "edit"; automation: ZCodeAutomation };
+  | { mode: "edit"; automation: ZodyAutomation };
 
 /** 主视图标签页：fork（F4.3）Idle-time tab 随闲时任务全链路删除，仅保留 Scheduled。 */
 export type AutomationsTab = "scheduled";
@@ -207,12 +207,12 @@ function automationPromptSummary(prompt: string): string {
 }
 
 export function canRestartAutomation(
-  automation: Pick<ZCodeAutomation, "lifecycleStatus">,
+  automation: Pick<ZodyAutomation, "lifecycleStatus">,
 ): boolean {
   return automation.lifecycleStatus === "failed";
 }
 
-export function canToggleAutomation(automation: Pick<ZCodeAutomation, "lifecycleStatus">): boolean {
+export function canToggleAutomation(automation: Pick<ZodyAutomation, "lifecycleStatus">): boolean {
   return automation.lifecycleStatus !== "completed" && automation.lifecycleStatus !== "failed";
 }
 
@@ -238,19 +238,19 @@ export function getAutomationCreateErrorToastId(error: unknown): string {
 }
 
 export function resolveAutomationDetailTarget(
-  automations: readonly ZCodeAutomation[],
+  automations: readonly ZodyAutomation[],
   automationId?: string | null,
-): ZCodeAutomation | null {
+): ZodyAutomation | null {
   const targetId = automationId?.trim();
   if (!targetId) return null;
   return automations.find((automation) => automation.automationId === targetId) ?? null;
 }
 
 export function resolveAutomationDetailNavigation(
-  automations: readonly ZCodeAutomation[],
+  automations: readonly ZodyAutomation[],
   automationId: string | null | undefined,
   listReady: boolean,
-): { status: "pending" } | { status: "missing" } | { status: "found"; target: ZCodeAutomation } {
+): { status: "pending" } | { status: "missing" } | { status: "found"; target: ZodyAutomation } {
   if (!automationId?.trim() || !listReady) return { status: "pending" };
   const target = resolveAutomationDetailTarget(automations, automationId);
   return target ? { status: "found", target } : { status: "missing" };
@@ -258,15 +258,15 @@ export function resolveAutomationDetailNavigation(
 
 
 interface AutomationActionsMenuProps {
-  automation: ZCodeAutomation;
+  automation: ZodyAutomation;
   busy: boolean;
   canRestart: boolean;
   canToggle: boolean;
-  onRunNow: (automation: ZCodeAutomation) => void;
-  onEdit: (automation: ZCodeAutomation) => void;
-  onToggle: (automation: ZCodeAutomation, enabled: boolean) => void;
-  onRestart: (automation: ZCodeAutomation) => void;
-  onDelete: (automation: ZCodeAutomation) => void;
+  onRunNow: (automation: ZodyAutomation) => void;
+  onEdit: (automation: ZodyAutomation) => void;
+  onToggle: (automation: ZodyAutomation, enabled: boolean) => void;
+  onRestart: (automation: ZodyAutomation) => void;
+  onDelete: (automation: ZodyAutomation) => void;
 }
 
 function AutomationActionsMenu({
@@ -280,7 +280,7 @@ function AutomationActionsMenu({
   onRestart,
   onDelete,
 }: AutomationActionsMenuProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -377,7 +377,7 @@ function AutomationActionsMenu({
 
 /** 状态筛选命中 0 条时的占位；复用闲时空态卡的描边样式，文案与「还没有任务」区分开。 */
 function AutomationStatusFilterEmpty() {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   return (
     <div className="rounded-[10px] border border-card-border px-3 py-3 text-ui-base text-foreground-subtle">
       {intl.formatMessage({ id: "automations.statusFilter.empty" })}
@@ -399,9 +399,9 @@ export function AutomationsSection({
   onOpenWorkflowConsumed,
   onOpenSession,
 }: AutomationsSectionProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const platform = usePlatform();
-  const { clientScenesService, zcodeAgentService } = useServices();
+  const { clientScenesService, zodyAgentService } = useServices();
   const confirmDialog = useConfirmDialog();
   // fork（F4.3）：offPeakTaskService/useOffPeakEligibility/升级弹窗与 Coding Plan 门
   // （只服务闲时创建提示）随闲时任务全链路删除。
@@ -500,14 +500,14 @@ export function AutomationsSection({
     void initialize({
       workspacePath,
       workspaceIdentity,
-      agentService: zcodeAgentService,
+      agentService: zodyAgentService,
     }).then(() => {
       if (!disposed) setLoadedWorkspaceKey(workspaceKey);
     });
     return () => {
       disposed = true;
     };
-  }, [workspacePath, workspaceIdentity, zcodeAgentService, initialize]);
+  }, [workspacePath, workspaceIdentity, zodyAgentService, initialize]);
 
   // fork（F4.3）：Idle tab 收敛 effect 随闲时任务全链路删除。
 
@@ -556,12 +556,12 @@ export function AutomationsSection({
     setRefreshing(true);
     try {
       // fork（F4.3）：offPeakRefresh 并行刷新随闲时任务全链路删除。
-      await refresh(zcodeAgentService);
+      await refresh(zodyAgentService);
       setNow(Date.now());
     } finally {
       setRefreshing(false);
     }
-  }, [refresh, zcodeAgentService]);
+  }, [refresh, zodyAgentService]);
 
   // fork（F4.3）：闲时预填草稿消费与远端 workspace 退出闲时视图的 effect 随闲时任务全链路删除。
 
@@ -659,7 +659,7 @@ export function AutomationsSection({
       workspaceIdentity: targetIdentity,
     }: AutomationEditSubmit) => {
       if (view.mode === "edit") {
-        const ok = await updateAutomation(view.automation.automationId, input, zcodeAgentService);
+        const ok = await updateAutomation(view.automation.automationId, input, zodyAgentService);
         if (!ok) {
           toast(
             intl.formatMessage({
@@ -681,7 +681,7 @@ export function AutomationsSection({
           workspacePath: targetPath,
           workspaceIdentity: targetIdentity,
         },
-        zcodeAgentService,
+        zodyAgentService,
       );
       void reportAutomationCreateResult(platform, {
         automationId: created?.automationId,
@@ -715,13 +715,13 @@ export function AutomationsSection({
       showAutomationCreateLimitToast,
       updateAutomation,
       view,
-      zcodeAgentService,
+      zodyAgentService,
     ],
   );
 
   const handleToggle = useCallback(
-    async (automation: ZCodeAutomation, enabled: boolean) => {
-      await setEnabled(automation.automationId, enabled, zcodeAgentService);
+    async (automation: ZodyAutomation, enabled: boolean) => {
+      await setEnabled(automation.automationId, enabled, zodyAgentService);
       const message = useAutomationManagementStore.getState().error;
       if (message) toast(intl.formatMessage({ id: getAutomationActionErrorToastId("toggle") }));
       else {
@@ -742,12 +742,12 @@ export function AutomationsSection({
         setNow(Date.now());
       }
     },
-    [intl, setEnabled, zcodeAgentService],
+    [intl, setEnabled, zodyAgentService],
   );
 
   const handleRestart = useCallback(
-    async (automation: ZCodeAutomation) => {
-      await restartAutomation(automation.automationId, zcodeAgentService);
+    async (automation: ZodyAutomation) => {
+      await restartAutomation(automation.automationId, zodyAgentService);
       const message = useAutomationManagementStore.getState().error;
       if (message)
         toast(
@@ -757,11 +757,11 @@ export function AutomationsSection({
         );
       else setNow(Date.now());
     },
-    [intl, restartAutomation, zcodeAgentService],
+    [intl, restartAutomation, zodyAgentService],
   );
 
   const handleRunNow = useCallback(
-    async (automation: ZCodeAutomation, source: "list" | "editor" = "list") => {
+    async (automation: ZodyAutomation, source: "list" | "editor" = "list") => {
       logger.debug("[automations] 立即运行交互开始", {
         automationId: automation.automationId,
         source,
@@ -772,14 +772,14 @@ export function AutomationsSection({
         automation,
         providerSettingsView,
       });
-      const result = await runAutomationNow(automation.automationId, zcodeAgentService);
+      const result = await runAutomationNow(automation.automationId, zodyAgentService);
       logger.debug("[automations] 立即运行交互结束", {
         automationId: automation.automationId,
         source,
         result,
       });
       if (result === "queued") {
-        await loadRuns(automation.automationId, zcodeAgentService, true);
+        await loadRuns(automation.automationId, zodyAgentService, true);
         const latestSessionId = useAutomationManagementStore
           .getState()
           .runsCache[automation.automationId]?.runs?.find(
@@ -824,12 +824,12 @@ export function AutomationsSection({
       platform,
       providerSettingsView,
       runAutomationNow,
-      zcodeAgentService,
+      zodyAgentService,
     ],
   );
 
   const handleDelete = useCallback(
-    async (automation: ZCodeAutomation, source: "list" | "editor" = "list") => {
+    async (automation: ZodyAutomation, source: "list" | "editor" = "list") => {
       const confirmed = await confirmDialog({
         presentation: "automation-confirmation",
         title: intl.formatMessage({ id: "automations.delete.title" }),
@@ -850,7 +850,7 @@ export function AutomationsSection({
         automation,
         providerSettingsView,
       });
-      await deleteAutomation(automation.automationId, zcodeAgentService);
+      await deleteAutomation(automation.automationId, zodyAgentService);
       const message = useAutomationManagementStore.getState().error;
       if (message) toast(intl.formatMessage({ id: getAutomationActionErrorToastId("delete") }));
       // 若在编辑该任务的整页,删除后回列表。
@@ -860,7 +860,7 @@ export function AutomationsSection({
           : prev,
       );
     },
-    [confirmDialog, deleteAutomation, intl, platform, providerSettingsView, zcodeAgentService],
+    [confirmDialog, deleteAutomation, intl, platform, providerSettingsView, zodyAgentService],
   );
 
   // fork（F4.3）：handleOffPeak{OpenSession,Open,Cancel,Delete,DeleteHistory,Submit}
@@ -898,11 +898,11 @@ export function AutomationsSection({
           runsEntry={view.mode === "edit" ? runsCache[view.automation.automationId] : undefined}
           onLoadRuns={() => {
             if (view.mode === "edit")
-              void loadRuns(view.automation.automationId, zcodeAgentService, true);
+              void loadRuns(view.automation.automationId, zodyAgentService, true);
           }}
           onDeleteRun={(runId) => {
             if (view.mode === "edit") {
-              void deleteRun(view.automation.automationId, runId, zcodeAgentService);
+              void deleteRun(view.automation.automationId, runId, zodyAgentService);
             }
           }}
           onOpenSession={

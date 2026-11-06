@@ -51,17 +51,17 @@ describe("dev desktop remote production-like script", () => {
   it("启动 env 应强制走 CDN，并允许显式 cache 覆盖", () => {
     const env = buildDesktopRemoteProdEnv(
       {
-        ZCODE_ENV: "test",
+        ZODY_ENV: "test",
         ZCODE_DEV_REMOTE_ASSET_USE_CDN: "0",
-        ZCODE_REMOTE_ASSET_CACHE_DIR: "/tmp/custom-cache",
+        ZODY_REMOTE_ASSET_CACHE_DIR: "/tmp/custom-cache",
       },
       "darwin",
       "/Users/alice",
     );
 
-    expect(env.ZCODE_ENV).toBe("production");
+    expect(env.ZODY_ENV).toBe("production");
     expect(env.ZCODE_DEV_REMOTE_ASSET_USE_CDN).toBe("0");
-    expect(env.ZCODE_REMOTE_ASSET_CACHE_DIR).toBe("/tmp/custom-cache");
+    expect(env.ZODY_REMOTE_ASSET_CACHE_DIR).toBe("/tmp/custom-cache");
   });
 
   it("Windows 下应使用 pnpm.cmd 启动", () => {

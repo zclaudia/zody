@@ -7,7 +7,7 @@
  *   1. 本地 Gateway 可用；`pnpm build:mobile-web` 已生成 packages/web/dist-mobile-remote。
  *   2. `scripts/mobile-m2-t6/desktop-provider-harness.mjs` 已在 ZODY_E2E_CONTROL_URL 上运行。
  *   3. Debug APK 已安装并启动；设备允许 `adb forward` 与 WebView 调试（debug 构建）。
- *   4. 通过 `node --env-file=.env.gateway.local` 提供 ZCODE_GATEWAY_DEVICE_CREDENTIAL。
+ *   4. 通过 `node --env-file=.env.gateway.local` 提供 ZODY_GATEWAY_DEVICE_CREDENTIAL。
  *
  * 运行：
  *   node --env-file=.env.gateway.local scripts/mobile-m2-t6/run-e2e.mjs
@@ -34,7 +34,7 @@ const publicGatewayUrl = (
   process.env.ZODY_E2E_PUBLIC_GATEWAY_URL || "http://10.0.2.2:3200"
 ).replace(/\/+$/u, "");
 const namespace = process.env.ZODY_E2E_NAMESPACE || "zcode";
-const deviceCredential = process.env.ZCODE_GATEWAY_DEVICE_CREDENTIAL;
+const deviceCredential = process.env.ZODY_GATEWAY_DEVICE_CREDENTIAL;
 const skip = new Set(
   (process.env.ZODY_E2E_SKIP || "")
     .split(",")
@@ -223,7 +223,7 @@ async function ensureConfigured() {
     page.close();
     return { existed: true, configRevision: read.config.configRevision };
   }
-  assert(deviceCredential, "ZCODE_GATEWAY_DEVICE_CREDENTIAL is required for pairing");
+  assert(deviceCredential, "ZODY_GATEWAY_DEVICE_CREDENTIAL is required for pairing");
   const draft = JSON.stringify({
     gatewayUrl: publicGatewayUrl,
     namespace,

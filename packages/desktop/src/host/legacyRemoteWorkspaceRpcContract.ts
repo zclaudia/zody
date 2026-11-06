@@ -1,4 +1,4 @@
-import type { IServiceAccessor } from "@zcode/services";
+import type { IServiceAccessor } from "@zody/services";
 
 /**
  * 只把既有远端 RPC client 收进窗口 Host，不改变 zcode-server wire。
@@ -10,9 +10,9 @@ export const LEGACY_REMOTE_WORKSPACE_RPC_CHANNELS = [
   "gitCheckpointService",
   "systemService",
   "terminalService",
-  "zcodeTaskService",
-  "zcodeAgentService",
-  "zcodeSessionService",
+  "zodyTaskService",
+  "zodyAgentService",
+  "zodySessionService",
   "fileWatcherService",
   "skillsService",
   "skillSyncService",

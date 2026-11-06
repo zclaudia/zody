@@ -19,7 +19,7 @@ const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
 // Windows Chrome 导入入口未启用，默认构建继续编译 helper 会增加 CI 时间和发布签名面。
 // 保留显式开关，后续恢复入口时仍可复用既有原生实现和供应链校验。
 const shouldPrepareWindowsBrowserImportHelper =
-  target.os === "win32" && process.env.ZCODE_ENABLE_WINDOWS_BROWSER_IMPORT === "1";
+  target.os === "win32" && process.env.ZODY_ENABLE_WINDOWS_BROWSER_IMPORT === "1";
 // Windows Computer Use Helper 由真实 producer 提供；开源占位包没有 Helper runtime，跳过准备。
 const shouldPrepareWindowsCuaHelper =
   target.os === "win32" && isRealComputerUseProducerInstalled({ desktopPackageRoot: desktopRoot });
@@ -56,14 +56,14 @@ function runTimedPnpmScript(scriptName) {
   }
 }
 
-const shouldSkipRemoteAssets = process.env.ZCODE_SKIP_REMOTE_ASSETS === "1";
+const shouldSkipRemoteAssets = process.env.ZODY_SKIP_REMOTE_ASSETS === "1";
 
 if (!shouldSkipRemoteAssets) {
   runTimedPnpmScript("prepare:remote-assets");
   runTimedPnpmScript("stage:remote-runtime");
 } else {
   // 普通 bootstrap 可只准备本机运行时；发布的 beforePack 仍强制暂存并校验四平台远端资源。
-  console.log("[prepare:runtime-assets] reuse remote artifacts (ZCODE_SKIP_REMOTE_ASSETS=1)");
+  console.log("[prepare:runtime-assets] reuse remote artifacts (ZODY_SKIP_REMOTE_ASSETS=1)");
 }
 
 for (const scriptName of localRuntimeScripts) {

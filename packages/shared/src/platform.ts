@@ -363,7 +363,7 @@ export interface SSHConfigAliasOption {
   source?: string;
 }
 
-export interface ZCodeStdioTapDevState {
+export interface ZodyStdioTapDevState {
   enabled: boolean;
   visible: boolean;
   logDir: string;
@@ -661,11 +661,11 @@ export const DesktopCommandIds = {
   ExportLogs: "exportLogs",
   ToggleDevTools: "toggleDevTools",
   OpenResourceManager: "openResourceManager",
-  ToggleZCodeStdioTapDevProxy: "toggleZCodeStdioTapDevProxy",
-  SetZCodeEndpointProduction: "setZCodeEndpointProduction",
-  SetZCodeEndpointTest: "setZCodeEndpointTest",
-  SetZCodeEndpointCustom: "setZCodeEndpointCustom",
-  ResetZCodeEndpoint: "resetZCodeEndpoint",
+  ToggleZodyStdioTapDevProxy: "toggleZodyStdioTapDevProxy",
+  SetZodyEndpointProduction: "setZodyEndpointProduction",
+  SetZodyEndpointTest: "setZodyEndpointTest",
+  SetZodyEndpointCustom: "setZodyEndpointCustom",
+  ResetZodyEndpoint: "resetZodyEndpoint",
   ClearAllData: "clearAllData",
   GetCuaOsSupport: "getCuaOsSupport",
   GetCuaCapability: "getCuaCapability",
@@ -699,7 +699,7 @@ export type CuaBuildCapability =
   | { kind: "narrow"; capabilities: string[] };
 
 /**
- * 平台操作接口 —— 替代直接访问 window.zcode
+ * 平台操作接口 —— 替代直接访问 window.zody
  *
  * 定义需要宿主环境（Electron main / Web server）参与的操作。
  * Desktop 和 Web 各自提供不同的实现，UI 层通过此接口统一消费。
@@ -977,7 +977,7 @@ export interface IPlatformService {
   /** 使用系统默认应用打开本地文件；普通 Web 平台返回 unsupported。 */
   openExternalFile?(path: string): Promise<{ success: boolean; error?: string }>;
 
-  /** 打开 ZCode Computer Use 的完整权限引导。Desktop only。 */
+  /** 打开 Zody Computer Use 的完整权限引导。Desktop only。 */
   openCuaPermissionOnboarding?(
     options?: OpenCuaPermissionOnboardingOptions,
   ): Promise<CuaAccessibilitySettingsResult>;
@@ -1301,7 +1301,7 @@ export interface IPlatformService {
   }>;
 
   /** 开发环境 stdio tap proxy 开关状态；非桌面平台可不实现 */
-  getZCodeStdioTapDevState?(): Promise<ZCodeStdioTapDevState>;
+  getZodyStdioTapDevState?(): Promise<ZodyStdioTapDevState>;
 
   /** 是否为本地开发运行形态；桌面端用 !app.isPackaged 注入，Web 端可省略。 */
   isLocalDevelopmentRuntime?: boolean;

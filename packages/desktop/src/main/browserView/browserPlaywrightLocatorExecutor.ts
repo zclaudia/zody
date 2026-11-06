@@ -1,4 +1,4 @@
-import type { BrowserPlaywrightAction } from "@zcode/shared";
+import type { BrowserPlaywrightAction } from "@zody/shared";
 import {
   executePlaywrightLocator,
   type PlaywrightLocatorExecution,

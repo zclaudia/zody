@@ -1,5 +1,5 @@
 import { constants } from "node:os";
-import { Emitter, type Event } from "@zcode/rpc";
+import { Emitter, type Event } from "@zody/rpc";
 
 interface CloseEventController {
   event: Event<number>;
@@ -47,7 +47,7 @@ const UNKNOWN_REMOTE_EXIT_CODE = 255;
  * Bug 原因：三个 Backend 都写成 `code ?? 0`。进程被信号杀死时 code 是 null，
  * ssh2 的通道在没有 exit-status 时 close 也不带 code，于是被 kill -9 的下载、解包、
  * update 都被当成成功。这里按 shell 惯例返回 128 + 信号值；完全没有退出信息时返回 255。
- * （移植自上游 ZCode v3.17.1 a60ba6a7 packages/server/src/remote/closeEvent.ts）
+ * （移植自上游 Zody v3.17.1 a60ba6a7 packages/server/src/remote/closeEvent.ts）
  */
 export function resolveRemoteExitCode(
   code: number | null | undefined,

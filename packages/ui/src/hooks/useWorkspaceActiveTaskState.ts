@@ -1,16 +1,16 @@
 import { useMemo, useRef } from "react";
-import type { ZCodeProvider, ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodyProvider, ZodyTaskMeta } from "@zody/shared";
 import { useActiveTaskSnapshotMeta } from "@/hooks/useActiveTaskSnapshotMeta.js";
 import { useTaskNativeSessionLogFile } from "@/hooks/useTaskNativeSessionLogFile.js";
 import { useTaskSessionFilePath } from "@/hooks/useTaskSessionFilePath.js";
 import { buildTaskEntityKey } from "@/lib/taskQueryCache.js";
-import { mergeTaskMetaCandidates } from "@/lib/zcodeTaskMetaMerge.js";
+import { mergeTaskMetaCandidates } from "@/lib/zodyTaskMetaMerge.js";
 import { resolveWorkspaceHeaderProvider } from "@/lib/workspaceHeaderProvider.js";
 import {
   getTaskMeta,
-  selectWorkspaceZCodeState,
-  useZCodeSessionStore,
-} from "@/store/zcodeSessionStore.js";
+  selectWorkspaceZodyState,
+  useZodySessionStore,
+} from "@/store/zodySessionStore.js";
 import { useTaskQueryCacheStore } from "@/store/taskQueryCacheStore.js";
 
 interface UseWorkspaceActiveTaskStateParams {
@@ -18,7 +18,7 @@ interface UseWorkspaceActiveTaskStateParams {
   activeTaskId: string | null;
   workspaceRemoteSessionId?: string | null;
   workspaceIdentity?: string;
-  selectedProvider: ZCodeProvider;
+  selectedProvider: ZodyProvider;
   intl: {
     formatMessage(descriptor: { id: string }): string;
   };
@@ -29,8 +29,8 @@ function areTaskMetaJsonFieldsEqual(left: unknown, right: unknown) {
 }
 
 function areResolvedTaskMetasEqual(
-  left: ZCodeTaskMeta | null,
-  right: ZCodeTaskMeta | null,
+  left: ZodyTaskMeta | null,
+  right: ZodyTaskMeta | null,
 ) {
   if (left === right) {
     return true;
@@ -66,9 +66,9 @@ function areResolvedTaskMetasEqual(
 }
 
 export function useStableResolvedActiveTaskMeta(
-  taskMeta: ZCodeTaskMeta | null,
+  taskMeta: ZodyTaskMeta | null,
 ) {
-  const stableTaskMetaRef = useRef<ZCodeTaskMeta | null>(null);
+  const stableTaskMetaRef = useRef<ZodyTaskMeta | null>(null);
   const stableTaskMeta = stableTaskMetaRef.current;
   // stream chunk 只更新消息流时，active task meta 经列表/乐观层重新合成后可能字段相同但引用变了。
   // Header/Shell 依赖 memo props；这里复用等价 meta 的旧引用，避免连续流式更新拖动标题栏重渲。
@@ -86,8 +86,8 @@ export function useWorkspaceActiveTaskState({
   selectedProvider,
   intl,
 }: UseWorkspaceActiveTaskStateParams) {
-  const workspaceState = useZCodeSessionStore((state) =>
-    selectWorkspaceZCodeState(state, workspaceAbsPath, workspaceIdentity),
+  const workspaceState = useZodySessionStore((state) =>
+    selectWorkspaceZodyState(state, workspaceAbsPath, workspaceIdentity),
   );
   const activeTaskQueryMeta = useTaskQueryCacheStore((state) => {
     if (!activeTaskId) {

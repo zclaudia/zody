@@ -32,17 +32,17 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Verify tag and root version
-        run: node scripts/zcode-distribution/validate-release-tag.mjs "$RELEASE_VERSION"
+        run: node scripts/zody-distribution/validate-release-tag.mjs "$RELEASE_VERSION"
       - name: Verify third-party release obligations
         run: node scripts/licenses.mjs check --strict
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm architecture:check --changed
       - run: pnpm test:unit
-      - run: pnpm --dir apps/zcode-cli test
-      - run: pnpm --dir apps/zcode-cli typecheck
-      - run: pnpm --dir apps/zcode-cli lint
-      - run: node --test scripts/zcode-distribution.test.mjs scripts/zody-distribution.test.mjs
+      - run: pnpm --dir apps/zody-cli test
+      - run: pnpm --dir apps/zody-cli typecheck
+      - run: pnpm --dir apps/zody-cli lint
+      - run: node --test scripts/zody-distribution-runner.test.mjs scripts/zody-distribution.test.mjs scripts/zody-distribution-smoke.test.mjs
 
   desktop:
     needs: validate
@@ -85,13 +85,13 @@ jobs:
       - name: Build unsigned Desktop artifacts
         shell: bash
         env:
-          ZCODE_ENV: production
-          ZCODE_ENABLE_MAC_SIGN: "0"
+          ZODY_ENV: production
+          ZODY_ENABLE_MAC_SIGN: "0"
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: pnpm --dir packages/desktop run bundle --os "${{ matrix.os }}" --arch "${{ matrix.arch }}"
       - name: Collect Desktop artifacts
         shell: bash
-        run: node scripts/zcode-distribution/collect-desktop-artifact.mjs "${{ matrix.target }}" "$RUNNER_TEMP/zody-assets"
+        run: node scripts/zody-distribution/collect-desktop-artifact.mjs "${{ matrix.target }}" "$RUNNER_TEMP/zody-assets"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: desktop-${{ matrix.target }}
@@ -132,11 +132,11 @@ jobs:
       - name: Build self-contained CLI and Web archive
         shell: bash
         env:
-          ZCODE_ENV: production
+          ZODY_ENV: production
         run: pnpm run build:zody --target "${{ matrix.target }}" --out-dir "$RUNNER_TEMP/zody"
       - name: Smoke extracted archive without Node on PATH
         shell: bash
-        run: node scripts/zcode-distribution/smoke-cli-archive.mjs "$RUNNER_TEMP/zody/releases/${RELEASE_VERSION#v}/zody-cli-${RELEASE_VERSION#v}-${{ matrix.target }}.tar.gz"
+        run: node scripts/zody-distribution/smoke-cli-archive.mjs "$RUNNER_TEMP/zody/releases/${RELEASE_VERSION#v}/zody-cli-${RELEASE_VERSION#v}-${{ matrix.target }}.tar.gz"
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: cli-${{ matrix.target }}
@@ -214,8 +214,8 @@ jobs:
           path: ${{ runner.temp }}/zody-input
           merge-multiple: true
       - name: Assemble and validate release assets
-        run: node scripts/zcode-distribution/prepare-release-assets.mjs --version "${RELEASE_VERSION#v}" --input "$RUNNER_TEMP/zody-input" --output "$RUNNER_TEMP/zody-release"
+        run: node scripts/zody-distribution/prepare-release-assets.mjs --version "${RELEASE_VERSION#v}" --input "$RUNNER_TEMP/zody-input" --output "$RUNNER_TEMP/zody-release"
       - name: Create or safely resume draft pre-release
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/zcode-distribution/publish-draft-release.mjs "$RUNNER_TEMP/zody-release" "$RELEASE_VERSION"
+        run: node scripts/zody-distribution/publish-draft-release.mjs "$RUNNER_TEMP/zody-release" "$RELEASE_VERSION"

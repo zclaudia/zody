@@ -1,4 +1,4 @@
-import type { Event } from "@zcode/rpc";
+import type { Event } from "@zody/rpc";
 import type {
   MobileNotification,
   MobileNotificationCursor,

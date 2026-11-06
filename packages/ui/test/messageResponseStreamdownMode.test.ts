@@ -12,10 +12,10 @@ import {
   resolveMessageStreamdownMode,
 } from "@/components/ai-elements/message.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: unknown) => unknown) =>
+  useZodyStore: (selector: (state: unknown) => unknown) =>
     selector({
       codePreviewSettings: {
         darkTheme: "github-dark",
@@ -44,7 +44,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("invalidates memoized artifact images when their session or reader changes", () => {
     const readAttachment = vi.fn();
     const base = {
-      children: "![CUA](zcode-artifact://session-1/shot)",
+      children: "![CUA](zody-artifact://session-1/shot)",
       sessionId: "session-1",
       readAttachment,
     };
@@ -164,7 +164,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("Assistant citation 使用现有文件链接渲染，普通文件名仍保持原文", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -193,7 +193,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("citation 和 Markdown 文件链接支持智能引号且不污染路径", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -220,7 +220,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("正文文件链接由文字提供真实基线，图标独立居中，并仅在 hover 显示虚线下划线", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -254,7 +254,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("正文公网链接与文件链接使用相同的浏览器式链接交互", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -274,7 +274,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("streaming 时隐藏未闭合 citation，异常换行后的正文仍可见", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -293,7 +293,7 @@ describe("resolveMessageStreamdownMode", () => {
 
     const malformedHtml = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -316,7 +316,7 @@ describe("resolveMessageStreamdownMode", () => {
   ])("Assistant citation 的 Windows %s 通过 harden 后仍可点击", (_case, path, resolvedPath) => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -358,7 +358,7 @@ describe("resolveMessageStreamdownMode", () => {
     const compatibilityDirective = ':zcode-file-citation{path="docs/legacy.pdf"}';
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           TooltipProvider,
@@ -402,7 +402,7 @@ describe("resolveMessageStreamdownMode", () => {
   ])("Windows 绝对 Markdown 链接（%s）通过 harden 后仍可点击", (_case, markdown, path) => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -423,7 +423,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("UNC workspace 中 Windows 绝对 Markdown 链接通过 harden 后仍可点击", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -448,7 +448,7 @@ describe("resolveMessageStreamdownMode", () => {
   ])("Windows 绝对 Markdown 图片（%s）通过 harden 后保留本地路径", (_case, markdown) => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(MessageResponse, { workspacePath: "C:\\workspace" }, markdown),
       ),
@@ -462,7 +462,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("UNC workspace 中 Windows 绝对 Markdown 图片通过 harden 后保留本地路径", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -480,7 +480,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("正文裸文件名保持普通文本且 GFM 表格正常渲染", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           TooltipProvider,
@@ -629,7 +629,7 @@ describe("resolveMessageStreamdownMode", () => {
   it("rewrites assistant artifact images before Streamdown hardening", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,
@@ -641,7 +641,7 @@ describe("resolveMessageStreamdownMode", () => {
               mediaType: "image/png",
             }),
           },
-          "![CUA](zcode-artifact://session-1/shot)",
+          "![CUA](zody-artifact://session-1/shot)",
         ),
       ),
     );
@@ -714,7 +714,7 @@ it("通用模式回答保留代码容器和复制入口，锁定换行入口且�
   const render = (forceCodeWrap: boolean) =>
     renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           TooltipProvider,

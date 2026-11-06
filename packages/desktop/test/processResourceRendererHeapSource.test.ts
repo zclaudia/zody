@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PlatformChannels, type ProcessResourceRole } from "@zcode/shared";
+import { PlatformChannels, type ProcessResourceRole } from "@zody/shared";
 
 const h = vi.hoisted(() => ({
   ipcListeners: new Map<string, Array<(...args: unknown[]) => unknown>>(),

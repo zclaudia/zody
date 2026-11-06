@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCuaNativeAuditLine } from "../src/zcode-agent/cuaNativeAuditLog.js";
+import { parseCuaNativeAuditLine } from "../src/zody-agent/cuaNativeAuditLog.js";
 
 const NODE_IDENTIFIER = "io.github.zclaudia.zody.cua-helper.node";
 const NODE_CDHASH = "3c57a9bb9f4e8b748ac80d60bc78cdde14767218";

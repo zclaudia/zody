@@ -2,8 +2,8 @@ import {
   mobileTargetRefSchema,
   resolveWebRemoteControlWorkspaceKey,
   type WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
-import type { connectViaProtocol } from "@zcode/client";
+} from "@zody/shared";
+import type { connectViaProtocol } from "@zody/client";
 
 type Services = Awaited<ReturnType<typeof connectViaProtocol>>;
 type Reader = NonNullable<Services["mobileNotificationReaderService"]>;
@@ -46,7 +46,7 @@ export async function validateMobileNotificationTask(
   services: Services,
   target: { taskId: string; workspacePath: string; workspaceIdentity?: string },
 ) {
-  const meta = await services.zcodeTaskService.getTaskMeta(target);
+  const meta = await services.zodyTaskService.getTaskMeta(target);
   if (
     !meta ||
     meta.taskId !== target.taskId ||

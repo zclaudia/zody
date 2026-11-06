@@ -4,7 +4,7 @@ import {
   CONVERSATION_SELECTION_MAX_COUNT,
   CONVERSATION_SELECTION_MAX_TOTAL_LENGTH,
   type ConversationSelectionText,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export {
   buildPromptWithConversationSelections,
@@ -12,7 +12,7 @@ export {
   CONVERSATION_SELECTION_MAX_COUNT,
   CONVERSATION_SELECTION_MAX_TOTAL_LENGTH,
   type ConversationSelectionText,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export type ConversationSelectionContentType = "user" | "assistant" | "reasoning" | "tool";
 

@@ -7,7 +7,7 @@ import {
   TID_V4_MODEL_CONFIG,
   TID_V4_SESSION_PANE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   getE2EAppDataPaths,

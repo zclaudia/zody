@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createWebRemoteControlAppPayloadRequester } from "../src/mobile-remote/payloadRequester.js";
 
 afterEach(() => {
@@ -20,26 +20,26 @@ describe("createWebRemoteControlAppPayloadRequester", () => {
       timeoutMs: 100,
     });
     const promise = requester.requestAppPayload(
-      { zcode_type: "bootstrap-request", requestId: "req-1" },
-      (payload): payload is WebRemoteControlAppPayload & { zcode_type: "bootstrap-response" } =>
-        payload.zcode_type === "bootstrap-response" && payload.requestId === "req-1",
+      { zody_type: "bootstrap-request", requestId: "req-1" },
+      (payload): payload is WebRemoteControlAppPayload & { zody_type: "bootstrap-response" } =>
+        payload.zody_type === "bootstrap-response" && payload.requestId === "req-1",
     );
 
     requester.acceptPayload({
-      zcode_type: "app-error",
+      zody_type: "app-error",
       requestId: "other",
       reason: "unexpected-error",
       error: "unrelated",
     });
     requester.acceptPayload({
-      zcode_type: "app-error",
+      zody_type: "app-error",
       requestId: "req-1",
       reason: "desktop-disconnected",
       error: "closed",
     });
 
     await expect(promise).rejects.toMatchObject({ reason: "desktop-disconnected" });
-    expect(sent).toEqual([{ zcode_type: "bootstrap-request", requestId: "req-1" }]);
+    expect(sent).toEqual([{ zody_type: "bootstrap-request", requestId: "req-1" }]);
   });
 
   it("does not consume unmatched workspace bridge errors", () => {
@@ -50,7 +50,7 @@ describe("createWebRemoteControlAppPayloadRequester", () => {
 
     expect(
       requester.acceptPayload({
-        zcode_type: "workspace-bridge-error",
+        zody_type: "workspace-bridge-error",
         requestId: "remote-session-closed:remote-1",
         bridgeSessionId: "bridge-1",
         reason: "desktop-disconnected",
@@ -66,9 +66,9 @@ describe("createWebRemoteControlAppPayloadRequester", () => {
     });
 
     const promise = requester.requestAppPayload(
-      { zcode_type: "bootstrap-request", requestId: "req-unsent" },
-      (payload): payload is WebRemoteControlAppPayload & { zcode_type: "bootstrap-response" } =>
-        payload.zcode_type === "bootstrap-response" && payload.requestId === "req-unsent",
+      { zody_type: "bootstrap-request", requestId: "req-unsent" },
+      (payload): payload is WebRemoteControlAppPayload & { zody_type: "bootstrap-response" } =>
+        payload.zody_type === "bootstrap-response" && payload.requestId === "req-unsent",
     );
 
     await expect(promise).rejects.toMatchObject({
@@ -88,7 +88,7 @@ describe("createWebRemoteControlAppPayloadRequester", () => {
     });
     const promise = requester.requestAppPayload(
       {
-        zcode_type: "workspace-reconnect-request",
+        zody_type: "workspace-reconnect-request",
         requestId: "reconnect-1",
         workspaceKey: "remote:docker:demo:/root",
       },
@@ -96,9 +96,9 @@ describe("createWebRemoteControlAppPayloadRequester", () => {
         payload,
       ): payload is Extract<
         WebRemoteControlAppPayload,
-        { zcode_type: "workspace-reconnect-response" }
+        { zody_type: "workspace-reconnect-response" }
       > =>
-        payload.zcode_type === "workspace-reconnect-response" &&
+        payload.zody_type === "workspace-reconnect-response" &&
         payload.requestId === "reconnect-1" &&
         payload.workspaceKey === "remote:docker:demo:/root",
       { timeoutMs: WEB_REMOTE_CONTROL_WORKSPACE_RECONNECT_TIMEOUT_MS },
@@ -106,7 +106,7 @@ describe("createWebRemoteControlAppPayloadRequester", () => {
 
     await vi.advanceTimersByTimeAsync(11);
     requester.acceptPayload({
-      zcode_type: "workspace-reconnect-response",
+      zody_type: "workspace-reconnect-response",
       requestId: "reconnect-1",
       workspaceKey: "remote:docker:demo:/root",
       success: true,

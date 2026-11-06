@@ -11,29 +11,29 @@ const productionRoots = [
   "packages/ui/src",
   "packages/desktop/src",
   "packages/shared/src",
-  "apps/zcode-cli/packages/adapters/src",
-  "apps/zcode-cli/packages/bootstrap/src",
-  "apps/zcode-cli/packages/cli/src",
-  "apps/zcode-cli/packages/contracts/src",
-  "apps/zcode-cli/packages/core/src",
-  "apps/zcode-cli/packages/tui/src",
+  "apps/zody-cli/packages/adapters/src",
+  "apps/zody-cli/packages/bootstrap/src",
+  "apps/zody-cli/packages/cli/src",
+  "apps/zody-cli/packages/contracts/src",
+  "apps/zody-cli/packages/core/src",
+  "apps/zody-cli/packages/tui/src",
 ] as const;
 
 const legacyDtoOwners = new Set([
   "packages/services/src/model-provider/legacyModelProviderSerialized.ts",
-  "packages/services/src/model-provider/legacyZCodeConfigProviderReader.ts",
+  "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
   "packages/services/src/model-provider/legacyPersonalProviderConfigImporter.ts",
   "packages/services/src/model-provider/providerConfigRuntime.ts",
 ]);
 const legacyDtoTestOwners = new Set([
-  "packages/services/test/legacyZCodeConfigProviderReader.test.ts",
+  "packages/services/test/legacyZodyConfigProviderReader.test.ts",
   "packages/services/test/legacyPersonalProviderConfigImporter.test.ts",
   "packages/services/test/providerConfigRuntime.test.ts",
   "packages/ui/test/providerSettingsFormBoundary.test.ts",
 ]);
 const legacyApiFormatOwners = new Set([
   "packages/services/src/model-provider/legacyModelProviderSerialized.ts",
-  "packages/services/src/model-provider/legacyZCodeConfigProviderReader.ts",
+  "packages/services/src/model-provider/legacyZodyConfigProviderReader.ts",
 ]);
 const testRoots = [
   "packages/desktop/test",

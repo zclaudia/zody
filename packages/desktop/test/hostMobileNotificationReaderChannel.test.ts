@@ -2,9 +2,9 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ChannelClient, ChannelServer, createQueuePair, ProxyChannel } from "@zcode/rpc";
-import { IMobileNotificationReader } from "@zcode/services";
-import { createMobileNotificationService } from "@zcode/services/mobile-notifications/node";
+import { ChannelClient, ChannelServer, createQueuePair, ProxyChannel } from "@zody/rpc";
+import { IMobileNotificationReader } from "@zody/services";
+import { createMobileNotificationService } from "@zody/services/mobile-notifications/node";
 import { registerMobileNotificationReaderChannel } from "../src/host/mobileNotificationReaderChannel.js";
 
 describe("mobile notification reader Host channel", () => {

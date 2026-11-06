@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
-import type { Locale } from "@zcode/shared";
+import type { Locale } from "@zody/shared";
 import type { DesktopShellIntegrationIdentity } from "./desktopShellIntegrationIdentity.js";
 
 // 修复原因：上游键名 `ZCode.OpenInZCode` 与文案写死，Zody 会覆盖/冒用上游菜单项，

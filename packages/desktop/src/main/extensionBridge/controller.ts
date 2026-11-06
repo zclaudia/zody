@@ -1,12 +1,12 @@
 import {
   EXTENSION_BRIDGE_DEFAULT_PORT,
   EXTENSION_BRIDGE_EXTENSION_ID,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import type {
   ExtensionBridgeRequestMessage,
   ExtensionBridgeServerMessage,
-} from "@zcode/shared/browser-extension-transport";
-import { HostMessageTypes } from "@zcode/shared";
+} from "@zody/shared/browser-extension-transport";
+import { HostMessageTypes } from "@zody/shared";
 import { ExtensionBridgeServer } from "./server.js";
 import { createExtensionPersistentStores } from "./persistentStores.js";
 import { beginWindowPairing, cancelWindowPairing } from "./pairingActions.js";

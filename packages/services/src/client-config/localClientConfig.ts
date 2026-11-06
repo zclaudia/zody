@@ -4,8 +4,8 @@ import {
   resolveDynamicWorkflowClientConfig,
   type DynamicWorkflowClientConfig,
   type RequestVerificationConfig,
-  type ZCodeModelContextBudgetStrategy,
-} from "@zcode/shared";
+  type ZodyModelContextBudgetStrategy,
+} from "@zody/shared";
 
 /**
  * fork（F2.6b）Host 侧 client-config 本地值：`/api/v1/client/configs` 不再被请求，
@@ -15,7 +15,7 @@ import {
  */
 
 /**
- * 动态工作流 offer：`ZCODE_DYNAMIC_WORKFLOW_MODE` 三档覆盖规则不变（shared 折叠裁决），
+ * 动态工作流 offer：`ZODY_DYNAMIC_WORKFLOW_MODE` 三档覆盖规则不变（shared 折叠裁决），
  * 覆盖缺省时落到 fork 固定提供值 `onDemand`（来源 default），再叠加用户设置
  * `dynamicWorkflowMode`（launch.md「The user's choice」；读取失败按抛错上抛，
  * 与原订阅服务路径一致，由调用方按各自契约降级）。
@@ -43,5 +43,5 @@ export function resolveLocalRequestVerificationConfig(): RequestVerificationConf
 }
 
 /** 上下文预算策略：3.12.2 起统一 preflight-v1，不再为建会话等待远端配置。 */
-export const LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY: ZCodeModelContextBudgetStrategy =
+export const LOCAL_MODEL_CONTEXT_BUDGET_STRATEGY: ZodyModelContextBudgetStrategy =
   DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY;

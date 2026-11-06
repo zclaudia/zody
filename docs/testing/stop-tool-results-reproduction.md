@@ -36,7 +36,7 @@ sequenceDiagram
 运行：
 
 ```sh
-ZCODE_E2E_MANUAL_REVIEW=1 ZCODE_E2E_DEEPSEEK_CONTEXT_WINDOW=128000 \
+ZODY_E2E_MANUAL_REVIEW=1 ZCODE_E2E_DEEPSEEK_CONTEXT_WINDOW=128000 \
 pnpm --filter @zcode/desktop test:e2e -- --spec \
 './test/e2e/conversation-session/manual-review/pending/conversation-session-stop-tool-results.test.ts'
 ```

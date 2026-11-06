@@ -8,10 +8,10 @@ import {
   databaseMigrationFactsSchema,
   type DatabaseMigrationFacts,
   databaseStartupErrorDetailsSchema,
-  zcodeStoragePreparationFrameSchema,
+  zodyStoragePreparationFrameSchema,
   type DatabaseStartupState,
-} from "@zcode/shared";
-import { resolveDefaultZCodeAgentCommand } from "@zcode/services/storage-startup";
+} from "@zody/shared";
+import { resolveDefaultZodyAgentCommand } from "@zody/services/storage-startup";
 
 type Phase = NonNullable<DatabaseStartupState["databasePhase"]>;
 const workerMessageSchema = z.discriminatedUnion("type", [
@@ -136,7 +136,7 @@ export async function prepareSessionStorage(options: {
     }
     entry = options.storagePreparationEntryUrl;
   } else {
-    const command = resolveDefaultZCodeAgentCommand({
+    const command = resolveDefaultZodyAgentCommand({
       workspacePath: options.cwd,
       workspaceKey: options.cwd,
       presentationSurface: "desktop",
@@ -183,7 +183,7 @@ export async function prepareSessionStorage(options: {
     lines.on("line", (line) => {
       try {
         if (line.length > 65536) throw statusError("transport_closed");
-        const frame = zcodeStoragePreparationFrameSchema.parse(JSON.parse(line));
+        const frame = zodyStoragePreparationFrameSchema.parse(JSON.parse(line));
         clearTimeout(firstStateTimer);
         if (frame.method === "startup/storagePath") {
           if (pathReceived) throw statusError("transport_closed");

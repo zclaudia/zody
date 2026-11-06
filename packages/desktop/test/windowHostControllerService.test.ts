@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { ChannelClient, ChannelServer, createQueuePair, Emitter, Event, ProxyChannel } from "@zcode/rpc";
-import { IWindowControllerService } from "@zcode/services";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import { ChannelClient, ChannelServer, createQueuePair, Emitter, Event, ProxyChannel } from "@zody/rpc";
+import { IWindowControllerService } from "@zody/services";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type {
-  IZCodeAgentService,
-  IZCodeTaskService,
+  IZodyAgentService,
+  IZodyTaskService,
   WindowHostControllerFrame,
-} from "@zcode/services";
+} from "@zody/services";
 import {
   CONTROLLER_TASKS_INDEX_TOPIC,
   type SessionsIndexTopicWireCandidate,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { createWindowHostControllerRuntime } from "../src/host/windowHostControllerService.js";
 
 function meta(params: {
@@ -18,7 +18,7 @@ function meta(params: {
   workspacePath?: string;
   workspaceIdentity?: string;
   createdAt?: number;
-}): ZCodeTaskMeta {
+}): ZodyTaskMeta {
   return {
     taskId: params.taskId,
     traceId: `trace-${params.taskId}`,
@@ -32,10 +32,10 @@ function meta(params: {
 }
 
 function taskService(params: {
-  active?: ZCodeTaskMeta[];
-  pinned?: ZCodeTaskMeta[];
-  archived?: ZCodeTaskMeta[];
-  search?: ZCodeTaskMeta[];
+  active?: ZodyTaskMeta[];
+  pinned?: ZodyTaskMeta[];
+  archived?: ZodyTaskMeta[];
+  search?: ZodyTaskMeta[];
 }) {
   return {
     listTasks: vi.fn(async () => params.active ?? []),
@@ -53,7 +53,7 @@ function taskService(params: {
     unarchiveTask: vi.fn(async () => meta({ taskId: "unarchived" })),
     deleteTask: vi.fn(async () => undefined),
     setTaskUnread: vi.fn(async () => meta({ taskId: "unread" })),
-  } as unknown as IZCodeTaskService;
+  } as unknown as IZodyTaskService;
 }
 
 const remoteIdentity = "remote:ssh:dev:22:user:/work/demo";
@@ -75,7 +75,7 @@ describe("WindowHostControllerService", () => {
     };
     const tasksA = taskService({ search: [meta({ taskId: "same-task", workspacePath })] });
     const tasksB = taskService({ search: [meta({ taskId: "same-task", workspacePath })] });
-    const createHost = (ownScope: typeof scopeA, tasks: IZCodeTaskService) => {
+    const createHost = (ownScope: typeof scopeA, tasks: IZodyTaskService) => {
       const runtime = createWindowHostControllerRuntime({
         createId: () => "id",
         resolveSource: (requested) =>
@@ -154,7 +154,7 @@ describe("WindowHostControllerService", () => {
 
   it("scope source 生命周期通知只注册一次并在断开和dispose时释放", async () => {
     const local = taskService({});
-    const agent = {} as IZCodeAgentService;
+    const agent = {} as IZodyAgentService;
     const listener = { dispose: vi.fn() };
     const onWorkspaceSourceAvailable = vi.fn(() => listener);
     const runtime = createWindowHostControllerRuntime({
@@ -200,7 +200,7 @@ describe("WindowHostControllerService", () => {
       subscribeSessionsIndexV4: vi.fn(async () => ({ ack: { subscriptionId: "sessions-sub" } })),
       unsubscribeSessionsIndexV4: vi.fn(async () => undefined),
       resyncSessionsIndexV4: vi.fn(),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const captureSubscription = { dispose: vi.fn() };
     const onWorkspaceSourceAvailable = vi.fn(() => captureSubscription);
     const scope = {
@@ -236,8 +236,8 @@ describe("WindowHostControllerService", () => {
   it("分别捕获多个已打开 workspace source，offline scope 不创建订阅并在释放时清理", async () => {
     const localTasks = taskService({});
     const remoteTasks = taskService({});
-    const localAgent = {} as IZCodeAgentService;
-    const remoteAgent = {} as IZCodeAgentService;
+    const localAgent = {} as IZodyAgentService;
+    const remoteAgent = {} as IZodyAgentService;
     const localSubscription = { dispose: vi.fn() };
     const remoteSubscription = { dispose: vi.fn() };
     const callback = vi.fn((scope) =>
@@ -307,7 +307,7 @@ describe("WindowHostControllerService", () => {
 
   it("source services 被替换时先释放旧通知捕获订阅", async () => {
     let currentTasks = taskService({});
-    let currentAgent = {} as IZCodeAgentService;
+    let currentAgent = {} as IZodyAgentService;
     const oldSubscription = { dispose: vi.fn() };
     const newSubscription = { dispose: vi.fn() };
     const callback = vi
@@ -332,7 +332,7 @@ describe("WindowHostControllerService", () => {
     };
     await runtime.service.searchMobileHistory(query);
     currentTasks = taskService({});
-    currentAgent = {} as IZCodeAgentService;
+    currentAgent = {} as IZodyAgentService;
     await runtime.service.searchMobileHistory(query);
     expect(callback).toHaveBeenCalledTimes(2);
     expect(oldSubscription.dispose).toHaveBeenCalledTimes(1);
@@ -497,7 +497,7 @@ describe("WindowHostControllerService", () => {
       }),
       resyncSessionsIndexV4: vi.fn(),
       unsubscribeSessionsIndexV4: vi.fn(async () => undefined),
-    } as unknown as IZCodeAgentService;
+    } as unknown as IZodyAgentService;
     const local = taskService({ active: [meta({ taskId: "live" })] });
     const onCaptureSessionsChange = vi.fn();
     const runtime = createWindowHostControllerRuntime({
@@ -959,7 +959,7 @@ describe("WindowHostControllerService", () => {
       active: [meta({ taskId: "new", workspaceIdentity: remoteIdentity })],
     });
     let sessionId = "remote-old";
-    let service: IZCodeTaskService = oldService;
+    let service: IZodyTaskService = oldService;
     const runtime = createWindowHostControllerRuntime({
       createId: () => "id",
       resolveSource: (scope) => ({

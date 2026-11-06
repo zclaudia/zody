@@ -22,9 +22,21 @@ describe("host RPC 日志级别映射", () => {
     expect(resolveRpcLogLevel("[rpc:call] setting.get FAIL (1.5ms)")).toBe("warn");
   });
 
+  it("does not downgrade an old provider code alone", () => {
+    const error = Object.assign(new Error("unclassified"), {
+      code: "ZCODE_AGENT_PROVIDER_NOT_READY",
+    });
+    expect(
+      resolveRpcLogLevel(
+        "[rpc:call] zcode-session.getWorkspaceRuntimeIdentity FAIL (12.0ms)",
+        error,
+      ),
+    ).toBe("warn");
+  });
+
   it("provider registry 尚未就绪的 runtime identity 查询应记为 info", () => {
     const error = Object.assign(new Error("provider not ready"), {
-      code: "ZCODE_AGENT_PROVIDER_NOT_READY",
+      code: "ZODY_AGENT_PROVIDER_NOT_READY",
     });
 
     expect(

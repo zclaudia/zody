@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
-import type { RemoteTarget } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { RemoteTarget } from "@zody/shared";
 import {
   resolveBaseWorkspaceServices,
   resolveWorkspaceServiceIsRemoteTarget,
@@ -843,7 +843,7 @@ describe("useWorkspaceServices 核心路由逻辑覆盖", () => {
       const base = makeMockServices("base");
       const state = useRemoteWorkspaceSessionStore.getState();
       const result = resolveWorkspaceServices(context, null, base, state.sessionsById, true);
-      const transport = createAgentSessionsIndexTransport(result.zcodeAgentService, {
+      const transport = createAgentSessionsIndexTransport(result.zodyAgentService, {
         workspacePath: "/root",
         workspaceIdentity: "remote:ssh:198.44.179.20:2222:root:/root",
       });

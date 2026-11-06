@@ -88,7 +88,7 @@ export const ENTRY_NAMES = ["host-entry.mjs", "cli-entry.mjs", "session-entry.mj
 export const AUXILIARY_RESOURCES = [
   {
     name: "node-repl-server.mjs",
-    source: "apps/zcode-cli/packages/node-repl-host/src/server.ts",
+    source: "apps/zody-cli/packages/node-repl-host/src/server.ts",
     capability: "node-repl-mcp-and-cell-server; cell owns only per-call broker capability",
   },
 ];

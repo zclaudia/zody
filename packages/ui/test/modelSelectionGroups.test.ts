@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ModelSelectionView } from "@zcode/services";
+import type { ModelSelectionView } from "@zody/services";
 import { buildRegistryModelSelectGroups } from "../src/lib/modelSelectionGroups.js";
 
 describe("model selection groups", () => {

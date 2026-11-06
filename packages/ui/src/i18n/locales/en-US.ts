@@ -5266,46 +5266,46 @@ const enUS: Record<string, string> = {
   "chat.permission.switchMode.placeholder": "Implementation plan",
 
   // ZCode Agent
-  "zcode.unavailable": "AI agent not available",
-  "zcode.initFailed": "Failed to start AI agent",
-  "zcode.error.TASK_OWNED_BY_OTHER_HOST": "This task is already running in another connected view.",
-  "zcode.error.STALE_TASK_OWNER_COMMAND": "This action belongs to an older run and was ignored.",
-  "zcode.error.NO_ACTIVE_TASK_OWNER": "No active task owner is available for this action.",
-  "zcode.error.OWNER_COMMAND_FAILED": "The task owner could not complete this action.",
-  "zcode.error.MEDIA_BUDGET_CURRENT_ATTACHMENT_TOO_LARGE":
+  "zody.unavailable": "AI agent not available",
+  "zody.initFailed": "Failed to start AI agent",
+  "zody.error.TASK_OWNED_BY_OTHER_HOST": "This task is already running in another connected view.",
+  "zody.error.STALE_TASK_OWNER_COMMAND": "This action belongs to an older run and was ignored.",
+  "zody.error.NO_ACTIVE_TASK_OWNER": "No active task owner is available for this action.",
+  "zody.error.OWNER_COMMAND_FAILED": "The task owner could not complete this action.",
+  "zody.error.MEDIA_BUDGET_CURRENT_ATTACHMENT_TOO_LARGE":
     "Current attachments are too large for one request. Remove or compress attachments and try again.",
-  "zcode.error.MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE":
+  "zody.error.MEDIA_BUDGET_CURRENT_IMAGE_TOO_LARGE":
     "Current image attachments are too large. Remove or compress images and try again.",
-  "zcode.error.MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE":
+  "zody.error.MEDIA_BUDGET_CURRENT_VIDEO_TOO_LARGE":
     "Current video attachments are too large. Remove or compress videos and try again.",
-  "zcode.error.ZCODE_RUNTIME_MODEL_UNAVAILABLE":
+  "zody.error.ZODY_RUNTIME_MODEL_UNAVAILABLE":
     "The current model is no longer available. Select an available model from the current model list to continue.",
-  "zcode.error.ZCODE_BIGMODEL_TEAM_PLAN_MEMBER_REQUIRED":
+  "zody.error.ZCODE_BIGMODEL_TEAM_PLAN_MEMBER_REQUIRED":
     "The current model is unavailable. Check whether the current account has been added to the project member list.",
-  "zcode.error.CLAUDE_UNKNOWN_COMMAND":
+  "zody.error.CLAUDE_UNKNOWN_COMMAND":
     "Claude Code does not recognize {command}. Check the command name, or switch to an Agent/skill that supports it and try again.",
-  "zcode.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS":
+  "zody.error.CLAUDE_UNKNOWN_COMMAND_WITH_ARGS":
     "Claude Code does not recognize {command} (args: {args}). Check the command name, or switch to an Agent/skill that supports it and try again.",
-  "zcode.error.providerBusiness.1006": "Your login session has expired. Please sign in again.",
-  "zcode.error.providerBusiness.1005":
+  "zody.error.providerBusiness.1006": "Your login session has expired. Please sign in again.",
+  "zody.error.providerBusiness.1005":
     "Today's free plan quota has been used up. Upgrade to continue now, or wait for the quota to reset.",
-  "zcode.error.providerBusiness.3006":
+  "zody.error.providerBusiness.3006":
     "The current model is not included in this plan. Switch to an allowed model and try again.",
-  "zcode.error.providerBusiness.3002":
+  "zody.error.providerBusiness.3002":
     "You're sending requests too quickly. Please try again later.",
-  "zcode.error.providerBusiness.3001":
+  "zody.error.providerBusiness.3001":
     "The request parameters are invalid. Check the input and try again.",
-  "zcode.error.providerBusiness.3008":
+  "zody.error.providerBusiness.3008":
     "The system is busy. Please switch models, upgrade your account, or try again later.",
-  "zcode.error.providerBusiness.3009":
+  "zody.error.providerBusiness.3009":
     "The system is busy. Please switch models, upgrade your account, or try again later.",
-  "zcode.error.providerBusiness.3010":
+  "zody.error.providerBusiness.3010":
     "The system is busy. Please switch models, upgrade your account, or try again later.",
-  "zcode.error.providerBusiness.3102":
+  "zody.error.providerBusiness.3102":
     "This run exceeded the maximum single-run time. Create a new off-peak task to continue.",
-  "zcode.error.providerBusiness.2007":
+  "zody.error.providerBusiness.2007":
     "The upstream service is temporarily unavailable. Please try again later.",
-  "zcode.error.providerBusiness.429":
+  "zody.error.providerBusiness.429":
     "You're sending requests too quickly. Please try again later.",
 
   // Debug info bar

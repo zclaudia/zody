@@ -2,19 +2,25 @@ import { App, PostMessageTransport } from "@modelcontextprotocol/ext-apps";
 import { z } from "zod";
 import {
   GEN_UI_GLOBALS_EVENT,
+  GEN_UI_GLOBALS_EVENT_CANONICAL,
   GEN_UI_STATE_CONTEXT_KEY,
+  GEN_UI_STATE_CONTEXT_KEY_CANONICAL,
   GEN_UI_TWEAK_CONTEXT_KEY,
-  GEN_UI_STATE_METHOD,
-  GEN_UI_FOLLOW_UP_METHOD,
-  GEN_UI_TWEAK_METHOD,
-  GEN_UI_PRESENTATION_METHOD,
+  GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL,
+  GEN_UI_STATE_METHOD_CANONICAL,
+  GEN_UI_FOLLOW_UP_METHOD_CANONICAL,
+  GEN_UI_TWEAK_METHOD_CANONICAL,
+  GEN_UI_PRESENTATION_METHOD_CANONICAL,
   genUiWidgetStateSchema,
   genUiFollowUpSchema,
+  pickGenUiMethodName,
+  type GenUiMethodNameCanonical,
+  type GenUiTweakResult,
   type GenUiWidgetState,
   genUiTweakMessageSchema,
   genUiTweakResultSchema,
   genUiTweakAnnotationSchema,
-} from "@zcode/shared/gen-ui";
+} from "@zody/shared/gen-ui";
 import { installGenUiTweakRuntime } from "./genUiTweakRuntime.js";
 
 const initial = JSON.parse(
@@ -23,6 +29,36 @@ const initial = JSON.parse(
 let state: GenUiWidgetState | null =
   initial === null ? null : genUiWidgetStateSchema.parse(initial);
 const app = new App({ name: "zody-gen-ui", version: "1" }, {}, { autoResize: false });
+
+/**
+ * 发送端单选（R50 冻结接口 `pickGenUiMethodName`）：一次操作只发一个方法名，双宣告选 canonical、
+ * 仅 legacy 选 legacy；两种能力都未宣告时不发送，**不得**改用另一名称重发（spec §3.2–§3.3）。
+ */
+const requestGenUi = (
+  canonical: GenUiMethodNameCanonical,
+  params: Record<string, unknown>,
+  resultSchema: z.ZodTypeAny,
+): Promise<unknown> => {
+  const method = pickGenUiMethodName(app.getHostCapabilities(), canonical);
+  return method ? app.request({ method, params }, resultSchema) : Promise.resolve(undefined);
+};
+
+/**
+ * 页内事件双名派发：旧插件监听 `zcode:*`，新插件监听 `zody:*`，两次派发来自同一次投影。
+ * 同一 `detail` 对象引用保证监听者不会看到内容分叉；这里只写 DOM，不重复写入任何 owner。
+ */
+const dispatchDualEvent = (legacy: string, canonical: string, detail?: unknown) => {
+  const init = detail === undefined ? undefined : { detail };
+  window.dispatchEvent(new CustomEvent(legacy, init));
+  window.dispatchEvent(new CustomEvent(canonical, init));
+};
+
+/** hostContext 读侧 canonical 优先、缺省回退 legacy（spec §4）；用 hasOwn 区分“未下发”与合法 null。 */
+const readContextValue = (
+  context: Record<string, unknown>,
+  canonical: string,
+  legacy: string,
+): unknown => (Object.hasOwn(context, canonical) ? context[canonical] : context[legacy]);
 
 function observeContentSize() {
   const body = document.body;
@@ -62,9 +98,7 @@ function observeContentSize() {
       return;
     void app
       .sendSizeChanged({ width: next.width, height: Math.ceil(next.height) })
-      .catch((error) =>
-        window.dispatchEvent(new CustomEvent("zcode:error", { detail: String(error) })),
-      );
+      .catch((error) => dispatchDualEvent("zcode:error", "zody:error", String(error)));
   };
   const schedule = () => {
     frame ??= requestAnimationFrame(report);
@@ -102,16 +136,23 @@ function observeContentSize() {
 }
 installGenUiTweakRuntime(async (_name, message) => {
   await ready;
-  return app.request(
-    { method: GEN_UI_TWEAK_METHOD, params: genUiTweakMessageSchema.parse(message) },
+  const result = await requestGenUi(
+    GEN_UI_TWEAK_METHOD_CANONICAL,
+    genUiTweakMessageSchema.parse(message),
     genUiTweakResultSchema,
   );
+  // 宿主未宣告任何 Gen UI 能力时不发送；tweak 需要 ACK，不能伪造结果或用旧名重发。
+  if (result === undefined) throw new Error("The host does not advertise Gen UI tweak support");
+  return result as GenUiTweakResult;
 });
 const update = (context: Record<string, unknown>) => {
-  if (Object.hasOwn(context, GEN_UI_STATE_CONTEXT_KEY)) {
-    const next = context[GEN_UI_STATE_CONTEXT_KEY];
-    state = next === null ? null : genUiWidgetStateSchema.parse(next);
-  }
+  const nextState = readContextValue(
+    context,
+    GEN_UI_STATE_CONTEXT_KEY_CANONICAL,
+    GEN_UI_STATE_CONTEXT_KEY,
+  );
+  if (nextState !== undefined)
+    state = nextState === null ? null : genUiWidgetStateSchema.parse(nextState);
   if (context.theme === "dark" || context.theme === "light") {
     document.documentElement.dataset.theme = context.theme;
     document.documentElement.style.colorScheme = context.theme;
@@ -120,20 +161,20 @@ const update = (context: Record<string, unknown>) => {
     ?.variables;
   for (const [name, value] of Object.entries(variables ?? {}))
     if (name.startsWith("--")) document.documentElement.style.setProperty(name, value);
-  window.dispatchEvent(
-    new CustomEvent(GEN_UI_GLOBALS_EVENT, {
-      detail: {
-        globals: {
-          widgetState: structuredClone(state),
-          theme: document.documentElement.dataset.theme,
-          visualizationAnnotation:
-            context[GEN_UI_TWEAK_CONTEXT_KEY] === undefined
-              ? null
-              : genUiTweakAnnotationSchema.parse(context[GEN_UI_TWEAK_CONTEXT_KEY]),
-        },
-      },
-    }),
+  const tweak = readContextValue(
+    context,
+    GEN_UI_TWEAK_CONTEXT_KEY_CANONICAL,
+    GEN_UI_TWEAK_CONTEXT_KEY,
   );
+  // 状态与 globals 只有这一条派发路径；双名事件共用同一 detail 对象，不产生第二份投影。
+  dispatchDualEvent(GEN_UI_GLOBALS_EVENT, GEN_UI_GLOBALS_EVENT_CANONICAL, {
+    globals: {
+      widgetState: structuredClone(state),
+      theme: document.documentElement.dataset.theme,
+      visualizationAnnotation:
+        tweak === undefined || tweak === null ? null : genUiTweakAnnotationSchema.parse(tweak),
+    },
+  });
 };
 app.onhostcontextchanged = update;
 const ready = app.connect(new PostMessageTransport(window.parent, window.parent)).then(() => {
@@ -142,9 +183,7 @@ const ready = app.connect(new PostMessageTransport(window.parent, window.parent)
     document.addEventListener("DOMContentLoaded", observeContentSize, { once: true });
   else observeContentSize();
 });
-void ready.catch((error) =>
-  window.dispatchEvent(new CustomEvent("zcode:error", { detail: String(error) })),
-);
+void ready.catch((error) => dispatchDualEvent("zcode:error", "zody:error", String(error)));
 let saves = Promise.resolve();
 const api = Object.freeze({
   get widgetState() {
@@ -156,7 +195,14 @@ const api = Object.freeze({
       .catch(() => undefined)
       .then(async () => {
         await ready;
-        await app.request({ method: GEN_UI_STATE_METHOD, params: { state: next } }, z.object({}));
+        const result = await requestGenUi(
+          GEN_UI_STATE_METHOD_CANONICAL,
+          { state: next },
+          z.object({}),
+        );
+        // 单次副作用：未宣告能力时不发送、不改名重发，也不能向页面伪装保存成功。
+        if (result === undefined)
+          throw new Error("The host does not advertise Gen UI state support");
         // Service 通知是唯一状态投影；迟到的保存 ACK 不能覆盖另一窗口更新的快照。
       });
     saves = pending;
@@ -166,7 +212,9 @@ const api = Object.freeze({
     const params = genUiFollowUpSchema.parse(value);
     await saves;
     await ready;
-    await app.request({ method: GEN_UI_FOLLOW_UP_METHOD, params }, z.object({}));
+    const result = await requestGenUi(GEN_UI_FOLLOW_UP_METHOD_CANONICAL, params, z.object({}));
+    if (result === undefined)
+      throw new Error("The host does not advertise Gen UI follow-up support");
   },
   async openExternal(value: unknown) {
     const { href } = z.object({ href: z.string() }).strict().parse(value);
@@ -176,6 +224,8 @@ const api = Object.freeze({
   },
 });
 Object.defineProperty(window, "zcode", { value: api, writable: false, configurable: false });
+// 双命名空间：`window.zody` 与只读 `window.zcode` 是同一个冻结 API 对象，共享同一个保存队列与握手。
+Object.defineProperty(window, "zody", { value: api, writable: false, configurable: false });
 const openAnchor = (event: MouseEvent) => {
   if (event.defaultPrevented || (event.button !== 0 && event.button !== 1)) return;
   const anchor = event.composedPath().find((node) => node instanceof HTMLAnchorElement);
@@ -187,16 +237,14 @@ const openAnchor = (event: MouseEvent) => {
   if (!event.isTrusted || anchor.hasAttribute("download")) return;
   void api
     .openExternal({ href })
-    .catch((error) =>
-      window.dispatchEvent(new CustomEvent("zcode:error", { detail: String(error) })),
-    );
+    .catch((error) => dispatchDualEvent("zcode:error", "zody:error", String(error)));
 };
 window.addEventListener("click", openAnchor);
 window.addEventListener("auxclick", openAnchor);
 // guest 的 hover/键盘事件不会冒泡到宿主 DOM；只传展示事件，不增加 Agent 能力。
 const presentation = (params: { hovered?: boolean; escape?: true }) => {
   void ready
-    .then(() => app.request({ method: GEN_UI_PRESENTATION_METHOD, params }, z.object({})))
+    .then(() => requestGenUi(GEN_UI_PRESENTATION_METHOD_CANONICAL, params, z.object({})))
     .catch(() => {});
 };
 document.documentElement.addEventListener("pointerenter", () => presentation({ hovered: true }));

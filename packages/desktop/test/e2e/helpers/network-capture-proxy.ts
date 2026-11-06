@@ -5,10 +5,10 @@ import { readdir, readFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { rootCertificates } from "node:tls";
 import {
-  ZCODE_AGENT_CA_CERT_ENV_KEY,
-  ZCODE_HTTP_PROXY_ENV_KEY,
-  ZCODE_NO_PROXY_ENV_KEY,
-} from "@zcode/shared";
+  ZODY_AGENT_CA_CERT_ENV_KEY,
+  ZODY_HTTP_PROXY_ENV_KEY,
+  ZODY_NO_PROXY_ENV_KEY,
+} from "@zody/shared";
 import { Proxy } from "http-mitm-proxy";
 import type { IContext } from "http-mitm-proxy";
 import { writeE2EJsonFileAtomically } from "./e2e-atomic-json-file.js";
@@ -701,9 +701,9 @@ function buildProxyEnv(
     SSL_CERT_FILE: caBundlePath,
     // Bugfix: agent provider fetch 会过滤标准 HTTP_PROXY/HTTPS_PROXY，只认
     // ZCode 显式网络出口配置；否则真实模型请求会直连上游，capture artifact 为空。
-    [ZCODE_AGENT_CA_CERT_ENV_KEY]: caCertPath,
-    [ZCODE_HTTP_PROXY_ENV_KEY]: proxyUrl,
-    [ZCODE_NO_PROXY_ENV_KEY]: noProxy,
+    [ZODY_AGENT_CA_CERT_ENV_KEY]: caCertPath,
+    [ZODY_HTTP_PROXY_ENV_KEY]: proxyUrl,
+    [ZODY_NO_PROXY_ENV_KEY]: noProxy,
   };
 }
 

@@ -1,12 +1,12 @@
 import { isAbsolute } from "node:path";
-import type { ModelSelection } from "@zcode/shared";
+import type { ModelSelection } from "@zody/shared";
 import {
-  digestZCodeAgentNativeRuntimeNetwork,
-  normalizeZCodeAgentNativeRuntimeNetwork,
-} from "@zcode/services/node";
+  digestZodyAgentNativeRuntimeNetwork,
+  normalizeZodyAgentNativeRuntimeNetwork,
+} from "@zody/services/node";
 
 /** Fixed compile-time opt-in. Missing/undefined keeps the normal Electron utility Host path. */
-declare const __ZCODE_CUA_NARROW_AGENT__: unknown;
+declare const __ZODY_CUA_NARROW_AGENT__: unknown;
 
 export const CUA_NARROW_PROFILE_KIND = "zody-cua-narrow-agent-profile";
 export const CUA_NARROW_PROFILE_SCHEMA_VERSION = 1;
@@ -130,18 +130,18 @@ export interface CuaNarrowNetworkConfig {
 }
 
 export type CuaNarrowNormalizedNetworkConfig = ReturnType<
-  typeof normalizeZCodeAgentNativeRuntimeNetwork
+  typeof normalizeZodyAgentNativeRuntimeNetwork
 >;
 
 /** Same normalization used by the services readback digest and the build profile. */
 export function normalizeCuaNarrowNetworkConfig(
   input: CuaNarrowNetworkConfig,
 ): CuaNarrowNormalizedNetworkConfig {
-  return normalizeZCodeAgentNativeRuntimeNetwork(input);
+  return normalizeZodyAgentNativeRuntimeNetwork(input);
 }
 
 export function digestCuaNarrowNetworkConfig(input: CuaNarrowNetworkConfig): string {
-  return digestZCodeAgentNativeRuntimeNetwork(input);
+  return digestZodyAgentNativeRuntimeNetwork(input);
 }
 
 export function parseCuaNarrowAgentBuildProfile(value: unknown): CuaNarrowAgentBuildProfile {
@@ -247,5 +247,5 @@ export function parseCuaNarrowAgentBuildProfile(value: unknown): CuaNarrowAgentB
 }
 
 export function readCuaNarrowAgentBuildProfile(): unknown {
-  return typeof __ZCODE_CUA_NARROW_AGENT__ === "undefined" ? undefined : __ZCODE_CUA_NARROW_AGENT__;
+  return typeof __ZODY_CUA_NARROW_AGENT__ === "undefined" ? undefined : __ZODY_CUA_NARROW_AGENT__;
 }

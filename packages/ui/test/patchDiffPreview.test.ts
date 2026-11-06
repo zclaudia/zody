@@ -7,6 +7,13 @@ import {
 } from "@/lib/patchDiffPreview.js";
 
 describe("getPlainTextPatchFallbackLines", () => {
+  it("accepts only the current truncation marker", () => {
+    expect(parseTruncatedMarkerOmittedLineCount("\\ __ZODY_DIFF_TRUNCATED__:7")).toBe(7);
+    expect(parseTruncatedMarkerOmittedLineCount("\\ __ZCODE_DIFF_TRUNCATED__:7")).toBeNull();
+    expect(parseTruncatedMarkerOmittedLineCount("\\ __ZODY_DIFF_TRUNCATED__:-1")).toBeNull();
+    expect(parseTruncatedMarkerOmittedLineCount("\\ __ZODY_DIFF_TRUNCATED__:7extra")).toBeNull();
+  });
+
   it("falls back for created files whose unknown suffix resolves to plain text", () => {
     const patch = [
       "--- /dev/null",

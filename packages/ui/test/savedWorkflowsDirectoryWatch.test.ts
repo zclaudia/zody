@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
-import type { IFileWatcherService } from "@zcode/services";
+import type { IFileWatcherService } from "@zody/services";
 import { describe, expect, it, vi } from "vitest";
 import { useSavedWorkflowsDirectoryWatch } from "@/settings/saved-workflows/useSavedWorkflowsDirectoryWatch.js";
 

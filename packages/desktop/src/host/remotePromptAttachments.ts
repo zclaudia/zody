@@ -1,22 +1,22 @@
-import type { IRemoteBackend, RemoteUploadOptions } from "@zcode/server/remote";
-import { quotePosixPathArg } from "@zcode/server/remote/posixShell.js";
-import { ZCODE_DATA_ROOT_DIR_NAME, type TraceId, type ZCodePromptAttachment } from "@zcode/shared";
+import type { IRemoteBackend, RemoteUploadOptions } from "@zody/server/remote";
+import { quotePosixPathArg } from "@zody/server/remote/posixShell.js";
+import { ZODY_DATA_ROOT_DIR_NAME, type TraceId, type ZodyPromptAttachment } from "@zody/shared";
 import { randomUUID } from "node:crypto";
 
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-export const REMOTE_PROMPT_ATTACHMENT_ROOT = `~/${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
-const REMOTE_PROMPT_ATTACHMENT_RELATIVE_ROOT = `${ZCODE_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
+export const REMOTE_PROMPT_ATTACHMENT_ROOT = `~/${ZODY_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
+const REMOTE_PROMPT_ATTACHMENT_RELATIVE_ROOT = `${ZODY_DATA_ROOT_DIR_NAME}/tmp/prompt-attachments`;
 
 export interface RemotePromptAttachmentMaterializeInput {
   taskId?: string;
   content: string;
   traceId: TraceId | string;
-  attachments?: ZCodePromptAttachment[];
+  attachments?: ZodyPromptAttachment[];
 }
 
 export interface RemotePromptAttachmentMaterializeResult {
   content: string;
-  attachments?: ZCodePromptAttachment[];
+  attachments?: ZodyPromptAttachment[];
   uploadedCount: number;
 }
 
@@ -33,7 +33,7 @@ export async function materializeRemotePromptAttachments(
   }
 
   const replacements = new Map<string, string>();
-  const nextAttachments: ZCodePromptAttachment[] = [];
+  const nextAttachments: ZodyPromptAttachment[] = [];
   let remoteRootPromise: Promise<string> | undefined;
   let uploadedCount = 0;
   let changed = false;
@@ -89,7 +89,7 @@ export async function materializeRemotePromptAttachments(
     nextAttachments.push({
       ...attachment,
       localPath: remotePath,
-    } as ZCodePromptAttachment);
+    } as ZodyPromptAttachment);
     replacements.set(localPath, remotePath);
     uploadedCount += 1;
     changed = true;
@@ -223,7 +223,7 @@ async function waitForRemoteCommand(
   });
 }
 
-function getAttachmentLocalPath(attachment: ZCodePromptAttachment): string | undefined {
+function getAttachmentLocalPath(attachment: ZodyPromptAttachment): string | undefined {
   const localPath = attachment.localPath?.trim();
   return localPath ? attachment.localPath : undefined;
 }
@@ -354,7 +354,7 @@ function createRemotePromptAttachmentServiceProxy<T extends object>(
           traceId,
           content,
           attachments: Array.isArray((params as { attachments?: unknown }).attachments)
-            ? (params as { attachments?: ZCodePromptAttachment[] }).attachments
+            ? (params as { attachments?: ZodyPromptAttachment[] }).attachments
             : undefined,
         });
         const nextParams: Record<string, unknown> = {

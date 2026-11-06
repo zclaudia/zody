@@ -1,4 +1,4 @@
-import type { ZCodePluginReferenceCatalogEntry } from "@zcode/shared";
+import type { ZodyPluginReferenceCatalogEntry } from "@zody/shared";
 import { describe, expect, it } from "vitest";
 import {
   buildSessionPluginIconMap,
@@ -6,7 +6,7 @@ import {
   isSessionPluginCatalogReady,
 } from "@/v4/pluginReferenceIconProjection.js";
 
-function plugin(pluginId: string, icon?: string): ZCodePluginReferenceCatalogEntry {
+function plugin(pluginId: string, icon?: string): ZodyPluginReferenceCatalogEntry {
   const [name = pluginId, marketplace = "market"] = pluginId.split("@");
   return {
     pluginId,

@@ -1,7 +1,7 @@
 import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { TID_WORKSPACE_MORE_BUTTON, TID_WORKSPACE_PATH, TID_WORKSPACE_TITLE } from "@zcode/shared";
+import { TID_WORKSPACE_MORE_BUTTON, TID_WORKSPACE_PATH, TID_WORKSPACE_TITLE } from "@zody/shared";
 
 const capturedGitBranchSwitcherProps = vi.hoisted(() => [] as Array<Record<string, unknown>>);
 
@@ -108,7 +108,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
     skillSyncService: {},
     mcpSyncService: {},
     pluginSyncService: {},
-    zcodeTaskService: {
+    zodyTaskService: {
       archiveTask: vi.fn(),
       renameTask: vi.fn(),
       setTaskPinned: vi.fn(),
@@ -130,7 +130,7 @@ vi.mock("@/useTaskListItemContextActions.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -146,8 +146,8 @@ vi.mock("@/store/taskQueryCacheStore.js", () => ({
   applyTaskQueryCacheMutation: vi.fn(),
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+vi.mock("@/store/zodySessionStore.js", () => ({
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({
       removeTaskState: vi.fn(),
       removeOptimisticTaskListItem: vi.fn(),

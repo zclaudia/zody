@@ -1,4 +1,4 @@
-import { encodeCustomModelValue } from "@zcode/shared";
+import { encodeCustomModelValue } from "@zody/shared";
 import { clearAppData } from "../../../helpers/desktop-app.js";
 import {
   assertUpstreamRequestCapture,

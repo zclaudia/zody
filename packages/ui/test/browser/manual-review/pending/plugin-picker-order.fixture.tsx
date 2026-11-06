@@ -10,13 +10,13 @@ import { ChatPromptActionMenu } from "@/prompt-editor/ChatPromptActionMenu.js";
 import type { LexicalChatInputHandle } from "@/LexicalChatInput.js";
 import { ServiceProvider } from "@/hooks/useServices.js";
 import { StoreContext } from "@/store/StoreProvider.js";
-import { createZCodeStore } from "@/store/index.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { createZodyStore } from "@/store/index.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
-import type { IBroadcastService, IServiceAccessor } from "@zcode/services";
+import type { IBroadcastService, IServiceAccessor } from "@zody/services";
 import "@/styles.css";
 const params = new URLSearchParams(location.search);
-const store = createZCodeStore({
+const store = createZodyStore({
   send: async () => {},
   onMessage: () => ({ dispose() {} }),
 } as unknown as IBroadcastService);
@@ -30,7 +30,7 @@ const services = {
       return response.json();
     },
   },
-  zcodeAgentService: { onAgentRuntimeRestarted: () => ({ dispose() {} }) },
+  zodyAgentService: { onAgentRuntimeRestarted: () => ({ dispose() {} }) },
   clientConfigService: {
     getSnapshot: async () => {
       const response = await fetch("/order");
@@ -102,11 +102,11 @@ function Fixture() {
 createRoot(document.getElementById("root")!).render(
   <ServiceProvider services={services}>
     <StoreContext.Provider value={store}>
-      <ZCodeIntlProvider initialLocale={params.get("locale") === "zh-CN" ? "zh-CN" : "en-US"}>
+      <ZodyIntlProvider initialLocale={params.get("locale") === "zh-CN" ? "zh-CN" : "en-US"}>
         <TooltipProvider>
           <Fixture />
         </TooltipProvider>
-      </ZCodeIntlProvider>
+      </ZodyIntlProvider>
     </StoreContext.Provider>
   </ServiceProvider>,
 );

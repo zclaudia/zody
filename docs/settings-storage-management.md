@@ -21,7 +21,7 @@ App 允许设置「数据存储路径」（`setting.json.dataBaseDir`），但**
 | --- | --- | --- | --- |
 | app services（host 进程） | `{dataBaseDir}/.zcode`，默认 `~/.zcode` | 是 | `packages/services/src/paths.ts` `getZCodeDataRootDir()` |
 | 「数据存储路径」切换时的迁移 | 只复制 `.zcode/v2`，且是复制不是移动 | — | `packages/services/src/paths.ts` `copyDataDirectory()` |
-| zcode-cli（agent 进程） | `~/.zcode/cli/config.json` 的 `storage.dir`，默认 `~/.zcode`；app **不下发** `ZCODE_STORAGE_DIR` | 否 | `apps/zcode-cli/packages/bootstrap/src/app/create-app.ts:184` |
+| zcode-cli（agent 进程） | `~/.zcode/cli/config.json` 的 `storage.dir`，默认 `~/.zcode`；app **不下发** `ZODY_STORAGE_DIR` | 否 | `apps/zcode-cli/packages/bootstrap/src/app/create-app.ts:184` |
 | 模型调用轨迹 model-io | 直接 `homedir()/.zcode/cli/{debug,rollout}` | 否（硬编码） | `apps/zcode-cli/packages/adapters/src/model/runner-debug.ts` `getModelIOBaseDir` |
 | hooks 信任库 / subagents / skills / commands | 读 `~/.zcode/cli/config.json` 的 `storage.dir` | 否 | `packages/services/src/hooks/hooksService.ts:153-173` 等 |
 | Computer Use Helper、日志导出对 cli 目录的引用 | `homedir()/.zcode/...` | 否（硬编码） | `packages/desktop/src/main/exportLogs.ts:34-48` |
@@ -45,7 +45,7 @@ R2 = {dataBaseDir}/.zcode           （仅在设置了数据存储路径且 ≠ 
 | `cli/db/backup`, `cli/db/backups`, `cli/db/*.bak`, `cli/db/*.backup-*` | ≈6 GB | CLI 库迁移前备份 | 备份 |
 | `cli/db/db.sqlite(+wal/shm)` | 0.77 GB | CLI 会话/任务库（在用） | 会话记录与数据库 |
 | `backup/*`（session-projects、before-*-restore…） | 7.2 GB | 脚本/迁移备份，含 cli-db 与 v2 全量副本 | 备份 |
-| `v2/dev/stdio-traffic` | 2.4 GB | 开发态 stdio 协议抓包（`zcodeStdioTapDevConfig.ts`） | 开发诊断抓包 |
+| `v2/dev/stdio-traffic` | 2.4 GB | 开发态 stdio 协议抓包（`zodyStdioTapDevConfig.ts`） | 开发诊断抓包 |
 | `v2/migrations`, `v2/backup`, `v2/*.bak`, `v2/setting.json.corrupt-*`, `v2/config.json.pre-*` | ≈0.8 GB | 迁移前快照 / 损坏文件留档 | 备份 |
 | `v2/acp-config`, `v2/acp-traffic-proxy`, `v2/acp-auth` | ≈0.8 GB | 已退役的 ACP runtime 目录（exportLogs 已按退役目录跳过） | 开发诊断抓包 / 配置 |
 | `cli/debug`（开发态）、`cli/rollout`（生产态） | 1.35 GB | 模型调用轨迹 model-io JSONL | 模型调用轨迹 |
@@ -180,7 +180,7 @@ export const IStorageService = createServiceDescriptor<IStorageService>("storage
 
 大小口径：`lstat().size` 求和，不跟随符号链接，硬链接/APFS clone 可能重复计数，UI 文案注明「估算值」。
 
-复用：desktop 已有一个只用于遥测的递归大小扫描器（`packages/desktop/src/main/zcodeDataSizeScanner.ts`，Worker 内跑、不跟随符号链接，由 `desktopZCodeDataSizeTelemetry.ts` 调用）。本功能把它下沉到 services 层并扩展为「按 catalog 分类累加 + 进度回调 + 取消」，遥测改为调用同一实现，避免两份目录遍历逻辑。
+复用：desktop 已有一个只用于遥测的递归大小扫描器（`packages/desktop/src/main/zodyDataSizeScanner.ts`，Worker 内跑、不跟随符号链接，由 `desktopZodyDataSizeTelemetry.ts` 调用）。本功能把它下沉到 services 层并扩展为「按 catalog 分类累加 + 进度回调 + 取消」，遥测改为调用同一实现，避免两份目录遍历逻辑。
 
 RPC 接线沿用 `ISettingService` 的既有模式：`packages/shared/src/channels.ts` 增加 `ServiceChannels.Storage` → services 定义描述符与实现 → host collection（`packages/desktop/src/host/remoteConnectionServiceCollection.ts`）`.register` → `packages/client/src/remoteServiceAccess.ts` 增加代理并加进 `IServiceAccessor` → UI 通过 `useServices().storageService` 调用。
 
@@ -214,7 +214,7 @@ Renderer <StorageSection>                 Host StorageService                   
 性能约束（裁决 Q7：实时刷新、性能优先）：
 
 - 生命周期与分区绑定：进入「存储管理」才 `startScan`，切到其他分区 / 关闭设置页 / 窗口失焦超过 60s 立即 `cancelScan`；回来重新开始。不做后台常驻扫描。
-- 遍历跑在 Worker 线程（复用 `zcodeDataSizeScanner.ts` 的 Worker 形态），host 主事件循环只收节流后的进度；Worker 内全部 `fs/promises`，`readdir({ withFileTypes: true })` 减少 stat 次数，目录级有界并发（默认 4，可配），每处理 N 个条目 `setImmediate` 让出一次。
+- 遍历跑在 Worker 线程（复用 `zodyDataSizeScanner.ts` 的 Worker 形态），host 主事件循环只收节流后的进度；Worker 内全部 `fs/promises`，`readdir({ withFileTypes: true })` 减少 stat 次数，目录级有界并发（默认 4，可配），每处理 N 个条目 `setImmediate` 让出一次。
 - 取消用 `AbortSignal`，每进入一个目录检查一次；取消后 Worker 立即停止而不是跑完再丢弃。
 - 进入分区时若内存里有上一次 `complete` 快照，先展示旧值再在后台重扫（stale-while-revalidate），避免每次进入都从 0 开始跳数字。
 - 进度事件 ≥300ms 一次且只在数字变化时发；快照体积受控：`entries` 只聚合到规则命中的一级路径，不携带逐文件列表。
@@ -327,7 +327,7 @@ contracts/spec/tests: 本文 §3/§4/§5；storage/contract.ts + contract.test.t
 拒绝的形态（对照 ai-guidance 反模式）：
 
 - Renderer 直接 `fs` 扫盘或自建队列 ❌ —— 只走 `IStorageService`。
-- 第二套目录遍历器 ❌ —— desktop main 的 `zcodeDataSizeScanner.ts` 遍历逻辑迁入本模块 adapters，遥测 Worker 改为 import 同一实现。
+- 第二套目录遍历器 ❌ —— desktop main 的 `zodyDataSizeScanner.ts` 遍历逻辑迁入本模块 adapters，遥测 Worker 改为 import 同一实现。
 - domain 里出现 `fs` / `path.resolve(homedir)` / 定时器 ❌ —— 分类、折叠、清理计划全是纯函数。
 - 深层 import `@zcode/services/src/storage/app/...` ❌ —— 只允许 `contract.ts`。
 
@@ -377,7 +377,7 @@ desktop/src/host/storageScanWorker.ts   (tsup 新增 entry "host/storageScanWork
       import { classify, fold } from services/storage/domain/*     ← 纯函数可在 Worker 内跑
       每 300ms postMessage(部分 snapshot)；收到 abort 消息即停
 desktop/src/host/storageScanWorkerClient.ts  实现 ScanRunnerPort：new Worker(new URL(...)) + terminate on abort
-desktop/src/main/zcodeDataSizeWorker.ts      改为 import services 的 fsWalker（删除 main 里的重复遍历实现）
+desktop/src/main/zodyDataSizeWorker.ts      改为 import services 的 fsWalker（删除 main 里的重复遍历实现）
 ```
 
 理由：分类与折叠在 Worker 内完成，主线程只收聚合后的快照，不为每个文件跨线程传消息；进程内测试用 `createInProcessScanRunner()` 直接调用同一 walker + domain，保证 Worker 版与测试版走同一条路径。
@@ -405,7 +405,7 @@ desktop/src/main/zcodeDataSizeWorker.ts      改为 import services 的 fsWalker
 | `packages/desktop/src/host/remoteConnectionServiceCollection.ts` | `.register(IStorageService, ...)`（连接级，机器作用域；不注册到 workspace 级 collection） |
 | `packages/desktop/src/host/storageScanWorker.ts` + `storageScanWorkerClient.ts` | Worker 入口与 ScanRunnerPort 实现 |
 | `packages/desktop/tsup.config.ts` | host 增加 `"host/storageScanWorker"` entry |
-| `packages/desktop/src/main/zcodeDataSizeWorker.ts` / `zcodeDataSizeScanner.ts` | 遍历实现迁入 services，main 侧只保留 Worker 入口 |
+| `packages/desktop/src/main/zodyDataSizeWorker.ts` / `zodyDataSizeScanner.ts` | 遍历实现迁入 services，main 侧只保留 Worker 入口 |
 | `packages/ui/src/hooks/useStorageUsage.ts` | 订阅 `onScanProgress`，mount 时 `startScan`、unmount/失焦 60s 时 `cancelScan`，按 jobId 过滤 |
 | `packages/ui/src/settings/storage/` | `StorageSection.tsx`、`StorageDiskCard.tsx`、`StorageCategoryList.tsx`、`StorageCategoryDetail.tsx`、`StorageCleanConfirmDialog.tsx`、`storageCategoryPresentation.ts`（图标/文案 id/颜色） |
 | `packages/ui/src/settings/settingsPageConfig.ts`、`lib/settingsNavigation.ts`、`SettingsPage.tsx` | 注册 `storage` 分区（`isDesktop` 门控） |
@@ -440,4 +440,4 @@ desktop/src/main/zcodeDataSizeWorker.ts      改为 import services 的 fsWalker
 - 「在文件管理器中显示」走 `StorageRevealPath`，main 用 `isPathInsideStorageRoots` 校验后调用 `shell.showItemInFolder`。
 - 契约类型与 `groupStorageRootsByVolume` 放在 `packages/shared/src/storage.ts`（renderer 桥、main、services 共用，且避免 contract ↔ domain 循环依赖）。
 - 数据大小的 SM-08（切走即停）与 SM-09（24h 保护）由单测覆盖（`useStorageUsage.test.ts`、`storageCleanPlan.test.ts`），E2E 不再重复。
-- desktop main 的遥测扫描器 `zcodeDataSizeScanner.ts` 尚未切到 services 的 `walkStorageRoot`，留作后续小 MR（行为等价替换，需保留 file/time limit partial 语义）。
+- desktop main 的遥测扫描器 `zodyDataSizeScanner.ts` 尚未切到 services 的 `walkStorageRoot`，留作后续小 MR（行为等价替换，需保留 file/time limit partial 语义）。

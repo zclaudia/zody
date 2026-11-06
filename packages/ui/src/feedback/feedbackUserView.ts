@@ -1,4 +1,4 @@
-import type { FeedbackComment, FeedbackTicketStatus } from "@zcode/shared";
+import type { FeedbackComment, FeedbackTicketStatus } from "@zody/shared";
 
 type MessageFormatter = (
   descriptor: { id: string },

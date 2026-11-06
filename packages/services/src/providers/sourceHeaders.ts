@@ -1,12 +1,12 @@
 import { version as readOsVersion } from "node:os";
 import {
-  buildZCodeSourceHeadersFromContext,
-  normalizeZCodeSourceHeaderValue,
-  ZCODE_ENV,
-  ZCODE_VERSION,
-} from "@zcode/shared";
+  buildZodySourceHeadersFromContext,
+  normalizeZodySourceHeaderValue,
+  ZODY_ENV,
+  ZODY_VERSION,
+} from "@zody/shared";
 
-interface ZCodeSourceHeaderOptions {
+interface ZodySourceHeaderOptions {
   appVersion?: string;
   arch?: string;
   clientLanguage?: string;
@@ -17,7 +17,7 @@ interface ZCodeSourceHeaderOptions {
 }
 
 function normalizePrintableHeaderValue(value: string | undefined): string | undefined {
-  return normalizeZCodeSourceHeaderValue(value);
+  return normalizeZodySourceHeaderValue(value);
 }
 
 function resolveClientLanguage(): string {
@@ -30,13 +30,13 @@ function resolveClientTimezone(): string {
   );
 }
 
-export function buildZCodeSourceHeaders(
-  options: ZCodeSourceHeaderOptions = {},
+export function buildZodySourceHeaders(
+  options: ZodySourceHeaderOptions = {},
 ): Record<string, string> {
   const platform = options.platform ?? process.platform;
   const arch = options.arch ?? process.arch;
-  const appVersion = normalizePrintableHeaderValue(options.appVersion ?? ZCODE_VERSION);
-  const releaseChannel = normalizePrintableHeaderValue(options.releaseChannel ?? ZCODE_ENV);
+  const appVersion = normalizePrintableHeaderValue(options.appVersion ?? ZODY_VERSION);
+  const releaseChannel = normalizePrintableHeaderValue(options.releaseChannel ?? ZODY_ENV);
   const clientLanguage =
     normalizePrintableHeaderValue(options.clientLanguage) ?? resolveClientLanguage();
   const clientTimezone =
@@ -44,7 +44,7 @@ export function buildZCodeSourceHeaders(
   const osVersion = normalizePrintableHeaderValue(options.osVersion ?? readOsVersion());
 
   // fork（F2.10）：设备标识 X-Device-Mid 停发，不再读取 telemetry-state.json。
-  return buildZCodeSourceHeadersFromContext({
+  return buildZodySourceHeadersFromContext({
     appVersion,
     arch,
     clientLanguage,

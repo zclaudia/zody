@@ -183,9 +183,9 @@ describe("MobileShellConfigWrite schema", () => {
       credential: "zgd_test",
       backendId: "backend-a",
     });
-    expect(
-      mobileShellConfigWriteSchema.safeParse({ ...CONFIG, configRevision: 1 }).success,
-    ).toBe(false);
+    expect(mobileShellConfigWriteSchema.safeParse({ ...CONFIG, configRevision: 1 }).success).toBe(
+      false,
+    );
   });
 });
 
@@ -214,16 +214,11 @@ describe("MobileSessionContext schema", () => {
       "https://gateway.example.com",
     );
     expect(
-      parseMobileSessionContext(
-        { ...CONTEXT, gatewayUrl: "http://localhost:3200" },
-        release,
-      ),
+      parseMobileSessionContext({ ...CONTEXT, gatewayUrl: "http://localhost:3200" }, release),
     ).toBeUndefined();
     expect(
-      parseMobileSessionContext(
-        { ...CONTEXT, gatewayUrl: "http://localhost:3200" },
-        development,
-      )?.gatewayUrl,
+      parseMobileSessionContext({ ...CONTEXT, gatewayUrl: "http://localhost:3200" }, development)
+        ?.gatewayUrl,
     ).toBe("http://localhost:3200");
   });
 
@@ -424,9 +419,9 @@ describe("bridge 发现", () => {
 
   it("只接受方法齐全的 ZodyShellBridge / ZodyRemoteBridge", () => {
     const shellBridge = createShellBridge();
-    expect(
-      resolveMobileShellBridge({ [MOBILE_UI_SHELL_BRIDGE_GLOBAL_KEY]: shellBridge }),
-    ).toBe(shellBridge);
+    expect(resolveMobileShellBridge({ [MOBILE_UI_SHELL_BRIDGE_GLOBAL_KEY]: shellBridge })).toBe(
+      shellBridge,
+    );
     expect(
       resolveMobileShellBridge({ [MOBILE_UI_SHELL_BRIDGE_GLOBAL_KEY]: { readConfig: () => "{}" } }),
     ).toBeUndefined();
@@ -436,9 +431,9 @@ describe("bridge 发现", () => {
       getSessionContext: () => JSON.stringify({ schemaVersion: 1, ok: true, context: CONTEXT }),
       returnShell: () => {},
     };
-    expect(
-      resolveMobileRemoteBridge({ [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: remoteBridge }),
-    ).toBe(remoteBridge);
+    expect(resolveMobileRemoteBridge({ [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: remoteBridge })).toBe(
+      remoteBridge,
+    );
     // prepareReload 是可选加法能力，缺少它不能导致整个 Remote 桥不可用。
     expect(
       resolveMobileRemoteBridge({
@@ -449,7 +444,9 @@ describe("bridge 发现", () => {
       }),
     ).toBeDefined();
     expect(
-      resolveMobileRemoteBridge({ [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: { returnShell: () => {} } }),
+      resolveMobileRemoteBridge({
+        [MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]: { returnShell: () => {} },
+      }),
     ).toBeUndefined();
   });
 });

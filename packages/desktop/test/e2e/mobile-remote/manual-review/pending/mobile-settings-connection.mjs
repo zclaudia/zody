@@ -18,12 +18,12 @@ const entryId = "\0mobile-settings-connection-e2e-entry";
 const entry = `
 import React from 'react';
 import {createRoot} from 'react-dom/client';
-import {Event} from '@zcode/rpc';
+import {Event} from '@zody/rpc';
 import {ServiceProvider} from '@/hooks/useServices.js';
 import {PlatformProvider} from '@/hooks/usePlatform.js';
 import {StoreProvider} from '@/store/StoreProvider.js';
 import {TabStoreProvider} from '@/store/TabStoreProvider.js';
-import {ZCodeIntlProvider} from '@/i18n/IntlProvider.js';
+import {ZodyIntlProvider} from '@/i18n/IntlProvider.js';
 import {SettingsPage} from '@/SettingsPage.js';
 import {TooltipProvider} from '@/components/ui/tooltip.js';
 import '@/styles.css';
@@ -48,7 +48,7 @@ const services = {
     update: async () => {},
     updateDataBaseDir: async () => {},
   },
-  zcodeAgentService: {syncAppRuntimePreferences: async () => ({})},
+  zodyAgentService: {syncAppRuntimePreferences: async () => ({})},
   systemService: {
     info: async () => ({homedir: '/tmp', platform: 'darwin'}),
     listIntegratedTerminalShells: async () => [],
@@ -101,7 +101,7 @@ function App() {
           TabStoreProvider,
           null,
           React.createElement(
-            ZCodeIntlProvider,
+            ZodyIntlProvider,
             {initialLocale: 'en-US'},
             React.createElement(SettingsPage, {
               isWebRemoteControl: true,
@@ -152,7 +152,7 @@ const vite = await createServer({
   resolve: {
     alias: {
       "@": resolve(repoRoot, "packages/ui/src"),
-      "@zcode/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
+      "@zody/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
     },
   },
   server: { host: "127.0.0.1", port: 0 },

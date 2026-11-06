@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PlatformChannels } from "@zcode/shared";
+import { PlatformChannels } from "@zody/shared";
 import { registerRemoteAccessIpcHandlers } from "../src/main/desktopRemoteAccessIpc.js";
 
 type IpcHandler = (...args: unknown[]) => unknown;

@@ -3,7 +3,7 @@ import {
   PlatformChannels,
   type RemoteAccessStatus,
   type WebRemoteControlStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export interface WebRemoteControlIpcManager {
   /** App 级状态（状态查询 IPC）。 */

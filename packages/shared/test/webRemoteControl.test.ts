@@ -10,7 +10,10 @@ import {
   webRemoteControlTaskTargetSchema,
   webRemoteControlWorkspaceTargetSchema,
 } from "../src/validation.js";
-import { encodeWebRemoteControlRpcTransportMessage } from "../src/web-remote-control-rpc-transport.js";
+import {
+  hasObsoleteWebRemoteControlDiscriminator,
+  encodeWebRemoteControlRpcTransportMessage,
+} from "../src/web-remote-control-rpc-transport.js";
 
 describe("webRemoteControlWorkspaceTargetSchema", () => {
   it("accepts disconnected remote workspace presentation state", () => {
@@ -55,13 +58,13 @@ describe("recent projects / workspace open / desktop window open payloads", () =
 
   it("parses recent-projects-updated and the bootstrap-response additions", () => {
     const updated = {
-      zcode_type: "recent-projects-updated",
+      zody_type: "recent-projects-updated",
       result: { desktopWindowState: "none", recentProjects: [recentProject] },
     };
     expect(parseWebRemoteControlAppPayload(updated)).toEqual(updated);
 
     const bootstrap = {
-      zcode_type: "bootstrap-response",
+      zody_type: "bootstrap-response",
       requestId: "bootstrap-1",
       success: true,
       result: {
@@ -90,7 +93,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
 
   it("recent-projects-updated 是 strict schema：多余字段与不透明 id 的额外路径字段都被丢弃", () => {
     const valid = {
-      zcode_type: "recent-projects-updated",
+      zody_type: "recent-projects-updated",
       result: { desktopWindowState: "open", recentProjects: [recentProject] },
     };
     expect(parseWebRemoteControlAppPayload({ ...valid, extra: 1 })).toBeNull();
@@ -113,7 +116,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
 
   it("workspace-open-request 只接受 recentProjectId，手机无法夹带任意路径", () => {
     const request = {
-      zcode_type: "workspace-open-request",
+      zody_type: "workspace-open-request",
       requestId: "open-1",
       recentProjectId: "opaque-id-1",
     };
@@ -128,7 +131,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
   it("解析 workspace-open-response 的成功与失败形状", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-open-response",
+        zody_type: "workspace-open-response",
         requestId: "open-1",
         success: true,
         workspaceKey: "/workspace/demo",
@@ -136,7 +139,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     ).not.toBeNull();
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-open-response",
+        zody_type: "workspace-open-response",
         requestId: "open-1",
         success: false,
         error: "unknown recent project id",
@@ -145,7 +148,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     // 失败响应不能携带 workspaceKey，成功响应必须携带。
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-open-response",
+        zody_type: "workspace-open-response",
         requestId: "open-1",
         success: false,
         error: "x",
@@ -154,7 +157,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     ).toBeNull();
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-open-response",
+        zody_type: "workspace-open-response",
         requestId: "open-1",
         success: true,
       }),
@@ -162,19 +165,19 @@ describe("recent projects / workspace open / desktop window open payloads", () =
   });
 
   it("解析 desktop-window-open-request/response", () => {
-    const request = { zcode_type: "desktop-window-open-request", requestId: "window-1" };
+    const request = { zody_type: "desktop-window-open-request", requestId: "window-1" };
     expect(parseWebRemoteControlAppPayload(request)).toEqual(request);
     expect(parseWebRemoteControlAppPayload({ ...request, extra: true })).toBeNull();
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "desktop-window-open-response",
+        zody_type: "desktop-window-open-response",
         requestId: "window-1",
         success: true,
       }),
     ).not.toBeNull();
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "desktop-window-open-response",
+        zody_type: "desktop-window-open-response",
         requestId: "window-1",
         success: false,
         error: "window creation blocked",
@@ -184,7 +187,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
 
   it("workspace-open-path-request 只接受 workspacePath（第二批 E1）；夹带字段整帧丢弃", () => {
     const request = {
-      zcode_type: "workspace-open-path-request",
+      zody_type: "workspace-open-path-request",
       requestId: "open-path-1",
       workspacePath: "/workspace/demo",
     };
@@ -199,7 +202,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
   it("解析 workspace-open-path-response 的成功与失败形状；失败用稳定错误码", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-open-path-response",
+        zody_type: "workspace-open-path-response",
         requestId: "open-path-1",
         success: true,
         workspaceKey: "/workspace/demo",
@@ -208,7 +211,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     for (const error of ["arbitrary-path-disabled", "path-invalid", "open-failed", "timeout"]) {
       expect(
         parseWebRemoteControlAppPayload({
-          zcode_type: "workspace-open-path-response",
+          zody_type: "workspace-open-path-response",
           requestId: "open-path-1",
           success: false,
           error,
@@ -217,7 +220,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     }
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-open-path-response",
+        zody_type: "workspace-open-path-response",
         requestId: "open-path-1",
         success: false,
       }),
@@ -226,7 +229,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
 
   it("mobile-directory-list-request 的 path 可省略，夹带字段整帧丢弃", () => {
     const request = {
-      zcode_type: "mobile-directory-list-request",
+      zody_type: "mobile-directory-list-request",
       requestId: "list-1",
     };
     expect(parseWebRemoteControlAppPayload(request)).toEqual(request);
@@ -243,7 +246,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     const entry = { name: "demo", path: "/workspace/demo", isSymbolicLink: false };
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "mobile-directory-list-response",
+        zody_type: "mobile-directory-list-response",
         requestId: "list-1",
         success: true,
         resolvedPath: "/workspace",
@@ -254,7 +257,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     // 根目录 parentPath 为 null 是合法形状。
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "mobile-directory-list-response",
+        zody_type: "mobile-directory-list-response",
         requestId: "list-1",
         success: true,
         resolvedPath: "/",
@@ -265,7 +268,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     for (const error of ["not-found", "not-directory", "unreadable", "too-large", "path-invalid"]) {
       expect(
         parseWebRemoteControlAppPayload({
-          zcode_type: "mobile-directory-list-response",
+          zody_type: "mobile-directory-list-response",
           requestId: "list-1",
           success: false,
           error,
@@ -275,7 +278,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     // entry 夹带文件字段被拒；entries 超过 1000 上限被拒。
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "mobile-directory-list-response",
+        zody_type: "mobile-directory-list-response",
         requestId: "list-1",
         success: true,
         resolvedPath: "/workspace",
@@ -285,7 +288,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
     ).toBeNull();
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "mobile-directory-list-response",
+        zody_type: "mobile-directory-list-response",
         requestId: "list-1",
         success: true,
         resolvedPath: "/workspace",
@@ -302,7 +305,7 @@ describe("recent projects / workspace open / desktop window open payloads", () =
 describe("bootstrap response version", () => {
   it("validates the optional authoritative desktop version in bootstrap responses", () => {
     const response = {
-      zcode_type: "bootstrap-response",
+      zody_type: "bootstrap-response",
       requestId: "bootstrap-1",
       success: true,
       result: { windowControlSessionId: "sid-1", workspaces: [], tasks: [] },
@@ -466,7 +469,7 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("accepts pushed workspace list updates", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-list-updated",
+        zody_type: "workspace-list-updated",
         result: {
           workspaces: [
             {
@@ -491,7 +494,7 @@ describe("parseWebRemoteControlAppPayload", () => {
         },
       }),
     ).toMatchObject({
-      zcode_type: "workspace-list-updated",
+      zody_type: "workspace-list-updated",
       result: {
         tasks: [expect.objectContaining({ taskId: "task-1", archived: true })],
       },
@@ -501,24 +504,24 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("accepts workspace reconnect requests and responses", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-reconnect-request",
+        zody_type: "workspace-reconnect-request",
         requestId: "reconnect-1",
         workspaceKey: "remote:ssh:dev:/workspace/app",
       }),
     ).toMatchObject({
-      zcode_type: "workspace-reconnect-request",
+      zody_type: "workspace-reconnect-request",
       workspaceKey: "remote:ssh:dev:/workspace/app",
     });
 
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-reconnect-response",
+        zody_type: "workspace-reconnect-response",
         requestId: "reconnect-1",
         workspaceKey: "remote:ssh:dev:/workspace/app",
         success: true,
       }),
     ).toMatchObject({
-      zcode_type: "workspace-reconnect-response",
+      zody_type: "workspace-reconnect-response",
       success: true,
     });
   });
@@ -526,7 +529,7 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("preserves mobile device info on mobile view state updates", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "mobile-view-state-update",
+        zody_type: "mobile-view-state-update",
         viewState: {
           activeWorkspaceKey: "/workspace/app",
           activeTaskId: "task-1",
@@ -555,7 +558,7 @@ describe("parseWebRemoteControlAppPayload", () => {
         },
       }),
     ).toMatchObject({
-      zcode_type: "mobile-view-state-update",
+      zody_type: "mobile-view-state-update",
       deviceInfo: {
         platform: "web",
         userAgent: "Mozilla/5.0 Mobile Safari/604.1",
@@ -570,7 +573,7 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("removes the legacy one-shot rpc-frame branch from the production app parser", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "rpc-frame",
+        zody_type: "rpc-frame",
         bridgeSessionId: "bridge-1",
         bridgeGeneration: 2,
         recoveryId: "recovery-1",
@@ -591,14 +594,14 @@ describe("parseWebRemoteControlAppPayload", () => {
     expect(parseWebRemoteControlAppPayload(fragment)).toEqual(fragment);
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "rpc-frame-ack",
+        zody_type: "rpc-frame-ack",
         bridgeSessionId: "bridge-1",
         bridgeGeneration: 2,
         recoveryId: "recovery-1",
         ackMessageSeq: 1,
       }),
     ).toEqual({
-      zcode_type: "rpc-frame-ack",
+      zody_type: "rpc-frame-ack",
       bridgeSessionId: "bridge-1",
       bridgeGeneration: 2,
       recoveryId: "recovery-1",
@@ -606,7 +609,7 @@ describe("parseWebRemoteControlAppPayload", () => {
     });
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "rpc-frame",
+        zody_type: "rpc-frame",
         bridgeSessionId: "bridge-1",
         seq: 1,
         dataBase64: "AQID",
@@ -666,27 +669,27 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("accepts bridge degraded recovery payloads", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "bridge-degraded",
+        zody_type: "bridge-degraded",
         bridgeSessionId: "bridge-1",
         reason: "buffer-timeout",
         droppedCount: 1,
       }),
     ).toMatchObject({
-      zcode_type: "bridge-degraded",
+      zody_type: "bridge-degraded",
       bridgeSessionId: "bridge-1",
       reason: "buffer-timeout",
       droppedCount: 1,
     });
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "bridge-degraded",
+        zody_type: "bridge-degraded",
         bridgeSessionId: "bridge-1",
         bridgeGeneration: 2,
         recoveryId: "recovery-1",
         reason: "rpc-transport-fault",
       }),
     ).toMatchObject({
-      zcode_type: "bridge-degraded",
+      zody_type: "bridge-degraded",
       bridgeSessionId: "bridge-1",
       bridgeGeneration: 2,
       recoveryId: "recovery-1",
@@ -695,7 +698,7 @@ describe("parseWebRemoteControlAppPayload", () => {
     // 兼容旧 desktop 在原子升级窗口内仍可能发送的细分枚举。
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "bridge-degraded",
+        zody_type: "bridge-degraded",
         bridgeSessionId: "bridge-legacy",
         reason: "rpc-frame-gap",
       }),
@@ -705,7 +708,7 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("preserves bridge metadata on workspace bridge payloads", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-bridge-open",
+        zody_type: "workspace-bridge-open",
         requestId: "bridge-open-1",
         bridgeSessionId: "bridge-1",
         bridgeGeneration: 2,
@@ -714,14 +717,14 @@ describe("parseWebRemoteControlAppPayload", () => {
         taskId: "task-1",
       }),
     ).toMatchObject({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       bridgeGeneration: 2,
       recoveryId: "recovery-1",
     });
 
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "workspace-bridge-ready",
+        zody_type: "workspace-bridge-ready",
         requestId: "bridge-open-1",
         bridgeSessionId: "bridge-1",
         bridgeGeneration: 2,
@@ -736,7 +739,7 @@ describe("parseWebRemoteControlAppPayload", () => {
         },
       }),
     ).toMatchObject({
-      zcode_type: "workspace-bridge-ready",
+      zody_type: "workspace-bridge-ready",
       bridgeGeneration: 2,
       recoveryId: "recovery-1",
       bridge: {
@@ -749,7 +752,7 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("accepts low-frequency mobile diagnostic payloads", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "mobile-diagnostic",
+        zody_type: "mobile-diagnostic",
         event: "socket-close",
         timestamp: 1710000000000,
         state: "reconnecting",
@@ -759,7 +762,7 @@ describe("parseWebRemoteControlAppPayload", () => {
         online: true,
       }),
     ).toMatchObject({
-      zcode_type: "mobile-diagnostic",
+      zody_type: "mobile-diagnostic",
       event: "socket-close",
       closeCode: 1006,
       wasPaired: true,
@@ -769,7 +772,7 @@ describe("parseWebRemoteControlAppPayload", () => {
   it("rejects invalid rpc-frame payloads", () => {
     expect(
       parseWebRemoteControlAppPayload({
-        zcode_type: "rpc-frame",
+        zody_type: "rpc-frame",
         bridgeSessionId: "bridge-1",
         seq: -1,
         dataBase64: "AQID",
@@ -807,5 +810,30 @@ describe("hostIncomingMessageSchema", () => {
       type: HostMessageTypes.DetachServicePort,
       attachmentId: "attachment-1",
     });
+  });
+});
+
+describe("phone discriminator hard cut", () => {
+  it("rejects old and mixed top-level keys but preserves nested user data", () => {
+    expect(
+      parseWebRemoteControlAppPayload({ zcode_type: "bootstrap-request", requestId: "r" }),
+    ).toBeNull();
+    expect(
+      parseWebRemoteControlAppPayload({
+        zody_type: "bootstrap-request",
+        zcode_type: "bootstrap-request",
+        requestId: "r",
+      }),
+    ).toBeNull();
+    const nested = { zcode_type: "historical", text: "中文🙂 zcode_type remains user text" };
+    const request = {
+      zody_type: "platform-request",
+      requestId: "r",
+      method: "isDockerAvailable",
+      args: nested,
+    };
+    // guard 只判断外层自身属性；opaque args 的保留由实际解析结果验证。
+    expect(hasObsoleteWebRemoteControlDiscriminator(request)).toBe(false);
+    expect(parseWebRemoteControlAppPayload(request)).toEqual(request);
   });
 });

@@ -1,10 +1,12 @@
 # ZCode Preview 内部测试包
 
+> **历史设计说明（当前分支）**：本文保留原 Preview 设计和历史判据，不表示所列 GitLab、旧脚本或发布链仍在当前仓库可执行。现有 `scripts/doctor-macos-release-app.sh` 的 Helper variant 依据 `ZODY_ENV` 和 `ZODY_PREVIEW_IDENTITY`；其他实现以当前源码为准。
+
 ## Feature Summary
 
 | Field                 | Value                                                                                                                                                                                                                   |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Change                | `ZCODE_ENV=test` 的全平台桌面安装包使用 `ZCode Preview` 产品身份，并可从 MR 流水线手动触发生产级构建、签名和公证链路                                                                                                    |
+| Change                | `ZODY_ENV=test` 的全平台桌面安装包使用 `ZCode Preview` 产品身份，并可从 MR 流水线手动触发生产级构建、签名和公证链路                                                                                                    |
 | User-visible surfaces | 安装包名、应用名、系统安装记录、任务栏/Dock、About、CUA 权限引导                                                                                                                                                        |
 | Existing docs         | `docs/cua-permission-broker/zcode-cua-permission-broker.md`、`docs/cua-permission-broker/cua-helper-installation.md`、`docs/desktop/auto-update-superseded-ready-package.md`                                            |
 | Existing code owners  | `packages/desktop/electron-builder.config.js`、`packages/desktop/src/main/desktopRuntimeEnv.ts`、`packages/desktop/src/main/autoUpdater.ts`、`packages/services/src/cua-permission-broker/*`、`.gitlab/ci/30-build.yml` |
@@ -14,8 +16,8 @@
 
 | Round | Question | User answer | Boundary fixed | Follow-up needed |
 | --- | --- | --- | --- | --- |
-| 1 | 测试包名称 | `ZCode Preview` | `ZCODE_ENV=test` 对应 Preview 产品名 | no |
-| 1 | 数据和账号是否隔离 | 不隔离，与生产版相同 | 继续共享 `${ZCODE_HOME:-$HOME/.zcode}` 业务数据 | no |
+| 1 | 测试包名称 | `ZCode Preview` | `ZODY_ENV=test` 对应 Preview 产品名 | no |
+| 1 | 数据和账号是否隔离 | 不隔离，与生产版相同 | 继续共享 `${ZODY_HOME:-$HOME/.zcode}` 业务数据 | no |
 | 1 | 是否独立更新/发布 | 不独立、不自动更新、仅内部 | Preview 不进入 stable 发布，不初始化更新器，也不执行强更 | no |
 | 1 | 平台与能力范围 | 全平台、完整可用 | macOS、Windows、Linux 都生成可安装 Preview 包；生产已有的签名能力继续适用 | no |
 | 2 | 是否要求与生产版同时运行 | 是 | OS 安装身份、可执行名和 Electron 运行目录必须分离 | no |
@@ -30,7 +32,7 @@
 
 | Boundary | Decision | Includes | Excludes / prunes | Source |
 | --- | --- | --- | --- | --- |
-| 包类型 | `ZCODE_ENV=test` 构建 Preview | 生产优化、测试环境 API、内部安装包 | 新增第三种环境值 | user + current CI |
+| 包类型 | `ZODY_ENV=test` 构建 Preview | 生产优化、测试环境 API、内部安装包 | 新增第三种环境值 | user + current CI |
 | 展示身份 | `ZCode Preview` | macOS bundle 名、Windows 产品名、Linux desktop 名、产物名 | 改图标或 UI 品牌体系 | user |
 | 系统身份 | Preview 使用独立 app id / executable / Linux package name | 与生产版并排安装和启动 | 复用 `dev.zcode.app` | simultaneous-run invariant |
 | 数据 | 业务数据继续使用 `~/.zcode` | 任务、配置、凭据 | 两个进程同时修改同一任务的强一致保证 | user |
@@ -72,7 +74,7 @@
 ## Concept Map
 
 ```text
-ZCODE_ENV=test
+ZODY_ENV=test
   |
   +-- MR pipeline: build:preview (optional manual)
   |     -> child pipeline: same MR ref/SHA
@@ -85,7 +87,7 @@ ZCODE_ENV=test
   -> compiled runtime environment: test endpoints
   -> Electron runtime name: ZCode Preview
        -> appData/ZCode Preview (single-instance/session/cache isolation)
-  -> business data: ${ZCODE_HOME:-$HOME/.zcode} (shared)
+  -> business data: ${ZODY_HOME:-$HOME/.zcode} (shared)
   -> updater: disabled
   -> CUA install: ~/.zcode/computer-use/preview/ZCode Computer Use.app
        -> signed helper identity remains dev.zcode.cua-helper
@@ -123,11 +125,11 @@ workflow path selection
 
 | State / fact              | Authority                                     | Mirrors / caches                                    | Evidence                                       |
 | ------------------------- | --------------------------------------------- | --------------------------------------------------- | ---------------------------------------------- |
-| Build flavor              | CI/build `ZCODE_ENV`                          | tsup/vite define、electron-builder config           | dry-run/config tests、产物 metadata            |
+| Build flavor              | CI/build `ZODY_ENV`                          | tsup/vite define、electron-builder config           | dry-run/config tests、产物 metadata            |
 | OS application identity   | electron-builder config                       | macOS Info.plist、NSIS GUID、Linux package metadata | unpacked artifact inspection                   |
 | Electron runtime identity | desktop main                                  | `app.name`、`userData`、single-instance lock        | runtime unit test、manual simultaneous launch  |
 | Business data root        | services path resolver                        | settings/task/credential repos                      | path assertions、manual shared-task visibility |
-| Update eligibility        | compiled `ZCODE_ENV` in desktop main          | application menu/tray/updater state                 | unit tests、network/log absence                |
+| Update eligibility        | compiled `ZODY_ENV` in desktop main          | application menu/tray/updater state                 | unit tests、network/log absence                |
 | CUA launcher trust        | signed Helper process                         | code requirement string                             | peer-verifier unit test、signed macOS smoke    |
 | CUA Helper version path   | Host process env + installer resolver         | helper candidate/reaper paths                       | installer/host unit tests、filesystem path     |
 | Preview trigger variables | `build:preview` job                           | child pipeline trigger variables                    | CI config assertion                            |
@@ -153,7 +155,7 @@ workflow path selection
 
 | Candidate ID | State                                            | Event                             | Target/surface           | Expected guard/effect                                                                            | Initial status | Notes                                                |
 | ------------ | ------------------------------------------------ | --------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------ | -------------- | ---------------------------------------------------- |
-| ZPREVIEW-001 | `ZCODE_ENV=test`                                 | package                           | all platforms            | Preview name and distinct install identity; optimized build                                      | accepted       | primary build case                                   |
+| ZPREVIEW-001 | `ZODY_ENV=test`                                 | package                           | all platforms            | Preview name and distinct install identity; optimized build                                      | accepted       | primary build case                                   |
 | ZPREVIEW-002 | production                                       | package                           | all platforms            | existing ZCode identity unchanged                                                                | accepted       | regression case                                      |
 | ZPREVIEW-003 | prod and Preview installed                       | launch both                       | desktop lifecycle        | both instances remain running with separate Electron data                                        | accepted       | manual smoke                                         |
 | ZPREVIEW-004 | Preview running                                  | read tasks/settings/credentials   | business data            | same `~/.zcode` repositories as production                                                       | accepted       | no data migration                                    |
@@ -176,7 +178,7 @@ workflow path selection
 | Decision ID  | Pruned combinations                         | Guard/invariant                            | Product reason                              | Representative coverage             |
 | ------------ | ------------------------------------------- | ------------------------------------------ | ------------------------------------------- | ----------------------------------- |
 | ZPREVIEW-P01 | 两个应用同时执行 CUA                        | 任一时刻只有一个应用使用 CUA               | 无需引入全局 CUA lease 和新 UI 状态         | 分别验证 prod/Preview 可启动 Helper |
-| ZPREVIEW-P02 | Preview 独立账号/任务/配置                  | 业务数据明确共享                           | Preview 仅是内部测试入口                    | 验证路径解析未改写 `ZCODE_HOME`     |
+| ZPREVIEW-P02 | Preview 独立账号/任务/配置                  | 业务数据明确共享                           | Preview 仅是内部测试入口                    | 验证路径解析未改写 `ZODY_HOME`     |
 | ZPREVIEW-P03 | Preview 独立 scheme                         | 用户接受 deep-link 抢占                    | 避免改 OAuth callback 配置                  | 保留 `zcode` protocol 配置断言      |
 | ZPREVIEW-P04 | Preview 更新 channel                        | Preview 禁止更新                           | 内部包由重新下载安装替换                    | 断言 updater、菜单和强更均禁用      |
 | ZPREVIEW-P05 | branch/tag/web pipeline 展示 Preview 命令   | 手动入口仅限 MR                            | 与 MR merge/approve 同级是本次明确边界      | CI rules 静态断言                   |
@@ -229,8 +231,8 @@ workflow path selection
 
 ## E2E Handoff Notes
 
-- Provider fixture: 不需要；测试环境 endpoint 由既有 `ZCODE_ENV=test` 单测覆盖。
-- File-system fixture: 临时 appData、`ZCODE_HOME/computer-use[/preview]`。
+- Provider fixture: 不需要；测试环境 endpoint 由既有 `ZODY_ENV=test` 单测覆盖。
+- File-system fixture: 临时 appData、`ZODY_HOME/computer-use[/preview]`。
 - Timing strategy: 配置/路径采用纯函数单测；双应用并行启动使用签名产物手工 smoke。
 - Docker preset: 不适用。
 - Review risks: macOS 签名 requirement 语法、Windows NSIS 并排安装、Linux deb package name、Preview 禁用强更。
@@ -246,19 +248,19 @@ workflow path selection
 
 | 项 | 决定 | 说明 |
 | --- | --- | --- |
-| 新增变量 | `ZCODE_PREVIEW_IDENTITY=1`（只认 `1`；`0`/空 = 关闭；其它拼写构建期直接失败） | 构建期开关；只控制**身份**，不碰后端环境。单一拼写与 CI 规则的 `== "1"` 精确比较同语义（2026-09-14 收紧，见下） |
-| `ZCODE_ENV` 语义 | 不变，仍只表示后端环境 | 原 Boundary「新增第三种环境值」的排除继续有效 |
-| 身份推导 | `flavor = ZCODE_PREVIEW_IDENTITY 为真 \|\| ZCODE_ENV=test ? preview : production` | 测试后端永远是 Preview，开关无法把测试后端包变成正式 `ZCode` |
+| 新增变量 | `ZODY_PREVIEW_IDENTITY=1`（只认 `1`；`0`/空 = 关闭；其它拼写构建期直接失败） | 构建期开关；只控制**身份**，不碰后端环境。单一拼写与 CI 规则的 `== "1"` 精确比较同语义（2026-09-14 收紧，见下） |
+| `ZODY_ENV` 语义 | 不变，仍只表示后端环境 | 原 Boundary「新增第三种环境值」的排除继续有效 |
+| 身份推导 | `flavor = ZODY_PREVIEW_IDENTITY 为真 \|\| ZODY_ENV=test ? preview : production` | 测试后端永远是 Preview，开关无法把测试后端包变成正式 `ZCode` |
 | 身份含义 | 整套 Preview 身份，不是只改显示名 | appId `dev.zcode.app.preview`、`ZCode Preview` 应用名、独立 Electron `userData`、Linux `zcode-preview`、Helper 安装子目录 `computer-use/preview`、Windows AUMID |
 | 更新 | Preview 身份在两种后端下都禁用 updater / 强更 / 菜单与标题栏更新入口 | stable feed 上只有正式 `ZCode` 安装包，装到 Preview bundle 上等于再装一份正式版 |
-| 产物后缀 | `_TEST` 只标记 `ZCODE_ENV=test`；生产后端的 Preview 没有后缀 | 生产 Preview 靠 productName 区分：`ZCode Preview-<version>-mac-arm64.dmg` vs `ZCode-<version>-mac-arm64.dmg` |
-| 发布链路 | `ZCODE_PREVIEW_IDENTITY == "1"` 与 `ZCODE_ENV == "test"` 同等对待：所有 release job `when: never`，`publish-release.sh` 硬拦截 | 生产后端的 Preview 仍是内部包 |
+| 产物后缀 | `_TEST` 只标记 `ZODY_ENV=test`；生产后端的 Preview 没有后缀 | 生产 Preview 靠 productName 区分：`ZCode Preview-<version>-mac-arm64.dmg` vs `ZCode-<version>-mac-arm64.dmg` |
+| 发布链路 | `ZODY_PREVIEW_IDENTITY == "1"` 与 `ZODY_ENV == "test"` 同等对待：所有 release job `when: never`，`publish-release.sh` 硬拦截 | 生产后端的 Preview 仍是内部包 |
 | CUA Helper | 不改 | app id 仍是 `dev.zcode.app.preview`，Helper 的 launcher allowlist 已接受 |
 
 ### 编译期常量
 
 - `packages/shared/src/env.ts` 新增 `ZCodeProductFlavor = "production" | "preview"`、`ZCODE_PRODUCT_FLAVOR`、`normalizeZCodeProductFlavor(value, zcodeEnv)`。
-- `tsup.config.ts` / `vite.config.ts` 注入 `__ZCODE_PRODUCT_FLAVOR__`；未注入 define 的 bundle（web、CLI、测试）回落为"跟随 `ZCODE_ENV`"的旧单轴语义。
+- `tsup.config.ts` / `vite.config.ts` 注入 `__ZODY_PRODUCT_FLAVOR__`；未注入 define 的 bundle（web、CLI、测试）回落为"跟随 `ZODY_ENV`"的旧单轴语义。
 - 打包后的应用**不能**依赖机器上的环境变量：身份和后端一样是编译期常量，主进程 / renderer 只读 `ZCODE_PRODUCT_FLAVOR`。
 
 ### 改为按身份判断的位置
@@ -272,7 +274,7 @@ workflow path selection
 | `packages/ui/.../WindowsCaptionMenuButton.tsx` `shouldShowDesktopUpdateEntry` | `ZCodeEnv` | `ZCodeProductFlavor` |
 | `scripts/notarize-macos.sh` `is_preview_package` / `is_strict_release` | `ZCODE_ENV=test` | 加上 `ZCODE_PREVIEW_IDENTITY`；Preview 永不进入 strict release |
 | `scripts/sign-macos-runtime-binaries.sh` fail-closed | `ZCODE_ENV=test` | `is_preview_package` |
-| `scripts/doctor-macos-release-app.sh` 默认 Helper variant | `ZCODE_ENV=test` | 加上 `ZCODE_PREVIEW_IDENTITY` |
+| `scripts/doctor-macos-release-app.sh` 默认 Helper variant | `ZCODE_ENV=test` | 当前使用 `ZODY_ENV=test` 或 `ZODY_PREVIEW_IDENTITY=1` |
 | `scripts/upload-oss.sh` / `scripts/package-cua-helper-release.mjs` `is_strict_release` | `ZCODE_ENV != test` | 再排除 Preview 身份 |
 | `scripts/publish-release.sh` | 拒绝 `ZCODE_ENV=test` | 同时拒绝 `ZCODE_PREVIEW_IDENTITY` 为真 |
 | `scripts/notify-feishu.mjs` | 标题只带环境 | `production` + 身份开关时追加 `· ZCode Preview`，其余标题不变 |

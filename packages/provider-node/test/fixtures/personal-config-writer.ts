@@ -1,8 +1,8 @@
-import { ProviderConfig } from "@zcode/provider";
+import { ProviderConfig } from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
   NodeModelSelectionConfigRepository,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 
 const [filePath, role] = process.argv.slice(2);
 if (!filePath || (role !== "provider" && role !== "default"))

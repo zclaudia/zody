@@ -5,14 +5,14 @@ import { cp, lstat, mkdir, readFile, readdir, realpath, rm, stat } from "node:fs
 import { homedir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { parse as parseYaml } from "yaml";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type {
   SkillSyncArchiveExportResult,
   SkillSyncCandidate,
   SkillSyncCandidateListResult,
   SkillSyncImportResult,
   SkillSyncRemoteStatusResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { ISkillSyncService } from "./skillSync.js";
 import { createSkillSyncArchive, extractSkillSyncArchive } from "./skillSyncArchive.js";
 import { normalizeSkillSyncRelativePath, resolveSkillSyncPathWithin } from "./skillSyncPath.js";
@@ -37,7 +37,7 @@ export function createSkillSyncService(options?: { maxArchiveBytes?: number }): 
       };
     },
     async listRemoteUserSkillStatuses(params): Promise<SkillSyncRemoteStatusResult> {
-      const root = getUserZcodeSkillRoot();
+      const root = getUserZodySkillRoot();
       const existingSkillPathByName = await collectUserSkillDirectoryPathByName();
       // skill sync service 会通过 RPC 暴露给 renderer / remote 客户端；
       // directoryName 不能只信 UI 候选，必须在服务端限制为 skills 根内的安全相对路径。
@@ -109,7 +109,7 @@ export function createSkillSyncService(options?: { maxArchiveBytes?: number }): 
       };
     },
     async checkRemoteUserSkillWriteAccess() {
-      return checkRemoteSyncDirectoryWriteAccess(getUserZcodeSkillRoot());
+      return checkRemoteSyncDirectoryWriteAccess(getUserZodySkillRoot());
     },
     async importSkillsArchive(params): Promise<SkillSyncImportResult> {
       if (params.overwrite) {
@@ -131,9 +131,9 @@ function resolveUserHomeDir(): string {
   return process.env.HOME?.trim() || process.env.USERPROFILE?.trim() || homedir();
 }
 
-function getUserZcodeSkillRoot(): string {
+function getUserZodySkillRoot(): string {
   // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "skills");
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "skills");
 }
 
 function getUserAgentsSkillRoot(): string {
@@ -142,26 +142,26 @@ function getUserAgentsSkillRoot(): string {
 
 async function collectUserSkillCandidates(): Promise<SkillSyncCandidate[]> {
   const seenSkillRealpaths = new Set<string>();
-  const userZcodeSkillRoot = getUserZcodeSkillRoot();
-  const rawZcodeCandidates = await collectUserSkillCandidatesInRoot(userZcodeSkillRoot);
-  const zcodeDirectoryNames = await collectCoveredSkillDirectoryNamesInRoot(userZcodeSkillRoot);
-  const zcodeSkillNameKeys = new Set(
-    rawZcodeCandidates.map((candidate) => normalizeSkillNameKey(candidate.name)),
+  const userZodySkillRoot = getUserZodySkillRoot();
+  const rawZodyCandidates = await collectUserSkillCandidatesInRoot(userZodySkillRoot);
+  const zodyDirectoryNames = await collectCoveredSkillDirectoryNamesInRoot(userZodySkillRoot);
+  const zodySkillNameKeys = new Set(
+    rawZodyCandidates.map((candidate) => normalizeSkillNameKey(candidate.name)),
   );
-  const zcodeCandidates = await dedupeCandidatesByCanonicalSkillPath(
-    rawZcodeCandidates,
+  const zodyCandidates = await dedupeCandidatesByCanonicalSkillPath(
+    rawZodyCandidates,
     seenSkillRealpaths,
   );
   const agentsCandidates = await dedupeCandidatesByCanonicalSkillPath(
     (await collectUserSkillCandidatesInRoot(getUserAgentsSkillRoot())).filter(
       (candidate) =>
-        !zcodeDirectoryNames.has(candidate.directoryName) &&
-        !zcodeSkillNameKeys.has(normalizeSkillNameKey(candidate.name)),
+        !zodyDirectoryNames.has(candidate.directoryName) &&
+        !zodySkillNameKeys.has(normalizeSkillNameKey(candidate.name)),
     ),
     seenSkillRealpaths,
   );
 
-  return [...zcodeCandidates, ...agentsCandidates].sort((left, right) =>
+  return [...zodyCandidates, ...agentsCandidates].sort((left, right) =>
     left.directoryName.localeCompare(right.directoryName),
   );
 }
@@ -380,7 +380,7 @@ async function collectSkillDirectoryPathByName(root: string): Promise<Map<string
 }
 
 async function collectUserSkillDirectoryPathByName(): Promise<Map<string, string>> {
-  const result = await collectSkillDirectoryPathByName(getUserZcodeSkillRoot());
+  const result = await collectSkillDirectoryPathByName(getUserZodySkillRoot());
   const agentsSkillPathByName = await collectSkillDirectoryPathByName(getUserAgentsSkillRoot());
   for (const [nameKey, directoryPath] of agentsSkillPathByName) {
     if (!result.has(nameKey)) {
@@ -394,7 +394,7 @@ async function importArchive(
   archive: Uint8Array,
   maxArchiveBytes: number,
 ): Promise<SkillSyncImportResult> {
-  const targetRoot = getUserZcodeSkillRoot();
+  const targetRoot = getUserZodySkillRoot();
   await mkdir(targetRoot, { recursive: true });
   const tempRoot = join(targetRoot, `.sync-tmp-${randomUUID()}`);
   await mkdir(tempRoot, { recursive: true });

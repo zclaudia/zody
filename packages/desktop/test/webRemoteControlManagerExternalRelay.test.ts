@@ -1,13 +1,13 @@
 import { EventEmitter } from "node:events";
-import { ChannelServer, MessagePortProtocol, ProxyChannel } from "@zcode/rpc";
-import { IWindowControllerService } from "@zcode/services";
+import { ChannelServer, MessagePortProtocol, ProxyChannel } from "@zody/rpc";
+import { IWindowControllerService } from "@zody/services";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   WebRemoteControlAppPayload,
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceTarget,
-} from "@zcode/shared";
-import { encodeWebRemoteControlRpcTransportMessage } from "@zcode/shared";
+} from "@zody/shared";
+import { encodeWebRemoteControlRpcTransportMessage } from "@zody/shared";
 import { createWebRemoteControlManager } from "../src/main/webRemoteControlManager.js";
 import { createWebRemoteControlFeatureGate } from "../src/main/webRemoteControlFeatureGate.js";
 import { createRemoteWorkspaceDirectory } from "../src/main/remote-access/remoteWorkspaceDirectory.js";
@@ -325,7 +325,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     setTimeout(() => hostServer.ready(), 0);
     remoteWorkspaceDirectory.syncWorkspaces(2, [localWorkspace]);
     deliverPayload({
-      zcode_type: "mobile-history-search-request",
+      zody_type: "mobile-history-search-request",
       requestId: "search-1",
       context: {
         backendId: "backend-1",
@@ -343,7 +343,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "mobile-history-search-outcome",
+          zody_type: "mobile-history-search-outcome",
           requestId: "search-1",
           queryGeneration: 8,
           scopeSignature: JSON.stringify([localWorkspace.workspacePath]),
@@ -451,7 +451,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     const sendSearch = (requestId: string, backendId: string, workspaceKey: string) => {
       h.deliverPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId,
         context: { backendId, connectionGeneration: 3, workspaceKey, requestId },
         queryGeneration: 1,
@@ -468,7 +468,7 @@ describe("createWebRemoteControlManager app runtime", () => {
         expect(
           h.sentPayloads.filter(
             (payload) =>
-              payload.zcode_type === "mobile-history-search-outcome" && payload.status === "ok",
+              payload.zody_type === "mobile-history-search-outcome" && payload.status === "ok",
           ),
         ).toHaveLength(2),
       );
@@ -547,10 +547,10 @@ describe("createWebRemoteControlManager app runtime", () => {
   it("returns the desktop's own version before a workspace bridge is attached", async () => {
     const h = createManagerHarness();
     await h.manager.start({ workspacePath: localWorkspace.workspacePath });
-    h.deliverPayload({ zcode_type: "bootstrap-request", requestId: "version-check" });
+    h.deliverPayload({ zody_type: "bootstrap-request", requestId: "version-check" });
     expect(h.sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "bootstrap-response",
+        zody_type: "bootstrap-response",
         requestId: "version-check",
         result: expect.objectContaining({ desktopAppVersion: "1.5.0" }),
       }),
@@ -614,7 +614,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     });
     manager.syncAvailableWorkspaces(1, [remoteWorkspace]);
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "bridge-request-remote",
       bridgeSessionId: "bridge-remote",
       workspaceKey: remoteWorkspace.workspaceIdentity!,
@@ -650,7 +650,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await manager.start({ workspacePath: localWorkspace.workspacePath });
     manager.syncAvailableWorkspaces(1, [localWorkspace]);
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "bridge-request-failed",
       bridgeSessionId: "bridge-failed",
       workspaceKey: localWorkspace.workspacePath,
@@ -695,7 +695,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     sentPayloads.length = 0;
     deliverPayload({
-      zcode_type: "workspace-bridge-open" as const,
+      zody_type: "workspace-bridge-open" as const,
       requestId: "req-1",
       bridgeSessionId: "bridge-1",
       workspaceKey: "remote:ssh:host:/workspace/demo",
@@ -704,7 +704,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() => {
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-bridge-ready",
+          zody_type: "workspace-bridge-ready",
           bridgeSessionId: "bridge-1",
           bridge: expect.objectContaining({
             kind: "remote",
@@ -715,7 +715,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       );
     });
     const readyPayload = sentPayloads.find(
-      (payload) => payload.zcode_type === "workspace-bridge-ready",
+      (payload) => payload.zody_type === "workspace-bridge-ready",
     );
     expect(JSON.stringify(readyPayload)).not.toContain("bridgeToken");
     expect(JSON.stringify(readyPayload)).not.toContain("wsUrl");
@@ -814,7 +814,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-1",
       bridgeSessionId: "bridge-1",
       workspaceKey: "/workspace/demo",
@@ -825,7 +825,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     );
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-2",
       bridgeSessionId: "bridge-2",
       workspaceKey: "/workspace/demo",
@@ -862,12 +862,12 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
 
     sentPayloads.length = 0;
-    deliverPayload({ zcode_type: "workspace-list-request", requestId: "list-1" });
+    deliverPayload({ zody_type: "workspace-list-request", requestId: "list-1" });
 
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-list-response",
+          zody_type: "workspace-list-response",
           result: expect.objectContaining({
             workspaces: expect.arrayContaining([
               expect.objectContaining({
@@ -883,7 +883,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     sentPayloads.length = 0;
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "bridge-req-1",
       bridgeSessionId: "bridge-disconnected",
       workspaceKey: "remote:ssh:host:/workspace/remote",
@@ -892,7 +892,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-bridge-error",
+          zody_type: "workspace-bridge-error",
           bridgeSessionId: "bridge-disconnected",
         }),
       ),
@@ -926,7 +926,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     expect(sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "workspace-list-updated",
+        zody_type: "workspace-list-updated",
         result: expect.objectContaining({
           tasks: [
             expect.objectContaining({
@@ -991,7 +991,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     expect(sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "workspace-list-updated",
+        zody_type: "workspace-list-updated",
         result: expect.objectContaining({
           tasks: [expect.objectContaining({ taskId: task.taskId, ...patch })],
         }),
@@ -1016,7 +1016,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     expect(sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "workspace-list-updated",
+        zody_type: "workspace-list-updated",
         result: expect.objectContaining({
           workspaces: expect.arrayContaining([
             expect.objectContaining({
@@ -1036,7 +1036,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     expect(sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "workspace-list-updated",
+        zody_type: "workspace-list-updated",
         result: expect.objectContaining({
           tasks: [
             expect.objectContaining({
@@ -1075,7 +1075,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     expect(sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "workspace-list-updated",
+        zody_type: "workspace-list-updated",
         result: expect.objectContaining({
           tasks: [
             expect.objectContaining({
@@ -1098,14 +1098,14 @@ describe("createWebRemoteControlManager app runtime", () => {
     await manager.start({ workspacePath: "/workspace/demo" }, 1);
 
     deliverPayload({
-      zcode_type: "workspace-reconnect-request",
+      zody_type: "workspace-reconnect-request",
       requestId: "reconnect-1",
       workspaceKey: "remote:ssh:host:/workspace/demo",
     });
 
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual({
-        zcode_type: "workspace-reconnect-response",
+        zody_type: "workspace-reconnect-response",
         requestId: "reconnect-1",
         workspaceKey: "remote:ssh:host:/workspace/demo",
         success: true,
@@ -1142,13 +1142,13 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-1",
       bridgeSessionId: "bridge-1",
       workspaceKey: "/workspace/demo",
     });
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-2",
       bridgeSessionId: "bridge-2",
       workspaceKey: "/workspace/demo",
@@ -1171,7 +1171,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     expect(
       sentPayloads.filter(
         (payload) =>
-          payload.zcode_type === "workspace-bridge-ready" && payload.bridgeSessionId === "bridge-1",
+          payload.zody_type === "workspace-bridge-ready" && payload.bridgeSessionId === "bridge-1",
       ),
     ).toEqual([]);
   });
@@ -1196,7 +1196,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     sentPayloads.length = 0;
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-path",
       bridgeSessionId: "bridge-path",
       workspaceKey: "/workspace/demo",
@@ -1205,7 +1205,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() => {
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-bridge-error",
+          zody_type: "workspace-bridge-error",
           requestId: "req-path",
         }),
       );
@@ -1230,7 +1230,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: `req-${code}`,
       bridgeSessionId: `bridge-${code}`,
       workspaceKey: "/workspace/demo",
@@ -1239,7 +1239,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() => {
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-bridge-error",
+          zody_type: "workspace-bridge-error",
           requestId: `req-${code}`,
           bridgeSessionId: `bridge-${code}`,
           reason,
@@ -1330,7 +1330,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     canSendPayload = false;
     deliverPayload({
-      zcode_type: "workspace-list-request",
+      zody_type: "workspace-list-request",
       requestId: "req-buffered",
     });
     expect(sentPayloads).toEqual([]);
@@ -1341,7 +1341,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     expect(sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "workspace-list-response",
+        zody_type: "workspace-list-response",
         requestId: "req-buffered",
       }),
     );
@@ -1364,14 +1364,14 @@ describe("createWebRemoteControlManager app runtime", () => {
       { workspacePath: "/workspace/demo", label: "demo", kind: "local" },
     ]);
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-bridge",
       bridgeSessionId: "bridge-1",
       workspaceKey: "/workspace/demo",
     });
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
-        expect.objectContaining({ zcode_type: "workspace-bridge-ready" }),
+        expect.objectContaining({ zody_type: "workspace-bridge-ready" }),
       ),
     );
 
@@ -1403,14 +1403,14 @@ describe("createWebRemoteControlManager app runtime", () => {
       { workspacePath: "/workspace/demo", label: "demo", kind: "local" },
     ]);
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-bridge",
       bridgeSessionId: "bridge-1",
       workspaceKey: "/workspace/demo",
     });
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
-        expect.objectContaining({ zcode_type: "workspace-bridge-ready" }),
+        expect.objectContaining({ zody_type: "workspace-bridge-ready" }),
       ),
     );
 
@@ -1424,7 +1424,7 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     expect(hostPort.postMessage).not.toHaveBeenCalled();
     expect(sentPayloads).toContainEqual({
-      zcode_type: "bridge-degraded",
+      zody_type: "bridge-degraded",
       bridgeSessionId: "bridge-1",
       reason: "rpc-transport-fault",
     });
@@ -1451,14 +1451,14 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
     emitTransportState("paired");
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-bridge",
       bridgeSessionId: "bridge-1",
       workspaceKey: "/workspace/demo",
     });
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
-        expect.objectContaining({ zcode_type: "workspace-bridge-ready" }),
+        expect.objectContaining({ zody_type: "workspace-bridge-ready" }),
       ),
     );
 
@@ -1471,8 +1471,8 @@ describe("createWebRemoteControlManager app runtime", () => {
     canSendPayload = true;
     emitTransportSendReady("same-socket");
 
-    expect(sentPayloads.filter((payload) => payload.zcode_type === "rpc-frame")).toHaveLength(51);
-    expect(sentPayloads.some((payload) => payload.zcode_type === "bridge-degraded")).toBe(false);
+    expect(sentPayloads.filter((payload) => payload.zody_type === "rpc-frame")).toHaveLength(51);
+    expect(sentPayloads.some((payload) => payload.zody_type === "bridge-degraded")).toBe(false);
   });
 
   it("does not apply the ordinary app buffer timeout to raw bridge frames", async () => {
@@ -1497,14 +1497,14 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
     emitTransportState("paired");
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-bridge",
       bridgeSessionId: "bridge-1",
       workspaceKey: "/workspace/demo",
     });
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
-        expect.objectContaining({ zcode_type: "workspace-bridge-ready" }),
+        expect.objectContaining({ zody_type: "workspace-bridge-ready" }),
       ),
     );
 
@@ -1516,8 +1516,8 @@ describe("createWebRemoteControlManager app runtime", () => {
     canSendPayload = true;
     emitTransportSendReady("same-socket");
 
-    expect(sentPayloads.filter((payload) => payload.zcode_type === "rpc-frame")).toHaveLength(1);
-    expect(sentPayloads.some((payload) => payload.zcode_type === "bridge-degraded")).toBe(false);
+    expect(sentPayloads.filter((payload) => payload.zody_type === "rpc-frame")).toHaveLength(1);
+    expect(sentPayloads.some((payload) => payload.zody_type === "bridge-degraded")).toBe(false);
   });
 
   it("replays lost-ACK raw frames after same-socket peer readiness and stops after cumulative ACK", async () => {
@@ -1537,41 +1537,41 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
     emitTransportState("paired");
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-bridge",
       bridgeSessionId: "bridge-1",
       workspaceKey: "/workspace/demo",
     });
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
-        expect.objectContaining({ zcode_type: "workspace-bridge-ready" }),
+        expect.objectContaining({ zody_type: "workspace-bridge-ready" }),
       ),
     );
 
     sentPayloads.length = 0;
     hostPort.emit("message", { data: new Uint8Array([1, 2, 3]) });
-    expect(sentPayloads.filter((payload) => payload.zcode_type === "rpc-frame")).toHaveLength(1);
+    expect(sentPayloads.filter((payload) => payload.zody_type === "rpc-frame")).toHaveLength(1);
     const firstFrame = sentPayloads[0];
 
     emitTransportSendReady("same-socket");
-    expect(sentPayloads.filter((payload) => payload.zcode_type === "rpc-frame")).toHaveLength(2);
+    expect(sentPayloads.filter((payload) => payload.zody_type === "rpc-frame")).toHaveLength(2);
     expect(sentPayloads[1]).toBe(firstFrame);
 
     deliverPayload({
-      zcode_type: "rpc-frame-ack",
+      zody_type: "rpc-frame-ack",
       bridgeSessionId: "foreign-bridge",
       ackMessageSeq: 1,
     });
     emitTransportSendReady("reconnected-socket");
-    expect(sentPayloads.filter((payload) => payload.zcode_type === "rpc-frame")).toHaveLength(3);
+    expect(sentPayloads.filter((payload) => payload.zody_type === "rpc-frame")).toHaveLength(3);
 
     deliverPayload({
-      zcode_type: "rpc-frame-ack",
+      zody_type: "rpc-frame-ack",
       bridgeSessionId: "bridge-1",
       ackMessageSeq: 1,
     });
     emitTransportSendReady("reconnected-socket");
-    expect(sentPayloads.filter((payload) => payload.zcode_type === "rpc-frame")).toHaveLength(3);
+    expect(sentPayloads.filter((payload) => payload.zody_type === "rpc-frame")).toHaveLength(3);
   });
 
   it("forwards raw adapter saturated/drained edges only to the owning host attachment", async () => {
@@ -1592,30 +1592,30 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
     emitTransportState("paired");
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-bridge",
       bridgeSessionId: "bridge-flow",
       workspaceKey: "/workspace/demo",
     });
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
-        expect.objectContaining({ zcode_type: "workspace-bridge-ready" }),
+        expect.objectContaining({ zody_type: "workspace-bridge-ready" }),
       ),
     );
 
     hostPort.emit("message", { data: new Uint8Array(900_000) });
     expect(hostPort.postMessage).toHaveBeenCalledWith({
-      __zcodeRpcControl: "connection-flow-v1",
+      __zodyRpcControl: "connection-flow-v1",
       state: "saturated",
     });
 
     deliverPayload({
-      zcode_type: "rpc-frame-ack",
+      zody_type: "rpc-frame-ack",
       bridgeSessionId: "bridge-flow",
       ackMessageSeq: 1,
     });
     expect(hostPort.postMessage).toHaveBeenCalledWith({
-      __zcodeRpcControl: "connection-flow-v1",
+      __zodyRpcControl: "connection-flow-v1",
       state: "drained",
     });
   });
@@ -1628,7 +1628,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     });
 
     deliverPayload({
-      zcode_type: "mobile-view-state-update",
+      zody_type: "mobile-view-state-update",
       viewState: {
         activeWorkspaceKey: "/workspace/demo",
         activeTaskId: "task-1",
@@ -1694,7 +1694,7 @@ describe("createWebRemoteControlManager app runtime", () => {
         remote_kind: "ssh",
       },
     } as const;
-    deliverPayload({ zcode_type: "telemetry-report", event });
+    deliverPayload({ zody_type: "telemetry-report", event });
     expect(reportRendererTelemetryEvent).toHaveBeenCalledExactlyOnceWith(event);
   });
 
@@ -1706,7 +1706,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     });
 
     deliverPayload({
-      zcode_type: "mobile-diagnostic",
+      zody_type: "mobile-diagnostic",
       event: "socket-close",
       timestamp: 1710000000000,
       state: "reconnecting",
@@ -1737,7 +1737,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-cgx",
       bridgeSessionId: "bridge-cgx",
       workspaceKey: "/workspace/cgx-dev-web",
@@ -1746,7 +1746,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-bridge-ready",
+          zody_type: "workspace-bridge-ready",
           bridgeSessionId: "bridge-cgx",
         }),
       ),
@@ -1791,7 +1791,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       },
     ]);
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-1",
       bridgeSessionId: "bridge-1",
       workspaceKey: "remote:ssh:host:/workspace/demo",
@@ -1823,7 +1823,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     manager.syncAvailableWorkspaces(2, [remoteWorkspace]);
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-remote",
       bridgeSessionId: "bridge-remote",
       workspaceKey: remoteWorkspace.workspaceIdentity!,
@@ -1831,7 +1831,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-bridge-ready",
+          zody_type: "workspace-bridge-ready",
           bridgeSessionId: "bridge-remote",
         }),
       ),
@@ -1842,7 +1842,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     );
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-local",
       bridgeSessionId: "bridge-local",
       workspaceKey: localWorkspace.workspacePath,
@@ -1850,7 +1850,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
         expect.objectContaining({
-          zcode_type: "workspace-bridge-ready",
+          zody_type: "workspace-bridge-ready",
           bridgeSessionId: "bridge-local",
         }),
       ),
@@ -1878,14 +1878,14 @@ describe("createWebRemoteControlManager app runtime", () => {
     manager.syncAvailableWorkspaces(2, [localWorkspace]);
 
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-focused",
       bridgeSessionId: "bridge-focused",
       workspaceKey: localWorkspace.workspacePath,
     });
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual(
-        expect.objectContaining({ zcode_type: "workspace-bridge-ready" }),
+        expect.objectContaining({ zody_type: "workspace-bridge-ready" }),
       ),
     );
     expect(attachWorkspaceHost).toHaveBeenLastCalledWith(
@@ -1904,7 +1904,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     manager.syncAvailableWorkspaces(1, [localWorkspace]);
     manager.syncAvailableWorkspaces(2, [remoteWorkspace]);
     deliverPayload({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       requestId: "req-remote",
       bridgeSessionId: "bridge-remote",
       workspaceKey: remoteWorkspace.workspaceIdentity!,
@@ -1921,7 +1921,7 @@ describe("createWebRemoteControlManager app runtime", () => {
     expect(releaseWorkspaceHostAttachment).toHaveBeenCalledWith("attachment-1");
     expect(sentPayloads).toContainEqual(
       expect.objectContaining({
-        zcode_type: "workspace-bridge-error",
+        zody_type: "workspace-bridge-error",
         bridgeSessionId: "bridge-remote",
         reason: "workspace-closed",
       }),
@@ -1942,14 +1942,14 @@ describe("createWebRemoteControlManager app runtime", () => {
     ]);
 
     deliverPayload({
-      zcode_type: "workspace-reconnect-request",
+      zody_type: "workspace-reconnect-request",
       requestId: "reconnect-remote",
       workspaceKey: remoteWorkspace.workspaceIdentity!,
     });
 
     await vi.waitFor(() =>
       expect(sentPayloads).toContainEqual({
-        zcode_type: "workspace-reconnect-response",
+        zody_type: "workspace-reconnect-response",
         requestId: "reconnect-remote",
         workspaceKey: remoteWorkspace.workspaceIdentity,
         success: true,
@@ -1968,10 +1968,10 @@ describe("createWebRemoteControlManager app runtime", () => {
 
     await manager.disposeWindow(2);
 
-    const updated = sentPayloads.find((payload) => payload.zcode_type === "workspace-list-updated");
+    const updated = sentPayloads.find((payload) => payload.zody_type === "workspace-list-updated");
     expect(updated).toEqual(
       expect.objectContaining({
-        zcode_type: "workspace-list-updated",
+        zody_type: "workspace-list-updated",
         result: expect.objectContaining({
           workspaces: expect.arrayContaining([
             expect.objectContaining({ workspacePath: localWorkspace.workspacePath }),
@@ -2036,7 +2036,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       failure: undefined,
     });
     expect(disposeTransport).not.toHaveBeenCalled();
-    expect(sentPayloads).not.toContainEqual(expect.objectContaining({ zcode_type: "app-error" }));
+    expect(sentPayloads).not.toContainEqual(expect.objectContaining({ zody_type: "app-error" }));
     expect(disposeWorkspaceHostAttachmentsForRemoteSession).toHaveBeenCalledWith(
       "remote-session-1",
       "remote-closed",
@@ -2073,7 +2073,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
       remoteWorkspaceDirectory.syncWorkspaces(2, [localWorkspace]);
       deliverPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId: "owner-search-1",
         context: {
           backendId: "backend-1",
@@ -2091,7 +2091,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       await vi.waitFor(() =>
         expect(sentPayloads).toContainEqual(
           expect.objectContaining({
-            zcode_type: "mobile-history-search-outcome",
+            zody_type: "mobile-history-search-outcome",
             requestId: "owner-search-1",
             status: "ok",
           }),
@@ -2151,7 +2151,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       setTimeout(() => hostServer.ready(), 0);
       remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
       deliverPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId: "epoch-search-1",
         context: {
           backendId: "backend-1",
@@ -2174,7 +2174,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       await vi.waitFor(() =>
         expect(sentPayloads).toContainEqual(
           expect.objectContaining({
-            zcode_type: "mobile-history-search-outcome",
+            zody_type: "mobile-history-search-outcome",
             requestId: "epoch-search-1",
             status: "offline",
           }),
@@ -2236,7 +2236,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       remoteWorkspaceDirectory.syncWorkspaces(1, [workspace]);
       const workspaceKey = workspace.workspaceIdentity ?? workspace.workspacePath;
       deliverPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId: `guard-${expected.status}`,
         context: {
           backendId: "backend-1",
@@ -2254,7 +2254,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       await vi.waitFor(() =>
         expect(sentPayloads).toContainEqual(
           expect.objectContaining({
-            zcode_type: "mobile-history-search-outcome",
+            zody_type: "mobile-history-search-outcome",
             requestId: `guard-${expected.status}`,
             ...expected,
           }),
@@ -2308,7 +2308,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       setTimeout(() => hostServer.ready(), 0);
       remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
       deliverPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId: "oversize-search-1",
         context: {
           backendId: "backend-1",
@@ -2326,7 +2326,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       await vi.waitFor(() =>
         expect(sentPayloads).toContainEqual(
           expect.objectContaining({
-            zcode_type: "mobile-history-search-outcome",
+            zody_type: "mobile-history-search-outcome",
             requestId: "oversize-search-1",
             status: "error",
             errorCode: "search-response-too-large",
@@ -2359,7 +2359,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       await manager.start({ workspacePath: "/workspace/origin" }, 1);
       remoteWorkspaceDirectory.syncWorkspaces(1, [localWorkspace]);
       deliverPayload({
-        zcode_type: "mobile-history-search-request",
+        zody_type: "mobile-history-search-request",
         requestId: "attach-fail-search-1",
         context: {
           backendId: "backend-1",
@@ -2377,7 +2377,7 @@ describe("createWebRemoteControlManager app runtime", () => {
       await vi.waitFor(() =>
         expect(sentPayloads).toContainEqual(
           expect.objectContaining({
-            zcode_type: "mobile-history-search-outcome",
+            zody_type: "mobile-history-search-outcome",
             requestId: "attach-fail-search-1",
             status: "error",
             errorCode: "search-route-failed",

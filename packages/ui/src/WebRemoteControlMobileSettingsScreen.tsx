@@ -1,6 +1,6 @@
 import { ArrowRight, LoaderCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   useWebRemoteControlMobileSettingsForm,
   WebRemoteControlMobileSettingsFields,
@@ -41,7 +41,7 @@ export function WebRemoteControlMobileSettingsScreen({
   onBack,
   formatError,
 }: WebRemoteControlMobileSettingsScreenProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const form = useWebRemoteControlMobileSettingsForm({
     initial,
     allowInsecureTransport,

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import type { WebRemoteControlWorkspaceListResult } from "@zcode/shared";
+import type { WebRemoteControlWorkspaceListResult } from "@zody/shared";
 import {
   WebRemoteControlMobileTaskHome,
   persistWebRemoteControlMobileTaskHomePreferences,

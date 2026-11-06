@@ -3,7 +3,7 @@ import type { BackendPresenceV4 } from "@zclaudia/gateway-protocol";
 import {
   WEB_REMOTE_CONTROL_BACKEND_CAPABILITY,
   WEB_REMOTE_CONTROL_UI_BACKEND_CAPABILITY,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   startMobileRemoteBackendDiscovery,
   type MobileRemoteBackendDiscoverySnapshot,

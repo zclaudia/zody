@@ -31,7 +31,7 @@ sequenceDiagram
 
 ## 执行入口与 Android handoff
 
-root 先启动隔离 push harness，保留其凭据文件路径于私有环境变量 `ZCODE_P8_CREDENTIAL_FILE`。再从仓库根运行：
+root 先启动隔离 push harness，保留其凭据文件路径于私有环境变量 `ZODY_P8_CREDENTIAL_FILE`。再从仓库根运行：
 
 ```bash
 fnm exec --using=24.14.0 node scripts/run-mobile-p8-multihost-notification-click-e2e.mjs

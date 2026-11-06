@@ -52,7 +52,7 @@ async function main() {
   if (!existsSync(WEB_DIST)) {
     console.error(
       `[mobile-web-isolation] 缺少普通 Web 客户端产物：${relative(REPO_ROOT, WEB_DIST)}。` +
-        "先运行 `pnpm --filter @zcode/web build`。",
+        "先运行 `pnpm --filter @zody/web build`。",
     );
     process.exit(1);
   }

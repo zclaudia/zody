@@ -5,7 +5,7 @@ import {
   ProviderConfig,
   ProviderConfigMap,
   extractManualModelConfig,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   decodeProviderConfigFile,
   encodeProviderConfigFile,

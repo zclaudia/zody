@@ -1,8 +1,8 @@
 import {
   TID_SETTINGS_BACK_BUTTON,
   TID_V4_COMPOSER_INPUT,
-  type ZCodePluginComponentKind,
-} from "@zcode/shared";
+  type ZodyPluginComponentKind,
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,
@@ -67,7 +67,7 @@ describe("PLM-LC-003 Personal Source 插件主生命周期 E2E", () => {
       "command",
       "agent",
       "hook",
-    ] satisfies ZCodePluginComponentKind[]) {
+    ] satisfies ZodyPluginComponentKind[]) {
       await waitForPluginControl("plugin-store-component-section", { componentKind: kind }, 30000);
     }
     await capturePluginManualReview("PLM-LC-003", "uninstalled-five-components");

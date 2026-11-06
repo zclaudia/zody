@@ -13,7 +13,7 @@ import {
 } from "react";
 import darkEmptyStateLogoUrl from "@/assets/Z.svg";
 import { cn } from "@/components/lib/utils.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useIsOfficeMode } from "@/hooks/useInterfaceMode.js";
 import { logger } from "@/logger.js";
 
@@ -100,7 +100,7 @@ export function ConversationDraftEmptyState({
   className?: string;
   compactForRemoteControl?: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const isOfficeMode = useIsOfficeMode();
   const [greetingDate, setGreetingDate] = useState(() => new Date());
   const [greetingFontSizePx, setGreetingFontSizePx] = useState(
@@ -211,7 +211,7 @@ export function ConversationDraftEmptyState({
           "-translate-x-1/2 -translate-y-1/2 text-foreground-subtlest",
         )}
       >
-        <ZCodeEmptyStateLogo className="h-full w-full" />
+        <ZodyEmptyStateLogo className="h-full w-full" />
       </div>
       <p
         ref={greetingContainerRef}
@@ -241,7 +241,7 @@ export function ConversationDraftEmptyState({
   );
 }
 
-function ZCodeEmptyStateLogo({ className }: { className?: string }) {
+function ZodyEmptyStateLogo({ className }: { className?: string }) {
   return (
     <>
       {/* 修复原因：夜间资源已自带渐变和透明度，公共容器叠加遮罩会让它重复变淡；渐隐效果只属于浅色线框。 */}

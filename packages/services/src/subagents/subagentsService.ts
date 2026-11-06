@@ -6,8 +6,8 @@ import {
   createPluginAgentStateId,
   parsePluginSubagentModelSelectionOverrides,
   DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS,
-  ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID,
+  ZODY_DATA_ROOT_DIR_NAME,
   modelSelectionSchema,
   type SubagentRuntimeConfig,
   type AgentCreateParams,
@@ -24,8 +24,8 @@ import {
   type PluginSubagentModelSelectionOverrides,
   type SubAgentConfig,
   type SubagentsListMode,
-  type ZCodeProvider,
-} from "@zcode/shared";
+  type ZodyProvider,
+} from "@zody/shared";
 import { normalizeSubagentModelSelection } from "./subagentModelSelection.js";
 import { serializeSubagentMarkdown, parseSubagentMarkdown } from "./subagentMarkdown.js";
 import {
@@ -34,7 +34,7 @@ import {
   resolveUserSubagentRoot,
   resolveWorkspaceSubagentRoot,
   resolveWorkspaceLegacySubagentRoot,
-  resolveZCodeStorageRoot,
+  resolveZodyStorageRoot,
   type SubagentStorageOptions,
 } from "./subagentStorage.js";
 import type { ISubagentsService } from "./subagents.js";
@@ -43,7 +43,7 @@ import {
   migrateUserSubagentMarkdown,
   migrateSubagentStateFile,
   scanOfficialPluginCacheRoots,
-} from "@zcode/shared/node";
+} from "@zody/shared/node";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 
 import { createSubagentRuntimeConfigCache } from "./subagentRuntimeConfig.js";
@@ -86,6 +86,9 @@ interface PluginAgentDiscovery {
 }
 
 const BUILT_IN_AGENT_NAMES = new Set(["general-purpose", "Explore"]);
+// R54：新格式优先；旧 `.zcode-plugin` 仅在新格式缺失时回退。新格式存在但不可读/非法时
+// 直接判定无 manifest，不继续探测旧格式（不合并、不回退）。
+const CANONICAL_PLUGIN_MANIFEST_PATH = join(".zody-plugin", "plugin.json");
 const PLUGIN_MANIFEST_PATHS = [
   join(".zcode-plugin", "plugin.json"),
   join(".claude-plugin", "plugin.json"),
@@ -294,7 +297,7 @@ async function collectAgentMarkdownPaths(rootPath: string, recursive = false): P
 }
 
 function resolveCapabilities(options?: SubagentsServiceOptions): AgentsCapability {
-  const isDesktopRuntime = options?.isDesktopRuntime ?? Boolean(process.env.ZCODE_PROCESS_LABEL);
+  const isDesktopRuntime = options?.isDesktopRuntime ?? Boolean(process.env.ZODY_PROCESS_LABEL);
   if (isDesktopRuntime) {
     return { userScopeAvailable: true };
   }
@@ -323,7 +326,7 @@ async function discoverPluginAgents(params: {
   reservedNames: Iterable<string>;
   storageOptions?: SubagentStorageOptions;
 }): Promise<PluginAgentDiscovery> {
-  const storageRoot = await resolveZCodeStorageRoot(params.storageOptions);
+  const storageRoot = await resolveZodyStorageRoot(params.storageOptions);
   const cliStorageRoot = basename(storageRoot) === "cli" ? storageRoot : join(storageRoot, "cli");
   const pluginConfig = await readPluginConfig(params.storageOptions);
   const records = await readEnabledPluginRecords(join(cliStorageRoot, "plugins"), pluginConfig);
@@ -420,7 +423,7 @@ async function readPluginConfig(options?: SubagentStorageOptions): Promise<Plugi
     // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
     const configPath = join(
       resolveUserHomeDir(options),
-      ZCODE_DATA_ROOT_DIR_NAME,
+      ZODY_DATA_ROOT_DIR_NAME,
       "cli",
       "config.json",
     );
@@ -455,13 +458,13 @@ async function readEnabledPluginRecords(
       config.enabledPlugins[record.id] === true &&
       // 卸载抑制优先于遗留的安装/启用记录，不能只在缓存兜底时检查而复活官方插件。
       !(
-        record.id.endsWith(`@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID}`) &&
+        record.id.endsWith(`@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID}`) &&
         config.suppressedBuiltins.includes(record.id)
       ),
   );
   const seenIds = new Set(installed.map((record) => record.id));
   for (const cacheRoot of await scanOfficialPluginCacheRoots(pluginStorageRoot)) {
-    const id = `${cacheRoot.name}@${ZCODE_OFFICIAL_PLUGIN_MARKETPLACE_ID}`;
+    const id = `${cacheRoot.name}@${ZODY_OFFICIAL_PLUGIN_MARKETPLACE_ID}`;
     if (seenIds.has(id) || config.suppressedBuiltins.includes(id)) continue;
     const enabled = config.enabledPlugins[id] ?? DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS.has(id);
     if (!enabled) continue;
@@ -506,16 +509,35 @@ async function collectPluginAgentMarkdownPaths(rootPath: string): Promise<string
 }
 
 async function readPluginManifest(rootPath: string): Promise<Record<string, unknown> | null> {
+  const canonicalPath = join(rootPath, CANONICAL_PLUGIN_MANIFEST_PATH);
+  try {
+    const raw = await readFile(canonicalPath, "utf-8");
+    const parsed = JSON.parse(raw) as unknown;
+    // 新格式存在即唯一 manifest：非法/非对象时不再探测旧格式。
+    return isRecord(parsed) ? parsed : null;
+  } catch (error) {
+    // 仅“确实不存在”才回退旧格式；读取失败按存在但不可用处理。
+    if (!isNotFoundFsError(error)) return null;
+  }
+
   for (const relativePath of PLUGIN_MANIFEST_PATHS) {
     try {
       const raw = await readFile(join(rootPath, relativePath), "utf-8");
       const parsed = JSON.parse(raw) as unknown;
       if (isRecord(parsed)) return parsed;
     } catch {
-      // Try the next supported manifest path.
+      // 旧格式维持既有“继续探测下一格式”语义。
     }
   }
   return null;
+}
+
+function isNotFoundFsError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    String((error as NodeJS.ErrnoException).code) === "ENOENT"
+  );
 }
 
 function collectPluginAgentRoots(rootPath: string, manifestAgents: unknown): string[] {
@@ -625,7 +647,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
     async list(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
       mode?: SubagentsListMode;
     }): Promise<AgentsListResult> {
       const capability = resolveCapabilities(options);
@@ -745,7 +767,7 @@ export function createSubagentsService(options?: SubagentsServiceOptions): ISuba
       await mutate(runUpdate);
     },
 
-    async getPrimaryUserAgentsDirectory(_params: { provider: ZCodeProvider }): Promise<{
+    async getPrimaryUserAgentsDirectory(_params: { provider: ZodyProvider }): Promise<{
       path: string;
     }> {
       const path = await resolveUserSubagentRoot(storageOptions);

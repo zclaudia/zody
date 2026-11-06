@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  digestZCodeAgentNativeRuntimeNetwork,
-  type ZCodeAgentNativeRuntimeStartupContext,
-} from "@zcode/services/node";
+  digestZodyAgentNativeRuntimeNetwork,
+  type ZodyAgentNativeRuntimeStartupContext,
+} from "@zody/services/node";
 import {
   CUA_NARROW_APP_NAME,
   CUA_NARROW_CAPABILITY,
@@ -23,7 +23,7 @@ import {
 const createdRoots: string[] = [];
 
 afterEach(() => {
-  delete process.env.ZCODE_CUA_NARROW_AGENT_JSON;
+  delete process.env.ZODY_CUA_NARROW_AGENT_JSON;
   for (const root of createdRoots.splice(0).reverse()) {
     rmSync(root, { recursive: true, force: true });
   }
@@ -70,7 +70,7 @@ function createWorkspace(name = "workspace") {
   return workspace;
 }
 
-const startupContext: ZCodeAgentNativeRuntimeStartupContext = {
+const startupContext: ZodyAgentNativeRuntimeStartupContext = {
   providerDigestSha256: "a".repeat(64),
   selection: {
     providerId: "deepseek-anthropic",
@@ -128,7 +128,7 @@ function prepare(
 
 function resolverContext(
   workspace: string,
-  readStartupContext: () => Promise<ZCodeAgentNativeRuntimeStartupContext> = async () =>
+  readStartupContext: () => Promise<ZodyAgentNativeRuntimeStartupContext> = async () =>
     startupContext,
 ) {
   return {
@@ -154,7 +154,7 @@ describe("cua narrow agent runtime", () => {
     const workspace = createWorkspace();
     const resources = createResources();
     const profile = createProfile(resources, [workspace]);
-    process.env.ZCODE_CUA_NARROW_AGENT_JSON = JSON.stringify(profile);
+    process.env.ZODY_CUA_NARROW_AGENT_JSON = JSON.stringify(profile);
 
     expect(readCuaNarrowAgentBuildProfile()).toBeUndefined();
     expect(() => parseCuaNarrowAgentBuildProfile(undefined)).toThrow(/kind/);
@@ -280,14 +280,14 @@ describe("cua narrow agent runtime", () => {
       reason: "read-before-eligibility-compare",
       providerDigestSha256: startupContext.providerDigestSha256,
       selection: startupContext.selection,
-      networkDigestSha256: digestZCodeAgentNativeRuntimeNetwork(startupContext.network),
+      networkDigestSha256: digestZodyAgentNativeRuntimeNetwork(startupContext.network),
       snapshotSource: "existing-host-services",
       taskTimeProviderGuard: false,
     });
     expect(JSON.stringify(snapshot)).not.toContain("127.0.0.1:7890");
     expect(JSON.stringify(snapshot)).not.toContain("zody-test-ca.pem");
     expect(digestCuaNarrowNetworkConfig(startupContext.network)).toBe(
-      digestZCodeAgentNativeRuntimeNetwork(startupContext.network),
+      digestZodyAgentNativeRuntimeNetwork(startupContext.network),
     );
   });
 
@@ -326,7 +326,7 @@ describe("cua narrow agent runtime", () => {
     if (result.status !== "eligible") return;
 
     const readStartupContext = vi
-      .fn<() => Promise<ZCodeAgentNativeRuntimeStartupContext>>()
+      .fn<() => Promise<ZodyAgentNativeRuntimeStartupContext>>()
       .mockResolvedValueOnce(startupContext)
       .mockResolvedValueOnce({ ...startupContext, providerDigestSha256: "c".repeat(64) })
       .mockRejectedValueOnce(new Error("provider service unavailable"))

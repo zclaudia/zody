@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { TID_SETTINGS_BACK_BUTTON } from "@zcode/shared";
+import { TID_SETTINGS_BACK_BUTTON } from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

@@ -1,4 +1,4 @@
-import type { ExtensionBridgeClientMessage } from "@zcode/shared/browser-extension-transport";
+import type { ExtensionBridgeClientMessage } from "@zody/shared/browser-extension-transport";
 import type { NativeBridgeMessage } from "./workerProtocol.js";
 
 /** service worker 的 Chrome 事件投影转成 transport 消息；不保存任何业务状态。 */

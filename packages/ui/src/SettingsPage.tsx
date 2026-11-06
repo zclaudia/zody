@@ -15,18 +15,18 @@ import type {
   IntegratedTerminalShellOption,
   IntegratedTerminalShellSelection,
   Locale,
-  ZCodeInteractionBehavior,
-} from "@zcode/shared";
+  ZodyInteractionBehavior,
+} from "@zody/shared";
 import {
   TID_SETTINGS_BACK_BUTTON,
   TID_SETTINGS_PAGE,
   TID_SETTINGS_SECTION_NAV,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
 import { DesktopWindowFrame } from "@/DesktopWindowFrame.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { getPathLeaf } from "@/lib/path.js";
 import {
@@ -70,7 +70,7 @@ import {
   SettingsHeaderBreadcrumb,
   type SettingsBreadcrumbItem,
 } from "@/settings/SettingsHeaderBreadcrumb.js";
-import { useZCodeStore } from "@/store/StoreProvider.js";
+import { useZodyStore } from "@/store/StoreProvider.js";
 import { useTabStore } from "@/store/TabStoreProvider.js";
 import { isWorkspaceTab } from "@/store/tabStore.js";
 import type { Theme } from "@/useTheme.js";
@@ -198,7 +198,7 @@ export function SettingsPage({
   onOpenWorkspace?: () => void;
   allowOpenWorkspace?: boolean;
 }) {
-  const { intl, localePreference, setLocalePreference } = useZCodeIntl();
+  const { intl, localePreference, setLocalePreference } = useZodyIntl();
   const isMobileSettings = useWebRemoteControlMobileViewport(isWebRemoteControl);
   // 连接分区只在手机 Web Remote Control 且 bootstrap 已注入连接能力时出现；
   // 桌面 remoteAccess 与普通 Web 的设置列表保持原样。
@@ -285,24 +285,24 @@ export function SettingsPage({
   const [settingsBreadcrumbItems, setSettingsBreadcrumbItems] = useState<
     readonly SettingsBreadcrumbItem[]
   >([]);
-  const interfaceMode = useZCodeStore((state) => state.interfaceMode);
-  const setInterfaceMode = useZCodeStore((state) => state.setInterfaceMode);
-  const theme = useZCodeStore((state) => state.theme);
-  const setTheme = useZCodeStore((state) => state.setTheme);
-  const codePreviewSettings = useZCodeStore((state) => state.codePreviewSettings);
-  const setCodePreviewSettings = useZCodeStore((state) => state.setCodePreviewSettings);
-  const uiFontSizePx = useZCodeStore((state) => state.uiFontSizePx);
-  const setUiFontSizePx = useZCodeStore((state) => state.setUiFontSizePx);
-  const notificationEnabled = useZCodeStore((state) => state.notificationEnabled);
-  const setNotificationEnabled = useZCodeStore((state) => state.setNotificationEnabled);
-  const notificationSoundEnabled = useZCodeStore((state) => state.notificationSoundEnabled);
-  const setNotificationSoundEnabled = useZCodeStore((state) => state.setNotificationSoundEnabled);
+  const interfaceMode = useZodyStore((state) => state.interfaceMode);
+  const setInterfaceMode = useZodyStore((state) => state.setInterfaceMode);
+  const theme = useZodyStore((state) => state.theme);
+  const setTheme = useZodyStore((state) => state.setTheme);
+  const codePreviewSettings = useZodyStore((state) => state.codePreviewSettings);
+  const setCodePreviewSettings = useZodyStore((state) => state.setCodePreviewSettings);
+  const uiFontSizePx = useZodyStore((state) => state.uiFontSizePx);
+  const setUiFontSizePx = useZodyStore((state) => state.setUiFontSizePx);
+  const notificationEnabled = useZodyStore((state) => state.notificationEnabled);
+  const setNotificationEnabled = useZodyStore((state) => state.setNotificationEnabled);
+  const notificationSoundEnabled = useZodyStore((state) => state.notificationSoundEnabled);
+  const setNotificationSoundEnabled = useZodyStore((state) => state.setNotificationSoundEnabled);
   const [initialModelProviderTarget] = useState(() => consumePendingSettingsModelProviderTarget());
   // fork（F4.1b）：useCodingPlanUpgradeDialog 消费摘除（升级弹窗 Provider 已在 Root 摘挂载）。
   const [pendingModelProviderTarget, setPendingModelProviderTarget] = useState<
     SettingsModelProviderTarget | undefined
   >(() => initialModelProviderTarget);
-  const setNewUserOnboardingOpen = useZCodeStore((state) => state.setNewUserOnboardingOpen);
+  const setNewUserOnboardingOpen = useZodyStore((state) => state.setNewUserOnboardingOpen);
   const requestOnboardingDialog = () => setNewUserOnboardingOpen(true);
 
   // 这些投影同时供桌面 breadcrumb、分区标题和手机 header/返回使用；提前计算，
@@ -556,7 +556,7 @@ export function SettingsPage({
   const [toolGroupingTerminalEnabled, setToolGroupingTerminalEnabled] = useState(true);
   const [toolGroupingChangesEnabled, setToolGroupingChangesEnabled] = useState(false);
   const [zcodeInteractionBehavior, setZCodeInteractionBehavior] =
-    useState<ZCodeInteractionBehavior>("queue");
+    useState<ZodyInteractionBehavior>("queue");
   const [defaultHomeDir, setDefaultHomeDir] = useState("");
   const [hostPlatform, setHostPlatform] = useState("");
 
@@ -1069,8 +1069,8 @@ export function SettingsPage({
     },
     [updateSharedSettings],
   );
-  const handleZCodeInteractionBehaviorChange = useCallback(
-    async (behavior: ZCodeInteractionBehavior) => {
+  const handleZodyInteractionBehaviorChange = useCallback(
+    async (behavior: ZodyInteractionBehavior) => {
       await runSettingsActionAsync({
         featureId: "settings.conversation",
         action: "change_interaction_behavior",
@@ -1585,7 +1585,7 @@ export function SettingsPage({
                             onToolGroupingChangesEnabledChange={
                               handleToolGroupingChangesEnabledChange
                             }
-                            onZCodeInteractionBehaviorChange={handleZCodeInteractionBehaviorChange}
+                            onZCodeInteractionBehaviorChange={handleZodyInteractionBehaviorChange}
                             onAskUserQuestionAutoResolutionEnabledChange={
                               handleAskUserQuestionAutoResolutionEnabledChange
                             }

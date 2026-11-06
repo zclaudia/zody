@@ -7,8 +7,8 @@ import {
   MarkdownImage,
   normalizeConsecutiveMarkdownImageBlocks,
 } from "@/components/ai-elements/markdown-image.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
-import { rewriteMarkdownArtifactImageSources } from "@zcode/shared";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
+import { rewriteMarkdownArtifactImageSources } from "@zody/shared";
 import { sanitizeImageSourceForLog } from "@/components/ai-elements/image-preview-dialog.js";
 import {
   imageThumbnailClassName,
@@ -19,7 +19,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("artifact-backed Markdown images", () => {
   it("reads an authorized session artifact instead of passing its custom URI to img", async () => {
-    const ref = "zcode-artifact://session-1/cua-shot";
+    const ref = "zody-artifact://session-1/cua-shot";
     const rewritten = rewriteMarkdownArtifactImageSources(`![shot](${ref})`);
     const src = rewritten.match(/!\[shot\]\(([^)]+)\)/u)?.[1] ?? "";
     const readAttachment = vi.fn().mockResolvedValue({
@@ -31,7 +31,7 @@ describe("artifact-backed Markdown images", () => {
 
     const rendered = render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(MarkdownImage, {
           alt: "shot",

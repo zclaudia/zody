@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { createElement, type ReactNode } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON } from "@zcode/shared";
+import { TID_MODEL_PROVIDER_ADD_PROVIDER_BUTTON } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ProviderSettingsFormProvider } from "@/lib/providerSettingsFormTypes.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ModelProviderSection } from "@/settings/ModelProviderSection.js";
 import { ModelProviderSectionDetail } from "@/settings/model-provider-section/Detail.js";
 import { useModelProviders } from "@/hooks/useModelProviders.js";
@@ -48,7 +48,7 @@ function setView({ loading = false, providers = [] as ProviderSettingsFormProvid
 
 function section(locale: "en-US" | "zh-CN" = "en-US") {
   return createElement(
-    ZCodeIntlProvider,
+    ZodyIntlProvider,
     { initialLocale: locale },
     createElement(ModelProviderSection),
   );
@@ -128,7 +128,7 @@ describe("模型设置空状态", () => {
   it("已有 Provider 但导航选择尚未收敛时不提前显示空状态", () => {
     render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(ModelProviderSectionDetail, {
           selectedNavItem: null,

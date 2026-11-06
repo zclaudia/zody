@@ -2,8 +2,8 @@ import type {
   ExtensionBridgeClientMessage,
   ExtensionBridgeRequestMessage,
   ExtensionBridgeServerMessage,
-} from "@zcode/shared/browser-extension-transport";
-import type { BrowserExtensionBridgeStatus } from "@zcode/shared";
+} from "@zody/shared/browser-extension-transport";
+import type { BrowserExtensionBridgeStatus } from "@zody/shared";
 import type { ExtensionStoredCredential } from "./types.js";
 
 /** Main 侧 Host 投递句柄；Host 退出时必须 unregister，避免事件写进已退出进程。 */

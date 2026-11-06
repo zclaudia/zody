@@ -361,7 +361,7 @@ renderer query {requestGeneration}
 - TSL18 使用 E2E-only membership gate 精确暂停 tasks-index `listTasks` 回包：先确认 running row 与 spinner，
   再启动并确认旧 membership refresh 已在途，Stop 收敛为 `completedInterrupted` 后释放旧回包；最终等待
   对应 workspace query 重新 fresh，并断言释放窗口内 spinner 未重现。gate 只在
-  `VITE_ZCODE_E2E_STORE_BRIDGE=1` 时通过 `window.__testActions` 暴露，不进入普通生产 renderer。
+  `VITE_ZODY_E2E_STORE_BRIDGE=1` 时通过 `window.__testActions` 暴露，不进入普通生产 renderer。
 - Goal 只取 `ordinary terminal / notSatisfied / verified / cancelled / error` 的通知边界，不与 queue kind、provider、分屏做笛卡尔积。
 - desktop restart 代表：先为 workspace B 持久化 last-session，从 A 点击 B 的 workspace 行“新建对话”，断言 draft 意图获胜且无旧 session 回写；另证普通激活 B 仍恢复 last-session。
 - mobile `web-remote-replayable` 只证明 snapshot/gap 恢复后同一 phase/attention/unread 投影一致，并验证 workspace identity 隔离。

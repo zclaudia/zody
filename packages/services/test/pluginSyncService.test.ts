@@ -3,6 +3,7 @@ import { chmod, mkdir, readFile, realpath, stat, writeFile } from "node:fs/promi
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createPluginSyncArchive } from "../src/plugin-sync/pluginSyncArchive.js";
 import { createPluginSyncService } from "../src/plugin-sync/pluginSyncService.js";
 
 function makeHome() {
@@ -45,6 +46,21 @@ async function writeInlinePlugin(
   await mkdir(join(pluginRoot, "skills", "demo"), { recursive: true });
   await writeFile(join(pluginRoot, "skills", "demo", "SKILL.md"), "---\nname: demo\n---\n");
   return pluginRoot;
+}
+
+async function writeRejectedCanonicalPlugin(
+  home: string,
+  kind: "directory" | "invalid-name",
+): Promise<string> {
+  const root = await writeInlinePlugin(join(home, "external"), "legacy-tools");
+  await mkdir(join(root, ".zody-plugin"), { recursive: true });
+  const manifestPath = join(root, ".zody-plugin", "plugin.json");
+  if (kind === "directory") {
+    await mkdir(manifestPath);
+  } else {
+    await writeFile(manifestPath, JSON.stringify({ name: "Bad Name" }), "utf8");
+  }
+  return root;
 }
 
 async function readJsonFile(filePath: string): Promise<Record<string, unknown>> {
@@ -98,6 +114,111 @@ describe("plugin sync service", () => {
     ]);
     expect(result.maxArchiveBytes).toBeGreaterThan(0);
   });
+
+  // R54：同步入口与其他发现方共用“新格式优先、旧格式仅缺失回退”。
+  it("discovers inline plugins from the new-format manifest and prefers it over legacy", async () => {
+    const home = makeHome();
+    process.env.HOME = home;
+    const pluginRoot = join(home, "external", "canonical-tools");
+    await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+    await writeFile(
+      join(pluginRoot, ".zody-plugin", "plugin.json"),
+      `${JSON.stringify(
+        {
+          description: "new format",
+          name: "canonical-tools",
+          skills: "skills",
+          version: "2.0.0",
+        },
+        null,
+        2,
+      )}\n`,
+      "utf-8",
+    );
+    await writeFile(
+      join(pluginRoot, ".zcode-plugin", "plugin.json"),
+      `${JSON.stringify(
+        { description: "legacy format", name: "legacy-tools", version: "1.0.0" },
+        null,
+        2,
+      )}\n`,
+      "utf-8",
+    );
+    await writeZcodeUserConfig(home, { plugins: { dirs: [pluginRoot], enabledPlugins: {} } });
+
+    const result = await createPluginSyncService().listLocalUserPluginCandidates();
+
+    expect(result.candidates).toMatchObject([
+      {
+        description: "new format",
+        directoryName: "canonical-tools",
+        name: "canonical-tools",
+        pluginId: "canonical-tools@inline",
+        version: "2.0.0",
+      },
+    ]);
+  });
+
+  // R54：新格式存在但非法 → 该插件不可同步，不回退旧格式。
+  it("does not sync an inline plugin whose new-format manifest is invalid", async () => {
+    const home = makeHome();
+    process.env.HOME = home;
+    const pluginRoot = join(home, "external", "broken-tools");
+    await mkdir(join(pluginRoot, ".zody-plugin"), { recursive: true });
+    await mkdir(join(pluginRoot, ".zcode-plugin"), { recursive: true });
+    await writeFile(join(pluginRoot, ".zody-plugin", "plugin.json"), "{ not json", "utf-8");
+    await writeFile(
+      join(pluginRoot, ".zcode-plugin", "plugin.json"),
+      `${JSON.stringify({ name: "legacy-tools", version: "1.0.0" })}\n`,
+      "utf-8",
+    );
+    await writeZcodeUserConfig(home, { plugins: { dirs: [pluginRoot], enabledPlugins: {} } });
+
+    const result = await createPluginSyncService().listLocalUserPluginCandidates();
+
+    expect(result.candidates).toEqual([]);
+  });
+
+  it.each(["directory", "invalid-name"] as const)(
+    "rejects a %s canonical manifest instead of listing the legacy plugin",
+    async (kind) => {
+      const home = makeHome();
+      process.env.HOME = home;
+      const pluginRoot = await writeRejectedCanonicalPlugin(home, kind);
+      await writeZcodeUserConfig(home, { plugins: { dirs: [pluginRoot] } });
+
+      const result = await createPluginSyncService().listLocalUserPluginCandidates();
+
+      expect(result.candidates).toEqual([]);
+    },
+  );
+
+  it.each(["directory", "invalid-name"] as const)(
+    "rejects a %s canonical manifest before importing files or config",
+    async (kind) => {
+      const sourceHome = makeHome();
+      const pluginRoot = await writeRejectedCanonicalPlugin(sourceHome, kind);
+      const name = kind === "directory" ? "legacy-tools" : "Bad Name";
+      const archive = await createPluginSyncArchive({
+        entries: [{ sourcePath: pluginRoot, archivePath: "rejected-plugin" }],
+        metadata: {
+          plugins: [{ name, pluginId: `${name}@inline`, directoryName: "rejected-plugin" }],
+        },
+      });
+      const remoteHome = makeHome();
+      process.env.HOME = remoteHome;
+
+      const result = await createPluginSyncService().importPluginsArchive({
+        archive,
+        overwrite: false,
+      });
+
+      expect(result.results).toMatchObject([{ status: "failed" }]);
+      expect(existsSync(join(remoteHome, ".zody", "plugins", "rejected-plugin"))).toBe(false);
+      expect(existsSync(join(remoteHome, ".zody", "cli", "config.json"))).toBe(false);
+    },
+  );
 
   it("checks remote plugin and config directory write access before sync", async () => {
     const remoteHome = makeHome();

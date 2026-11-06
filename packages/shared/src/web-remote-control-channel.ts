@@ -10,7 +10,7 @@
  * 它的校验 owner 仍是 `validation.ts` 的 `parseWebRemoteControlAppPayload`，接收方必须先用
  * 那个函数校验后再使用。这样 rpc-frame 这类高频帧不会在 channel 层被 base64 校验二次解析。
  *
- * 演进规则（spec「版本兼容」）：新增 `zcode_type` 或在已有类型上新增可选字段时，都要在
+ * 演进规则（spec「版本兼容」）：新增 `zody_type` 或在已有类型上新增可选字段时，都要在
  * `WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES` 登记引入版本，并把
  * `WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION` 加 1。发送方只在协商版本达到引入版本时才写该
  * 类型或字段；接收方发现超出协商版本的已登记类型或字段时丢弃该帧，并回
@@ -30,12 +30,12 @@ export const WEB_REMOTE_CONTROL_CHANNEL_KIND = "zcode-remote";
 export const WEB_REMOTE_CONTROL_BACKEND_CAPABILITY = "zcode-remote-control";
 
 /** channel 帧格式版本：只有帧格式不兼容变化时才递增，不相等就直接 `close{incompatible-version}`。 */
-export const WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION = 1;
+export const WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION = 2;
 
 /** 应用层 payload 协议区间；`max` 是本仓库当前实现的版本。 */
-export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION = 1;
+export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MIN_VERSION = 5;
 /** v2：最近项目 / 打开项目 / 打开窗口 payload，以及 bootstrap-response 的新字段。 */
-export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION = 4;
+export const WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION = 5;
 
 /** gateway 不在数据 socket 上发 ping，心跳由应用层每 15 秒发一次；45 秒没有入站帧即判定 channel 已死。 */
 export const WEB_REMOTE_CONTROL_CHANNEL_HEARTBEAT_INTERVAL_MS = 15_000;
@@ -149,6 +149,7 @@ export const webRemoteControlChannelHelloFrameSchema = z
 export const webRemoteControlChannelHelloAckFrameSchema = z
   .object({
     type: z.literal("hello_ack"),
+    protocolVersion: positiveSafeIntegerSchema,
     appProtocol: positiveSafeIntegerSchema,
     desktopAppVersion: appVersionSchema,
   })
@@ -399,7 +400,7 @@ export function isWebRemoteControlChannelClosingFinished(options: {
   return options.nowMs - options.startedAtMs >= timeout;
 }
 
-export type WebRemoteControlAppPayloadType = WebRemoteControlAppPayload["zcode_type"];
+export type WebRemoteControlAppPayloadType = WebRemoteControlAppPayload["zody_type"];
 
 export interface WebRemoteControlAppProtocolFeature {
   /** 引入该类型或字段的 appProtocol 版本。 */
@@ -414,7 +415,7 @@ export interface WebRemoteControlAppProtocolFeature {
 
 /**
  * 「类型和字段的引入版本」清单：类型级条目覆盖 `WebRemoteControlAppPayload` 的全部
- * `zcode_type`；字段级条目只在 appProtocol > 首个版本新增字段时登记，未登记的字段按所属类型的
+ * `zody_type`；字段级条目只在 appProtocol > 首个版本新增字段时登记，未登记的字段按所属类型的
  * 引入版本处理。单测保证清单与 `webRemoteControlAppPayloadSchema` 一致。
  */
 export const WEB_REMOTE_CONTROL_APP_PROTOCOL_FEATURES: readonly WebRemoteControlAppProtocolFeature[] =
@@ -507,7 +508,7 @@ function findUnsupportedAppProtocolFeature(
   features: readonly WebRemoteControlAppProtocolFeature[],
 ): { zcodeType: string; field?: string } | null {
   const typeVersion = resolveWebRemoteControlAppProtocolVersion(
-    payload.zcode_type,
+    payload.zody_type,
     undefined,
     features,
   );
@@ -515,16 +516,16 @@ function findUnsupportedAppProtocolFeature(
     return null;
   }
   if (typeVersion > negotiatedAppProtocol) {
-    return { zcodeType: payload.zcode_type };
+    return { zcodeType: payload.zody_type };
   }
   for (const feature of features) {
     if (
       feature.field !== undefined &&
-      feature.zcodeType === payload.zcode_type &&
+      feature.zcodeType === payload.zody_type &&
       feature.introducedIn > negotiatedAppProtocol &&
       hasPayloadFieldPath(payload, feature.field)
     ) {
-      return { zcodeType: payload.zcode_type, field: feature.field };
+      return { zcodeType: payload.zody_type, field: feature.field };
     }
   }
   return null;

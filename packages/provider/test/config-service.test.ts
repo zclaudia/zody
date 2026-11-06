@@ -144,7 +144,7 @@ describe("ProviderConfigService", () => {
           ),
         );
         const service = new ProviderConfigService({
-          zcodeBuiltinSource: new MutableSource(
+          zodyBuiltinSource: new MutableSource(
             layerSnapshot(
               "builtin-1",
               new ProviderConfigMap([
@@ -178,7 +178,7 @@ describe("ProviderConfigService", () => {
       layerSnapshot("personal-1", new ProviderConfigMap([["p", original]])),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("builtin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("builtin-1")),
       personalRepository: personal,
     });
     try {
@@ -211,7 +211,7 @@ describe("ProviderConfigService", () => {
       layerSnapshot("personal-1", new ProviderConfigMap([["p", personalProvider([])]])),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: builtin,
+      zodyBuiltinSource: builtin,
       personalRepository: personal,
     });
     try {
@@ -239,7 +239,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: builtin,
+      zodyBuiltinSource: builtin,
       personalRepository: personal,
     });
     try {
@@ -259,7 +259,7 @@ describe("ProviderConfigService", () => {
     );
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: builtin,
+      zodyBuiltinSource: builtin,
       personalRepository: personal,
     });
     try {
@@ -306,7 +306,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: builtin,
+      zodyBuiltinSource: builtin,
       personalRepository: personal,
     });
     try {
@@ -353,12 +353,12 @@ describe("ProviderConfigService", () => {
     );
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: builtin,
+      zodyBuiltinSource: builtin,
       personalRepository: personal,
     });
     const account = new MutableSource<AccountProviderConfigSnapshot>({
       revision: "account-1",
-      basedOnZCodeBuiltinRevision: "builtin-1",
+      basedOnZodyBuiltinRevision: "builtin-1",
       providers: new ProviderConfigMap([
         [
           "account",
@@ -535,16 +535,16 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
     const snapshot = await service.read();
 
     expect(snapshot.revision).toBe('["zcodeBuiltin-1","personal-1"]');
-    expect(snapshot.zcodeBuiltinRevision).toBe("zcodeBuiltin-1");
+    expect(snapshot.zodyBuiltinRevision).toBe("zcodeBuiltin-1");
     expect(snapshot.personalRevision).toBe("personal-1");
-    expect(snapshot.zcodeBuiltinProviders.keys()).toEqual(["zcodeBuiltin"]);
+    expect(snapshot.zodyBuiltinProviders.keys()).toEqual(["zcodeBuiltin"]);
     expect(snapshot.personalProviders.keys()).toEqual(["personal"]);
   });
 
@@ -562,7 +562,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
@@ -586,7 +586,7 @@ describe("ProviderConfigService", () => {
     );
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
@@ -605,7 +605,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -642,7 +642,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(
+      zodyBuiltinSource: new MutableSource(
         layerSnapshot("zcodeBuiltin-1", new ProviderConfigMap([["builtin", zcodeBuiltinProvider]])),
       ),
       personalRepository: personal,
@@ -659,7 +659,7 @@ describe("ProviderConfigService", () => {
   it("Personal-only Provider 必须先显式创建，普通保存不能凭空创建", async () => {
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -690,7 +690,7 @@ describe("ProviderConfigService", () => {
     );
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
@@ -722,7 +722,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -768,7 +768,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
@@ -801,7 +801,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
@@ -849,7 +849,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
@@ -884,7 +884,7 @@ describe("ProviderConfigService", () => {
     });
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource({
+      zodyBuiltinSource: new MutableSource({
         ...layerSnapshot("zcodeBuiltin-1"),
         providerTemplates: new ProviderTemplateMap([["deepseek", template]]),
       }),
@@ -924,7 +924,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
 
@@ -958,7 +958,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -984,7 +984,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -1019,7 +1019,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
     const update = vi.spyOn(personal, "update");
@@ -1056,7 +1056,7 @@ describe("ProviderConfigService", () => {
       layerSnapshot("personal-2", new ProviderConfigMap([["personal", personalProvider(["old"])]])),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -1077,7 +1077,7 @@ describe("ProviderConfigService", () => {
       layerSnapshot("personal-1", new ProviderConfigMap([["personal", personalProvider(["old"])]])),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
     await expect(
@@ -1104,7 +1104,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
     await expect(
@@ -1131,7 +1131,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -1146,7 +1146,7 @@ describe("ProviderConfigService", () => {
 
   it("新增 Personal Model 拒绝覆盖 Built-in 或已有 Personal 成员", async () => {
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(
+      zodyBuiltinSource: new MutableSource(
         layerSnapshot(
           "zcodeBuiltin-1",
           new ProviderConfigMap([["personal", localProvider(["builtin-model"])]]),
@@ -1170,7 +1170,7 @@ describe("ProviderConfigService", () => {
 
   it("模型重命名拒绝覆盖 Built-in 或已有 Personal 成员", async () => {
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(
+      zodyBuiltinSource: new MutableSource(
         layerSnapshot(
           "zcodeBuiltin-1",
           new ProviderConfigMap([["zcodeBuiltin", localProvider(["managed-model"])]]),
@@ -1195,7 +1195,7 @@ describe("ProviderConfigService", () => {
   it("迁移边界可以原子替换完整 Personal Overlay", async () => {
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
     const providers = new ProviderConfigMap([["personal", personalProvider(["model-a"])]]);
@@ -1229,7 +1229,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -1285,7 +1285,7 @@ describe("ProviderConfigService", () => {
       ),
     );
     const service = new ProviderConfigService({
-      zcodeBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
+      zodyBuiltinSource: new MutableSource(layerSnapshot("zcodeBuiltin-1")),
       personalRepository: personal,
     });
 
@@ -1314,12 +1314,12 @@ describe("ProviderConfigService", () => {
     );
     const personal = new MemoryPersonalRepository(layerSnapshot("personal-1"));
     const configService = new ProviderConfigService({
-      zcodeBuiltinSource: zcodeBuiltin,
+      zodyBuiltinSource: zcodeBuiltin,
       personalRepository: personal,
     });
     const accountSource = new MutableSource<AccountProviderConfigSnapshot>({
       revision: "account-1",
-      basedOnZCodeBuiltinRevision: "zcodeBuiltin-1",
+      basedOnZodyBuiltinRevision: "zcodeBuiltin-1",
       providers: ProviderConfigMap.empty(),
     });
     const registry = new ProviderRegistryService({
@@ -1338,7 +1338,7 @@ describe("ProviderConfigService", () => {
     zcodeBuiltin.emit("catalog-updated");
     accountSource.current = {
       revision: "account-2",
-      basedOnZCodeBuiltinRevision: "zcodeBuiltin-2",
+      basedOnZodyBuiltinRevision: "zcodeBuiltin-2",
       providers: ProviderConfigMap.empty(),
     };
     accountSource.emit("builtin-recomputed");

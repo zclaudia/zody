@@ -5,7 +5,7 @@ import {
   TID_SIDE_PANE_TOGGLE,
   TID_WORKSPACE_HEADER,
   TID_WORKSPACE_TITLE,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, waitForDefaultWorkspaceReady } from "../helpers/desktop-app.js";
 
 const TAB_SELECTOR = "[data-side-pane-tab-id]";
@@ -301,7 +301,7 @@ describe("Side Pane Tab responsive interactions", () => {
       expect(terminalTabStyle.gap).toBe("4px");
       await browser.saveScreenshot(
         join(
-          process.env.ZCODE_E2E_ARTIFACT_DIR || process.cwd(),
+          process.env.ZODY_E2E_ARTIFACT_DIR || process.cwd(),
           `independent-panels-${theme}.png`,
         ),
       );

@@ -4,8 +4,8 @@ import type {
   ExtensionBridgeRequestMessage,
   ExtensionBridgeServerMessage,
   ExtensionNativeTab,
-} from "@zcode/shared/browser-extension-transport";
-import type { BrowserCommand } from "@zcode/shared";
+} from "@zody/shared/browser-extension-transport";
+import type { BrowserCommand } from "@zody/shared";
 import { ExtensionCdpTransport } from "../src/browser-core/extensionCdpTransport.js";
 import { ExtensionBrowserBackend } from "../src/host/extensionBrowserBackend.js";
 import type {

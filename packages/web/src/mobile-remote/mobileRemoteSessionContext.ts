@@ -7,7 +7,7 @@ import {
   type MobileBridgeErrorCode,
   type MobileRemoteBridge,
   type MobileSessionContext,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * Remote 页面的只读会话上下文入口（spec 第 7、8、9.1 节）。
@@ -26,8 +26,7 @@ import {
  * Release 构建始终要求 HTTPS；Android `ZodyRemoteBridge` 只在 Debug 构建声明该能力，
  * 页面不从 URL 或旧桥单独探测调试开关（spec 第 6.1 节「Debug 明文规则不变」）。
  */
-export const MOBILE_REMOTE_INSECURE_GATEWAY_TRANSPORT_CAPABILITY =
-  "insecure-gateway-transport";
+export const MOBILE_REMOTE_INSECURE_GATEWAY_TRANSPORT_CAPABILITY = "insecure-gateway-transport";
 
 const MOBILE_REMOTE_SESSION_CONTEXT_CAPABILITY = "session-context";
 
@@ -77,8 +76,7 @@ export function resolveMobileRemoteAllowInsecureTransport(input: {
 export function readMobileRemoteSessionContext(
   options: ReadMobileRemoteSessionContextOptions = {},
 ): MobileRemoteSession {
-  const bridge =
-    options.bridge ?? resolveMobileRemoteBridge(options.target ?? globalThis);
+  const bridge = options.bridge ?? resolveMobileRemoteBridge(options.target ?? globalThis);
   if (!bridge) {
     throw new MobileRemoteSessionContextError(
       "native-bridge-unavailable",

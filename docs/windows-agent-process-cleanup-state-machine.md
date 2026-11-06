@@ -10,7 +10,7 @@ Use Helper 凭据轮换以及 App 退出时，都必须回收 Agent 根进程与
 现有等待路径如下，禁止新增第二套等待语义：
 
 ```text
-ZCodeAgentProcessManager
+ZodyAgentProcessManager
   -> ZCodeProtocolClient.disposeAndWait
   -> ZCodeStdioTransport.disposeAndWait
   -> terminateProcessTreeAndWait

@@ -6,7 +6,7 @@
 import { createElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import type { CuaBuildCapability } from "@zcode/shared";
+import type { CuaBuildCapability } from "@zody/shared";
 
 const h = vi.hoisted(() => {
   let capability: CuaBuildCapability = { kind: "placeholder" };
@@ -53,7 +53,7 @@ vi.mock("@/hooks/useSettingService.js", () => ({
   }),
 }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },

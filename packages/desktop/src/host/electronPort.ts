@@ -1,4 +1,4 @@
-import type { MessagePortLike, MessagePortPayload } from "@zcode/rpc";
+import type { MessagePortLike, MessagePortPayload } from "@zody/rpc";
 
 interface ElectronMessagePortLike {
   on(event: "message", listener: (event: { data: MessagePortPayload }) => void): unknown;

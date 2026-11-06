@@ -2,23 +2,23 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IFeedbackService } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
+import type { IFeedbackService } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
 
 import { useFeedbackStore } from "@/feedback/feedbackStore.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { TabStoreProvider } from "@/store/TabStoreProvider.js";
 
 // fork（F2.9，决策门 D7）：反馈中心收敛为本地面板。
-// 「打开反馈地址」入口显隐由构建期 ZCODE_FEEDBACK_ISSUE_URL 决定；这里用可变 getter 模拟
+// 「打开反馈地址」入口显隐由构建期 ZODY_FEEDBACK_ISSUE_URL 决定；这里用可变 getter 模拟
 // 构建期 define 的两种注入结果（未注入为空串、注入为完整 URL）。
 const sharedMocks = vi.hoisted(() => ({ feedbackIssueUrl: "" as string }));
 
-vi.mock("@zcode/shared", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@zcode/shared")>();
+vi.mock("@zody/shared", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@zody/shared")>();
   return {
     ...original,
-    get ZCODE_FEEDBACK_ISSUE_URL() {
+    get ZODY_FEEDBACK_ISSUE_URL() {
       return sharedMocks.feedbackIssueUrl;
     },
   };
@@ -36,7 +36,7 @@ function makePlatform(): IPlatformService {
 function renderFeedbackCenter(platform: IPlatformService) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         TabStoreProvider,
@@ -66,7 +66,7 @@ describe("FeedbackCenter（反馈本地化面板）", () => {
     expect(screen.queryByText("我的反馈")).toBeNull();
   });
 
-  it("未配置 ZCODE_FEEDBACK_ISSUE_URL 时不显示打开反馈地址入口", () => {
+  it("未配置 ZODY_FEEDBACK_ISSUE_URL 时不显示打开反馈地址入口", () => {
     sharedMocks.feedbackIssueUrl = "";
     useFeedbackStore.setState({ open: true });
     renderFeedbackCenter(makePlatform());
@@ -75,7 +75,7 @@ describe("FeedbackCenter（反馈本地化面板）", () => {
     expect(screen.queryByText("打开反馈地址")).toBeNull();
   });
 
-  it("配置 ZCODE_FEEDBACK_ISSUE_URL 后显示入口，点击打开配置的地址", async () => {
+  it("配置 ZODY_FEEDBACK_ISSUE_URL 后显示入口，点击打开配置的地址", async () => {
     sharedMocks.feedbackIssueUrl = "https://example.com/feedback";
     useFeedbackStore.setState({ open: true });
     const platform = makePlatform();

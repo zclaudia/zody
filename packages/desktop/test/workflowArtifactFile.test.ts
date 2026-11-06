@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { dirname, join, relative, sep } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { setDataBaseDir } from "@zcode/services/node";
+import { setDataBaseDir } from "@zody/services/node";
 import {
   WORKFLOW_ARTIFACT_FILE_MAX_BYTES,
   materializeWorkflowArtifactFile,

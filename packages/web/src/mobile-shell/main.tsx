@@ -1,8 +1,8 @@
 import {
   installDocumentHiddenMotionPause,
   installMobileKeyboardInsetTracker,
-} from "@zcode/ui/mobile-shell";
-import "@zcode/ui/styles.css";
+} from "@zody/ui/mobile-shell";
+import "@zody/ui/styles.css";
 import { applyWebThemePreference } from "../webThemePreference.js";
 import { bootstrapMobileShell } from "./bootstrap.js";
 

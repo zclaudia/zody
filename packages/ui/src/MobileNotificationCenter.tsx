@@ -1,9 +1,9 @@
 import { useState } from "react";
-import type { MobileNotification } from "@zcode/services/mobile-notifications";
+import type { MobileNotification } from "@zody/services/mobile-notifications";
 import { useMobileNotificationFeed } from "@/hooks/useMobileNotificationFeed.js";
-import type { IMobileNotificationReaderContract } from "@zcode/services/mobile-notifications";
+import type { IMobileNotificationReaderContract } from "@zody/services/mobile-notifications";
 import { Button } from "@/components/ui/button.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { Loader2 } from "lucide-react";
 
 export interface MobileNotificationCenterProps {
@@ -38,7 +38,7 @@ export function MobileNotificationCenter({
   labels,
 }: MobileNotificationCenterProps) {
   const feed = useMobileNotificationFeed(reader);
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const [openingNotificationId, setOpeningNotificationId] = useState<string | null>(null);
   const [openError, setOpenError] = useState<unknown>(null);
   const [actionError, setActionError] = useState<unknown>(null);

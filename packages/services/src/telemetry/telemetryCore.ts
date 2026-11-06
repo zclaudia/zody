@@ -1,17 +1,17 @@
 /* oxlint-disable eslint(max-lines) -- telemetry state lock、deviceMid 编排和上报路径共享同一状态文件，拆分会增加锁语义漂移风险。 */
 import {
   createUuid,
-  ZCODE_VERSION,
-  ZCODE_ENV,
-  ZCODE_TELEMETRY_REPORT_ENDPOINT,
-  buildZCodeSourceHeadersFromContext,
-  rewriteZCodeEndpointUrl,
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_VERSION,
+  ZODY_ENV,
+  ZODY_TELEMETRY_REPORT_ENDPOINT,
+  buildZodySourceHeadersFromContext,
+  rewriteZodyEndpointUrl,
+  ZODY_DATA_ROOT_DIR_NAME,
   sanitizeTelemetryEventDetail,
   type TelemetryEventPayload,
   type TelemetryRendererContext,
   type TelemetryMarketingAttribution,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { mkdir, open, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { version } from "node:os";
@@ -19,7 +19,7 @@ import { dirname, join } from "node:path";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import { getAppConfigDir } from "../paths.js";
 
-const REPORT_ENDPOINT = ZCODE_TELEMETRY_REPORT_ENDPOINT;
+const REPORT_ENDPOINT = ZODY_TELEMETRY_REPORT_ENDPOINT;
 // fork（F3.1）：DEFAULT_ZCODE_ENDPOINT_ORIGIN 为空后不能再假设官方默认源。
 // 遥测只改写「构建期配置的上报端点」到运行时活动端点，因此显式把配置端点 origin 作为源；
 // REPORT_ENDPOINT 为空时 reportEvent 已提前返回，不会走到这里。
@@ -64,7 +64,7 @@ interface TelemetryCoreDependencies {
   releaseChannel?: string;
   osVersion?: string;
   homeDir?: string;
-  resolveZCodeEndpointOrigin?: () => Promise<string> | string;
+  resolveZodyEndpointOrigin?: () => Promise<string> | string;
   requestTimeoutMs?: number;
   sleep?: (ms: number) => Promise<void>;
   warn?: (message: string) => void;
@@ -137,14 +137,14 @@ function toLocalDateKey(timestamp: number, timeZone: string): string {
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 function resolveTelemetryStateFile(homeDir?: string): string {
   if (homeDir) {
-    return join(homeDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
+    return join(homeDir, ZODY_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.json");
   }
   return join(getAppConfigDir(), "telemetry-state.json");
 }
 
 function resolveTelemetryLockFile(homeDir?: string): string {
   if (homeDir) {
-    return join(homeDir, ZCODE_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.lock");
+    return join(homeDir, ZODY_DATA_ROOT_DIR_NAME, "v2", "telemetry-state.lock");
   }
   return join(getAppConfigDir(), "telemetry-state.lock");
 }
@@ -357,7 +357,7 @@ export function createTelemetryCore(dependencies: TelemetryCoreDependencies = {}
   let didWarnMarketingParamsLoadFailure = false;
   const randomUUID = dependencies.randomUUID ?? (() => createUuid());
   const now = dependencies.now ?? Date.now;
-  const appVersion = dependencies.appVersion ?? ZCODE_VERSION;
+  const appVersion = dependencies.appVersion ?? ZODY_VERSION;
   const platform = dependencies.platform ?? process.platform;
   const osVersion = dependencies.osVersion ?? version();
   const requestTimeoutMs = dependencies.requestTimeoutMs ?? REPORT_REQUEST_TIMEOUT_MS;
@@ -470,23 +470,23 @@ export function createTelemetryCore(dependencies: TelemetryCoreDependencies = {}
     });
 
     const endpoint = String(
-      rewriteZCodeEndpointUrl(
+      rewriteZodyEndpointUrl(
         REPORT_ENDPOINT,
-        (await dependencies.resolveZCodeEndpointOrigin?.()) ?? REPORT_ENDPOINT,
+        (await dependencies.resolveZodyEndpointOrigin?.()) ?? REPORT_ENDPOINT,
         { sourceOrigin: REPORT_ENDPOINT_ORIGIN },
       ),
     );
 
-    const headers = buildZCodeSourceHeadersFromContext({
+    const headers = buildZodySourceHeadersFromContext({
       appVersion,
       platform,
       arch: dependencies.arch ?? process.arch,
       osVersion,
-      releaseChannel: dependencies.releaseChannel ?? ZCODE_ENV,
+      releaseChannel: dependencies.releaseChannel ?? ZODY_ENV,
       clientLanguage: context.clientLanguage,
       clientTimezone: context.clientTimezone,
       // fork（F2.10）：来源头停发 X-Device-Mid 与 HTTP-Referer；
-      // deviceMid 仍只进上报 body（遥测整体由构建期 ZCODE_TELEMETRY_REPORT_ENDPOINT 控制）。
+      // deviceMid 仍只进上报 body（遥测整体由构建期 ZODY_TELEMETRY_REPORT_ENDPOINT 控制）。
     });
     const startedAt = Date.now();
     let lastError: TelemetryReportError | null = null;

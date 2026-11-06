@@ -6,4 +6,4 @@ export {
   clampDesktopZoomLevel,
   resolveDesktopZoomFactorForLevel,
   resolveDesktopZoomLevelFromFactor,
-} from "@zcode/shared";
+} from "@zody/shared";

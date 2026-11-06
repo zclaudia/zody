@@ -8,13 +8,13 @@ import {
   ProviderConfig,
   ProviderConfigMap,
   ProviderConfigResolver,
-} from "@zcode/provider";
+} from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
-  NodeZCodeBuiltinProviderConfigSource,
-} from "@zcode/provider-node";
+  NodeZodyBuiltinProviderConfigSource,
+} from "@zody/provider-node";
 import { getAppConfigDir, setDataBaseDir } from "../src/paths.js";
-import { readLegacyZCodeConfigProviders } from "../src/model-provider/legacyZCodeConfigProviderReader.js";
+import { readLegacyZodyConfigProviders } from "../src/model-provider/legacyZodyConfigProviderReader.js";
 import { importLegacyPersonalProviderConfig } from "../src/model-provider/legacyPersonalProviderConfigImporter.js";
 
 let directory: string | undefined;
@@ -83,13 +83,13 @@ describe("Todo 72 已发布 config.json 首次升级", () => {
       importLegacy: async () => {
         importCount++;
         return importLegacyPersonalProviderConfig({
-          legacyProviders: await readLegacyZCodeConfigProviders(),
+          legacyProviders: await readLegacyZodyConfigProviders(),
         });
       },
     });
-    const source = new NodeZCodeBuiltinProviderConfigSource({
+    const source = new NodeZodyBuiltinProviderConfigSource({
       bundledFilePath: fileURLToPath(
-        new URL("../../../config/provider/zcode-builtin.json", import.meta.url),
+        new URL("../../../config/provider/zody-builtin.json", import.meta.url),
       ),
       watch: false,
     });
@@ -98,9 +98,9 @@ describe("Todo 72 已发布 config.json 首次升级", () => {
       expect(personal.providers.keys()).toEqual(["bigmodel-api", "zai-api", customId]);
       const builtin = await source.read();
       const resolved = new ProviderConfigResolver().resolve({
-        zcodeBuiltinProviders: builtin.providers,
-        zcodeBuiltinProviderTemplates: builtin.providerTemplates,
-        zcodeBuiltinModelRules: builtin.models,
+        zodyBuiltinProviders: builtin.providers,
+        zodyBuiltinProviderTemplates: builtin.providerTemplates,
+        zodyBuiltinModelRules: builtin.models,
         personalProviders: personal.providers,
         personalModels: personal.models,
         accountProviders: ProviderConfigMap.empty(),
@@ -132,9 +132,9 @@ describe("Todo 72 已发布 config.json 首次升级", () => {
         enabled ?? true,
       );
       const missingKey = new ProviderConfigResolver().resolve({
-        zcodeBuiltinProviders: builtin.providers,
-        zcodeBuiltinProviderTemplates: builtin.providerTemplates,
-        zcodeBuiltinModelRules: builtin.models,
+        zodyBuiltinProviders: builtin.providers,
+        zodyBuiltinProviderTemplates: builtin.providerTemplates,
+        zodyBuiltinModelRules: builtin.models,
         personalProviders: personal.providers.setRule({
           ...personal.providers.getRule(customId)!,
           enabled: true,
@@ -160,7 +160,7 @@ describe("Todo 72 已发布 config.json 首次升级", () => {
         importLegacy: async () => {
           importCount++;
           return importLegacyPersonalProviderConfig({
-            legacyProviders: await readLegacyZCodeConfigProviders(),
+            legacyProviders: await readLegacyZodyConfigProviders(),
           });
         },
       });

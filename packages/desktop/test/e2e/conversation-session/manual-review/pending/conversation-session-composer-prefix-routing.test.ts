@@ -2,8 +2,8 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
   TID_V4_COMPOSER_INPUT,
-  ZCODE_AGENT_PROVIDER,
-} from "@zcode/shared";
+  ZODY_AGENT_PROVIDER,
+} from "@zody/shared";
 import { DEFAULT_WORKSPACE } from "../../../helpers/desktop-app.js";
 import {
   prepareConversationE2E,
@@ -290,7 +290,7 @@ async function seedRendererPromptSources(seed: {
       return { ok: true, boardId: board.id };
     },
     DEFAULT_WORKSPACE,
-    ZCODE_AGENT_PROVIDER,
+    ZODY_AGENT_PROVIDER,
     seed,
   )) as { ok: boolean; reason?: string; bridges?: Record<string, boolean> };
 

@@ -44,7 +44,7 @@ directory. The script never prints credential values.
 Run `node scripts/mobile-remote-p8-push-harness.mjs start` to create the
 infrastructure and issue backend/device credentials. The output contains only
 the Android-reachable Gateway URL and private credential-file path. The pending
-WDIO case uses its own `ZCODE_E2E_HOME_DIR`, configures the backend credential
+WDIO case uses its own `ZODY_E2E_HOME_DIR`, configures the backend credential
 through the desktop UI, waits for the Android device to connect, and then waits
 for `trigger-task.json` before sending a marker prompt through the real V4
 composer/runtime. Its case-local provider replay returns a deterministic text

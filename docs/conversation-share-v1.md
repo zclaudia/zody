@@ -2,9 +2,7 @@
 
 ## 状态
 
-- 当前事实 spec，日期：2026-08-31。
-- API 基线：会话分享接口 revision 27，加 2026-08-12 联调约定。
-- 本文同时约束发布端、Desktop 导入端和同仓库 `packages/web` 的独立 share 落地页契约。
+- 历史归档：会话分享能力已移除，以下保留原方案与历史事实，不作为当前产品合同。
 
 ## 产品边界
 
@@ -91,7 +89,7 @@ Preview not_found → 现有 Loader
 `/cn/share/mock-partial-unsupported`（认不出的行被跳过，顶部出软提示）和
 `/cn/share/mock-outdated-client`（载荷版本高于本 build，显示「需要更新 ZCode」而不是「格式无效」）。
 
-Desktop Host 的分享运行时始终使用真实 Share API，API 地址由 `ZCODE_ENV` 解析；不再提供运行时
+Desktop Host 的分享运行时始终使用真实 Share API，API 地址由 `ZODY_ENV` 解析；不再提供运行时
 Mock 开关。`ConversationShareMockApiClient` 仅用于服务单测和协议 fixture，不能生成可跨进程访问的分享链接。
 
 公开页正文展示复用 `packages/ui` 的只读 presentation 层：通过
@@ -210,7 +208,7 @@ CSP 的两个硬约束（改动前先读，否则会静默打断线上页面）�
 - `script-src` 必须带 `'wasm-unsafe-eval'`：shiki 代码高亮默认走 oniguruma wasm
   （`packages/ui/src/lib/shikiHighlighter.ts` 的 `createHighlighter`），只给 `'self'` 会让分享页
   所有代码高亮失效。它只放开 wasm 编译，`eval` / `new Function` 仍然被挡住（已实测）。
-- `connect-src` 保持 `https:`：API origin 是 vite 构建期按 `ZCODE_ENV` 注入的
+- `connect-src` 保持 `https:`：API origin 是 vite 构建期按 `ZODY_ENV` 注入的
   （`packages/web-share/vite.config.ts`），写死具体 origin 会让 test/production 各自需要一份 conf。
 
 artifact 只经 `window.open` 打开、不做 `<img src>`，因此不受 `img-src` 收紧影响。

@@ -4,7 +4,7 @@ import type {
   SessionWorkflowActivity,
   SessionWorkflowPhaseSummary,
   SessionWorkflowRunSummary,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import {
   WORKFLOW_RUN_ACK_LIMIT,
   createWorkflowRunAckStore,

@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IServiceAccessor } from "@zcode/services";
-import type { FileEntry } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { FileEntry } from "@zody/shared";
 import {
   MOBILE_FILE_SAVE_MAX_BYTES,
   MOBILE_FILE_SAVE_RANGE_BYTES,
@@ -14,7 +14,7 @@ import {
   resolveMobileFileBrowserError,
 } from "../src/mobileFileBrowserModel.js";
 import { MobileWorkspaceFileBrowser } from "../src/MobileWorkspaceFileBrowser.js";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
 import { ServiceProvider } from "../src/hooks/useServices.js";
 import { PlatformProvider } from "../src/hooks/usePlatform.js";
 import { StoreProvider } from "../src/store/StoreProvider.js";
@@ -218,7 +218,7 @@ function createBrowserHarness(
 
   const view = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         StoreProvider,

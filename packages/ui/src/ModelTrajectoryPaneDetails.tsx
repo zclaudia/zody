@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 import type {
-  ZCodeModelTrajectoryContentPart,
-  ZCodeModelTrajectoryRecord,
-  ZCodeModelTrajectoryUsage,
-} from "@zcode/services";
+  ZodyModelTrajectoryContentPart,
+  ZodyModelTrajectoryRecord,
+  ZodyModelTrajectoryUsage,
+} from "@zody/services";
 import { Badge } from "@/components/ui/badge.js";
 import { cn } from "@/components/lib/utils.js";
-import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import type { useZodyIntl } from "@/i18n/IntlProvider.js";
 
-type IntlShape = ReturnType<typeof useZCodeIntl>["intl"];
+type IntlShape = ReturnType<typeof useZodyIntl>["intl"];
 
 export function ContentPartView({
   part,
@@ -16,7 +16,7 @@ export function ContentPartView({
   sectionLabel,
   showToolHeader = true,
 }: {
-  part: ZCodeModelTrajectoryContentPart;
+  part: ZodyModelTrajectoryContentPart;
   intl: IntlShape;
   sectionLabel?: string;
   showToolHeader?: boolean;
@@ -164,7 +164,7 @@ export function UsageBadges({
   usage,
   intl,
 }: {
-  usage?: ZCodeModelTrajectoryUsage;
+  usage?: ZodyModelTrajectoryUsage;
   intl: IntlShape;
 }) {
   if (!usage) {
@@ -225,7 +225,7 @@ export function EmptyState({
   );
 }
 
-export function summarizeRecords(records: ZCodeModelTrajectoryRecord[]): {
+export function summarizeRecords(records: ZodyModelTrajectoryRecord[]): {
   totalTokens: number;
   models: string[];
 } {

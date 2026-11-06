@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- 远程访问分区的表单、凭证只写不读状态机和连接状态展示共享同一组 pending/刷新边界，拆分会引入第二套状态。 */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { DEFAULT_REMOTE_ACCESS_NAMESPACE, tryNormalizeRemoteAccessGatewayUrl } from "@zcode/shared";
+import { DEFAULT_REMOTE_ACCESS_NAMESPACE, tryNormalizeRemoteAccessGatewayUrl } from "@zody/shared";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/toast.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useRemoteAccessStatus } from "@/hooks/useRemoteAccessStatus.js";
 import { useSettings } from "@/hooks/useSettingService.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import {
   getGatewayStatusDotClassName,
@@ -62,7 +62,7 @@ function PendingSpinner({ pending }: { pending: boolean }) {
  * 本组件只提交用户动作。backend 凭证只写不读，界面只能看到「已配置/未配置」。
  */
 export function RemoteAccessSection({ isDesktop }: { isDesktop: boolean }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const platform = usePlatform();
   const { settings, update, refresh: refreshSettings } = useSettings();
   const remoteAccessStatusRead = useRemoteAccessStatus({ enabled: isDesktop });

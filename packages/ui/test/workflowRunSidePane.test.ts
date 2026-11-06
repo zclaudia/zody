@@ -11,8 +11,8 @@
 import { createElement, type ReactNode } from "react";
 import { act, cleanup, fireEvent, render, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TID_WORKFLOW_ARTIFACTS_SECTION, TID_WORKFLOW_ARTIFACT_CARD } from "@zcode/shared";
-import type { WorkflowRunState } from "@zcode/shared/zcode-protocol-v4";
+import { TID_WORKFLOW_ARTIFACTS_SECTION, TID_WORKFLOW_ARTIFACT_CARD } from "@zody/shared";
+import type { WorkflowRunState } from "@zody/shared/zody-protocol-v4";
 import type { WorkflowRunSidePaneTab } from "@/lib/workspaceSidePane.js";
 
 vi.mock("@/logger.js", () => ({
@@ -82,7 +82,7 @@ vi.mock("@/hooks/useModelSelectionView.js", () => ({
 }));
 
 // eslint-disable-next-line import/first -- 必须在全部 mock 之后再引入被测组件。
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 // eslint-disable-next-line import/first
 import { WorkflowRunSidePane } from "@/app-shell/WorkflowRunSidePane.js";
 // eslint-disable-next-line import/first
@@ -262,7 +262,7 @@ function renderPane(
 ) {
   return render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(WorkflowRunSidePane, {
         tab,
@@ -286,7 +286,7 @@ type Pane = ReturnType<typeof renderPane>;
 function rerenderPane(view: Pane, locale: "en-US" | "zh-CN" = "en-US"): Pane {
   view.rerender(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: locale },
       createElement(WorkflowRunSidePane, { tab: { ...tab }, onOpenWorkflowActorSession }),
     ),
@@ -1859,7 +1859,7 @@ describe("WorkflowRunSidePane 阶段名册", () => {
   // focusPhaseId 到这里——展开、开门、节头滚到顶、亮一下；同一站换 openedAt 再落一次。
   const landedTree = (overrides: Partial<WorkflowRunSidePaneTab>) =>
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "en-US" },
       createElement(WorkflowRunSidePane, { tab: { ...tab, ...overrides }, onOpenWorkflowActorSession }),
     );
@@ -2112,7 +2112,7 @@ describe("WorkflowRunSidePane 配置", () => {
     };
     view.rerender(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "en-US" },
         createElement(WorkflowRunSidePane, { tab: { ...tab }, onOpenWorkflowRun }),
       ),
@@ -2181,7 +2181,7 @@ describe("WorkflowRunSidePane 配置", () => {
     };
     const borrowed = render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(WorkflowRunSidePane, { tab: settingsTab }),
       ),
@@ -2221,7 +2221,7 @@ describe("WorkflowRunSidePane 配置", () => {
     };
     const landed = render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(WorkflowRunSidePane, { tab: settingsTab }),
       ),
@@ -2267,7 +2267,7 @@ describe("WorkflowRunSidePane 配置", () => {
     };
     const view = render(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(WorkflowRunSidePane, { tab: retuneTab }),
       ),

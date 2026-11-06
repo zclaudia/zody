@@ -3,7 +3,7 @@ import {
   type ClientConfigReadOptions,
   type ClientConfigSnapshot,
   type DynamicWorkflowClientConfig,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createServiceDescriptor } from "../descriptors.js";
 
 /** 窗口级公开配置读取。业务模块只消费自己的字段，不拥有第二份请求缓存。 */

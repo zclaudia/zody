@@ -63,9 +63,7 @@ describe("Remote 启动期 release manifest 校验", () => {
     });
 
     const [url, init] = fetcher.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe(
-      "https://gateway.example.invalid/api/proxy/backend-1/mobile-ui/release",
-    );
+    expect(url).toBe("https://gateway.example.invalid/api/proxy/backend-1/mobile-ui/release");
     expect(url).not.toContain("zgd_");
     expect(init.headers).toEqual({
       accept: "application/json",
@@ -129,8 +127,6 @@ describe("Remote 启动期 release manifest 校验", () => {
         context,
         isProduction: false,
       }),
-    ).toBe(
-      "https://gateway.example.invalid/api/proxy/backend-1/mobile-ui/release",
-    );
+    ).toBe("https://gateway.example.invalid/api/proxy/backend-1/mobile-ui/release");
   });
 });

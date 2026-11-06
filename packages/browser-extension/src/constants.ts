@@ -2,4 +2,4 @@
 export const EXTENSION_VERSION = "0.1.0";
 
 /** 由 manifest 固定 `key` 推导；作为 runtime.id 不可用时的稳定 fallback。 */
-export { EXTENSION_BRIDGE_EXTENSION_ID as EXTENSION_ID } from "@zcode/shared/browser-extension-transport";
+export { EXTENSION_BRIDGE_EXTENSION_ID as EXTENSION_ID } from "@zody/shared/browser-extension-transport";

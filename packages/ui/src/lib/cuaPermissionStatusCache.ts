@@ -25,7 +25,7 @@ import {
   type CuaPermissionState,
   type CuaPermissionStatus,
   type CuaPermissionStatusResult,
-} from "@zcode/services";
+} from "@zody/services";
 
 interface StorageLike {
   getItem(key: string): string | null;

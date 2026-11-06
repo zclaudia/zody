@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { WorkspaceFileEntry } from "@zcode/shared";
-import { packWorkspaceFileEntries } from "@zcode/shared/workspaceFileEntriesCodec";
+import type { WorkspaceFileEntry } from "@zody/shared";
+import { packWorkspaceFileEntries } from "@zody/shared/workspaceFileEntriesCodec";
 import {
   filterWorkspaceFileSearchCandidates,
   mapWorkspaceFileEntriesToSearchCandidates,
-} from "@zcode/shared/workspaceFileSearch";
+} from "@zody/shared/workspaceFileSearch";
 import {
   buildHostFileSearchCandidates,
   searchHostFileCandidates,

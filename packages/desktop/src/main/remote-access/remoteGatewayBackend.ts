@@ -1,5 +1,5 @@
 import type { GatewayBackendOptions, GatewayBackendState } from "@zclaudia/gateway-backend";
-import type { RemoteAccessGatewayConnectionStatus } from "@zcode/shared";
+import type { RemoteAccessGatewayConnectionStatus } from "@zody/shared";
 import type {
   RemoteGatewayBackend,
   RemoteGatewayBackendConfig,

@@ -4,13 +4,13 @@ import {
   WEB_REMOTE_CONTROL_APP_PROTOCOL_MAX_VERSION,
   WEB_REMOTE_CONTROL_CHANNEL_PROTOCOL_VERSION,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   connectViaProtocolOwned,
   createAcknowledgedWebRemoteControlRelayProtocol,
-} from "@zcode/client";
-import { ChannelServer, MessagePortProtocol, ProxyChannel } from "@zcode/rpc";
-import { IZCodeAgentService, IZCodeSessionService } from "@zcode/services";
+} from "@zody/client";
+import { ChannelServer, MessagePortProtocol, ProxyChannel } from "@zody/rpc";
+import { IZodyAgentService, IZodySessionService } from "@zody/services";
 import {
   createGatewayDeviceTransport,
   type GatewayDeviceSocket,
@@ -259,11 +259,11 @@ function createAttachmentHost(hostRuntime: HostRuntime) {
       const protocol = new MessagePortProtocol(hostPort as never);
       const server = new ChannelServer(protocol, "host", 1000, true);
       server.registerChannel(
-        IZCodeSessionService.channelName,
+        IZodySessionService.channelName,
         ProxyChannel.fromService(hostRuntime.sessionService as never),
       );
       server.registerChannel(
-        IZCodeAgentService.channelName,
+        IZodyAgentService.channelName,
         ProxyChannel.fromService(hostRuntime.agentService as never),
       );
       // 与真实 Host 一样，服务端口挂到同一个 Host 进程；延迟一拍等新页面建好 ChannelClient。
@@ -330,7 +330,7 @@ function createMobilePage(channel: FakeChannel, onReady: (bridge: unknown) => vo
     dropRpc: false,
     handleDesktopPayload(payload) {
       page.received.push(payload);
-      if (payload.zcode_type === "workspace-bridge-ready") {
+      if (payload.zody_type === "workspace-bridge-ready") {
         page.bridge = payload.bridge;
         resolveBridgeReady(payload.bridge);
         onReady(payload.bridge);
@@ -338,7 +338,7 @@ function createMobilePage(channel: FakeChannel, onReady: (bridge: unknown) => vo
       }
       if (
         !page.dropRpc &&
-        (payload.zcode_type === "rpc-frame" || payload.zcode_type === "rpc-frame-ack")
+        (payload.zody_type === "rpc-frame" || payload.zody_type === "rpc-frame-ack")
       ) {
         page.relay?.acceptPayload(payload);
       }
@@ -484,7 +484,7 @@ describe("mobile UI refresh replay recovery", () => {
     const h = createTransportHarness();
     const first = h.attach("phone-1");
     expect(h.states).toEqual(["waiting_terminal", "paired"]);
-    first.deliver(dataFrame({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" }));
+    first.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "bootstrap-1" }));
     expect(h.payloads).toHaveLength(1);
 
     // 旧页面刷新：transport dispose 会发 close{client-leaving} 并关闭 socket。
@@ -497,16 +497,16 @@ describe("mobile UI refresh replay recovery", () => {
     expect(first.frames().some((frame) => frame.type === "close")).toBe(false);
     expect(second.isOpen).toBe(true);
 
-    second.deliver(dataFrame({ zcode_type: "bootstrap-request", requestId: "bootstrap-2" }));
+    second.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "bootstrap-2" }));
     expect(h.payloads).toHaveLength(2);
     expect(
       h.session.sendPayloadResult({
-        zcode_type: "workspace-list-request",
+        zody_type: "workspace-list-request",
         requestId: "list-1",
       }).kind,
     ).toBe("sent");
     expect(second.frames()).toContainEqual(
-      dataFrame({ zcode_type: "workspace-list-request", requestId: "list-1" }),
+      dataFrame({ zody_type: "workspace-list-request", requestId: "list-1" }),
     );
     // 旧页面之后不会再收到新数据。
     expect(first.frames().filter((frame) => frame.type === "data")).toHaveLength(0);
@@ -525,13 +525,13 @@ describe("mobile UI refresh replay recovery", () => {
     expect(h.states.at(-1)).toBe("waiting_terminal");
     expect(
       h.session.sendPayloadResult({
-        zcode_type: "workspace-list-request",
+        zody_type: "workspace-list-request",
         requestId: "after-close",
       }),
     ).toEqual({ kind: "unavailable" });
 
     // 旧 channel 的 socket 可能还有已入队的迟到帧；不能绕过关闭事实。
-    first.deliver(dataFrame({ zcode_type: "bootstrap-request", requestId: "stale-bootstrap" }));
+    first.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "stale-bootstrap" }));
     expect(h.payloads).toHaveLength(0);
 
     h.session.dispose();
@@ -549,7 +549,7 @@ describe("mobile UI refresh replay recovery", () => {
     expect(first.isOpen).toBe(true);
 
     first.sent.length = 0;
-    first.deliver(dataFrame({ zcode_type: "bootstrap-request", requestId: "stale" }));
+    first.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "stale" }));
     expect(h.payloads).toHaveLength(0);
     expect(first.frames()).toEqual([]);
     expect(second.isOpen).toBe(true);
@@ -569,19 +569,17 @@ describe("mobile UI refresh replay recovery", () => {
       // 旧 Remote 页面：连接、拿到任务列表、切到 task-1、打开 bridge。
       const firstChannel = h.attachClient("phone-1");
       const page1 = h.pageOn(firstChannel);
-      firstChannel.deliver(
-        dataFrame({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" }),
-      );
+      firstChannel.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "bootstrap-1" }));
       const bootstrap1 = h.sentPayloads.find(
         (payload) =>
-          payload.zcode_type === "bootstrap-response" && payload.requestId === "bootstrap-1",
+          payload.zody_type === "bootstrap-response" && payload.requestId === "bootstrap-1",
       );
       expect(bootstrap1).toMatchObject({
         result: { tasks: [expect.objectContaining({ taskId: "task-1" })] },
       });
       firstChannel.deliver(
         dataFrame({
-          zcode_type: "mobile-view-state-update",
+          zody_type: "mobile-view-state-update",
           viewState: {
             activeWorkspaceKey: localWorkspace.workspacePath,
             activeTaskId: "task-1",
@@ -591,7 +589,7 @@ describe("mobile UI refresh replay recovery", () => {
       );
       firstChannel.deliver(
         dataFrame({
-          zcode_type: "workspace-bridge-open",
+          zody_type: "workspace-bridge-open",
           requestId: "bridge-open-1",
           bridgeSessionId: "bridge-1",
           workspaceKey: localWorkspace.workspacePath,
@@ -603,11 +601,11 @@ describe("mobile UI refresh replay recovery", () => {
       const services1 = page1.attachRelay(bridge1 as never);
 
       // 旧页面按 replayable 协议恢复并提交一次输入（admission 只应发生这一次）。
-      await services1.zcodeSessionService.resumeSession({
+      await services1.zodySessionService.resumeSession({
         workspacePath: localWorkspace.workspacePath,
         sessionId: "task-1",
       });
-      const snapshot1 = await services1.zcodeSessionService.readSession({
+      const snapshot1 = await services1.zodySessionService.readSession({
         workspacePath: localWorkspace.workspacePath,
         sessionId: "task-1",
         deliveryKind: "web-remote-replayable",
@@ -615,7 +613,7 @@ describe("mobile UI refresh replay recovery", () => {
       expect(snapshot1).toMatchObject({
         runtime: { pendingRequestIds: ["prompt-1"] },
       });
-      const promptResult = await services1.zcodeAgentService.sendPrompt({
+      const promptResult = await services1.zodyAgentService.sendPrompt({
         workspacePath: localWorkspace.workspacePath,
         sessionId: "task-1",
         traceId: "trace-1",
@@ -635,11 +633,11 @@ describe("mobile UI refresh replay recovery", () => {
       const secondChannel = h.attachClient("phone-1");
       const page2 = h.pageOn(secondChannel);
       secondChannel.deliver(
-        dataFrame({ zcode_type: "bootstrap-request", requestId: "bootstrap-2" }),
+        dataFrame({ zody_type: "bootstrap-request", requestId: "bootstrap-2" }),
       );
       const bootstrap2 = h.sentPayloads.find(
         (payload) =>
-          payload.zcode_type === "bootstrap-response" && payload.requestId === "bootstrap-2",
+          payload.zody_type === "bootstrap-response" && payload.requestId === "bootstrap-2",
       );
       expect(bootstrap2).toMatchObject({
         result: {
@@ -651,7 +649,7 @@ describe("mobile UI refresh replay recovery", () => {
       // 新页面为同一个 task 重开 bridge：只轮换 attachment，不新建 Host/Agent/任务。
       secondChannel.deliver(
         dataFrame({
-          zcode_type: "workspace-bridge-open",
+          zody_type: "workspace-bridge-open",
           requestId: "bridge-open-2",
           bridgeSessionId: "bridge-2",
           workspaceKey: localWorkspace.workspacePath,
@@ -662,11 +660,11 @@ describe("mobile UI refresh replay recovery", () => {
       expect(bridge2).toMatchObject({ bridgeSessionId: "bridge-2", initialTaskId: "task-1" });
       const services2 = page2.attachRelay(bridge2 as never);
 
-      await services2.zcodeSessionService.resumeSession({
+      await services2.zodySessionService.resumeSession({
         workspacePath: localWorkspace.workspacePath,
         sessionId: "task-1",
       });
-      const snapshot2 = await services2.zcodeSessionService.readSession({
+      const snapshot2 = await services2.zodySessionService.readSession({
         workspacePath: localWorkspace.workspacePath,
         sessionId: "task-1",
         deliveryKind: "web-remote-replayable",
@@ -687,12 +685,10 @@ describe("mobile UI refresh replay recovery", () => {
 
       const thirdChannel = h.attachClient("phone-1");
       const page3 = h.pageOn(thirdChannel);
-      thirdChannel.deliver(
-        dataFrame({ zcode_type: "bootstrap-request", requestId: "bootstrap-3" }),
-      );
+      thirdChannel.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "bootstrap-3" }));
       thirdChannel.deliver(
         dataFrame({
-          zcode_type: "workspace-bridge-open",
+          zody_type: "workspace-bridge-open",
           requestId: "bridge-open-3",
           bridgeSessionId: "bridge-3",
           workspaceKey: localWorkspace.workspacePath,
@@ -702,11 +698,11 @@ describe("mobile UI refresh replay recovery", () => {
       const bridge3 = await page3.bridgeReady;
       expect(bridge3).toMatchObject({ bridgeSessionId: "bridge-3", initialTaskId: "task-1" });
       const services3 = page3.attachRelay(bridge3 as never);
-      await services3.zcodeSessionService.resumeSession({
+      await services3.zodySessionService.resumeSession({
         workspacePath: localWorkspace.workspacePath,
         sessionId: "task-1",
       });
-      const snapshot3 = await services3.zcodeSessionService.readSession({
+      const snapshot3 = await services3.zodySessionService.readSession({
         workspacePath: localWorkspace.workspacePath,
         sessionId: "task-1",
         deliveryKind: "web-remote-replayable",
@@ -752,12 +748,10 @@ describe("mobile UI refresh replay recovery", () => {
       // 旧页面只有草稿/optimistic overlay，没有 bridge、没有 sendPrompt。
       const firstChannel = h.attachClient("phone-1");
       const page1 = h.pageOn(firstChannel);
-      firstChannel.deliver(
-        dataFrame({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" }),
-      );
+      firstChannel.deliver(dataFrame({ zody_type: "bootstrap-request", requestId: "bootstrap-1" }));
       firstChannel.deliver(
         dataFrame({
-          zcode_type: "mobile-view-state-update",
+          zody_type: "mobile-view-state-update",
           viewState: { activeWorkspaceKey: localWorkspace.workspacePath, updatedAt: 11 },
         }),
       );
@@ -767,16 +761,16 @@ describe("mobile UI refresh replay recovery", () => {
       const secondChannel = h.attachClient("phone-1");
       h.pageOn(secondChannel);
       secondChannel.deliver(
-        dataFrame({ zcode_type: "bootstrap-request", requestId: "bootstrap-2" }),
+        dataFrame({ zody_type: "bootstrap-request", requestId: "bootstrap-2" }),
       );
 
       // 桌面从未收到任何 bridge/prompt；刷新不能把页面本地草稿变成 runtime 输入。
       expect(h.attachmentHost.attachWorkspaceHost).not.toHaveBeenCalled();
       expect(hostRuntime.counts.prompts).toBe(0);
       expect(hostRuntime.counts.create).toBe(0);
-      expect(
-        h.sentPayloads.some((payload) => payload.zcode_type === "workspace-bridge-ready"),
-      ).toBe(false);
+      expect(h.sentPayloads.some((payload) => payload.zody_type === "workspace-bridge-ready")).toBe(
+        false,
+      );
     } finally {
       h.dispose();
     }

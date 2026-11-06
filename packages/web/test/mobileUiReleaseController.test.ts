@@ -1,4 +1,4 @@
-import type { MobileRemotePrepareReloadResult, MobileUiReleaseManifest } from "@zcode/shared";
+import type { MobileRemotePrepareReloadResult, MobileUiReleaseManifest } from "@zody/shared";
 import { describe, expect, it, vi } from "vitest";
 import type {
   MobileUiReleaseCheckReason,

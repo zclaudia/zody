@@ -1,18 +1,18 @@
 import {
-  getZCodeToolFamilyForName,
+  getZodyToolFamilyForName,
   isTodoPlanToolName,
-  isZCodeFileContentWriteToolName,
-  normalizeZCodeToolName,
-  type ZCodeKnownToolName,
-  type ZCodeToolFamily,
-} from "@zcode/shared";
+  isZodyFileContentWriteToolName,
+  normalizeZodyToolName,
+  type ZodyKnownToolName,
+  type ZodyToolFamily,
+} from "@zody/shared";
 import {
   normalizeAskUserQuestionInput,
   readAskUserQuestionInput,
 } from "@/lib/askUserQuestion.js";
 
 export type ToolCallPresentationFamily =
-  | ZCodeToolFamily
+  | ZodyToolFamily
   | "plan-guidance"
   | "switch-mode"
   | "explore"
@@ -31,7 +31,7 @@ export type ToolCallIdentitySource =
   | "unknown";
 
 export interface ToolCallIdentity {
-  toolName: ZCodeKnownToolName | string | null;
+  toolName: ZodyKnownToolName | string | null;
   family: ToolCallPresentationFamily;
   source: ToolCallIdentitySource;
   isLegacy: boolean;
@@ -89,11 +89,11 @@ function identityFromKnownToolName(
   value: string | null | undefined,
   source: ToolCallIdentitySource,
 ): ToolCallIdentity | null {
-  const toolName = normalizeZCodeToolName(value);
+  const toolName = normalizeZodyToolName(value);
   if (!toolName) {
     return null;
   }
-  const family = getZCodeToolFamilyForName(toolName);
+  const family = getZodyToolFamilyForName(toolName);
   if (!family) {
     return null;
   }
@@ -138,14 +138,14 @@ function isLegacyAgentTool(
   const kind = normalizeLegacyToken(toolCall.kind);
   const title = normalizeLegacyToken(toolCall.title);
   const rawDirect = normalizeLegacyToken(rawNames.direct);
-  const rawZCode = normalizeLegacyToken(rawNames.zcode);
+  const rawZody = normalizeLegacyToken(rawNames.zcode);
   const rawClaude = normalizeLegacyToken(rawNames.claudeCode);
 
   return (
     rawClaude === "agent" ||
     rawClaude === "task" ||
-    rawZCode === "agent" ||
-    rawZCode === "spawn_agent" ||
+    rawZody === "agent" ||
+    rawZody === "spawn_agent" ||
     rawDirect === "agent" ||
     rawDirect === "spawn_agent" ||
     kind === "agent" ||
@@ -397,7 +397,7 @@ export function isFileContentWriteToolCall(
   if (identity.family !== "file-write") {
     return false;
   }
-  if (isZCodeFileContentWriteToolName(identity.toolName)) {
+  if (isZodyFileContentWriteToolName(identity.toolName)) {
     return true;
   }
   const legacyKind = normalizeLegacyToken(toolCall.kind);

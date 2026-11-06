@@ -3,7 +3,7 @@
 import { createElement, type ReactNode } from "react";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { RemoteAccessStatus } from "@zcode/shared";
+import type { RemoteAccessStatus } from "@zody/shared";
 import { RemoteAccessSection } from "@/settings/RemoteAccessSection.js";
 
 vi.mock("@/components/ui/button.js", () => ({
@@ -60,7 +60,7 @@ const intlMock = vi.hoisted(() => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => intlMock,
+  useZodyIntl: () => intlMock,
 }));
 
 const platformMock = vi.hoisted(() => ({

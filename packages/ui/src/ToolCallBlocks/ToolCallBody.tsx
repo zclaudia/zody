@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { FileMediaPreview } from "@zcode/shared";
+import type { FileMediaPreview } from "@zody/shared";
 import { CodeBlock } from "@/components/ai-elements/code-block.js";
 import { MessageResponse, type MessageFileLinkTarget } from "@/components/ai-elements/message.js";
 import { ToolInput, ToolOutput } from "@/components/ai-elements/tool.js";
 import { useServices } from "@/hooks/useServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import type {
   CodeViewerSource,
@@ -152,7 +152,7 @@ function inlineImageSourceKey(preview: ImageCodeViewerSource): string {
 
 function InlineImageContent({ preview }: { preview: ImageCodeViewerSource }) {
   const { fileService } = useServices();
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const sourceKey = inlineImageSourceKey(preview);
   const [state, setState] = useState<InlineImagePreviewState>({
     key: sourceKey,
@@ -249,7 +249,7 @@ function InlinePlanResult({
   onOpenFileLink?: (target: MessageFileLinkTarget) => void;
   onOpenBrowserUrl?: (url: string) => void;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   return (
     <div className="space-y-3 rounded-xl border border-outline/60 bg-muted/15 p-3">

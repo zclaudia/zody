@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { HostResponseTypes } from "@zcode/shared";
+import { HostResponseTypes } from "@zody/shared";
 import type {
   ExtensionBridgeClientMessage,
   ExtensionBridgeRequestMessage,
   ExtensionBridgeServerMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 
 export interface ExtensionHostConnection {
   profileInstanceId: string;

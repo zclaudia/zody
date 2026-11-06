@@ -115,11 +115,8 @@ describe("Shell 独立入口 mobile-shell.html", () => {
     expect(relativePaths).not.toContain(WEB_ENTRY);
   });
 
-  it("@zcode/ui/mobile-shell 子入口不会传递依赖 Remote/PDF 工作台", () => {
-    const graph = collectModuleGraph(
-      resolve(UI_ROOT, "src/mobileShell.ts"),
-      resolveUiModule,
-    );
+  it("@zody/ui/mobile-shell 子入口不会传递依赖 Remote/PDF 工作台", () => {
+    const graph = collectModuleGraph(resolve(UI_ROOT, "src/mobileShell.ts"), resolveUiModule);
     const relativePaths = [...graph].map((file) => file.replace(`${UI_ROOT}/`, ""));
 
     expect(relativePaths).toContain("src/WebRemoteControlMobileSettingsScreen.tsx");
@@ -128,7 +125,9 @@ describe("Shell 独立入口 mobile-shell.html", () => {
 
     expect(relativePaths.filter((path) => /(?:^|\/)(?:Root|App)\.tsx?$/u.test(path))).toEqual([]);
     expect(
-      relativePaths.filter((path) => /(?:previewPane|pdf|RemoteControlMobileStartPage|Terminal)/iu.test(path)),
+      relativePaths.filter((path) =>
+        /(?:previewPane|pdf|RemoteControlMobileStartPage|Terminal)/iu.test(path),
+      ),
     ).toEqual([]);
   });
 });
@@ -145,11 +144,13 @@ describe("Web Vite 三入口隔离", () => {
   it("Shell 跳过 PDF.js CMaps 插件，Remote 与普通 Web 保持原插件", async () => {
     const pluginNames = async (mode: string) => {
       const plugins = ((await loadWebConfig(mode))?.config.plugins ?? []) as unknown[];
-      return plugins.flat(Infinity).map((plugin) =>
-        typeof plugin === "object" && plugin !== null && "name" in plugin
-          ? String((plugin as { name: unknown }).name)
-          : undefined,
-      );
+      return plugins
+        .flat(Infinity)
+        .map((plugin) =>
+          typeof plugin === "object" && plugin !== null && "name" in plugin
+            ? String((plugin as { name: unknown }).name)
+            : undefined,
+        );
     };
 
     expect(await pluginNames("mobile-shell")).not.toContain("zcode:pdfjs-cmaps");
@@ -171,30 +172,25 @@ describe("Web Vite 三入口隔离", () => {
   });
 });
 
-describe.runIf(existsSync(resolve(SHELL_DIST, "index.html")))(
-  "已构建 Shell 产物只读断言",
-  () => {
-    function walk(dir: string): string[] {
-      return readdirSync(dir).flatMap((name) => {
-        const path = resolve(dir, name);
-        return statSync(path).isDirectory() ? walk(path) : [path];
-      });
-    }
-
-    it("有 index.html 与 JS/CSS，且没有 PDF.js / sourcemap 资源", () => {
-      const html = readFileSync(resolve(SHELL_DIST, "index.html"), "utf8");
-      const files = walk(SHELL_DIST).map((file) => file.replace(`${SHELL_DIST}/`, ""));
-
-      expect(html).toContain('id="root"');
-      expect(files.some((file) => file.endsWith(".js"))).toBe(true);
-      expect(files.some((file) => file.endsWith(".css"))).toBe(true);
-      expect(files).not.toContain("mobile-shell.html");
-      expect(
-        files.filter((file) => /\.(?:map|cmap|bcmap)$/u.test(file)),
-      ).toEqual([]);
-      expect(
-        files.filter((file) => /(?:^|\/)(?:pdfjs|pdf\.worker)(?:[.-]|$)/iu.test(file)),
-      ).toEqual([]);
+describe.runIf(existsSync(resolve(SHELL_DIST, "index.html")))("已构建 Shell 产物只读断言", () => {
+  function walk(dir: string): string[] {
+    return readdirSync(dir).flatMap((name) => {
+      const path = resolve(dir, name);
+      return statSync(path).isDirectory() ? walk(path) : [path];
     });
-  },
-);
+  }
+
+  it("有 index.html 与 JS/CSS，且没有 PDF.js / sourcemap 资源", () => {
+    const html = readFileSync(resolve(SHELL_DIST, "index.html"), "utf8");
+    const files = walk(SHELL_DIST).map((file) => file.replace(`${SHELL_DIST}/`, ""));
+
+    expect(html).toContain('id="root"');
+    expect(files.some((file) => file.endsWith(".js"))).toBe(true);
+    expect(files.some((file) => file.endsWith(".css"))).toBe(true);
+    expect(files).not.toContain("mobile-shell.html");
+    expect(files.filter((file) => /\.(?:map|cmap|bcmap)$/u.test(file))).toEqual([]);
+    expect(files.filter((file) => /(?:^|\/)(?:pdfjs|pdf\.worker)(?:[.-]|$)/iu.test(file))).toEqual(
+      [],
+    );
+  });
+});

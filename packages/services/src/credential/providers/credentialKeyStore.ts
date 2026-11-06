@@ -1,4 +1,4 @@
-import { resolveStoredCredentialSecret } from "@zcode/shared/node";
+import { resolveStoredCredentialSecret } from "@zody/shared/node";
 import { createCredentialCipherProvider } from "./credentialCipherProvider.js";
 
 export async function createStoredCredentialCipher(
@@ -6,5 +6,5 @@ export async function createStoredCredentialCipher(
   env: NodeJS.ProcessEnv = process.env,
 ) {
   const secret = await resolveStoredCredentialSecret(credentialsFile, env);
-  return createCredentialCipherProvider({ env: { ZCODE_CREDENTIAL_SECRET: secret } });
+  return createCredentialCipherProvider({ env: { ZODY_CREDENTIAL_SECRET: secret } });
 }

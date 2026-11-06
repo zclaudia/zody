@@ -1,5 +1,5 @@
 import type { BrowserWindow, NativeImage } from "electron";
-import { ZCODE_DOWNLOAD_PAGE_URL, type Locale } from "@zcode/shared";
+import { ZODY_DOWNLOAD_PAGE_URL, type Locale } from "@zody/shared";
 
 export interface ArchitectureMismatch {
   /** 当前运行的二进制架构，例如 x64。 */
@@ -46,7 +46,7 @@ export function detectArchitectureMismatch(
 
 // fork（F2.5）：删除 resolveArchitectureDownloadUrl——它按应用语言拼官方下载页
 // （{origin}/cn、{origin}/en），fork 的手动升级入口统一改为构建期
-// ZCODE_DOWNLOAD_PAGE_URL（阶段 2 细则「强制升级 gate（删除）」规则 4），
+// ZODY_DOWNLOAD_PAGE_URL（阶段 2 细则「强制升级 gate（删除）」规则 4），
 // 代码里不再出现官方下载页形式，下载页地址只由构建配置提供。
 
 interface ArchitectureMismatchDialogText {
@@ -94,7 +94,7 @@ export interface ArchitectureGuardLogger {
 
 /**
  * 启动时检测架构是否匹配；若用户装了错误架构的版本，弹框说明情况。
- * 「前往下载」仅在构建期配置了 ZCODE_DOWNLOAD_PAGE_URL 时显示，点击后用系统浏览器
+ * 「前往下载」仅在构建期配置了 ZODY_DOWNLOAD_PAGE_URL 时显示，点击后用系统浏览器
  * 打开该地址（fork 手动升级入口，阶段 2 细则「强制升级 gate（删除）」规则 4）；
  * 未配置时弹框只做说明，不提供下载入口。
  * 非阻塞：检测命中后异步弹框，不影响主界面继续加载。
@@ -124,7 +124,7 @@ export async function maybeWarnArchitectureMismatch(options: {
   );
 
   // 构建期常量（经 define 注入，build-time-config 已做 https 校验与 trim）；空串表示未配置。
-  const downloadPageUrl = ZCODE_DOWNLOAD_PAGE_URL.trim();
+  const downloadPageUrl = ZODY_DOWNLOAD_PAGE_URL.trim();
   const text = formatArchitectureMismatchDialogText(mismatch, options.locale);
   const buttons = downloadPageUrl
     ? [text.downloadButton, text.dismissButton]

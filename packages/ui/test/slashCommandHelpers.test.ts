@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSlashCommand } from "@zcode/shared";
+import type { ZodySlashCommand } from "@zody/shared";
 import {
   buildAppSlashCommandSuggestions,
   buildSkillSuggestions,
@@ -12,7 +12,7 @@ import {
 
 describe("slashCommandHelpers", () => {
   it("buildSlashSuggestions 逐项展示 CLI catalog，不在 UI 维护内建白名单", () => {
-    const commands: ZCodeSlashCommand[] = [
+    const commands: ZodySlashCommand[] = [
       {
         name: "review",
         description: "run review",

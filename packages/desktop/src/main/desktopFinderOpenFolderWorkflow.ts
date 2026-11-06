@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
-import type { Locale } from "@zcode/shared";
+import type { Locale } from "@zody/shared";
 import type { DesktopShellIntegrationIdentity } from "./desktopShellIntegrationIdentity.js";
 
 // 修复原因：上游写死 “Open in ZCode.workflow” 与 zcode:// 协议，Zody 安装后会与上游同名服务冲突，

@@ -1,10 +1,10 @@
 # Zody 全面分叉:zcode→zody 改名影响盘点与实施方案
 
-状态:调查完成(2026-10-31),方案修订(2026-11-02),产品实现尚未开始。2026-11-02 按评审补充兼容语义、远端切换、信任数据、发布边界和验证矩阵;保留 §8 的既有产品裁决。本文以**全面分叉**(不再常规按功能移植上游 zai-org/ZCode)为前提,拟替代 [zody-brand-residual-cleanup.md](../../specs/zody-brand-residual-cleanup.md)(2026-10-21)中"保留内部 workspace 标识"的决策;实施前必须先更新该 spec、[upstream-sync-policy.md](../fork/upstream-sync-policy.md) 与 [zody-path-compatibility.md](../../apps/zcode-cli/docs/design/v2/zody-path-compatibility.md)。本次修订方案不代表这些现行规则已同步更新。
+状态:调查完成(2026-10-31)，实施中(2026-11-02)。本设计保留 §8 的既有产品裁决；R01 已更新 [品牌规格](../../specs/zody-brand-residual-cleanup.md)、[上游策略](../fork/upstream-sync-policy.md) 与 [路径契约](../../apps/zcode-cli/docs/design/v2/zody-path-compatibility.md)。R10 脚本阶段已有验收候选；全面改名尚未完成，实际进度与门禁以 [执行账本](zody-rename-execution/task-ledger.md) 为准。
 
 调查方式:六个并行只读子代理分别扫描 workspace 结构、引用分布、运行时协议、环境变量/对外入口、插件生态、测试/CUA 冻结链,本文为汇总。
 
-执行拆分见 [子代理实施任务计划](zody-full-divergence-rename-execution-plan.md):26 个父任务、56 个可派发单元的写入范围、前置依赖、并行约束、派发模板与集成验收。本文继续作为产品规则和改名边界的设计输入。
+执行拆分见 [子代理实施任务计划](zody-full-divergence-rename-execution-plan.md):26 个任务的写入范围、前置依赖、并行约束、派发模板与集成验收。本文继续作为产品规则和改名边界的设计输入。
 
 2026-11-02 复核方式:三个 Terra 子代理按插件、构建、远端契约只读核对源码。下文数量保留 2026-10-31 的调查口径,不代表重新全量统计;实施批次需记录基线 SHA、执行命令、目标与结果。静态检查不能代替真实构建、混布拒绝或插件兼容的运行证据。
 
@@ -52,6 +52,8 @@ P0 同时定义残留检查输入和精确允许清单;P2 起对受 Git 追踪�
 - 附加身份:`packages/zcode-server-cli/package.json` 的 `bin: { "zcode": ... }`(private 包,不发布 npm,无外部影响)。
 
 ### 1.2 workspace/lockfile
+
+**当前决定**：根工作区与根锁为唯一安装所有者，移除 CLI 嵌套 workspace/lock；保留 `pnpm --dir apps/zody-cli …`，CLI Turbo 从根上下文选择 CLI 包及其真实依赖。下列计数保留调查时历史基线。
 
 - `pnpm-workspace.yaml`:3 行 glob 含 `apps/zcode-cli`。
 - `pnpm-lock.yaml`(v9):importer 键 37 处路径前缀 + 92 处 `@zcode/` workspace 链接键。保留现有 lock 基线,由固定工具链增量更新 importer/workspace 链接,不删除 lock 后重新解析整个依赖树。当前工具链为 `mise.toml` 的 Node 24.14.0、根 `package.json` 的 pnpm 10.33.2,实施时复核。第三方版本、integrity 与 peer 解析变化必须逐项说明,无关依赖升级移出本批;最后在干净检出执行 `pnpm install --frozen-lockfile`。
@@ -283,7 +285,7 @@ P4.5 验收矩阵包括:旧插件、新插件、双键相等、双键冲突、�
 
 **重做工序(依赖顺序)**:P2 更新 18 处硬编码及配套测试 → P5 在最终源码上重跑 `build-cua-desktop-session.mjs`(新 entries+pins 头)→ Helper 重编译+native tests → controller 重签(身份 pins 常量不变,`io.github.zclaudia.zody.cua-helper` bundle id **不动**——它被 DR 字符串钉死,动它=换信任根)→ 窄资源 stage/manifest 重出 → demo-defaults 四 pin 重录 → 冻结归档重导出+`restore-cua-narrow-frozen` 复检 → 主 app 重打包过全部 afterPack 断言。
 
-注意:不能把 `packages/desktop/native/macos-cua-*` 与 `output/cua-*` 一概视为 Git 外材料。当前 native 目录含受 Git 追踪的 entries、源码、patches 和来源记录；本地构建/封存产物另行盘点。R00 必须区分活跃源码入口、历史冻结证据和生成产物，分别记录路径、追踪状态、来源与摘要；R20 只修改获授的活跃入口引用，旧来源证据、pins 和归档不能随品牌字符串重写。重走工序前仍须确认可恢复冻结材料在场(用 `restore-cua-narrow-frozen.mjs` 归档机制)。
+注意：R02 preflight 纠正：native 冻结目录并非全部在 git 外，当前有 3770 个 tracked 文件；`output/` 被忽略，旧归档存在。tracked 内容与本地忽略材料均需核实，不能凭 git diff 判定输入齐全。重走工序前确认对应源码、摘要和归档，并在隔离目录演练恢复。
 
 P2 前保存可复原的旧归档、摘要、签名身份与匹配源码版本;复原演练写入隔离目录,不覆盖现有冻结材料。P2 至 P5 通过前暂停 macOS arm64 CUA 发行,不得复用旧冻结包把中间版本标为已发布。P5 后若再修改 sealed inputs,重新执行受影响冻结链,不沿用此前发布通过结论。
 
@@ -294,7 +296,7 @@ P2 前保存可复原的旧归档、摘要、签名身份与匹配源码版本;�
 | 阶段                          | 命令/场景                                                                                                                                                                                                    | 通过条件与环境                                                                                          |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | P1—P5 代码批次                | `pnpm typecheck`; `pnpm lint`; `pnpm architecture:check --changed`                                                                                                                                           | 记录基线与改后结果;架构检查范围必须覆盖实际变更                                                         |
-| P2 workspace                  | `pnpm install --frozen-lockfile`; `pnpm knip`; `pnpm test:unit`                                                                                                                                              | 干净检出安装;无未解释的依赖漂移、失效导出或新增失败                                                     |
+| P2 workspace                  | 根 `pnpm install --frozen-lockfile`（唯一安装 owner）；核对 CLI `--dir` 包集合与 links；`pnpm knip`; `pnpm test:unit`                                                                                                                                              | 干净检出安装;无未解释的依赖漂移、失效导出或新增失败                                                     |
 | P2 CLI/Web                    | `pnpm build:zody --all`                                                                                                                                                                                      | 当前支持 darwin-arm64、darwin-x64、win32-x64、linux-x64 的 CLI/Web 产物;不含 Desktop                    |
 | P2 Desktop 准备 / P5 最终出包 | `pnpm bundle:desktop -- --os mac --arch arm64`                                                                                                                                                               | P2 记录准备检查与冻结阻塞,不能记最终出包通过;P5 在具备签名身份、SDK 与冻结输入的 macOS arm64 上真实执行 |
 | 其他发布 Desktop 目标         | `pnpm bundle:desktop -- --os win --arch x64`; `pnpm bundle:desktop -- --os linux --arch x64`;如发布 mac x64,执行对应 `--os mac --arch x64`                                                                   | 使用具备目标依赖的 CI/主机;脚本接受参数不代表跨平台构建或签名已经验证。P0 固定本次实际发布目标          |
@@ -326,8 +328,6 @@ P0 为下列验收 ID 绑定实际测试文件、fixture、运行命令及平台
 `--dry-run` 只能作为准备检查,不能代替真实产包、签名或系统交互。P2 的完整 macOS CUA 发布验收明确延后至 P5;任何批次的阶段性通过都不能被写成整个改名已验证。
 
 ## 7. 分阶段实施方案
-
-可派发的任务卡、依赖波次、精确文件分配要求与独立验收流程见 [子代理实施任务计划](zody-full-divergence-rename-execution-plan.md)。该计划将以下阶段拆为 26 个任务，并为全仓改名、远端接入和 CUA 冻结增加可续做的串行子步骤；本文继续作为产品规则与保留边界的依据。
 
 前置:**Phase 0(spec 先行)**——更新 `zody-brand-residual-cleanup.md`(替代"保留内部标识"决策、固化 §5 兼容与退役语义)、`upstream-sync-policy.md`(全面分叉,不再常规移植,仅按需安全修复,保留来源证据)、`zody-path-compatibility.md`(env 硬切、来源与信任规则),同步 AGENTS.md 等现行说明。补齐 §0.1 清单、§3.3 协议门禁、§6.3 验收映射和冻结输入备份。
 

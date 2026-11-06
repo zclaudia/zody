@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { MobileRemoteBridge, MobileSessionContext } from "@zcode/shared";
+import type { MobileRemoteBridge, MobileSessionContext } from "@zody/shared";
 import type {
   MobileUiReleaseController,
   MobileUiReleaseControllerOptions,
@@ -22,7 +22,7 @@ const uiState = vi.hoisted(() => ({
   uninstallCalls: 0,
 }));
 
-vi.mock("@zcode/ui", () => ({
+vi.mock("@zody/ui", () => ({
   installMobileRemoteRefreshGuardRegistry: (registry: unknown) => {
     uiState.installed = registry;
     uiState.installCalls += 1;

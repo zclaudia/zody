@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { beforeAll, describe, expect, it } from "vitest";
-import { compileModelOptionMaps } from "@zcode/model-option-map";
-import { ModelConfig, ModelConfigRules, parseZCodeBuiltinModelConfigRules } from "@zcode/provider";
+import { compileModelOptionMaps } from "@zody/model-option-map";
+import { ModelConfig, ModelConfigRules, parseZodyBuiltinModelConfigRules } from "@zody/provider";
 
 const url = "https://opencode.ai/zen/go/v1";
 // F08（上游 v3.17.1 rev43）：Go 端点成员随上游更新——新增 minimax-m3.1-flash、
@@ -76,15 +76,18 @@ let templates: {
 let templateDeclared = new Set<string>();
 beforeAll(async () => {
   const release = JSON.parse(
-    await readFile(new URL("../../../config/provider/zcode-builtin.json", import.meta.url), "utf8"),
+    await readFile(new URL("../../../config/provider/zody-builtin.json", import.meta.url), "utf8"),
   );
-  rules = parseZCodeBuiltinModelConfigRules(release.config.modelConfigRules);
+  rules = parseZodyBuiltinModelConfigRules(release.config.modelConfigRules);
   templates = release.config.providerConfigRules.templateRules;
   templateDeclared = new Set(
     release.config.modelConfigRules.templateModelRules
       .filter(
-        (rule: { templateId: string; modelId: string; config: { properties?: unknown; optionSpecs?: unknown } }) =>
-          rule.config.properties !== undefined || rule.config.optionSpecs !== undefined,
+        (rule: {
+          templateId: string;
+          modelId: string;
+          config: { properties?: unknown; optionSpecs?: unknown };
+        }) => rule.config.properties !== undefined || rule.config.optionSpecs !== undefined,
       )
       .map((rule: { templateId: string; modelId: string }) => `${rule.templateId}/${rule.modelId}`),
   );
@@ -142,17 +145,14 @@ describe("Todo149 Go 模板与自建供应商共用站点规则", () => {
     ["opencode-go-responses", "gpt-6-luna", 1_050_000, true, true],
     ["opencode-go-responses", "grok-4.7", 500_000, true, false],
     ["opencode-go-messages", "claude-haiku-5-5", 200_000, true, true],
-  ] as const)(
-    "%s/%s 的模板条目能力声明生效",
-    (templateId, modelId, context, image, pdf) => {
-      const fromTemplate = rules.resolve({ ...input(modelId), templateId });
-      expect(fromTemplate.properties?.contextWindow).toBe(context);
-      expect(fromTemplate.properties?.inputFormat.toJSON()).toMatchObject({
-        supportsImage: image,
-        supportsPdf: pdf,
-      });
-    },
-  );
+  ] as const)("%s/%s 的模板条目能力声明生效", (templateId, modelId, context, image, pdf) => {
+    const fromTemplate = rules.resolve({ ...input(modelId), templateId });
+    expect(fromTemplate.properties?.contextWindow).toBe(context);
+    expect(fromTemplate.properties?.inputFormat.toJSON()).toMatchObject({
+      supportsImage: image,
+      supportsPdf: pdf,
+    });
+  });
 
   // 原因：GLM 落入通用四组参数兜底，Go 上游严格校验并拒绝 enable_thinking/reasoning。
   it.each(["glm-5.3", "glm-5.3-flash"])(

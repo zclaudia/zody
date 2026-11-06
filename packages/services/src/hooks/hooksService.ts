@@ -2,13 +2,13 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type {
   Hook,
   HookEvent,
   SettingsDirectoryLocation,
   SettingsDirectorySource,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   buildWorkspaceHookBundleSnapshot,
   createWorkspaceHookSourceInput,
@@ -18,23 +18,23 @@ import {
   type WorkspaceHookBundleSnapshotData,
   type WorkspaceHookSourceInput,
   type WorkspaceHooksConfig,
-} from "@zcode/shared/workspace-hook-discovery";
-import { parseWorkspaceHookTrustStoreContent } from "@zcode/shared/workspace-hook-trust-store-file";
-import { resolveProjectResourcePaths } from "@zcode/shared/zody-paths";
+} from "@zody/shared/workspace-hook-discovery";
+import { parseWorkspaceHookTrustStoreContent } from "@zody/shared/workspace-hook-trust-store-file";
+import { resolveProjectResourcePaths } from "@zody/shared/zody-paths";
 import { createServiceLogger, type ServiceLogger } from "#src/logger/serviceLogger.js";
 import type { IHooksService } from "./hooks.js";
 import { atomicWriteWorkspaceHookConfig } from "./workspaceHookConfigMutation.js";
 import {
   fromLegacyHooksConfig,
   fromProjectSnapshot,
-  fromUserZCodeSource,
+  fromUserZodySource,
   resolveNextRootEnabled,
-  toZCodeHooksEvents,
+  toZodyHooksEvents,
   type LegacyHooksConfig,
 } from "./workspaceHookSettingsModel.js";
 
 const SETTINGS_FILE = "settings.json";
-const ZCODE_CONFIG_FILE = "config.json";
+const ZODY_CONFIG_FILE = "config.json";
 const HOOK_EVENTS: readonly HookEvent[] = [
   "SessionStart",
   "UserPromptSubmit",
@@ -45,7 +45,7 @@ const HOOK_EVENTS: readonly HookEvent[] = [
   "Stop",
 ];
 
-interface ZCodeConfigFile {
+interface ZodyConfigFile {
   hooks?: WorkspaceHooksConfig;
   [key: string]: unknown;
 }
@@ -59,7 +59,7 @@ function getRootDir(source: SettingsDirectorySource, workspacePath?: string): st
   const baseDir = workspacePath ?? resolveUserHomeDir();
   if (source === "zcode") {
     // Project writes use .zody; discovery separately keeps the legacy .zcode read path.
-    return workspacePath ? join(baseDir, ".zody") : join(baseDir, ZCODE_DATA_ROOT_DIR_NAME, "cli");
+    return workspacePath ? join(baseDir, ".zody") : join(baseDir, ZODY_DATA_ROOT_DIR_NAME, "cli");
   }
   return join(baseDir, source === "agents" ? ".agents" : ".claude");
 }
@@ -67,7 +67,7 @@ function getRootDir(source: SettingsDirectorySource, workspacePath?: string): st
 function getConfigPath(source: SettingsDirectorySource, workspacePath?: string): string {
   return join(
     getRootDir(source, workspacePath),
-    source === "zcode" ? ZCODE_CONFIG_FILE : SETTINGS_FILE,
+    source === "zcode" ? ZODY_CONFIG_FILE : SETTINGS_FILE,
   );
 }
 
@@ -105,7 +105,7 @@ async function readJsonFile<T>(filePath: string): Promise<T | null> {
   }
 }
 
-async function readUserZCodeSource(): Promise<WorkspaceHookSourceInput | undefined> {
+async function readUserZodySource(): Promise<WorkspaceHookSourceInput | undefined> {
   const path = getConfigPath("zcode");
   const config = await readJsonFile<Record<string, unknown>>(path);
   const parsed = workspaceHooksConfigSchema.safeParse(config?.hooks);
@@ -168,7 +168,7 @@ async function readPersistentWorkspaceHookTrustDigests(
       : isAbsolute(configured)
         ? resolve(configured)
         : resolve(home, configured)
-    : join(home, ZCODE_DATA_ROOT_DIR_NAME);
+    : join(home, ZODY_DATA_ROOT_DIR_NAME);
   const trustFilePath = join(storageRoot, "security", "workspace-hook-trust-v1.json");
 
   // 异步读取 + ENOENT 区分：不用 existsSync 预检——同步调用会阻塞服务
@@ -229,7 +229,7 @@ async function loadHooksImpl(
   const workspaceIdentity = params.workspaceIdentity?.trim() || workspacePath;
   const [{ sources: projectSources }, userSource] = await Promise.all([
     readWorkspaceHookProjectSources({ workingDirectory: workspacePath }),
-    readUserZCodeSource(),
+    readUserZodySource(),
   ]);
   const runtimeRoot = resolveWorkspaceHookRuntimeRoot([
     userSource?.hooks,
@@ -253,7 +253,7 @@ async function loadHooksImpl(
     }),
     ...(await loadLegacyHooksFromLocation("agents", workspacePath)),
     ...(await loadLegacyHooksFromLocation("claude", workspacePath)),
-    ...fromUserZCodeSource({
+    ...fromUserZodySource({
       source: userSource,
       runtimeRoot,
       workspacePath,
@@ -270,24 +270,24 @@ async function loadHooksImpl(
   };
 }
 
-async function writeZCodeHooksConfig(
+async function writeZodyHooksConfig(
   workspacePath: string | undefined,
   hooks: Hook[],
 ): Promise<void> {
   const configPath = workspacePath
-    ? resolveProjectResourcePaths(workspacePath, ZCODE_CONFIG_FILE).writePath
+    ? resolveProjectResourcePaths(workspacePath, ZODY_CONFIG_FILE).writePath
     : getConfigPath("zcode");
   const effectivePath = workspacePath
-    ? resolveProjectResourcePaths(workspacePath, ZCODE_CONFIG_FILE).readPath
+    ? resolveProjectResourcePaths(workspacePath, ZODY_CONFIG_FILE).readPath
     : configPath;
-  const existingConfig = (await readJsonFile<ZCodeConfigFile>(effectivePath)) ?? {};
+  const existingConfig = (await readJsonFile<ZodyConfigFile>(effectivePath)) ?? {};
   const enabled = resolveNextRootEnabled(existingConfig.hooks?.enabled, hooks);
   await atomicWriteWorkspaceHookConfig(configPath, {
     ...existingConfig,
     hooks: {
       ...existingConfig.hooks,
       ...(enabled !== undefined ? { enabled } : {}),
-      events: toZCodeHooksEvents(hooks),
+      events: toZodyHooksEvents(hooks),
     },
   });
 }
@@ -298,7 +298,7 @@ async function saveHooksImpl(params: {
   hooks: Hook[];
 }): Promise<void> {
   const currentProjectConfigPath = resolve(
-    resolveProjectResourcePaths(params.workspacePath, ZCODE_CONFIG_FILE).readPath,
+    resolveProjectResourcePaths(params.workspacePath, ZODY_CONFIG_FILE).readPath,
   );
   const userHooks = params.hooks.filter(
     (hook) =>
@@ -313,8 +313,8 @@ async function saveHooksImpl(params: {
       (!hook.configuredState ||
         resolve(hook.configuredState.sourcePath) === currentProjectConfigPath),
   );
-  await writeZCodeHooksConfig(undefined, userHooks);
-  await writeZCodeHooksConfig(params.workspacePath, projectHooks);
+  await writeZodyHooksConfig(undefined, userHooks);
+  await writeZodyHooksConfig(params.workspacePath, projectHooks);
 }
 
 export function createHooksService(

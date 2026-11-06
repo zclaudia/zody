@@ -4,7 +4,7 @@ import {
   normalizeRemoteResourcePackageSelection,
   REMOTE_RESOURCE_PACKAGE_IDS,
   remoteTargetSchema,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const retiredProtocolPrefix = `${"a"}${"cp"}`;
 const retiredProxyRuntimePackageId = `${retiredProtocolPrefix}-proxy-runtime`;

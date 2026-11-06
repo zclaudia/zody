@@ -1,12 +1,12 @@
-import { PERMISSION_FULL_ACCESS_OPTION_ID } from "@zcode/shared/zcode-protocol-v4";
-import type { ZCodePermissionOption } from "@zcode/shared";
+import { PERMISSION_FULL_ACCESS_OPTION_ID } from "@zody/shared/zody-protocol-v4";
+import type { ZodyPermissionOption } from "@zody/shared";
 
 export {
   getPermissionRequestPreview,
   type PermissionRequestFileChange,
   type PermissionRequestPreview,
   type PermissionRequestScope,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * macOS CUA 截图「App 内确认弹窗」（specs/computer-use-macos-phase1.md
@@ -37,7 +37,7 @@ function normalizeToolName(value: unknown): string | null {
  * 识别 CUA 截图确认请求：kind 与 raw.toolName 任一命中固定字面量即认定
  * （v4 适配器把 payload.toolName 同时写进 request.kind 与 raw）。
  * 参数形状放宽到 `kind?/raw?`，PermissionDialog 的合成 toolCall（TaskChatToolCall）
- * 与 ZCodePermissionRequest 都能直接传入。
+ * 与 ZodyPermissionRequest 都能直接传入。
  */
 export function isCuaScreenshotConfirmRequest(request: {
   kind?: string | null;
@@ -160,7 +160,7 @@ export function getPermissionOptionDisplayKind(kind: string): PermissionOptionDi
 }
 
 export function shouldPreferPermissionOptionName(
-  option: Pick<ZCodePermissionOption, "kind" | "name">,
+  option: Pick<ZodyPermissionOption, "kind" | "name">,
 ): boolean {
   const normalizedName = normalizeInlineText(option.name).toLowerCase();
   if (normalizedName.length === 0) {
@@ -191,8 +191,8 @@ function getPermissionOptionSortPriority(kind: string): number {
 }
 
 export function sortPermissionOptions(
-  options: readonly ZCodePermissionOption[],
-): ZCodePermissionOption[] {
+  options: readonly ZodyPermissionOption[],
+): ZodyPermissionOption[] {
   return options
     .map((option, index) => ({ option, index }))
     .sort((left, right) => {

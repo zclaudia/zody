@@ -15,7 +15,7 @@ import {
   type WebRemoteControlBootstrapResponsePayload,
   type WebRemoteControlFailure,
   type WebRemoteControlRpcTransportAssemblyEvent,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createGatewayDeviceTransport } from "../src/main/remote-access/gatewayDeviceTransport.js";
 import type {
   GatewayDeviceSocket,
@@ -39,10 +39,10 @@ import {
  *   + `GatewayDeviceTransport`；
  * - 手机：`GatewayTerminalTransport`（`@zclaudia/gateway-client@0.3.0`，与 packages/web 一致）。
  *
- * 显式开启：只有同时设置 `ZCODE_GATEWAY_IT_URL` 与 `ZCODE_GATEWAY_IT_ADMIN_TOKEN` 才执行；
+ * 显式开启：只有同时设置 `ZODY_GATEWAY_IT_URL` 与 `ZODY_GATEWAY_IT_ADMIN_TOKEN` 才执行；
  * 缺失时整个 suite 跳过并在名称里说明原因（不伪造结果）。凭证由测试用管理 API 现签现删，
  * 不读取、也不打印任何已存在的凭证。gateway 重启场景需要显式提供
- * `ZCODE_GATEWAY_IT_RESTART_COMMAND`（例如 `docker restart <container>`），避免测试擅自
+ * `ZODY_GATEWAY_IT_RESTART_COMMAND`（例如 `docker restart <container>`），避免测试擅自
  * 重启共享实例。
  *
  * 说明：manager / bridge 的 ACK 与重放属于 (b)(c) 层，本测试不装配完整 manager；
@@ -51,19 +51,19 @@ import {
  *
  * 本地运行（T0.2 生成的 .env.gateway.local 已含 IT_URL/管理令牌）：
  *   set -a; source .env.gateway.local; set +a
- *   ZCODE_GATEWAY_IT_RESTART_COMMAND='docker restart zclaudia-gateway-gateway-1' \
+ *   ZODY_GATEWAY_IT_RESTART_COMMAND='docker restart zclaudia-gateway-gateway-1' \
  *     pnpm vitest run packages/desktop/test/mobileRemoteGatewayIntegration.test.ts
  * 不设置重启命令时只跳过「gateway 重启」一个场景。
  */
 
-const gatewayUrl = process.env.ZCODE_GATEWAY_IT_URL?.trim();
-const adminToken = process.env.ZCODE_GATEWAY_IT_ADMIN_TOKEN?.trim();
-const namespace = process.env.ZCODE_GATEWAY_IT_NAMESPACE?.trim() || "zcode";
-const restartCommand = process.env.ZCODE_GATEWAY_IT_RESTART_COMMAND?.trim();
+const gatewayUrl = process.env.ZODY_GATEWAY_IT_URL?.trim();
+const adminToken = process.env.ZODY_GATEWAY_IT_ADMIN_TOKEN?.trim();
+const namespace = process.env.ZODY_GATEWAY_IT_NAMESPACE?.trim() || "zcode";
+const restartCommand = process.env.ZODY_GATEWAY_IT_RESTART_COMMAND?.trim();
 const skipReason = !gatewayUrl
-  ? "未设置 ZCODE_GATEWAY_IT_URL"
+  ? "未设置 ZODY_GATEWAY_IT_URL"
   : !adminToken
-    ? "未设置 ZCODE_GATEWAY_IT_ADMIN_TOKEN"
+    ? "未设置 ZODY_GATEWAY_IT_ADMIN_TOKEN"
     : undefined;
 
 const DESKTOP_APP_VERSION = "0.0.0-integration";
@@ -295,10 +295,10 @@ interface DesktopHarness {
   readonly sendReadyCount: number;
   waitOnline(): Promise<void>;
   onPayload(handler: (payload: WebRemoteControlAppPayload) => void): () => void;
-  waitPayload<T extends WebRemoteControlAppPayload["zcode_type"]>(
+  waitPayload<T extends WebRemoteControlAppPayload["zody_type"]>(
     type: T,
-    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zcode_type: T }>) => boolean,
-  ): Promise<Extract<WebRemoteControlAppPayload, { zcode_type: T }>>;
+    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zody_type: T }>) => boolean,
+  ): Promise<Extract<WebRemoteControlAppPayload, { zody_type: T }>>;
   dispose(): Promise<void>;
 }
 
@@ -400,8 +400,8 @@ function createDesktopHarness(options: DesktopHarnessOptions): DesktopHarness {
     waitPayload(type, predicate) {
       return waitFor(() => {
         for (const payload of payloads) {
-          if (payload.zcode_type !== type) continue;
-          const typed = payload as Extract<WebRemoteControlAppPayload, { zcode_type: typeof type }>;
+          if (payload.zody_type !== type) continue;
+          const typed = payload as Extract<WebRemoteControlAppPayload, { zody_type: typeof type }>;
           if (!predicate || predicate(typed)) return typed;
         }
         return undefined;
@@ -436,10 +436,10 @@ interface PhoneHarness {
   readonly version: { appProtocol: number; desktopAppVersion: string } | undefined;
   readonly state: GatewayTerminalTransportState;
   waitReady(): Promise<void>;
-  waitPayload<T extends WebRemoteControlAppPayload["zcode_type"]>(
+  waitPayload<T extends WebRemoteControlAppPayload["zody_type"]>(
     type: T,
-    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zcode_type: T }>) => boolean,
-  ): Promise<Extract<WebRemoteControlAppPayload, { zcode_type: T }>>;
+    predicate?: (payload: Extract<WebRemoteControlAppPayload, { zody_type: T }>) => boolean,
+  ): Promise<Extract<WebRemoteControlAppPayload, { zody_type: T }>>;
   dispose(): void;
 }
 
@@ -520,8 +520,8 @@ function createPhoneHarness(options: PhoneHarnessOptions): PhoneHarness {
     waitPayload(type, predicate) {
       return waitFor(() => {
         for (const payload of payloads) {
-          if (payload.zcode_type !== type) continue;
-          const typed = payload as Extract<WebRemoteControlAppPayload, { zcode_type: typeof type }>;
+          if (payload.zody_type !== type) continue;
+          const typed = payload as Extract<WebRemoteControlAppPayload, { zody_type: typeof type }>;
           if (!predicate || predicate(typed)) return typed;
         }
         return undefined;
@@ -535,7 +535,7 @@ function createPhoneHarness(options: PhoneHarnessOptions): PhoneHarness {
 
 function buildBootstrapResponse(requestId: string): WebRemoteControlBootstrapResponsePayload {
   return {
-    zcode_type: "bootstrap-response",
+    zody_type: "bootstrap-response",
     requestId,
     success: true,
     result: {
@@ -657,7 +657,7 @@ describeIntegration(integrationName, () => {
     expect(desktop.stateEvents).toContain("paired");
 
     expect(
-      phone.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "bootstrap-1" }),
+      phone.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "bootstrap-1" }),
     ).toBe(true);
     await desktop.waitPayload(
       "bootstrap-request",
@@ -688,12 +688,12 @@ describeIntegration(integrationName, () => {
     const desktopEvents: WebRemoteControlRpcTransportAssemblyEvent[] = [];
     const context = await createIntegrationContext({
       phoneRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame") return false;
         phoneEvents.push(phoneAssembler.accept(payload));
         return true;
       },
       desktopRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame") return false;
         desktopEvents.push(desktopAssembler.accept(payload));
         return true;
       },
@@ -755,7 +755,7 @@ describeIntegration(integrationName, () => {
     const sendAck = (ackMessageSeq: number): void => {
       expect(
         phone.transport.sendPayload({
-          zcode_type: "rpc-frame-ack",
+          zody_type: "rpc-frame-ack",
           bridgeSessionId,
           ackMessageSeq,
         }),
@@ -764,10 +764,10 @@ describeIntegration(integrationName, () => {
 
     const context = await createIntegrationContext({
       phoneRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type === "rpc-frame-ack") {
+        if ((payload as { zody_type?: string }).zody_type === "rpc-frame-ack") {
           return false;
         }
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame") return false;
         const event = assembler.accept(payload);
         if (event.kind === "complete") {
           completed.push(event.messageSeq);
@@ -779,7 +779,7 @@ describeIntegration(integrationName, () => {
         return true;
       },
       desktopRawHandler: (payload) => {
-        if ((payload as { zcode_type?: string }).zcode_type !== "rpc-frame-ack") return false;
+        if ((payload as { zody_type?: string }).zody_type !== "rpc-frame-ack") return false;
         acks.push((payload as { ackMessageSeq: number }).ackMessageSeq);
         return true;
       },
@@ -849,13 +849,13 @@ describeIntegration(integrationName, () => {
 
     // 桌面收到 bootstrap-request 就回一份响应，用来证明哪部手机仍处于活跃通道。
     const unsubscribe = desktop.onPayload((payload) => {
-      if (payload.zcode_type !== "bootstrap-request") return;
+      if (payload.zody_type !== "bootstrap-request") return;
       desktop.session.sendPayloadResult(buildBootstrapResponse(payload.requestId));
     });
     cleanupTasks.push(() => unsubscribe());
 
     expect(
-      phoneA.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "from-a" }),
+      phoneA.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "from-a" }),
     ).toBe(true);
     await phoneA.waitPayload("bootstrap-response", (payload) => payload.requestId === "from-a");
 
@@ -873,7 +873,7 @@ describeIntegration(integrationName, () => {
 
     // 后到者仍可用；先到者已锁死，不再自动重开 channel（方案硬性规则）。
     expect(
-      phoneB.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "from-b" }),
+      phoneB.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "from-b" }),
     ).toBe(true);
     await phoneB.waitPayload("bootstrap-response", (payload) => payload.requestId === "from-b");
     const channelCountAfterReplace = desktop.channelIds.length;
@@ -919,7 +919,7 @@ describeIntegration(integrationName, () => {
 
     // 恢复后业务帧仍可往返。
     expect(
-      phone.transport.sendPayload({ zcode_type: "bootstrap-request", requestId: "after-epoch" }),
+      phone.transport.sendPayload({ zody_type: "bootstrap-request", requestId: "after-epoch" }),
     ).toBe(true);
     await desktop.waitPayload(
       "bootstrap-request",
@@ -929,7 +929,7 @@ describeIntegration(integrationName, () => {
 
   const restartTestName = restartCommand
     ? "gateway 重启后两端自动重连并恢复业务"
-    : "gateway 重启后两端自动重连并恢复业务（跳过：未设置 ZCODE_GATEWAY_IT_RESTART_COMMAND）";
+    : "gateway 重启后两端自动重连并恢复业务（跳过：未设置 ZODY_GATEWAY_IT_RESTART_COMMAND）";
   (restartCommand ? it : it.skip)(
     restartTestName,
     async () => {
@@ -971,7 +971,7 @@ describeIntegration(integrationName, () => {
 
       expect(
         phone.transport.sendPayload({
-          zcode_type: "bootstrap-request",
+          zody_type: "bootstrap-request",
           requestId: "after-restart",
         }),
       ).toBe(true);

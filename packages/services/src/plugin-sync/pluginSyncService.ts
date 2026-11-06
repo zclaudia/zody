@@ -15,12 +15,12 @@ import {
 import { homedir, tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import {
-  ZCODE_DATA_ROOT_DIR_NAME,
+  ZODY_DATA_ROOT_DIR_NAME,
   type PluginSyncCandidate,
   type PluginSyncComponentType,
   type PluginSyncImportResult,
   type PluginSyncRemoteStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { IPluginSyncService } from "./pluginSync.js";
 import {
   createPluginSyncArchive,
@@ -75,7 +75,12 @@ const DEFAULT_MAX_ARCHIVE_BYTES = 50 * 1024 * 1024;
 const USER_CONFIG_FILE_MODE = 0o600;
 const MARKETPLACE_SOURCE_ROOT_DIRECTORY = "marketplace-sources";
 const MIRRORED_MARKETPLACE_PLUGIN_ROOT = "plugins";
+// R54：新格式只有 ENOENT 才回退；不可读或非法都返回 null，不从旧格式借身份。
+// 名称值域与 CLI 插件加载端保持一致，避免同步成功后 runtime 拒绝加载。
+const CANONICAL_PLUGIN_MANIFEST_DIRECTORY = ".zody-plugin";
+const PLUGIN_NAME_PATTERN = /^[a-z0-9][a-z0-9._-]{0,127}$/u;
 const PLUGIN_MANIFEST_RELATIVE_PATHS = [
+  [CANONICAL_PLUGIN_MANIFEST_DIRECTORY, "plugin.json"],
   [".zcode-plugin", "plugin.json"],
   [".claude-plugin", "plugin.json"],
   [".codex-plugin", "plugin.json"],
@@ -93,7 +98,7 @@ export function createPluginSyncService(options?: {
       };
     },
     async listRemoteUserPluginStatuses(params) {
-      const targetRoot = getUserZcodePluginRoot();
+      const targetRoot = getUserZodyPluginRoot();
       const existingPluginPathById = await collectConfiguredInlinePluginPathById();
       return {
         statuses: params.plugins.map((plugin): PluginSyncRemoteStatus => {
@@ -195,8 +200,8 @@ export function createPluginSyncService(options?: {
     },
     async checkRemoteUserPluginWriteAccess() {
       return checkRemoteSyncDirectoriesWriteAccess([
-        getUserZcodePluginRoot(),
-        dirname(getUserZcodeConfigPath()),
+        getUserZodyPluginRoot(),
+        dirname(getUserZodyConfigPath()),
       ]);
     },
     async importMarketplaceSourceArchive(params) {
@@ -218,12 +223,12 @@ function resolveUserHomeDir(): string {
 }
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-function getUserZcodeConfigPath(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli", "config.json");
+function getUserZodyConfigPath(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "cli", "config.json");
 }
 
-function getUserZcodePluginRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "plugins");
+function getUserZodyPluginRoot(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "plugins");
 }
 
 async function collectLocalUserPluginCandidates(): Promise<PluginSyncCandidate[]> {
@@ -376,7 +381,7 @@ async function importMarketplaceSourceArchiveInternal(
         `marketplace source archive id mismatch: ${manifest.name} !== ${metadata.marketplaceId}`,
       );
     }
-    const targetRoot = join(getUserZcodePluginRoot(), MARKETPLACE_SOURCE_ROOT_DIRECTORY);
+    const targetRoot = join(getUserZodyPluginRoot(), MARKETPLACE_SOURCE_ROOT_DIRECTORY);
     const targetPath = resolvePluginSyncPathWithin(targetRoot, directoryName);
     if (existsSync(targetPath)) {
       return {
@@ -402,7 +407,7 @@ async function importMarketplaceSourceArchiveInternal(
 }
 
 async function readUserPluginConfigState(): Promise<UserPluginConfigState> {
-  const parsed = await readJsonFileOrEmpty(getUserZcodeConfigPath());
+  const parsed = await readJsonFileOrEmpty(getUserZodyConfigPath());
   const plugins = isRecord(parsed.plugins) ? parsed.plugins : {};
   const enabledPlugins = isRecord(plugins.enabledPlugins) ? plugins.enabledPlugins : {};
   const enabledOverrides = new Map<string, boolean>();
@@ -445,7 +450,7 @@ async function importPluginsArchive(
       maxExtractedBytes: maxArchiveBytes,
     });
     const metadata = await readArchiveMetadata(tempRoot);
-    const targetRoot = getUserZcodePluginRoot();
+    const targetRoot = getUserZodyPluginRoot();
     const existingPluginPathById = await collectConfiguredInlinePluginPathById();
     const results: PluginSyncImportResult["results"] = [];
 
@@ -909,7 +914,7 @@ async function addPluginDirToUserConfig(
   pluginId: string,
   enabledOverride: boolean | undefined,
 ): Promise<void> {
-  const filePath = getUserZcodeConfigPath();
+  const filePath = getUserZodyConfigPath();
   const parsed = await readJsonFileOrEmpty(filePath);
   const plugins = isRecord(parsed.plugins) ? parsed.plugins : {};
   const resolvedPluginPath = resolve(pluginPath);
@@ -943,7 +948,13 @@ async function readPluginManifestInfo(pluginRoot: string): Promise<PluginManifes
     let raw: string;
     try {
       raw = await readFile(manifestPath, "utf-8");
-    } catch {
+    } catch (error) {
+      // 新文件存在但不可读时回退，会让同步身份与实际加载的唯一 manifest 分叉。
+      if (
+        segments[0] === CANONICAL_PLUGIN_MANIFEST_DIRECTORY &&
+        (error as NodeJS.ErrnoException).code !== "ENOENT"
+      )
+        return null;
       continue;
     }
     let parsed: unknown;
@@ -956,7 +967,7 @@ async function readPluginManifestInfo(pluginRoot: string): Promise<PluginManifes
       return null;
     }
     const name = typeof parsed.name === "string" ? parsed.name.trim() : "";
-    if (!name) {
+    if (!PLUGIN_NAME_PATTERN.test(name)) {
       return null;
     }
     return {

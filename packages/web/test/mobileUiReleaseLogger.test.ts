@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 /**
  * M3-T2 发布日志边界：
- * - `packages/web` 只能通过公开子入口 `@zcode/ui/logger` 使用现有 UI logger；
+ * - `packages/web` 只能通过公开子入口 `@zody/ui/logger` 使用现有 UI logger；
  * - 复用 `[ui]` 前缀与生产 no-op 门控；
  * - controller 的诊断 context 不得包含凭证、session、gateway URL。
  */
@@ -14,8 +14,8 @@ afterEach(() => {
 });
 
 describe("mobile UI release logger", () => {
-  it("is importable through the public @zcode/ui/logger subpath", async () => {
-    const { logger } = await import("@zcode/ui/logger");
+  it("is importable through the public @zody/ui/logger subpath", async () => {
+    const { logger } = await import("@zody/ui/logger");
     expect(typeof logger.debug).toBe("function");
     expect(typeof logger.info).toBe("function");
     expect(typeof logger.warn).toBe("function");

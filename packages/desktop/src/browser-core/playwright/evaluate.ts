@@ -4,7 +4,7 @@
  * IAB 在 Electron debugger 上执行；extension 在 chrome.debugger attachment 上执行。
  * 两者共享同一表达式构造、异常归一化和取消语义。
  */
-import type { BrowserPlaywrightAction } from "@zcode/shared";
+import type { BrowserPlaywrightAction } from "@zody/shared";
 import type { PlaywrightPage } from "./types.js";
 
 type EvaluateAction = Extract<BrowserPlaywrightAction, { name: "evaluate" }>;

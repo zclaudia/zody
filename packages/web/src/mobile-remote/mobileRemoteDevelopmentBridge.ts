@@ -3,7 +3,7 @@ import {
   MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY,
   parseMobileSessionContext,
   type MobileRemoteBridge,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearDevelopmentRemoteHandoff,
   readDevelopmentRemoteHandoff,
@@ -70,9 +70,7 @@ export function installDevelopmentMobileRemoteBridge(
   if (!target || typeof target !== "object") {
     return undefined;
   }
-  const installed = (target as Record<string, unknown>)[
-    MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY
-  ];
+  const installed = (target as Record<string, unknown>)[MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY];
   if (installed) {
     // 原生桥优先；开发模拟不得覆盖真实注入。
     return undefined;
@@ -101,15 +99,10 @@ export function installDevelopmentMobileRemoteBridge(
     getSessionContext() {
       return context
         ? success({ context })
-        : failure(
-            "session-context-invalid",
-            "The development Remote handoff is invalid.",
-          );
+        : failure("session-context-invalid", "The development Remote handoff is invalid.");
     },
     markRemoteReady(sessionId: string) {
-      return context && sessionId === context.sessionId
-        ? success()
-        : failure("stale-session");
+      return context && sessionId === context.sessionId ? success() : failure("stale-session");
     },
     returnShell(_reason: string, sessionId: string): void {
       if (!context || sessionId !== context.sessionId) {

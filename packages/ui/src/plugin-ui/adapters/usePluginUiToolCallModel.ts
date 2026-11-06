@@ -1,4 +1,4 @@
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   buildTaskSidePaneMemoryKey,
   claimPluginUiSidePaneAutoOpen,
@@ -33,7 +33,7 @@ import type {
   McpAppsDisplayMode,
   PluginSandboxHandle,
   PluginUiScopeRef,
-} from "@zcode/shared/mcp-apps";
+} from "@zody/shared/mcp-apps";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { resolvePluginUiLogicalScope } from "../domain/pluginUiLogicalScope.js";
 
@@ -48,7 +48,7 @@ const INLINE_ONLY: readonly McpAppsDisplayMode[] = ["inline"];
 export function usePluginUiToolCallModel(
   context: ToolCallBlockRenderContext,
 ): Omit<PluginUiToolCallViewProps, "fallback"> {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const presentation = useMemo(
     () => readPluginUiPresentation(context.toolCallNode.toolCall.raw),
     [context.toolCallNode.toolCall.raw],

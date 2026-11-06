@@ -16,12 +16,12 @@ SilentInstall silent
 !define isUpdated `1 == 1`
 ; This fixture has no electron-builder uninstaller.nsh section; use a normal function for log smoke coverage.
 !ifdef BUILD_UNINSTALLER
-  !define ZCODE_UNINSTALLER_FUNCTION_PREFIX ""
+  !define ZODY_UNINSTALLER_FUNCTION_PREFIX ""
 !endif
 
 Var appExe
 
-!include "${ZCODE_INSTALLER_NSH}"
+!include "${ZODY_INSTALLER_NSH}"
 
 Section
   SetOutPath "$INSTDIR"

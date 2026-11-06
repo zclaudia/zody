@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeRemoteResourcePackageSelection } from "@zcode/shared";
+import { normalizeRemoteResourcePackageSelection } from "@zody/shared";
 import {
   buildRemoteTarget,
   withDefaultRemoteResourcePackages,

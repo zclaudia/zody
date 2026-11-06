@@ -1,9 +1,13 @@
+// @vitest-environment jsdom
+
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
-import { TID_V4_USER_INPUT_DIALOG } from "@zcode/shared";
-import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
-import { ZCodeIntlProvider } from "../src/i18n/IntlProvider.js";
+import { cleanup, render, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { TID_V4_USER_INPUT_DIALOG } from "@zody/shared";
+import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
+import { ZodyIntlProvider } from "../src/i18n/IntlProvider.js";
+import { useWorkspaceHookReviewStore } from "../src/store/workspaceHookReviewStore.js";
 import {
   // fork（bot-channels 移除）：buildV4ElicitationProgressKey / resolveV4ElicitationRequest
   // 的 bot 代答进度用例删除后不再被本文件引用。
@@ -19,6 +23,11 @@ vi.mock("@/v4/V4ConversationContext.js", () => ({
 }));
 
 describe("V4InteractionDialogs", () => {
+  afterEach(() => {
+    cleanup();
+    useWorkspaceHookReviewStore.setState({ bindings: {}, commandBindings: {} });
+  });
+
   it("ignores a stale snapshot while switching back to another task", () => {
     const staleSnapshot = {
       sessionId: "task-b",
@@ -78,7 +87,7 @@ describe("V4InteractionDialogs", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(V4InteractionDialogs, {
           sessionId: "sess-1",
@@ -149,7 +158,7 @@ describe("V4InteractionDialogs", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(V4InteractionDialogs, {
           sessionId: "sess-1",
@@ -197,7 +206,7 @@ describe("V4InteractionDialogs", () => {
 
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(V4InteractionDialogs, {
           sessionId: "sess-1",
@@ -211,5 +220,62 @@ describe("V4InteractionDialogs", () => {
     expect(html).toContain("快速");
     expect(html).toContain("先做最小修复");
     expect(html).not.toContain(`data-testid="${TID_V4_USER_INPUT_DIALOG}"`);
+  });
+
+  it("registers the workspace Hook review binding with its exact remote route", async () => {
+    const snapshot = {
+      sessionId: "sess-1",
+      pendingInteractions: [
+        {
+          interactionId: "workspace-review-1",
+          kind: "workspaceHookReview",
+          anchorRowId: null,
+          createdAt: 300,
+          payload: {
+            kind: "workspaceHookReview",
+            reviewFlowId: "flow-1",
+            generation: 1,
+            interactionId: "workspace-review-1",
+            sessionId: "sess-1",
+            taskId: "sess-1",
+            runId: "run-1",
+            workspaceIdentity: "remote:workspace",
+            workspaceLabel: "workspace",
+            remoteSessionId: "remote-b",
+            bundleDigest: "a".repeat(64),
+            createdAt: 300,
+            deadlineAt: 600_300,
+            sourceFiles: [],
+            summary: { eventCount: 0, hookCount: 0, pendingCount: 0 },
+            items: [],
+            warningCode: "workspace_hooks_execute_code",
+          },
+        },
+      ],
+    } as ConversationSnapshot;
+
+    const view = render(
+      createElement(
+        ZodyIntlProvider,
+        { initialLocale: "zh-CN" },
+        createElement(V4InteractionDialogs, {
+          sessionId: "sess-1",
+          workspacePath: "/workspace",
+          workspaceIdentity: "remote:workspace",
+          remoteSessionId: "remote-b",
+          snapshot,
+        }),
+      ),
+    );
+
+    await waitFor(() => {
+      expect(
+        useWorkspaceHookReviewStore.getState().commandBindings["sess-1"]?.remoteSessionId,
+      ).toBe("remote-b");
+      expect(
+        useWorkspaceHookReviewStore.getState().bindings["sess-1"]?.request.remoteSessionId,
+      ).toBe("remote-b");
+    });
+    view.unmount();
   });
 });

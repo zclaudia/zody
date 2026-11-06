@@ -1,4 +1,4 @@
-import type { BrowserKeyModifier, BrowserMouseButton } from "@zcode/shared";
+import type { BrowserKeyModifier, BrowserMouseButton } from "@zody/shared";
 import { dispatchClickAtOnPage, dispatchKeyOnPage } from "../../browser-core/playwright/input.js";
 import { createPlaywrightPageFromControlledView } from "./browserPlaywrightPageAdapter.js";
 import { RESOLVE_SCRIPT } from "./browserCommandScripts.js";

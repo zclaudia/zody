@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeTaskMeta, ZCodeWorkspaceTaskListChanged } from "@zcode/shared";
+import type { ZodyTaskMeta, ZodyWorkspaceTaskListChanged } from "@zody/shared";
 import {
   getTaskMetaWorkspaceEventSyncMode,
   isTaskListMembershipWorkspaceEvent,
@@ -8,11 +8,11 @@ import {
   shouldRefreshTaskListForWorkspaceEvent,
 } from "@/lib/taskListRefreshPolicy.js";
 
-function createEvent(reason: ZCodeWorkspaceTaskListChanged["reason"]) {
+function createEvent(reason: ZodyWorkspaceTaskListChanged["reason"]) {
   return { reason };
 }
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: "task-1",
     traceId: "trace-1",

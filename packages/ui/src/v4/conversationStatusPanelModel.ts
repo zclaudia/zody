@@ -1,4 +1,4 @@
-import type { GitRepositorySummary } from "@zcode/shared";
+import type { GitRepositorySummary } from "@zody/shared";
 import type {
   BackgroundWorkSummary,
   GoalState,
@@ -6,12 +6,12 @@ import type {
   RunningSubagentSummary,
   ToolCallRow,
   WorkflowRunState,
-} from "@zcode/shared/zcode-protocol-v4";
-import type { SessionWorkflowPhaseSummary } from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
+import type { SessionWorkflowPhaseSummary } from "@zody/shared/zody-protocol-v4";
 import {
   deriveSessionWorkflowPhases,
   workflowRunStepCounts,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { extractPlanToolCallContent, getPlanDirectoryTitle } from "@/lib/planToolCall.js";
 import { workflowRunParallelPhaseLabel } from "@/lib/workflowRunLine.js";
 

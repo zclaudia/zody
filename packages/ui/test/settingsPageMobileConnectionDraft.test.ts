@@ -85,7 +85,7 @@ vi.mock("@/components/ui/button.js", () => ({
   }) => createElement("button", { type: "button", ...props }, children),
 }));
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: { formatMessage: ({ id }: { id: string }) => id },
     localePreference: "system",
     setLocalePreference: vi.fn(),
@@ -110,7 +110,7 @@ vi.mock("@/hooks/useSettingService.js", () => ({
   useSettings: () => ({ settings: undefined, update: vi.fn() }),
 }));
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: Record<string, unknown>) => unknown) => selector(storeState),
+  useZodyStore: (selector: (state: Record<string, unknown>) => unknown) => selector(storeState),
 }));
 vi.mock("@/store/TabStoreProvider.js", () => ({
   useTabStore: (selector: (state: Record<string, unknown>) => unknown) => selector(tabStoreState),

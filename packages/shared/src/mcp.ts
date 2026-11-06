@@ -4,16 +4,16 @@
  */
 
 import type { SettingsDirectoryLocation } from "./settings-source.js";
-import type { McpServerFailureKind } from "./zcode-protocol/index.js";
+import type { McpServerFailureKind } from "./zody-protocol/index.js";
 
 // CUA official plugin 身份常量（port 自 feat；UI 设置面板 + bootstrap 复用以避免字面量漂移）。
-export const ZCODE_CUA_OFFICIAL_PLUGIN_ID = "computer-use@zcode-plugins-official";
+export const ZODY_CUA_OFFICIAL_PLUGIN_ID = "computer-use@zcode-plugins-official";
 // CUA server 身份串（port 自 feat mcp.ts）：server key = 模型可见工具前缀段（刻意不带 zcode-）；
 // namespace name = official plugin 运行时命名空间 plugin:<pluginId>:<serverKey>。
-export const ZCODE_CUA_OFFICIAL_MCP_NAMESPACE_NAME = "plugin:computer-use:computer-use";
+export const ZODY_CUA_OFFICIAL_MCP_NAMESPACE_NAME = "plugin:computer-use:computer-use";
 // 插件身份 env key：resolver（adapters/src/plugins/mcp.ts）权威写入 loaded.id，manifest/user env 不可覆盖。
 // bootstrap + cli/plugin-host-command.ts 复用此常量识别 official zcode-cua plugin server，避免字面量漂移。
-export const ZCODE_PLUGIN_ID_ENV_KEY = "ZCODE_PLUGIN_ID";
+export const ZODY_PLUGIN_ID_ENV_KEY = "ZCODE_PLUGIN_ID";
 
 export type McpSource =
   | "mcp"
@@ -105,7 +105,7 @@ export interface McpConfig {
   opencodemcp: CliMcpConfig;
 }
 
-export interface ZCodeMcpServer {
+export interface ZodyMcpServer {
   id: string;
   name: string;
   config: McpServerConfig;
@@ -158,7 +158,7 @@ export interface McpTestResult {
   response_time?: number;
 }
 
-export type ZCodeAgentMcpServer =
+export type ZodyAgentMcpServer =
   | {
       name: string;
       command: string;
@@ -205,10 +205,10 @@ export function getMcpServerRequestHeaders(
 }
 
 // zcode-cua MCP server 识别的单一事实源。desktop 产品 broker resolver（@zcode/services 的
-// mcpBrokerInjection）与 CLI bootstrap（apps/zcode-cli 的 mcp-config）两条注入入口必须用
+// mcpBrokerInjection）与 CLI bootstrap（apps/zody-cli 的 mcp-config）两条注入入口必须用
 // 完全一致的判定；否则同一 MCP 配置在不同入口行为不同，可能漏注入 product broker，让
 // Python/uvx 自己持有 macOS TCC 权限（违反 fail-closed 边界）。改这里即同时改两条链路。
-function zcodeCuaArgLeaf(value: string): string {
+function zodyCuaArgLeaf(value: string): string {
   // 先去掉结尾的路径分隔符再取叶子：`.../zcode-cua/` 直接 split 会得到空串叶子 → 漏判 → fail-open。
   return (
     value
@@ -222,7 +222,7 @@ function zcodeCuaArgLeaf(value: string): string {
 // zcode-cua）；覆盖 uv/npm 的 `@version`、pip 的 `==version`、extras `[...]`、git 的 `.git`/`.git@`，
 // 以及 `python -m zcode_cua.server` 这种点号子模块（`zcode-cua.<submodule>`）。fail-closed 边界宁可
 // 过判也不漏判；仍不会误判 `zcode-cua-proxy`（短横续接，不以 `.`/`@`/`[`/`==` 边界续接）。
-function matchesZCodeCuaSpec(candidate: string): boolean {
+function matchesZodyCuaSpec(candidate: string): boolean {
   const c = candidate.replace(/_/g, "-");
   return (
     c === "zcode-cua" ||
@@ -239,8 +239,8 @@ function matchesZCodeCuaSpec(candidate: string): boolean {
  * 覆盖 `command: "zcode-cua"`、`/opt/bin/zcode-cua`，以及把包规格直接当 command 的写法
  * （`zcode-cua@1.2.3` 等）。对 fail-closed 边界宁可过判也不漏判。
  */
-export function isZCodeCuaMcpCommand(command: string): boolean {
-  return matchesZCodeCuaSpec(command) || matchesZCodeCuaSpec(zcodeCuaArgLeaf(command));
+export function isZodyCuaMcpCommand(command: string): boolean {
+  return matchesZodyCuaSpec(command) || matchesZodyCuaSpec(zodyCuaArgLeaf(command));
 }
 
 /**
@@ -248,14 +248,14 @@ export function isZCodeCuaMcpCommand(command: string): boolean {
  * `zcode-cua==1.2.3`、`zcode_cua`，以及 git / 本地路径形态（`.../zcode-cua`、`zcode-cua.git`、
  * `git+https://.../zcode-cua.git@v1`）。同时比对原始值与路径叶子，覆盖 `--from <path>`、`--from <git-url>`。
  */
-export function isZCodeCuaMcpPackageArg(value: string): boolean {
-  return matchesZCodeCuaSpec(value) || matchesZCodeCuaSpec(zcodeCuaArgLeaf(value));
+export function isZodyCuaMcpPackageArg(value: string): boolean {
+  return matchesZodyCuaSpec(value) || matchesZodyCuaSpec(zodyCuaArgLeaf(value));
 }
 
-export function convertToZCodeAgentMcpServer(
+export function convertToZodyAgentMcpServer(
   name: string,
   config: McpServerConfig,
-): ZCodeAgentMcpServer | null {
+): ZodyAgentMcpServer | null {
   let inferredType = config.type;
   if (!inferredType) {
     if (config.command) inferredType = "stdio";

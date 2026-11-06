@@ -31,7 +31,7 @@ import {
   TID_WORKFLOWS_CREATE_VIA_CHAT,
   TID_WORKFLOWS_EMPTY,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   DEFAULT_WORKSPACE,
   clearAppData,
@@ -188,7 +188,7 @@ describe("已保存工作流中枢 E2E", () => {
       { timeout: 15000, timeoutMsg: "保存后磁盘文件的说明没有更新" },
     );
     const saved = await readFile(WORKFLOW_FILE, "utf-8");
-    expect(saved.startsWith("/* zcode-workflow\n")).toBe(true);
+    expect(saved.startsWith("/* zody-workflow\n")).toBe(true);
     expect(saved.endsWith(`*/\n${SCRIPT}`)).toBe(true);
     expect(saved).toContain("whenToUse: 准备发版时");
     expect(saved).toContain("required: true");
@@ -1048,7 +1048,7 @@ describe("直接启动 E2E", () => {
       timeoutMsg: "直接保存后磁盘上没有出现工作流文件",
     });
     const written = await readFile(LAUNCH_SAVE_FILE, "utf-8");
-    expect(written.startsWith("/* zcode-workflow")).toBe(true);
+    expect(written.startsWith("/* zody-workflow")).toBe(true);
     expect(written.endsWith(`*/\n${LAUNCH_SAVE_SCRIPT}`)).toBe(true);
 
     // 7) 卡片立刻翻面：芯片回来，动词又是「再次运行」。

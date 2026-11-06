@@ -35,7 +35,7 @@ import {
   resolveProjectResourcePathsAsync,
   resolveProjectResourceRoots,
 } from "../src/zody-paths.js";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "../src/dataDir.js";
+import { ZODY_DATA_ROOT_DIR_NAME } from "../src/dataDir.js";
 
 const roots: string[] = [];
 
@@ -54,7 +54,7 @@ afterEach(async () => {
 describe("zody project paths", () => {
   it("uses .zody as the only user root and orders project directory candidates", () => {
     const project = makeRoot();
-    expect(ZCODE_DATA_ROOT_DIR_NAME).toBe(".zody");
+    expect(ZODY_DATA_ROOT_DIR_NAME).toBe(".zody");
     expect(resolveProjectResourceRoots(project, "skills")).toEqual({
       writePath: join(project, ".zody", "skills"),
       readPaths: [join(project, ".zody", "skills"), join(project, ".zcode", "skills")],

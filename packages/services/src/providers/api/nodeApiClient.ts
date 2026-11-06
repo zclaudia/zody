@@ -1,11 +1,11 @@
 import {
   ApiError,
-  normalizeZCodeEndpointOrigin,
+  normalizeZodyEndpointOrigin,
   type ApiClient,
   type ApiRequestInit,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
-import { buildZCodeSourceHeaders } from "../sourceHeaders.js";
+import { buildZodySourceHeaders } from "../sourceHeaders.js";
 import { withRequestIdHeader } from "./requestIdHeaders.js";
 
 const log = createServiceLogger("node-api-client");
@@ -19,7 +19,7 @@ interface NodeApiClientOptions {
     headers: Headers,
   ) => boolean | Promise<boolean>;
   businessUnauthorizedObservationTimeoutMs?: number;
-  resolveZCodeEndpointOrigin?: () => Promise<string> | string;
+  resolveZodyEndpointOrigin?: () => Promise<string> | string;
 }
 
 const DEFAULT_BUSINESS_UNAUTHORIZED_OBSERVATION_TIMEOUT_MS = 1000;
@@ -111,21 +111,21 @@ function readHeaderKeys(headers: RequestInit["headers"] | undefined): string[] {
 
 function isRequestForEndpoint(input: string | URL, endpointOrigin: string): boolean {
   // fork（F3.1）：未配置端点（空字符串）时没有任何请求属于 ZCode endpoint，
-  // 也不能让 normalizeZCodeEndpointOrigin 对空值抛错。
+  // 也不能让 normalizeZodyEndpointOrigin 对空值抛错。
   if (!endpointOrigin.trim()) {
     return false;
   }
   try {
-    return new URL(resolveUrl(input)).origin === normalizeZCodeEndpointOrigin(endpointOrigin);
+    return new URL(resolveUrl(input)).origin === normalizeZodyEndpointOrigin(endpointOrigin);
   } catch {
     return false;
   }
 }
 
-function withZCodeEndpointHeaders(
+function withZodyEndpointHeaders(
   headers: RequestInit["headers"] | undefined,
 ): RequestInit["headers"] {
-  const next = new Headers(buildZCodeSourceHeaders());
+  const next = new Headers(buildZodySourceHeaders());
   if (headers) {
     new Headers(headers).forEach((value, key) => {
       next.set(key, value);
@@ -148,12 +148,12 @@ function resolveRequestHeaders(
 
   // ZCode 后端请求以前只有部分业务路径手动补来源头。
   // 统一在 ApiClient 出口按 endpoint origin 注入，避免 OAuth/config/billing/snapshot 等链路遗漏。
-  return withZCodeEndpointHeaders(headers);
+  return withZodyEndpointHeaders(headers);
 }
 
 export class NodeApiClient implements ApiClient {
   private readonly fetchImpl?: typeof fetch;
-  private readonly resolveZCodeEndpointOrigin?: () => Promise<string> | string;
+  private readonly resolveZodyEndpointOrigin?: () => Promise<string> | string;
   private readonly onZcodeJwtInvalid?: (input: string | URL, headers: Headers) => void;
   private readonly isZcodeJwtRequest?: NodeApiClientOptions["isZcodeJwtRequest"];
   private readonly isBusinessUnauthorizedRequest?: NodeApiClientOptions["isBusinessUnauthorizedRequest"];
@@ -167,15 +167,15 @@ export class NodeApiClient implements ApiClient {
     this.businessUnauthorizedObservationTimeoutMs =
       options.businessUnauthorizedObservationTimeoutMs ??
       DEFAULT_BUSINESS_UNAUTHORIZED_OBSERVATION_TIMEOUT_MS;
-    this.resolveZCodeEndpointOrigin = options.resolveZCodeEndpointOrigin;
+    this.resolveZodyEndpointOrigin = options.resolveZodyEndpointOrigin;
   }
 
   async request(input: string | URL, init?: ApiRequestInit): Promise<Response> {
-    const endpointOrigin = this.resolveZCodeEndpointOrigin
-      ? await this.resolveZCodeEndpointOrigin()
+    const endpointOrigin = this.resolveZodyEndpointOrigin
+      ? await this.resolveZodyEndpointOrigin()
       : undefined;
     // fork（F3.1）：默认端点为空（未配置），不再存在「官方默认 origin → 活动 origin」的
-    // 隐式改写；请求 URL 由调用方用 buildRuntimeZCodeApiUrl / 当前 endpoint 构造。
+    // 隐式改写；请求 URL 由调用方用 buildRuntimeZodyApiUrl / 当前 endpoint 构造。
     const activeEndpointOrigin = endpointOrigin?.trim() ?? "";
     const requestInput = input;
     const url = resolveUrl(requestInput);
@@ -220,12 +220,12 @@ export class NodeApiClient implements ApiClient {
       if ((response.status === 401 || response.status === 200) && this.onZcodeJwtInvalid) {
         try {
           const requestHeadersForObservation = new Headers(requestHeaders);
-          const isCurrentZCodeJwtRequest = await this.isZcodeJwtRequest?.(
+          const isCurrentZodyJwtRequest = await this.isZcodeJwtRequest?.(
             requestInput,
             requestHeadersForObservation,
           );
           if (
-            isCurrentZCodeJwtRequest &&
+            isCurrentZodyJwtRequest &&
             (response.status === 401 ||
               ((await this.isBusinessUnauthorizedRequest?.(
                 requestInput,

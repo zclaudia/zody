@@ -1,7 +1,7 @@
 import { act, createElement, type ReactElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 
 type TestEvent = {
   bubbles?: boolean;
@@ -145,24 +145,24 @@ vi.mock("@/components/ui/toast.js", () => ({
   toast: () => {},
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", async () => {
+vi.mock("@/store/zodySessionStore.js", async () => {
   const actual = await vi.importActual<
-    typeof import("@/store/zcodeSessionStore.js")
-  >("@/store/zcodeSessionStore.js");
+    typeof import("@/store/zodySessionStore.js")
+  >("@/store/zodySessionStore.js");
   return {
     ...actual,
     getTaskRuntimeState: () => "idle",
     getTaskUnreadIndicator: () => false,
     hasTaskPendingHumanInterventionRequest: () => false,
     hasTaskPendingPermissionRequest: () => false,
-    selectWorkspaceZCodeState: () => ({}),
-    useZCodeSessionStore: (
+    selectWorkspaceZodyState: () => ({}),
+    useZodySessionStore: (
       selector: (state: Record<string, unknown>) => unknown,
     ) => selector({}),
   };
 });
 
-function createTask(): ZCodeTaskMeta {
+function createTask(): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -528,7 +528,7 @@ describe("TaskListItem hover action rendering", () => {
           task: {
             ...task,
             automationId: "automation-1",
-          } as ZCodeTaskMeta & { automationId: string },
+          } as ZodyTaskMeta & { automationId: string },
         }),
       );
     });

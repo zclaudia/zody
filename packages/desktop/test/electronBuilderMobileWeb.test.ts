@@ -10,7 +10,7 @@ const desktopPackageRoot = resolve(fileURLToPath(new URL("..", import.meta.url))
 
 // electron-builder 配置在 darwin/arm64 会默认选中已 pin 的 CUA narrow 资源；
 // 这些资源不在普通单测环境构建。固定为非默认目标，只验证移动 UI 资源映射。
-vi.stubEnv("ZCODE_TARGET_OS", "linux");
+vi.stubEnv("ZODY_TARGET_OS", "linux");
 const { default: desktopBuilderConfig, createMobileWebExtraResource } =
   await import("../electron-builder.config.js");
 afterAll(() => {

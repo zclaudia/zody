@@ -18,21 +18,21 @@ Workspace Hook 只保留一种用户授权：对当前工作区中某一条精�
 
 ### 2.1 变更层
 
-| 层 | 本次变化 |
-| --- | --- |
-| presentation | 删除独立审核面板和行内状态徽章；未信任行在有效运行开关左侧始终显示“信任”按钮 |
-| validation | 继续校验 workspace identity、bundle digest、review flow generation、interaction、review item，并在所有 Settings Trust mutation 前校验同一受信 managed policy provider |
-| commit-effect | 用户只可提交单条或明确选中条目的 persistent Trust mutation |
-| persistence | 仍使用 user-owned Trust store，以 `workspaceIdentity + hookDeclarationDigest` 为键 |
-| recovery | continuous/replayable 继续投影 pending admission；超时、断连和页面关闭均不写 Trust |
+| 层            | 本次变化                                                                                                                                                              |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| presentation  | 删除独立审核面板和行内状态徽章；未信任行在有效运行开关左侧始终显示“信任”按钮                                                                                          |
+| validation    | 继续校验 workspace identity、bundle digest、review flow generation、interaction、review item，并在所有 Settings Trust mutation 前校验同一受信 managed policy provider |
+| commit-effect | 用户只可提交单条或明确选中条目的 persistent Trust mutation                                                                                                            |
+| persistence   | 仍使用 user-owned Trust store，以 `workspaceIdentity + hookDeclarationDigest` 为键                                                                                    |
+| recovery      | continuous/replayable 继续投影 pending admission；超时、断连和页面关闭均不写 Trust                                                                                    |
 
 ### 2.2 UI Surface Matrix
 
-| Surface | 展示/本地状态 | 提交入口 | 权威状态 | 多端边界 |
-| --- | --- | --- | --- | --- |
+| Surface                         | 展示/本地状态                                                                                  | 提交入口                                                                                                                                                                                  | 权威状态                                                                                                     | 多端边界                                                                                                    |
+| ------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
 | Settings / Hooks / Workspace 行 | Hook 配置与静态 Trust store 快照决定按钮/开关展示；活跃 review request 只提供可操作 generation | 有 session command binding 时复用 Runtime review；无 task/session 时经 workspace 级 Agent RPC 重验 snapshot，并通过 Host 注入的同一 managed policy provider 后提交精确 declaration digest | Runtime review controller / workspace pretrust authority + shared managed policy provider + user Trust store | Desktop 与 Web 共用组件；remote 必须携带 `workspaceIdentity` / `remoteSessionId`；不得为了信任创建隐藏 task |
-| 会话 pending banner | `workspaceHookAdmission.pendingCount` | `requestWorkspaceHookReview` 后打开 Hooks 设置 | Runtime admission projection | Desktop continuous 直推；Web remote replayable 从 snapshot 恢复 |
-| Runtime dispatch gate | canonical snapshot evaluation | 无 UI 旁路 | Trust coordinator + security revision | 所有 SessionStart/tool dispatch 共用同一 gate |
+| 会话 pending banner             | `workspaceHookAdmission.pendingCount`                                                          | `requestWorkspaceHookReview` 后打开 Hooks 设置                                                                                                                                            | Runtime admission projection                                                                                 | Desktop continuous 直推；Web remote replayable 从 snapshot 恢复                                             |
+| Runtime dispatch gate           | canonical snapshot evaluation                                                                  | 无 UI 旁路                                                                                                                                                                                | Trust coordinator + security revision                                                                        | 所有 SessionStart/tool dispatch 共用同一 gate                                                               |
 
 ### 2.3 必须检查的关系
 
@@ -60,12 +60,12 @@ Workspace Hook 只保留一种用户授权：对当前工作区中某一条精�
 
 配置状态与信任状态正交：
 
-| configured | trusted | 行内操作 | Runtime 结果 |
-| --- | --- | --- | --- |
-| off | no | 显示“信任”与锁定关闭的有效运行开关 | 不执行 |
-| on | no | 显示“信任”与锁定关闭的有效运行开关；不改写原始配置 | 跳过并上报 pending |
-| off | yes | 只显示关闭的配置开关 | 不执行 |
-| on | yes | 只显示开启的配置开关 | 通过其他 policy / snapshot gate 后执行 |
+| configured | trusted | 行内操作                                           | Runtime 结果                           |
+| ---------- | ------- | -------------------------------------------------- | -------------------------------------- |
+| off        | no      | 显示“信任”与锁定关闭的有效运行开关                 | 不执行                                 |
+| on         | no      | 显示“信任”与锁定关闭的有效运行开关；不改写原始配置 | 跳过并上报 pending                     |
+| off        | yes     | 只显示关闭的配置开关                               | 不执行                                 |
+| on         | yes     | 只显示开启的配置开关                               | 通过其他 policy / snapshot gate 后执行 |
 
 未信任时开关展示的是“当前是否可运行”，因此统一为关闭且不可操作；原始
 `configuredEnabled` 仍保留在 workspace 配置中。若它原本为 `on`，持久信任成功并刷新
@@ -161,24 +161,24 @@ Renderer              V4/Bootstrap                 Core / Trust Store
 
 ### 已确认
 
-| Case | Setup | Action | Assertions | Evidence |
-| --- | --- | --- | --- | --- |
-| WHT01 | enabled + untrusted | 打开 Hooks 设置 | 只显示“信任”与开关，无状态徽章 | UI + Runtime request item |
-| WHT02 | disabled + untrusted，且存在当前 immutable review | 点击“信任” | 可预先持久信任；配置仍关闭；按钮消失 | UI + Trust store |
-| WHT03 | 多条 untrusted | 信任其中一条 | 仅该条落盘/消失；其余通过下一 generation 保持可操作 | Protocol + store + UI |
-| WHT04 | 已信任 SessionStart 曾被跳过 | 当前 task 再发 prompt | 不补跑；下一新 task 的自然 SessionStart 才可运行 | Runtime lifecycle |
-| WHT05 | pending review | 超时/关闭/断连 | Trust 不变，pending admission 不变，可重新请求 review | Protocol projection + store |
-| WHT06 | 已信任声明发生语义变化 | 刷新/下次评估 | 新 digest 未信任，按钮重新出现，旧记录不授权新声明 | Digest + UI + runtime gate |
-| WHT07 | 本地与远程 tab 使用相同 `workspacePath`，远程具有独立 identity | 本地 Settings 查找 review/command binding | 只命中本地 binding；远程 identity 不能通过 path fallback 成为本地提交通道 | UI store |
-| WHT08 | explicit project config 与 auto-discovery 指向同一文件，或候选中含损坏 JSON | Runtime 与 Settings 分别构造 snapshot | 同一 canonical source 只出现一次；失败候选仍占 discovery order，双方 digest 一致 | adapters + shared discovery |
-| WHT09 | pending banner 当前可见 | 点击“忽略”；随后 bundle digest 变化 | 当前 bundle 立即隐藏；新 bundle 重新显示；命令 reject 仅记录 services/UI 规范日志 | UI interaction |
-| WHT10 | 同一 snapshot 连续请求审核或并发提交两次同一决策 | `requestReview` / `respond` | flow 只创建和监管一次；Trust 只落盘一次，第二次提交 superseded | bootstrap controller |
-| WHT11 | Trust 已原子落盘，但 deadline 抢先终结旧 flow | controller 收口提交结果 | 按 accepted 回报，且只发一次 resolved Settled；不得把已成功授权误报为失败 | bootstrap controller + store |
-| WHT12 | Trust store revoke 收到空 digest 列表；Windows rename 遇短暂占用 | revoke / atomic write | 空列表作为无效输入拒绝；`undefined` 仍表示撤销 workspace 全部；EPERM/EBUSY/EACCES 有界重试 | adapters persistence |
-| WHT13 | Settings 静态快照为 untrusted，当前没有 review interaction，但存在同 workspace session command binding | 打开 Workspace Hooks；点击“信任” | 按钮立即可见；开关显示关闭并锁定；先请求 review，收到包含该 item 的同 bundle immutable request 后再提交 persistent Trust | UI store + bootstrap controller |
-| WHT14 | 仅存在 configured-disabled + untrusted Hook，或当前没有 session command binding | 请求 review / 打开 Settings | controller 允许为 disabled pending item 建 flow；无 command binding 时按钮仍可点击，经 workspace grant 持久信任；任何展示均不改写 workspace 配置 | UI + bootstrap controller + services/Agent RPC |
-| WHT15 | 没有 task/session，Settings snapshot 在点击前已过期或 Trust store 损坏 | 点击“信任” | Agent 重新发现 snapshot；bundle/digest 不匹配或 store corrupt 时 fail closed，不写 Trust、不创建 task | shared protocol + bootstrap pretrust + UI |
-| WHT16 | 没有 task/session，Host managed policy 分别为 `user_decides` / `deny` / `allow_trusted_only` | Settings 点击“信任” | `user_decides` 才进入精确 grant；`deny` 返回 `workspace_hooks_blocked_by_policy`；`allow_trusted_only` 返回 `workspace_hooks_policy_requires_pretrust`；后两者不调用 store grant，也不能留下在后续 policy 放宽时生效的 record | protocol server + shared policy provider + Trust store spy |
+| Case  | Setup                                                                                                  | Action                                    | Assertions                                                                                                                                                                                                                    | Evidence                                                   |
+| ----- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| WHT01 | enabled + untrusted                                                                                    | 打开 Hooks 设置                           | 只显示“信任”与开关，无状态徽章                                                                                                                                                                                                | UI + Runtime request item                                  |
+| WHT02 | disabled + untrusted，且存在当前 immutable review                                                      | 点击“信任”                                | 可预先持久信任；配置仍关闭；按钮消失                                                                                                                                                                                          | UI + Trust store                                           |
+| WHT03 | 多条 untrusted                                                                                         | 信任其中一条                              | 仅该条落盘/消失；其余通过下一 generation 保持可操作                                                                                                                                                                           | Protocol + store + UI                                      |
+| WHT04 | 已信任 SessionStart 曾被跳过                                                                           | 当前 task 再发 prompt                     | 不补跑；下一新 task 的自然 SessionStart 才可运行                                                                                                                                                                              | Runtime lifecycle                                          |
+| WHT05 | pending review                                                                                         | 超时/关闭/断连                            | Trust 不变，pending admission 不变，可重新请求 review                                                                                                                                                                         | Protocol projection + store                                |
+| WHT06 | 已信任声明发生语义变化                                                                                 | 刷新/下次评估                             | 新 digest 未信任，按钮重新出现，旧记录不授权新声明                                                                                                                                                                            | Digest + UI + runtime gate                                 |
+| WHT07 | 本地与远程 tab 使用相同 `workspacePath`，远程具有独立 identity                                         | 本地 Settings 查找 review/command binding | 只命中本地 binding；远程 identity 不能通过 path fallback 成为本地提交通道                                                                                                                                                     | UI store                                                   |
+| WHT08 | explicit project config 与 auto-discovery 指向同一文件，或候选中含损坏 JSON                            | Runtime 与 Settings 分别构造 snapshot     | 同一 canonical source 只出现一次；失败候选仍占 discovery order，双方 digest 一致                                                                                                                                              | adapters + shared discovery                                |
+| WHT09 | pending banner 当前可见                                                                                | 点击“忽略”；随后 bundle digest 变化       | 当前 bundle 立即隐藏；新 bundle 重新显示；命令 reject 仅记录 services/UI 规范日志                                                                                                                                             | UI interaction                                             |
+| WHT10 | 同一 snapshot 连续请求审核或并发提交两次同一决策                                                       | `requestReview` / `respond`               | flow 只创建和监管一次；Trust 只落盘一次，第二次提交 superseded                                                                                                                                                                | bootstrap controller                                       |
+| WHT11 | Trust 已原子落盘，但 deadline 抢先终结旧 flow                                                          | controller 收口提交结果                   | 按 accepted 回报，且只发一次 resolved Settled；不得把已成功授权误报为失败                                                                                                                                                     | bootstrap controller + store                               |
+| WHT12 | Trust store revoke 收到空 digest 列表；Windows rename 遇短暂占用                                       | revoke / atomic write                     | 空列表作为无效输入拒绝；`undefined` 仍表示撤销 workspace 全部；EPERM/EBUSY/EACCES 有界重试                                                                                                                                    | adapters persistence                                       |
+| WHT13 | Settings 静态快照为 untrusted，当前没有 review interaction，但存在同 workspace session command binding | 打开 Workspace Hooks；点击“信任”          | 按钮立即可见；开关显示关闭并锁定；先请求 review，收到包含该 item 的同 bundle immutable request 后再提交 persistent Trust                                                                                                      | UI store + bootstrap controller                            |
+| WHT14 | 仅存在 configured-disabled + untrusted Hook，或当前没有 session command binding                        | 请求 review / 打开 Settings               | controller 允许为 disabled pending item 建 flow；无 command binding 时按钮仍可点击，经 workspace grant 持久信任；任何展示均不改写 workspace 配置                                                                              | UI + bootstrap controller + services/Agent RPC             |
+| WHT15 | 没有 task/session，Settings snapshot 在点击前已过期或 Trust store 损坏                                 | 点击“信任”                                | Agent 重新发现 snapshot；bundle/digest 不匹配或 store corrupt 时 fail closed，不写 Trust、不创建 task                                                                                                                         | shared protocol + bootstrap pretrust + UI                  |
+| WHT16 | 没有 task/session，Host managed policy 分别为 `user_decides` / `deny` / `allow_trusted_only`           | Settings 点击“信任”                       | `user_decides` 才进入精确 grant；`deny` 返回 `workspace_hooks_blocked_by_policy`；`allow_trusted_only` 返回 `workspace_hooks_policy_requires_pretrust`；后两者不调用 store grant，也不能留下在后续 policy 放宽时生效的 record | protocol server + shared policy provider + Trust store spy |
 
 ### 剪枝
 
@@ -233,3 +233,41 @@ Renderer              V4/Bootstrap                 Core / Trust Store
     IO/mutation 前读取 policy：只有 `user_decides` 可写；`deny` 与 `allow_trusted_only` 分别返回
     `workspace_hooks_blocked_by_policy` 与 `workspace_hooks_policy_requires_pretrust`。本地管理员 CLI
     若保留预审能力，必须继续走与 Settings RPC 不同的显式入口，不能复用普通 UI authority。
+
+## 11. Renderer 精确路由
+
+本节锁定 R47 的发起侧路由合同；持久 Trust 身份仍是 `workspaceIdentity?.trim() || workspacePath`
+加精确 declaration digest，`remoteSessionId`、task/session 只用于活跃命令与 review 路由，不构成
+第二个 Trust owner。
+
+1. Settings 行内 Trust、PendingBanner 与 Runtime review 命令必须沿同一
+   `workspaceKey + remoteSessionId + optional taskSessionId` 路由。binding 的
+   `remoteSessionId` 与查询目标都按
+   trim 后的非空值精确比较；任何一侧有值而另一侧缺失都不匹配，不借用同 identity 的其他 session、
+   另一 remote 或无 identity 的本地 binding。
+2. 只有双方都不带 identity 的旧 local binding 才允许 `workspacePath` fallback；本地
+   `remoteSessionId` 也必须缺省。存在多个同 route binding 时必须按明确的 taskSessionId 收窄；
+   仍不唯一则 fail closed，不按插入顺序、`createdAt` 或最新 generation 猜 owner。
+3. 唯一匹配的 immutable review 直接按其完整 target respond。否则向唯一匹配的 command binding
+   发 request，等待同 workspace、remoteSessionId、task session、bundle 与 reviewItemId 的 review，
+   再 respond。request 使用的 `sendCommand` 必须与等待/响应链同源；连接换代、abort 或 binding
+   失效时停止等待，旧 flow 不得借新通道重发。
+4. 已经取得 review 后，respond 的失败、超时或换代不得改走独立 grant。只有尚未取得匹配 review、
+   request 明确返回既有可降级 reason，且调用方给出的 hooks service 已绑定所选 remote 时，才可沿用
+   现行受控 workspace pretrust；policy 拒绝、route 歧义、错误 remote、stale/timeout 均不触发 grant。
+5. 旧 renderer effect 的迟到 review upsert 不得覆盖或删除新连接 binding；review binding 的
+   `request.remoteSessionId` 必须与该 session 当前 command binding 的 remote 同源。
+
+```text
+UI (workspaceKey, remoteSessionId, taskSessionId)
+  -> unique command binding (strict route)
+  -> request on that binding.sendCommand
+  -> unique review (same route + bundle + item + sendCommand)
+  -> respond with immutable target
+
+ambiguous / missing route / replaced sendCommand / abort -> reject, no command, no grant
+```
+
+## 改名实施目标
+
+本文件描述的现有行为在全面改名时须遵守 [Zody 改名运行时契约](../../specs/zody-rename-runtime-contract.md)；代际门禁、来源摘要和资源清理以该目标规格为准，尚未实现的行为不视为当前已发布。

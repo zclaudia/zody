@@ -1,4 +1,4 @@
-import type { ModelSelection, NodeSelfResourceSample } from "@zcode/shared";
+import type { ModelSelection, NodeSelfResourceSample } from "@zody/shared";
 /** scheduler → main */
 export type SchedulerToMainMessage = {
     type: "cron-dispatch-request";

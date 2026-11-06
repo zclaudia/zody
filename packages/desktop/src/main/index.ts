@@ -58,32 +58,32 @@ import {
   captureLoginShellEnvSnapshot,
   getConversationWorkspaceDir,
   getDataBaseDir,
-  getZCodeDataRootDir,
+  getZodyDataRootDir,
   normalizeRuntimeProcessEnv,
   setDataBaseDir,
-} from "@zcode/services/node";
+} from "@zody/services/node";
 import {
   desktopMenuMessageIds,
   type Locale,
   type AppSettings,
   PlatformChannels,
-  ZCODE_ENV,
-  ZCODE_PRODUCT_FLAVOR,
-  ZCODE_AUTO_UPDATE_ENABLED,
+  ZODY_ENV,
+  ZODY_PRODUCT_FLAVOR,
+  ZODY_AUTO_UPDATE_ENABLED,
   DEFAULT_ZCODE_ENDPOINT_ORIGIN,
   DISABLED_RENDERER_ACTION_TRACE_CONFIG,
   DEFAULT_LOCALE,
   DEFAULT_REMOTE_ACCESS_NAMESPACE,
   tryNormalizeRemoteAccessGatewayUrl,
   TEST_ZCODE_ENDPOINT_ORIGIN,
-  ZCODE_VERSION,
-  ZCODE_DATA_ROOT_DIR_NAME,
-  resolveZCodeEndpointOrigin,
+  ZODY_VERSION,
+  ZODY_DATA_ROOT_DIR_NAME,
+  resolveZodyEndpointOrigin,
   shouldEnableE2ETestBridge,
   type UpdateStatePayload,
   type TelemetryEventPayload,
   HostMessageTypes,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { logger } from "./logger.js";
 import { markMainLaunchAppReady } from "./desktopLaunchMarks.js";
 import { createCuaPipFocusRouter, resolveCuaPipWindowKey } from "./cuaPipFocusRouter.js";
@@ -140,7 +140,7 @@ import {
   getDesktopMenuLabel as getDesktopMenuLabelByLocale,
   rebuildApplicationMenu,
   resolveSystemApplicationLocale,
-  updateZCodeStdioTapDevMenuState,
+  updateZodyStdioTapDevMenuState,
 } from "./desktopApplicationMenu.js";
 import { applyAppIcon } from "./desktopWindowChrome.js";
 import { resolveWindowsAppUserModelIdForFlavor } from "../../scripts/desktop-product-identity.mjs";
@@ -162,7 +162,7 @@ import {
   syncApplicationUnreadBadge,
   handleDesktopWindowCloseRequest,
 } from "./desktopWindowLifecycle.js";
-import { resolveZCodeBuiltinProviderConfigFilePath } from "./desktopProviderConfig.js";
+import { resolveZodyBuiltinProviderConfigFilePath } from "./desktopProviderConfig.js";
 import {
   getCredentialsDir,
   isDockerDaemonAvailable,
@@ -172,7 +172,7 @@ import {
   loadHostProcessEnvFromLocalFiles,
   resolveBundledGlmBinaryPath,
   resolveRemoteAssetDirs,
-  resolveZCodeEndpointEnvBaseOrigin,
+  resolveZodyEndpointEnvBaseOrigin,
   desktopRuntimeEnv,
   runtimeApplicationName,
   runtimeHomePath,
@@ -253,9 +253,9 @@ import {
 } from "./desktopResourceTelemetry.js";
 import { registerRendererHeapSampleIpc } from "./processResourceRendererHeapSource.js";
 import {
-  registerDesktopZCodeDataSizeTelemetry,
-  stopDesktopZCodeDataSizeTelemetry,
-} from "./desktopZCodeDataSizeTelemetry.js";
+  registerDesktopZodyDataSizeTelemetry,
+  stopDesktopZodyDataSizeTelemetry,
+} from "./desktopZodyDataSizeTelemetry.js";
 import { configureDesktopMcpTelemetry, reportMcpTelemetryToArms } from "./desktopMcpTelemetry.js";
 import {
   configureDesktopNetworkTelemetry,
@@ -269,7 +269,7 @@ import {
   createEmbeddedBrowserPermissionUiBridge,
   setActiveEmbeddedBrowserPermissionUiBridge,
 } from "./embeddedBrowserPermissionUiBridge.js";
-import { mapZCodeEnvToArmsRumEnv } from "@zcode/shared";
+import { mapZodyEnvToArmsRumEnv } from "@zody/shared";
 import {
   findWindowsProcessesReferencingResourceMarkers,
   probeWindowsPackagedResourceWritable,
@@ -289,9 +289,9 @@ registerLocalMediaPreviewScheme(protocol, [PLUGIN_SANDBOX_PRIVILEGED_SCHEME]);
 const localMediaPreviewPathRegistry = createLocalMediaPreviewPathRegistry();
 
 // e2e 由 Chromedriver 管理远程调试端口；如果这里继续固定到 9229，
-// 会和开发态已打开的 ZCode Dev 抢端口，导致 WebDriver session 创建前白屏超时。
+// 会和开发态已打开的 Zody Dev 抢端口，导致 WebDriver session 创建前白屏超时。
 // 仅本地开发运行默认开启远程调试端口，并允许 e2e 通过环境变量交给 Chromedriver 接管。
-if (!app.isPackaged && process.env.ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT !== "1") {
+if (!app.isPackaged && process.env.ZODY_DISABLE_FIXED_REMOTE_DEBUGGING_PORT !== "1") {
   app.commandLine.appendSwitch("remote-debugging-port", "9229");
 }
 
@@ -577,7 +577,7 @@ let currentDesktopZoomLevel = 0;
 let currentDesktopWindowSize: DesktopWindowSize | undefined;
 const preloadPath = join(import.meta.dirname, "../preload/index.cjs");
 // fork 数据隔离：家目录级数据根为 Zody 独立的 .zody。
-const settingsFile = join(homedir(), ZCODE_DATA_ROOT_DIR_NAME, "v2", "setting.json");
+const settingsFile = join(homedir(), ZODY_DATA_ROOT_DIR_NAME, "v2", "setting.json");
 let activeAppShutdownPolicy = resolveAppShutdownPolicy("normal", process.platform);
 let activeAppShutdownKind: AppShutdownKind | null = null;
 const WINDOWS_AGENT_FORCE_KILL_TIMEOUT_MS = 2_000;
@@ -761,7 +761,7 @@ async function reloadRemoteGatewayBackendConfig(): Promise<void> {
  */
 const gatewayDeviceTransport = createGatewayDeviceTransport({
   logger,
-  desktopAppVersion: ZCODE_VERSION || app.getVersion(),
+  desktopAppVersion: ZODY_VERSION || app.getVersion(),
 });
 /**
  * M1-T5：Main 只装配只读 MobileUiAssetProvider，并把它交给 gateway backend 的 serveHttp。
@@ -851,16 +851,16 @@ remoteGatewayBackend.onChannelClosed((info) =>
 const appLaunchGate = createAppLaunchGate();
 const appLaunchCoordinator = createAppLaunchCoordinator(appLaunchGate);
 async function resolveCurrentZodyEndpointOrigin() {
-  return resolveZCodeEndpointOrigin({
-    env: ZCODE_ENV,
-    envBaseOrigin: resolveZCodeEndpointEnvBaseOrigin(hostProcessLocalEnv),
+  return resolveZodyEndpointOrigin({
+    env: ZODY_ENV,
+    envBaseOrigin: resolveZodyEndpointEnvBaseOrigin(hostProcessLocalEnv),
     overrideOrigin: (await mainSettingService.get()).zodyEndpointOrigin,
   });
 }
 // fork（F4.7）：官方账号 OAuth 下线后不再注入 userId/授权/营销参数 loader，
 // TelemetryCore 回落到匿名遥测（空 userId、无 Authorization）。
 const appTelemetryCore = createTelemetryCore({
-  resolveZCodeEndpointOrigin: resolveCurrentZodyEndpointOrigin,
+  resolveZodyEndpointOrigin: resolveCurrentZodyEndpointOrigin,
   fetchImpl: createDesktopTelemetryFetch(net),
 });
 const appTelemetryRuntime = createAppTelemetryRuntime({
@@ -896,7 +896,7 @@ function syncAppTelemetryInteractiveState(): void {
 app.on("browser-window-focus", (_event, win) => {
   syncAppTelemetryInteractiveState();
   rebuildMenu();
-  // 设置/更新等无 Host 的 ZCode 窗口也算前台：router 会先把旧 workspace Host 清成 null，
+  // 设置/更新等无 Host 的 Zody 窗口也算前台：router 会先把旧 workspace Host 清成 null，
   // 再把无 Host 的新窗口事实静默丢弃，避免旧会话 PiP 继续显示。
   cuaPipFocusRouter.focusWindow(resolveCuaPipWindowKey(win));
 });
@@ -932,7 +932,7 @@ const readHelpConfig = createDesktopHelpConfigReader();
 // fork（F2.6a，spec D1b）：渲染端动作追踪属于遥测，fork 无自有 OTLP 端点，固定禁用。
 // 不再构造 /api/v1/client/configs 的 fetchConfig，也不经 singleFeatureRollout 读远端；
 // 保留 rollout 形状以复用 registerRendererActionTraceIpc 的装配与本地 env 调试覆盖
-// （ZCODE_RENDERER_ACTION_TRACE_ENABLED / ZCODE_LOCAL_TTFT_ENABLED）。
+// （ZODY_RENDERER_ACTION_TRACE_ENABLED / ZODY_LOCAL_TTFT_ENABLED）。
 const rendererActionTraceRollout: RendererActionTraceRollout = {
   getSnapshot: () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
   refresh: async () => ({ ...DISABLED_RENDERER_ACTION_TRACE_CONFIG }),
@@ -940,7 +940,7 @@ const rendererActionTraceRollout: RendererActionTraceRollout = {
 };
 const localTtftExporter = createLocalTtftExporter({
   env: { ...hostProcessLocalEnv, ...process.env },
-  version: ZCODE_VERSION || app.getVersion(),
+  version: ZODY_VERSION || app.getVersion(),
   logger,
 });
 ipcMain.on(PlatformChannels.ReportLocalTtftBatch, (_event, batch: unknown) =>
@@ -988,7 +988,7 @@ const remoteWorkspaceDirectory = createRemoteWorkspaceDirectory({
 });
 
 const webRemoteControlManager = createWebRemoteControlManager({
-  appVersion: ZCODE_VERSION || app.getVersion(),
+  appVersion: ZODY_VERSION || app.getVersion(),
   // T2.3：启动恢复只看 App 级开关；旧的 webRemoteControlLastEnabledContext 已随 relay
   // 体系删除，只在设置迁移时读取原始 JSON。
   remoteAccessSettings,
@@ -1136,16 +1136,14 @@ function syncImmediateAppSettings(patch: Partial<AppSettings>) {
   if (typeof patch.browserExtensionBridgePort === "number") {
     // 设置页的正常路径走 SetBrowserExtensionBridgePort（先重启成功再持久化）；这里兜底
     // 覆盖直接 useSettings.update 的写入，保证 Main 不会继续监听旧端口。
-    void extensionBridgeController
-      ?.setPort(patch.browserExtensionBridgePort)
-      .then((result) => {
-        if (!result.ok) {
-          logger.warn("[extension-bridge] settings port update failed", {
-            port: patch.browserExtensionBridgePort,
-            error: result.error,
-          });
-        }
-      });
+    void extensionBridgeController?.setPort(patch.browserExtensionBridgePort).then((result) => {
+      if (!result.ok) {
+        logger.warn("[extension-bridge] settings port update failed", {
+          port: patch.browserExtensionBridgePort,
+          error: result.error,
+        });
+      }
+    });
   }
 
   if (typeof patch.receivePreviewUpdates === "boolean") {
@@ -1237,7 +1235,7 @@ async function prepareAppQuit(reason: string, kind: AppShutdownKind = "normal"):
   // Bug 根因：资源样本改为 5 分钟窗口后，退出仍直接 stop 会清空未满窗口的数据。
   // 退出时只排空已存在的角色 / Agent 内存窗口，不启动新采样、目录扫描或外部探针。
   stopDesktopResourceTelemetry({ flushPendingWindows: true });
-  stopDesktopZCodeDataSizeTelemetry();
+  stopDesktopZodyDataSizeTelemetry();
   stopDesktopNetworkTelemetry();
   stopRemoteUsageArmsPeriodicSampling();
   // 扩展 socket 随 Host 退出一起收口；失败只记录，不扩大退出预算。
@@ -1321,7 +1319,7 @@ async function prepareAppQuit(reason: string, kind: AppShutdownKind = "normal"):
 
 function exitPreparedApp(reason: string): never | void {
   logger.info(`[app-quit] exiting prepared app (${reason})`);
-  if (process.env.ZCODE_E2E_RUN_ID?.trim()) {
+  if (process.env.ZODY_E2E_RUN_ID?.trim()) {
     flushMainE2ECoverage((error) => {
       logger.warn("[e2e-coverage] main coverage flush failed", error);
     });
@@ -1530,12 +1528,12 @@ async function prepareWindowsProcessesForUpdateInstall() {
 
 function shouldConfirmAppQuit() {
   // 开发环境里的普通会话经常需要重启 Electron，只在 production 下拦截，避免打断调试。
-  return ZCODE_ENV === "production" && getRunningAgentSessionCount() > 0;
+  return ZODY_ENV === "production" && getRunningAgentSessionCount() > 0;
 }
 
 function confirmAppQuit(originWindow?: BrowserWindow | null) {
   if (!shouldConfirmAppQuit()) {
-    logger.info(`[app-quit] quit confirmation skipped in ${ZCODE_ENV}`);
+    logger.info(`[app-quit] quit confirmation skipped in ${ZODY_ENV}`);
     return true;
   }
 
@@ -1581,14 +1579,14 @@ async function executeDesktopCommandForApp(
     command,
     senderWindow,
     logger,
-    updateZCodeStdioTapDevMenuState,
+    updateZodyStdioTapDevMenuState,
     onDesktopZoomChanged: (zoomLevel) => {
       currentDesktopZoomLevel = clampDesktopZoomLevel(zoomLevel);
       rebuildMenu();
     },
     settingService: mainSettingService,
-    onZCodeEndpointChanged: handleZCodeEndpointChanged,
-    zcodeEndpointEnvBaseOrigin: resolveZCodeEndpointEnvBaseOrigin(hostProcessLocalEnv),
+    onZCodeEndpointChanged: handleZodyEndpointChanged,
+    zcodeEndpointEnvBaseOrigin: resolveZodyEndpointEnvBaseOrigin(hostProcessLocalEnv),
     onRelaunchApp: async () => {
       await prepareAppQuit("desktop-command-relaunch");
       app.relaunch();
@@ -1599,8 +1597,8 @@ async function executeDesktopCommandForApp(
   });
 }
 
-async function resolveZCodeEndpointSelection(): Promise<"production" | "test" | "custom"> {
-  if (ZCODE_ENV === "production") {
+async function resolveZodyEndpointSelection(): Promise<"production" | "test" | "custom"> {
+  if (ZODY_ENV === "production") {
     return "production";
   }
   const origin = await resolveCurrentZodyEndpointOrigin();
@@ -1613,7 +1611,7 @@ async function resolveZCodeEndpointSelection(): Promise<"production" | "test" | 
   return "custom";
 }
 
-async function handleZCodeEndpointChanged() {
+async function handleZodyEndpointChanged() {
   rebuildMenu();
   // T2.3：远控 runtime 是 App 级单实例，endpoint 变化只需要挂起一次。
   await webRemoteControlManagerRef.current?.suspend("endpoint-changed");
@@ -1654,7 +1652,7 @@ function resetShortcutRecordingForWebContents(webContentsId: number) {
 }
 
 function rebuildMenu() {
-  void Promise.all([resolveZCodeEndpointSelection(), mainSettingService.get()]).then(
+  void Promise.all([resolveZodyEndpointSelection(), mainSettingService.get()]).then(
     ([zcodeEndpointSelection, settings]) => {
       rebuildApplicationMenu({
         currentApplicationLocale,
@@ -1939,7 +1937,7 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
         label,
         {
           ...initMessage,
-          zcodeBuiltinProviderConfigFilePath: resolveZCodeBuiltinProviderConfigFilePath(),
+          zodyBuiltinProviderConfigFilePath: resolveZodyBuiltinProviderConfigFilePath(),
         },
         {
           hostProcessLocalEnv,
@@ -2136,10 +2134,10 @@ app.whenReady().then(async () => {
       : {}),
     logger: console,
     // e2e L05（配额）：只在 e2e run 里允许缩小注册表容量。
-    ...(process.env.ZCODE_E2E_RUN_ID?.trim() &&
-    Number.isInteger(Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES)) &&
-    Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) > 0
-      ? { registryMaxEntries: Number(process.env.ZCODE_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) }
+    ...(process.env.ZODY_E2E_RUN_ID?.trim() &&
+    Number.isInteger(Number(process.env.ZODY_E2E_PLUGIN_SANDBOX_MAX_ENTRIES)) &&
+    Number(process.env.ZODY_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) > 0
+      ? { registryMaxEntries: Number(process.env.ZODY_E2E_PLUGIN_SANDBOX_MAX_ENTRIES) }
       : {}),
   });
   installBrowserRestoreBootstrapProtocol(
@@ -2222,7 +2220,7 @@ app.whenReady().then(async () => {
     // 打包态必须与 NSIS 快捷方式使用同一 AUMID，否则 Shell 把它们当成不同应用。
     // 使用构建期产品身份，不依赖用户机器环境；开发态继续保持独立身份。
     app.setAppUserModelId(
-      resolveWindowsAppUserModelIdForFlavor(ZCODE_PRODUCT_FLAVOR, { isPackaged: app.isPackaged }),
+      resolveWindowsAppUserModelIdForFlavor(ZODY_PRODUCT_FLAVOR, { isPackaged: app.isPackaged }),
     );
   }
 
@@ -2275,11 +2273,11 @@ app.whenReady().then(async () => {
   logWindowsBundledRuntimeIntegrityDiagnostic();
 
   // 启动自动更新检查（后台执行，不阻塞主界面）
-  // Preview 身份无论连接哪个后端都不自动更新：stable feed 上只分发正式 ZCode 安装包，
+  // Preview 身份无论连接哪个后端都不自动更新：stable feed 上只分发正式 Zody 安装包，
   // 不向 Preview 渠道提供更新。构建期未启用自动更新时同样不更新
   // （见 docs/desktop/build-time-optional-capabilities.md）。
   void initAutoUpdater({
-    enabled: ZCODE_PRODUCT_FLAVOR === "production" && ZCODE_AUTO_UPDATE_ENABLED,
+    enabled: ZODY_PRODUCT_FLAVOR === "production" && ZODY_AUTO_UPDATE_ENABLED,
     onBeforeQuitAndInstall: async () => {
       notifyStabilityLifecycle("update_install");
       await prepareAppQuit("auto-update quitAndInstall", "update-install");
@@ -2489,8 +2487,8 @@ app.whenReady().then(async () => {
     armsCustomContext: {
       deviceMid,
       platform: process.platform,
-      appVersion: ZCODE_VERSION,
-      armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+      appVersion: ZODY_VERSION,
+      armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
     },
     finalArmsCustomEventE2EEnabled: shouldEnableE2ETestBridge(process.env),
     webRemoteControlManager,
@@ -2532,35 +2530,35 @@ app.whenReady().then(async () => {
   configureDesktopStabilityTelemetry({
     deviceMid,
     platform: process.platform,
-    appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    appVersion: ZODY_VERSION,
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopResourceTelemetry({
     deviceMid,
     platform: process.platform,
-    appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    appVersion: ZODY_VERSION,
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopMcpTelemetry({
     deviceMid,
-    appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    appVersion: ZODY_VERSION,
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   configureDesktopNetworkTelemetry({
     deviceMid,
     platform: process.platform,
-    appVersion: ZCODE_VERSION,
-    armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+    appVersion: ZODY_VERSION,
+    armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
   });
   registerDesktopStabilityMonitors(logger, crashCapturePaths);
   registerDesktopResourceTelemetry(logger);
   // 主窗口 renderer 的 60 秒 heap 样本入口；随 App 生命周期常驻，只注册一次。
   registerRendererHeapSampleIpc();
   const defaultDataBaseDir = process.env.HOME?.trim() || homedir();
-  registerDesktopZCodeDataSizeTelemetry({
+  registerDesktopZodyDataSizeTelemetry({
     context: {
-      appVersion: ZCODE_VERSION,
-      armsEnv: mapZCodeEnvToArmsRumEnv(desktopRuntimeEnv),
+      appVersion: ZODY_VERSION,
+      armsEnv: mapZodyEnvToArmsRumEnv(desktopRuntimeEnv),
       dataRootKind:
         resolve(getDataBaseDir()) === resolve(defaultDataBaseDir) ? "default" : "custom",
       deviceMid,
@@ -2570,20 +2568,17 @@ app.whenReady().then(async () => {
     isAppBackground: () => resolveResourceUsageScene() === "background",
     isZCodeBusy: () => getRunningAgentSessionCount() > 0,
     logger,
-    rootPath: getZCodeDataRootDir(),
+    rootPath: getZodyDataRootDir(),
     stateFile: join(app.getPath("userData"), "zody-data-size-telemetry.json"),
   });
   registerDesktopNetworkTelemetry(logger);
 
   // Chrome 扩展桥在首窗创建前启动：Host 注册后才能接收绑定窗口的连接事件。
   // 端口占用等失败只让 backend unavailable，不阻断 App 启动。
-  const configuredExtensionBridgePort = (await mainSettingService.get())
-    .browserExtensionBridgePort;
+  const configuredExtensionBridgePort = (await mainSettingService.get()).browserExtensionBridgePort;
   extensionBridgeController = createExtensionBridgeController({
     userDataPath: app.getPath("userData"),
-    ...(configuredExtensionBridgePort === undefined
-      ? {}
-      : { port: configuredExtensionBridgePort }),
+    ...(configuredExtensionBridgePort === undefined ? {} : { port: configuredExtensionBridgePort }),
     logger: {
       debug: (...args: unknown[]) => logger.debug(...args),
       info: (...args: unknown[]) => logger.info(...args),

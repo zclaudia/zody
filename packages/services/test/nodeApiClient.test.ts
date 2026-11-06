@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError } from "@zcode/shared";
+import { ApiError } from "@zody/shared";
 import { createNodeApiClient } from "../src/providers/api/nodeApiClient.js";
 
 describe("nodeApiClient", () => {

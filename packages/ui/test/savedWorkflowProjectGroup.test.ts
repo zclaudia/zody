@@ -16,14 +16,17 @@ import {
   TID_WORKFLOW_DETAIL,
   TID_WORKFLOW_PROJECT_GROUP,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
-  type ZCodeWorkflowsDeleteResult,
-  type ZCodeWorkflowsListResult,
-} from "@zcode/shared";
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
+  type ZodyWorkflowsDeleteResult,
+  type ZodyWorkflowsListResult,
+} from "@zody/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
-import { resetSavedWorkflowStoreForTests } from "@/store/savedWorkflowStore.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
+import {
+  useSavedWorkflowStore,
+  resetSavedWorkflowStoreForTests,
+} from "@/store/savedWorkflowStore.js";
 
 const confirmMock = vi.fn(async () => true);
 const toastMock = vi.fn();
@@ -39,17 +42,17 @@ const fileWatcherService = {
 };
 
 function makeAgent() {
-  const listResult: { current: ZCodeWorkflowsListResult } = {
+  const listResult: { current: ZodyWorkflowsListResult } = {
     current: { workflows: [], invalid: [], dir: "/beta/.zcode/workflows" },
   };
-  const runsResult: { current: ZCodeSavedWorkflowRun[] } = { current: [] };
+  const runsResult: { current: ZodySavedWorkflowRun[] } = { current: [] };
   const agent = {
     listResult,
     runsResult,
     listSavedWorkflows: vi.fn(async () => listResult.current),
     listSavedWorkflowRuns: vi.fn(async () => ({ runs: runsResult.current })),
     deleteSavedWorkflow: vi.fn(
-      async (): Promise<ZCodeWorkflowsDeleteResult> => ({
+      async (): Promise<ZodyWorkflowsDeleteResult> => ({
         ok: true as const,
         path: "/beta/.zcode/workflows/x.dwf.ts",
       }),
@@ -68,7 +71,7 @@ const agentByPath: Record<string, ReturnType<typeof makeAgent>> = {
 
 vi.mock("@/hooks/useWorkspaceServices.js", () => ({
   useWorkspaceServicesResolution: (workspacePath: string) => ({
-    services: { zcodeAgentService: agentByPath[workspacePath] ?? agentRepo, fileWatcherService },
+    services: { zodyAgentService: agentByPath[workspacePath] ?? agentRepo, fileWatcherService },
     remoteSessionId: null,
     isRemoteTarget: false,
     connectionKind: "local-ready" as const,
@@ -110,13 +113,13 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowCard.js", () => ({
     onMove,
     onDelete,
   }: {
-    entry: ZCodeSavedWorkflowEntry;
-    lastRun: ZCodeSavedWorkflowRun | undefined;
-    onOpen: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRun: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRevise: (entry: ZCodeSavedWorkflowEntry) => void;
-    onMove?: (entry: ZCodeSavedWorkflowEntry) => void;
-    onDelete: (entry: ZCodeSavedWorkflowEntry) => void;
+    entry: ZodySavedWorkflowEntry;
+    lastRun: ZodySavedWorkflowRun | undefined;
+    onOpen: (entry: ZodySavedWorkflowEntry) => void;
+    onRun: (entry: ZodySavedWorkflowEntry) => void;
+    onRevise: (entry: ZodySavedWorkflowEntry) => void;
+    onMove?: (entry: ZodySavedWorkflowEntry) => void;
+    onDelete: (entry: ZodySavedWorkflowEntry) => void;
   }) =>
     createElement(
       "div",
@@ -167,15 +170,18 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowDetailView.js", () => ({
     name,
     projectLabel,
     onBack,
+    onMetaSaved,
   }: {
     name: string;
     projectLabel: string;
     onBack: () => void;
+    onMetaSaved: () => void;
   }) =>
     createElement(
       "div",
       { "data-testid": TID_WORKFLOW_DETAIL, "data-name": name, "data-project": projectLabel },
       createElement("button", { type: "button", onClick: onBack }, "back"),
+      createElement("button", { type: "button", onClick: onMetaSaved }, "meta saved"),
     ),
 }));
 
@@ -184,8 +190,8 @@ const { SavedWorkflowProjectGroup } =
 
 function entry(
   name: string,
-  overrides: Partial<ZCodeSavedWorkflowEntry> = {},
-): ZCodeSavedWorkflowEntry {
+  overrides: Partial<ZodySavedWorkflowEntry> = {},
+): ZodySavedWorkflowEntry {
   return {
     name,
     description: `${name} 的说明`,
@@ -209,7 +215,7 @@ function mount(
   const onBack = vi.fn();
   const result = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale },
       createElement(SavedWorkflowProjectGroup, {
         project: BETA,
@@ -345,7 +351,7 @@ describe("SavedWorkflowProjectGroup", () => {
 
     rerender(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(SavedWorkflowProjectGroup, {
           project: BETA,
@@ -496,6 +502,27 @@ describe("SavedWorkflowProjectGroup", () => {
     await screen.findByTestId(testId(TID_WORKFLOW_CARD, "x"));
     fireEvent.click(screen.getByText("open"));
     expect(onOpenDetail).toHaveBeenCalledWith("x");
+  });
+
+  it("metadata saved refreshes the project list and picks up canonical path", async () => {
+    agentBeta.listResult.current = { workflows: [entry("x")], invalid: [] };
+    mount({ mode: { kind: "detail", name: "x" } });
+    await screen.findByTestId(TID_WORKFLOW_DETAIL);
+    await waitFor(() => expect(agentBeta.listSavedWorkflows).toHaveBeenCalled());
+    const count = agentBeta.listSavedWorkflows.mock.calls.length;
+    agentBeta.listResult.current = {
+      workflows: [entry("x", { path: "/beta/.zody/workflows/x.dwf.ts" })],
+      invalid: [],
+    };
+    fireEvent.click(screen.getByText("meta saved"));
+    await waitFor(() =>
+      expect(agentBeta.listSavedWorkflows.mock.calls.length).toBeGreaterThan(count),
+    );
+    await waitFor(() =>
+      expect(useSavedWorkflowStore.getState().byWorkspaceKey["/beta"]?.entries[0]?.path).toBe(
+        "/beta/.zody/workflows/x.dwf.ts",
+      ),
+    );
   });
 
   it("detail 模式渲染 SavedWorkflowDetailView 并把项目名传给面包屑", async () => {

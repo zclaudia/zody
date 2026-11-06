@@ -3,7 +3,7 @@
 import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { CommandAck, SessionConfigState } from "@zcode/shared/zcode-protocol-v4";
+import type { CommandAck, SessionConfigState } from "@zody/shared/zody-protocol-v4";
 import {
   startDraftSessionPrewarm,
   useDraftSessionPrewarm,

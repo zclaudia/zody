@@ -35,7 +35,7 @@ const DEFAULT_OUTPUT = join(REPO_ROOT, "output/cua-desktop-session/ui-candidate"
 const DEFAULT_RENDERER = join(DESKTOP_ROOT, "out/renderer");
 const DEFAULT_PRELOAD = join(DESKTOP_ROOT, "out/preload");
 const DEFAULT_PLUGIN_SANDBOX = join(DESKTOP_ROOT, "out/plugin-sandbox");
-const DEFAULT_PROVIDER_CONFIG = join(REPO_ROOT, "config/provider/zcode-builtin.json");
+const DEFAULT_PROVIDER_CONFIG = join(REPO_ROOT, "config/provider/zody-builtin.json");
 const RUNTIME_EXTERNALS = ["electron", "node-pty", "ssh2", "undici", "yaml", "node-forge", "yauzl"];
 const DESKTOP_SCHEDULER_ENTRYPOINTS = Object.freeze({
   "scheduler/index": "src/scheduler/index.ts",
@@ -159,7 +159,7 @@ async function copyDirectory(source, destination, label) {
 
 async function buildCandidate(options) {
   const { environment } = await loadBuiltinProviderConfig({ root: REPO_ROOT });
-  const productFlavor = resolveDesktopProductFlavor({ ...process.env, ZCODE_ENV: environment });
+  const productFlavor = resolveDesktopProductFlavor({ ...process.env, ZODY_ENV: environment });
   const buildMetadata = getBuildMetadata();
   const buildTimeDefines = createBuildTimeConfigDefines(
     await resolveBuildTimeConfig(process.env),
@@ -171,16 +171,16 @@ async function buildCandidate(options) {
     bridgeFd: options.bridgeFd,
   };
   const define = {
-    __ZCODE_VERSION__: JSON.stringify(buildMetadata.appVersion),
-    __ZCODE_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
-    __ZCODE_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
-    __ZCODE_ENV__: JSON.stringify(environment),
-    __ZCODE_PRODUCT_FLAVOR__: JSON.stringify(productFlavor),
+    __ZODY_VERSION__: JSON.stringify(buildMetadata.appVersion),
+    __ZODY_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
+    __ZODY_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
+    __ZODY_ENV__: JSON.stringify(environment),
+    __ZODY_PRODUCT_FLAVOR__: JSON.stringify(productFlavor),
     ...buildTimeDefines,
-    __ZCODE_CUA_HELPER_BUILD_ID__: JSON.stringify(""),
-    __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify([]),
-    __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify({}),
-    __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__: JSON.stringify(nativeHostLaunch),
+    __ZODY_CUA_HELPER_BUILD_ID__: JSON.stringify(""),
+    __ZODY_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify([]),
+    __ZODY_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify({}),
+    __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__: JSON.stringify(nativeHostLaunch),
   };
 
   const outputParent = dirname(options.output);
@@ -197,7 +197,7 @@ async function buildCandidate(options) {
       ? await copyDirectory(options.pluginSandbox, join(appDir, "plugin-sandbox"), "plugin-sandbox output")
       : undefined;
     const providerConfig = await requireFile(DEFAULT_PROVIDER_CONFIG, "builtin provider config");
-    const providerConfigDestination = join(staging, "config/provider/zcode-builtin.json");
+    const providerConfigDestination = join(staging, "config/provider/zody-builtin.json");
     await mkdir(dirname(providerConfigDestination), { recursive: true, mode: 0o700 });
     await copyFile(providerConfig.path, providerConfigDestination);
     for (const directory of ["profile/user-data", "profile/session-data"]) {
@@ -265,7 +265,7 @@ async function buildCandidate(options) {
     if (!main) throw new Error("built main entry is missing");
     const mainEntry = join(appDir, "main/index.js");
     const mainSource = await readFile(mainEntry, "utf8");
-    if (mainSource.includes("__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__")) {
+    if (mainSource.includes("__ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__")) {
       throw new Error("candidate nativeHostLaunch define was not compiled into main");
     }
     if (!mainSource.includes(options.launcherPath)) {
@@ -299,7 +299,7 @@ async function buildCandidate(options) {
     const runScript = join(staging, "run-ui-candidate.sh");
     await writeFile(
       runScript,
-      `#!/bin/sh\nset -eu\nHERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)\nunset ELECTRON_RUN_AS_NODE ELECTRON_RENDERER_URL\nmkdir -p "$HERE/profile/user-data" "$HERE/profile/session-data"\nexport ZCODE_BUILTIN_PROVIDER_CONFIG_FILE="$HERE/config/provider/zcode-builtin.json"\nexport ZCODE_DESKTOP_USER_DATA_DIR="$HERE/profile/user-data"\nexport ZCODE_DESKTOP_SESSION_DATA_DIR="$HERE/profile/session-data"\nexport ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT=1\n\nexec ${shellQuote(electron.executable)} "$HERE/app" "$@"\n`,
+      `#!/bin/sh\nset -eu\nHERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)\nunset ELECTRON_RUN_AS_NODE ELECTRON_RENDERER_URL\nmkdir -p "$HERE/profile/user-data" "$HERE/profile/session-data"\nexport ZODY_BUILTIN_PROVIDER_CONFIG_FILE="$HERE/config/provider/zody-builtin.json"\nexport ZODY_DESKTOP_USER_DATA_DIR="$HERE/profile/user-data"\nexport ZODY_DESKTOP_SESSION_DATA_DIR="$HERE/profile/session-data"\nexport ZODY_DISABLE_FIXED_REMOTE_DEBUGGING_PORT=1\n\nexec ${shellQuote(electron.executable)} "$HERE/app" "$@"\n`,
       { mode: 0o755 },
     );
 
@@ -317,7 +317,7 @@ async function buildCandidate(options) {
       nativeHostLaunch: {
         ...nativeHostLaunch,
         launcher: { path: launcher.path, bytes: launcher.bytes, sha256: launcher.sha256 },
-        compileTimeDefine: "__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__",
+        compileTimeDefine: "__ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__",
       },
       electron: {
         version: electron.version,
@@ -365,7 +365,7 @@ async function buildCandidate(options) {
       runtimeNodeModules: join(REPO_ROOT, "node_modules"),
       builtinProviderConfig: {
         source: providerConfig.path,
-        destination: join(options.output, "config/provider/zcode-builtin.json"),
+        destination: join(options.output, "config/provider/zody-builtin.json"),
         bytes: providerConfig.bytes,
         sha256: providerConfig.sha256,
       },
@@ -374,13 +374,13 @@ async function buildCandidate(options) {
         sessionDataDir: join(options.output, "profile/session-data"),
       },
       runtimeEnv: {
-        ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: join(
+        ZODY_BUILTIN_PROVIDER_CONFIG_FILE: join(
           options.output,
-          "config/provider/zcode-builtin.json",
+          "config/provider/zody-builtin.json",
         ),
-        ZCODE_DESKTOP_USER_DATA_DIR: join(options.output, "profile/user-data"),
-        ZCODE_DESKTOP_SESSION_DATA_DIR: join(options.output, "profile/session-data"),
-        ZCODE_DISABLE_FIXED_REMOTE_DEBUGGING_PORT: "1",
+        ZODY_DESKTOP_USER_DATA_DIR: join(options.output, "profile/user-data"),
+        ZODY_DESKTOP_SESSION_DATA_DIR: join(options.output, "profile/session-data"),
+        ZODY_DISABLE_FIXED_REMOTE_DEBUGGING_PORT: "1",
       },
       run: {
         script: "run-ui-candidate.sh",

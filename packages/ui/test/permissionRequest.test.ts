@@ -1,4 +1,4 @@
-import type { ZCodePermissionRequest } from "@zcode/shared";
+import type { ZodyPermissionRequest } from "@zody/shared";
 import { describe, expect, it } from "vitest";
 import {
   getPermissionOptionDisplayKind,
@@ -7,8 +7,8 @@ import {
 } from "../src/lib/permissionRequest.js";
 
 function createPermissionRequest(
-  overrides: Partial<Pick<ZCodePermissionRequest, "title" | "description" | "kind" | "raw">> = {},
-): Pick<ZCodePermissionRequest, "title" | "description" | "kind" | "raw"> {
+  overrides: Partial<Pick<ZodyPermissionRequest, "title" | "description" | "kind" | "raw">> = {},
+): Pick<ZodyPermissionRequest, "title" | "description" | "kind" | "raw"> {
   return {
     title: "Run a shell command",
     description: "Run a shell command",

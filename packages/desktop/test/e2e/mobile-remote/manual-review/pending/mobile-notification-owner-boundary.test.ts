@@ -14,7 +14,7 @@ import {
   buildRemoteWorkspaceIdentity,
   resolveWorkspaceKey,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clickTestIdByDom,
   seedSettings,
@@ -75,14 +75,14 @@ type NotificationRow = {
 type HandoffLabel = "owner" | "taskdeleted" | "workspaceclosed";
 
 const marker = "E2E_MOBILE_P8_OWNER_BOUNDARY";
-const workspacePath = process.env.ZCODE_E2E_P8_OWNER_WORKSPACE_PATH?.trim() ?? "";
-const sshPort = Number(process.env.ZCODE_E2E_P8_OWNER_PORT);
-const passwordFile = process.env.ZCODE_E2E_P8_OWNER_PASSWORD_FILE?.trim() ?? "";
+const workspacePath = process.env.ZODY_E2E_P8_OWNER_WORKSPACE_PATH?.trim() ?? "";
+const sshPort = Number(process.env.ZODY_E2E_P8_OWNER_PORT);
+const passwordFile = process.env.ZODY_E2E_P8_OWNER_PASSWORD_FILE?.trim() ?? "";
 const sharedDir = resolve(
-  process.env.ZCODE_P8_OWNER_HANDOFF_DIR?.trim() ||
+  process.env.ZODY_P8_OWNER_HANDOFF_DIR?.trim() ||
     join(process.cwd(), "../../.tmp/mobile-remote-p8-owner-boundary"),
 );
-const credentialPath = process.env.ZCODE_P8_CREDENTIAL_FILE?.trim();
+const credentialPath = process.env.ZODY_P8_CREDENTIAL_FILE?.trim();
 const readyPath = join(sharedDir, "ready.json");
 const releasePath = join(sharedDir, "release.json");
 const resultPath = (label: HandoffLabel) => join(sharedDir, `result-${label}.json`);

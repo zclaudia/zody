@@ -1,7 +1,7 @@
 import {
   WEB_REMOTE_CONTROL_RPC_TRANSPORT_LIMITS,
   type WebRemoteControlAppPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 export type WebRemoteControlPayloadSendResult =
   | { kind: "sent"; bytes: number }

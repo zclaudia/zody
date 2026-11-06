@@ -5,7 +5,7 @@ import {
   TID_CHAT_MESSAGE_EDIT_SUBMIT,
   TID_CHAT_USER_MESSAGE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clickTestIdByDom } from "./desktop-app.js";
 
 export interface EditButtonSnapshot {

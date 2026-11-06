@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DesktopCommandIds, TEST_ZCODE_ENDPOINT_ORIGIN } from "@zcode/shared";
+import { DesktopCommandIds, TEST_ZCODE_ENDPOINT_ORIGIN } from "@zody/shared";
 
 const appMock = {
   isPackaged: false,
@@ -109,8 +109,8 @@ const originalPlatform = process.platform;
 // 自动更新唯一判定（fork spec：production 身份 + 构建期启用）；检查更新命令只读它。
 const autoUpdateState = vi.hoisted(() => ({ active: false }));
 
-vi.mock("@zcode/shared", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@zcode/shared")>()),
+vi.mock("@zody/shared", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@zody/shared")>()),
   isDesktopAutoUpdateActive: () => autoUpdateState.active,
 }));
 
@@ -329,7 +329,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
 
     await executeDesktopCommand({
       ...commandOptions,
-      command: DesktopCommandIds.SetZCodeEndpointTest,
+      command: DesktopCommandIds.SetZodyEndpointTest,
     });
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
       zodyEndpointOrigin: TEST_ZCODE_ENDPOINT_ORIGIN,
@@ -339,7 +339,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     // 默认端点为空（未配置），不再写入官方地址。
     await executeDesktopCommand({
       ...commandOptions,
-      command: DesktopCommandIds.SetZCodeEndpointProduction,
+      command: DesktopCommandIds.SetZodyEndpointProduction,
     });
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
       zodyEndpointOrigin: undefined,
@@ -347,7 +347,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
 
     await executeDesktopCommand({
       ...commandOptions,
-      command: DesktopCommandIds.ResetZCodeEndpoint,
+      command: DesktopCommandIds.ResetZodyEndpoint,
     });
     expect(commandOptions.settingService.update).toHaveBeenLastCalledWith({
       zodyEndpointOrigin: undefined,
@@ -362,7 +362,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
 
     const commandPromise = executeDesktopCommand({
       ...commandOptions,
-      command: DesktopCommandIds.SetZCodeEndpointCustom,
+      command: DesktopCommandIds.SetZodyEndpointCustom,
     });
     await vi.waitFor(() => expect(BrowserWindowMock).toHaveBeenCalledTimes(1));
     const promptWindow = browserWindowInstances[0];
@@ -388,11 +388,11 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     expect(targetWindow.webContents.setZoomFactor).toHaveBeenLastCalledWith(Math.pow(1.1, 5));
     expect(targetWindow.setWindowButtonPosition).toHaveBeenLastCalledWith({ x: 22, y: 44 });
     expect(targetWindow.webContents.send).toHaveBeenLastCalledWith(
-      "zcode:desktop-zoom-level-changed",
+      "zody:desktop-zoom-level-changed",
       { zoomLevel: 5 },
     );
     expect(targetWindow.webContents.send).toHaveBeenCalledWith(
-      "zcode:window-controls-overlay-changed",
+      "zody:window-controls-overlay-changed",
       { leftPaddingPx: 60 },
     );
 
@@ -400,7 +400,7 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     updateDesktopZoomLevel(targetWindow, "in");
     expect(targetWindow.webContents.setZoomFactor).toHaveBeenLastCalledWith(Math.pow(1.1, 5));
     expect(targetWindow.webContents.send).toHaveBeenLastCalledWith(
-      "zcode:desktop-zoom-level-changed",
+      "zody:desktop-zoom-level-changed",
       { zoomLevel: 5 },
     );
 
@@ -409,11 +409,11 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     expect(targetWindow.webContents.setZoomFactor).toHaveBeenLastCalledWith(Math.pow(1.1, -3));
     expect(targetWindow.setWindowButtonPosition).toHaveBeenLastCalledWith({ x: 22, y: 14 });
     expect(targetWindow.webContents.send).toHaveBeenCalledWith(
-      "zcode:window-controls-overlay-changed",
+      "zody:window-controls-overlay-changed",
       { leftPaddingPx: 128 },
     );
     expect(targetWindow.webContents.send).toHaveBeenLastCalledWith(
-      "zcode:desktop-zoom-level-changed",
+      "zody:desktop-zoom-level-changed",
       { zoomLevel: -3 },
     );
 
@@ -422,11 +422,11 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
     expect(targetWindow.webContents.setZoomFactor).toHaveBeenLastCalledWith(1);
     expect(targetWindow.setWindowButtonPosition).toHaveBeenLastCalledWith({ x: 22, y: 23 });
     expect(targetWindow.webContents.send).toHaveBeenCalledWith(
-      "zcode:window-controls-overlay-changed",
+      "zody:window-controls-overlay-changed",
       { leftPaddingPx: 96 },
     );
     expect(targetWindow.webContents.send).toHaveBeenLastCalledWith(
-      "zcode:desktop-zoom-level-changed",
+      "zody:desktop-zoom-level-changed",
       { zoomLevel: 0 },
     );
   });
@@ -446,11 +446,11 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
       height: 77,
     });
     expect(targetWindow.webContents.send).toHaveBeenCalledWith(
-      "zcode:window-controls-overlay-changed",
+      "zody:window-controls-overlay-changed",
       { rightPaddingPx: 84, titleBarHeightPx: 77 },
     );
     expect(targetWindow.webContents.send).toHaveBeenLastCalledWith(
-      "zcode:desktop-zoom-level-changed",
+      "zody:desktop-zoom-level-changed",
       { zoomLevel: 5 },
     );
 
@@ -462,11 +462,11 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
       height: 36,
     });
     expect(targetWindow.webContents.send).toHaveBeenCalledWith(
-      "zcode:window-controls-overlay-changed",
+      "zody:window-controls-overlay-changed",
       { rightPaddingPx: 181, titleBarHeightPx: 36 },
     );
     expect(targetWindow.webContents.send).toHaveBeenLastCalledWith(
-      "zcode:desktop-zoom-level-changed",
+      "zody:desktop-zoom-level-changed",
       { zoomLevel: -3 },
     );
   });
@@ -491,11 +491,11 @@ describe("desktopCommandHandlers resolveFeedbackUrl", () => {
 
       expect(customWindow.setTitleBarOverlay).not.toHaveBeenCalled();
       expect(customWindow.webContents.send).toHaveBeenCalledWith(
-        "zcode:window-controls-overlay-changed",
+        "zody:window-controls-overlay-changed",
         { rightPaddingPx: 136 },
       );
       expect(nativeWindow.webContents.send).toHaveBeenCalledWith(
-        "zcode:window-controls-overlay-changed",
+        "zody:window-controls-overlay-changed",
         { rightPaddingPx: nativePadding, titleBarHeightPx: height },
       );
       for (const targetWindow of [customWindow, nativeWindow]) {
@@ -574,7 +574,7 @@ function createCommandOptions(options?: {
   return {
     command: DesktopCommandIds.OpenChangelog,
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-    updateZCodeStdioTapDevMenuState: vi.fn(),
+    updateZodyStdioTapDevMenuState: vi.fn(),
     onDesktopZoomChanged: options?.onDesktopZoomChanged ?? vi.fn(),
     onZCodeEndpointChanged: options?.onZCodeEndpointChanged ?? vi.fn(),
     onRelaunchApp: options?.onRelaunchApp ?? vi.fn(async () => undefined),

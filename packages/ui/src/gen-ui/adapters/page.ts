@@ -4,22 +4,25 @@ import {
   type McpUiHostContext,
 } from "@modelcontextprotocol/ext-apps/app-bridge";
 import { z } from "zod";
-import type { IGenUiService } from "@zcode/services";
-import type { PluginSandboxPlatformPort, PluginSandboxHandle } from "@zcode/shared/mcp-apps";
+import type { IGenUiService } from "@zody/services";
+import type { PluginSandboxPlatformPort, PluginSandboxHandle } from "@zody/shared/mcp-apps";
 import {
-  GEN_UI_STATE_METHOD,
-  GEN_UI_FOLLOW_UP_METHOD,
-  GEN_UI_TWEAK_METHOD,
-  GEN_UI_PRESENTATION_METHOD,
-  GEN_UI_STATE_CONTEXT_KEY,
-  GEN_UI_TWEAK_CONTEXT_KEY,
+  GEN_UI_STATE_METHOD_CANONICAL,
+  GEN_UI_FOLLOW_UP_METHOD_CANONICAL,
+  GEN_UI_TWEAK_METHOD_CANONICAL,
+  GEN_UI_PRESENTATION_METHOD_CANONICAL,
+  buildGenUiExperimentalCapability,
   buildGenUiStateKey,
+  genUiMethodNames,
+  projectGenUiContextEntries,
   genUiWidgetStateSchema,
   genUiFollowUpSchema,
   genUiTweakMessageSchema,
   genUiTweakResultSchema,
+  type GenUiTweakAnnotation,
   type GenUiTweakValues,
-} from "@zcode/shared/gen-ui";
+  type GenUiWidgetState,
+} from "@zody/shared/gen-ui";
 import {
   createPluginUiPagePlane,
   createPluginUiMessagePortTransport,
@@ -81,8 +84,15 @@ export function createGenUiPage(input: GenUiPageInput): GenUiPage {
     theme: document.documentElement.classList.contains("dark") ? "dark" : "light",
     styles: { variables: readGenUiStyleVariables() as McpUiStyles },
   };
+  let widgetState: GenUiWidgetState | null = null;
+  let tweakAnnotation: GenUiTweakAnnotation | null = null;
+  // hostContext 出站双表示：同一份快照投影到 canonical 与 legacy 键，两键引用同一对象（spec §4）。
+  const hostContext = (): McpUiHostContext => ({
+    ...context,
+    ...projectGenUiContextEntries(widgetState, tweakAnnotation),
+  });
   const pushContext = () => {
-    bridge?.setHostContext({ ...context });
+    bridge?.setHostContext(hostContext());
   };
   const assertCurrent = () => {
     if (disposed || !visible || !handle || snapshot.phase !== "ready")
@@ -119,8 +129,8 @@ export function createGenUiPage(input: GenUiPageInput): GenUiPage {
     const active = new AppBridge(
       null,
       { name: "zody-gen-ui", version: "1" },
-      { openLinks: {}, experimental: { "zcode/gen-ui": {} } },
-      { hostContext: { ...context } },
+      { openLinks: {}, experimental: buildGenUiExperimentalCapability() },
+      { hostContext: hostContext() },
     );
     bridge = active;
     active.onerror = fail;
@@ -155,77 +165,83 @@ export function createGenUiPage(input: GenUiPageInput): GenUiPage {
       await input.openExternal(link.href);
       return {};
     };
-    active.setRequestHandler(
-      GEN_UI_STATE_METHOD,
-      { params: z.object({ state: genUiWidgetStateSchema }).strict(), result: z.object({}) },
-      async ({ state }) => {
-        current();
-        operations++;
-        const save = saves
-          .catch(() => undefined)
-          .then(async () => {
-            current();
-            await input.state.setState({ target: stateTarget, state });
-          });
-        saves = save;
-        try {
-          await save;
-        } finally {
-          operations--;
-          input.onSettled?.();
-        }
-        return {};
-      },
-    );
-    active.setRequestHandler(
-      GEN_UI_FOLLOW_UP_METHOD,
-      { params: genUiFollowUpSchema, result: z.object({}) },
-      async ({ prompt, title }) => {
-        current();
-        await followUp(prompt, title);
-        return {};
-      },
-    );
-    active.setRequestHandler(
-      GEN_UI_TWEAK_METHOD,
-      {
-        params: genUiTweakMessageSchema,
-        result: genUiTweakResultSchema,
-      },
-      async (message) => {
-        current();
-        const result = tweaks.handle(message);
-        const groups = tweaks.groups();
-        const values = Object.fromEntries(
-          groups.flatMap((group) =>
-            group.controls.map((control) => [
-              control.id,
-              snapshot.tweakValues[control.id] ?? control.value,
-            ]),
-          ),
-        );
-        update({ tweak: groups[0] ?? null, groups, tweakValues: values });
-        projectTweaks();
-        return result;
-      },
-    );
-    active.setRequestHandler(
-      GEN_UI_PRESENTATION_METHOD,
-      {
-        params: z
-          .object({ hovered: z.boolean().optional(), escape: z.literal(true).optional() })
-          .strict(),
-        result: z.object({}),
-      },
-      async ({ hovered, escape }) => {
-        current();
-        update({
-          ...(hovered !== undefined ? { hovered } : {}),
-          ...(escape ? { escapeSequence: snapshot.escapeSequence + 1 } : {}),
+    const onState = async ({ state }: { state: GenUiWidgetState }) => {
+      current();
+      operations++;
+      const save = saves
+        .catch(() => undefined)
+        .then(async () => {
+          current();
+          await input.state.setState({ target: stateTarget, state });
         });
-        return {};
-      },
-    );
+      saves = save;
+      try {
+        await save;
+      } finally {
+        operations--;
+        input.onSettled?.();
+      }
+      return {};
+    };
+    // 双名注册到同一个 handler：旧名只是 wire 兼容的另一个名字，共用本页唯一的保存队列。
+    for (const method of genUiMethodNames(GEN_UI_STATE_METHOD_CANONICAL))
+      active.setRequestHandler(
+        method,
+        { params: z.object({ state: genUiWidgetStateSchema }).strict(), result: z.object({}) },
+        onState,
+      );
+    const onFollowUp = async ({ prompt, title }: z.output<typeof genUiFollowUpSchema>) => {
+      current();
+      await followUp(prompt, title);
+      return {};
+    };
+    for (const method of genUiMethodNames(GEN_UI_FOLLOW_UP_METHOD_CANONICAL))
+      active.setRequestHandler(
+        method,
+        { params: genUiFollowUpSchema, result: z.object({}) },
+        onFollowUp,
+      );
+    const onTweak = async (message: z.output<typeof genUiTweakMessageSchema>) => {
+      current();
+      const result = tweaks.handle(message);
+      const groups = tweaks.groups();
+      const values = Object.fromEntries(
+        groups.flatMap((group) =>
+          group.controls.map((control) => [
+            control.id,
+            snapshot.tweakValues[control.id] ?? control.value,
+          ]),
+        ),
+      );
+      update({ tweak: groups[0] ?? null, groups, tweakValues: values });
+      projectTweaks();
+      return result;
+    };
+    for (const method of genUiMethodNames(GEN_UI_TWEAK_METHOD_CANONICAL))
+      active.setRequestHandler(
+        method,
+        { params: genUiTweakMessageSchema, result: genUiTweakResultSchema },
+        onTweak,
+      );
+    const onPresentation = async ({ hovered, escape }: { hovered?: boolean; escape?: true }) => {
+      current();
+      update({
+        ...(hovered !== undefined ? { hovered } : {}),
+        ...(escape ? { escapeSequence: snapshot.escapeSequence + 1 } : {}),
+      });
+      return {};
+    };
+    for (const method of genUiMethodNames(GEN_UI_PRESENTATION_METHOD_CANONICAL))
+      active.setRequestHandler(
+        method,
+        {
+          params: z
+            .object({ hovered: z.boolean().optional(), escape: z.literal(true).optional() })
+            .strict(),
+          result: z.object({}),
+        },
+        onPresentation,
+      );
     clearTimeout(handshake);
     // 超时只报告握手失败，不参与同步或恢复。
     handshake = setTimeout(() => fail(new Error("Gen UI handshake timed out")), 15_000);
@@ -248,7 +264,7 @@ export function createGenUiPage(input: GenUiPageInput): GenUiPage {
     stopState = input.state.onStateChanged((change) => {
       if (buildGenUiStateKey(change.target) === buildGenUiStateKey(stateTarget)) {
         stateRevision++;
-        context[GEN_UI_STATE_CONTEXT_KEY] = change.state;
+        widgetState = change.state;
         pushContext();
       }
     });
@@ -266,7 +282,7 @@ export function createGenUiPage(input: GenUiPageInput): GenUiPage {
     // 登记 HTML 含状态快照；随后读取最新状态，且不以迟到查询覆盖期间已收到的通知。
     const revision = stateRevision;
     const latest = await input.state.getState(stateTarget);
-    if (revision === stateRevision) context[GEN_UI_STATE_CONTEXT_KEY] = latest;
+    if (revision === stateRevision) widgetState = latest;
     if (disposed) return;
     plane.mount(prepared);
   })()
@@ -276,9 +292,7 @@ export function createGenUiPage(input: GenUiPageInput): GenUiPage {
       input.onSettled?.();
     });
   const projectTweaks = () => {
-    context[GEN_UI_TWEAK_CONTEXT_KEY] = tweaks.annotation(
-      snapshot.previewOriginal ? {} : snapshot.tweakValues,
-    );
+    tweakAnnotation = tweaks.annotation(snapshot.previewOriginal ? {} : snapshot.tweakValues);
     pushContext();
   };
   return {

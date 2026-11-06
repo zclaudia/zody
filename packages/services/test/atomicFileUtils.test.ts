@@ -325,7 +325,7 @@ describe("atomicWriteText", () => {
     mkdirGate.release();
 
     await expect(writePromise).rejects.toMatchObject({
-      code: "ZCODE_FILE_LOCK_TIMEOUT",
+      code: "ZODY_FILE_LOCK_TIMEOUT",
     });
     expect(existsSync(lockDir)).toBe(true);
     expect(existsSync(filePath)).toBe(false);
@@ -366,7 +366,7 @@ describe("atomicWriteText", () => {
     mkdirGate.release();
 
     await expect(writePromise).rejects.toMatchObject({
-      code: "ZCODE_FILE_LOCK_TIMEOUT",
+      code: "ZODY_FILE_LOCK_TIMEOUT",
     });
     expect(existsSync(lockFile)).toBe(true);
     expect(existsSync(filePath)).toBe(false);
@@ -456,7 +456,7 @@ describe("atomicWriteText", () => {
         lockOwnerlessGraceMs: 10,
         lockMaxWaitMs: 20,
       }),
-    ).rejects.toMatchObject({ code: "ZCODE_FILE_LOCK_TIMEOUT" });
+    ).rejects.toMatchObject({ code: "ZODY_FILE_LOCK_TIMEOUT" });
 
     expect(readFileSync(ownerFile, "utf-8")).toContain('"token":"live-owner"');
     expect(existsSync(filePath)).toBe(false);
@@ -487,7 +487,7 @@ describe("atomicWriteText", () => {
     mkdirGate.release();
 
     await expect(writePromise).rejects.toMatchObject({
-      code: "ZCODE_FILE_LOCK_TIMEOUT",
+      code: "ZODY_FILE_LOCK_TIMEOUT",
     });
     expect(readFileSync(freshOwnerFile, "utf-8")).toContain(
       '"token":"fresh-owner"',
@@ -510,7 +510,7 @@ describe("atomicWriteText", () => {
         lockMaxWaitMs: 10,
       }),
     ).rejects.toMatchObject({
-      code: "ZCODE_FILE_LOCK_TIMEOUT",
+      code: "ZODY_FILE_LOCK_TIMEOUT",
       path: filePath,
       syscall: "mkdir",
     });

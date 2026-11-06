@@ -107,10 +107,10 @@ async function main() {
   await writeFile(
     gatewayEnvFile,
     [
-      `ZCODE_GATEWAY_IT_URL='${gatewayUrl}'`,
-      "ZCODE_GATEWAY_NAMESPACE='zody'",
-      `ZCODE_GATEWAY_BACKEND_CREDENTIAL='${backendCredential}'`,
-      `ZCODE_GATEWAY_DEVICE_CREDENTIAL='${deviceCredential}'`,
+      `ZODY_GATEWAY_IT_URL='${gatewayUrl}'`,
+      "ZODY_GATEWAY_NAMESPACE='zody'",
+      `ZODY_GATEWAY_BACKEND_CREDENTIAL='${backendCredential}'`,
+      `ZODY_GATEWAY_DEVICE_CREDENTIAL='${deviceCredential}'`,
       "",
     ].join("\n"),
     { mode: 0o600 },
@@ -163,16 +163,16 @@ async function main() {
 
   const env = { ...process.env };
   for (const key of [
-    "ZCODE_GATEWAY_IT_URL",
-    "ZCODE_GATEWAY_BACKEND_CREDENTIAL",
-    "ZCODE_GATEWAY_DEVICE_CREDENTIAL",
+    "ZODY_GATEWAY_IT_URL",
+    "ZODY_GATEWAY_BACKEND_CREDENTIAL",
+    "ZODY_GATEWAY_DEVICE_CREDENTIAL",
   ])
     delete env[key];
   Object.assign(env, {
-    ZCODE_GATEWAY_ENV_FILE: gatewayEnvFile,
-    ZCODE_E2E_HOME_DIR: e2eHome,
-    ZCODE_E2E_REQUESTED_UPSTREAM_HTTP_MODE: "replay",
-    ZCODE_E2E_MANUAL_REVIEW_HOLD_MS: "600000",
+    ZODY_GATEWAY_ENV_FILE: gatewayEnvFile,
+    ZODY_E2E_HOME_DIR: e2eHome,
+    ZODY_E2E_REQUESTED_UPSTREAM_HTTP_MODE: "replay",
+    ZODY_E2E_MANUAL_REVIEW_HOLD_MS: "600000",
     E2E_PROVIDER_REPLAY_FIXTURE_PATH: [
       join(repoRoot, "packages/desktop/test/e2e/fixtures/upstream/common.json"),
       join(
@@ -180,28 +180,28 @@ async function main() {
         "packages/desktop/test/e2e/fixtures/upstream/mobile-remote/mobile-ssh-workspace.json",
       ),
     ].join(","),
-    ZCODE_E2E_P8_REMOTE_WORKSPACE: workspacePath,
-    ZCODE_E2E_P8_SSH_CONTAINER: sshName,
-    ZCODE_E2E_P8_SSH_HOST: "127.0.0.1",
-    ZCODE_E2E_P8_SSH_PORT: String(sshPort),
-    ZCODE_E2E_P8_SSH_USERNAME: "root",
-    ZCODE_E2E_P8_SSH_PASSWORD_FILE: sshPasswordFile,
-    ZCODE_E2E_P8_REMOTE_HANDOFF_FILE: handoffFile,
-    ZCODE_E2E_P8_REMOTE_RELEASE_FILE: releaseFile,
-    ZCODE_E2E_P8_REMOTE_DEVICE_CREDENTIAL_FILE: deviceCredentialFile,
+    ZODY_E2E_P8_REMOTE_WORKSPACE: workspacePath,
+    ZODY_E2E_P8_SSH_CONTAINER: sshName,
+    ZODY_E2E_P8_SSH_HOST: "127.0.0.1",
+    ZODY_E2E_P8_SSH_PORT: String(sshPort),
+    ZODY_E2E_P8_SSH_USERNAME: "root",
+    ZODY_E2E_P8_SSH_PASSWORD_FILE: sshPasswordFile,
+    ZODY_E2E_P8_REMOTE_HANDOFF_FILE: handoffFile,
+    ZODY_E2E_P8_REMOTE_RELEASE_FILE: releaseFile,
+    ZODY_E2E_P8_REMOTE_DEVICE_CREDENTIAL_FILE: deviceCredentialFile,
     DOCKER_HOST: dockerHost,
     // wdio.onPrepare 以标准 SSH gate 识别并 stage 本轮 remote runtime assets。
-    ZCODE_E2E_SSH_HOST: "127.0.0.1",
-    ZCODE_E2E_SSH_PORT: String(sshPort),
-    ZCODE_E2E_SSH_USERNAME: "root",
-    ZCODE_E2E_SSH_PASSWORD: sshPassword,
-    ZCODE_E2E_SSH_WORKSPACE_PATH: workspacePath,
+    ZODY_E2E_SSH_HOST: "127.0.0.1",
+    ZODY_E2E_SSH_PORT: String(sshPort),
+    ZODY_E2E_SSH_USERNAME: "root",
+    ZODY_E2E_SSH_PASSWORD: sshPassword,
+    ZODY_E2E_SSH_WORKSPACE_PATH: workspacePath,
   });
   const status = await run(
     "pnpm",
     [
       "--filter",
-      "@zcode/desktop",
+      "@zody/desktop",
       "exec",
       "wdio",
       "run",

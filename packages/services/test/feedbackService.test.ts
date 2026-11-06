@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ApiClient } from "@zcode/shared";
+import type { ApiClient } from "@zody/shared";
 
 import { createFeedbackService } from "../src/feedback/feedbackService.js";
 import { setDataBaseDir } from "../src/paths.js";

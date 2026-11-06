@@ -3,7 +3,7 @@ import type {
   IMobileNotificationReaderContract,
   MobileNotification,
   MobileNotificationCursor,
-} from "@zcode/services/mobile-notifications";
+} from "@zody/services/mobile-notifications";
 
 // perf-9：移动端不引入虚拟化，改为分页渲染上限（4 页 × 每页 50 = 200 条）。
 // 达到上限后不再追加更旧的通知并收敛 nextCursor，控制 DOM 规模与 feed 变化时

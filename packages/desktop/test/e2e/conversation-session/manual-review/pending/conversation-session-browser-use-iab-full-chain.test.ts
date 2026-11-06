@@ -11,7 +11,7 @@ import {
   TID_BROWSER_WEBVIEW,
   TID_V4_COMPOSER_INPUT,
   TID_V4_TIMELINE,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByWebDriver,

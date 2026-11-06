@@ -16,7 +16,7 @@ import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parse as parseYaml } from "yaml";
 import type {
-  ZCodeProvider,
+  ZodyProvider,
   SkillDiagnostic,
   SkillMetadata,
   SkillScope,
@@ -24,8 +24,8 @@ import type {
   SkillsPromptContext,
   SkillsListResult,
   SkillsCapability,
-} from "@zcode/shared";
-import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+} from "@zody/shared";
+import { DEFAULT_ENABLED_OFFICIAL_PLUGIN_IDS, ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { ISkillsService } from "./skills.js";
 import { SKILL_FILE_NAME, walkSkillMarkdownPaths } from "./skillDiscoveryWalk.js";
 import { readInstalledPluginRoots } from "#src/plugins/installedPluginRoots.js";
@@ -33,7 +33,7 @@ import {
   resolveProjectResourceRoots,
   ZODY_DIRECTORY_NAME,
   LEGACY_ZCODE_DIRECTORY_NAME,
-} from "@zcode/shared/zody-paths";
+} from "@zody/shared/zody-paths";
 
 interface DiscoverResult {
   skills: SkillSummary[];
@@ -53,18 +53,20 @@ interface ParsedFrontmatter {
 
 const SKILL_META_FILE_NAME = "_meta.json";
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-const SKILL_SETTINGS_DIR = join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "v2");
-const SKILL_CLI_SETTINGS_DIR = join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli");
+const SKILL_SETTINGS_DIR = join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "v2");
+const SKILL_CLI_SETTINGS_DIR = join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "cli");
 const SKILL_CLI_CONFIG_FILE = join(SKILL_CLI_SETTINGS_DIR, "config.json");
 const GIT_MARKER = ".git";
 const HOME_PREFIX = "~/";
-const ZCODE_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
-const ZCODE_INLINE_PLUGIN_MARKETPLACE = "inline";
-const ZCODE_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
+const ZODY_OFFICIAL_PLUGIN_MARKETPLACE = "zcode-plugins-official";
+const ZODY_INLINE_PLUGIN_MARKETPLACE = "inline";
+// R54：新格式优先，旧 `.zcode-plugin` 仅作缺失回退（常量字节保留）。
+const CANONICAL_PLUGIN_MANIFEST_PATH = join(".zody-plugin", "plugin.json");
+const ZODY_PLUGIN_MANIFEST_PATH = join(".zcode-plugin", "plugin.json");
 const CLAUDE_PLUGIN_MANIFEST_PATH = join(".claude-plugin", "plugin.json");
 const CODEX_PLUGIN_MANIFEST_PATH = join(".codex-plugin", "plugin.json");
 
-/** 对齐 apps/zcode-cli/packages/adapters/src/skills/index.ts:19 */
+/** 对齐 apps/zody-cli/packages/adapters/src/skills/index.ts:19 */
 const MAX_DESCRIPTION_LENGTH = 1024;
 function resolveUserHomeDir() {
   const envHome = process.env.HOME?.trim() || process.env.USERPROFILE?.trim();
@@ -76,7 +78,7 @@ interface SkillsServiceOptions {
 }
 
 /** ZCode Agent 工作区级技能目录。 */
-function getWorkspaceZcodeSkillRoot(workspacePath: string): string {
+function getWorkspaceZodySkillRoot(workspacePath: string): string {
   return resolveProjectResourceRoots(workspacePath, "skills").writePath;
 }
 
@@ -86,8 +88,8 @@ function getWorkspaceAgentsSkillRoot(workspacePath: string): string {
 }
 
 /** ZCode Agent 用户级技能目录。 */
-function getUserZcodeSkillRoot(): string {
-  return join(resolveUserHomeDir(), ZCODE_DATA_ROOT_DIR_NAME, "skills");
+function getUserZodySkillRoot(): string {
+  return join(resolveUserHomeDir(), ZODY_DATA_ROOT_DIR_NAME, "skills");
 }
 
 /** 兼容目录: 用户级 `~/.agents/skills`。 */
@@ -122,25 +124,25 @@ async function collectSkillNameKeysInRoot(rootPath: string): Promise<Set<string>
   return nameKeys;
 }
 
-async function isUserAgentsSkillCoveredByZcode(params: {
+async function isUserAgentsSkillCoveredByZody(params: {
   skillPath: string;
   rootPath: string;
-  userZcodeSkillNameKeys: Set<string>;
+  userZodySkillNameKeys: Set<string>;
 }): Promise<boolean> {
-  const { skillPath, rootPath, userZcodeSkillNameKeys } = params;
+  const { skillPath, rootPath, userZodySkillNameKeys } = params;
   if (rootPath !== getUserAgentsSkillRoot()) {
     return false;
   }
-  if (await exists(join(getUserZcodeSkillRoot(), basename(dirname(skillPath)), SKILL_FILE_NAME))) {
+  if (await exists(join(getUserZodySkillRoot(), basename(dirname(skillPath)), SKILL_FILE_NAME))) {
     return true;
   }
-  return userZcodeSkillNameKeys.has(await readSkillNameKey(skillPath));
+  return userZodySkillNameKeys.has(await readSkillNameKey(skillPath));
 }
 
 /**
  * 从 workspacePath 向上走到 worktree 根（含 .git 标记），把每一层的
  * `.zody/skills`、`.zcode/skills` 与 `.agents/skills` 都收集起来；同名由 .zody 优先。
- * 对齐 apps/zcode-cli/packages/adapters/src/skills/roots.ts:60-72。
+ * 对齐 apps/zody-cli/packages/adapters/src/skills/roots.ts:60-72。
  * 找不到 .git 时退回 workspacePath 自身。
  */
 async function resolveAncestorWorkspaceRoots(workspacePath: string): Promise<string[]> {
@@ -241,7 +243,7 @@ function hashStableIdPart(value: string): string {
 }
 
 function buildSkillId(params: {
-  provider: ZCodeProvider;
+  provider: ZodyProvider;
   scope: SkillScope;
   name: string;
   path: string;
@@ -650,7 +652,7 @@ function readStorageDirFromConfig(config: Record<string, unknown>): string {
   const storage = isObjectRecord(config.storage) ? config.storage : {};
   return typeof storage.dir === "string" && storage.dir.trim().length > 0
     ? storage.dir
-    : `~/${ZCODE_DATA_ROOT_DIR_NAME}`;
+    : `~/${ZODY_DATA_ROOT_DIR_NAME}`;
 }
 
 function resolveConfigPath(path: string): string {
@@ -692,7 +694,7 @@ function resolveInside(rootPath: string, rawPath: string): string | null {
 }
 
 async function scanOfficialPluginCacheRoots(pluginStorageRoot: string): Promise<string[]> {
-  const cacheRoot = join(pluginStorageRoot, "cache", ZCODE_OFFICIAL_PLUGIN_MARKETPLACE);
+  const cacheRoot = join(pluginStorageRoot, "cache", ZODY_OFFICIAL_PLUGIN_MARKETPLACE);
   let pluginEntries: Dirent[] = [];
   try {
     pluginEntries = await readdir(cacheRoot, { withFileTypes: true });
@@ -748,8 +750,11 @@ async function readPluginManifest(rootPath: string): Promise<PluginManifestSumma
 }
 
 async function findPluginManifestPath(rootPath: string): Promise<string | null> {
+  // R54：返回首个存在的 manifest；新格式存在即唯一 manifest，解析失败由
+  // readPluginManifest 返回 null，不回退旧格式。
   for (const manifestPath of [
-    join(rootPath, ZCODE_PLUGIN_MANIFEST_PATH),
+    join(rootPath, CANONICAL_PLUGIN_MANIFEST_PATH),
+    join(rootPath, ZODY_PLUGIN_MANIFEST_PATH),
     join(rootPath, CLAUDE_PLUGIN_MANIFEST_PATH),
     join(rootPath, CODEX_PLUGIN_MANIFEST_PATH),
   ]) {
@@ -792,12 +797,12 @@ async function resolvePluginSkillRootDescriptors(): Promise<SkillRootDescriptor[
   const candidates: PluginRootCandidate[] = [
     ...config.dirs.map((dir) => ({
       defaultEnabled: true,
-      marketplace: ZCODE_INLINE_PLUGIN_MARKETPLACE,
+      marketplace: ZODY_INLINE_PLUGIN_MARKETPLACE,
       rootPath: resolveConfigPath(dir),
     })),
     ...officialCacheRoots.map((rootPath) => ({
       defaultEnabled: false,
-      marketplace: ZCODE_OFFICIAL_PLUGIN_MARKETPLACE,
+      marketplace: ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
       rootPath,
     })),
     ...installedRoots,
@@ -815,7 +820,7 @@ async function resolvePluginSkillRootDescriptors(): Promise<SkillRootDescriptor[
     // 官方 cache 时不经过 CLI resolve 的过滤，需要在这里同样跳过，否则被卸载的内置插件
     // 仍会从 cache 贡献技能。
     if (
-      candidate.marketplace === ZCODE_OFFICIAL_PLUGIN_MARKETPLACE &&
+      candidate.marketplace === ZODY_OFFICIAL_PLUGIN_MARKETPLACE &&
       config.suppressedBuiltins.includes(pluginId)
     ) {
       continue;
@@ -850,7 +855,7 @@ async function discoverSkills(params: {
   workspacePath: string;
   workspaceIdentity?: string;
   includeUserSkills: boolean;
-  provider: ZCodeProvider;
+  provider: ZodyProvider;
 }): Promise<DiscoverResult> {
   const workspaceRoots = dedupeRoots(await resolveAncestorWorkspaceRoots(params.workspacePath));
   const roots: SkillRootDescriptor[] = workspaceRoots.map((rootPath) => ({
@@ -862,7 +867,7 @@ async function discoverSkills(params: {
     // `.agents/skills` 会导致外部 Agent 的全局技能在导入后从设置页消失。
     roots.push({
       scope: "user" as const,
-      rootPath: getUserZcodeSkillRoot(),
+      rootPath: getUserZodySkillRoot(),
     });
     roots.push({
       scope: "user" as const,
@@ -875,8 +880,8 @@ async function discoverSkills(params: {
   const skills: SkillSummary[] = [];
   const seenSkillPaths = new Set<string>();
   const preferredProjectSkillNames = new Set<string>();
-  const userZcodeSkillNameKeys = params.includeUserSkills
-    ? await collectSkillNameKeysInRoot(getUserZcodeSkillRoot())
+  const userZodySkillNameKeys = params.includeUserSkills
+    ? await collectSkillNameKeysInRoot(getUserZodySkillRoot())
     : new Set<string>();
   const scanRootPaths = await dedupeScanRootsByRealpath(roots.map((root) => root.rootPath));
   const rootByPath = new Map(roots.map((root) => [root.rootPath, root]));
@@ -893,10 +898,10 @@ async function discoverSkills(params: {
     const skillPaths = await collectSkillMarkdownPaths(root.rootPath, diagnostics);
     for (const skillPath of skillPaths) {
       if (
-        await isUserAgentsSkillCoveredByZcode({
+        await isUserAgentsSkillCoveredByZody({
           skillPath,
           rootPath: root.rootPath,
-          userZcodeSkillNameKeys,
+          userZodySkillNameKeys,
         })
       ) {
         continue;
@@ -1030,7 +1035,7 @@ async function collectSkillMarkdownPaths(
 }
 
 function resolveCapabilities(options?: SkillsServiceOptions): SkillsCapability {
-  const isDesktopRuntime = options?.isDesktopRuntime ?? Boolean(process.env.ZCODE_PROCESS_LABEL);
+  const isDesktopRuntime = options?.isDesktopRuntime ?? Boolean(process.env.ZODY_PROCESS_LABEL);
   if (isDesktopRuntime) {
     return { userScopeAvailable: true };
   }
@@ -1054,7 +1059,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
     async list(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
     }): Promise<SkillsListResult> {
       const capability = resolveCapabilities(options);
       const provider = "glm";
@@ -1075,7 +1080,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
     async setEnabled(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
       scope?: SkillScope;
       skillId: string;
       enabled: boolean;
@@ -1106,7 +1111,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
     async buildPromptContext(params: {
       workspacePath: string;
       workspaceIdentity?: string;
-      provider?: ZCodeProvider;
+      provider?: ZodyProvider;
       prompt: string;
     }): Promise<SkillsPromptContext> {
       const mentionedSkillNames = collectMentionedSkillNames(params.prompt);
@@ -1158,8 +1163,8 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
       // 通用目录根据 skill 原 scope 确定 user 还是 workspace 级
       const commonRoot =
         skill.scope === "workspace"
-          ? getWorkspaceZcodeSkillRoot(params.workspacePath)
-          : getUserZcodeSkillRoot();
+          ? getWorkspaceZodySkillRoot(params.workspacePath)
+          : getUserZodySkillRoot();
       const targetDir = join(commonRoot, basename(sourceDir));
       // 不覆盖已有目录
       if (await exists(targetDir)) {
@@ -1184,8 +1189,8 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
         throw new Error(`Skill not found: ${params.skillId}`);
       }
       const normalizedPath = skill.path.replaceAll("\\", "/").toLowerCase();
-      const userCommonRoot = getUserZcodeSkillRoot().replaceAll("\\", "/").toLowerCase();
-      const workspaceCommonRoot = getWorkspaceZcodeSkillRoot(params.workspacePath)
+      const userCommonRoot = getUserZodySkillRoot().replaceAll("\\", "/").toLowerCase();
+      const workspaceCommonRoot = getWorkspaceZodySkillRoot(params.workspacePath)
         .replaceAll("\\", "/")
         .toLowerCase();
       const inUserCommon = normalizedPath.includes(`${userCommonRoot}/`);
@@ -1231,7 +1236,7 @@ export function createSkillsService(options?: SkillsServiceOptions): ISkillsServ
       // 安全护栏：删除是 `rm -rf` 目录的破坏性操作，仅允许命中受控技能根。
       // 收集工作区各层级（沿 worktree 向上）的 .zcode/skills 与 .agents/skills，外加用户级两根。
       const allowedRootCandidates = await resolveAncestorWorkspaceRoots(params.workspacePath);
-      allowedRootCandidates.push(getUserZcodeSkillRoot());
+      allowedRootCandidates.push(getUserZodySkillRoot());
       allowedRootCandidates.push(getUserAgentsSkillRoot());
 
       // 用 realpath 后的父目录与 realpath 后的根比较：父目录必须落在（或等于）某个受控根内。

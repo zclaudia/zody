@@ -92,7 +92,7 @@ describe("paths", () => {
     const env = {
       ProgramFiles: "C:\\Program Files",
       LOCALAPPDATA: "C:\\Users\\tester\\AppData\\Local",
-      ZCODE_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody",
+      ZODY_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody",
     };
 
     expect(
@@ -109,7 +109,7 @@ describe("paths", () => {
     ).toMatchObject({ ok: false });
   });
 
-  // 回归：未注入安装目录（无 appInstallDir / ZCODE_WINDOWS_APP_INSTALL_DIR）时，
+  // 回归：未注入安装目录（无 appInstallDir / ZODY_WINDOWS_APP_INSTALL_DIR）时，
   // 仍须按 Zody 产品名的默认安装目录拦截；上游 `ZCode` 目录不再是 Zody 的安装位置。
   it("Windows 默认安装目录候选按 Zody 产品名生成", async () => {
     vi.resetModules();
@@ -144,7 +144,7 @@ describe("paths", () => {
     const { validateDataBaseDirTarget } = await import("../src/paths.js");
     const env = {
       LOCALAPPDATA: "C:\\Users\\tester\\AppData\\Local",
-      ZCODE_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody",
+      ZODY_WINDOWS_APP_INSTALL_DIR: "C:\\Users\\tester\\AppData\\Local\\Programs\\Zody",
     };
 
     expect(

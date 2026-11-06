@@ -43,14 +43,14 @@ Phase 1 records user-visible reproduction evidence:
 - WDIO drives the four-pane path.
 - The in-app Electron window recorder captures a video artifact.
 - The DeepSeek replay server writes request and response chunk timelines.
-- The recording path requires `ffmpeg` on `PATH`, or `ZCODE_E2E_FFMPEG_PATH`
+- The recording path requires `ffmpeg` on `PATH`, or `ZODY_E2E_FFMPEG_PATH`
   pointing at a compatible binary.
 
 Run PERF02 with:
 
 ```bash
 E2E_PROVIDER_REPLAY_FIXTURE_PATH=packages/desktop/test/e2e/fixtures/upstream/common.json,packages/desktop/test/e2e/fixtures/upstream/conversation-session/conversation-session-runtime-communication-performance.json \
-ZCODE_E2E_MANUAL_REVIEW=1 \
+ZODY_E2E_MANUAL_REVIEW=1 \
 pnpm --filter @zcode/desktop test:e2e -- --spec './test/e2e/conversation-session/manual-review/pending/conversation-session-runtime-communication-performance.test.ts'
 ```
 
@@ -58,9 +58,9 @@ Run the same case without video recording but with a renderer CPU profile:
 
 ```bash
 E2E_PROVIDER_REPLAY_FIXTURE_PATH=packages/desktop/test/e2e/fixtures/upstream/common.json,packages/desktop/test/e2e/fixtures/upstream/conversation-session/conversation-session-runtime-communication-performance.json \
-ZCODE_E2E_PROFILE_ONLY=1 \
-ZCODE_E2E_PROFILE_STREAMING=1 \
-ZCODE_E2E_MANUAL_REVIEW=1 \
+ZODY_E2E_PROFILE_ONLY=1 \
+ZODY_E2E_PROFILE_STREAMING=1 \
+ZODY_E2E_MANUAL_REVIEW=1 \
 pnpm --filter @zcode/desktop test:e2e -- --spec './test/e2e/conversation-session/manual-review/pending/conversation-session-runtime-communication-performance.test.ts'
 ```
 

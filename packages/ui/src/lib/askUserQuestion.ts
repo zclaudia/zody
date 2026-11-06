@@ -1,4 +1,4 @@
-type ZCodeUserQuestionAnswers = Record<string, unknown>;
+type ZodyUserQuestionAnswers = Record<string, unknown>;
 
 type AskUserQuestionType = "single" | "multiple";
 
@@ -20,7 +20,7 @@ interface AskUserQuestionItem {
 
 interface AskUserQuestionData {
   questions: AskUserQuestionItem[];
-  answers?: ZCodeUserQuestionAnswers;
+  answers?: ZodyUserQuestionAnswers;
 }
 
 interface AskUserQuestionAnswerDraft {
@@ -114,7 +114,7 @@ function readQuestions(input: unknown): unknown[] {
     : [];
 }
 
-function readAnswers(input: unknown): ZCodeUserQuestionAnswers | undefined {
+function readAnswers(input: unknown): ZodyUserQuestionAnswers | undefined {
   if (!isPlainRecord(input)) {
     return undefined;
   }
@@ -122,12 +122,12 @@ function readAnswers(input: unknown): ZCodeUserQuestionAnswers | undefined {
   return isPlainRecord(answers) ? answers : undefined;
 }
 
-function parseClaudeAskUserQuestionOutput(output: unknown): ZCodeUserQuestionAnswers | undefined {
+function parseClaudeAskUserQuestionOutput(output: unknown): ZodyUserQuestionAnswers | undefined {
   if (typeof output !== "string" || output.trim().length === 0) {
     return undefined;
   }
 
-  const answers: ZCodeUserQuestionAnswers = {};
+  const answers: ZodyUserQuestionAnswers = {};
   const answerPattern = /"([^"]+)"="([^"]*)"/g;
   for (const match of output.matchAll(answerPattern)) {
     const question = match[1]?.trim();
@@ -155,7 +155,7 @@ function parseJsonRecord(output: unknown): Record<string, unknown> | undefined {
   }
 }
 
-function readNestedAskUserQuestionAnswers(input: unknown): ZCodeUserQuestionAnswers | undefined {
+function readNestedAskUserQuestionAnswers(input: unknown): ZodyUserQuestionAnswers | undefined {
   const directTextAnswers = parseClaudeAskUserQuestionOutput(input);
   if (directTextAnswers) {
     return directTextAnswers;
@@ -198,10 +198,10 @@ function readNestedAskUserQuestionAnswers(input: unknown): ZCodeUserQuestionAnsw
   return readNestedAskUserQuestionAnswers(record.output);
 }
 
-function parseZCodeAskUserQuestionOutput(
+function parseZodyAskUserQuestionOutput(
   output: unknown,
   input: unknown,
-): ZCodeUserQuestionAnswers | undefined {
+): ZodyUserQuestionAnswers | undefined {
   const outputRecord = parseJsonRecord(output);
   if (!outputRecord) {
     return undefined;
@@ -318,7 +318,7 @@ export function readAskUserQuestionAnswers(value: {
   input?: unknown;
   output?: unknown;
   raw?: unknown;
-}): ZCodeUserQuestionAnswers | undefined {
+}): ZodyUserQuestionAnswers | undefined {
   const nestedOutputAnswers = readNestedAskUserQuestionAnswers(value.output);
   if (nestedOutputAnswers) {
     return nestedOutputAnswers;
@@ -330,12 +330,12 @@ export function readAskUserQuestionAnswers(value: {
   if (parsedOutputAnswers) {
     return parsedOutputAnswers;
   }
-  const parsedZCodeOutputAnswers = parseZCodeAskUserQuestionOutput(
+  const parsedZodyOutputAnswers = parseZodyAskUserQuestionOutput(
     value.output,
     readAskUserQuestionInput(value),
   );
-  if (parsedZCodeOutputAnswers) {
-    return parsedZCodeOutputAnswers;
+  if (parsedZodyOutputAnswers) {
+    return parsedZodyOutputAnswers;
   }
   if (isPlainRecord(value.input) && isPlainRecord(value.input.answers)) {
     return value.input.answers;
@@ -349,12 +349,12 @@ export function readAskUserQuestionAnswers(value: {
     if (parsedRawOutputAnswers) {
       return parsedRawOutputAnswers;
     }
-    const parsedRawZCodeOutputAnswers = parseZCodeAskUserQuestionOutput(
+    const parsedRawZodyOutputAnswers = parseZodyAskUserQuestionOutput(
       value.raw.rawOutput,
       readAskUserQuestionInput(value),
     );
-    if (parsedRawZCodeOutputAnswers) {
-      return parsedRawZCodeOutputAnswers;
+    if (parsedRawZodyOutputAnswers) {
+      return parsedRawZodyOutputAnswers;
     }
     const nestedRawAnswers = readNestedAskUserQuestionAnswers(value.raw.output);
     if (nestedRawAnswers) {
@@ -364,12 +364,12 @@ export function readAskUserQuestionAnswers(value: {
     if (parsedRawAnswers) {
       return parsedRawAnswers;
     }
-    const parsedRawZCodeAnswers = parseZCodeAskUserQuestionOutput(
+    const parsedRawZodyAnswers = parseZodyAskUserQuestionOutput(
       value.raw.output,
       readAskUserQuestionInput(value),
     );
-    if (parsedRawZCodeAnswers) {
-      return parsedRawZCodeAnswers;
+    if (parsedRawZodyAnswers) {
+      return parsedRawZodyAnswers;
     }
     const nestedRawContentAnswers = readNestedAskUserQuestionAnswers(value.raw.content);
     if (nestedRawContentAnswers) {
@@ -381,7 +381,7 @@ export function readAskUserQuestionAnswers(value: {
 
 export function getAskUserQuestionAnswerText(
   question: AskUserQuestionItem,
-  answers: ZCodeUserQuestionAnswers | undefined,
+  answers: ZodyUserQuestionAnswers | undefined,
   noAnswerText: string,
 ) {
   const value = answers?.[question.question] ?? answers?.[question.id];

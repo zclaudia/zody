@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { DesktopCommandIds, PlatformChannels, type Locale } from "@zcode/shared";
+import { DesktopCommandIds, PlatformChannels, type Locale } from "@zody/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import localDefaultAppConfig from "../../../config/default.json" with { type: "json" };
 
@@ -195,7 +195,7 @@ describe("desktopHelpConfig 只读内置值", () => {
 function createCommandOptions() {
   return {
     logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
-    updateZCodeStdioTapDevMenuState: vi.fn(),
+    updateZodyStdioTapDevMenuState: vi.fn(),
     onZCodeEndpointChanged: vi.fn(),
     onRelaunchApp: vi.fn(async () => undefined),
     settingService: {

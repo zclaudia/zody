@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY } from "@zcode/shared";
+import { MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY } from "@zody/shared";
 import {
   MOBILE_REMOTE_MAX_ATTACHMENT_BYTES,
   MOBILE_REMOTE_SAVE_CHUNK_BYTES,
@@ -47,9 +47,7 @@ function createFakeBridge() {
       }),
     ),
     abort: vi.fn((_sessionId: string, _token: string) => success()),
-    open: vi.fn((_sessionId: string, _uri: string, _mimeType: string) =>
-      success({ opened: true }),
-    ),
+    open: vi.fn((_sessionId: string, _uri: string, _mimeType: string) => success({ opened: true })),
     saveFileBegin(sessionId, fileName, mimeType) {
       return bridge.begin(sessionId, fileName, mimeType) as string;
     },
@@ -141,9 +139,7 @@ describe("mobile remote file bridge (T6.3)", () => {
         openFile: () => true,
       },
     });
-    expect(resolved?.saveFileBegin("session-1", "a.txt", "text/plain")).toBe(
-      "token",
-    );
+    expect(resolved?.saveFileBegin("session-1", "a.txt", "text/plain")).toBe("token");
   });
 
   it("chunks data payloads into base64 bridge calls and opens the saved file", async () => {
@@ -159,11 +155,7 @@ describe("mobile remote file bridge (T6.3)", () => {
     });
 
     expect(result).toEqual({ success: true, path: "Download/report.pdf" });
-    expect(bridge.begin).toHaveBeenCalledWith(
-      "session-1",
-      "report.pdf",
-      "application/pdf",
-    );
+    expect(bridge.begin).toHaveBeenCalledWith("session-1", "report.pdf", "application/pdf");
     expect(chunks).toHaveLength(2);
     expect(decodeChunks(chunks)).toEqual(bytes);
     expect(bridge.finish).toHaveBeenCalledWith("session-1", "save-token");
@@ -198,9 +190,7 @@ describe("mobile remote file bridge (T6.3)", () => {
       }),
     ).resolves.toMatchObject({ success: true });
     expect(over.chunks).toHaveLength(2);
-    expect(Buffer.from(over.chunks[0], "base64")).toHaveLength(
-      MOBILE_REMOTE_SAVE_CHUNK_BYTES,
-    );
+    expect(Buffer.from(over.chunks[0], "base64")).toHaveLength(MOBILE_REMOTE_SAVE_CHUNK_BYTES);
     expect(Buffer.from(over.chunks[1], "base64")).toHaveLength(1);
     expect(decodeChunks(over.chunks)).toEqual(overBytes);
   });
@@ -222,11 +212,7 @@ describe("mobile remote file bridge (T6.3)", () => {
 
     expect(result.success).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://gateway.test/files/photo");
-    expect(bridge.begin).toHaveBeenCalledWith(
-      "session-1",
-      "photo.png",
-      "image/png",
-    );
+    expect(bridge.begin).toHaveBeenCalledWith("session-1", "photo.png", "image/png");
     expect(decodeChunks(chunks)).toEqual(new Uint8Array([1, 2, 3, 4]));
   });
 
@@ -303,9 +289,7 @@ describe("mobile remote file bridge (T6.3)", () => {
     const withoutBridge = createMobileRemoteFileCapabilities(undefined, {
       sessionId: "session-1",
     });
-    expect(withoutBridge.maxAttachmentBytes).toBe(
-      MOBILE_REMOTE_MAX_ATTACHMENT_BYTES,
-    );
+    expect(withoutBridge.maxAttachmentBytes).toBe(MOBILE_REMOTE_MAX_ATTACHMENT_BYTES);
     expect(withoutBridge.saveFile).toBeUndefined();
 
     const { bridge } = createFakeBridge();
@@ -355,22 +339,10 @@ describe("mobile remote file bridge (T6.3)", () => {
       suggestedName: "a.txt",
     });
 
-    expect(native.saveFileBegin).toHaveBeenCalledWith(
-      "session-1",
-      "a.txt",
-      "text/plain",
-    );
-    expect(native.saveFileAppend).toHaveBeenCalledWith(
-      "session-1",
-      "token",
-      expect.any(String),
-    );
+    expect(native.saveFileBegin).toHaveBeenCalledWith("session-1", "a.txt", "text/plain");
+    expect(native.saveFileAppend).toHaveBeenCalledWith("session-1", "token", expect.any(String));
     expect(native.saveFileFinish).toHaveBeenCalledWith("session-1", "token");
-    expect(native.openFile).toHaveBeenCalledWith(
-      "session-1",
-      "content://file/1",
-      "text/plain",
-    );
+    expect(native.openFile).toHaveBeenCalledWith("session-1", "content://file/1", "text/plain");
     // bridge 只是测试辅助对象，避免未使用变量告警。
     expect(bridge).toBeDefined();
   });
@@ -411,10 +383,7 @@ describe("mobile remote file bridge (T6.3)", () => {
     });
 
     expect(result).toEqual({ success: false, error: "stale-session" });
-    expect(bridge.finish).toHaveBeenCalledWith(
-      "stale-session-id",
-      "save-token",
-    );
+    expect(bridge.finish).toHaveBeenCalledWith("stale-session-id", "save-token");
     expect(bridge.abort).toHaveBeenCalledWith("stale-session-id", "save-token");
     expect(bridge.open).not.toHaveBeenCalled();
   });

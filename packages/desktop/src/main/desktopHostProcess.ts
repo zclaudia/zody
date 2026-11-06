@@ -12,7 +12,7 @@ import {
   type HostSessionCreateTelemetryResponse,
   type TaskRealtimeHostDeliveryKind,
   type WorkspacePurpose,
-  formatZCodeHostProcessName,
+  formatZodyHostProcessName,
   HostMessageTypes,
   hostResponseMessageSchema,
   HostResponseTypes,
@@ -20,13 +20,13 @@ import {
   LAUNCH_MARKS_QUERY_KEY,
   RUNTIME_ZCODE_DEBUG,
   serializeLaunchMarks,
-  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
-} from "@zcode/shared";
+  ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+} from "@zody/shared";
 import type {
   PluginSandboxHandle,
   PluginSandboxRegisterRequestPayload,
   PluginSandboxRegisterResultPayload,
-} from "@zcode/shared/mcp-apps";
+} from "@zody/shared/mcp-apps";
 import type { MessagePortMain } from "electron";
 import {
   app,
@@ -90,7 +90,7 @@ export interface HostInitMessage {
   }>;
   agentSpawnFallbackCwd?: string;
   /** Main 解析后的 ZCode Built-in Provider Config 路径；Host/Services 不感知 Electron 安装布局。 */
-  zcodeBuiltinProviderConfigFilePath: string;
+  zodyBuiltinProviderConfigFilePath: string;
   /** Main 提前异步采集并过滤的本机 runtime 环境；只允许传给 InitLocal。 */
   runtimeProcessEnvPatch?: Record<string, string>;
 }
@@ -164,8 +164,8 @@ export function spawnHostProcess(
   initMessage: HostInitMessage,
   dependencies: {
     publishMobileNotification?: (
-      message: import("@zcode/shared").MobileNotificationPublish,
-    ) => Promise<import("@zcode/shared").MobileNotificationReceipt>;
+      message: import("@zody/shared").MobileNotificationPublish,
+    ) => Promise<import("@zody/shared").MobileNotificationReceipt>;
     getMobileNotificationContext?: () => { enabled: boolean; backendId?: string };
     hostProcessLocalEnv: Record<string, string>;
     logger: {
@@ -287,23 +287,23 @@ export function spawnHostProcess(
   const child: HostProcessHandle =
     nativeHost ??
     electronUtilityProcess.fork(hostModulePath, [], {
-      serviceName: formatZCodeHostProcessName(label),
+      serviceName: formatZodyHostProcessName(label),
       execArgv,
       env: {
         ...buildHostProcessEnv(dependencies.hostProcessLocalEnv),
         ...buildHostE2ECoverageEnv(),
-        ZCODE_PROCESS_LABEL: label,
+        ZODY_PROCESS_LABEL: label,
         // macOS-only: the Computer Use Helper launcher runs inside this forked host utilityProcess, whose
         // code-signing identity is a nested Electron helper (NOT dev.zcode.app). Publish THIS (main
         // Electron) process's pid — which IS dev.zcode.app — so helperLauncher passes it as
         // `--launcher-pid` and the Helper's signature/peer verification succeeds instead of
         // health-timing out. Env-name mirror of services' LAUNCHER_PID_ENV. Not set on
         // Windows/Linux (CUA is macOS-only; nothing reads it there) to keep the host env pristine.
-        ...(process.platform === "darwin" ? { ZCODE_CUA_LAUNCHER_PID: String(process.pid) } : {}),
+        ...(process.platform === "darwin" ? { ZODY_CUA_LAUNCHER_PID: String(process.pid) } : {}),
         // fork（F2.6a，spec D1b）：桌面上下文提示固定开启，不再由 Main 读取远端灰度后
         // 经依赖注入决定；Host env 恒为 1，下游 services/node.ts 的三态解析（"1"/"0"/缺省）
         // 保持不变，Host/Agent 侧语义不受影响。
-        [ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: "1",
+        [ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: "1",
       },
     });
 

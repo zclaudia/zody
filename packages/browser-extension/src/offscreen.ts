@@ -1,4 +1,4 @@
-import { EXTENSION_BRIDGE_DEFAULT_PORT } from "@zcode/shared/browser-extension-transport";
+import { EXTENSION_BRIDGE_DEFAULT_PORT } from "@zody/shared/browser-extension-transport";
 import { ExtensionBridgeClient, type BridgeSocketLike } from "./bridgeClient.js";
 import { EXTENSION_ID, EXTENSION_VERSION } from "./constants.js";
 import { log } from "./log.js";

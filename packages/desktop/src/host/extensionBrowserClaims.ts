@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { ExtensionClaimDecisionMessage } from "@zcode/shared/browser-extension-transport";
+import type { ExtensionClaimDecisionMessage } from "@zody/shared/browser-extension-transport";
 import type {
   ExtensionExecutionContext,
   ExtensionBrowserBackendLogger,

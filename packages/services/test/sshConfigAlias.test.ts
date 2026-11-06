@@ -65,7 +65,7 @@ async function createFakeSshExecutable(
 }
 
 async function loadAliasParser() {
-  const { listSSHConfigAliasesFromLocalConfig } = await import("@zcode/services/node");
+  const { listSSHConfigAliasesFromLocalConfig } = await import("@zody/services/node");
   return listSSHConfigAliasesFromLocalConfig;
 }
 

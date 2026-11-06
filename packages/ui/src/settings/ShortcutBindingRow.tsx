@@ -1,8 +1,8 @@
 import { Keyboard, Pencil, Trash2 } from "lucide-react";
-import type { ShortcutCommandEntry, ShortcutCommandId } from "@zcode/shared";
+import type { ShortcutCommandEntry, ShortcutCommandId } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { Kbd, KbdGroup } from "@/components/ui/kbd.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { formatShortcutBindingLabelParts } from "@/shortcuts/label.js";
 import { useSettingsPresentation } from "@/settings/SettingsPresentationContext.js";
 import { SETTINGS_TOUCH_MIN_SIZE_11_CLASS } from "@/settings/settingsMobileClasses.js";
@@ -56,7 +56,7 @@ export function ShortcutBindingRow({
   onSteal,
   onClearAll,
 }: ShortcutBindingRowProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const { isMobile } = useSettingsPresentation();
   const conflictBinding = isRecording ? recording?.conflictBinding : null;
 

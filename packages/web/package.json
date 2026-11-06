@@ -1,5 +1,5 @@
 {
-  "name": "@zcode/web",
+  "name": "@zody/web",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@zclaudia/gateway-client": "0.3.0",
-    "@zcode/client": "workspace:*",
-    "@zcode/shared": "workspace:*",
-    "@zcode/ui": "workspace:*",
+    "@zody/client": "workspace:*",
+    "@zody/shared": "workspace:*",
+    "@zody/ui": "workspace:*",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

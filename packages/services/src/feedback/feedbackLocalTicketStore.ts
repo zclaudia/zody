@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { FeedbackListQuery, FeedbackTicketStatus, FeedbackTicketSummary } from "@zcode/shared";
+import type { FeedbackListQuery, FeedbackTicketStatus, FeedbackTicketSummary } from "@zody/shared";
 import { getFeedbackRootDir } from "#src/paths.js";
 
 // fork（F2.9，决策门 D7）：官方工单提交停用后，本地 ticket store 收敛为只读——

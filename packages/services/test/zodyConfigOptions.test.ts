@@ -1,0 +1,45 @@
+import { describe, expect, it } from "vitest";
+import type { ZodySessionSettingsState } from "@zody/shared";
+import {
+  getZodyAgentAvailableModes,
+  normalizeAvailableZodyMode,
+  settingsToConfigOptions,
+} from "../src/zody-agent/zodyConfigOptions.js";
+
+function settingsWithMode(
+  mode: ZodySessionSettingsState["mode"]["current"],
+): ZodySessionSettingsState {
+  return {
+    model: {
+      current: { providerId: "glm", modelId: "glm-5" },
+      available: [],
+    },
+    thoughtLevel: {
+      enabled: false,
+      available: [],
+    },
+    mode: { current: mode },
+  };
+}
+
+describe("zcodeConfigOptions", () => {
+  it("keeps persisted edit while the shared menu replaces it with guarded", () => {
+    const options = settingsToConfigOptions(settingsWithMode("edit"));
+    const modeOption = options.find((option) => option.category === "mode");
+
+    expect(modeOption?.currentValue).toBe("edit");
+    expect(modeOption?.options?.map((option) => option.value)).toEqual([
+      "build",
+      "guarded",
+      "plan",
+      "yolo",
+    ]);
+    expect(getZodyAgentAvailableModes().map((mode) => mode.id)).toEqual([
+      "build",
+      "guarded",
+      "plan",
+      "yolo",
+    ]);
+    expect(normalizeAvailableZodyMode("edit")).toBe("edit");
+  });
+});

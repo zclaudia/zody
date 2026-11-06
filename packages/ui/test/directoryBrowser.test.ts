@@ -12,7 +12,7 @@ vi.mock("@/components/ui/input.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },

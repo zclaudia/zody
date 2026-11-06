@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 describe("desktop main logger", () => {
   afterEach(async () => {
     vi.restoreAllMocks();
-    const services = await import("@zcode/services/node");
+    const services = await import("@zody/services/node");
     services.resetProcessFsFaultInjectorForTests();
     services.setDataBaseDir(null);
     vi.resetModules();
@@ -19,7 +19,7 @@ describe("desktop main logger", () => {
 
     try {
       vi.resetModules();
-      const services = await import("@zcode/services/node");
+      const services = await import("@zody/services/node");
       services.setDataBaseDir(tempRoot);
       services.setFsFaultInjectorForTests(
         services.createFsFaultInjector([

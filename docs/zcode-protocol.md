@@ -58,15 +58,15 @@ epoch、CAS 和 product guard 裁决。
 
 当前命令全集以 `packages/shared/src/zcode-protocol-v4/command.ts` 为唯一类型事实源，主要分组如下：
 
-| 分组          | 命令                                                                                    |
-| ------------- | --------------------------------------------------------------------------------------- |
+| 分组          | 命令                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------- |
 | 会话/输入     | `createSession`、`createSelectionSideSession`、`sendText`、`sendGoalCommand`、`renameSession`、`deleteSession` |
-| 生成控制      | `stop`、`compact`、`retryTurn`、`editUserQuery`、`forkAssistant`                        |
-| 文件回退      | `applyFileRewind`                                                                       |
-| 队列          | `sendQueuedNow`、`editQueueItem`、`reorderQueueItem`、`deleteQueueItem`、`setAutoDrain` |
-| 配置          | `switchModelConfig`、`switchCollaborationMode`、`setFollowupMode`                       |
-| Goal/后台工作 | `pauseGoal`、`resumeGoal`、`cancelBackgroundWork`                                       |
-| 阻塞交互      | `resolveInteraction`、`snoozeInteractionAutoResolution`                                |
+| 生成控制      | `stop`、`compact`、`retryTurn`、`editUserQuery`、`forkAssistant`                                               |
+| 文件回退      | `applyFileRewind`                                                                                              |
+| 队列          | `sendQueuedNow`、`editQueueItem`、`reorderQueueItem`、`deleteQueueItem`、`setAutoDrain`                        |
+| 配置          | `switchModelConfig`、`switchCollaborationMode`、`setFollowupMode`                                              |
+| Goal/后台工作 | `pauseGoal`、`resumeGoal`、`cancelBackgroundWork`                                                              |
+| 阻塞交互      | `resolveInteraction`、`snoozeInteractionAutoResolution`                                                        |
 
 `session/steer`、`session/rewind` 和独立 rewind 命令已经删除。引导输入由 `sendText` + `inputRouting`/follow-up mode 裁决；重试和编辑分别使用 `retryTurn`、`editUserQuery`；workspace 文件撤销使用 `applyFileRewind`，不会隐式截断会话历史。
 
@@ -141,3 +141,7 @@ desktop-continuous 或 web-remote-replayable 的投递与恢复边界。
 - 协议变更必须同时验证 CLI reducer、Host transport、desktop continuous 与 mobile replayable。
 - 禁止在 UI、relay 或 Electron main 中复制 session/task/stream/queue/snapshot 业务状态。
 - 旧 `packages/shared/src/zcode-protocol/index.ts` 只能缩减兼容面，不能承接新的聊天能力。
+
+## 改名实施目标
+
+本文件描述的现有行为在全面改名时须遵守 [Zody 改名运行时契约](../specs/zody-rename-runtime-contract.md)；代际门禁、来源摘要和资源清理以该目标规格为准，尚未实现的行为不视为当前已发布。

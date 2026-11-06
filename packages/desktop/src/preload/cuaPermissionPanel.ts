@@ -8,9 +8,9 @@
  * invoke 的 Promise 往返会错过 OS 的拖拽手势窗口，表现为「按住拖动但什么都没被拖出来」。
  */
 import { contextBridge, ipcRenderer } from "electron";
-import { PlatformChannels, type CuaPermissionKind, type Locale } from "@zcode/shared";
+import { PlatformChannels, type CuaPermissionKind, type Locale } from "@zody/shared";
 
-const CUA_PERMISSION_PANEL_STATE_CHANNEL = "zcode:cua-permission-panel-state";
+const CUA_PERMISSION_PANEL_STATE_CHANNEL = "zody:cua-permission-panel-state";
 
 interface CuaPermissionPanelState {
   permission: CuaPermissionKind;

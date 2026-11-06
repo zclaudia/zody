@@ -4,11 +4,11 @@
 
 Desktop WDIO E2E uses one run identity for both file isolation and process cleanup:
 
-- `ZCODE_E2E_RUN_ID`
-- `ZCODE_E2E_HOME_DIR`
+- `ZODY_E2E_RUN_ID`
+- `ZODY_E2E_HOME_DIR`
 - Electron app arg `--zcode-e2e-run-id=<runId>`
 
-`ZCODE_E2E_HOME_DIR` isolates persisted app data. `ZCODE_E2E_RUN_ID` is also passed on the Electron command line so process scans can identify the root process for the current WDIO run without relying on shared build paths.
+`ZODY_E2E_HOME_DIR` isolates persisted app data. `ZODY_E2E_RUN_ID` is also passed on the Electron command line so process scans can identify the root process for the current WDIO run without relying on shared build paths.
 
 ## Cleanup Boundary
 

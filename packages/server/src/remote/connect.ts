@@ -1,23 +1,24 @@
-import { SocketProtocol, ChannelClient } from "@zcode/rpc";
-import type { IServiceAccessor } from "@zcode/services";
-import { RemoteServiceAccess } from "@zcode/client";
+import { SocketProtocol, ChannelClient } from "@zody/rpc";
+import type { IServiceAccessor } from "@zody/services";
+import { RemoteServiceAccess } from "@zody/client";
 import {
   SERVICE_AUTHORITY_MODE_ENV,
-  ZCODE_APP_VERSION_ENV,
-  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
-  ZCODE_DYNAMIC_WORKFLOW_MODE_ENV,
+  ZODY_VERSION,
+  ZODY_APP_VERSION_ENV,
+  ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  ZODY_DYNAMIC_WORKFLOW_MODE_ENV,
   formatLogPrefix,
-  ZCODE_REMOTE_HTTP_PROXY_ENV_KEY,
-  ZCODE_REMOTE_NO_PROXY_ENV_KEY,
-  ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
-  ZCODE_DATA_ROOT_DIR_NAME,
-} from "@zcode/shared";
+  ZODY_REMOTE_HTTP_PROXY_ENV_KEY,
+  ZODY_REMOTE_NO_PROXY_ENV_KEY,
+  ZODY_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY,
+  ZODY_DATA_ROOT_DIR_NAME,
+} from "@zody/shared";
 import type { IRemoteBackend } from "./backend.js";
 import { wrapStdioStream } from "./stdio-socket.js";
 import { performHandshake } from "./handshake.js";
 import { deployServer } from "./deploy.js";
 import type { DeployOptions } from "./deploy.js";
-import { assertSupportedRemoteEnvironment } from "@zcode/server/remote/remotePlatformSupport.js";
+import { assertSupportedRemoteEnvironment } from "@zody/server/remote/remotePlatformSupport.js";
 import { quotePosixShellArg } from "./posixShell.js";
 import { formatWslProxyForLog } from "./wslProxy.js";
 
@@ -55,18 +56,18 @@ export interface RemoteConnection {
 }
 
 const REMOTE_RUNTIME_ENV_KEYS = [
-  "ZCODE_ENV",
-  "ZCODE_BASE_URL",
-  "ZCODE_ENDPOINT_ORIGIN",
-  "ZCODE_TEST_BASE_URL",
-  "ZCODE_PRODUCTION_BASE_URL",
+  "ZODY_ENV",
+  "ZODY_BASE_URL",
+  "ZODY_ENDPOINT_ORIGIN",
+  "ZODY_TEST_BASE_URL",
+  "ZODY_PRODUCTION_BASE_URL",
   // fork（F4.1a）：官方账号下线后不再向远端转发 ZAI_*（OAuth/Business/ClientId）；
   // 远端也不再需要官方账号换证与 Business 计费链的端点信息。
   // Desktop Main 已完成的单功能灰度结果；远端 server 只消费，不重新分桶。
-  ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
+  ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV,
   // 同上：本地覆盖由 Desktop Main 按构建档位写定（buildHostProcessEnv），
   // 透传后 SSH/WSL/Docker 远端 Host 与本地 Host 得到同一档位。
-  ZCODE_DYNAMIC_WORKFLOW_MODE_ENV,
+  ZODY_DYNAMIC_WORKFLOW_MODE_ENV,
 ] as const;
 
 export type RemoteRuntimeEnvKey = (typeof REMOTE_RUNTIME_ENV_KEYS)[number];
@@ -205,7 +206,13 @@ async function connectRemoteUnchecked(
 
   // 4. Handshake
   log("performing handshake...");
-  const { hello, remaining } = await performHandshake(stream, clientId, options?.handshakeTimeout);
+  const { hello, remaining } = await performHandshake(
+    stream,
+    clientId,
+    options?.handshakeTimeout,
+    options?.signal,
+    ZODY_VERSION,
+  );
   throwIfRemoteConnectAborted(options?.signal);
   log("handshake done, server version:", hello.version);
 
@@ -223,6 +230,8 @@ async function connectRemoteUnchecked(
   // 反向注册（desktop-resource ChannelServer）是第三方 IM bot 的资源回传链，随 bot
   // channels 整体删除；ChannelClient 主体结构保留。
   const services = new RemoteServiceAccess(client);
+  // 握手已暂停输出；RPC 完成订阅后再恢复，确保余帧不被丢弃。
+  stream.stdout.resume();
   let hasReportedRemoteClose = false;
   let hasStreamClosed = false;
   let resolveStreamClosed!: () => void;
@@ -368,7 +377,7 @@ function buildRemoteServerCommand(
   const envParts = [
     `${SERVICE_AUTHORITY_MODE_ENV}="desktop-attached-remote"`,
     // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
-    `ZCODE_SERVER_RUNTIME_ROOT="$HOME/${ZCODE_DATA_ROOT_DIR_NAME}/server"`,
+    `ZODY_SERVER_RUNTIME_ROOT="$HOME/${ZODY_DATA_ROOT_DIR_NAME}/server"`,
   ];
   for (const [key, value] of Object.entries(
     pickRemoteRuntimeEnv(options?.remoteRuntimeEnv ?? {}),
@@ -379,20 +388,20 @@ function buildRemoteServerCommand(
   if (appVersion) {
     // 远端 server 是通过 SSH/WSL/Docker 单独启动的，不会继承桌面 host env。
     // 这里显式把 app 版本作为远端进程 env 注入，远端 agent 才能在模型请求 header 中带上版本。
-    envParts.push(`${ZCODE_APP_VERSION_ENV}=${quotePosixShellArg(appVersion)}`);
+    envParts.push(`${ZODY_APP_VERSION_ENV}=${quotePosixShellArg(appVersion)}`);
   }
   if (remoteRuntimeNetwork?.authoritative) {
-    envParts.push(`${ZCODE_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY}='1'`);
+    envParts.push(`${ZODY_REMOTE_RUNTIME_NETWORK_AUTHORITY_ENV_KEY}='1'`);
     if (remoteRuntimeNetwork.httpProxy !== undefined) {
       envParts.push(
-        `${ZCODE_REMOTE_HTTP_PROXY_ENV_KEY}=${quotePosixShellArg(remoteRuntimeNetwork.httpProxy)}`,
+        `${ZODY_REMOTE_HTTP_PROXY_ENV_KEY}=${quotePosixShellArg(remoteRuntimeNetwork.httpProxy)}`,
       );
     }
     if (remoteRuntimeNetwork.noProxy !== undefined) {
       envParts.push(
-        `${ZCODE_REMOTE_NO_PROXY_ENV_KEY}=${quotePosixShellArg(remoteRuntimeNetwork.noProxy)}`,
+        `${ZODY_REMOTE_NO_PROXY_ENV_KEY}=${quotePosixShellArg(remoteRuntimeNetwork.noProxy)}`,
       );
     }
   }
-  return `${envParts.join(" ")} ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/node ~/${ZCODE_DATA_ROOT_DIR_NAME}/server/zcode-server.cjs`;
+  return `${envParts.join(" ")} ~/${ZODY_DATA_ROOT_DIR_NAME}/server/node ~/${ZODY_DATA_ROOT_DIR_NAME}/server/zody-server.cjs`;
 }

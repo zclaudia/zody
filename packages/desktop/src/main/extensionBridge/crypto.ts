@@ -3,7 +3,7 @@ import {
   EXTENSION_BRIDGE_CLIENT_PROOF_PREFIX,
   EXTENSION_BRIDGE_HKDF_INFO,
   EXTENSION_BRIDGE_SERVER_PROOF_PREFIX,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 
 /** 192 bit 一次性配对码；只在发起窗口与 Popup 之间人工核对，不落日志。 */
 export function createPairingCode(): string {

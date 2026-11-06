@@ -1,11 +1,19 @@
 import type { McpToolUiDescriptor, PluginSandboxHandle } from "./contract.js";
 import {
   MCP_APPS_CSP_RELAXATION_META_KEY,
+  MCP_APPS_CSP_RELAXATION_META_KEY_CANONICAL,
   MCP_APPS_SET_WIDGET_STATE_METHOD,
+  MCP_APPS_TRUNCATED_META_KEY,
+  MCP_APPS_TRUNCATED_META_KEY_CANONICAL,
   PLUGIN_SANDBOX_PORT_NAME,
   buildMcpAppsClientCapabilities,
   buildMcpAppsCspExperimentalCapability,
 } from "./contract.js";
+import {
+  buildMcpAppsExperimentalCapabilities,
+  buildMcpAppsTruncatedMeta,
+  buildMcpAppsWidgetStateContextEntries,
+} from "./toolMeta.js";
 
 /** 一个带 UI 资源的工具 `_meta` 归一化后应得到的描述。 */
 export const exampleToolUiDescriptor: McpToolUiDescriptor = {
@@ -49,3 +57,24 @@ export const exampleResourceMetaWithRelaxations = {
 };
 export const exampleSetWidgetStateMethod = MCP_APPS_SET_WIDGET_STATE_METHOD;
 export const examplePortName = PLUGIN_SANDBOX_PORT_NAME;
+/** 过渡期宿主 experimental 双宣告（csp + widgetState + resourceSubscribe + surface）。 */
+export const exampleExperimentalCapabilities = buildMcpAppsExperimentalCapabilities({
+  canSetWidgetState: true,
+  canSubscribeResources: true,
+  surfaceId: "panel",
+});
+/** 资源 `_meta` 双键等值写法：同一放宽声明在 canonical 与 legacy 键上各一份。 */
+export const exampleResourceMetaWithDualRelaxations = {
+  [MCP_APPS_CSP_RELAXATION_META_KEY_CANONICAL]: { unsafeEval: true },
+  [MCP_APPS_CSP_RELAXATION_META_KEY]: { unsafeEval: true },
+};
+/** hostContext 初值双键。 */
+export const exampleWidgetStateContextEntries = buildMcpAppsWidgetStateContextEntries({
+  tab: "chart",
+});
+/** 工具结果截断标记双键。 */
+export const exampleTruncatedMeta = buildMcpAppsTruncatedMeta(2048);
+export const exampleTruncatedMetaKeys = {
+  canonical: MCP_APPS_TRUNCATED_META_KEY_CANONICAL,
+  legacy: MCP_APPS_TRUNCATED_META_KEY,
+};

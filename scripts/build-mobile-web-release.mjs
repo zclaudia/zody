@@ -3,7 +3,7 @@
 //
 // 产物布局（packages/web/dist-mobile-remote）：
 //   index.html   由 Vite 的 mobile.html 规范化而来，注入 <meta name="zody-mobile-ui-release">
-//   release.json 严格 manifest（schema 来自 @zcode/shared 的 mobile-ui-release）
+//   release.json 严格 manifest（schema 来自 @zody/shared 的 mobile-ui-release）
 //   assets/ ...  Vite 内容哈希资源与其它静态资源；不含 sourcemap
 //
 // 确定性：releaseId 只由格式版本、desktopVersion 与 assetDigest 计算；assetDigest 只由制品文件的
@@ -259,16 +259,7 @@ function runViteBuild({ root }) {
   return new Promise((resolvePromise, reject) => {
     const child = spawn(
       command,
-      [
-        "--filter",
-        "@zcode/web",
-        "exec",
-        "vite",
-        "build",
-        "--mode",
-        "mobile",
-        `--base=${BASE_PATH}`,
-      ],
+      ["--filter", "@zody/web", "exec", "vite", "build", "--mode", "mobile", `--base=${BASE_PATH}`],
       { cwd: root, stdio: "inherit", shell: process.platform === "win32" },
     );
     child.on("error", reject);

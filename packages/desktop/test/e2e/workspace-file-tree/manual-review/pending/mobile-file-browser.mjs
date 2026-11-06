@@ -22,12 +22,12 @@ const entryId = "\0mobile-file-browser-e2e-entry";
 const entry = `
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Event } from '@zcode/rpc';
+import { Event } from '@zody/rpc';
 import { ServiceProvider } from '@/hooks/useServices.js';
 import { PlatformProvider } from '@/hooks/usePlatform.js';
 import { StoreProvider } from '@/store/StoreProvider.js';
 import { TabStoreProvider } from '@/store/TabStoreProvider.js';
-import { ZCodeIntlProvider } from '@/i18n/IntlProvider.js';
+import { ZodyIntlProvider } from '@/i18n/IntlProvider.js';
 import { MobileWorkspaceFileBrowser } from '@/MobileWorkspaceFileBrowser.js';
 import '@/styles.css';
 const fixture = ${JSON.stringify(fixture)};
@@ -93,7 +93,7 @@ createRoot(document.getElementById('root')).render(
     React.createElement(TabStoreProvider, null,
       React.createElement(StoreProvider, {broadcastService},
         React.createElement(PlatformProvider, {platform},
-          React.createElement(ZCodeIntlProvider, null, React.createElement(Harness)))))));
+          React.createElement(ZodyIntlProvider, null, React.createElement(Harness)))))));
 `;
 
 const vite = await createServer({
@@ -123,7 +123,7 @@ const vite = await createServer({
   resolve: {
     alias: {
       "@": resolve(repoRoot, "packages/ui/src"),
-      "@zcode/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
+      "@zody/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
     },
   },
   server: { host: "127.0.0.1", port: 0 },

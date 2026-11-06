@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { cn } from "@/components/lib/utils.js";
 import {
   SETTINGS_TOUCH_MIN_H_11_CLASS,
@@ -58,7 +58,7 @@ export function SettingsResourceHeaderActions({
   exportActionId,
   newActionId,
 }: SettingsResourceHeaderActionsProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const resolvedRefreshLabel = refreshLabel ?? intl.formatMessage({ id: "common.refresh" });
   const importLabel = intl.formatMessage({
     id: "settings.resourceActions.import",

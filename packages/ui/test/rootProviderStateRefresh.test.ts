@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { IProviderSettingsService } from "@zcode/services";
+import type { IProviderSettingsService } from "@zody/services";
 import { refreshRootProviderState } from "@/root/useRootProviderStateRefresh.js";
 
 describe("refreshRootProviderState", () => {

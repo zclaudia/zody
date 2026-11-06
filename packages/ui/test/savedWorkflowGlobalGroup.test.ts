@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // 全局工作流组（docs/dynamic-workflow/launch.md）：顶部固定「全局」组，空也显示；载体走
-// useServices().zcodeAgentService，RPC 带 { scope: "global" }。卡片 / 实参窗 / 移动窗 / 详情页换桩，
+// useServices().zodyAgentService，RPC 带 { scope: "global" }。卡片 / 实参窗 / 移动窗 / 详情页换桩，
 // 只看组的状态流与全局语义（运行带 scope、修订 / 创建落到本地项目、移到项目、-32602 提示、运行行项目列）。
 import { createElement } from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -15,12 +15,12 @@ import {
   TID_WORKFLOW_DETAIL,
   TID_WORKFLOW_GLOBAL_GROUP,
   testId,
-  type ZCodeSavedWorkflowEntry,
-  type ZCodeSavedWorkflowRun,
-  type ZCodeWorkflowsListResult,
-} from "@zcode/shared";
+  type ZodySavedWorkflowEntry,
+  type ZodySavedWorkflowRun,
+  type ZodyWorkflowsListResult,
+} from "@zody/shared";
 import type { AutomationWorkspaceOption } from "@/settings/automationWorkspaceOptions.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { resetSavedWorkflowStoreForTests } from "@/store/savedWorkflowStore.js";
 
 const confirmMock = vi.fn(async () => true);
@@ -31,10 +31,10 @@ const fileWatcherService = {
   unwatch: vi.fn(async () => {}),
 };
 
-const listResult: { current: ZCodeWorkflowsListResult | (() => never) } = {
+const listResult: { current: ZodyWorkflowsListResult | (() => never) } = {
   current: { workflows: [], invalid: [], dir: "/home/.zcoder/workflows" },
 };
-const runsResult: { current: ZCodeSavedWorkflowRun[] } = { current: [] };
+const runsResult: { current: ZodySavedWorkflowRun[] } = { current: [] };
 const agent = {
   listSavedWorkflows: vi.fn(async () => {
     const value = listResult.current;
@@ -56,7 +56,7 @@ const agent = {
 };
 
 vi.mock("@/hooks/useServices.js", () => ({
-  useServices: () => ({ zcodeAgentService: agent, fileWatcherService }),
+  useServices: () => ({ zodyAgentService: agent, fileWatcherService }),
 }));
 vi.mock("@/hooks/useConfirmDialog.js", () => ({ useConfirmDialog: () => confirmMock }));
 vi.mock("@/components/ui/toast.js", () => ({ toast: (...args: unknown[]) => toastMock(...args) }));
@@ -73,12 +73,12 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowCard.js", () => ({
     onMove,
     onDelete,
   }: {
-    entry: ZCodeSavedWorkflowEntry;
-    onOpen: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRun: (entry: ZCodeSavedWorkflowEntry) => void;
-    onRevise: (entry: ZCodeSavedWorkflowEntry) => void;
-    onMove?: (entry: ZCodeSavedWorkflowEntry) => void;
-    onDelete: (entry: ZCodeSavedWorkflowEntry) => void;
+    entry: ZodySavedWorkflowEntry;
+    onOpen: (entry: ZodySavedWorkflowEntry) => void;
+    onRun: (entry: ZodySavedWorkflowEntry) => void;
+    onRevise: (entry: ZodySavedWorkflowEntry) => void;
+    onMove?: (entry: ZodySavedWorkflowEntry) => void;
+    onDelete: (entry: ZodySavedWorkflowEntry) => void;
   }) =>
     createElement(
       "div",
@@ -150,11 +150,11 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowLaunchDialog.js", () => ({
     defaultTargetKey,
     onSubmit,
   }: {
-    entry: ZCodeSavedWorkflowEntry | null;
+    entry: ZodySavedWorkflowEntry | null;
     targets?: readonly AutomationWorkspaceOption[];
     defaultTargetKey?: string | null;
     onSubmit: (
-      entry: ZCodeSavedWorkflowEntry,
+      entry: ZodySavedWorkflowEntry,
       args: Record<string, unknown>,
       target?: AutomationWorkspaceOption,
     ) => void;
@@ -217,8 +217,8 @@ vi.mock("@/settings/saved-workflows/SavedWorkflowDetailView.js", () => ({
   }: {
     name: string;
     projectLabel: string;
-    runs: readonly ZCodeSavedWorkflowRun[];
-    resolveRunProject?: (run: ZCodeSavedWorkflowRun) => { label: string; canOpen: boolean } | null;
+    runs: readonly ZodySavedWorkflowRun[];
+    resolveRunProject?: (run: ZodySavedWorkflowRun) => { label: string; canOpen: boolean } | null;
     onMove?: () => void;
   }) =>
     createElement(
@@ -246,8 +246,8 @@ const { SavedWorkflowGlobalGroup } =
 
 function entry(
   name: string,
-  overrides: Partial<ZCodeSavedWorkflowEntry> = {},
-): ZCodeSavedWorkflowEntry {
+  overrides: Partial<ZodySavedWorkflowEntry> = {},
+): ZodySavedWorkflowEntry {
   return {
     name,
     description: `${name} 的说明`,
@@ -269,7 +269,7 @@ function mount(props: Partial<Parameters<typeof SavedWorkflowGlobalGroup>[0]> = 
   const onMoved = vi.fn();
   const utils = render(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(SavedWorkflowGlobalGroup, {
         refreshSeq: 0,

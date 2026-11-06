@@ -18,6 +18,7 @@ import {
   readWorkspaceProductionGraph,
   scanInstalledPackages,
   missingProductionPackages,
+  collectInstalledLicenseRecords,
 } from "./third-party-npm.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -31,8 +32,6 @@ if (command === "notices") {
 
 // 标识门禁与声明生成共用 workspace 图和递归扫描，不按包名猜测生产范围。
 const { required, projects } = await readWorkspaceProductionGraph(ROOT);
-const ownNames = new Set(projects.map((project) => project.name));
-const installed = new Map();
 const MANUAL_LICENSE = {
   "exif-parser": "MIT", // 包内 LICENSE.md
   khroma: "MIT", // 包内 license 文件
@@ -47,15 +46,9 @@ function normLicense(value) {
 }
 const scanned = await scanInstalledPackages(ROOT, projects);
 missingProductionPackages(required, scanned);
-for (const [key, { pkg }] of scanned) {
-  if (ownNames.has(pkg.name)) continue;
-  installed.set(key, {
-    name: pkg.name,
-    version: pkg.version,
-    license: normLicense(pkg.license ?? pkg.licenses ?? MANUAL_LICENSE[pkg.name]),
-    isProd: required.has(key),
-  });
-}
+const installed = await collectInstalledLicenseRecords(scanned, required, (pkg) =>
+  normLicense(pkg.license ?? pkg.licenses ?? MANUAL_LICENSE[pkg.name]),
+);
 // ---------- 分类 ----------
 const GREEN =
   /^(MIT|MIT-0|ISC|BSD-2-Clause|BSD-3-Clause|BSD-4-Clause|0BSD|Unlicense|Apache-2\.0|Zlib|WTFPL|Artistic-2\.0|BlueOak-1\.0\.0|CC0-1\.0|CC-BY-4\.0|CC-BY-3\.0|BSD|Python-2\.0)$/i;

@@ -4,7 +4,7 @@ import {
   type MobileNotificationClick,
   type MobileNotificationPlatform,
   type MobileNotificationPushStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { parseMobileRemoteBridgeEnvelope } from "./mobileRemoteBridgeEnvelope.js";
 
 /**
@@ -136,9 +136,9 @@ export function createMobileNotificationPlatform(
   target: unknown = globalThis,
   options: CreateMobileNotificationPlatformOptions,
 ): MobileNotificationPlatform | undefined {
-  const native = (target as Record<string, unknown>)[
-    MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY
-  ] as NativeNotifications | undefined;
+  const native = (target as Record<string, unknown>)[MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY] as
+    | NativeNotifications
+    | undefined;
   const { sessionId, subscribePermission } = options;
   if (
     !native ||
@@ -168,14 +168,10 @@ export function createMobileNotificationPlatform(
     typeof native.notificationAcknowledgeAction === "function"
       ? {
           getPendingAction: async (): Promise<MobileNotificationActionClick | null> =>
-            parsePendingAction(
-              await native.notificationGetPendingAction?.(sessionId),
-            ),
+            parsePendingAction(await native.notificationGetPendingAction?.(sessionId)),
           acknowledgeAction: async (id) => {
             if (native.notificationAcknowledgeAction) {
-              parseOperation(
-                await native.notificationAcknowledgeAction(sessionId, id),
-              );
+              parseOperation(await native.notificationAcknowledgeAction(sessionId, id));
             }
           },
         }

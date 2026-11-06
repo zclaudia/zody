@@ -5,7 +5,7 @@ import {
   TID_TASK_ITEM,
   TID_V4_SESSION_PANE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData } from "./helpers/desktop-app.js";
 import {
   E2E_REPLY_TOKEN,

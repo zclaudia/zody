@@ -103,7 +103,7 @@ Header 是运行时 Secret，只进入 Exporter 配置，不进入 Resource、Sp
 Standalone 安装 ID 保存于：
 
 ```text
-$ZCODE_HOME/v2/telemetry-state.json
+$ZODY_HOME/v2/telemetry-state.json
 或 ~/.zcode/v2/telemetry-state.json
 ```
 

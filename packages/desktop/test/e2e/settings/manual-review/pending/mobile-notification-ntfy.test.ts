@@ -7,7 +7,7 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clickTestIdByDom } from "../../../helpers/desktop-app.js";
 import { dismissOccupationOnboarding } from "../../../helpers/occupation-onboarding.js";
 import {

@@ -39,9 +39,9 @@ const { createRemoteGatewayBackend } = await import(
   `${repoRoot}/packages/desktop/src/main/remote-access/remoteGatewayBackend.ts`
 );
 
-const gatewayUrl = process.env.ZCODE_GATEWAY_IT_URL?.replace(/\/+$/u, "");
-const credential = process.env.ZCODE_GATEWAY_BACKEND_CREDENTIAL;
-const namespace = process.env.ZODY_E2E_NAMESPACE || process.env.ZCODE_GATEWAY_NAMESPACE || "zody";
+const gatewayUrl = process.env.ZODY_GATEWAY_IT_URL?.replace(/\/+$/u, "");
+const credential = process.env.ZODY_GATEWAY_BACKEND_CREDENTIAL;
+const namespace = process.env.ZODY_E2E_NAMESPACE || process.env.ZODY_GATEWAY_NAMESPACE || "zody";
 const controlPort = Number(process.env.ZODY_E2E_CONTROL_PORT || 39555);
 const publicGatewayUrl = (process.env.ZODY_E2E_PUBLIC_GATEWAY_URL || gatewayUrl)?.replace(
   /\/+$/u,
@@ -126,19 +126,19 @@ function handleChannel(channel) {
       console.error("[provider] hello", JSON.stringify(frame.appProtocol));
       send(channel, {
         type: "hello_ack",
-        appProtocol: 4,
+        appProtocol: 5,
         desktopAppVersion: "0.1.0-e2e",
       });
       return;
     }
     if (frame.type !== "data" || !frame.payload || typeof frame.payload !== "object") return;
     const payload = frame.payload;
-    if (payload.zcode_type === "workspace-list-request") {
+    if (payload.zody_type === "workspace-list-request") {
       // home-only Root 在渲染前调用 listWorkspaces；不响应会让 M3 guard 场景一直等超时。
       send(channel, {
         type: "data",
         payload: {
-          zcode_type: "workspace-list-response",
+          zody_type: "workspace-list-response",
           requestId: payload.requestId,
           success: true,
           result: {
@@ -149,12 +149,12 @@ function handleChannel(channel) {
       });
       return;
     }
-    if (payload.zcode_type !== "bootstrap-request") return;
+    if (payload.zody_type !== "bootstrap-request") return;
     const respond = () => {
       send(channel, {
         type: "data",
         payload: {
-          zcode_type: "bootstrap-response",
+          zody_type: "bootstrap-response",
           requestId: payload.requestId,
           success: true,
           result: {

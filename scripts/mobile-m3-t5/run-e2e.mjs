@@ -30,7 +30,7 @@ const publicGatewayUrl = (
 ).replace(/\/+$/u, "");
 const namespace = process.env.ZODY_E2E_NAMESPACE || "zcode";
 const fixturesDir = process.env.ZODY_E2E_M3_FIXTURES || "/tmp/zody-m3-releases";
-const deviceCredential = process.env.ZCODE_GATEWAY_DEVICE_CREDENTIAL;
+const deviceCredential = process.env.ZODY_GATEWAY_DEVICE_CREDENTIAL;
 const skip = new Set(
   (process.env.ZODY_E2E_SKIP || "")
     .split(",")
@@ -313,7 +313,7 @@ async function ensureConfigured() {
     page.close();
     return { existed: true, configRevision: read.config.configRevision };
   }
-  assert(deviceCredential, "ZCODE_GATEWAY_DEVICE_CREDENTIAL is required for pairing");
+  assert(deviceCredential, "ZODY_GATEWAY_DEVICE_CREDENTIAL is required for pairing");
   const draft = JSON.stringify({
     gatewayUrl: publicGatewayUrl,
     namespace,

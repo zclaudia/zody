@@ -17,7 +17,7 @@ function createWorkspace(cuaManifest: Record<string, unknown> | null) {
   const desktopRoot = join(root, "packages", "desktop");
   mkdirSync(desktopRoot, { recursive: true });
   if (cuaManifest) {
-    const cuaDir = join(root, "node_modules", "@zcode", "zcode-cua");
+    const cuaDir = join(root, "node_modules", "@zody", "zody-cua");
     mkdirSync(cuaDir, { recursive: true });
     writeFileSync(join(cuaDir, "package.json"), JSON.stringify(cuaManifest));
   }
@@ -30,7 +30,7 @@ afterEach(() => {
 
 describe("Computer Use producer detection", () => {
   it("真实 producer：已安装且未声明占位", () => {
-    const desktopRoot = createWorkspace({ name: "@zcode/zcode-cua", version: "0.6.4" });
+    const desktopRoot = createWorkspace({ name: "@zody/zody-cua", version: "0.6.4" });
     expect(readComputerUseProducer({ desktopPackageRoot: desktopRoot })).toMatchObject({
       installed: true,
       placeholder: false,
@@ -39,7 +39,7 @@ describe("Computer Use producer detection", () => {
   });
 
   it("开源占位包：声明 zcodeCuaPlaceholder 时不算真实 producer", () => {
-    const desktopRoot = createWorkspace({ name: "@zcode/zcode-cua", zcodeCuaPlaceholder: true });
+    const desktopRoot = createWorkspace({ name: "@zody/zody-cua", zcodeCuaPlaceholder: true });
     expect(readComputerUseProducer({ desktopPackageRoot: desktopRoot })).toMatchObject({
       installed: true,
       placeholder: true,
@@ -54,10 +54,10 @@ describe("Computer Use producer detection", () => {
   });
 
   it("占位包下 dev 插件运行时暂存直接跳过，不要求 sharp 与插件清单", () => {
-    const desktopRoot = createWorkspace({ name: "@zcode/zcode-cua", zcodeCuaPlaceholder: true });
+    const desktopRoot = createWorkspace({ name: "@zody/zody-cua", zcodeCuaPlaceholder: true });
     expect(
       stageDevCuaPluginRuntime({
-        env: { ZCODE_CUA_DEV_MODE: "1" },
+        env: { ZODY_CUA_DEV_MODE: "1" },
         desktopPackageRoot: desktopRoot,
         pluginRoot: join(desktopRoot, "missing-plugin"),
       }),

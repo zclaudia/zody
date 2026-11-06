@@ -2,32 +2,32 @@
 
 set -euo pipefail
 
-APP_PATH="${1:-${ZCODE_MACOS_RELEASE_APP_PATH:-/Applications/Zody.app}}"
-ZCODE_HOME_DIR="${ZCODE_HOME:-${HOME:+$HOME/.zody}}"
-CUA_HELPER_INSTALL_VARIANT="${ZCODE_CUA_HELPER_INSTALL_VARIANT:-}"
-# 安装包身份与后端环境分轴：ZCODE_PREVIEW_IDENTITY=1 让生产后端的构建仍是 Zody Preview。
-# 只认 "1"，与 CI workflow / release 门的精确比较同一套语义（其它拼写由 resolve_zcode_env 拒绝）。
+APP_PATH="${1:-${ZODY_MACOS_RELEASE_APP_PATH:-/Applications/Zody.app}}"
+ZODY_DOCTOR_HOME_DIR="${ZODY_HOME:-${HOME:+$HOME/.zody}}"
+CUA_HELPER_INSTALL_VARIANT="${ZODY_CUA_HELPER_INSTALL_VARIANT:-}"
+# 安装包身份与后端环境分轴：ZODY_PREVIEW_IDENTITY=1 让生产后端的构建仍是 Zody Preview。
+# 此脚本仅将值精确等于 "1" 视为启用，其余值不触发该判断。
 is_preview_identity_requested() {
-  [[ "${ZCODE_PREVIEW_IDENTITY:-}" = "1" ]]
+  [[ "${ZODY_PREVIEW_IDENTITY:-}" = "1" ]]
 }
-if [ -z "$CUA_HELPER_INSTALL_VARIANT" ] && { [ "${ZCODE_ENV:-production}" = "test" ] || is_preview_identity_requested; }; then
+if [ -z "$CUA_HELPER_INSTALL_VARIANT" ] && { [ "${ZODY_ENV:-production}" = "test" ] || is_preview_identity_requested; }; then
   CUA_HELPER_INSTALL_VARIANT="preview"
 fi
 if [ -n "$CUA_HELPER_INSTALL_VARIANT" ] && [[ ! "$CUA_HELPER_INSTALL_VARIANT" =~ ^[A-Za-z0-9_-]+$ ]]; then
-  echo "[macos-release-doctor] invalid ZCODE_CUA_HELPER_INSTALL_VARIANT: $CUA_HELPER_INSTALL_VARIANT" >&2
+  echo "[macos-release-doctor] invalid ZODY_CUA_HELPER_INSTALL_VARIANT: $CUA_HELPER_INSTALL_VARIANT" >&2
   exit 1
 fi
 CUA_HELPER_INSTALL_SUBDIR="${CUA_HELPER_INSTALL_VARIANT:+$CUA_HELPER_INSTALL_VARIANT/}"
 # Shell cannot import producer TS constants. macosReleaseAppDoctor.test.ts locks these literals to
-# @zcode/zcode-cua/broker/helperConstants so a future producer rename fails loudly.
-ZCODE_HOME_HELPER_APP_PATH="${ZCODE_HOME_DIR:+$ZCODE_HOME_DIR/computer-use/${CUA_HELPER_INSTALL_SUBDIR}ZCode Computer Use.app}"
-HELPER_APP_PATH="${ZCODE_CUA_HELPER_APP_PATH:-$ZCODE_HOME_HELPER_APP_PATH}"
+# @zody/zody-cua/broker/helperConstants so a future producer rename fails loudly.
+ZODY_DOCTOR_HOME_HELPER_APP_PATH="${ZODY_DOCTOR_HOME_DIR:+$ZODY_DOCTOR_HOME_DIR/computer-use/${CUA_HELPER_INSTALL_SUBDIR}ZCode Computer Use.app}"
+HELPER_APP_PATH="${ZODY_CUA_HELPER_APP_PATH:-$ZODY_DOCTOR_HOME_HELPER_APP_PATH}"
 # 修复原因：`--help` 作为首参时 basename 会把它当作选项报错退出，导致帮助无法显示；用 `--` 结束选项解析。
 APP_BUNDLE_NAME="$(basename -- "$APP_PATH")"
 APP_DISPLAY_NAME="${APP_BUNDLE_NAME%.app}"
-APP_EXECUTABLE_NAME="${ZCODE_APP_EXECUTABLE_NAME:-$APP_DISPLAY_NAME}"
-HELPER_EXECUTABLE_NAME="${ZCODE_CUA_HELPER_EXECUTABLE_NAME:-ZCode Computer Use}"
-REQUIRE_CUA_HELPER="${ZCODE_CUA_REQUIRE_HELPER:-0}"
+APP_EXECUTABLE_NAME="${ZODY_APP_EXECUTABLE_NAME:-$APP_DISPLAY_NAME}"
+HELPER_EXECUTABLE_NAME="${ZODY_CUA_HELPER_EXECUTABLE_NAME:-ZCode Computer Use}"
+REQUIRE_CUA_HELPER="${ZODY_CUA_REQUIRE_HELPER:-0}"
 REQUIRE_CUA_HELPER_STAPLE=0
 if [[ "$REQUIRE_CUA_HELPER" =~ ^(1|true|on)$ ]]; then
   REQUIRE_CUA_HELPER_STAPLE=1
@@ -37,21 +37,21 @@ if [ "${APP_PATH:-}" = "--help" ] || [ "${APP_PATH:-}" = "-h" ]; then
   cat <<'USAGE'
 Usage:
   bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
-  ZCODE_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
-  ZCODE_CUA_HELPER_APP_PATH=/path/to/ZCode\ Computer\ Use.app ZCODE_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
-  ZCODE_MACOS_RELEASE_APP_PATH=/Applications/Zody.app pnpm run doctor:macos-release
+  ZODY_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
+  ZODY_CUA_HELPER_APP_PATH=/path/to/ZCode\ Computer\ Use.app ZODY_CUA_REQUIRE_HELPER=1 bash scripts/doctor-macos-release-app.sh /Applications/Zody.app
+  ZODY_MACOS_RELEASE_APP_PATH=/Applications/Zody.app pnpm run doctor:macos-release
 
 Always validates the installed macOS release app with:
   codesign --verify --deep --strict <app>
   spctl -a -vv -t exec <app>
 
-Set ZCODE_CUA_REQUIRE_HELPER=1 for CUA/Helper release gates. In that mode this
+Set ZODY_CUA_REQUIRE_HELPER=1 for CUA/Helper release gates. In that mode this
 also validates the independently signed Helper bundle selected below with the
 same codesign/spctl checks and a local notarization staple check.
 
 Helper lookup order:
-  1. ZCODE_CUA_HELPER_APP_PATH (CI passes the Helper bundled inside Zody.app)
-  2. ${ZCODE_HOME:-$HOME/.zody}/computer-use/<optional variant>/ZCode Computer Use.app
+  1. ZODY_CUA_HELPER_APP_PATH (CI passes the Helper bundled inside Zody.app)
+  2. ${ZODY_HOME:-$HOME/.zody}/computer-use/<optional variant>/ZCode Computer Use.app
 
 CI release acceptance validates the copy actually shipped at
 Zody.app/Contents/Resources/cua-helper/ZCode Computer Use.app. Post-install checks
@@ -73,7 +73,7 @@ assert_bundle_dir() {
   local label="$1"
   local bundle_path="$2"
   if [ -z "$bundle_path" ]; then
-    echo "[macos-release-doctor] ${label} missing: <no product helper path; set ZCODE_HOME or HOME>" >&2
+    echo "[macos-release-doctor] ${label} missing: <no product helper path; set ZODY_HOME or HOME>" >&2
     exit 1
   fi
   if [ ! -d "$bundle_path" ]; then
@@ -153,7 +153,7 @@ if [ "$REQUIRE_CUA_HELPER" != "1" ] && [ "$REQUIRE_CUA_HELPER" != "true" ] && [ 
   if [ -d "$HELPER_APP_PATH" ]; then
     echo "[macos-release-doctor] standalone Computer Use Helper.app present; validating optional helper: $HELPER_APP_PATH"
   else
-    echo "[macos-release-doctor] standalone Computer Use Helper.app not required; set ZCODE_CUA_REQUIRE_HELPER=1 for CUA release gates"
+    echo "[macos-release-doctor] standalone Computer Use Helper.app not required; set ZODY_CUA_REQUIRE_HELPER=1 for CUA release gates"
     echo "[macos-release-doctor] done"
     exit 0
   fi

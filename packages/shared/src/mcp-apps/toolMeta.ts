@@ -2,6 +2,8 @@ import type {
   McpAppCspRelaxations,
   McpAppResourceMeta,
   McpAppsDisplayMode,
+  McpAppsMetaKeyDirection,
+  McpAppsMetaKeyPair,
   McpAppsResourcePermission,
   McpAppsToolVisibility,
   McpToolUiCsp,
@@ -10,15 +12,155 @@ import type {
 import {
   MCP_APPS_CSP_RELAXATION_FLAGS,
   MCP_APPS_CSP_RELAXATION_META_KEY,
+  MCP_APPS_CSP_RELAXATION_META_KEY_CANONICAL,
   MCP_APPS_DEFAULT_TOOL_VISIBILITY,
   MCP_APPS_RESOURCE_PERMISSIONS,
+  MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY,
+  MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY_CANONICAL,
   MCP_APPS_LEGACY_RESOURCE_URI_META_KEY,
   MCP_APPS_RESOURCE_URI_MAX_CHARS,
+  MCP_APPS_SURFACE_EXPERIMENTAL_KEY,
+  MCP_APPS_SURFACE_EXPERIMENTAL_KEY_CANONICAL,
   MCP_APPS_SURFACE_ID_MAX_CHARS,
   MCP_APPS_SURFACE_ID_PATTERN,
+  MCP_APPS_TRUNCATED_META_KEY,
+  MCP_APPS_TRUNCATED_META_KEY_CANONICAL,
   MCP_APPS_UI_RESOURCE_SCHEME,
+  MCP_APPS_WIDGET_STATE_CONTEXT_KEY,
+  MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL,
+  MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY,
+  MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY_CANONICAL,
 } from "./contract.js";
-
+const metaKeyPair = (
+  canonical: string,
+  legacy: string,
+  direction: McpAppsMetaKeyDirection,
+  failClosed: boolean,
+): McpAppsMetaKeyPair => ({ canonical, legacy, direction, failClosed });
+/** `_meta` / `hostContext` / `experimental` 键对注册表（R50 单一事实来源）；新增登记键先加这里。 */
+export const MCP_APPS_META_KEY_COMPAT = {
+  csp: metaKeyPair(
+    MCP_APPS_CSP_RELAXATION_META_KEY_CANONICAL,
+    MCP_APPS_CSP_RELAXATION_META_KEY,
+    "bidirectional",
+    true,
+  ),
+  truncated: metaKeyPair(
+    MCP_APPS_TRUNCATED_META_KEY_CANONICAL,
+    MCP_APPS_TRUNCATED_META_KEY,
+    "outbound",
+    false,
+  ),
+  widgetState: metaKeyPair(
+    MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY_CANONICAL,
+    MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY,
+    "outbound",
+    false,
+  ),
+  resourceSubscribe: metaKeyPair(
+    MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY_CANONICAL,
+    MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY,
+    "outbound",
+    false,
+  ),
+  surface: metaKeyPair(
+    MCP_APPS_SURFACE_EXPERIMENTAL_KEY_CANONICAL,
+    MCP_APPS_SURFACE_EXPERIMENTAL_KEY,
+    "outbound",
+    false,
+  ),
+} as const satisfies Record<string, McpAppsMetaKeyPair>;
+export interface McpAppsExperimentalCapabilityInput {
+  canSetWidgetState: boolean;
+  canSubscribeResources: boolean;
+  /** 常驻面板实例才宣告 surface id。 */
+  surfaceId?: string;
+}
+export function buildMcpAppsExperimentalCapabilities(
+  input: McpAppsExperimentalCapabilityInput,
+): Readonly<Record<string, unknown>> {
+  const csp = { flags: [...MCP_APPS_CSP_RELAXATION_FLAGS] };
+  const capabilities: Record<string, unknown> = {
+    [MCP_APPS_CSP_RELAXATION_META_KEY_CANONICAL]: csp,
+    [MCP_APPS_CSP_RELAXATION_META_KEY]: csp,
+  };
+  if (input.canSetWidgetState) {
+    const capability = {};
+    capabilities[MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY_CANONICAL] = capability;
+    capabilities[MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY] = capability;
+  }
+  if (input.canSubscribeResources) {
+    const capability = {};
+    capabilities[MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY_CANONICAL] = capability;
+    capabilities[MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY] = capability;
+  }
+  if (input.surfaceId) {
+    const capability = { id: input.surfaceId };
+    capabilities[MCP_APPS_SURFACE_EXPERIMENTAL_KEY_CANONICAL] = capability;
+    capabilities[MCP_APPS_SURFACE_EXPERIMENTAL_KEY] = capability;
+  }
+  return capabilities;
+}
+export function buildMcpAppsWidgetStateContextEntries(
+  widgetState: unknown,
+): Readonly<Record<string, unknown>> {
+  return {
+    [MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL]: widgetState,
+    [MCP_APPS_WIDGET_STATE_CONTEXT_KEY]: widgetState,
+  };
+}
+export function buildMcpAppsTruncatedMeta(bytes: number): Readonly<Record<string, unknown>> {
+  const truncated = { bytes };
+  return {
+    [MCP_APPS_TRUNCATED_META_KEY_CANONICAL]: truncated,
+    [MCP_APPS_TRUNCATED_META_KEY]: truncated,
+  };
+}
+/** 双键读取结果：`conflict` 由调用边界呈现为可见错误并拒绝应用该字段；纯函数不 throw。 */
+export type McpAppsMetaEntryRead<T> =
+  | { status: "absent" }
+  | { status: "accepted"; value: T; source: "canonical" | "legacy" | "both" }
+  | {
+      status: "conflict";
+      canonicalKey: string;
+      legacyKey: string;
+      canonical: unknown;
+      legacy: unknown;
+    };
+/** `_meta` 双键读取（R50）：单键非法视作未声明；双键归一化相等才接受，任一不可用或不等即冲突（fail-closed）。 */
+export function readMcpAppsMetaEntry<T>(
+  meta: unknown,
+  pair: McpAppsMetaKeyPair,
+  parse: (value: unknown) => T | null,
+): McpAppsMetaEntryRead<T> {
+  const root = asRecord(meta);
+  if (!root) return { status: "absent" };
+  const hasCanonical = Object.hasOwn(root, pair.canonical);
+  const hasLegacy = Object.hasOwn(root, pair.legacy);
+  if (!hasCanonical && !hasLegacy) return { status: "absent" };
+  const canonical = hasCanonical ? parse(root[pair.canonical]) : null;
+  const legacy = hasLegacy ? parse(root[pair.legacy]) : null;
+  if (hasCanonical && hasLegacy) {
+    if (canonical === null || legacy === null || !jsonEquals(canonical, legacy)) {
+      return {
+        status: "conflict",
+        canonicalKey: pair.canonical,
+        legacyKey: pair.legacy,
+        canonical: root[pair.canonical],
+        legacy: root[pair.legacy],
+      };
+    }
+    return { status: "accepted", value: canonical, source: "both" };
+  }
+  if (hasCanonical) {
+    return canonical === null
+      ? { status: "absent" }
+      : { status: "accepted", value: canonical, source: "canonical" };
+  }
+  return legacy === null
+    ? { status: "absent" }
+    : { status: "accepted", value: legacy, source: "legacy" };
+}
 /**
  * 工具可见性与 UI 呈现解耦。只读 `_meta.ui.visibility`，缺省 `["model", "app"]`；
  * 没有 `ui://` 资源的纯数据工具同样按它决定进不进模型工具表，不再因为缺 resourceUri 而整体丢失。
@@ -102,17 +244,45 @@ export function normalizeMcpAppResourcePermissions(value: unknown): McpAppsResou
 }
 
 /**
- * 资源级 `_meta["zcode/csp"]`：只认 `MCP_APPS_CSP_RELAXATION_FLAGS` 里的布尔键，未知键与非布尔值丢弃；
- * 没有任何为 true 的键返回 null（false 等于不声明）。
+ * 资源级 CSP 放宽的可见解析结果（R50）：`conflict` 携带两侧原始值，供边界记录可见错误；
+ * `normalizeMcpAppCspRelaxations` 保持原签名，冲突时返回 null（不产生任何放宽）。
  */
-export function normalizeMcpAppCspRelaxations(meta: unknown): McpAppCspRelaxations | null {
-  const root = asRecord(asRecord(meta)?.[MCP_APPS_CSP_RELAXATION_META_KEY]);
+export type McpAppsCspRelaxationResolution =
+  | { status: "absent" }
+  | { status: "accepted"; value: McpAppCspRelaxations }
+  | { status: "conflict"; canonical: unknown; legacy: unknown };
+
+/** 单个 `csp` 声明值：只认 `MCP_APPS_CSP_RELAXATION_FLAGS` 里的布尔键，未知键与非布尔值丢弃。 */
+export function normalizeMcpAppCspRelaxationValue(value: unknown): McpAppCspRelaxations | null {
+  const root = asRecord(value);
   if (!root) return null;
   const result: McpAppCspRelaxations = {};
   for (const flag of MCP_APPS_CSP_RELAXATION_FLAGS) {
     if (root[flag] === true) result[flag] = true;
   }
   return Object.keys(result).length > 0 ? result : null;
+}
+
+/** 资源级 `_meta` 的 CSP 放宽：`zody/csp` 与 legacy `zcode/csp` 双键读取，冲突 fail-closed。 */
+export function resolveMcpAppsCspRelaxations(meta: unknown): McpAppsCspRelaxationResolution {
+  const read = readMcpAppsMetaEntry(
+    meta,
+    MCP_APPS_META_KEY_COMPAT.csp,
+    normalizeMcpAppCspRelaxationValue,
+  );
+  if (read.status === "conflict") {
+    return { status: "conflict", canonical: read.canonical, legacy: read.legacy };
+  }
+  return read.status === "accepted" ? { status: "accepted", value: read.value } : read;
+}
+
+/**
+ * 资源级 `_meta["zody/csp"]`（legacy `"zcode/csp"` 同语义）：双键归一化相等才接受；
+ * 冲突或非法返回 null（fail-closed，等同未声明）。
+ */
+export function normalizeMcpAppCspRelaxations(meta: unknown): McpAppCspRelaxations | null {
+  const resolved = resolveMcpAppsCspRelaxations(meta);
+  return resolved.status === "accepted" ? resolved.value : null;
 }
 
 /** 面板 id：长度与字符集受限，非法即丢弃（工具结果退回内联卡片，不报错）。 */
@@ -209,4 +379,21 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+}
+
+/** 归一化值比较：按键排序的 JSON 文本，避免对象字面量顺序影响等值判定。 */
+function jsonEquals(left: unknown, right: unknown): boolean {
+  return normalizedJson(left) === normalizedJson(right);
+}
+
+function normalizedJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(normalizedJson).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${normalizedJson(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "null";
 }

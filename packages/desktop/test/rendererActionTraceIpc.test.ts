@@ -4,7 +4,7 @@ import {
   DISABLED_RENDERER_ACTION_TRACE_CONFIG,
   PlatformChannels,
   type RendererActionTraceConfigV1,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const ipcListeners = new Map<string, (event: unknown, payload: unknown) => void>();
 const ipcHandlers = new Map<string, unknown>();
@@ -45,7 +45,7 @@ function createBatch(rendererInstanceId: string) {
     sequence: 1,
     droppedSinceLastFlush: 0,
     resource: {
-      serviceName: "zcode-desktop-renderer",
+      serviceName: "zody-desktop-renderer",
       serviceVersion: "test",
       deploymentEnvironment: "test",
       rendererInstanceId,
@@ -111,7 +111,7 @@ describe("renderer action trace IPC", () => {
     const dispose = registerRendererActionTraceIpc({
       rollout: disabledRollout,
       broker: { enqueue: vi.fn(), flush: vi.fn(), shutdown: vi.fn() },
-      // env 为空：排除 ZCODE_RENDERER_ACTION_TRACE_ENABLED / ZCODE_LOCAL_TTFT_ENABLED 调试覆盖。
+      // env 为空：排除 ZODY_RENDERER_ACTION_TRACE_ENABLED / ZODY_LOCAL_TTFT_ENABLED 调试覆盖。
       env: {},
       logger: { debug: vi.fn(), warn: vi.fn() },
     });

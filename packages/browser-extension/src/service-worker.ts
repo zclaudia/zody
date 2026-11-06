@@ -4,7 +4,7 @@ import type {
   ExtensionTabClass,
   ExtensionTargetDetachReason,
   ExtensionTargetRef,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   findAttachmentByDebuggee,
   findAttachmentForTargetRef,

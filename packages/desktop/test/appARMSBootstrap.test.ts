@@ -1,8 +1,12 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { ZodyAgentProcessManager } from "@zody/services/node";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ZCODE_AGENT_LIFECYCLE_LOG_MARKER } from "@zcode/shared/process-diagnostic";
+import { ZODY_AGENT_LIFECYCLE_LOG_MARKER } from "@zody/shared/process-diagnostic";
 
 const init = vi.fn((_config: unknown) => Promise.resolve());
 
@@ -27,15 +31,15 @@ vi.mock("../src/main/logger.js", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("@zcode/shared", async (importOriginal) => {
+vi.mock("@zody/shared", async (importOriginal) => {
   // 脱敏收口是 beforeReport 的一部分，必须用真实实现验证；只覆写环境/版本等常量。
-  const actual = await importOriginal<typeof import("@zcode/shared")>();
+  const actual = await importOriginal<typeof import("@zody/shared")>();
   return {
     ...actual,
-    ZCODE_ARMS_RUM_ENDPOINT: "https://example.test/endpoint",
-    ZCODE_ENV: "test",
-    ZCODE_VERSION: "0.0.0-test",
-    mapZCodeEnvToArmsRumEnv: vi.fn(() => "local"),
+    ZODY_ARMS_RUM_ENDPOINT: "https://example.test/endpoint",
+    ZODY_ENV: "test",
+    ZODY_VERSION: "0.0.0-test",
+    mapZodyEnvToArmsRumEnv: vi.fn(() => "local"),
   };
 });
 
@@ -146,13 +150,36 @@ function buildCrashpadProcessTypeDump(options: {
 }
 
 describe("appARMSBootstrap beforeReport", () => {
+  it("counts a real Agent exit once and filters its marked console duplicate", async () => {
+    const workspacePath = mkdtempSync(join(tmpdir(), "r46-lifecycle-"));
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const reporter = { onSpawn: vi.fn(), onExit: vi.fn(), onError: vi.fn() };
+    const manager = new ZodyAgentProcessManager({
+      commandResolver: () => ({ command: process.execPath, args: ["-e", "process.exit(1)"], cwd: workspacePath }),
+      processLifecycleReporter: reporter,
+    });
+    try {
+      await manager.getClient({ workspacePath });
+      await vi.waitFor(() => expect(reporter.onExit).toHaveBeenCalledTimes(1));
+      await vi.waitFor(() => expect(log.mock.calls.some((args) => String(args[1]).includes(ZODY_AGENT_LIFECYCLE_LOG_MARKER))).toBe(true));
+      const message = String(log.mock.calls.find((args) => String(args[1]).includes(ZODY_AGENT_LIFECYCLE_LOG_MARKER))?.[1]);
+      const payload = { events: [{ event_type: "custom", name: "perf_agent_crash" }, { event_type: "exception", type: "error", source: "console.error", message }] };
+      const beforeReport = await getBeforeReport();
+      const filtered = beforeReport(payload) as { events: Array<Record<string, unknown>> };
+      expect(filtered.events).toHaveLength(1);
+      expect(filtered.events[0]).toMatchObject({ event_type: "custom", name: "perf_agent_crash" });
+      expect(message).toContain("[zody-agent-lifecycle-reported]");
+      expect(message).not.toContain("[zcode-agent-lifecycle-reported]");
+    } finally { manager.disposeAll(); log.mockRestore(); rmSync(workspacePath, { recursive: true, force: true }); }
+  });
+
   it("filters only explicitly marked lifecycle console wrappers, preserving real JS errors", async () => {
     const beforeReport = await getBeforeReport();
     const wrapper = {
       event_type: "exception",
       type: "error",
       source: "console.error",
-      message: `[host-log] process exited ${ZCODE_AGENT_LIFECYCLE_LOG_MARKER}`,
+      message: `[host-log] process exited ${ZODY_AGENT_LIFECYCLE_LOG_MARKER}`,
     };
     const realError = { ...wrapper, source: "uncaughtException" };
     const normalConsoleError = { ...wrapper, message: "a real main error" };
@@ -227,14 +254,14 @@ describe("appARMSBootstrap beforeReport", () => {
 
   it("使用 Desktop 本地开发运行态计算 ARMS 环境", async () => {
     await import("../src/main/appARMSBootstrap.js");
-    const shared = await import("@zcode/shared");
+    const shared = await import("@zody/shared");
     const config = init.mock.calls[0]?.[0] as unknown as {
       env: string;
       app: { env: string };
       tracing: { sample: number };
     };
 
-    expect(shared.mapZCodeEnvToArmsRumEnv).toHaveBeenCalledWith("development");
+    expect(shared.mapZodyEnvToArmsRumEnv).toHaveBeenCalledWith("development");
     expect(config).toMatchObject({
       env: "local",
       app: { env: "local" },

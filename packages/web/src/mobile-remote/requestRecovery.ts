@@ -1,4 +1,4 @@
-import type { WebRemoteControlFailure } from "@zcode/shared";
+import type { WebRemoteControlFailure } from "@zody/shared";
 
 /**
  * 手机远控的应用 payload 请求恢复层：一次可恢复失败后共用一次连接恢复并重试一次。

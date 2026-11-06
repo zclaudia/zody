@@ -1,11 +1,11 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ModelConfigRules, parsePersonalProviderConfigMap } from "@zcode/provider";
+import { ModelConfigRules, parsePersonalProviderConfigMap } from "@zody/provider";
 import {
   NodePersonalProviderConfigRepository,
   encodeProviderConfigFile,
-} from "@zcode/provider-node";
+} from "@zody/provider-node";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCredentialCipherProvider } from "../src/credential/providers/credentialCipherProvider.js";
 import {
@@ -33,7 +33,7 @@ describe("Provider Provisioning Source", () => {
   it("exports sparse Personal Config, default, account settings and only provider credentials", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-provisioning-source-"));
     const credentialsPath = join(root, "credentials.json");
-    const cipher = createCredentialCipherProvider({ env: { ZCODE_CREDENTIAL_SECRET: "source" } });
+    const cipher = createCredentialCipherProvider({ env: { ZODY_CREDENTIAL_SECRET: "source" } });
     await writeFile(
       credentialsPath,
       JSON.stringify({
@@ -107,7 +107,7 @@ describe("Provider Provisioning Source", () => {
   it("does not let malformed non-allowlist credential records block sync", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-provider-provisioning-source-"));
     const credentialsPath = join(root, "credentials.json");
-    const cipher = createCredentialCipherProvider({ env: { ZCODE_CREDENTIAL_SECRET: "source" } });
+    const cipher = createCredentialCipherProvider({ env: { ZODY_CREDENTIAL_SECRET: "source" } });
     await writeFile(
       credentialsPath,
       JSON.stringify({

@@ -2,7 +2,7 @@ import { act, createElement, type ComponentProps } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ProviderSettingsView } from "@zcode/services";
+import type { ProviderSettingsView } from "@zody/services";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { V4ComposerModelControls } from "@/v4/composer/V4ComposerToolbar.js";
 import type { ModelConfigSelect } from "@/ModelConfigSelect.js";
@@ -158,7 +158,7 @@ vi.mock("@/hooks/useSettingService.js", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useZCodeConfig.js", () => ({
+vi.mock("@/hooks/useZodyConfig.js", () => ({
   useToolbarConfigOptions: () => ({
     configOptions: mocks.configOptions,
     loading: false,
@@ -167,7 +167,7 @@ vi.mock("@/hooks/useZCodeConfig.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },

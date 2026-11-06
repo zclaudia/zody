@@ -29,7 +29,7 @@ import {
 } from "../src/host/nodeHostEntryConfig.js";
 import { validateHostStorageResources } from "../src/host/hostStorageResources.js";
 import { createCandidateNetworkTransportDependencies } from "../src/host/candidateNodeNetwork.js";
-import { createHostApiNetworkTransport } from "@zcode/services/node";
+import { createHostApiNetworkTransport } from "@zody/services/node";
 import {
   NATIVE_HOST_ENTRY_NAME,
   NodeHostProcess,

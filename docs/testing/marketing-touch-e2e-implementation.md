@@ -55,7 +55,7 @@ Main 原始 V8 转换计数存在“未生成源码行计为 1”的实例：同
 
 直接用 `istanbul-lib-instrument` 的 TypeScript/JSX parser 解析原始源码，能排除 import、interface、type，但实验确认不会为运行时 `enum` 生成 statement。因此不能直接将这个结果用作所有运行域的统一可执行行分母。该候选方案未接入统计，不改变既有覆盖报告；后续需验证编译转换及 source map，未识别项保留 unknown。
 
-合并执行当前三个 pending spec，并开启 `ZCODE_E2E_SOURCE_EVIDENCE=1`，核验同轮结果与源码指纹；历史分批通过不等价于同轮全量通过。
+合并执行当前三个 pending spec，并开启 `ZODY_E2E_SOURCE_EVIDENCE=1`，核验同轮结果与源码指纹；历史分批通过不等价于同轮全量通过。
 
 ### 第十一批：同轮 48 项与覆盖报告恢复
 
@@ -239,7 +239,7 @@ App init(instance A) -> ZIP ready(instance B) -> 忽略 -> 原 ready 超时 -> f
 
 ### 第十批：构建源码证据
 
-显式设置 `ZCODE_E2E_SOURCE_EVIDENCE=1` 时，WDIO 对新 desktop 构建前后分别计算 packages/\*/src 的源码 SHA，并记录实际 staged App 的 JS/CSS/HTML/map 哈希到 `build-source-evidence.json`。两次源码相同且有产物才标 fresh-stable；变化、SKIP_BUILD 或 packaged App 不追认当前源码。仅覆盖 desktop 的 Renderer/Host/Main，不证明随后构建或复用的 CLI。全部 IO 异步，不写入源码和凭据，不输出源码正文。
+显式设置 `ZODY_E2E_SOURCE_EVIDENCE=1` 时，WDIO 对新 desktop 构建前后分别计算 packages/\*/src 的源码 SHA，并记录实际 staged App 的 JS/CSS/HTML/map 哈希到 `build-source-evidence.json`。两次源码相同且有产物才标 fresh-stable；变化、SKIP_BUILD 或 packaged App 不追认当前源码。仅覆盖 desktop 的 Renderer/Host/Main，不证明随后构建或复用的 CLI。全部 IO 异步，不写入源码和凭据，不输出源码正文。
 
 ```text
 源码指纹 A -> fresh build -> stage App -> 源码指纹 B + staged 产物指纹

@@ -28,7 +28,7 @@ export const enum ResponseType {
   PromiseError = 202,
   PromiseErrorObj = 203,
   EventFire = 204,
-  // 事件订阅在服务端被拒绝时用独立失败帧回传（上游 ZCode v3.17.1 a60ba6a7 引入）：
+  // 事件订阅在服务端被拒绝时用独立失败帧回传（上游 Zody v3.17.1 a60ba6a7 引入）：
   // 不能把错误对象混进 EventFire 正常事件流，也不能让客户端保留一条永远收不到数据的死订阅。
   EventError = 205,
 }

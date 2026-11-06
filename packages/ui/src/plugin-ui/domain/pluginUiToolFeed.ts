@@ -1,6 +1,6 @@
-import type { McpAppsToolResultPayload } from "@zcode/shared/mcp-apps";
-import { MCP_APPS_TRUNCATED_META_KEY } from "@zcode/shared/mcp-apps";
-import type { ConversationRow, ToolCallRow } from "@zcode/shared/zcode-protocol-v4";
+import type { McpAppsToolResultPayload } from "@zody/shared/mcp-apps";
+import { buildMcpAppsTruncatedMeta } from "@zody/shared/mcp-apps";
+import type { ConversationRow, ToolCallRow } from "@zody/shared/zody-protocol-v4";
 import type { PluginUiPresentation } from "../contract.js";
 import { parseJsonText, readPluginUiPresentation } from "./readPluginUiPresentation.js";
 
@@ -51,9 +51,10 @@ export function buildPluginUiToolResult(
       : [];
   const baseMeta =
     typeof meta === "object" && meta !== null ? (meta as Record<string, unknown>) : {};
-  // H12：超限字段已被 agent 省略；页面从 _meta["zcode/truncated"].bytes 得知并可用 tools/call 重取。
+  // H12：超限字段已被 agent 省略；页面从 _meta 的 `zody/truncated`（legacy `zcode/truncated` 同一次投影）得知并可用
+  // tools/call 重取。R52：两种表示由 shared helper 从同一个 `{ bytes }` 生成，两键引用同一对象。
   const mergedMeta = presentation.truncated
-    ? { ...baseMeta, [MCP_APPS_TRUNCATED_META_KEY]: { bytes: presentation.truncatedBytes ?? 0 } }
+    ? { ...baseMeta, ...buildMcpAppsTruncatedMeta(presentation.truncatedBytes ?? 0) }
     : baseMeta;
   return {
     content,

@@ -16,7 +16,7 @@ import {
   type ProviderProvisioningTrigger,
   type WindowHostRemoteWorkspaceDescriptor,
   type WebRemoteControlFailure,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   RemoteConnectionStats,
   RemoteDisconnectReason,
@@ -877,7 +877,7 @@ export function createRemoteWorkspaceSessionManager(options: {
     workspaceIdentity: string;
     workspaceKey: string;
     clientMode: "web-remote-replayable";
-    mobileNotificationPrincipal?: import("@zcode/shared").MobileNotificationPrincipal;
+    mobileNotificationPrincipal?: import("@zody/shared").MobileNotificationPrincipal;
   }): {
     process: HostProcessHandle;
     port: MessagePortMain;

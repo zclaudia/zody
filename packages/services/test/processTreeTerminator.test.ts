@@ -15,7 +15,7 @@ import {
   terminateProcessTreeAndWait,
   type ProcessIdentity,
   type ProcessTreeSnapshot,
-} from "@zcode/services/process/processTreeTerminator";
+} from "@zody/services/process/processTreeTerminator";
 
 const activeChildren = new Set<ChildProcessWithoutNullStreams>();
 const tempDirs = new Set<string>();

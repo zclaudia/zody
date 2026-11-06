@@ -8,7 +8,7 @@ import {
   TID_V4_COMPOSER_INPUT,
   TID_V4_SESSION_PANE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { clearAppData, clickTestIdByDom, DEFAULT_WORKSPACE } from "../helpers/desktop-app.js";
 import { resolveE2ERuntimePath } from "../helpers/e2e-runtime-paths.js";
 import {
@@ -47,9 +47,9 @@ describe("Markdown preview selection", () => {
         { timeout: 5000, timeoutMsg: "Workspace file tree action did not mount after hover" },
       )
       .catch(async (error) => {
-        if (process.env.ZCODE_E2E_ARTIFACT_DIR) {
+        if (process.env.ZODY_E2E_ARTIFACT_DIR) {
           await browser.saveScreenshot(
-            join(process.env.ZCODE_E2E_ARTIFACT_DIR, "markdown-file-tree-unavailable.png"),
+            join(process.env.ZODY_E2E_ARTIFACT_DIR, "markdown-file-tree-unavailable.png"),
           );
         }
         console.log(
@@ -121,9 +121,9 @@ describe("Markdown preview selection", () => {
         };
       });
       expect(layout).toEqual({ horizontal: true, adaptive: true, inside: true });
-      if (i === 0 && process.env.ZCODE_E2E_ARTIFACT_DIR) {
+      if (i === 0 && process.env.ZODY_E2E_ARTIFACT_DIR) {
         await browser.saveScreenshot(
-          join(process.env.ZCODE_E2E_ARTIFACT_DIR, "markdown-selection-tooltip.png"),
+          join(process.env.ZODY_E2E_ARTIFACT_DIR, "markdown-selection-tooltip.png"),
         );
       }
       await action.click();
@@ -133,9 +133,9 @@ describe("Markdown preview selection", () => {
     );
     await chip.waitForDisplayed();
     expect(await chip.getText()).toContain("selection.md");
-    if (process.env.ZCODE_E2E_ARTIFACT_DIR) {
+    if (process.env.ZODY_E2E_ARTIFACT_DIR) {
       await browser.saveScreenshot(
-        join(process.env.ZCODE_E2E_ARTIFACT_DIR, "markdown-selection-composer.png"),
+        join(process.env.ZODY_E2E_ARTIFACT_DIR, "markdown-selection-composer.png"),
       );
     }
     const state = await browser.execute(
@@ -254,9 +254,9 @@ describe("Markdown preview selection", () => {
       };
     }, TID_V4_COMPOSER_INPUT);
     expect(sideState).toEqual({ sideText: "", mainText: "E2E_MARKDOWN_MAIN_KEEP", distinct: true });
-    if (process.env.ZCODE_E2E_ARTIFACT_DIR)
+    if (process.env.ZODY_E2E_ARTIFACT_DIR)
       await browser.saveScreenshot(
-        join(process.env.ZCODE_E2E_ARTIFACT_DIR, "markdown-side-conversation.png"),
+        join(process.env.ZODY_E2E_ARTIFACT_DIR, "markdown-side-conversation.png"),
       );
   });
 });

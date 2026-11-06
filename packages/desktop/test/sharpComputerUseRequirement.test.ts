@@ -14,7 +14,7 @@ function createWorkspace(cuaManifest: Record<string, unknown> | null, location: 
   mkdirSync(desktopRoot, { recursive: true });
   if (cuaManifest) {
     const base = location === "root" ? root : desktopRoot;
-    const cuaDir = join(base, "node_modules", "@zcode", "zcode-cua");
+    const cuaDir = join(base, "node_modules", "@zody", "zody-cua");
     mkdirSync(cuaDir, { recursive: true });
     writeFileSync(join(cuaDir, "package.json"), JSON.stringify(cuaManifest));
   }
@@ -28,14 +28,14 @@ afterEach(() => {
 describe("isSharpRequiredByComputerUse", () => {
   it("真实 Computer Use 包声明 sharp 时需要暂存 sharp", () => {
     const desktopRoot = createWorkspace(
-      { name: "@zcode/zcode-cua", dependencies: { sharp: "^0.34.0" } },
+      { name: "@zody/zody-cua", dependencies: { sharp: "^0.34.0" } },
       "root",
     );
     expect(isSharpRequiredByComputerUse({ desktopPackageRoot: desktopRoot })).toBe(true);
   });
 
   it("不声明 sharp 的占位包不需要 sharp，优先读取离桌面包最近的安装", () => {
-    const desktopRoot = createWorkspace({ name: "@zcode/zcode-cua", version: "0.6.3" }, "desktop");
+    const desktopRoot = createWorkspace({ name: "@zody/zody-cua", version: "0.6.3" }, "desktop");
     expect(isSharpRequiredByComputerUse({ desktopPackageRoot: desktopRoot })).toBe(false);
   });
 

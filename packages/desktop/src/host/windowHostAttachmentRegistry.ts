@@ -1,5 +1,5 @@
-import type { MobileNotificationPrincipal, WindowHostAttachmentScope } from "@zcode/shared";
-import type { ZCodeAgentV4ClientMode } from "@zcode/services";
+import type { MobileNotificationPrincipal, WindowHostAttachmentScope } from "@zody/shared";
+import type { ZodyAgentV4ClientMode } from "@zody/services";
 
 export interface WindowHostAttachmentPort {
   once(event: "close", listener: () => void): unknown;
@@ -18,7 +18,7 @@ export interface WindowHostResolvedAttachmentScope<TServices, TCapabilities = ne
 export interface WindowHostExposeAttachmentParams<TServices, TPort, TCapabilities = never> {
   requestId: string;
   attachmentId: string;
-  clientMode: ZCodeAgentV4ClientMode;
+  clientMode: ZodyAgentV4ClientMode;
   scope: WindowHostAttachmentScope;
   services: TServices;
   generation: number;
@@ -58,7 +58,7 @@ export function createWindowHostAttachmentRegistry<
   function attach(params: {
     requestId: string;
     attachmentId: string;
-    clientMode: ZCodeAgentV4ClientMode;
+    clientMode: ZodyAgentV4ClientMode;
     scope: WindowHostAttachmentScope;
     port: TPort;
     mobileNotificationPrincipal?: MobileNotificationPrincipal;

@@ -1,9 +1,9 @@
-import type { InputId, ZCodeProvider, ZCodeTaskMeta } from "@zcode/shared";
-import { getTaskMeta, resolveWorkspaceStateKey, useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import type { InputId, ZodyProvider, ZodyTaskMeta } from "@zody/shared";
+import { getTaskMeta, resolveWorkspaceStateKey, useZodySessionStore } from "@/store/zodySessionStore.js";
 import {
   mergeTaskMetaCandidates,
   mergeTaskWithOptimisticMeta,
-} from "@/lib/zcodeTaskMetaMerge.js";
+} from "@/lib/zodyTaskMetaMerge.js";
 import {
   applyTaskQueryCacheMutation,
   removeTaskFromTaskQueryCaches,
@@ -79,7 +79,7 @@ function membershipForWorkspaceEventReason(
   }
 }
 
-function sortTasksByUpdatedAt(tasks: readonly ZCodeTaskMeta[]): ZCodeTaskMeta[] {
+function sortTasksByUpdatedAt(tasks: readonly ZodyTaskMeta[]): ZodyTaskMeta[] {
   return [...tasks].sort((left, right) => {
     if (right.updatedAt !== left.updatedAt) {
       return right.updatedAt - left.updatedAt;
@@ -94,14 +94,14 @@ function sortTasksByUpdatedAt(tasks: readonly ZCodeTaskMeta[]): ZCodeTaskMeta[] 
 export function syncTaskMetaToTaskCaches(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-  task: ZCodeTaskMeta;
+  task: ZodyTaskMeta;
   membership?: TaskListMembershipState;
   forceInsertMembership?: boolean;
   ensureInWorkspaceTaskCache?: boolean;
   preserveListMembership?: boolean;
   applyQueryCacheMutation?: boolean;
 }): void {
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   const previousTask = getTaskMeta(workspaceState, params.task.taskId);
   const queryTask = useTaskQueryCacheStore.getState().taskMetaByEntityKey[
@@ -171,7 +171,7 @@ export function syncTaskMetaToTaskCaches(params: {
 export function syncTaskMembershipEventToTaskCaches(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-  task: ZCodeTaskMeta;
+  task: ZodyTaskMeta;
   reason: "task_archived" | "task_unarchived" | "task_pinned" | "task_unpinned";
 }): void {
   const previousMembership =
@@ -204,7 +204,7 @@ export function removeTaskFromTaskCaches(params: {
   workspaceIdentity?: string;
   taskId: string;
 }): boolean {
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   if (workspaceState.taskListCache) {
     store.setTaskListCache(
@@ -221,9 +221,9 @@ export function patchTaskMetaInTaskCaches(params: {
   workspacePath: string;
   workspaceIdentity?: string;
   taskId: string;
-  patch: (task: ZCodeTaskMeta) => Partial<ZCodeTaskMeta>;
-}): ZCodeTaskMeta | null {
-  const store = useZCodeSessionStore.getState();
+  patch: (task: ZodyTaskMeta) => Partial<ZodyTaskMeta>;
+}): ZodyTaskMeta | null {
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   const identityWorkspaceState = params.workspaceIdentity
     ? store.workspaces[resolveWorkspaceStateKey(params.workspacePath, params.workspaceIdentity)]
@@ -274,7 +274,7 @@ export function patchTaskMetaInTaskCaches(params: {
 export function insertTaskIntoTaskCaches(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-  task: ZCodeTaskMeta;
+  task: ZodyTaskMeta;
   membership: TaskListMembershipState;
 }): void {
   // Bugfix: 新建/fork/远控 shared-host 创建 task 都应走同一条“无 -> 有”成员变更。
@@ -295,11 +295,11 @@ export function insertTaskIntoTaskCaches(params: {
 export function initializeBackgroundTaskInTaskCaches(params: {
   workspacePath: string;
   workspaceIdentity?: string;
-  task: ZCodeTaskMeta;
-  provider: ZCodeProvider;
+  task: ZodyTaskMeta;
+  provider: ZodyProvider;
   activeInputId: InputId;
 }): void {
-  const store = useZCodeSessionStore.getState();
+  const store = useZodySessionStore.getState();
   const workspaceState = store.getWorkspaceState(params.workspacePath, params.workspaceIdentity);
   const previousTask = getTaskMeta(workspaceState, params.task.taskId);
   const task = previousTask

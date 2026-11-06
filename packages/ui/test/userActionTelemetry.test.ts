@@ -3,14 +3,14 @@ import type {
   RendererActionTraceBatchV1,
   RendererActionTraceConfigV1,
   RendererActionTraceResourceV1,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   RendererUserActionTelemetry,
   type UserActionTelemetryClock,
 } from "../src/lib/userActionTelemetry.js";
 
 const resource: RendererActionTraceResourceV1 = {
-  serviceName: "zcode-desktop-renderer",
+  serviceName: "zody-desktop-renderer",
   serviceVersion: "test",
   deploymentEnvironment: "test",
   rendererInstanceId: "renderer-test",

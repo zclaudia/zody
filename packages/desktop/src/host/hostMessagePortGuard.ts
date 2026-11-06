@@ -1,4 +1,4 @@
-import { hostIncomingMessageSchema } from "@zcode/shared";
+import { hostIncomingMessageSchema } from "@zody/shared";
 
 export interface CloseableTransferredPort {
   close(): void;

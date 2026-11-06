@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { ZCodeSessionEndedSubagent } from "@zcode/shared";
+import type { ZodySessionEndedSubagent } from "@zody/shared";
 import {
   mergeEndedSubagentPages,
   resolveEndedSubagentRefreshTargetCount,
 } from "@/hooks/useSessionSubagents.js";
 
-function ended(childSessionId: string, endedAt: number): ZCodeSessionEndedSubagent {
+function ended(childSessionId: string, endedAt: number): ZodySessionEndedSubagent {
   return {
     childSessionId,
     subagentType: "Explore",

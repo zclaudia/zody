@@ -1,4 +1,4 @@
-import type { BrowserBackendDescriptor, BrowserCommand, BrowserCommandResult } from "@zcode/shared";
+import type { BrowserBackendDescriptor, BrowserCommand, BrowserCommandResult } from "@zody/shared";
 
 export interface BrowserRouterContext {
   requestId: string;

@@ -2,7 +2,7 @@
 import {
   MOBILE_UI_BRIDGE_SCHEMA_VERSION,
   MOBILE_UI_BRIDGE_VERSION,
-  ZCODE_VERSION,
+  ZODY_VERSION,
   mobileShellBridgeInfoResultSchema,
   mobileShellConfigReadResultSchema,
   mobileShellConfigSaveResultSchema,
@@ -18,7 +18,7 @@ import {
   type MobileShellDiagnostics,
   type MobileSessionContext,
   type PlatformSecureStore,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   MobileRemoteConfigStore,
   type MobileRemoteGatewayConfig,
@@ -91,9 +91,9 @@ export interface MobileShellConfigClient {
 }
 
 interface SafeParseSchema<T> {
-  safeParse(value: unknown):
-    | { success: true; data: T }
-    | { success: false; error: { message: string } };
+  safeParse(
+    value: unknown,
+  ): { success: true; data: T } | { success: false; error: { message: string } };
 }
 
 function parseBridgeJsonOrThrow<T>(
@@ -115,10 +115,7 @@ function parseBridgeJsonOrThrow<T>(
   }
   const result = schema.safeParse(parsed);
   if (!result.success) {
-    throw new MobileShellBridgeError(
-      code,
-      `Invalid mobile bridge JSON: ${result.error.message}`,
-    );
+    throw new MobileShellBridgeError(code, `Invalid mobile bridge JSON: ${result.error.message}`);
   }
   return result.data;
 }
@@ -154,7 +151,7 @@ export function createDevelopmentMobileShellBridgeInfo(): MobileShellBridgeInfo 
   return {
     schemaVersion: MOBILE_UI_BRIDGE_SCHEMA_VERSION,
     bridgeVersion: MOBILE_UI_BRIDGE_VERSION,
-    appVersion: ZCODE_VERSION,
+    appVersion: ZODY_VERSION,
     allowsInsecureGatewayTransport: true,
   };
 }
@@ -421,12 +418,7 @@ function createDevelopmentMobileShellConfigClient(options: {
           options.handoffStorage,
         );
         writeDevelopmentRemoteHandoff(
-          createDevelopmentSessionContext(
-            config,
-            backendId,
-            clientInstanceId,
-            newSessionId(),
-          ),
+          createDevelopmentSessionContext(config, backendId, clientInstanceId, newSessionId()),
           options.handoffStorage,
         );
       } catch (error) {
@@ -476,10 +468,7 @@ export function createMobileShellConfigClient(
         "ZodyShellBridge is not available.",
       );
     }
-    return createNativeMobileShellConfigClient(
-      options.bridge,
-      options.allowInsecureTransport,
-    );
+    return createNativeMobileShellConfigClient(options.bridge, options.allowInsecureTransport);
   }
   const secureStore = options.secureStore ?? createMobileRemoteSecureStore();
   return createDevelopmentMobileShellConfigClient({

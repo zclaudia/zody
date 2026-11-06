@@ -1,6 +1,6 @@
 /* eslint-disable max-lines -- 测试桥只负责把统一的 19 个场景输入翻译成 V4 live fact，集中映射便于隐私审计。 */
-import type { IPlatformService } from "@zcode/shared";
-import type { ConversationTelemetryFact } from "@zcode/shared/zcode-protocol-v4";
+import type { IPlatformService } from "@zody/shared";
+import type { ConversationTelemetryFact } from "@zody/shared/zody-protocol-v4";
 import { reportAppTelemetryEvent } from "@/lib/appTelemetry.js";
 import {
   getConversationTelemetryParityScenario,

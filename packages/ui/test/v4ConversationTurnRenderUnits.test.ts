@@ -9,7 +9,7 @@ import type {
   ToolCallRow,
   TurnHeaderRow,
   UserInputRow,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { buildConversationTurnRenderUnits } from "@/v4/conversationTurnRenderUnits.js";
 import { resolveAssistantCopyText } from "@/v4/ConversationTurnRow.js";
 

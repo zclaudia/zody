@@ -1,6 +1,6 @@
-import type { Event } from "@zcode/rpc";
-import { ServiceChannels } from "@zcode/shared";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { Event } from "@zody/rpc";
+import { ServiceChannels } from "@zody/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type {
   ControllerResyncParams,
   ControllerResyncResult,
@@ -11,15 +11,15 @@ import type {
   WindowHostControllerTaskRow,
   WindowHostControllerWorkspaceFrame,
   WindowHostTaskAddress,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { createServiceDescriptor } from "../descriptors.js";
-import type { ZCodeArchivedTaskDeletionResult } from "#src/session/zcodeTaskService.js";
+import type { ZodyArchivedTaskDeletionResult } from "#src/session/zodyTaskService.js";
 import type {
-  ZCodeTaskListItem,
-  ZCodeTaskListQuery,
-  ZCodeTaskListResult,
-  ZCodeTaskListWorkspaceScope,
-} from "../session/zcodeTaskListTypes.js";
+  ZodyTaskListItem,
+  ZodyTaskListQuery,
+  ZodyTaskListResult,
+  ZodyTaskListWorkspaceScope,
+} from "../session/zodyTaskListTypes.js";
 
 export type WindowHostControllerMutation =
   | { kind: "pin"; pinned: boolean }
@@ -31,26 +31,26 @@ export type WindowHostControllerMutation =
   | { kind: "open" }
   | { kind: "resume" };
 
-export type WindowHostControllerTaskListItem = ZCodeTaskListItem & {
+export type WindowHostControllerTaskListItem = ZodyTaskListItem & {
   remoteSessionId?: string;
   sourceAvailability: "online" | "offline";
   liveStatus: WindowHostControllerTaskRow["liveStatus"];
   activity?: WindowHostControllerTaskRow["activity"];
 };
 
-export interface WindowHostControllerTaskListResult extends Omit<ZCodeTaskListResult, "items"> {
+export interface WindowHostControllerTaskListResult extends Omit<ZodyTaskListResult, "items"> {
   items: WindowHostControllerTaskListItem[];
 }
 
 export interface MobileHistorySearchSourceQuery {
-  workspaceScope: ZCodeTaskListWorkspaceScope;
+  workspaceScope: ZodyTaskListWorkspaceScope;
   query: string;
   includeArchived: boolean;
   limit: 50 | 100 | 200;
 }
 
 export type MobileHistorySearchSourceItem = Pick<
-  ZCodeTaskMeta,
+  ZodyTaskMeta,
   | "taskId"
   | "traceId"
   | "title"
@@ -86,15 +86,15 @@ export interface IWindowControllerService {
   deleteArchivedTasks(params: {
     address: WindowHostTaskAddress;
     taskIds: string[];
-  }): Promise<ZCodeArchivedTaskDeletionResult>;
-  listTaskList(params: ZCodeTaskListQuery): Promise<WindowHostControllerTaskListResult>;
+  }): Promise<ZodyArchivedTaskDeletionResult>;
+  listTaskList(params: ZodyTaskListQuery): Promise<WindowHostControllerTaskListResult>;
   searchMobileHistory(
     params: MobileHistorySearchSourceQuery,
   ): Promise<MobileHistorySearchSourceResult>;
   mutateTask(params: {
     address: WindowHostTaskAddress;
     mutation: WindowHostControllerMutation;
-  }): Promise<ZCodeTaskMeta | null>;
+  }): Promise<ZodyTaskMeta | null>;
   subscribeControllerV4(params: ControllerSubscribeParams): Promise<ControllerSubscribeResult>;
   resyncControllerV4(params: ControllerResyncParams): Promise<ControllerResyncResult>;
   unsubscribeControllerV4(params: ControllerUnsubscribeParams): Promise<void>;

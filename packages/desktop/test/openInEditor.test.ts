@@ -35,7 +35,7 @@ vi.mock("electron", () => ({
   },
 }));
 
-vi.mock("@zcode/server/remote/wsl-detect.js", () => ({
+vi.mock("@zody/server/remote/wsl-detect.js", () => ({
   listWSLDistros: listWSLDistrosMock,
 }));
 

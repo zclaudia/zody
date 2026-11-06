@@ -4,7 +4,7 @@ import type {
   GitBranchMutationResult,
   GitFileChange,
   GitHeadRefType,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 interface GitDirtySectionLike {
   changes: Array<{

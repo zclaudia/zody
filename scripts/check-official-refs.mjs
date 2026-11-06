@@ -2,7 +2,7 @@
 
 // F0.1 官方引用残留检查（specs/fork-official-deps-removal-tasks.md「F0.1」小节，
 // 规则见 specs/fork-official-deps-removal-plan.md 阶段 0.1）。
-// 结构参照 scripts/audit-zcode-agent-remnants.mjs：文本扩展名过滤、根目录列表、相对路径输出。
+// 结构参照 scripts/audit-zody-agent-remnants.mjs：文本扩展名过滤、根目录列表、相对路径输出。
 //
 // 规则：
 // - 域名类（拦截）：扫描 packages/ apps/ scripts/ config/ public/，与基线
@@ -50,7 +50,7 @@ const textExtensions = new Set([
 ]);
 
 // 构建产物与夹具目录，整体跳过。注意不含 `locales`：
-// packages/ui/src/i18n/locales 与 apps/zcode-cli/packages/i18n/src/locales 是
+// packages/ui/src/i18n/locales 与 apps/zody-cli/packages/i18n/src/locales 是
 // i18n 源码（含官方下载链接等文案，属阶段 3/7 的收紧范围），必须纳入统计。
 const alwaysIgnoredSegments = new Set([
   ".git",

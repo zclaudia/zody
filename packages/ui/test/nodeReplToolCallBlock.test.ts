@@ -1,8 +1,8 @@
-import type { IBroadcastService } from "@zcode/services";
+import type { IBroadcastService } from "@zody/services";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { buildNodeReplDisplayModel } from "@/lib/nodeReplToolDisplay.js";
 import { StoreProvider } from "@/store/StoreProvider.js";
 import { ToolCallBlock } from "@/ToolCallBlocks.js";
@@ -52,7 +52,7 @@ const displayModel = {
 function renderWithProviders(element: ReactElement) {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         StoreProvider,

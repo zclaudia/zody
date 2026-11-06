@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildComponentArtifactUrlCandidates,
   buildReleaseAssetUrlCandidates,
-} from "@zcode/server/remote/remoteAssetCdn.js";
+} from "@zody/server/remote/remoteAssetCdn.js";
 
 describe("remoteAssetCdn URL encoding", () => {
   it("组件路径包含 '+' 时应编码为 %2B", () => {

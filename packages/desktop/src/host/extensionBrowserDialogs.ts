@@ -1,4 +1,4 @@
-import type { BrowserDialog } from "@zcode/shared";
+import type { BrowserDialog } from "@zody/shared";
 import type { BrowserCdpTarget } from "../browser-core/cdpTransport.js";
 
 export interface ExtensionDialogState {

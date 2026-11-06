@@ -5,7 +5,7 @@
  * 判定规则本身全部在 lib/cuaComposerEntryState.ts，这里不复制任何一条分支。
  */
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { isRemoteWorkspaceIdentity, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zcode/shared";
+import { isRemoteWorkspaceIdentity, ZODY_CUA_OFFICIAL_PLUGIN_ID } from "@zody/shared";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useSettings } from "@/hooks/useSettingService.js";
@@ -21,8 +21,8 @@ import {
 } from "@/lib/cuaPlatform.js";
 import { setPendingSettingsSectionIntent } from "@/lib/settingsNavigation.js";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
-import { getVisibleTaskMetas, getWorkspaceState } from "@/store/zcodeSessionStoreSelectors.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
+import { getVisibleTaskMetas, getWorkspaceState } from "@/store/zodySessionStoreSelectors.js";
 import { useOptionalTabStore } from "@/store/TabStoreProvider.js";
 
 /** 与 zcodeSessionStoreTaskSlice 的 isRunningStatus 同口径。 */
@@ -78,7 +78,7 @@ export function useCuaComposerEntry({
   // 归属由 store 的 lastFailedPluginId 记录。
   const lastFailedPluginId = usePluginManagementStore((state) => state.lastFailedPluginId);
   const initializePlugins = usePluginManagementStore((state) => state.initialize);
-  const cuaPlugin = plugins.find((plugin) => plugin.id === ZCODE_CUA_OFFICIAL_PLUGIN_ID);
+  const cuaPlugin = plugins.find((plugin) => plugin.id === ZODY_CUA_OFFICIAL_PLUGIN_ID);
   const pluginEnabled = cuaPlugin?.enabled === true;
 
   const pluginManagementService = services.pluginManagementService;
@@ -121,7 +121,7 @@ export function useCuaComposerEntry({
   // session-busy 判定粒度是 workspace：切换插件会让该 workspace 全部会话的
   // 工具集变化、prompt 缓存失效，影响面与禁用面必须一致，因此不能只看当前 task。
   // 复用 getWorkspaceState 的 identity→path fallback，避免这里重写一份 workspaceKey 规则。
-  const workspaceSessionBusy = useZCodeSessionStore((state) => {
+  const workspaceSessionBusy = useZodySessionStore((state) => {
     const workspaceState = getWorkspaceState(state, workspacePath, workspaceIdentity);
     const runtimeBusy = Object.values(workspaceState.taskRuntimeByTaskId ?? {}).some(
       (runtime) =>
@@ -146,9 +146,9 @@ export function useCuaComposerEntry({
         hiddenBySettings,
         permissionServiceAvailable: Boolean(services.cuaPermissionService),
         pluginEnabled,
-        pluginToggling: togglingPluginId === ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+        pluginToggling: togglingPluginId === ZODY_CUA_OFFICIAL_PLUGIN_ID,
         pluginError:
-          Boolean(pluginStoreError) && lastFailedPluginId === ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+          Boolean(pluginStoreError) && lastFailedPluginId === ZODY_CUA_OFFICIAL_PLUGIN_ID,
         permissionStatus: permissionStatus ?? null,
         sessionBusy,
       }),

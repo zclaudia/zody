@@ -3,14 +3,14 @@
  * 本文件只保留 BYOK（自定义 provider）详情表单。
  */
 import { Loader2Icon } from "lucide-react";
-import type { ProviderSettingsView } from "@zcode/services";
-import type { SavePersonalModelDraftInput } from "@zcode/provider";
-import type { ModelConnectivityResult } from "@zcode/shared";
+import type { ProviderSettingsView } from "@zody/services";
+import type { SavePersonalModelDraftInput } from "@zody/provider";
+import type { ModelConnectivityResult } from "@zody/shared";
 import {
   getProviderFormApiKeyManagementUrl,
   type ProviderSettingsFormProvider,
 } from "@/lib/providerSettingsFormTypes.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import type { ModelProviderNavItem } from "./constants.js";
 import { InlineEditableProviderCard } from "./InlineEditableProviderCard.js";
 
@@ -59,7 +59,7 @@ export function ModelProviderSectionDetail({
   onOpenApiKeyUrl: (url: string) => void;
   providerSettingsView?: ProviderSettingsView | null;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const loadingLabel = intl.formatMessage({ id: "common.loading" });
   const modelEditingProps = {
     onAddPersonalModel,

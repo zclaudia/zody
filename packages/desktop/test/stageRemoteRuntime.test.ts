@@ -1,7 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { ZCODE_VERSION } from "@zcode/shared";
+import { ZODY_VERSION } from "@zody/shared";
 import { createLocalRuntimeFixture } from "../../server/test/helpers/localRuntimeFixture.js";
 import { stageRemoteRuntime, REMOTE_RUNTIME_PLATFORMS } from "../scripts/stage-remote-runtime.mjs";
 
@@ -27,14 +27,14 @@ describe("packaged SSH/WSL runtime", () => {
     await stageRemoteRuntime({
       sourceDir: first.source.rootDir,
       targetDir,
-      version: ZCODE_VERSION,
+      version: ZODY_VERSION,
     });
     expect((await readdir(targetDir)).sort()).toEqual(["components", "releases"]);
-    expect(await readdir(join(targetDir, "releases"))).toEqual([ZCODE_VERSION]);
+    expect(await readdir(join(targetDir, "releases"))).toEqual([ZODY_VERSION]);
     for (const fixture of fixtures) {
       const manifest = JSON.parse(
         await readFile(
-          join(targetDir, "releases", ZCODE_VERSION, `manifest-${fixture.platformArch}.json`),
+          join(targetDir, "releases", ZODY_VERSION, `manifest-${fixture.platformArch}.json`),
           "utf8",
         ),
       );
@@ -49,7 +49,7 @@ describe("packaged SSH/WSL runtime", () => {
     await mkdir(targetDir);
     await writeFile(join(targetDir, "sentinel"), "keep");
     await expect(
-      stageRemoteRuntime({ sourceDir: fixture.source.rootDir, targetDir, version: ZCODE_VERSION }),
+      stageRemoteRuntime({ sourceDir: fixture.source.rootDir, targetDir, version: ZODY_VERSION }),
     ).rejects.toThrow(/manifest/);
     expect(await readFile(join(targetDir, "sentinel"), "utf8")).toBe("keep");
   });

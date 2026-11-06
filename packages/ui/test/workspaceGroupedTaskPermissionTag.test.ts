@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import { GroupedTaskRow } from "@/workspace-grouped-tasks/task-row.js";
 import { attachTaskListRowActivity } from "@/v4/taskListRowActivity.js";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, string>) => {
         const messages: Record<string, string> = {
@@ -54,7 +54,7 @@ vi.mock("@/useTaskListItemContextActions.js", () => ({
   }),
 }));
 
-function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTaskMeta(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     taskId: "grouped-task-permission",
     traceId: "trace-grouped-task-permission",
@@ -70,7 +70,7 @@ function createTaskMeta(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
 
 function renderGroupedTaskRow(
   params: {
-    task?: Partial<ZCodeTaskMeta>;
+    task?: Partial<ZodyTaskMeta>;
     unreadAt?: number;
     permissionCount?: number;
     userInputCount?: number;

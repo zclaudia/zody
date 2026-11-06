@@ -19,7 +19,7 @@ import {
   type SessionModelTransition,
   type ToolCallRow,
   type TopicFrameDeliveryKind,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 import { logger } from "@/logger.js";
 import type { ConversationTurnNavigatorHydrationResult } from "@/v4/conversationTurnNavigatorHelpers.js";
 import type { ConversationTransport } from "@/v4/transport.js";
@@ -61,7 +61,7 @@ function roundedDuration(startedAt: number, endedAt: number): number {
 /**
  * 是否为 runtime 换代/回收导致的瞬态 subscribe 失败。
  *
- * 三种文案都来自同一次回收：transport 关闭时 ZCodeProtocolClient.rejectAll 打断在途请求
+ * 三种文案都来自同一次回收：transport 关闭时 ZodyProtocolClient.rejectAll 打断在途请求
  * （transport closed），复用已回收 client 时 assertNotDisposed 早退（client disposed），
  * 以及 runtime 尚未重新拉起时的 fail-fast（runtime is not running）。
  */
@@ -549,7 +549,7 @@ export class ConversationProjectionStore {
   }
 
   /**
-   * 有界退避重连。重订阅走 start-if-needed（zcodeAgentService.subscribeConversationV4），
+   * 有界退避重连。重订阅走 start-if-needed（zodyAgentService.subscribeConversationV4），
    * 自身即可把懒启动的 runtime 拉起来——这是 available 永不到达时唯一的自愈路径。
    * 返回 true 表示已接管，调用方不应再落 error。
    */

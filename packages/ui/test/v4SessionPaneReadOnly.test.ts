@@ -3,8 +3,8 @@ import { createElement, type ReactNode } from "react";
 import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ConversationSnapshot } from "@zcode/shared/zcode-protocol-v4";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import type { ConversationSnapshot } from "@zody/shared/zody-protocol-v4";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { SessionPane } from "@/v4/SessionPane.js";
 import type { ConversationRowRenderContext } from "@/v4/conversationRowContext.js";
 
@@ -26,6 +26,15 @@ const timelineState = vi.hoisted(() => ({
   rowContext: null as unknown,
 }));
 
+const pendingBannerProps = vi.hoisted(() => ({
+  current: null as {
+    sessionId?: string;
+    workspacePath?: string;
+    workspaceIdentity?: string;
+    remoteSessionId?: string;
+  } | null,
+}));
+
 // fork（F4.8）：分享选择 store mock 随会话分享功能删除。
 
 vi.mock("@/v4/useConversationProjection.js", () => ({
@@ -41,7 +50,7 @@ vi.mock("@/v4/V4ConversationContext.js", () => ({
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStoreWithDefault: (_selector: unknown, fallback: unknown) => fallback,
+  useZodyStoreWithDefault: (_selector: unknown, fallback: unknown) => fallback,
 }));
 
 vi.mock("@/hooks/useSettingService.js", () => ({
@@ -57,10 +66,10 @@ vi.mock("@/hooks/useSettingService.js", () => ({
 vi.mock("@/hooks/useServices.js", () => ({
   useOptionalServices: () => null,
   useServices: () => ({
-    zcodeSessionService: {
+    zodySessionService: {
       updateProviderRegistry: vi.fn(),
     },
-    zcodeTaskService: {
+    zodyTaskService: {
       restartWorkspaceProcess: vi.fn(),
     },
   }),
@@ -139,6 +148,16 @@ vi.mock("@/v4/V4InteractionDialogs.js", async () => {
   };
 });
 
+vi.mock("@/v4/WorkspaceHookPendingBanner.js", async () => {
+  const React = await import("react");
+  return {
+    WorkspaceHookPendingBanner: (props: typeof pendingBannerProps.current) => {
+      pendingBannerProps.current = props;
+      return React.createElement("div", { "data-testid": "mock-pending-banner" });
+    },
+  };
+});
+
 vi.mock("@/request-security-edition/V4ProviderRuntimeHeadersController.js", async () => {
   const React = await import("react");
   return {
@@ -203,16 +222,21 @@ function renderReadOnlyPane({
   apiRetry = null,
   lastError = null,
   readOnly = true,
+  remoteSessionId,
+  workspaceHookAdmission,
   workflowRuns,
 }: {
   allowWorkspaceFileRewind?: boolean;
   apiRetry?: ConversationSnapshot["control"]["apiRetry"];
   lastError?: ConversationSnapshot["control"]["lastError"];
   readOnly?: boolean;
+  remoteSessionId?: string;
+  workspaceHookAdmission?: ConversationSnapshot["workspaceHookAdmission"];
   workflowRuns?: ConversationSnapshot["workflowRuns"];
 } = {}): string {
   const snapshot = makeSnapshot(lastError);
   snapshot.control.apiRetry = apiRetry;
+  snapshot.workspaceHookAdmission = workspaceHookAdmission ?? null;
   if (workflowRuns) snapshot.workflowRuns = workflowRuns;
   projectionState.current = {
     lastError: null,
@@ -225,7 +249,7 @@ function renderReadOnlyPane({
 
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(SessionPane, {
         allowWorkspaceFileRewind,
@@ -233,6 +257,7 @@ function renderReadOnlyPane({
         readOnly,
         sessionId: "child-session",
         workspacePath: "/workspace",
+        ...(remoteSessionId ? { remoteSessionId } : {}),
         ...(readOnly ? {} : { onOpenWorkflowRun: () => {} }),
       }),
     ),
@@ -331,6 +356,23 @@ describe("SessionPane read-only mode", () => {
     expect(html).not.toContain("workflow-run-island-pill");
   });
 
+  it("passes the pane remoteSessionId into the workspace Hook pending banner", () => {
+    const html = renderReadOnlyPane({
+      readOnly: false,
+      remoteSessionId: "remote-selected",
+      workspaceHookAdmission: {
+        pendingCount: 1,
+        bundleDigest: "a".repeat(64),
+        workspaceIdentity: "remote:workspace",
+      },
+    });
+
+    expect(html).toContain('data-testid="mock-pending-banner"');
+    expect(pendingBannerProps.current).toMatchObject({
+      sessionId: "child-session",
+      remoteSessionId: "remote-selected",
+    });
+  });
 });
 
 // fork（F4.8）：SessionPane 分享模式接线用例随会话分享功能删除。

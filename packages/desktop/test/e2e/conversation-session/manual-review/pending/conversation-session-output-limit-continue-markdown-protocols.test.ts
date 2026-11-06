@@ -1,6 +1,6 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { TID_V4_TIMELINE } from "@zcode/shared";
+import { TID_V4_TIMELINE } from "@zody/shared";
 import { clearAppData, DEFAULT_WORKSPACE } from "../../../helpers/desktop-app.js";
 import {
   countUpstreamRequests,
@@ -366,6 +366,6 @@ function readMarkdownContinueTurnSnapshot(
 }
 
 function readManualReviewHoldMs(): number {
-  const parsed = Number(process.env.ZCODE_E2E_MANUAL_REVIEW_HOLD_MS ?? "0");
+  const parsed = Number(process.env.ZODY_E2E_MANUAL_REVIEW_HOLD_MS ?? "0");
   return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : 0;
 }

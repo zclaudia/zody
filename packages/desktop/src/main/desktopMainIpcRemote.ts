@@ -14,7 +14,7 @@ import {
   type ArmsRumEnv,
   type RemoteTarget,
   type TelemetryEventPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { dispatchTaskNotification } from "./desktopNotifications.js";
 import { clearDeepLinkRoutesForWindow, deliverPendingDeepLink } from "./desktopDeepLink.js";
 import {
@@ -92,7 +92,7 @@ export function registerRemoteIpcHandlers(options: {
     appVersion: string;
     armsEnv: ArmsRumEnv;
   };
-  /** 仅由 VITE_ZCODE_E2E_STORE_BRIDGE + test runner 双门禁打开。 */
+  /** 仅由 VITE_ZODY_E2E_STORE_BRIDGE + test runner 双门禁打开。 */
   finalArmsCustomEventE2EEnabled?: boolean;
   webRemoteControlManager: WebRemoteControlIpcManager;
   /** T4.1：设置页凭证与「测试连接」IPC；由 index 接到 Main 的凭据服务与 gateway backend。 */

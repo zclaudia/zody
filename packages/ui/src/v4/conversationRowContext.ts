@@ -11,8 +11,8 @@ import type { WorkflowRunSettingsChange } from "@/components/workflow-timeline/w
 import type { WorkflowDraftPosition, WorkflowRunCardSummary } from "@/ToolCallBlocks/shared.js";
 import type { WorkflowFillGraph } from "@/v4/workflowRunCardJoin.js";
 import type { Theme } from "@/useTheme.js";
-import type { ModelSelectionView } from "@zcode/services";
-import type { ZCodeWorkflowsForRunCandidate } from "@zcode/shared";
+import type { ModelSelectionView } from "@zody/services";
+import type { ZodyWorkflowsForRunCandidate } from "@zody/shared";
 import type { ConversationAttachmentReadParams, ConversationTransport } from "@/v4/transport.js";
 import type {
   OpenPlanDetailSideTabRequest,
@@ -28,7 +28,7 @@ import type {
   TurnHeaderRow,
   V4ConversationFileChangesResult,
   V4ConversationFileRewindPreviewResult,
-} from "@zcode/shared/zcode-protocol-v4";
+} from "@zody/shared/zody-protocol-v4";
 
 export type ConversationFileChangesState = Exclude<
   NonNullable<TurnHeaderRow["fileChanges"]>["state"],
@@ -137,7 +137,7 @@ export interface ConversationRowRenderContext {
    * 由宿主从行窗口一遍建立。它是「模型另起名字存下的那份定义」与这次 run 之间仅有的联系
    * （模型不会用 run 名当工作流名），所以必须从转写里读。
    */
-  workflowSaveCandidatesByRunId?: ReadonlyMap<string, readonly ZCodeWorkflowsForRunCandidate[]>;
+  workflowSaveCandidatesByRunId?: ReadonlyMap<string, readonly ZodyWorkflowsForRunCandidate[]>;
   /** 会话当前模型（「配置」弹层首项「会话模型」的名字）；读不到即缺席，首项只写「会话模型」。 */
   workflowSessionModel?: { providerId: string; modelId: string };
   /**

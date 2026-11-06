@@ -22,18 +22,18 @@ const entryId = "\0mobile-history-search-e2e-entry";
 const entry = `
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Event } from '@zcode/rpc';
+import { Event } from '@zody/rpc';
 import { ServiceProvider } from '@/hooks/useServices.js';
 import { PlatformProvider } from '@/hooks/usePlatform.js';
 import { StoreProvider } from '@/store/StoreProvider.js';
-import { ZCodeIntlProvider } from '@/i18n/IntlProvider.js';
+import { ZodyIntlProvider } from '@/i18n/IntlProvider.js';
 import { WebRemoteControlMobileSearch } from '@/WebRemoteControlMobileSearch.js';
 import '@/styles.css';
 const fixture = ${JSON.stringify(fixture)};
 const workspaces = fixture.workspaces;
 const calls = [];
 function makeOutcome(request, status, items = []) {
-  return { zcode_type: 'mobile-history-search-outcome', requestId: request.requestId,
+  return { zody_type: 'mobile-history-search-outcome', requestId: request.requestId,
     context: request.context, queryGeneration: request.queryGeneration,
     scopeSignature: request.scopeSignature, status, ...(status === 'ok' ? {items} : {errorCode: 'fixture-offline'}) };
 }
@@ -78,7 +78,7 @@ function Harness() {
 }
 createRoot(document.getElementById('root')).render(React.createElement(ServiceProvider, {services},
   React.createElement(StoreProvider, {broadcastService}, React.createElement(PlatformProvider, {platform},
-    React.createElement(ZCodeIntlProvider, null, React.createElement(Harness))))));
+    React.createElement(ZodyIntlProvider, null, React.createElement(Harness))))));
 `;
 
 const vite = await createServer({
@@ -108,7 +108,7 @@ const vite = await createServer({
   resolve: {
     alias: {
       "@": resolve(repoRoot, "packages/ui/src"),
-      "@zcode/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
+      "@zody/rpc": resolve(repoRoot, "packages/rpc/src/index.ts"),
     },
   },
   server: { host: "127.0.0.1", port: 0 },

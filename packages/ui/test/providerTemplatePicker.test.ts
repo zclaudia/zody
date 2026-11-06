@@ -11,7 +11,7 @@ import {
   TID_MODEL_PROVIDER_TEMPLATE_ITEM,
   TID_MODEL_PROVIDER_TEMPLATE_PICKER,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { ProviderTemplatePicker } from "@/settings/model-provider-section/ProviderTemplatePicker.js";
 import { ProviderDetailFeedbackBoundary } from "@/settings/model-provider-section/ProviderDetailFeedback.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
@@ -23,7 +23,7 @@ vi.mock("@/logger.js", () => ({ logger: loggerMock }));
 afterEach(cleanup);
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     locale: "zh-CN",
     intl: {
       formatMessage: ({ id }: { id: string }, values?: Record<string, string>) => {
@@ -92,7 +92,7 @@ describe("ProviderTemplatePicker", () => {
     // 也不能在 jsdom 环境对相对 URL 做 resolve（Vite 会改写成 http://localhost/@fs/...）。
     const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
     const builtin = JSON.parse(
-      await readFile(resolve(repoRoot, "config/provider/zcode-builtin.json"), "utf8"),
+      await readFile(resolve(repoRoot, "config/provider/zody-builtin.json"), "utf8"),
     );
     const templates = builtin.config.providerConfigRules.templateRules.filter(
       (template: { templateId: string }) =>
@@ -191,7 +191,9 @@ describe("ProviderTemplatePicker", () => {
       expect(await screen.findByRole("button", { name })).toBeTruthy();
     }
     fireEvent.click(screen.getByRole("button", { name: "火山方舟 Coding Plan" }));
-    await waitFor(() => expect(onCreateFromTemplate).toHaveBeenLastCalledWith("volcengine-coding-plan"));
+    await waitFor(() =>
+      expect(onCreateFromTemplate).toHaveBeenLastCalledWith("volcengine-coding-plan"),
+    );
     fireEvent.click(screen.getByRole("button", { name: "硅基流动 API（中国）" }));
     await waitFor(() => expect(onCreateFromTemplate).toHaveBeenLastCalledWith("siliconflow-cn"));
   });

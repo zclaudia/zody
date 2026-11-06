@@ -6,7 +6,7 @@ import {
   TID_WORKSPACE_ITEM,
   TID_WORKSPACE_PATH,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { probeWorkspaceAppState } from "./e2e/helpers/desktop-app.js";
 
 const PROJECT_PATH = "/Users/dev/Code/z-code/.e2e-home/ZodyProject";

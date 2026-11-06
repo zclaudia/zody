@@ -1,0 +1,29 @@
+import type { NodeReplRequestMeta, NodeReplSession } from "@zody/core";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+export declare const NODE_REPL_CUA_BRIDGE_SYMBOL: unique symbol;
+export declare const CUA_UNAVAILABLE_IN_SUBAGENT_MESSAGE = "Computer Use is not available in subagent";
+export interface ActiveCuaNodeReplCall {
+    generation: number;
+    requestMeta: NodeReplRequestMeta;
+    signal: AbortSignal;
+}
+export interface NodeReplCuaBrokerConnection {
+    socketPath: string;
+    token: string;
+    /** 每次 js 调用唯一；broker 用它拒绝旧 capability，并从 main 侧取绑定 context。 */
+    invocationId: string;
+}
+export interface ComputerUseRuntimeBridge {
+    /** 私有 capability 请求；这里不是 MCP tool 调用，MCP 只承载外层 node_repl。 */
+    call(method: string, input: unknown): Promise<CallToolResult>;
+    assertAvailable(): void;
+    documentationRoot: string;
+}
+export declare function createComputerUseBridgeGlobals(input: {
+    broker?: NodeReplCuaBrokerConnection;
+    generation: number;
+    getActiveCall: () => ActiveCuaNodeReplCall | undefined;
+    session: () => NodeReplSession;
+    documentationRoot: string;
+}): Record<PropertyKey, unknown>;
+//# sourceMappingURL=cua-bridge.d.ts.map

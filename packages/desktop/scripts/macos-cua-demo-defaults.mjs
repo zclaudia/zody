@@ -10,7 +10,7 @@ import { NARROW_MANIFEST_ENV, REPO_ROOT } from "./macos-cua-narrow-resources-con
 import { validateNarrowManifest } from "./macos-cua-narrow-resources-validate.mjs";
 import { createNormalHostNarrowProfile } from "./lib/normal-host-candidate-profile.mjs";
 
-export const NARROW_AGENT_ENV = "ZCODE_CUA_NARROW_AGENT_JSON";
+export const NARROW_AGENT_ENV = "ZODY_CUA_NARROW_AGENT_JSON";
 
 export const CUA_DEMO_DEFAULT_PUBLIC_FACTS = Object.freeze({
   testedTarget: Object.freeze({ os: "darwin", arch: "arm64", macOSVersion: "26.6.2" }),
@@ -31,7 +31,7 @@ export const CUA_DEMO_DEFAULT_PUBLIC_FACTS = Object.freeze({
   // 545008f5…，旧 snapshot pin 触发了设计内的 provider-revision-mismatch 回退。
   // 这里按同一测量语义重新固定 Host 于 2026-10-31 18:12 实测记录的当前配置快照。
   // 2026-11-05：startup snapshot 的 provider digest 字段更名（旧名前缀撞 M2 退出标识，
-  // 详见 ZCodeAgentNativeRuntimeStartupContext 处注释），snapshot 文件 key 同步改名、
+  // 详见 ZodyAgentNativeRuntimeStartupContext 处注释），snapshot 文件 key 同步改名、
   // 实测 digest 值不变，startupSnapshotSha256 按新文件字节重新计算。
   startupSnapshotRelativePath: "output/cua-inapp-confirm/startup-snapshot-current.json",
   manifestSha256: "48a657bb2883ed18801dd52e13425c360e03c90ae2f66f1f6f77231108af1a10",
@@ -220,8 +220,8 @@ export async function resolveMacosCuaDemoBuildSelection({
   repoRoot = REPO_ROOT,
   validateManifest = validateNarrowManifest,
 } = {}) {
-  const observedTargetOs = targetOs ?? env.ZCODE_TARGET_OS ?? process.platform;
-  const observedTargetArch = targetArch ?? env.ZCODE_TARGET_ARCH ?? process.arch;
+  const observedTargetOs = targetOs ?? env.ZODY_TARGET_OS ?? process.platform;
+  const observedTargetArch = targetArch ?? env.ZODY_TARGET_ARCH ?? process.arch;
   const normalizedOs = normalizeTargetOs(observedTargetOs);
   const normalizedArch = normalizeTargetArch(observedTargetArch);
   const targetPlatform = { os: normalizedOs, arch: normalizedArch };

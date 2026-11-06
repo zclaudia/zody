@@ -44,7 +44,7 @@ if (!Number.isFinite(IDLE_MS) || IDLE_MS < 0) {
 async function main() {
   if (!existsSync(join(distDir, "manifest.json"))) {
     throw new Error(
-      `extension is not built: ${distDir} (run pnpm --filter @zcode/browser-extension build)`,
+      `extension is not built: ${distDir} (run pnpm --filter @zody/browser-extension build)`,
     );
   }
   const manifest = JSON.parse(await readFile(join(distDir, "manifest.json"), "utf8"));

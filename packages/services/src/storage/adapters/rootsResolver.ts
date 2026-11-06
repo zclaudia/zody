@@ -4,10 +4,10 @@
  */
 import { join, resolve } from "node:path";
 import type { RootsResolverPort } from "../app/ports.js";
-import { ZCODE_DATA_ROOT_DIR_NAME, type StorageRootSpec } from "@zcode/shared";
+import { ZODY_DATA_ROOT_DIR_NAME, type StorageRootSpec } from "@zody/shared";
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
-export const ZCODE_DATA_DIR_NAME = ZCODE_DATA_ROOT_DIR_NAME;
+export const ZODY_DATA_DIR_NAME = ZODY_DATA_ROOT_DIR_NAME;
 
 export function resolveStorageRoots(params: {
   homeDir: string;
@@ -17,12 +17,12 @@ export function resolveStorageRoots(params: {
   const dataBase = resolve(params.dataBaseDir);
   const hasCustomDataBaseDir = dataBase !== home;
   const roots: StorageRootSpec[] = [
-    { id: "home", path: join(home, ZCODE_DATA_DIR_NAME), hasCustomDataBaseDir },
+    { id: "home", path: join(home, ZODY_DATA_DIR_NAME), hasCustomDataBaseDir },
   ];
   if (hasCustomDataBaseDir) {
     roots.push({
       id: "dataBaseDir",
-      path: join(dataBase, ZCODE_DATA_DIR_NAME),
+      path: join(dataBase, ZODY_DATA_DIR_NAME),
       hasCustomDataBaseDir,
     });
   }

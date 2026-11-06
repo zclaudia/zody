@@ -4,7 +4,7 @@ import {
   type RemoteAccessCredentialStatus,
   type RemoteAccessTestConnectionRequest,
   type RemoteAccessTestConnectionResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 /**
  * T4.1：桌面设置页的远程访问 IPC 边界。

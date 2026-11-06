@@ -1,4 +1,4 @@
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import {
   resolvePendingOptimisticOverlayBlockReason,
   useMobileRemoteRefreshGuard,
@@ -11,7 +11,7 @@ import {
  * 普通桌面 Web/未安装 controller 时 hook 不注册任何 guard。
  */
 export function MobileRemoteRefreshGuardHost() {
-  const pendingOptimisticOverlay = useZCodeSessionStore(
+  const pendingOptimisticOverlay = useZodySessionStore(
     (state) =>
       resolvePendingOptimisticOverlayBlockReason(
         state.workspaces as Record<string, { optimisticTaskListByTaskId: Record<string, unknown> }>,

@@ -12,7 +12,7 @@ import {
   TID_TASK_ITEM,
   TID_WORKSPACE_TITLE,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

@@ -2,7 +2,7 @@ import {
   EXTENSION_BRIDGE_MAX_RESULT_BYTES,
   isExtensionBridgeResultMessage,
   type ExtensionBridgeClientMessage,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import {
   EXTENSION_BRIDGE_REQUEST_TIMEOUT_MS,
   ExtensionBridgeError,

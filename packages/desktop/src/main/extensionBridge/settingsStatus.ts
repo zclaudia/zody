@@ -2,7 +2,7 @@ import type {
   BrowserExtensionBridgeStatus,
   BrowserExtensionPairingStatus,
   BrowserExtensionProfileStatus,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { ExtensionBridgeConnectionInfo, ExtensionStoredCredential } from "./types.js";
 
 export interface ExtensionBridgeStatusSource {

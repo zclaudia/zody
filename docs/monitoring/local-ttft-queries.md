@@ -57,7 +57,7 @@ Trace service.name 为 `zcode-local-ttft`。以 `observation_id` 精确过滤得
 先运行 `node packages/desktop/scripts/ttft-otlp-receiver.mjs`，接收器仅监听 localhost:14318，最多保留 512 批。随后运行：
 
 ```sh
-ZCODE_E2E_MANUAL_REVIEW=1 ZCODE_LOCAL_TTFT_ENABLED=1 \
+ZODY_E2E_MANUAL_REVIEW=1 ZCODE_LOCAL_TTFT_ENABLED=1 \
 OTEL_EXPORTER_OTLP_ENDPOINT=http://127.0.0.1:14318 \
 E2E_PROVIDER_REPLAY_FIXTURE_PATH=packages/desktop/test/e2e/fixtures/upstream/common.json,packages/desktop/test/e2e/fixtures/upstream/conversation-session/conversation-session-ttft-stages.json \
 pnpm --filter @zcode/desktop test:e2e -- --spec './test/e2e/conversation-session/manual-review/pending/conversation-session-ttft-stages.test.ts'

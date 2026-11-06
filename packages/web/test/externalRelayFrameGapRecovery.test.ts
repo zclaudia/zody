@@ -3,7 +3,7 @@ import {
   encodeWebRemoteControlRpcTransportMessage,
   type WebRemoteControlAppPayload,
   type WebRemoteControlRpcTransportPayload,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 const testState = vi.hoisted(() => ({
   relayProtocolOptions: [] as Array<{
@@ -52,14 +52,14 @@ vi.mock("react-dom/client", () => ({
   createRoot: () => ({ render: renderMock }),
 }));
 
-vi.mock("@zcode/ui", () => ({
+vi.mock("@zody/ui", () => ({
   AppErrorBoundary: ({ children }: { children: unknown }) => children,
   Button: () => null,
   Root: () => null,
   WebRemoteControlMobileStartPage: () => null,
   WebRemoteControlMobileSettingsScreen: () => null,
   WebRemoteControlMobileBackendPicker: () => null,
-  ZCodeIntlProvider: ({ children }: { children: unknown }) => children,
+  ZodyIntlProvider: ({ children }: { children: unknown }) => children,
   generateMobileDeviceFingerprint: vi.fn(() => "test-mobile-fingerprint"),
   installDocumentHiddenMotionPause: vi.fn(),
   installMobileRemoteRefreshGuardRegistry: vi.fn(() => () => {}),
@@ -68,7 +68,7 @@ vi.mock("@zcode/ui", () => ({
   setWebRemoteControlTerminalTransportState: vi.fn(),
 }));
 
-vi.mock("@zcode/client", () => ({
+vi.mock("@zody/client", () => ({
   connectViaProtocol: vi.fn(() => ({ settingService: {} })),
   connectViaProtocolOwned: vi.fn(() => ({
     services: { settingService: {} },
@@ -126,10 +126,10 @@ vi.mock("../src/mobile-remote/gatewayTerminalTransport.js", () => {
 
       sendPayload(payload: WebRemoteControlAppPayload): boolean {
         testState.sentPayloads.push(payload);
-        if (payload.zcode_type === "bootstrap-request") {
+        if (payload.zody_type === "bootstrap-request") {
           const reply = () => {
             this.options.onPayload({
-              zcode_type: "bootstrap-response",
+              zody_type: "bootstrap-response",
               requestId: payload.requestId,
               success: true,
               result: {
@@ -164,10 +164,10 @@ vi.mock("../src/mobile-remote/gatewayTerminalTransport.js", () => {
           if (testState.deferBootstrap) testState.bootstrapReplies.push(reply);
           else queueMicrotask(reply);
         }
-        if (payload.zcode_type === "workspace-bridge-open") {
+        if (payload.zody_type === "workspace-bridge-open") {
           const reply = () => {
             this.options.onPayload({
-              zcode_type: "workspace-bridge-ready",
+              zody_type: "workspace-bridge-ready",
               requestId: payload.requestId,
               bridgeSessionId: payload.bridgeSessionId,
               ...(payload.bridgeGeneration !== undefined
@@ -509,7 +509,7 @@ describe("external relay frame gap recovery", () => {
 
     await vi.waitFor(() => expect(testState.relayProtocolOptions).toHaveLength(2));
     expect(
-      testState.sentPayloads.filter((payload) => payload.zcode_type === "workspace-bridge-open"),
+      testState.sentPayloads.filter((payload) => payload.zody_type === "workspace-bridge-open"),
     ).toHaveLength(2);
   });
 
@@ -530,7 +530,7 @@ describe("external relay frame gap recovery", () => {
         ),
       ).toBe(true);
       expect(
-        testState.sentPayloads.filter((payload) => payload.zcode_type === "bootstrap-request"),
+        testState.sentPayloads.filter((payload) => payload.zody_type === "bootstrap-request"),
       ).toHaveLength(2);
     },
   );
@@ -555,7 +555,7 @@ describe("external relay frame gap recovery", () => {
       expect(testState.relayProtocolOptions).toHaveLength(1);
     });
     const initialBridgeOpenCount = testState.sentPayloads.filter(
-      (payload) => payload.zcode_type === "workspace-bridge-open",
+      (payload) => payload.zody_type === "workspace-bridge-open",
     ).length;
     testState.relayProtocolAdapters[0]!.markDegraded("remote.rpcFrame.physicalGap");
 
@@ -564,15 +564,15 @@ describe("external relay frame gap recovery", () => {
     });
     await vi.waitFor(() => {
       expect(
-        testState.sentPayloads.filter((payload) => payload.zcode_type === "workspace-bridge-open")
+        testState.sentPayloads.filter((payload) => payload.zody_type === "workspace-bridge-open")
           .length,
       ).toBeGreaterThan(initialBridgeOpenCount);
     });
     const latestBridgeOpen = testState.sentPayloads
-      .filter((payload) => payload.zcode_type === "workspace-bridge-open")
+      .filter((payload) => payload.zody_type === "workspace-bridge-open")
       .at(-1);
     expect(latestBridgeOpen).toMatchObject({
-      zcode_type: "workspace-bridge-open",
+      zody_type: "workspace-bridge-open",
       recoveryId: expect.stringMatching(/^recovery-/),
     });
   });
@@ -589,7 +589,7 @@ describe("external relay frame gap recovery", () => {
     const adapter = testState.relayProtocolAdapters[0]!;
     const transportOptions = testState.transportOptions[0]!;
     const ack = {
-      zcode_type: "rpc-frame-ack" as const,
+      zody_type: "rpc-frame-ack" as const,
       bridgeSessionId: testState.relayProtocolOptions[0]!.bridgeSessionId,
       ackMessageSeq: 1,
     };
@@ -614,10 +614,10 @@ describe("external relay frame gap recovery", () => {
       expect(testState.relayProtocolOptions).toHaveLength(1);
     });
     const initialBridgeOpenCount = testState.sentPayloads.filter(
-      (payload) => payload.zcode_type === "workspace-bridge-open",
+      (payload) => payload.zody_type === "workspace-bridge-open",
     ).length;
     const initialBootstrapRequestCount = testState.sentPayloads.filter(
-      (payload) => payload.zcode_type === "bootstrap-request",
+      (payload) => payload.zody_type === "bootstrap-request",
     ).length;
     const initialRenderCount = renderMock.mock.calls.length;
 
@@ -634,10 +634,10 @@ describe("external relay frame gap recovery", () => {
     // T4.2：回前台会额外用一次 bootstrap-request 观察桌面版本变化（版本化 URL 已移除）。
     // 关键是 bridge 和已挂载页面都不重建。
     expect(
-      testState.sentPayloads.filter((payload) => payload.zcode_type === "bootstrap-request"),
+      testState.sentPayloads.filter((payload) => payload.zody_type === "bootstrap-request"),
     ).toHaveLength(initialBootstrapRequestCount + 1);
     expect(
-      testState.sentPayloads.filter((payload) => payload.zcode_type === "workspace-bridge-open"),
+      testState.sentPayloads.filter((payload) => payload.zody_type === "workspace-bridge-open"),
     ).toHaveLength(initialBridgeOpenCount);
     expect(renderMock).toHaveBeenCalledTimes(initialRenderCount);
   });
@@ -653,10 +653,10 @@ describe("external relay frame gap recovery", () => {
       expect(testState.relayProtocolOptions).toHaveLength(1);
     });
     const initialBridgeOpenCount = testState.sentPayloads.filter(
-      (payload) => payload.zcode_type === "workspace-bridge-open",
+      (payload) => payload.zody_type === "workspace-bridge-open",
     ).length;
     const initialBootstrapRequestCount = testState.sentPayloads.filter(
-      (payload) => payload.zcode_type === "bootstrap-request",
+      (payload) => payload.zody_type === "bootstrap-request",
     ).length;
 
     lifecycle.setVisibilityState("hidden");
@@ -671,11 +671,11 @@ describe("external relay frame gap recovery", () => {
     // 同短时恢复：允许一次版本观察请求，但不重建 bridge。
     await vi.waitFor(() => {
       expect(
-        testState.sentPayloads.filter((payload) => payload.zcode_type === "bootstrap-request"),
+        testState.sentPayloads.filter((payload) => payload.zody_type === "bootstrap-request"),
       ).toHaveLength(initialBootstrapRequestCount + 1);
     });
     expect(
-      testState.sentPayloads.filter((payload) => payload.zcode_type === "workspace-bridge-open"),
+      testState.sentPayloads.filter((payload) => payload.zody_type === "workspace-bridge-open"),
     ).toHaveLength(initialBridgeOpenCount);
   });
 });

@@ -1,6 +1,6 @@
 import { EventEmitter } from "node:events";
 import { describe, expect, it } from "vitest";
-import { HostMessageTypes, HostResponseTypes } from "@zcode/shared";
+import { HostMessageTypes, HostResponseTypes } from "@zody/shared";
 import { probeNativeHostInitialization } from "../scripts/hostInitProbe.js";
 
 class FakeProbeHost extends EventEmitter {
@@ -53,7 +53,7 @@ describe("native Host InitLocal probe", () => {
         },
         workspacePath: "/workspace",
         workspaceIdentity: "identity",
-        zcodeBuiltinProviderConfigFilePath: "/config/zcode-builtin.json",
+        zodyBuiltinProviderConfigFilePath: "/config/zody-builtin.json",
         runtimeProcessEnvPatch: { SAFE_VALUE: "1" },
         onState: (state) => states.push(state.phase),
       },
@@ -69,7 +69,7 @@ describe("native Host InitLocal probe", () => {
       workspacePath: "/workspace",
       workspaceIdentity: "identity",
       agentSpawnFallbackCwd: "/workspace",
-      zcodeBuiltinProviderConfigFilePath: "/config/zcode-builtin.json",
+      zodyBuiltinProviderConfigFilePath: "/config/zody-builtin.json",
       runtimeProcessEnvPatch: { SAFE_VALUE: "1" },
     });
     expect(host.posted.at(-1)?.message).toEqual({ type: HostMessageTypes.Dispose });

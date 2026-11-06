@@ -11,10 +11,10 @@ import { persistWebRemoteControlMobileTaskHomePreferences } from "@/WebRemoteCon
 import type {
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -30,7 +30,7 @@ vi.mock("@/logger.js", () => ({
 }));
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (
+  useZodyStore: (
     selector: (state: { theme: string; setTheme: (theme: string) => void }) => unknown,
   ) => selector({ theme: "dark", setTheme: vi.fn() }),
 }));

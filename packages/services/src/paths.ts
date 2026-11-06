@@ -6,15 +6,15 @@ import { basename, join, win32 } from "node:path";
 import { homedir } from "node:os";
 import {
   DATA_BASE_DIR_FORBIDDEN_WINDOWS_INSTALL_DIR_ERROR_CODE,
-  ZCODE_AGENT_RUNTIME,
-  ZCODE_DATA_ROOT_DIR_NAME,
-} from "@zcode/shared";
+  ZODY_AGENT_RUNTIME,
+  ZODY_DATA_ROOT_DIR_NAME,
+} from "@zody/shared";
 
 let _dataBaseDir: string | null = null;
-export const ZCODE_WINDOWS_APP_INSTALL_DIR_ENV = "ZCODE_WINDOWS_APP_INSTALL_DIR";
+export const ZODY_WINDOWS_APP_INSTALL_DIR_ENV = "ZODY_WINDOWS_APP_INSTALL_DIR";
 /** Windows 安装器按产品名生成的默认安装目录名（正式版 / Preview）。 */
 const WINDOWS_APP_INSTALL_DIR_NAMES = ["Zody", "Zody Preview"] as const;
-const envDataBaseDir = process.env.ZCODE_DATA_BASE_DIR?.trim() || null;
+const envDataBaseDir = process.env.ZODY_DATA_BASE_DIR?.trim() || null;
 const defaultDataBaseDir = process.env.HOME?.trim() || homedir();
 
 export interface DataBaseDirTargetValidationOptions {
@@ -36,7 +36,7 @@ export function setDataBaseDir(dir: string | null): void {
   _dataBaseDir = dir?.trim() || null;
 }
 
-/** Get the current base directory. Priority: setDataBaseDir() > env ZCODE_DATA_BASE_DIR > homedir(). */
+/** Get the current base directory. Priority: setDataBaseDir() > env ZODY_DATA_BASE_DIR > homedir(). */
 export function getDataBaseDir(): string {
   if (_dataBaseDir) return _dataBaseDir;
   if (envDataBaseDir) return envDataBaseDir;
@@ -47,18 +47,18 @@ export function getDataBaseDir(): string {
 
 // fork 数据隔离：家目录级数据根改为 .zody，避免与正式版 ZCode 共用。
 /** {dataBaseDir}/.zody */
-export function getZCodeDataRootDir(): string {
-  return join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME);
+export function getZodyDataRootDir(): string {
+  return join(getDataBaseDir(), ZODY_DATA_ROOT_DIR_NAME);
 }
 
 /** 非项目对话共享的真实工作目录；默认 ~/.zody/workspace/default。 */
 export function getConversationWorkspaceDir(): string {
-  return join(getZCodeDataRootDir(), "workspace", "default");
+  return join(getZodyDataRootDir(), "workspace", "default");
 }
 
 /** {dataBaseDir}/.zody/v2 */
 export function getAppConfigDir(): string {
-  return join(getZCodeDataRootDir(), "v2");
+  return join(getZodyDataRootDir(), "v2");
 }
 
 function readEnvValue(env: Record<string, string | undefined>, key: string): string | undefined {
@@ -122,7 +122,7 @@ function collectWindowsForbiddenAppInstallDirs(
   // 未显式传 appInstallDir 时保护失效，数据目录可被选进安装目录、随卸载/升级被清除。
   const candidates = [
     options.appInstallDir,
-    readEnvValue(env, ZCODE_WINDOWS_APP_INSTALL_DIR_ENV),
+    readEnvValue(env, ZODY_WINDOWS_APP_INSTALL_DIR_ENV),
     ...WINDOWS_APP_INSTALL_DIR_NAMES.flatMap((name) => [
       programFiles ? win32.join(programFiles, name) : null,
       programFilesX86 ? win32.join(programFilesX86, name) : null,
@@ -171,15 +171,15 @@ export function validateDataBaseDirTarget(
 }
 
 export function getExportLogStageDir(): string {
-  return join(getZCodeDataRootDir(), "export-log-stage");
+  return join(getZodyDataRootDir(), "export-log-stage");
 }
 
 export function getExportLogDir(): string {
-  return join(getZCodeDataRootDir(), "export-log");
+  return join(getZodyDataRootDir(), "export-log");
 }
 
 export function getFeedbackRootDir(): string {
-  return join(getZCodeDataRootDir(), "feedback");
+  return join(getZodyDataRootDir(), "feedback");
 }
 
 export function getFeedbackAttachmentDir(): string {
@@ -191,7 +191,7 @@ export function getFeedbackLogArchiveDir(): string {
 }
 
 export function getGitCheckpointIndexRootDir(): string {
-  return join(getZCodeDataRootDir(), "git-checkpoint-index");
+  return join(getZodyDataRootDir(), "git-checkpoint-index");
 }
 
 /** ~/.zody/v2/tasks-index.sqlite */
@@ -241,9 +241,9 @@ export function getLegacyDeletedTaskSessionSnapshotPath(
  * 避免同机不同工作区配置漂移。
  */
 export function getProviderWorkspaceConfigDir(): string {
-  return ZCODE_AGENT_RUNTIME.nativeConfigDir
-    ? join(getDataBaseDir(), ZCODE_AGENT_RUNTIME.nativeConfigDir)
-    : join(getDataBaseDir(), ZCODE_DATA_ROOT_DIR_NAME, "cli");
+  return ZODY_AGENT_RUNTIME.nativeConfigDir
+    ? join(getDataBaseDir(), ZODY_AGENT_RUNTIME.nativeConfigDir)
+    : join(getDataBaseDir(), ZODY_DATA_ROOT_DIR_NAME, "cli");
 }
 
 /**
@@ -252,8 +252,8 @@ export function getProviderWorkspaceConfigDir(): string {
  * state must only live at the default homedir location.
  */
 export async function copyDataDirectory(oldBaseDir: string, newBaseDir: string): Promise<void> {
-  const oldDir = join(oldBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2");
-  const newDir = join(newBaseDir, ZCODE_DATA_ROOT_DIR_NAME, "v2");
+  const oldDir = join(oldBaseDir, ZODY_DATA_ROOT_DIR_NAME, "v2");
+  const newDir = join(newBaseDir, ZODY_DATA_ROOT_DIR_NAME, "v2");
   await cp(oldDir, newDir, {
     recursive: true,
     force: false,

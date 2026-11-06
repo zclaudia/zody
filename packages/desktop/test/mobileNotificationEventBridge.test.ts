@@ -2,16 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Event } from "@zcode/rpc";
-import type { ZCodeTaskMeta } from "@zcode/shared";
-import type { IZCodeAgentService, IZCodeTaskService } from "@zcode/services";
+import { Event } from "@zody/rpc";
+import type { ZodyTaskMeta } from "@zody/shared";
+import type { IZodyAgentService, IZodyTaskService } from "@zody/services";
 import { createMobileNotificationEventBridge } from "../src/host/mobileNotificationEventBridge.js";
 import { createMobileNotificationDeliveryBridge } from "../src/host/mobileNotificationDeliveryBridge.js";
 import {
   createMobileNotificationService,
   type IMobileNotificationService,
-} from "@zcode/services/mobile-notifications/node";
-import type { MobileNotificationRecordInput } from "@zcode/services/mobile-notifications";
+} from "@zody/services/mobile-notifications/node";
+import type { MobileNotificationRecordInput } from "@zody/services/mobile-notifications";
 
 describe("MobileNotificationEventBridge", () => {
   it("从 sessions-index 发现 task-index 暂未返回的 runtime session 并捕获终态", async () => {
@@ -32,11 +32,11 @@ describe("MobileNotificationEventBridge", () => {
           sessionListener = listener;
           return { dispose: vi.fn() };
         }),
-      } as unknown as Pick<IZCodeAgentService, "onDynamicSessionEvent">,
+      } as unknown as Pick<IZodyAgentService, "onDynamicSessionEvent">,
       taskService: {
         listTasks: vi.fn(async () => []),
         onDynamicWorkspaceEvent: vi.fn(() => () => ({ dispose: vi.fn() })),
-      } as unknown as Pick<IZCodeTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
+      } as unknown as Pick<IZodyTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
       notificationService: notificationService as unknown as Pick<
         IMobileNotificationService,
         "record" | "resolveInteraction"
@@ -79,7 +79,7 @@ describe("MobileNotificationEventBridge", () => {
   });
 
   it("captures replayable raw event IDs, normalized pending interactions, and remote source identity", async () => {
-    const task: ZCodeTaskMeta = {
+    const task: ZodyTaskMeta = {
       taskId: "session-1",
       traceId: "trace-1",
       title: "task",
@@ -125,9 +125,9 @@ describe("MobileNotificationEventBridge", () => {
         workspacePath: task.workspacePath,
         workspaceIdentity: task.workspaceIdentity!,
       },
-      agentService: agentService as unknown as Pick<IZCodeAgentService, "onDynamicSessionEvent">,
+      agentService: agentService as unknown as Pick<IZodyAgentService, "onDynamicSessionEvent">,
       taskService: taskService as unknown as Pick<
-        IZCodeTaskService,
+        IZodyTaskService,
         "listTasks" | "onDynamicWorkspaceEvent"
       >,
       notificationService: notificationService as unknown as Pick<
@@ -239,7 +239,7 @@ describe("MobileNotificationEventBridge", () => {
   });
 
   it("permission.request 的脱敏按钮随 permission 通知固化；question 通知不带按钮（第二批 E4）", async () => {
-    const task: ZCodeTaskMeta = {
+    const task: ZodyTaskMeta = {
       taskId: "session-perm",
       traceId: "trace-perm",
       title: "task",
@@ -274,9 +274,9 @@ describe("MobileNotificationEventBridge", () => {
     let backendId: string | undefined;
     const bridge = createMobileNotificationEventBridge({
       scope: { kind: "local", workspacePath: "/local/project" },
-      agentService: agentService as unknown as Pick<IZCodeAgentService, "onDynamicSessionEvent">,
+      agentService: agentService as unknown as Pick<IZodyAgentService, "onDynamicSessionEvent">,
       taskService: taskService as unknown as Pick<
-        IZCodeTaskService,
+        IZodyTaskService,
         "listTasks" | "onDynamicWorkspaceEvent"
       >,
       notificationService: notificationService as unknown as Pick<
@@ -354,7 +354,7 @@ describe("MobileNotificationEventBridge", () => {
   });
 
   it("已 resolve 的 interactionId 在后续陈旧 snapshot 再次出现时不再 record", async () => {
-    const task: ZCodeTaskMeta = {
+    const task: ZodyTaskMeta = {
       taskId: "session-stale",
       traceId: "trace-stale",
       title: "task",
@@ -384,9 +384,9 @@ describe("MobileNotificationEventBridge", () => {
       scope: { kind: "local", workspacePath: task.workspacePath },
       agentService: {
         onDynamicSessionEvent: vi.fn(() => () => ({ dispose: vi.fn() })),
-      } as unknown as Pick<IZCodeAgentService, "onDynamicSessionEvent">,
+      } as unknown as Pick<IZodyAgentService, "onDynamicSessionEvent">,
       taskService: taskService as unknown as Pick<
-        IZCodeTaskService,
+        IZodyTaskService,
         "listTasks" | "onDynamicWorkspaceEvent"
       >,
       notificationService: notificationService as unknown as Pick<
@@ -423,7 +423,7 @@ describe("MobileNotificationEventBridge", () => {
   });
 
   it("does not persist terminal events when authenticated backend context is unavailable", async () => {
-    const task: ZCodeTaskMeta = {
+    const task: ZodyTaskMeta = {
       taskId: "session-2",
       traceId: "trace-2",
       title: "task",
@@ -444,11 +444,11 @@ describe("MobileNotificationEventBridge", () => {
           listener = next;
           return { dispose: () => {} };
         },
-      } as unknown as Pick<IZCodeAgentService, "onDynamicSessionEvent">,
+      } as unknown as Pick<IZodyAgentService, "onDynamicSessionEvent">,
       taskService: {
         listTasks: async () => [task],
         onDynamicWorkspaceEvent: () => Event.None,
-      } as unknown as Pick<IZCodeTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
+      } as unknown as Pick<IZodyTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
       notificationService: notificationService as unknown as Pick<
         IMobileNotificationService,
         "record" | "resolveInteraction"
@@ -472,7 +472,7 @@ describe("MobileNotificationEventBridge", () => {
   });
 
   it("recovers a pending interaction when trusted backend context arrives after the first scan", async () => {
-    const task: ZCodeTaskMeta = {
+    const task: ZodyTaskMeta = {
       taskId: "session-late",
       traceId: "trace-late",
       title: "task",
@@ -494,11 +494,11 @@ describe("MobileNotificationEventBridge", () => {
       scope: { kind: "local", workspacePath: task.workspacePath },
       agentService: {
         onDynamicSessionEvent: () => () => ({ dispose: () => {} }),
-      } as unknown as Pick<IZCodeAgentService, "onDynamicSessionEvent">,
+      } as unknown as Pick<IZodyAgentService, "onDynamicSessionEvent">,
       taskService: {
         listTasks: async () => [task],
         onDynamicWorkspaceEvent: () => Event.None,
-      } as unknown as Pick<IZCodeTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
+      } as unknown as Pick<IZodyTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
       notificationService: notificationService as unknown as Pick<
         IMobileNotificationService,
         "record" | "resolveInteraction"
@@ -528,7 +528,7 @@ describe("MobileNotificationEventBridge", () => {
       databasePath: join(directory, "feed.sqlite"),
     });
     const recordSpy = vi.spyOn(service, "record");
-    const task: ZCodeTaskMeta = {
+    const task: ZodyTaskMeta = {
       taskId: "session-e2e",
       traceId: "trace-e2e",
       title: "task",
@@ -558,11 +558,11 @@ describe("MobileNotificationEventBridge", () => {
           sessionListener = listener;
           return { dispose: () => {} };
         },
-      } as unknown as Pick<IZCodeAgentService, "onDynamicSessionEvent">,
+      } as unknown as Pick<IZodyAgentService, "onDynamicSessionEvent">,
       taskService: {
         listTasks: async () => [task],
         onDynamicWorkspaceEvent: () => Event.None,
-      } as unknown as Pick<IZCodeTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
+      } as unknown as Pick<IZodyTaskService, "listTasks" | "onDynamicWorkspaceEvent">,
       notificationService: service,
       getBackendId: () => worker?.getBackendId(),
     });

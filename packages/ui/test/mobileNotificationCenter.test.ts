@@ -2,14 +2,14 @@
 import { createElement } from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { IMobileNotificationReaderContract } from "@zcode/services/mobile-notifications";
+import type { IMobileNotificationReaderContract } from "@zody/services/mobile-notifications";
 import { MobileNotificationCenter } from "@/MobileNotificationCenter.js";
 import { MobileNotificationsFeature } from "@/MobileNotificationsFeature.js";
 
 const platformState = vi.hoisted(() => ({ value: null as unknown }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({ intl: { formatMessage: ({ id }: { id: string }) => id } }),
+  useZodyIntl: () => ({ intl: { formatMessage: ({ id }: { id: string }) => id } }),
 }));
 vi.mock("@/hooks/usePlatform.js", () => ({
   useOptionalPlatform: () => platformState.value,

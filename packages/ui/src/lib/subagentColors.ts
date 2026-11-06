@@ -1,4 +1,4 @@
-import type { AgentColor } from "@zcode/shared";
+import type { AgentColor } from "@zody/shared";
 
 export const SUBAGENT_COLORS: AgentColor[] = [
   "yellow",

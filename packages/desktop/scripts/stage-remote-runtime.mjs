@@ -1,7 +1,7 @@
 import { copyFile, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { prepareLocalRemoteAssets } from "@zcode/server/remote";
+import { prepareLocalRemoteAssets } from "@zody/server/remote";
 
 export const REMOTE_RUNTIME_PLATFORMS = ["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64"];
 

@@ -19,15 +19,15 @@ zody
 zody --web --workspace /path/to/project --no-open
 ```
 
-Web 默认只监听 `127.0.0.1`。非回环监听地址必须启用 token；`--host 0.0.0.0` 默认生成 token，`--token` 可指定 token，不能在此模式下使用 `--no-token`。直接使用 HTTP 服务入口时，通过 `ZCODE_SERVER_AUTH_TOKEN` 配置认证。网络部署还需要自行配置 TLS 和访问控制。
+Web 默认只监听 `127.0.0.1`。非回环监听地址必须启用 token；`--host 0.0.0.0` 默认生成 token，`--token` 可指定 token，不能在此模式下使用 `--no-token`。直接使用 HTTP 服务入口时，通过 `ZODY_SERVER_AUTH_TOKEN` 配置认证。网络部署还需要自行配置 TLS 和访问控制。
 
 升级时手动下载新版；没有自动更新下载或安装。问题请提交至 [Issues](https://github.com/zclaudia/zody/issues)。
 
 ## 数据和项目配置
 
-用户级数据写入 `~/.zody/`；设置 `ZCODE_DATA_BASE_DIR` 可改变其父目录。Zody 不读取、迁移或自动删除旧 `~/.zcoder/`、`~/.zcode/` 用户数据。
+用户级数据写入 `~/.zody/`；设置 `ZODY_DATA_BASE_DIR` 可改变其父目录。Zody 不读取、迁移或自动删除旧 `~/.zcoder/`、`~/.zcode/` 用户数据。
 
-项目同时支持 `.zody/` 和 `.zcode/`：优先使用 `.zody/` 的同名文件或资源，缺失时读取 `.zcode/`，所有修改只写 `.zody/`。配置文件按文件覆盖，技能等目录资源按名称合并，Hook 声明仍需通过原有信任审查。详见 [兼容规则](apps/zcode-cli/docs/design/v2/zody-path-compatibility.md)。内部 `@zcode/*` 包名、协议标识及已有 `ZCODE_*` 配置键不做机械替换。
+项目同时支持 `.zody/` 和 `.zcode/`：优先使用 `.zody/` 的同名文件或资源，缺失时读取 `.zcode/`，所有修改只写 `.zody/`。配置文件按文件覆盖，技能等目录资源按名称合并，Hook 声明仍需通过原有信任审查。详见 [兼容规则](apps/zody-cli/docs/design/v2/zody-path-compatibility.md)。内部 `@zcode/*` 包名、协议标识及已有 `ZCODE_*` 配置键不做机械替换。
 
 ## 源码开发
 
@@ -40,20 +40,20 @@ pnpm dev:desktop
 pnpm dev:web
 ```
 
-Agent 源码在 `apps/zcode-cli/`，随仓库提供，不是 Git submodule。
+Agent 源码在 `apps/zody-cli/`，随仓库提供，不是 Git submodule。依赖由根 workspace 和根 lock 统一安装；`pnpm --dir apps/zody-cli …` 仍限定 CLI 任务入口。
 
 ```bash
-pnpm --filter @zcode/cli... build
-pnpm --filter @zcode/cli dev --help
+pnpm --filter @zody/cli... build
+pnpm --filter @zody/cli dev --help
 pnpm typecheck
 pnpm lint
 pnpm test:unit
-pnpm --dir apps/zcode-cli typecheck
-pnpm --dir apps/zcode-cli lint
-pnpm --dir apps/zcode-cli test
+pnpm --dir apps/zody-cli typecheck
+pnpm --dir apps/zody-cli lint
+pnpm --dir apps/zody-cli test
 ```
 
-SSH / Windows WSL 工作区纳入 0.1.0。开发前执行 `pnpm bootstrap:with-remote`（已有依赖时可用 `pnpm prepare:remote-assets`）。连接时固定从本机上传运行时；缺件或校验失败直接报错，不访问 CDN。发行包通过 `pnpm --filter @zcode/desktop stage:remote-runtime` 校验并暂存当前四平台 manifest 引用的组件归档，打包前再次校验；运行时从随包资源解包到本地缓存后上传。详见 [SSH/WSL 恢复规格](specs/ssh-wsl-local-runtime-restoration.md) 与 [远程部署](docs/remote/zcode-agent-remote-deployment.md)。Browser Use 保留；不可用的系统级 Computer Use 入口隐藏。
+SSH / Windows WSL 工作区纳入 0.1.0。开发前执行 `pnpm bootstrap:with-remote`（已有依赖时可用 `pnpm prepare:remote-assets`）。连接时固定从本机上传运行时；缺件或校验失败直接报错，不访问 CDN。发行包通过 `pnpm --filter @zody/desktop stage:remote-runtime` 校验并暂存当前四平台 manifest 引用的组件归档，打包前再次校验；运行时从随包资源解包到本地缓存后上传。详见 [SSH/WSL 恢复规格](specs/ssh-wsl-local-runtime-restoration.md) 与 [远程部署](docs/remote/zcode-agent-remote-deployment.md)。Browser Use 保留；不可用的系统级 Computer Use 入口隐藏。
 
 ## 构建和发布
 
@@ -76,9 +76,9 @@ CLI 产物默认写入 `dist/zody/`。目标名称为 `darwin-arm64`、`darwin-x
 | ---------------------------------------------------- | ------------------------------------ |
 | `packages/desktop`                                   | Electron Main、Host、Renderer 和打包 |
 | `packages/web`、`packages/android`                   | Web 客户端与 Android 远控壳          |
-| `packages/server`、`packages/zcode-server-cli`       | HTTP/WebSocket 服务和远端运行        |
+| `packages/server`、`packages/zody-server-cli`       | HTTP/WebSocket 服务和远端运行        |
 | `packages/ui`、`packages/services`                   | 共享 UI、状态与业务服务              |
 | `packages/shared`、`packages/rpc`、`packages/client` | 协议、类型、RPC 和 Agent SDK         |
-| `apps/zcode-cli`                                     | Agent CLI、TUI、运行时和工具         |
+| `apps/zody-cli`                                     | Agent CLI、TUI、运行时和工具         |
 
 第一方代码沿用 [Apache-2.0 LICENSE](LICENSE)，保留原作者与第三方版权。参见 [使用与隐私说明](NOTICE.md)、[第三方声明](THIRD-PARTY-NOTICES.md) 和 [首发规格](specs/zody-0.1.0-release.md)。

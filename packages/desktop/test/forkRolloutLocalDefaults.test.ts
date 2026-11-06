@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 /**
  * Fork spec「灰度开关的本地默认值（D1b）」（specs/fork-official-backend-runtime-dependencies.md）
  * 与任务 F2.6a 的 Main 侧验收（同文件验收 5 的 Main 部分）：
- * - 桌面上下文提示固定开启，经 Host env `ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1` 下发；
+ * - 桌面上下文提示固定开启，经 Host env `ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED=1` 下发；
  * - 渲染端动作追踪固定使用 `DISABLED_RENDERER_ACTION_TRACE_CONFIG`；
  * - Main 不再构造请求 `/api/v1/client/configs` 的 `fetchConfig`，也不再保留首个 Host
  *   spawn 前的灰度裁决门与 rollout 预热。
@@ -70,9 +70,9 @@ describe("Main 侧灰度本地固定值（F2.6a / D1b）", () => {
     expect(source).not.toContain("dependencies.desktopContextPromptEnabled");
   });
 
-  it("desktopHostProcess 恒向 Host env 下发 ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED=1", () => {
+  it("desktopHostProcess 恒向 Host env 下发 ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED=1", () => {
     const source = readMainSource("desktopHostProcess.ts");
 
-    expect(source).toContain('[ZCODE_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: "1"');
+    expect(source).toContain('[ZODY_DESKTOP_CONTEXT_PROMPT_ENABLED_ENV]: "1"');
   });
 });

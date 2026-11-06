@@ -3,7 +3,7 @@ import { memo, useState } from "react";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import type { UniqueIdentifier } from "@dnd-kit/core";
-import { isCronTask, type ZCodeTaskMeta } from "@zcode/shared";
+import { isCronTask, type ZodyTaskMeta } from "@zody/shared";
 import {
   ArrowUpToLine,
   Clock,
@@ -26,7 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import {
   deriveTaskLeadingIndicator,
   formatTaskRelativeTime,
@@ -75,7 +75,7 @@ function GroupedTaskRowComponent({
   dragOverlay,
   tooltipsDisabled,
 }: {
-  task: ZCodeTaskMeta;
+  task: ZodyTaskMeta;
   currentGroupId?: string;
   groups: TaskGroupMenuItem[];
   remoteSessionId?: string;
@@ -89,19 +89,19 @@ function GroupedTaskRowComponent({
     taskId: string,
     workspaceIdentity?: string,
   ) => void;
-  onCloseTask: (task: ZCodeTaskMeta) => void;
-  onOpenFileTree?: (task: ZCodeTaskMeta) => void;
-  onMoveTaskToGroup: (task: ZCodeTaskMeta, groupId: string | null) => void;
-  onMoveTaskToTop: (task: ZCodeTaskMeta) => void;
-  onStartRenameTask: (task: ZCodeTaskMeta) => void;
-  onArchiveTask: (task: ZCodeTaskMeta) => void;
-  onMarkTaskAsUnread: (task: ZCodeTaskMeta) => void;
+  onCloseTask: (task: ZodyTaskMeta) => void;
+  onOpenFileTree?: (task: ZodyTaskMeta) => void;
+  onMoveTaskToGroup: (task: ZodyTaskMeta, groupId: string | null) => void;
+  onMoveTaskToTop: (task: ZodyTaskMeta) => void;
+  onStartRenameTask: (task: ZodyTaskMeta) => void;
+  onArchiveTask: (task: ZodyTaskMeta) => void;
+  onMarkTaskAsUnread: (task: ZodyTaskMeta) => void;
   dragId?: UniqueIdentifier;
   dragging?: boolean;
   dragOverlay?: boolean;
   tooltipsDisabled?: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const workspaceActionsDisabled = useOptionalTabStore((state) =>
     isWorkspaceReadOnly(state, task.workspacePath, task.workspaceIdentity),
   );

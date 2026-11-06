@@ -1,0 +1,245 @@
+import { randomUUID } from "node:crypto";
+import { hostname } from "node:os";
+import { serve } from "@hono/node-server";
+import { createNodeWebSocket } from "@hono/node-ws";
+import { Hono } from "hono";
+import type { WebSocket } from "ws";
+import type { WebSocketServer } from "ws";
+import {
+  Emitter,
+  VSBuffer,
+  SocketProtocol,
+  ChannelServer,
+  ChannelClient,
+  LoggingChannelServer,
+  type ISocket,
+} from "@zody/rpc";
+import {
+  createZodyAgentConnectionScope,
+  IZodyAgentService,
+  ServiceCollection,
+} from "@zody/services";
+import { createServiceLogger } from "@zody/services/node";
+import {
+  SERVER_REMOTE_PROTOCOL_VERSION,
+  ZODY_RENAME_GENERATION,
+  ZODY_RENAME_GENERATION_HEADER,
+  ZODY_RENAME_WEBSOCKET_PROTOCOL,
+  checkRenameGeneration,
+  ZODY_RPC_HOST_CAPABILITY_HEADER,
+  ZODY_VERSION,
+  type ServerRemoteInfo,
+} from "@zody/shared";
+import { createHostCapabilityStore, type HostCapabilityStore } from "./hostCapability.js";
+
+// 原始 header 必须恰为单个规范值，不能把重复或宽松数字形式转换成代际 2。
+const generationGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header(ZODY_RENAME_GENERATION_HEADER);
+  if (
+    !checkRenameGeneration(
+      raw === String(ZODY_RENAME_GENERATION) ? ZODY_RENAME_GENERATION : undefined,
+    ).ok
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
+const browserProtocolGate: import("hono").MiddlewareHandler = async (c, next) => {
+  const raw = c.req.header("sec-websocket-protocol");
+  const protocols = raw?.split(",").map((part) => part.trim()) ?? [];
+  if (
+    !protocols.includes(ZODY_RENAME_WEBSOCKET_PROTOCOL) ||
+    protocols.some((part) => !/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(part)) ||
+    new Set(protocols).size !== protocols.length
+  ) {
+    return c.json({ error: "incompatible-generation" }, 426);
+  }
+  await next();
+};
+
+export interface CoreHttpServer {
+  host: string;
+  port: number;
+  close: () => Promise<void>;
+}
+
+const WEBSOCKET_DRAIN_TIMEOUT_MS = 250;
+const log = createServiceLogger("server-core");
+
+async function closeWebSocketServer(wss: WebSocketServer): Promise<void> {
+  for (const client of wss.clients) {
+    // HTTP server.close() 不会收敛已经 upgrade 的 WebSocket，活跃 desktop
+    // continuous 连接会让 Core 的 shutdown ack 永远发不出去。先发 close frame 给正常
+    // 客户端一个短暂排空窗口，再 terminate 兜底，保证 Supervisor 能在预算内释放资源。
+    client.close(1001, "Server shutting down");
+  }
+  const deadline = Date.now() + WEBSOCKET_DRAIN_TIMEOUT_MS;
+  while (wss.clients.size > 0 && Date.now() < deadline) {
+    await new Promise<void>((resolve) => setTimeout(resolve, 10));
+  }
+  for (const client of wss.clients) client.terminate();
+  await new Promise<void>((resolve, reject) => {
+    wss.close((error?: Error) => (error ? reject(error) : resolve()));
+  });
+}
+
+function isLoopbackHost(host: string): boolean {
+  const normalized = host.trim().toLowerCase();
+  return normalized === "127.0.0.1" || normalized === "::1" || normalized === "localhost";
+}
+
+function wrapWebSocket(ws: WebSocket): ISocket {
+  const data = new Emitter<VSBuffer>();
+  const close = new Emitter<void>();
+  ws.on("message", (raw) =>
+    data.fire(VSBuffer.wrap(Buffer.isBuffer(raw) ? raw : Buffer.from(raw as ArrayBuffer))),
+  );
+  ws.on("close", () => close.fire());
+  ws.on("error", () => close.fire());
+  return {
+    onData: data.event,
+    onClose: close.event,
+    onEnd: close.event,
+    write(buffer) {
+      if (ws.readyState === ws.OPEN) ws.send(buffer.buffer);
+    },
+    end() {
+      ws.close();
+    },
+    drain() {
+      return Promise.resolve();
+    },
+    dispose() {
+      ws.close();
+    },
+  };
+}
+
+function exposeWebSocket(
+  ws: WebSocket,
+  services: ServiceCollection,
+  clientMode: "desktop-continuous" | "web-remote-replayable",
+): void {
+  const socket = wrapWebSocket(ws);
+  const protocol = new SocketProtocol(socket);
+  const rawServer = new ChannelServer(protocol, "server");
+  const server = new LoggingChannelServer(rawServer, (...args) => log.debug(undefined, ...args));
+  const agentService = services.getOptional(IZodyAgentService);
+  // fork（bot channels 移除）：第三方 IM bot 的 topic-resource relay 注册（TopicResourcePeers
+  // attach + wrapAgent）随 bot channels 整体删除；desktop-continuous 受信 Host 连接仍保留
+  // 反向 ChannelClient 结构，仅不再挂载 relay 频道（与 packages/server/src/http.ts 成对）。
+  const reverseClient =
+    clientMode === "desktop-continuous" ? new ChannelClient(protocol) : undefined;
+  const scope = agentService
+    ? createZodyAgentConnectionScope(agentService, {
+        connectionId: `server-core-ws-${randomUUID()}`,
+        clientMode,
+        role: clientMode === "desktop-continuous" ? "trusted-host-relay" : "terminal-client",
+      })
+    : undefined;
+  services.exposeOnChannelServer(
+    server,
+    scope ? new Map([[IZodyAgentService.channelName, scope.service]]) : new Map(),
+  );
+  socket.onClose(() => {
+    reverseClient?.dispose();
+    void scope?.dispose();
+    rawServer.dispose();
+  });
+}
+
+export async function createCoreHttpServer(
+  services: ServiceCollection,
+  options: {
+    host?: string;
+    port?: number;
+    serverId?: string;
+    hostCapabilityStore?: HostCapabilityStore;
+  } = {},
+): Promise<CoreHttpServer> {
+  const app = new Hono();
+  const { injectWebSocket, upgradeWebSocket, wss } = createNodeWebSocket({ app });
+  // 子协议的默认实现选择首项；浏览器可能先提出其他协议，必须选中代际协议。
+  wss.options.handleProtocols = (protocols, request) => {
+    const path = new URL(request.url ?? "/", "http://localhost").pathname;
+    if (path === "/ws" || path.startsWith("/ws/remote/")) {
+      return protocols.has(ZODY_RENAME_WEBSOCKET_PROTOCOL) ? ZODY_RENAME_WEBSOCKET_PROTOCOL : false;
+    }
+    return protocols.values().next().value ?? false;
+  };
+  const host = options.host ?? "127.0.0.1";
+  if (!isLoopbackHost(host)) {
+    // R2 当前只有本机/SSH 隧道入口，Core 尚未接入 token middleware；对外监听必须 fail-closed。
+    throw new Error(
+      `Non-loopback host ${host} requires authentication before the server can listen`,
+    );
+  }
+  const info: ServerRemoteInfo = {
+    serverId: options.serverId ?? hostname() ?? "zody-server",
+    version: ZODY_VERSION,
+    protocolVersion: SERVER_REMOTE_PROTOCOL_VERSION,
+    authRequired: false,
+    workspaces: [],
+    capabilities: {
+      desktopContinuous: true,
+      websocketRpc: true,
+      processResourceTelemetry: true,
+    },
+  };
+  // 裸 Set 无法落实 expiresAt，未消费的 capability 会一直有效并持续累积。
+  // 使用与 packages/server 兼容的 TTL 一次性 store，使有效期和消费语义与返回信息一致。
+  const capabilities = options.hostCapabilityStore ?? createHostCapabilityStore();
+  app.get("/api/server-info", (context) =>
+    context.json({ ...info, renameGeneration: ZODY_RENAME_GENERATION }),
+  );
+  app.use("/api/rpc-host-capability", generationGate);
+  app.use("/ws/host", generationGate);
+  app.use("/ws", browserProtocolGate);
+  app.get(
+    "/ws",
+    upgradeWebSocket(() => ({
+      onOpen(_event, socket) {
+        exposeWebSocket(socket.raw as WebSocket, services, "web-remote-replayable");
+      },
+    })),
+  );
+  app.use("/ws/host", async (context, next) => {
+    const capability = context.req.header(ZODY_RPC_HOST_CAPABILITY_HEADER);
+    if (!capabilities.consume(capability)) {
+      return context.json({ error: "Invalid or expired host capability" }, 401);
+    }
+    await next();
+  });
+  app.get(
+    "/ws/host",
+    upgradeWebSocket(() => ({
+      onOpen(_event, socket) {
+        // fork（bot channels 移除）：trusted host 连接不再透传 topicResourcePeers。
+        exposeWebSocket(socket.raw as WebSocket, services, "desktop-continuous");
+      },
+    })),
+  );
+  app.post("/api/rpc-host-capability", (context) => context.json(capabilities.issue()));
+  let resolveListening: (value: { port: number }) => void = () => undefined;
+  const listening = new Promise<{ port: number }>((resolve) => {
+    resolveListening = resolve;
+  });
+  const server = serve({ fetch: app.fetch, hostname: host, port: options.port ?? 0 }, () => {
+    const address = server.address();
+    resolveListening({
+      port: typeof address === "object" && address ? address.port : (options.port ?? 0),
+    });
+  });
+  injectWebSocket(server);
+  const { port } = await listening;
+  return {
+    host,
+    port,
+    close: async () => {
+      await closeWebSocketServer(wss);
+      await new Promise<void>((resolve, reject) =>
+        server.close((error?: Error) => (error ? reject(error) : resolve())),
+      );
+    },
+  };
+}

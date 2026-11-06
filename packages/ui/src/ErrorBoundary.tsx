@@ -1,7 +1,7 @@
 import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
-import type { Locale } from "@zcode/shared";
-import { DEFAULT_LOCALE } from "@zcode/shared";
+import type { Locale } from "@zody/shared";
+import { DEFAULT_LOCALE } from "@zody/shared";
 import { DesktopWindowFrame } from "@/DesktopWindowFrame.js";
 import zhCN from "@/i18n/locales/zh-CN.js";
 import enUS from "@/i18n/locales/en-US.js";
@@ -295,7 +295,7 @@ function ScopedErrorFallback({
 /**
  * AppErrorBoundary —— React 根级错误边界
  *
- * renderer 入口若直接把 ZCodeIntlProvider / Root 挂到 createRoot，
+ * renderer 入口若直接把 ZodyIntlProvider / Root 挂到 createRoot，
  * 一旦某个 Provider 或页面组件在 render / lifecycle 阶段抛错，React 会整棵树卸载，
  * 用户看到的就只剩一张白屏。这里包一层共享根级边界，把异常收敛成可恢复 fallback，
  * 至少保证界面还能给出“重试 / 刷新”的出口，并把错误打到统一 UI 日志里。

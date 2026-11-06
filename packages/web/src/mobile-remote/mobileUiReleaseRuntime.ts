@@ -3,8 +3,8 @@ import {
   type MobileRemoteBridge,
   type MobileRemotePrepareReloadResult,
   type MobileSessionContext,
-} from "@zcode/shared";
-import { installMobileRemoteRefreshGuardRegistry } from "@zcode/ui";
+} from "@zody/shared";
+import { installMobileRemoteRefreshGuardRegistry } from "@zody/ui";
 import { hasActiveMobileRemoteFileOperation } from "./mobileRemoteFileBridge.js";
 import {
   createMobileUiReleaseController,
@@ -27,7 +27,7 @@ import {
  * - controller 由 bootstrap 在业务 ready 后调用 `start()`，本模块保证只启动一次并立即检查；
  * - beforeunload/会话销毁统一调用 `dispose()`：reload/轮询停止、guard 清空、UI 注册表卸载。
  *
- * prepareReload 复用 `@zcode/shared` 的严格解析：方法缺失、抛错或未知返回值都按
+ * prepareReload 复用 `@zody/shared` 的严格解析：方法缺失、抛错或未知返回值都按
  * `unsupported` 处理，页面不自行放行。reload 固定为 `window.location.reload()`。
  */
 

@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { IServiceAccessor } from "@zcode/services";
-import type { FileEntry } from "@zcode/shared";
+import type { IServiceAccessor } from "@zody/services";
+import type { FileEntry } from "@zody/shared";
 import { FolderIcon, FolderSymlinkIcon } from "lucide-react";
 import { Button } from "./components/ui/button.js";
 import { Input } from "./components/ui/input.js";
-import { useZCodeIntl } from "./i18n/IntlProvider.js";
+import { useZodyIntl } from "./i18n/IntlProvider.js";
 import { logger } from "./logger.js";
 import { isCoarseTouchDevice } from "./lib/pickerFocus.js";
 import { getContainingDirectoryPath } from "./lib/path.js";
@@ -103,7 +103,7 @@ export function DirectoryBrowser({
   const listRef = useRef<HTMLDivElement>(null);
   const showHiddenDirectoriesRef = useRef(false);
   const requestGuardRef = useRef(createDirectoryBrowserRequestGuard());
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   // home-4/keyboard-3：手机端打开选择器的主流程是浏览目录而非输入路径，
   // autoFocus 会立即拉起软键盘遮住目录列表（同 GitBranchSwitcher 分支列表的既有处置）；
   // 且 iOS Safari 聚焦 <16px 输入框会触发焦点缩放。触屏态不自动聚焦、改用 16px 兼容 token；

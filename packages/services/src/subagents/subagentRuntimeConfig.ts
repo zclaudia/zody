@@ -5,8 +5,8 @@ import {
   resolveSubagentRuntimeProfiles,
   type SubagentRuntimeConfig,
   type SubagentRuntimeState,
-} from "@zcode/shared";
-import { resolveProjectResourceRoots } from "@zcode/shared/zody-paths";
+} from "@zody/shared";
+import { resolveProjectResourceRoots } from "@zody/shared/zody-paths";
 import { createServiceLogger } from "#src/logger/serviceLogger.js";
 import {
   createSubagentConfigScope,

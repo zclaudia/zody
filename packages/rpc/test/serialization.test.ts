@@ -57,6 +57,17 @@ describe("serialization", () => {
     expect([...result]).toEqual([1, 2, 3, 4]);
   });
 
+  it("roundtrips nested bytes and preserves old marker as ordinary data", () => {
+    expect(roundtrip({ nested: new Uint8Array([4, 5]) })).toEqual({
+      nested: new Uint8Array([4, 5]),
+    });
+    const old = { __zcode_rpc_nested_uint8array_v1: true, base64: "BAU=" };
+    expect(roundtrip({ old })).toEqual({ old });
+    const writer = new BufferWriter();
+    serialize(writer, { nested: new Uint8Array([4, 5]) });
+    expect(writer.buffer.toString()).toContain("__zody_rpc_nested_uint8array_v1");
+  });
+
   it("should roundtrip floats via JSON fallback", () => {
     expect(roundtrip(3.14)).toBeCloseTo(3.14);
   });
@@ -102,7 +113,7 @@ describe("BufferReader / BufferWriter", () => {
 // 根因：JSON.stringify 先调用 toJSON 再调用 replacer。Node Buffer 是 Uint8Array 子类，
 // 到达 replacer 时已被 toJSON 展开成 {type:"Buffer",data:[...]}，旧逻辑按普通对象编码，
 // 归档体积约 3.6 倍且接收端拿不到二进制。修复后 replacer 按 holder 原值（this[key]）判定。
-// 参考：上游 ZCode v3.17.1 packages/rpc/src/serialization.ts。
+// 参考：上游 Zody v3.17.1 packages/rpc/src/serialization.ts。
 
 describe("nested binary fields in JSON fallback objects", () => {
   const NESTED_MARKER = "__zcode_rpc_nested_uint8array_v1";

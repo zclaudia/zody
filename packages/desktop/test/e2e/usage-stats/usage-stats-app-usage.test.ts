@@ -3,7 +3,7 @@ import {
   TID_SETTINGS_USAGE_TAB,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,

@@ -7,8 +7,8 @@ import type {
   WebRemoteControlTaskTarget,
   WebRemoteControlWorkspaceListResult,
   WebRemoteControlWorkspaceSwitchOptions,
-} from "@zcode/shared";
-import type { IServiceAccessor } from "@zcode/services";
+} from "@zody/shared";
+import type { IServiceAccessor } from "@zody/services";
 import type { ReactNode } from "react";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
 import type { WebRemoteControlMobileConnectionSettingsApi } from "@/settings/WebRemoteControlMobileConnectionSettingsSection.js";
@@ -26,15 +26,15 @@ export type WebRemoteControlTerminalTransportState =
 
 export interface WebRemoteControlWorkspaceSwitcherApi {
   getNotificationReader?():
-    | import("@zcode/services/mobile-notifications").IMobileNotificationReaderContract
+    | import("@zody/services/mobile-notifications").IMobileNotificationReaderContract
     | undefined;
   openNotification?(notificationId: string): Promise<void>;
   testNotification?(): Promise<void>;
-  getMobileCapabilities?(): import("@zcode/shared").MobileCapabilities | undefined;
+  getMobileCapabilities?(): import("@zody/shared").MobileCapabilities | undefined;
   getMobileConnection?(): { backendId: string; connectionGeneration: number };
   searchMobileHistory?(
-    request: import("@zcode/shared").MobileHistorySearchRequest,
-  ): Promise<import("@zcode/shared").MobileHistorySearchOutcome>;
+    request: import("@zody/shared").MobileHistorySearchRequest,
+  ): Promise<import("@zody/shared").MobileHistorySearchOutcome>;
   getSearchHighlight?():
     | import("@/v4/legacyChatViewTypes.js").ChatSearchResultHighlightRequest
     | undefined;
@@ -81,7 +81,7 @@ export interface RootProps {
   /** 如果从 main 进程传入则跳过项目选择页 */
   initialWorkspaceAbsPath?: string;
   /** app-owned workspace 展示分类；缺省为真实项目。 */
-  initialWorkspacePurpose?: import("@zcode/shared").WorkspacePurpose;
+  initialWorkspacePurpose?: import("@zody/shared").WorkspacePurpose;
   /** 桌面启动时精确 active 的本地 workspace 不可用；仅用于本次 renderer 生命周期。 */
   unavailableWorkspacePath?: string;
   /** 初始 workspace 的身份隔离键，远程工作区需要透传 */

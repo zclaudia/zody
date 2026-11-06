@@ -173,7 +173,7 @@ export class ChannelClient implements IChannelClient, IDisposable {
         emitter.fire(response.data);
       } else if (response.type === ResponseType.EventError) {
         // 订阅失败必须结束其监听器，不能把错误对象写入终端等正常事件流，也不能继续保留旧请求
-        // （上游 ZCode v3.17.1 a60ba6a7 channelClient.ts：EventError 独立失败帧，枚举 205）。
+        // （上游 Zody v3.17.1 a60ba6a7 channelClient.ts：EventError 独立失败帧，枚举 205）。
         this.handlers.delete(id);
         this.activeRequests.delete(emitter);
         emitter.dispose();

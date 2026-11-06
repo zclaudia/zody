@@ -1,11 +1,11 @@
 /* eslint-disable max-lines -- logical tab owner 的 attach/claim/串行队列/detach 必须共享同一状态机。 */
 import { randomUUID } from "node:crypto";
-import type { BrowserTabSummary, BrowserViewportSize } from "@zcode/shared";
+import type { BrowserTabSummary, BrowserViewportSize } from "@zody/shared";
 import type {
   ExtensionAttachResultMessage,
   ExtensionTabsCreateResultMessage,
   ExtensionTargetRef,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import { CdpTargetSessionMap } from "../browser-core/cdpTargetSessionMap.js";
 import type { ExtensionCdpTransport } from "../browser-core/extensionCdpTransport.js";
 import type { ExtensionHostConnection } from "./extensionTransportClient.js";

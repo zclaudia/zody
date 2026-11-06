@@ -1,11 +1,11 @@
 /* eslint-disable max-lines -- onboarding 弹窗集中编排欢迎页、会话迁移、外部导入和最终执行状态，拆开会增加跨步骤状态传递复杂度 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ZCODE_DATA_ROOT_DIR_NAME } from "@zcode/shared";
+import { ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog.js";
 import { useClaudeSessionMigration } from "@/hooks/useClaudeSessionMigration.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useSettingsSync } from "@/hooks/useSettingsSync.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { getPathLeaf } from "@/lib/path.js";
 import { logger } from "@/logger.js";
 import {
@@ -25,7 +25,7 @@ import {
   type OnboardingWorkspaceCandidate,
 } from "@/onboarding/OnboardingFlowParts.js";
 import { OnboardingAgentsFileStep } from "@/onboarding/OnboardingAgentsFileStep.js";
-import { useZCodeStore } from "@/store/StoreProvider.js";
+import { useZodyStore } from "@/store/StoreProvider.js";
 import {
   shouldAutoScanOnboardingSessions,
   useOnboardingMigration,
@@ -53,7 +53,7 @@ export function OnboardingDialog(props: {
   workspaceIdentity?: string;
   isDesktop?: boolean;
 }) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const confirmDialog = useConfirmDialog();
   const settingsSync = useSettingsSync({
     workspacePath: props.workspacePath,
@@ -63,8 +63,8 @@ export function OnboardingDialog(props: {
     workspacePath: props.workspacePath ?? null,
     isDesktop: props.isDesktop,
   });
-  const onboardingDialogRequested = useZCodeStore((state) => state.onboardingDialogRequested);
-  const clearOnboardingDialogRequest = useZCodeStore((state) => state.clearOnboardingDialogRequest);
+  const onboardingDialogRequested = useZodyStore((state) => state.onboardingDialogRequested);
+  const clearOnboardingDialogRequest = useZodyStore((state) => state.clearOnboardingDialogRequest);
   const [view, setView] = useState<OnboardingView>("welcome");
   const [wizardStep, setWizardStep] = useState<OnboardingWizardStep>("session");
   const [selectedWorkspacePaths, setSelectedWorkspacePaths] = useState<string[]>([]);
@@ -324,7 +324,7 @@ export function OnboardingDialog(props: {
             // fork 数据隔离：家目录级数据根改为 .zody，避免与上游 ZCode 共用。
             target:
               agentsFileMigration.status?.targetPath ??
-              `~/${ZCODE_DATA_ROOT_DIR_NAME}/AGENTS.md`,
+              `~/${ZODY_DATA_ROOT_DIR_NAME}/AGENTS.md`,
           },
         ),
         confirmLabel: intl.formatMessage({ id: "onboarding.agentsFile.confirmAction" }),

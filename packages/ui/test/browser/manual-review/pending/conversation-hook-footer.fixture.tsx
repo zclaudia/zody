@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
-import type { ConversationRow } from "@zcode/shared/zcode-protocol-v4";
+import type { ConversationRow } from "@zody/shared/zody-protocol-v4";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { ConversationTurnGroup } from "@/v4/ConversationTurnGroup.js";
 import { buildConversationTurnRenderUnits } from "@/v4/conversationTurnRenderUnits.js";
@@ -72,7 +72,7 @@ const [unit] = buildConversationTurnRenderUnits(rows);
 // 真实组件、主题与点击行为；只读投影输入固定，不建立 runtime 或远控连接。
 createRoot(document.getElementById("root")!).render(
   <TooltipProvider>
-    <ZCodeIntlProvider initialLocale={mobile ? "en-US" : "zh-CN"}>
+    <ZodyIntlProvider initialLocale={mobile ? "en-US" : "zh-CN"}>
       <main className="min-h-dvh bg-background text-foreground @container/conversation">
         <ConversationTurnGroup
           unit={unit!}
@@ -85,6 +85,6 @@ createRoot(document.getElementById("root")!).render(
           onFeedbackChange={() => undefined}
         />
       </main>
-    </ZCodeIntlProvider>
+    </ZodyIntlProvider>
   </TooltipProvider>,
 );

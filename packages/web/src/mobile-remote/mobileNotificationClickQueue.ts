@@ -1,4 +1,4 @@
-import type { MobileNotificationActionClick, MobileNotificationClick } from "@zcode/shared";
+import type { MobileNotificationActionClick, MobileNotificationClick } from "@zody/shared";
 
 /** 同一个 pending 意图只执行一次；成功后保留最近的 key，避免队列无限增长。 */
 const MAX_COMPLETED_INTENTS = 64;

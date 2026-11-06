@@ -1,6 +1,6 @@
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import type { ZCodeSessionFile, ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodySessionFile, ZodyTaskMeta } from "@zody/shared";
 import { getLegacyTaskSessionSnapshotPath } from "#src/paths.js";
 import {
   parseLegacyTaskSessionFile,
@@ -10,7 +10,7 @@ import type { TaskIndexRepo } from "#src/session/taskIndexRepo.js";
 
 const TASK_SEARCH_TEXT_MAX_CHARS = 200_000;
 
-export function buildSearchableTextFromMessages(messages: ZCodeSessionFile["messages"]): string {
+export function buildSearchableTextFromMessages(messages: ZodySessionFile["messages"]): string {
   const parts: string[] = [];
   let total = 0;
   for (const message of messages) {
@@ -47,13 +47,13 @@ export async function persistImportedClaudeTask(params: {
   sessionFile: LegacyTaskSessionFile;
   /** 仅当导入目标 workspace 与筛选 workspace 一致时才写入，避免把当前 tab 的 identity 套到其它路径。 */
   workspaceIdentity?: string;
-}): Promise<ZCodeTaskMeta> {
+}): Promise<ZodyTaskMeta> {
   const parsed = parseLegacyTaskSessionFile(params.sessionFile);
   const meta: LegacyTaskSessionFile["meta"] = {
     ...parsed.meta,
     ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
   };
-  const indexMeta: ZCodeTaskMeta = {
+  const indexMeta: ZodyTaskMeta = {
     ...meta,
     // SQLite task index 的 mode 列仍是 NOT NULL；导入 snapshot 本身保持过滤后的缺省。
     mode: meta.mode ?? "default",

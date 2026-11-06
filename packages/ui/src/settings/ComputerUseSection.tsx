@@ -6,17 +6,17 @@
 //    只会制造「未知 + 点了没反应」的失真呈现）；接入窄链 Helper 的真实状态查询属 phase1 收尾。
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSettings } from "@/hooks/useSettingService.js";
-import type { CuaOsSupport, RemoteTarget } from "@zcode/shared";
+import type { CuaOsSupport, RemoteTarget } from "@zody/shared";
 import {
   DesktopCommandIds,
   isRemoteWorkspaceIdentity,
-  ZCODE_CUA_OFFICIAL_PLUGIN_ID,
-} from "@zcode/shared";
+  ZODY_CUA_OFFICIAL_PLUGIN_ID,
+} from "@zody/shared";
 import { toast } from "@/components/ui/toast.js";
 import { Switch } from "@/components/ui/switch.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { useServices } from "@/hooks/useServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useCuaBuildCapability } from "@/hooks/useCuaBuildCapability.js";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
 import { SettingsGroupCard, SettingsRow } from "@/settings/SettingsPageParts.js";
@@ -46,7 +46,7 @@ export function ComputerUseSection({
   remoteSessionId,
   remoteTarget,
 }: ComputerUseSectionProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const pluginManagementService = useServices().pluginManagementService;
   const platform = usePlatform();
   const isLocalWorkspace =
@@ -104,9 +104,9 @@ export function ComputerUseSection({
   const setPluginEnabled = usePluginManagementStore((state) => state.setEnabled);
   const initializePlugins = usePluginManagementStore((state) => state.initialize);
   const togglingPluginId = usePluginManagementStore((state) => state.togglingPluginId);
-  const cuaPlugin = plugins.find((plugin) => plugin.id === ZCODE_CUA_OFFICIAL_PLUGIN_ID);
+  const cuaPlugin = plugins.find((plugin) => plugin.id === ZODY_CUA_OFFICIAL_PLUGIN_ID);
   const cuaEnabled = cuaPlugin?.enabled ?? false;
-  const cuaToggling = togglingPluginId === ZCODE_CUA_OFFICIAL_PLUGIN_ID;
+  const cuaToggling = togglingPluginId === ZODY_CUA_OFFICIAL_PLUGIN_ID;
 
   const initRef = useRef(false);
   useEffect(() => {
@@ -160,7 +160,7 @@ export function ComputerUseSection({
       const operationContextKey = pluginToggleContextKey;
       // 切换 zcode-cua 插件 = 同步其 MCP server + skill 一起启用/禁用。
       const completed = await runAfterSuccessfulPluginEnabledChange({
-        submit: () => setPluginEnabled(ZCODE_CUA_OFFICIAL_PLUGIN_ID, next, pluginManagementService),
+        submit: () => setPluginEnabled(ZODY_CUA_OFFICIAL_PLUGIN_ID, next, pluginManagementService),
         isCurrent: () =>
           mountedRef.current &&
           pluginToggleGenerationRef.current === operationGeneration &&

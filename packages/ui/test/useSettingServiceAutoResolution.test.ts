@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL, type AppSettings } from "@zcode/shared";
+import { APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL, type AppSettings } from "@zody/shared";
 
 const settingService = {
   get: vi.fn<() => Promise<AppSettings>>(),
@@ -10,7 +10,7 @@ const settingService = {
 const broadcastService = {
   send: vi.fn<(message: { channel: string; payload: unknown }) => Promise<void>>(),
 };
-const zcodeAgentService = {
+const zodyAgentService = {
   syncAppRuntimePreferences:
     vi.fn<
       (preferences: {
@@ -20,13 +20,13 @@ const zcodeAgentService = {
     >(),
 };
 // fork（bot-channels 移除）：botsService mock 与等待其 ACK 的断言随 BotsService 删除
-//（specs/bot-channels-removal.md），update 现在只等 zcodeAgentService 的 Host ACK。
+//（specs/bot-channels-removal.md），update 现在只等 zodyAgentService 的 Host ACK。
 
 vi.mock("@/hooks/useServices.js", () => ({
   useServices: () => ({
     broadcastService,
     settingService,
-    zcodeAgentService,
+    zodyAgentService,
   }),
 }));
 
@@ -43,7 +43,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
     } as AppSettings);
     settingService.update.mockResolvedValue(undefined);
     broadcastService.send.mockResolvedValue(undefined);
-    zcodeAgentService.syncAppRuntimePreferences.mockResolvedValue(undefined);
+    zodyAgentService.syncAppRuntimePreferences.mockResolvedValue(undefined);
   });
 
   it("persists, waits for the current Host ACK, then broadcasts the strict preference", async () => {
@@ -64,7 +64,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
     expect(settingService.update).toHaveBeenCalledWith({
       askUserQuestionAutoResolutionEnabled: false,
     });
-    expect(zcodeAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith({
+    expect(zodyAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith({
       askUserQuestionAutoResolutionEnabled: false,
       modelIoFullRetentionEnabled: false,
     });
@@ -75,7 +75,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
         modelIoFullRetentionEnabled: false,
       },
     });
-    expect(zcodeAgentService.syncAppRuntimePreferences.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(zodyAgentService.syncAppRuntimePreferences.mock.invocationCallOrder[0]).toBeLessThan(
       broadcastService.send.mock.invocationCallOrder[0] ?? 0,
     );
 
@@ -98,7 +98,7 @@ describe("useSettings AskUserQuestion runtime preference", () => {
       askUserQuestionAutoResolutionEnabled: true,
       modelIoFullRetentionEnabled: true,
     };
-    expect(zcodeAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith(preferences);
+    expect(zodyAgentService.syncAppRuntimePreferences).toHaveBeenCalledWith(preferences);
     expect(broadcastService.send).toHaveBeenCalledWith({
       channel: APP_RUNTIME_PREFERENCES_CHANGED_BROADCAST_CHANNEL,
       payload: preferences,

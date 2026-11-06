@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY } from "@zcode/shared";
-import {
-  installDevelopmentMobileRemoteBridge,
-} from "../src/mobile-remote/mobileRemoteDevelopmentBridge.js";
+import { MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY } from "@zody/shared";
+import { installDevelopmentMobileRemoteBridge } from "../src/mobile-remote/mobileRemoteDevelopmentBridge.js";
 import {
   MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX,
   type MobileRemoteDevelopmentStorage,
@@ -42,8 +40,7 @@ const CONTEXT = {
 
 function handoffStorage(context: unknown = CONTEXT) {
   return createStorage({
-    [`${MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX}remote-handoff`]:
-      JSON.stringify(context),
+    [`${MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX}remote-handoff`]: JSON.stringify(context),
   });
 }
 
@@ -122,12 +119,8 @@ describe("development Remote bridge handoff (M2-T2)", () => {
     ).not.toBeNull();
 
     bridge.returnShell("settings", "session-dev-1");
-    expect(navigate).toHaveBeenCalledExactlyOnceWith(
-      expect.stringContaining("mobile-shell.html"),
-    );
-    expect(
-      storage.getItem(`${MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX}remote-handoff`),
-    ).toBeNull();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("mobile-shell.html"));
+    expect(storage.getItem(`${MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX}remote-handoff`)).toBeNull();
     expect(target[MOBILE_UI_REMOTE_BRIDGE_GLOBAL_KEY]).toBeUndefined();
   });
 

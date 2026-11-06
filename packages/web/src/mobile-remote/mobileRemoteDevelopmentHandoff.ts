@@ -1,4 +1,4 @@
-import type { MobileSessionContext } from "@zcode/shared";
+import type { MobileSessionContext } from "@zody/shared";
 import { MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX } from "./mobileRemoteSecureStore.js";
 
 export { MOBILE_REMOTE_DEVELOPMENT_STORAGE_PREFIX };
@@ -47,9 +47,7 @@ export function resolveMobileRemoteDevelopmentStorage(
 }
 
 /** 读取原始 handoff；损坏 JSON 返回 undefined，由调用方 fail closed。 */
-export function readDevelopmentRemoteHandoff(
-  storage?: MobileRemoteDevelopmentStorage,
-): unknown {
+export function readDevelopmentRemoteHandoff(storage?: MobileRemoteDevelopmentStorage): unknown {
   const raw = resolveMobileRemoteDevelopmentStorage(storage)?.getItem(
     storageKey(MOBILE_SHELL_DEVELOPMENT_REMOTE_HANDOFF_KEY),
   );
@@ -78,9 +76,7 @@ export function writeDevelopmentRemoteHandoff(
   );
 }
 
-export function clearDevelopmentRemoteHandoff(
-  storage?: MobileRemoteDevelopmentStorage,
-): void {
+export function clearDevelopmentRemoteHandoff(storage?: MobileRemoteDevelopmentStorage): void {
   resolveMobileRemoteDevelopmentStorage(storage)?.removeItem(
     storageKey(MOBILE_SHELL_DEVELOPMENT_REMOTE_HANDOFF_KEY),
   );
@@ -98,9 +94,7 @@ export function allocateDevelopmentClientInstanceId(
   if (!resolved) {
     throw new Error("Development client instance storage is unavailable.");
   }
-  const key = storageKey(
-    `${MOBILE_SHELL_DEVELOPMENT_CLIENT_INSTANCE_ID_PREFIX}${backendId}`,
-  );
+  const key = storageKey(`${MOBILE_SHELL_DEVELOPMENT_CLIENT_INSTANCE_ID_PREFIX}${backendId}`);
   const existing = resolved.getItem(key);
   if (existing) {
     return existing;

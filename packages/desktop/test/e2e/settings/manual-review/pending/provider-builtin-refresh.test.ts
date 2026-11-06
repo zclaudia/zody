@@ -1,4 +1,4 @@
-import { NodePersonalProviderConfigRepository } from "@zcode/provider-node";
+import { NodePersonalProviderConfigRepository } from "@zody/provider-node";
 import { createServer } from "node:http";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -7,7 +7,7 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,
@@ -67,12 +67,12 @@ describe("Todo127 Built-in 设置刷新整链", () => {
       await mkdir(root, { recursive: true });
       // afterSession 会清理隔离工作区，验收证据必须写到报告目录。
       const artifacts = join(
-        process.env.ZCODE_E2E_ARTIFACT_DIR || join(process.cwd(), ".e2e-artifacts"),
+        process.env.ZODY_E2E_ARTIFACT_DIR || join(process.cwd(), ".e2e-artifacts"),
         "provider-builtin-refresh",
       );
       await mkdir(artifacts, { recursive: true });
       const release = JSON.parse(
-        await readFile(join(process.cwd(), "../../config/provider/zcode-builtin.json"), "utf8"),
+        await readFile(join(process.cwd(), "../../config/provider/zody-builtin.json"), "utf8"),
       );
       const clientConfig = JSON.parse(
         await readFile(

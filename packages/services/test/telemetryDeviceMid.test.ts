@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setDataBaseDir } from "../src/paths.js";
-import { buildZCodeSourceHeaders } from "../src/providers/sourceHeaders.js";
+import { buildZodySourceHeaders } from "../src/providers/sourceHeaders.js";
 import { createTelemetryCore, ensureTelemetryDeviceMid } from "../src/telemetry/telemetryCore.js";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -30,17 +30,17 @@ describe("ensureTelemetryDeviceMid", () => {
 
   it("远端主机没有 telemetry-state.json 时 ensureTelemetryDeviceMid 会创建；来源头已停发 X-Device-Mid", async () => {
     // F2.10：来源头不再携带 X-Device-Mid；ensureTelemetryDeviceMid 只服务遥测 body 的
-    // device_mid 字段（遥测上报整体由构建期 ZCODE_TELEMETRY_REPORT_ENDPOINT 控制）。
+    // device_mid 字段（遥测上报整体由构建期 ZODY_TELEMETRY_REPORT_ENDPOINT 控制）。
     const { stateFile } = createIsolatedDataBaseDir();
     expect(existsSync(stateFile)).toBe(false);
-    expect(buildZCodeSourceHeaders()["X-Device-Mid"]).toBeUndefined();
+    expect(buildZodySourceHeaders()["X-Device-Mid"]).toBeUndefined();
 
     const deviceMid = await ensureTelemetryDeviceMid();
 
     expect(deviceMid).toMatch(UUID_PATTERN);
     expect(JSON.parse(readFileSync(stateFile, "utf-8"))).toEqual({ deviceMid });
     // 来源头停发后，state 文件里的 deviceMid 不再进入任何请求头。
-    expect(buildZCodeSourceHeaders()["X-Device-Mid"]).toBeUndefined();
+    expect(buildZodySourceHeaders()["X-Device-Mid"]).toBeUndefined();
   });
 
   it("已有 deviceMid 时复用现值，不改写 state 文件里的其他字段", async () => {

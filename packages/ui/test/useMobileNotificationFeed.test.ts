@@ -5,7 +5,7 @@ import type {
   IMobileNotificationReaderContract,
   MobileNotification,
   MobileNotificationPage,
-} from "@zcode/services/mobile-notifications";
+} from "@zody/services/mobile-notifications";
 import {
   MOBILE_FEED_MAX_PAGES,
   useMobileNotificationFeed,

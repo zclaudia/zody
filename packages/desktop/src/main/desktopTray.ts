@@ -7,7 +7,7 @@ import {
   isDesktopAutoUpdateActive,
   type DesktopCommandId,
   type Locale,
-} from "@zcode/shared";
+} from "@zody/shared";
 
 let desktopTray: Tray | null = null;
 let rebuildDesktopTrayContextMenu: (() => void) | null = null;

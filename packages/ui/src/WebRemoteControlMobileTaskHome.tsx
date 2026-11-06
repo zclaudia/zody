@@ -27,7 +27,7 @@ import {
   type WebRemoteControlTaskDisplayStatus,
   type WebRemoteControlTaskTarget,
   type WebRemoteControlWorkspaceListResult,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import { Button } from "@/components/ui/button.js";
 import {
@@ -44,7 +44,7 @@ import {
   useWebRemoteControlTaskOpen,
 } from "@/hooks/useWebRemoteControlTaskOpen.js";
 import { getErrorMessage } from "@/hooks/chatActionHelpers.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { formatTaskRelativeTime } from "@/lib/taskListItemPresentation.js";
 import { TaskWorkflowRunLines } from "@/components/workflow-run-line/TaskWorkflowRunLines.js";
 import { getTaskTimelineGroupMessage, groupTaskTimelineItems } from "@/lib/taskTimelineGroups.js";
@@ -151,7 +151,7 @@ const MobileTaskRow = memo(function MobileTaskRow({
   timeField,
   onOpen,
 }: MobileTaskRowProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const taskTitle = task.title || intl.formatMessage({ id: "taskList.untitled" });
   const displayStatus = task.displayStatus ?? "idle";
 
@@ -214,9 +214,7 @@ const MobileTaskRow = memo(function MobileTaskRow({
             对齐最近项目行的信息密度；标题保持 text-ui-base。 */}
           {variant === "workspace" ? (
             <span className="mt-1 flex min-w-0 items-center gap-1.5 text-ui-sm text-foreground-subtle">
-              <span className="truncate">
-                {formatTaskRelativeTime(task.updatedAt, intl)}
-              </span>
+              <span className="truncate">{formatTaskRelativeTime(task.updatedAt, intl)}</span>
             </span>
           ) : (
             <span className="mt-1 flex min-w-0 items-center gap-1.5 text-ui-sm text-foreground-subtle">
@@ -296,7 +294,7 @@ const MobileWorkspaceCard = memo(function MobileWorkspaceCard({
   onStartDraft,
   onOpenTask,
 }: MobileWorkspaceCardProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const disconnected = isDisconnectedRemoteWorkspaceTarget(group.workspace);
 
   return (
@@ -381,11 +379,7 @@ const MobileWorkspaceCard = memo(function MobileWorkspaceCard({
               { id: "webRemoteControl.mobileHome.taskCount" },
               { count: String(group.tasks.length) },
             )}
-            {expanded ? (
-              <ChevronDown className="size-4" />
-            ) : (
-              <ChevronRight className="size-4" />
-            )}
+            {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
           </span>
         </button>
         {onOpenFiles && !disconnected ? (
@@ -460,9 +454,7 @@ const MobileWorkspaceCard = memo(function MobileWorkspaceCard({
                 key={rowKey}
                 task={task}
                 variant="workspace"
-                selected={
-                  taskWorkspaceKey === activeWorkspaceKey && task.taskId === activeTaskId
-                }
+                selected={taskWorkspaceKey === activeWorkspaceKey && task.taskId === activeTaskId}
                 switching={switchingTaskKey === rowKey}
                 disabled={Boolean(switchingTaskKey)}
                 disconnected={disconnected}
@@ -526,7 +518,7 @@ export function WebRemoteControlMobileTaskHome({
   refreshKey?: number;
   onCrossWorkspaceSwitchingChange?: (switching: boolean) => void;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const [result, setResult] = useState<WebRemoteControlWorkspaceListResult>(
     initialResult ?? EMPTY_WEB_REMOTE_CONTROL_WORKSPACE_LIST,
   );
@@ -548,7 +540,10 @@ export function WebRemoteControlMobileTaskHome({
   const [expandedWorkspaceKeysState, setExpandedWorkspaceKeysState] = useState<Set<string>>(() => {
     // shell-4 修复：重挂载时优先恢复模块级所有者里的展开状态；
     // 首次挂载（所有者为空）回落到默认展开规则。
-    return readPersistedExpandedWorkspaceKeys() ?? new Set(initialExpansionModel.defaultExpandedWorkspaceKeys);
+    return (
+      readPersistedExpandedWorkspaceKeys() ??
+      new Set(initialExpansionModel.defaultExpandedWorkspaceKeys)
+    );
   });
   // shell-4 修复：组件 state 是模块级所有者的镜像；所有写入都同步回写所有者，
   // 保证进入聊天页（组件卸载）后展开状态不丢。
@@ -665,7 +660,12 @@ export function WebRemoteControlMobileTaskHome({
 
     didInitializeLoadedExpansionRef.current = true;
     setExpandedWorkspaceKeys(new Set(model.defaultExpandedWorkspaceKeys));
-  }, [defaultExpandedWorkspaceKeySignature, loading, model.defaultExpandedWorkspaceKeys, setExpandedWorkspaceKeys]);
+  }, [
+    defaultExpandedWorkspaceKeySignature,
+    loading,
+    model.defaultExpandedWorkspaceKeys,
+    setExpandedWorkspaceKeys,
+  ]);
 
   useEffect(() => {
     if (loading || result.workspaces.length === 0) {

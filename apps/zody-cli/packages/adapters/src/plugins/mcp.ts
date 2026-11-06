@@ -1,0 +1,410 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import type {
+  McpOAuthConfig,
+  McpServerConfig,
+  McpServerRuntimeSource,
+  PluginDiagnostic,
+  PluginManifest,
+  PluginOptionValues,
+} from "@zody/contracts";
+import { ZODY_OFFICIAL_PLUGIN_MARKETPLACE } from "@zody/contracts";
+import { ZODY_PLUGIN_ID_ENV_KEY } from "@zody/shared";
+import type { LoadedPlugin } from "./types.js";
+import { isNotFoundError, isPluginOptionValue, isRecord, resolveInside } from "./helpers.js";
+
+const SUPPORTED_MCP_TYPES = new Set(["stdio", "http", "sse"]);
+const TEMPLATE_PATTERN = /\$\{([^}]+)\}/g;
+const ENVIRONMENT_VARIABLE_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+export function loadPluginMcpServerDefinitions(input: {
+  diagnostics: PluginDiagnostic[];
+  loaded: LoadedPlugin;
+}): Record<string, unknown> {
+  const fromFile = loadMcpServersFromFile(join(input.loaded.rootPath, ".mcp.json"), input);
+  const fromManifest = loadMcpServersFromSpec(input.loaded.manifest.mcpServers, input);
+  return { ...fromFile, ...fromManifest };
+}
+
+export function resolvePluginMcpServers(input: {
+  dataPath: string;
+  definitions?: Record<string, unknown>;
+  diagnostics: PluginDiagnostic[];
+  env: Record<string, string | undefined>;
+  loaded: LoadedPlugin;
+  options: PluginOptionValues;
+  workingDirectory: string;
+}): Record<string, McpServerConfig> {
+  const merged = input.definitions ?? loadPluginMcpServerDefinitions(input);
+  const context = createVariableContext(input);
+  const result: Record<string, McpServerConfig> = {};
+
+  for (const [name, server] of Object.entries(merged)) {
+    try {
+      result[toNamespacedServerName(input.loaded, name)] = resolveMcpServerConfig(server, context);
+    } catch (error) {
+      input.diagnostics.push({
+        code:
+          error instanceof PluginVariableError
+            ? "plugin_variable_missing"
+            : "plugin_mcp_server_disabled",
+        message: error instanceof Error ? error.message : `Invalid MCP server: ${name}`,
+        path: input.loaded.manifestPath,
+        pluginId: input.loaded.id,
+        severity: "error",
+      });
+    }
+  }
+
+  return result;
+}
+
+function toNamespacedServerName(loaded: LoadedPlugin, serverName: string): string {
+  return `plugin:${loaded.manifest.name}:${serverName}`;
+}
+
+function loadMcpServersFromSpec(
+  spec: unknown,
+  input: {
+    diagnostics: PluginDiagnostic[];
+    loaded: LoadedPlugin;
+  },
+): Record<string, unknown> {
+  if (spec === undefined) return {};
+  if (typeof spec === "string") {
+    const path = resolveInside(input.loaded.rootPath, spec);
+    if (!path) {
+      input.diagnostics.push({
+        code: "plugin_component_path_invalid",
+        message: `Plugin mcpServers path escapes plugin root: ${spec}`,
+        path: input.loaded.manifestPath,
+        pluginId: input.loaded.id,
+        severity: "error",
+      });
+      return {};
+    }
+    return loadMcpServersFromFile(path, input);
+  }
+  if (Array.isArray(spec)) {
+    return Object.assign({}, ...spec.map((item) => loadMcpServersFromSpec(item, input)));
+  }
+  return normalizeMcpServersShape(spec, input);
+}
+
+function loadMcpServersFromFile(
+  path: string,
+  input: {
+    diagnostics: PluginDiagnostic[];
+    loaded: LoadedPlugin;
+  },
+): Record<string, unknown> {
+  try {
+    return normalizeMcpServersShape(JSON.parse(readFileSync(path, "utf8")), input);
+  } catch (error) {
+    if (isNotFoundError(error)) return {};
+    input.diagnostics.push({
+      code: "plugin_mcp_read_failed",
+      message: error instanceof Error ? error.message : `Failed to read MCP config: ${path}`,
+      path,
+      pluginId: input.loaded.id,
+      severity: "error",
+    });
+    return {};
+  }
+}
+
+function normalizeMcpServersShape(
+  value: unknown,
+  input: {
+    diagnostics: PluginDiagnostic[];
+    loaded: LoadedPlugin;
+  },
+): Record<string, unknown> {
+  if (!isRecord(value)) {
+    input.diagnostics.push({
+      code: "plugin_mcp_invalid",
+      message: "Plugin MCP config must be an object",
+      path: input.loaded.manifestPath,
+      pluginId: input.loaded.id,
+      severity: "error",
+    });
+    return {};
+  }
+  const servers = isRecord(value.mcpServers) ? value.mcpServers : value;
+  return Object.fromEntries(Object.entries(servers).filter(([, config]) => isRecord(config)));
+}
+
+interface VariableContext {
+  dataPath: string;
+  env: Record<string, string | undefined>;
+  loaded: LoadedPlugin;
+  options: PluginOptionValues;
+  userConfigDefaults: PluginOptionValues;
+  workingDirectory: string;
+}
+
+function createVariableContext(input: {
+  dataPath: string;
+  env: Record<string, string | undefined>;
+  loaded: LoadedPlugin;
+  options: PluginOptionValues;
+  workingDirectory: string;
+}): VariableContext {
+  return {
+    dataPath: input.dataPath,
+    env: input.env,
+    loaded: input.loaded,
+    options: input.options,
+    userConfigDefaults: getUserConfigDefaults(input.loaded.manifest),
+    workingDirectory: input.workingDirectory,
+  };
+}
+
+function getUserConfigDefaults(manifest: PluginManifest): PluginOptionValues {
+  const defaults: PluginOptionValues = {};
+  for (const [key, option] of Object.entries(manifest.userConfig ?? {})) {
+    if (isPluginOptionValue(option.default)) defaults[key] = option.default;
+  }
+  return defaults;
+}
+
+function resolveMcpServerConfig(server: unknown, context: VariableContext): McpServerConfig {
+  if (!isRecord(server)) throw new Error("MCP server config must be an object");
+  const type = typeof server.type === "string" ? server.type : inferMcpType(server);
+  if (!SUPPORTED_MCP_TYPES.has(type)) throw new Error(`Unsupported MCP transport: ${type}`);
+  // ZCode 官方市场同时包含随应用装载的 Builtin Plugin 与按需安装的 CDN Plugin；后者运行时
+  // source 为 `cache`，因此必须按 marketplace 身份归类，不能只看 loader source。
+  const source: McpServerRuntimeSource = {
+    kind: context.loaded.marketplace === ZODY_OFFICIAL_PLUGIN_MARKETPLACE ? "builtin" : "plugin",
+  };
+
+  // fork（F4.6）：`auth: { type: "zcode_official" }` 解析与 `official` provenance 随
+  // 官方 MCP 鉴权链删除；插件 MCP 只保留普通配置与 OAuth 能力。
+
+  if (type === "stdio") {
+    const command = requireString(server.command, "stdio MCP server requires command");
+    const env = resolveStringRecord(
+      {
+        CLAUDE_PROJECT_DIR: context.workingDirectory,
+        ZCODE_PROJECT_DIR: context.workingDirectory,
+        ...(isRecord(server.env) ? server.env : {}),
+      },
+      context,
+      { allowSensitive: true },
+    );
+    // R55：插件身份必须由 resolver 权威写入（loaded.id 来自本地 plugin registry，不是可序列化
+    // 配置），不能让第三方伪造 official zcode-cua 身份后获得只应定向注入给内置插件的 broker 凭据。
+    // 两套身份组（ZODY_/ZCODE_ 的 ROOT/DATA/ID/NAME 加 CLAUDE_ 的 ROOT/DATA）从同一上下文一次
+    // 生成，并在 manifest env 展开之后覆盖；宿主环境由 MCP transport 先合并，因此外部 env 也无法
+    // 分别覆盖任一组。依据 specs/zody-rename-plugin-env.md §S1。
+    Object.assign(env, createPluginIdentityEnv(context.loaded, context.dataPath));
+    return {
+      type: "stdio",
+      command: resolveTemplate(command, context, { allowSensitive: false }),
+      args: Array.isArray(server.args)
+        ? server.args
+            .filter((arg): arg is string => typeof arg === "string")
+            .map((arg) => resolveTemplate(arg, context, { allowSensitive: false }))
+        : undefined,
+      cwd:
+        typeof server.cwd === "string"
+          ? resolveTemplate(server.cwd, context, { allowSensitive: false })
+          : undefined,
+      enabled: typeof server.enabled === "boolean" ? server.enabled : undefined,
+      env,
+      source,
+      timeoutMs: typeof server.timeoutMs === "number" ? server.timeoutMs : undefined,
+    };
+  }
+
+  const url = requireString(server.url, `${type} MCP server requires url`);
+  const headers = isRecord(server.headers)
+    ? resolveStringRecord(server.headers, context, { allowSensitive: true })
+    : undefined;
+  const oauth = resolveMcpOAuthConfig(server.oauth, context);
+
+  return {
+    type,
+    url: resolveTemplate(url, context, { allowSensitive: false }),
+    enabled: typeof server.enabled === "boolean" ? server.enabled : undefined,
+    headers,
+    oauth,
+    source,
+    timeoutMs: typeof server.timeoutMs === "number" ? server.timeoutMs : undefined,
+  } as McpServerConfig;
+}
+
+/**
+ * R55：从同一个权威插件上下文生成两套身份 env 与 Claude 兼容 ROOT/DATA。
+ * `ZODY_PLUGIN_ID_ENV_KEY`（shared 冻结常量）仍是 legacy `ZCODE_PLUGIN_ID` 的单一来源，
+ * 避免与 official zcode-cua broker 的识别逻辑漂移；其余键成对出现且取值相同。
+ */
+function createPluginIdentityEnv(
+  loaded: LoadedPlugin,
+  dataPath: string,
+): Record<string, string> {
+  return {
+    CLAUDE_PLUGIN_DATA: dataPath,
+    CLAUDE_PLUGIN_ROOT: loaded.rootPath,
+    ZODY_PLUGIN_DATA: dataPath,
+    ZODY_PLUGIN_ID: loaded.id,
+    ZODY_PLUGIN_NAME: loaded.manifest.name,
+    ZODY_PLUGIN_ROOT: loaded.rootPath,
+    [ZODY_PLUGIN_ID_ENV_KEY]: loaded.id,
+    ZCODE_PLUGIN_DATA: dataPath,
+    ZCODE_PLUGIN_NAME: loaded.manifest.name,
+    ZCODE_PLUGIN_ROOT: loaded.rootPath,
+  };
+}
+
+function resolveMcpOAuthConfig(
+  value: unknown,
+  context: VariableContext,
+): McpOAuthConfig | undefined {
+  if (!isRecord(value)) return undefined;
+  if (value.type === "client_credentials") {
+    return {
+      type: "client_credentials",
+      clientId: resolveTemplate(
+        requireString(value.clientId, "MCP OAuth client_credentials requires clientId"),
+        context,
+        { allowSensitive: false },
+      ),
+      clientSecret: resolveTemplate(
+        requireString(value.clientSecret, "MCP OAuth client_credentials requires clientSecret"),
+        context,
+        { allowSensitive: true },
+      ),
+      ...(typeof value.clientName === "string"
+        ? {
+            clientName: resolveTemplate(value.clientName, context, { allowSensitive: false }),
+          }
+        : {}),
+      ...(typeof value.scope === "string"
+        ? {
+            scope: resolveTemplate(value.scope, context, { allowSensitive: false }),
+          }
+        : {}),
+    };
+  }
+  if (value.type === "authorization_code") {
+    return {
+      type: "authorization_code",
+      ...(typeof value.clientId === "string"
+        ? {
+            clientId: resolveTemplate(value.clientId, context, { allowSensitive: false }),
+          }
+        : {}),
+      ...(typeof value.clientSecret === "string"
+        ? {
+            clientSecret: resolveTemplate(value.clientSecret, context, { allowSensitive: true }),
+          }
+        : {}),
+      ...(typeof value.clientName === "string"
+        ? {
+            clientName: resolveTemplate(value.clientName, context, { allowSensitive: false }),
+          }
+        : {}),
+      ...(typeof value.redirectPath === "string"
+        ? {
+            redirectPath: resolveTemplate(value.redirectPath, context, { allowSensitive: false }),
+          }
+        : {}),
+      ...(typeof value.scope === "string"
+        ? {
+            scope: resolveTemplate(value.scope, context, { allowSensitive: false }),
+          }
+        : {}),
+    };
+  }
+  throw new Error(`Unsupported MCP OAuth type: ${String(value.type)}`);
+}
+
+function inferMcpType(server: Record<string, unknown>): string {
+  return typeof server.command === "string" ? "stdio" : "http";
+}
+
+function requireString(value: unknown, message: string): string {
+  if (typeof value === "string" && value.length > 0) return value;
+  throw new Error(message);
+}
+
+function resolveStringRecord(
+  record: Record<string, unknown>,
+  context: VariableContext,
+  options: { allowSensitive: boolean },
+): Record<string, string> {
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (typeof value === "string") result[key] = resolveTemplate(value, context, options);
+  }
+  return result;
+}
+
+function resolveTemplate(
+  value: string,
+  context: VariableContext,
+  options: { allowSensitive: boolean },
+): string {
+  return value.replace(TEMPLATE_PATTERN, (match, name: string) => {
+    switch (name) {
+      case "CLAUDE_PLUGIN_ROOT":
+      case "ZCODE_PLUGIN_ROOT":
+      case "ZODY_PLUGIN_ROOT":
+        return context.loaded.rootPath;
+      case "CLAUDE_PLUGIN_DATA":
+      case "ZCODE_PLUGIN_DATA":
+      case "ZODY_PLUGIN_DATA":
+        return context.dataPath;
+      case "CLAUDE_PROJECT_DIR":
+      case "ZCODE_PROJECT_DIR":
+        return context.workingDirectory;
+      case "CLAUDE_CODE_SESSION_ID":
+      case "CLAUDE_SESSION_ID":
+      case "ZCODE_SESSION_ID":
+        throw new PluginVariableError(
+          `Plugin variable requires a runtime session context: ${name}`,
+        );
+      case "CLAUDE_SKILL_DIR":
+      case "ZCODE_SKILL_DIR":
+        throw new PluginVariableError(`Plugin variable requires a skill context: ${name}`);
+      default:
+        break;
+    }
+
+    if (name.startsWith("user_config.")) {
+      const key = name.slice("user_config.".length);
+      if (
+        context.loaded.manifest.userConfig?.[key]?.sensitive === true &&
+        !options.allowSensitive
+      ) {
+        throw new PluginVariableError(
+          `Sensitive plugin user_config value cannot be used in this field: ${key}`,
+        );
+      }
+      const configValue = context.options[key] ?? context.userConfigDefaults[key];
+      if (configValue === undefined) {
+        throw new PluginVariableError(`Missing plugin user_config value: ${key}`);
+      }
+      return String(configValue);
+    }
+    if (name.startsWith("ZCODE_")) {
+      const envValue = context.env[name];
+      if (envValue === undefined)
+        throw new PluginVariableError(`Missing environment variable: ${name}`);
+      return envValue;
+    }
+    if (options.allowSensitive && ENVIRONMENT_VARIABLE_NAME_PATTERN.test(name)) {
+
+      // token。只在敏感 sink 解析，避免 secret 被展开到 args、URL 或其它可见字段。
+      const envValue = context.env[name];
+      if (envValue === undefined)
+        throw new PluginVariableError(`Missing environment variable: ${name}`);
+      return envValue;
+    }
+
+    return match;
+  });
+}
+
+class PluginVariableError extends Error {}

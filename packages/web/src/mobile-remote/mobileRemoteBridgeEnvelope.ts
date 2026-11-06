@@ -1,4 +1,4 @@
-import { MOBILE_UI_BRIDGE_SCHEMA_VERSION } from "@zcode/shared";
+import { MOBILE_UI_BRIDGE_SCHEMA_VERSION } from "@zody/shared";
 
 /**
  * `ZodyRemoteBridge` 的 JSON envelope 解析（与 M2-T5 `ZodyRemoteBridge.kt` 对齐）。
@@ -35,9 +35,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * 解析成功 envelope；失败 envelope 转成带稳定 error.code 的异常。
  * `raw` 必须是字符串：原生 `@JavascriptInterface` 方法一律返回 JSON 字符串。
  */
-export function parseMobileRemoteBridgeEnvelope(
-  raw: unknown,
-): MobileRemoteBridgeSuccessEnvelope {
+export function parseMobileRemoteBridgeEnvelope(raw: unknown): MobileRemoteBridgeSuccessEnvelope {
   if (typeof raw !== "string") {
     throw new MobileRemoteBridgeEnvelopeError(
       "native-bridge-unavailable",
@@ -65,8 +63,7 @@ export function parseMobileRemoteBridgeEnvelope(
   }
   if (!parsed.ok) {
     const error = isRecord(parsed.error) ? parsed.error : undefined;
-    const code =
-      typeof error?.code === "string" ? error.code : "native-bridge-unavailable";
+    const code = typeof error?.code === "string" ? error.code : "native-bridge-unavailable";
     const message = typeof error?.message === "string" ? error.message : undefined;
     throw new MobileRemoteBridgeEnvelopeError(code, message);
   }

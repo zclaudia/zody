@@ -7,14 +7,14 @@ ZCode Computer Use Helper 必须作为独立 `.app` 运行，才能成为 macOS 
 产品安装位置固定为：
 
 ```text
-${ZCODE_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app
+${ZODY_HOME:-$HOME/.zcode}/computer-use/ZCode Computer Use.app
 ```
 
-内部 `ZCode Preview` 与生产版共享 `ZCODE_HOME` 里的任务、配置和凭据，但使用独立的 Helper
+内部 `ZCode Preview` 与生产版共享 `ZODY_HOME` 里的任务、配置和凭据，但使用独立的 Helper
 版本目录，避免两个不同 App 版本依次使用 CUA 时互相覆盖或触发降级保护：
 
 ```text
-${ZCODE_HOME:-$HOME/.zcode}/computer-use/preview/ZCode Computer Use.app
+${ZODY_HOME:-$HOME/.zcode}/computer-use/preview/ZCode Computer Use.app
 ```
 
 该路径由桌面 Host 注入 `ZCODE_CUA_HELPER_INSTALL_VARIANT=preview`，只改变 CUA 运行组件位置，
@@ -69,7 +69,7 @@ LaunchServices 启动外置 Helper，并把随机 socket/token 注入给可信 s
 
 非打包 macOS desktop 在显式开启上述 unsigned-local 模式后，优先使用非空的
 `ZCODE_CUA_BUNDLED_HELPER_APP_PATH` 作为本地 bundled source；未设置、空串或仅空白时回退到
-`${ZCODE_HOME:-$HOME/.zcode}/computer-use/dev/ZCode Computer Use Dev.app`。路径缺失或校验失败时
+`${ZODY_HOME:-$HOME/.zcode}/computer-use/dev/ZCode Computer Use Dev.app`。路径缺失或校验失败时
 fail-closed，绝不回退下载。正式打包 desktop 会忽略该开发态覆盖并始终使用
 `ZCode.app/Contents/Resources/cua-helper/ZCode Computer Use.app`，因此 shell 不能改写生产来源。
 

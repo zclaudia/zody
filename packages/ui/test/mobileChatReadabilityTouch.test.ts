@@ -18,10 +18,10 @@ import {
   ReasoningTrigger,
 } from "@/components/ai-elements/reasoning.js";
 import { Collapsible } from "@/components/ui/collapsible.js";
-import { ZCodeIntlProvider } from "@/i18n/IntlProvider.js";
+import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
 vi.mock("@/store/StoreProvider.js", () => ({
-  useZCodeStore: (selector: (state: unknown) => unknown) =>
+  useZodyStore: (selector: (state: unknown) => unknown) =>
     selector({
       codePreviewSettings: {
         darkTheme: "github-dark",
@@ -65,7 +65,7 @@ function renderToolSummaryRow(isExpanded: boolean) {
 function renderReasoningTrigger(defaultOpen: boolean) {
   return renderToStaticMarkup(
     createElement(
-      ZCodeIntlProvider,
+      ZodyIntlProvider,
       { initialLocale: "zh-CN" },
       createElement(
         Reasoning,
@@ -135,7 +135,7 @@ describe("触屏（hover:none）作用域的会话页可发现性与命中区", 
   it("assistant markdown 正常渲染容器带 wrap-anywhere 断行兜底", () => {
     const html = renderToStaticMarkup(
       createElement(
-        ZCodeIntlProvider,
+        ZodyIntlProvider,
         { initialLocale: "zh-CN" },
         createElement(
           MessageResponse,

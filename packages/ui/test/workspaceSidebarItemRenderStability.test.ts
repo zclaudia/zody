@@ -1,13 +1,13 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 
 const { taskListCalls, stableServices, zcodeSessionStoreState } = vi.hoisted(() => ({
   taskListCalls: [] as Array<Record<string, unknown>>,
   stableServices: {
-    zcodeTaskService: {
+    zodyTaskService: {
       archiveTask: async () => null,
       renameTask: async () => null,
       setTaskPinned: async () => null,
@@ -96,7 +96,7 @@ vi.mock("@/WorkspaceSidebar/ReconnectingRemoteWorkspaceLogTooltip.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: {
       formatMessage: ({ id }: { id: string }) => id,
     },
@@ -108,12 +108,12 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
   useWorkspaceServices: () => stableServices,
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
-  selectWorkspaceZCodeState: () => ({
+vi.mock("@/store/zodySessionStore.js", () => ({
+  selectWorkspaceZodyState: () => ({
     activeTaskId: null,
     selectedProvider: "codex",
   }),
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector(zcodeSessionStoreState),
 }));
 
@@ -211,7 +211,7 @@ function installMinimalDom() {
   return createMinimalElement(documentMock);
 }
 
-function createTask(): ZCodeTaskMeta {
+function createTask(): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -297,7 +297,7 @@ describe("WorkspaceSidebarItem render stability", () => {
     const tab = createWorkspaceTab();
     const task = createTask();
 
-    function renderWithTaskItems(taskItems: ZCodeTaskMeta[]) {
+    function renderWithTaskItems(taskItems: ZodyTaskMeta[]) {
       act(() => {
         root.render(
           createElement(WorkspaceSidebarItem, {

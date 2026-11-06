@@ -1,4 +1,4 @@
-import type { Locale, SkillScope } from "@zcode/shared";
+import type { Locale, SkillScope } from "@zody/shared";
 
 interface SkillDisplayCandidate {
   name: string;
@@ -38,6 +38,8 @@ const OFFICIAL_PLUGIN_PATH_MARKERS = [
   "/skill-creator-plugin/",
   "/plugin-creator-plugin/",
   "/superpowers-plugin/",
+  // 修复原因：源码目录已改名，而已发布插件仍使用旧 staged 目录。
+  "/zody-guide-plugin/",
   "/zcode-guide-plugin/",
 ];
 

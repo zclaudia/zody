@@ -22,7 +22,7 @@ describe("web Vite config", () => {
         webRoot,
         "silent",
       );
-      expect(result?.config.define?.__ZCODE_VERSION__).toBe(
+      expect(result?.config.define?.__ZODY_VERSION__).toBe(
         JSON.stringify(override?.trim() || version),
       );
     },
@@ -104,8 +104,8 @@ describe("web Vite config", () => {
     );
   });
 
-  it("显式 ZCODE_ENV=production 时注入生产 API 链接", async () => {
-    vi.stubEnv("ZCODE_ENV", "production");
+  it("显式 ZODY_ENV=production 时注入生产 API 链接", async () => {
+    vi.stubEnv("ZODY_ENV", "production");
     const webRoot = resolve(import.meta.dirname, "..");
     const configFile = resolve(webRoot, "vite.config.ts");
     const result = await loadConfigFromFile(
@@ -126,8 +126,8 @@ describe("web Vite config", () => {
   });
 
   it("uses shared ZCode endpoint env override for renderer injection", async () => {
-    vi.stubEnv("ZCODE_ENV", "test");
-    vi.stubEnv("ZCODE_BASE_URL", "https://zcode.z.ai/custom/path");
+    vi.stubEnv("ZODY_ENV", "test");
+    vi.stubEnv("ZODY_BASE_URL", "https://zcode.z.ai/custom/path");
     const webRoot = resolve(import.meta.dirname, "..");
     const configFile = resolve(webRoot, "vite.config.ts");
     const result = await loadConfigFromFile(

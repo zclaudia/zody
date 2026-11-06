@@ -70,22 +70,22 @@ async function buildCandidate(options) {
   );
   const electronVersion = JSON.parse(await readFile(electronPackageJson.path, "utf8")).version;
   const { environment } = await loadBuiltinProviderConfig({ root: REPO_ROOT });
-  const productFlavor = resolveDesktopProductFlavor({ ...process.env, ZCODE_ENV: environment });
+  const productFlavor = resolveDesktopProductFlavor({ ...process.env, ZODY_ENV: environment });
   const buildMetadata = getBuildMetadata();
   const buildTimeDefines = createBuildTimeConfigDefines(
     await resolveBuildTimeConfig(process.env),
   );
   const define = {
-    __ZCODE_VERSION__: JSON.stringify(buildMetadata.appVersion),
-    __ZCODE_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
-    __ZCODE_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
-    __ZCODE_ENV__: JSON.stringify(environment),
-    __ZCODE_PRODUCT_FLAVOR__: JSON.stringify(productFlavor),
+    __ZODY_VERSION__: JSON.stringify(buildMetadata.appVersion),
+    __ZODY_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
+    __ZODY_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
+    __ZODY_ENV__: JSON.stringify(environment),
+    __ZODY_PRODUCT_FLAVOR__: JSON.stringify(productFlavor),
     ...buildTimeDefines,
-    __ZCODE_CUA_HELPER_BUILD_ID__: JSON.stringify(""),
-    __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify([]),
-    __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify({}),
-    __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__: JSON.stringify(candidateNativeHostLaunch),
+    __ZODY_CUA_HELPER_BUILD_ID__: JSON.stringify(""),
+    __ZODY_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify([]),
+    __ZODY_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify({}),
+    __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__: JSON.stringify(candidateNativeHostLaunch),
   };
 
   const outputParent = dirname(options.output);
@@ -181,7 +181,7 @@ async function buildCandidate(options) {
     const mainEntryPath = join(appDir, "main/index.js");
     const mainEntry = await requireFile(mainEntryPath, "candidate main entry");
     const mainSource = await readFile(mainEntryPath, "utf8");
-    if (mainSource.includes("typeof __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__")) {
+    if (mainSource.includes("typeof __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__")) {
       throw new Error("candidate native Host define was not compiled into main");
     }
     if (!mainSource.includes(HELPER_RELATIVE_LAUNCHER)) {
@@ -220,10 +220,10 @@ async function buildCandidate(options) {
     );
 
     const providerConfig = await requireFile(
-      join(REPO_ROOT, "config/provider/zcode-builtin.json"),
+      join(REPO_ROOT, "config/provider/zody-builtin.json"),
       "builtin provider config",
     );
-    const providerDestination = join(resourcesDir, "config/provider/zcode-builtin.json");
+    const providerDestination = join(resourcesDir, "config/provider/zody-builtin.json");
     await copyFile(providerConfig.path, providerDestination);
     const defaultConfig = await requireFile(join(REPO_ROOT, "config/default.json"), "default config");
     await copyFile(defaultConfig.path, join(resourcesDir, "config/default.json"));
@@ -341,7 +341,7 @@ async function buildCandidate(options) {
       nativeHostLaunch: {
         descriptor: candidateNativeHostLaunch,
         resolvedLauncherRelativeToResources: HELPER_RELATIVE_LAUNCHER,
-        compileTimeDefine: "__ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__",
+        compileTimeDefine: "__ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__",
       },
       candidateUiProfile: {
         isolation: "electron-userData-and-sessionData-only",

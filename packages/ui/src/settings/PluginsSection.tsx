@@ -21,15 +21,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.js";
 import { Switch } from "@/components/ui/switch.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
-import { TID_PLUGIN_STORE_BROWSE, ZCODE_CUA_OFFICIAL_PLUGIN_ID } from "@zcode/shared";
-import type { ZCodePluginInfo, ZCodePluginScope, ZCodePluginUserConfigOption } from "@zcode/shared";
+import { TID_PLUGIN_STORE_BROWSE, ZODY_CUA_OFFICIAL_PLUGIN_ID } from "@zody/shared";
+import type { ZodyPluginInfo, ZodyPluginScope, ZodyPluginUserConfigOption } from "@zody/shared";
 import type { CreateTaskRequest } from "@/app-shell/types.js";
 import {
   useBaseWorkspaceServices,
   useWorkspaceServicesResolution,
 } from "@/hooks/useWorkspaceServices.js";
 import { getPathLeaf } from "@/lib/path.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { McpSettingsSection } from "@/settings/McpSettingsSection.js";
 import { SkillsSection } from "@/settings/SkillsSection.js";
 import { CommandsSection } from "@/settings/CommandsSection.js";
@@ -140,7 +140,7 @@ function PluginList({
   onVisibleCountChange,
 }: {
   target: WorkspaceTabState | null;
-  configScope: ZCodePluginScope;
+  configScope: ZodyPluginScope;
   searchQuery: string;
   isWebRemoteControl: boolean;
   onAdd?: () => void;
@@ -150,7 +150,7 @@ function PluginList({
   showMarketplaceBreadcrumb?: boolean;
   onVisibleCountChange?: (count: number) => void;
 }) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const targetServiceResolution = useWorkspaceServicesResolution(
     target?.workspacePath,
     target?.remoteSessionId,
@@ -242,7 +242,7 @@ function PluginList({
       searchQuery,
       storeItemById,
       locale,
-    ).filter((plugin) => plugin.id !== ZCODE_CUA_OFFICIAL_PLUGIN_ID);
+    ).filter((plugin) => plugin.id !== ZODY_CUA_OFFICIAL_PLUGIN_ID);
   }, [
     configScope,
     installedPlugins,
@@ -256,7 +256,7 @@ function PluginList({
     () =>
       storeMatchesTarget
         ? selectPluginsForScope(plugins, installedPlugins, configScope).filter(
-            (plugin) => plugin.id !== ZCODE_CUA_OFFICIAL_PLUGIN_ID,
+            (plugin) => plugin.id !== ZODY_CUA_OFFICIAL_PLUGIN_ID,
           )
         : [],
     [configScope, installedPlugins, plugins, storeMatchesTarget],
@@ -387,9 +387,9 @@ function PluginList({
     }));
   };
   const getPluginOptionValue = (
-    plugin: ZCodePluginInfo,
+    plugin: ZodyPluginInfo,
     key: string,
-    option: ZCodePluginUserConfigOption,
+    option: ZodyPluginUserConfigOption,
   ): string | number | boolean => {
     const draft = pluginOptionsDrafts[plugin.id]?.[key];
     if (draft === null) return "";
@@ -400,7 +400,7 @@ function PluginList({
       (option.type === "boolean" ? false : "")
     );
   };
-  const savePluginOptions = async (plugin: ZCodePluginInfo) => {
+  const savePluginOptions = async (plugin: ZodyPluginInfo) => {
     const { options, clearOptionKeys } = buildPluginConfigPatch(
       plugin,
       pluginOptionsDrafts[plugin.id] ?? {},
@@ -461,7 +461,7 @@ function PluginList({
     });
   }, [initialize, pluginManagementService, configScope, target, targetServiceResolution.rpcReady]);
 
-  const renderPluginRows = (items: ZCodePluginInfo[]) => (
+  const renderPluginRows = (items: ZodyPluginInfo[]) => (
     <div className="overflow-hidden rounded-xl bg-surface">
       {items.map((plugin, index) => (
         <Fragment key={plugin.id}>
@@ -869,8 +869,8 @@ function PluginList({
         onPluginOpenChange={setRemotePluginSyncOpen}
         localPluginSyncService={baseServices.pluginSyncService}
         remotePluginSyncService={targetServiceResolution.services.pluginSyncService}
-        localZCodeAgentService={baseServices.zcodeAgentService}
-        remoteZCodeAgentService={targetServiceResolution.services.zcodeAgentService}
+        localZCodeAgentService={baseServices.zodyAgentService}
+        remoteZCodeAgentService={targetServiceResolution.services.zodyAgentService}
         remoteTarget={connectedRemoteSyncTarget}
         skillWorkspacePath=""
         mcpWorkspacePath=""
@@ -904,7 +904,7 @@ export function PluginsSection({
   onOpenPluginStore,
   showMarketplaceBreadcrumb = false,
 }: PluginsSectionProps) {
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
   const tabs = useTabStore((state) => state.tabs);
   const storeActiveWorkspacePath = useTabStore((state) => state.activeWorkspacePath);
   const storeActiveWorkspaceIdentity = useTabStore((state) => state.activeWorkspaceIdentity);

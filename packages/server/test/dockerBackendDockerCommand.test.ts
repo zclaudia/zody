@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { waitForClose } from "@zcode/server/remote/deployShared.js";
+import { waitForClose } from "@zody/server/remote/deployShared.js";
 
 const mocks = vi.hoisted(() => ({
   execFile: vi.fn(),
@@ -21,14 +21,14 @@ vi.mock("node:child_process", () => ({
   spawn: mocks.spawn,
 }));
 
-vi.mock("@zcode/server/remote/docker-detect.js", () => ({
+vi.mock("@zody/server/remote/docker-detect.js", () => ({
   isDockerAvailable: mocks.isDockerAvailable,
   listDockerContainers: mocks.listDockerContainers,
   probeDockerDaemon: mocks.probeDockerDaemon,
   resolveDockerCommand: mocks.resolveDockerCommand,
 }));
 
-import { DockerBackend } from "@zcode/server/remote/docker-backend.js";
+import { DockerBackend } from "@zody/server/remote/docker-backend.js";
 
 const RESOLVED_DOCKER_COMMAND = "/resolved/bin/docker";
 

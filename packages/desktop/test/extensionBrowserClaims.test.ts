@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ExtensionBridgeClientMessage } from "@zcode/shared/browser-extension-transport";
+import type { ExtensionBridgeClientMessage } from "@zody/shared/browser-extension-transport";
 import {
   EXTENSION_CLAIM_TTL_MS,
   ExtensionClaimManager,

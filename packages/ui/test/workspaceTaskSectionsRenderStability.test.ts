@@ -1,7 +1,7 @@
 import { act, createElement, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZCodeTaskMeta } from "@zcode/shared";
+import type { ZodyTaskMeta } from "@zody/shared";
 import type { WorkspaceTabState } from "@/store/tabStore.js";
 
 const {
@@ -17,18 +17,18 @@ const {
   capturedTaskItemProps: [] as Array<Record<string, unknown>>,
   globalTaskListResult: {
     hasMore: false,
-    items: [] as ZCodeTaskMeta[],
+    items: [] as ZodyTaskMeta[],
     loading: false,
     syncingRemoteWorkspaces: false,
     total: 0,
   },
   remotePinnedState: {
-    itemsByWorkspaceKey: {} as Record<string, ZCodeTaskMeta[]>,
+    itemsByWorkspaceKey: {} as Record<string, ZodyTaskMeta[]>,
     loadingByWorkspaceKey: {} as Record<string, boolean>,
   },
   remoteTimelineState: {
     hasMoreByWorkspaceKey: {} as Record<string, boolean>,
-    itemsByWorkspaceKey: {} as Record<string, ZCodeTaskMeta[]>,
+    itemsByWorkspaceKey: {} as Record<string, ZodyTaskMeta[]>,
     loadingByWorkspaceKey: {} as Record<string, boolean>,
     totalByWorkspaceKey: {} as Record<string, number>,
   },
@@ -38,7 +38,7 @@ const {
     sessionsById: {} as Record<string, unknown>,
   },
   stableBaseServices: {
-    zcodeTaskService: {
+    zodyTaskService: {
       archiveTask: vi.fn(async () => null),
       renameTask: vi.fn(async () => null),
       setTaskPinned: vi.fn(async () => null),
@@ -83,7 +83,7 @@ vi.mock("@/hooks/useWorkspaceServices.js", () => ({
 }));
 
 vi.mock("@/i18n/IntlProvider.js", () => ({
-  useZCodeIntl: () => ({
+  useZodyIntl: () => ({
     intl: stableIntl,
     locale: "en",
   }),
@@ -92,7 +92,7 @@ vi.mock("@/i18n/IntlProvider.js", () => ({
 vi.mock("@/TaskListItem.js", () => ({
   MemoTaskItem: (props: Record<string, unknown>) => {
     capturedTaskItemProps.push(props);
-    return createElement("li", null, (props.task as ZCodeTaskMeta).title);
+    return createElement("li", null, (props.task as ZodyTaskMeta).title);
   },
   TaskListItemContextMenuContent: () => null,
 }));
@@ -109,8 +109,8 @@ vi.mock("@/TaskRenameDialog.js", () => ({
   TaskRenameDialog: () => null,
 }));
 
-vi.mock("@/store/zcodeSessionStore.js", () => ({
-  useZCodeSessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
+vi.mock("@/store/zodySessionStore.js", () => ({
+  useZodySessionStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector(zcodeSessionStoreState),
 }));
 
@@ -156,7 +156,7 @@ vi.mock("@/store/remoteWorkspaceSessionStore.js", () => ({
   ) => selector(remoteWorkspaceSessionState),
 }));
 
-function createTask(overrides: Partial<ZCodeTaskMeta> = {}): ZCodeTaskMeta {
+function createTask(overrides: Partial<ZodyTaskMeta> = {}): ZodyTaskMeta {
   return {
     createdAt: 1,
     mode: "default",
@@ -288,10 +288,10 @@ describe("workspace task section render stability", () => {
     remoteTimelineState.itemsByWorkspaceKey = {};
     remoteTimelineState.loadingByWorkspaceKey = {};
     remoteTimelineState.totalByWorkspaceKey = {};
-    stableBaseServices.zcodeTaskService.archiveTask.mockReset();
-    stableBaseServices.zcodeTaskService.renameTask.mockReset();
-    stableBaseServices.zcodeTaskService.setTaskPinned.mockReset();
-    stableBaseServices.zcodeTaskService.setTaskUnread.mockReset();
+    stableBaseServices.zodyTaskService.archiveTask.mockReset();
+    stableBaseServices.zodyTaskService.renameTask.mockReset();
+    stableBaseServices.zodyTaskService.setTaskPinned.mockReset();
+    stableBaseServices.zodyTaskService.setTaskUnread.mockReset();
     zcodeSessionStoreState.removeOptimisticTaskListItem.mockReset();
     zcodeSessionStoreState.removeTaskState.mockReset();
     zcodeSessionStoreState.setTaskUnreadIndicator.mockReset();

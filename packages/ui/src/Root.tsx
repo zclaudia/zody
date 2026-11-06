@@ -11,7 +11,7 @@ import {
   DesktopCommandIds,
   appRuntimePreferencesChangedBroadcastPayloadSchema,
   type RemoteTarget,
-} from "@zcode/shared";
+} from "@zody/shared";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import { Button } from "@/components/ui/button.js";
 import { PlatformProvider } from "@/hooks/usePlatform.js";
@@ -23,7 +23,7 @@ import {
 import { DirectoryBrowser } from "@/DirectoryBrowser.js";
 import { useTabPersistence } from "@/hooks/useTabPersistence.js";
 import { useWorkspaceServices } from "@/hooks/useWorkspaceServices.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { SSHDialog } from "@/SSHDialog.js";
 import { SettingsPage } from "@/SettingsPage.js";
 import { WelcomeScreen, type LoginCompleteReason } from "@/WelcomeScreen.js";
@@ -39,9 +39,9 @@ import {
   shouldShowRootStartupLoading,
   shouldOpenFallbackWorkspaceAfterCreate,
 } from "@/lib/rootStartupGate.js";
-import { StoreProvider, useZCodeStore } from "@/store/StoreProvider.js";
+import { StoreProvider, useZodyStore } from "@/store/StoreProvider.js";
 import { setMcpStorePlatform } from "@/store/mcpStore.js";
-import { useZCodeSessionStore } from "@/store/zcodeSessionStore.js";
+import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import { TabStoreProvider, useTabStore, useTabStoreApi } from "@/store/TabStoreProvider.js";
 import { isSettingsTab, isWorkspaceTab, type WorkspaceTabState } from "@/store/tabStore.js";
 import { logger } from "@/logger.js";
@@ -119,7 +119,7 @@ function WebRemoteControlTaskSync({
   syncWebRemoteControlTasks: NonNullable<RootProps["platform"]["syncWebRemoteControlTasks"]>;
   workspaceTabs: WorkspaceTabState[];
 }) {
-  const workspaceStates = useZCodeSessionStore((state) => state.workspaces);
+  const workspaceStates = useZodySessionStore((state) => state.workspaces);
   const timelineTaskList = useGlobalTaskList({
     kind: "timeline",
     workspaceTabs,
@@ -326,15 +326,15 @@ function RootInner({
   // fork（F2.6b）：经 IClientConfigService 读 Host 本地 offer，不再依赖订阅服务。
   useDynamicWorkflowAvailabilityLoader(services.clientConfigService);
 
-  const { intl, locale } = useZCodeIntl();
-  const theme = useZCodeStore((state) => state.theme);
+  const { intl, locale } = useZodyIntl();
+  const theme = useZodyStore((state) => state.theme);
   const { settings: appSettings, refresh: refreshAppSettings } = useSettings();
   // docs/dynamic-workflow/launch.md「The user's choice」：设置里的动态工作流选择变化后，通知本窗口
   // 的 Host 重发 CLI 策略（并转发给远程 Host），再重读灰度快照（经 clientConfigService，fork F2.6b）。
   useDynamicWorkflowUserModeSync({
     settingsLoaded: Boolean(appSettings),
     userMode: appSettings?.dynamicWorkflowMode,
-    zcodeAgentService: services.zcodeAgentService,
+    zodyAgentService: services.zodyAgentService,
     clientConfigService: services.clientConfigService,
   });
   // fork（F4.1b）：session-expired 启动标记随 OAuth 链摘除——JWT 过期重启标记只由
@@ -397,7 +397,7 @@ function RootInner({
           return;
         }
         void refreshAppSettings();
-        void services.zcodeAgentService.syncAppRuntimePreferences(parsed.data).catch((error) => {
+        void services.zodyAgentService.syncAppRuntimePreferences(parsed.data).catch((error) => {
           logger.warn("[settings] 同步跨窗口运行时偏好失败", error);
         });
         // fork（bot-channels 移除）：botsService 的跨窗口偏好同步分支随 BotsService 删除。
@@ -436,14 +436,14 @@ function RootInner({
     refreshAppSettings,
     // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
     services.broadcastService,
-    services.zcodeAgentService,
+    services.zodyAgentService,
   ]);
 
   useEffect(() => {
     if (!appSettings) {
       return;
     }
-    void services.zcodeAgentService
+    void services.zodyAgentService
       .syncAppRuntimePreferences({
         askUserQuestionAutoResolutionEnabled:
           appSettings.askUserQuestionAutoResolutionEnabled !== false,
@@ -457,7 +457,7 @@ function RootInner({
     appSettings?.askUserQuestionAutoResolutionEnabled,
     appSettings?.modelIoFullRetentionEnabled,
     // fork（bot-channels 移除）：services.botsService 依赖随 BotsService 删除。
-    services.zcodeAgentService,
+    services.zodyAgentService,
   ]);
 
   const tabs = useTabStore((state) => state.tabs);
@@ -501,7 +501,7 @@ function RootInner({
     }
     return activeTab.workspacePath;
   });
-  const totalUnreadTaskCount = useZCodeSessionStore((state) =>
+  const totalUnreadTaskCount = useZodySessionStore((state) =>
     countAllUnreadTasks(state.workspaces),
   );
   const addTab = useTabStore((state) => state.addTab);

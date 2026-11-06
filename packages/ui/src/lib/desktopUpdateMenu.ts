@@ -1,4 +1,4 @@
-import { isDesktopAutoUpdateActive, type UpdateStatePayload } from "@zcode/shared";
+import { isDesktopAutoUpdateActive, type UpdateStatePayload } from "@zody/shared";
 
 // 更新入口只跟随唯一判定 isDesktopAutoUpdateActive()（fork spec「自动更新」规则 1/3）：
 // production 安装身份且构建期启用自动更新才显示。Preview 身份与 fork 构建都直接隐藏入口，

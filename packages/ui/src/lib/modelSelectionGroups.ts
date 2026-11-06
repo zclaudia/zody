@@ -1,10 +1,10 @@
 import {
-  isZCodeAgentProvider,
-  type ZCodeProvider,
-} from "@zcode/shared";
-import type { ModelSelectionView } from "@zcode/services";
+  isZodyAgentProvider,
+  type ZodyProvider,
+} from "@zody/shared";
+import type { ModelSelectionView } from "@zody/services";
 import type { ModelSelectGroup } from "@/ModelConfigSelect.js";
-import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zcodeCustomModelValue.js";
+import { decodeCustomModelValue, encodeCustomModelValue } from "@/lib/zodyCustomModelValue.js";
 import { shouldShowModelVisionBadge } from "@/lib/modelVisionBadge.js";
 
 export interface ModelProviderGroupLabelOptions {
@@ -19,16 +19,16 @@ export interface ModelProviderGroupLabelOptions {
 }
 
 function supportsRegistryApiFormat(
-  selectedProvider: ZCodeProvider,
+  selectedProvider: ZodyProvider,
   apiFormat: string | null | undefined,
 ): boolean {
   if (!apiFormat) return false;
   // 仅剩 glm（ZCode Agent）provider；三方 CLI 的 api format 差异已随 provider 下线。
-  return isZCodeAgentProvider(selectedProvider);
+  return isZodyAgentProvider(selectedProvider);
 }
 
 export function buildRegistryModelSelectGroups(
-  selectedProvider: ZCodeProvider,
+  selectedProvider: ZodyProvider,
   view: ModelSelectionView,
   // fork（F4.11）：账号套餐分组标签（Coding Plan/Start Plan/Team）随官方账号体系删除；
   // 参数保留是为了不一次性改动所有调用方，后续 UI 文案任务（F7.4）再清理。

@@ -4,13 +4,13 @@ import type {
   ExtensionBridgeClientMessage,
   ExtensionClaimDecisionMessage,
   ExtensionNativeTab,
-} from "@zcode/shared/browser-extension-transport";
+} from "@zody/shared/browser-extension-transport";
 import type {
   BrowserBackendDescriptor,
   BrowserCommand,
   BrowserCommandResult,
   BrowserUserTabInfo,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type { ExtensionCdpTransport } from "../browser-core/extensionCdpTransport.js";
 import { ExtensionClaimManager } from "./extensionBrowserClaims.js";
 import { ExtensionBrowserCommandRunner } from "./extensionBrowserCommandRunner.js";

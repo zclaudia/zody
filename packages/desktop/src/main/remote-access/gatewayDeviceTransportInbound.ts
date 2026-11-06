@@ -1,11 +1,12 @@
 import {
   gateWebRemoteControlAppPayloadVersion,
+  hasObsoleteWebRemoteControlDiscriminator,
   parseWebRemoteControlAppPayload,
   parseWebRemoteControlChannelFrameJson,
   WEB_REMOTE_CONTROL_CHANNEL_MAX_FRAME_BYTES,
   type WebRemoteControlChannelFrame,
   type WebRemoteControlChannelFrameOf,
-} from "@zcode/shared";
+} from "@zody/shared";
 import type {
   RemoteGatewayBackendLogger,
   RemoteGatewayChannelMessage,
@@ -38,8 +39,8 @@ export interface GatewayDeviceInboundHost {
 
 function readSafePayloadType(payload: unknown): string | undefined {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return undefined;
-  const zcodeType = (payload as { zcode_type?: unknown }).zcode_type;
-  return typeof zcodeType === "string" ? zcodeType : undefined;
+  const zodyType = (payload as { zody_type?: unknown }).zody_type;
+  return typeof zodyType === "string" ? zodyType : undefined;
 }
 
 function handleDataFrame(
@@ -50,6 +51,8 @@ function handleDataFrame(
   if (!channel.ready || channel.appProtocol === undefined) {
     return;
   }
+  // raw 快路径早于 schema；旧键不能借此进入 RPC 或 ACK。
+  if (hasObsoleteWebRemoteControlDiscriminator(frame.payload)) return;
   const session = host.getSession();
   if (isRawTransportCandidate(frame.payload) && session?.onRawTransportPayload?.(frame.payload)) {
     return;
@@ -137,6 +140,17 @@ export function handleGatewayChannelMessage(
   }
   const parsed = parseWebRemoteControlChannelFrameJson(message.data);
   if (parsed.kind === "discarded") {
+    if (
+      !channel.ready &&
+      !channel.closing &&
+      parsed.reason === "malformed" &&
+      parsed.frameType === "hello"
+    ) {
+      // 可识别但不合法的握手不能静默等待超时，否则旧客户端会误判为网络故障。
+      channel.sendFrame({ type: "close", reason: "incompatible-version", upgrade: "mobile" });
+      channel.close("incompatible-version");
+      return;
+    }
     if (parsed.reason === "oversize") {
       host.logger.warn("[remote-access] oversize gateway channel frame dropped", {
         channelId: channel.channelId,

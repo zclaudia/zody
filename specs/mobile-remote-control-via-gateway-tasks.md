@@ -132,7 +132,7 @@ A、B、C、D、E 五条车道可以同时开工。车道汇合点是 T3.3（A �
 - **目标**：给集成测试、桌面 E2E 和日常开发提供可复现的 gateway。
 - **改动**：
   - 新增 `scripts/dev-gateway.mjs`，负责：
-    - 用 zclaudia-gateway 的 docker-compose 起一个 gateway，或者使用 `ZCODE_GATEWAY_IT_URL` 指向的已有实例；
+    - 用 zclaudia-gateway 的 docker-compose 起一个 gateway，或者使用 `ZODY_GATEWAY_IT_URL` 指向的已有实例；
     - 用 `GATEWAY_ADMIN_TOKEN` 签发 `zcode` namespace 下的一张 backend 凭证和一张 device 凭证；
     - 把配置写到被 gitignore 的本地文件。
   - 根 `package.json` 增加 `dev:gateway`。
@@ -314,7 +314,7 @@ A、B、C、D、E 五条车道可以同时开工。车道汇合点是 T3.3（A �
 ### T3.5 真实 gateway 集成测试（M）
 
 - **目标**：用真实 SDK 和真实 gateway 跑通两端。方案对应「验收」第 7 条。
-- **改动**：新增集成测试，用 `ZCODE_GATEWAY_IT_URL` 和 `ZCODE_GATEWAY_IT_ADMIN_TOKEN` 显式开启，未设置时跳过并说明原因。测试位置以 `pnpm architecture:check` 允许的位置为准。
+- **改动**：新增集成测试，用 `ZODY_GATEWAY_IT_URL` 和 `ZODY_GATEWAY_IT_ADMIN_TOKEN` 显式开启，未设置时跳过并说明原因。测试位置以 `pnpm architecture:check` 允许的位置为准。
 - **验证**：覆盖方案第 7 条列出的全部场景，包括两部手机互顶、`epoch_changed` 恢复、gateway 重启、吊销凭证。
 - **依赖**：T3.3、T3.4、T0.2。
 

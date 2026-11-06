@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button.js";
 import { useFeedbackStore } from "@/feedback/feedbackStore.js";
 import { DownloadIcon, ExternalLinkIcon } from "lucide-react";
 // fork（F2.9，决策门 D7）：官方工单提交停用，反馈中心收敛为本地面板——
-// 「导出诊断日志」+「打开 fork 问题反馈地址」（构建期 ZCODE_FEEDBACK_ISSUE_URL，未配置不显示）。
+// 「导出诊断日志」+「打开 fork 问题反馈地址」（构建期 ZODY_FEEDBACK_ISSUE_URL，未配置不显示）。
 // 旧的提交表单 / 工单列表 / 产品需求弹窗文件保留（阶段 4 删除），此处不再挂载。
-import { ZCODE_FEEDBACK_ISSUE_URL } from "@zcode/shared";
-import type { IFeedbackService } from "@zcode/services";
-import type { IPlatformService } from "@zcode/shared";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
+import { ZODY_FEEDBACK_ISSUE_URL } from "@zody/shared";
+import type { IFeedbackService } from "@zody/services";
+import type { IPlatformService } from "@zody/shared";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { memo } from "react";
 import { runExportLogsAction } from "@/lib/exportLogsAction.js";
 
@@ -22,14 +22,14 @@ export const FeedbackCenter = memo(function FeedbackCenterComponent({
   // store 的 openFeatureRequest 会把 open 置 false，这里必须合并判定才能响应全部入口。
   const open = useFeedbackStore((state) => state.open || state.featureRequestOpen);
   const close = useFeedbackStore((state) => state.close);
-  const { intl } = useZCodeIntl();
+  const { intl } = useZodyIntl();
 
   const handleExportLogs = () => {
     void runExportLogsAction(platform, intl);
   };
   const handleOpenIssuePage = () => {
-    if (ZCODE_FEEDBACK_ISSUE_URL) {
-      void platform.openExternal(ZCODE_FEEDBACK_ISSUE_URL);
+    if (ZODY_FEEDBACK_ISSUE_URL) {
+      void platform.openExternal(ZODY_FEEDBACK_ISSUE_URL);
     }
   };
 
@@ -55,7 +55,7 @@ export const FeedbackCenter = memo(function FeedbackCenterComponent({
               <DownloadIcon className="size-4" />
               {intl.formatMessage({ id: "feedback.center.exportLogsAction" })}
             </Button>
-            {ZCODE_FEEDBACK_ISSUE_URL ? (
+            {ZODY_FEEDBACK_ISSUE_URL ? (
               <Button
                 type="button"
                 variant="outline"

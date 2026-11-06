@@ -6,7 +6,7 @@ import {
   isProtectedStoragePath,
   type StorageCatalogContext,
 } from "../src/storage/domain/storageCatalog.js";
-import { STORAGE_CATEGORY_IDS } from "@zcode/shared";
+import { STORAGE_CATEGORY_IDS } from "@zody/shared";
 
 const home: StorageCatalogContext = { rootId: "home", hasCustomDataBaseDir: false };
 

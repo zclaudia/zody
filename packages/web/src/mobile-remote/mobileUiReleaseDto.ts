@@ -3,7 +3,7 @@ import {
   MOBILE_UI_RELEASE_META_NAME,
   safeParseMobileUiReleaseManifest,
   type MobileUiReleaseManifest,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   MOBILE_REMOTE_RELEASE_REQUEST_TIMEOUT_MS,
   resolveMobileRemoteReleaseRequestUrl,

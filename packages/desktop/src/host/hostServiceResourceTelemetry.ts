@@ -1,8 +1,8 @@
 import { registerHostToolExecResourceTelemetry } from "./hostToolExecResourceTelemetry.js";
 import { registerHostMcpResourceTelemetry } from "./hostMcpResourceTelemetry.js";
-import type { IDisposable } from "@zcode/rpc";
-import { IZCodeAgentService, type ServiceCollection } from "@zcode/services";
-import type { ProcessResourceRuntimeSurface } from "@zcode/shared";
+import type { IDisposable } from "@zody/rpc";
+import { IZodyAgentService, type ServiceCollection } from "@zody/services";
+import type { ProcessResourceRuntimeSurface } from "@zody/shared";
 import { registerHostAgentResourceTelemetry } from "./hostAgentResourceTelemetry.js";
 import { registerHostMcpTelemetry } from "./hostMcpTelemetry.js";
 
@@ -50,7 +50,7 @@ export function registerHostServiceResourceTelemetry(
   if (options.telemetrySupported === false) {
     return NO_TELEMETRY;
   }
-  const agentService = options.services.getOptional(IZCodeAgentService);
+  const agentService = options.services.getOptional(IZodyAgentService);
   if (!agentService) {
     return NO_TELEMETRY;
   }

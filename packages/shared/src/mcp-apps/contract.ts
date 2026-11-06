@@ -43,11 +43,14 @@ export interface McpToolUiCsp {
 }
 
 /**
- * 资源级 `_meta["zcode/csp"]`：宿主缺省按规范块（只有 'self' 'unsafe-inline'），不放行 `'unsafe-eval'` /
- * `'wasm-unsafe-eval'`；需要 eval / WebAssembly 的资源在这里显式声明。宿主经
- * `hostCapabilities.experimental["zcode/csp"].flags` 宣告支持的键。
+ * 资源级 `_meta["zody/csp"]`（legacy `"zcode/csp"` 保留到 1.0 运行时别名退役门禁）：宿主缺省按规范块
+ * （只有 'self' 'unsafe-inline'），不放行 `'unsafe-eval'` / `'wasm-unsafe-eval'`；需要 eval / WebAssembly
+ * 的资源在这里显式声明。宿主经 `hostCapabilities.experimental["zody/csp"].flags` 宣告支持的键。
+ * 双键同时出现必须归一化相等才接受；冲突 fail-closed，不合并、不取更宽（见 specs/zody-rename-plugin-wire.md）。
+ * @retention `zcode/csp` 保留至 1.0 运行时别名退役门禁；1.0 前一个 minor 发退役警告。
  */
 export const MCP_APPS_CSP_RELAXATION_META_KEY = "zcode/csp";
+export const MCP_APPS_CSP_RELAXATION_META_KEY_CANONICAL = "zody/csp";
 export const MCP_APPS_CSP_RELAXATION_FLAGS = ["unsafeEval", "wasmUnsafeEval"] as const;
 export type McpAppCspRelaxationFlag = (typeof MCP_APPS_CSP_RELAXATION_FLAGS)[number];
 export type McpAppCspRelaxations = Partial<Record<McpAppCspRelaxationFlag, boolean>>;
@@ -123,12 +126,14 @@ export const MCP_APPS_RESOURCE_URI_MAX_CHARS = 2048;
 /**
  * `display.ui.structuredContent` / `widgetMeta` / `content` 的持久化上限（JSON 文本的 UTF-8 字节）。
  * 超限不截断字符串（半截 JSON 没有意义）：字段整个省略，`truncated: true` 且 `truncatedBytes` 记被丢弃的字节数；
- * 页面侧 `toolOutput` 为 null、`toolResponseMetadata["zcode/truncated"] = { bytes }`，可用 tools/call 重取。
+ * 页面侧 `toolOutput` 为 null、`toolResponseMetadata["zody/truncated"] = { bytes }`（legacy
+ * `"zcode/truncated"` 保留到 1.0 运行时别名退役门禁），可用 tools/call 重取。
  */
 export const MCP_APPS_STRUCTURED_CONTENT_MAX_BYTES = 64 * 1024;
 export const MCP_APPS_WIDGET_META_MAX_BYTES = 16 * 1024;
 export const MCP_APPS_CONTENT_MAX_BYTES = 32 * 1024;
 export const MCP_APPS_TRUNCATED_META_KEY = "zcode/truncated";
+export const MCP_APPS_TRUNCATED_META_KEY_CANONICAL = "zody/truncated";
 /** host 侧接受的 `ui://` HTML 上限与 mimeType 白名单（规范只认带 profile 的；无 profile 的 text/html 是有意的宽松超集）。 */
 // 官方 pdf-server 示例的单文件页面（内联 pdf.js）就有 4.3 MB，4 MiB 会把它拒掉；放到 16 MiB。
 export const MCP_APPS_HTML_MAX_BYTES = 16 * 1024 * 1024;
@@ -147,17 +152,32 @@ export {
 
 /**
  * `hostCapabilities.experimental` 里 ZCode 扩展的键。官方 SDK 的 zod 会剥掉标准位之外的未知能力键，
- * 扩展一律放 experimental（规范预留位），页面按键 feature detect。
+ * 扩展一律放 experimental（规范预留位），页面按键 feature detect。过渡期双宣告 `zody/*`（canonical）
+ * 与 `zcode/*`（legacy，保留到 1.0 运行时别名退役门禁）；legacy 字节不得改动。
  */
 export const MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY = "zcode/widgetState";
+export const MCP_APPS_WIDGET_STATE_EXPERIMENTAL_KEY_CANONICAL = "zody/widgetState";
 export const MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY = "zcode/resourceSubscribe";
+export const MCP_APPS_RESOURCE_SUBSCRIBE_EXPERIMENTAL_KEY_CANONICAL = "zody/resourceSubscribe";
 export const MCP_APPS_SURFACE_EXPERIMENTAL_KEY = "zcode/surface";
+export const MCP_APPS_SURFACE_EXPERIMENTAL_KEY_CANONICAL = "zody/surface";
 /**
  * ZCode 扩展方法 `ui/set-widget-state { widgetState }`（MCP Apps 无 widgetState）：页面把界面状态交给宿主
- * renderer 内存保存（不持久化，会话内重挂载可恢复）；初值经 hostContext 的 `zcode/widgetState` 键随握手下发。
+ * renderer 内存保存（不持久化，会话内重挂载可恢复）；初值经 hostContext 的 `zody/widgetState` 键
+ * （legacy `zcode/widgetState` 同一次快照）随握手下发。
  */
 export const MCP_APPS_SET_WIDGET_STATE_METHOD = "ui/set-widget-state";
 export const MCP_APPS_WIDGET_STATE_CONTEXT_KEY = "zcode/widgetState";
+export const MCP_APPS_WIDGET_STATE_CONTEXT_KEY_CANONICAL = "zody/widgetState";
+
+export type McpAppsMetaKeyDirection = "inbound" | "outbound" | "bidirectional";
+/** 一对新旧键的登记项；`failClosed` 表示冲突时禁止应用整个声明（CSP / 权限 / 来源）。 */
+export interface McpAppsMetaKeyPair {
+  readonly canonical: string;
+  readonly legacy: string;
+  readonly direction: McpAppsMetaKeyDirection;
+  readonly failClosed: boolean;
+}
 
 /** 宿主 renderer ↔ relay shell 之间唯一一条 MessageChannel 的名字；上面跑原始 JSON-RPC（官方 AppBridge / App）。 */
 export const PLUGIN_SANDBOX_PORT_NAME = "plugin-sandbox-rpc";
@@ -233,7 +253,7 @@ export interface PluginSandboxRegisterRequestPayload {
   html: string;
   /** 有效 CSP：资源级优先，工具级兜底（host plugin-ui-bridge 已合并）。 */
   csp?: McpToolUiCsp;
-  /** 资源级 `_meta["zcode/csp"]` 声明的放宽项。 */
+  /** 资源级 `_meta`（`zody/csp` 或 legacy `zcode/csp`）声明的放宽项；冲突时不产生放宽。 */
   cspRelaxations?: McpAppCspRelaxations;
   /** 资源声明的浏览器权限；main 据此放宽 Permissions-Policy 与 iframe allow，并把权限请求交给闸门。 */
   permissions?: McpAppsResourcePermission[];

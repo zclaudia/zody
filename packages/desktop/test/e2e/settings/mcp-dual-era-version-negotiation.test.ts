@@ -6,7 +6,7 @@ import {
   TID_SETTINGS_SECTION_NAV,
   TID_TASK_SETTINGS_BUTTON,
   testId,
-} from "@zcode/shared";
+} from "@zody/shared";
 import {
   clearAppData,
   clickTestIdByDom,
@@ -257,7 +257,7 @@ async function waitForConnectedLogs(
 
 async function readConnectedLogs(): Promise<Map<string, McpConnectedLog>> {
   const logDir =
-    process.env.ZCODE_LOG_DIR?.trim() || join(E2E_PATHS.homeDir, ".zody", "cli", "log");
+    process.env.ZODY_LOG_DIR?.trim() || join(E2E_PATHS.homeDir, ".zody", "cli", "log");
   const result = new Map<string, McpConnectedLog>();
   const files = await readdir(logDir).catch(() => []);
   for (const file of files) {

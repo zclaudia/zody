@@ -13,7 +13,7 @@ import { resolveMobileWebRootDir } from "../scripts/mobile-web-assets.mjs";
 /**
  * M1-T5：真实 Gateway `/api/proxy/<backendId>` 集成验证。
  *
- * 只复用本地 `.env.gateway.local` 已签发的 backend/device 凭证（`ZCODE_GATEWAY_ENV_FILE` 指定文件），
+ * 只复用本地 `.env.gateway.local` 已签发的 backend/device 凭证（`ZODY_GATEWAY_ENV_FILE` 指定文件），
  * 不在测试里调用管理 API 新签凭证、不重启/改写 gateway、不打印任何凭证。
  * 环境或真实制品缺失时整个 suite 跳过并在名称里写明原因，不伪造通过。
  *
@@ -27,7 +27,7 @@ import { resolveMobileWebRootDir } from "../scripts/mobile-web-assets.mjs";
  */
 
 const ENV_FILE_CANDIDATES = [
-  process.env.ZCODE_GATEWAY_ENV_FILE?.trim(),
+  process.env.ZODY_GATEWAY_ENV_FILE?.trim(),
   resolve(import.meta.dirname, "../../../.env.gateway.local"),
   resolve(process.cwd(), ".env.gateway.local"),
   resolve(process.cwd(), "../../.env.gateway.local"),
@@ -47,13 +47,13 @@ async function readGatewayEnv(): Promise<Record<string, string>> {
 const fileEnv = await readGatewayEnv();
 const readEnv = (name: string) => process.env[name]?.trim() || fileEnv[name]?.trim() || "";
 
-const gatewayUrl = readEnv("ZCODE_GATEWAY_IT_URL").replace(/\/+$/u, "");
-const backendCredential = readEnv("ZCODE_GATEWAY_BACKEND_CREDENTIAL");
-const deviceCredential = readEnv("ZCODE_GATEWAY_DEVICE_CREDENTIAL");
-// 与既有 T3 集成测试一致：凭证实际 namespace 由 ZCODE_GATEWAY_IT_NAMESPACE 指定。
-// 本机 `.env.gateway.local` 里的 ZCODE_GATEWAY_NAMESPACE 可能滞后于已签发凭证，
+const gatewayUrl = readEnv("ZODY_GATEWAY_IT_URL").replace(/\/+$/u, "");
+const backendCredential = readEnv("ZODY_GATEWAY_BACKEND_CREDENTIAL");
+const deviceCredential = readEnv("ZODY_GATEWAY_DEVICE_CREDENTIAL");
+// 与既有 T3 集成测试一致：凭证实际 namespace 由 ZODY_GATEWAY_IT_NAMESPACE 指定。
+// 本机 `.env.gateway.local` 里的 ZODY_GATEWAY_NAMESPACE 可能滞后于已签发凭证，
 // 直接用它会让 peer_hello 因 namespace 不匹配返回 UNAUTHORIZED。
-const namespace = readEnv("ZCODE_GATEWAY_IT_NAMESPACE") || "zcode";
+const namespace = readEnv("ZODY_GATEWAY_IT_NAMESPACE") || "zcode";
 
 const desktopPackageRoot = resolve(import.meta.dirname, "..");
 const rootDir = resolveMobileWebRootDir({ isPackaged: false, desktopPackageRoot });
@@ -61,11 +61,11 @@ const artifactReady =
   existsSync(join(rootDir, "release.json")) && existsSync(join(rootDir, "index.html"));
 
 const missingEnv = !gatewayUrl
-  ? "未设置 ZCODE_GATEWAY_IT_URL"
+  ? "未设置 ZODY_GATEWAY_IT_URL"
   : !backendCredential
-    ? "未设置 ZCODE_GATEWAY_BACKEND_CREDENTIAL"
+    ? "未设置 ZODY_GATEWAY_BACKEND_CREDENTIAL"
     : !deviceCredential
-      ? "未设置 ZCODE_GATEWAY_DEVICE_CREDENTIAL"
+      ? "未设置 ZODY_GATEWAY_DEVICE_CREDENTIAL"
       : undefined;
 const skipReason =
   missingEnv ?? (artifactReady ? undefined : `未找到 ${rootDir}；先运行 pnpm build:mobile-web`);

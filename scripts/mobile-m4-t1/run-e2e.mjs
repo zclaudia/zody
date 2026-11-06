@@ -7,7 +7,7 @@
  *   1. 本地 Gateway 可用；`pnpm build:mobile-web` 已生成 packages/web/dist-mobile-remote。
  *   2. `scripts/mobile-m2-t6/desktop-provider-harness.mjs` 已在 ZODY_E2E_CONTROL_URL 上运行。
  *   3. Debug APK 已安装并启动；设备允许 `adb forward` 与 WebView 调试（debug 构建）。
- *   4. 通过 `node --env-file=.env.gateway.local` 提供 ZCODE_GATEWAY_DEVICE_CREDENTIAL。
+ *   4. 通过 `node --env-file=.env.gateway.local` 提供 ZODY_GATEWAY_DEVICE_CREDENTIAL。
  *
  * 运行：
  *   node --env-file=.env.gateway.local scripts/mobile-m4-t1/run-e2e.mjs
@@ -31,14 +31,15 @@ import { join } from "node:path";
 import { CdpPage, listTargets, waitForTarget } from "../mobile-m2-t6/cdp.mjs";
 
 const serial = process.env.ZODY_E2E_ANDROID_SERIAL || "emulator-5582";
-const controlUrl = (
-  process.env.ZODY_E2E_CONTROL_URL || "http://127.0.0.1:39555"
-).replace(/\/+$/u, "");
+const controlUrl = (process.env.ZODY_E2E_CONTROL_URL || "http://127.0.0.1:39555").replace(
+  /\/+$/u,
+  "",
+);
 const publicGatewayUrl = (
   process.env.ZODY_E2E_PUBLIC_GATEWAY_URL || "http://10.0.2.2:3200"
 ).replace(/\/+$/u, "");
 const namespace = process.env.ZODY_E2E_NAMESPACE || "zcode";
-const deviceCredential = process.env.ZCODE_GATEWAY_DEVICE_CREDENTIAL;
+const deviceCredential = process.env.ZODY_GATEWAY_DEVICE_CREDENTIAL;
 const skip = new Set(
   (process.env.ZODY_E2E_SKIP || "")
     .split(",")
@@ -49,13 +50,11 @@ const appId = "io.github.zclaudia.zody.mobile";
 const remotePredicate = (target) =>
   target.type === "page" && target.url.includes("remote.zody.local");
 const shellPredicate = (target) =>
-  target.type === "page" &&
-  target.url.includes("appassets.androidplatform.net");
+  target.type === "page" && target.url.includes("appassets.androidplatform.net");
 const scratchDir = mkdtempSync(join(tmpdir(), "zody-m4-t1-"));
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const adb = (...args) =>
-  execFileSync("adb", ["-s", serial, ...args], { encoding: "utf8" }).trim();
+const adb = (...args) => execFileSync("adb", ["-s", serial, ...args], { encoding: "utf8" }).trim();
 const adbShell = (command) => adb("shell", command);
 const adbBytes = (...args) =>
   execFileSync("adb", ["-s", serial, ...args], {
@@ -63,8 +62,8 @@ const adbBytes = (...args) =>
     maxBuffer: 32 * 1024 * 1024,
   });
 const control = (path) =>
-  fetch(`${controlUrl}${path}`, { signal: AbortSignal.timeout(20000) }).then(
-    (response) => response.json(),
+  fetch(`${controlUrl}${path}`, { signal: AbortSignal.timeout(20000) }).then((response) =>
+    response.json(),
   );
 
 const report = { device: serial, namespace, publicGatewayUrl, scenarios: {} };
@@ -126,11 +125,7 @@ async function setupDevtools() {
     // no previous forward
   }
   adb("forward", `tcp:${port}`, `localabstract:webview_devtools_remote_${pid}`);
-  await waitForTarget(
-    (target) => target.type === "page",
-    30000,
-    "webview target",
-  );
+  await waitForTarget((target) => target.type === "page", 30000, "webview target");
 }
 
 function isVisibleTarget(target) {
@@ -141,21 +136,13 @@ function isVisibleTarget(target) {
   }
 }
 
-async function connectWithExpression(
-  predicate,
-  expression,
-  label,
-  timeoutMs = 30000,
-) {
+async function connectWithExpression(predicate, expression, label, timeoutMs = 30000) {
   const deadline = Date.now() + timeoutMs;
   let lastError;
   while (Date.now() < deadline) {
     const targets = (await listTargets())
       .filter(predicate)
-      .sort(
-        (left, right) =>
-          Number(isVisibleTarget(right)) - Number(isVisibleTarget(left)),
-      );
+      .sort((left, right) => Number(isVisibleTarget(right)) - Number(isVisibleTarget(left)));
     for (const target of targets) {
       let page;
       try {
@@ -204,9 +191,7 @@ async function returnShellIfRemote() {
   const target = (await listTargets()).find(remotePredicate);
   if (!target) return;
   const page = await remotePage();
-  const envelope = JSON.parse(
-    await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"),
-  );
+  const envelope = JSON.parse(await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"));
   try {
     await page.evaluate(
       `void window.ZodyRemoteBridge.returnShell('m4-t1-reset', ${JSON.stringify(
@@ -223,26 +208,19 @@ async function returnShellIfRemote() {
 
 async function ensureConfigured() {
   const page = await shellPage();
-  const read = JSON.parse(
-    await page.evaluate("window.ZodyShellBridge.readConfig()"),
-  );
+  const read = JSON.parse(await page.evaluate("window.ZodyShellBridge.readConfig()"));
   if (read.config) {
     page.close();
     return { existed: true, configRevision: read.config.configRevision };
   }
-  assert(
-    deviceCredential,
-    "ZCODE_GATEWAY_DEVICE_CREDENTIAL is required for pairing",
-  );
+  assert(deviceCredential, "ZODY_GATEWAY_DEVICE_CREDENTIAL is required for pairing");
   const draft = JSON.stringify({
     gatewayUrl: publicGatewayUrl,
     namespace,
     credential: deviceCredential,
   });
   const saved = JSON.parse(
-    await page.evaluate(
-      `window.ZodyShellBridge.saveConfig(${JSON.stringify(draft)})`,
-    ),
+    await page.evaluate(`window.ZodyShellBridge.saveConfig(${JSON.stringify(draft)})`),
   );
   assert(saved.ok, `saveConfig failed: ${JSON.stringify(saved)}`);
   await page.evaluate("location.reload(); true").catch(() => {});
@@ -311,9 +289,7 @@ async function ensureRemote() {
   const shell = await shellPage();
   await waitPicker(shell);
   const items = await pickerItems(shell);
-  const selected = items.find(
-    (item) => item.supported === "true" && !item.disabled,
-  );
+  const selected = items.find((item) => item.supported === "true" && !item.disabled);
   assert(selected, `no selectable desktop: ${JSON.stringify(items)}`);
   const page = await clickBackend(shell, selected.id);
   await sleep(1500);
@@ -321,9 +297,7 @@ async function ensureRemote() {
 }
 
 async function remoteContext(page) {
-  const envelope = JSON.parse(
-    await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"),
-  );
+  const envelope = JSON.parse(await page.evaluate("window.ZodyRemoteBridge.getSessionContext()"));
   assert(envelope.ok, `getSessionContext failed: ${JSON.stringify(envelope)}`);
   return envelope.context;
 }
@@ -351,9 +325,7 @@ function attribute(node, name) {
 }
 
 function boundsCenter(node) {
-  const match = attribute(node, "bounds").match(
-    /\[(\d+),(\d+)\]\[(\d+),(\d+)\]/u,
-  );
+  const match = attribute(node, "bounds").match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/u);
   if (!match) return undefined;
   const [, left, top, right, bottom] = match.map(Number);
   return {
@@ -406,9 +378,7 @@ async function waitForText(text, timeoutMs, label = text) {
 async function waitForPackage(packageName, timeoutMs = 15000) {
   return waitFor(
     () => {
-      const output = adbShell(
-        "dumpsys activity activities | grep -m1 topResumedActivity",
-      );
+      const output = adbShell("dumpsys activity activities | grep -m1 topResumedActivity");
       return output.includes(packageName) ? output : undefined;
     },
     timeoutMs,
@@ -457,9 +427,7 @@ function deleteDownloadRow(id) {
 }
 
 function deleteDownloadRowsByName(name) {
-  for (const row of queryDownloadRows().filter(
-    (entry) => entry.name === name,
-  )) {
+  for (const row of queryDownloadRows().filter((entry) => entry.name === name)) {
     deleteDownloadRow(row.id);
   }
   try {
@@ -473,14 +441,7 @@ function readDownloadBytes(name) {
   return adbBytes("exec-out", `cat /sdcard/Download/${name}`);
 }
 
-function saveFileThroughBridge(
-  page,
-  sessionId,
-  fileName,
-  mimeType,
-  chunksBase64,
-  openMimeType,
-) {
+function saveFileThroughBridge(page, sessionId, fileName, mimeType, chunksBase64, openMimeType) {
   return page.evaluate(`(() => {
     const bridge = window.ZodyRemoteBridge;
     const begin = JSON.parse(bridge.saveFileBegin(${JSON.stringify(sessionId)}, ${JSON.stringify(
@@ -538,11 +499,7 @@ function computeChunkedFixture() {
   for (let index = 0; index < total; index += 1) bytes[index] = index % 251;
   const chunks = [];
   for (let offset = 0; offset < total; offset += chunkSize) {
-    chunks.push(
-      bytes
-        .subarray(offset, Math.min(offset + chunkSize, total))
-        .toString("base64"),
-    );
+    chunks.push(bytes.subarray(offset, Math.min(offset + chunkSize, total)).toString("base64"));
   }
   return {
     bytes,
@@ -564,14 +521,8 @@ async function runFileSelection(page, context) {
   await injectFileInput(page, "selection");
   await waitForText("Add attachment", 10000, "attachment source dialog");
   const busy = await prepareReload(page, context.sessionId);
-  assert(
-    busy.ok === false,
-    "prepareReload should veto while the system chooser is active",
-  );
-  assert(
-    busy.error?.code === "native-busy",
-    `unexpected chooser veto: ${JSON.stringify(busy)}`,
-  );
+  assert(busy.ok === false, "prepareReload should veto while the system chooser is active");
+  assert(busy.error?.code === "native-busy", `unexpected chooser veto: ${JSON.stringify(busy)}`);
 
   assert(tapText("Choose file"), "Choose file action is missing");
   await waitForPackage("com.google.android.documentsui", 15000);
@@ -602,10 +553,7 @@ async function runFileSelection(page, context) {
     files[0].name === SELECT_FILE_NAME,
     `selected ${files[0].name} instead of ${SELECT_FILE_NAME}; clean unrelated Downloads fixtures`,
   );
-  assert(
-    files[0].size === png.length,
-    `selected size ${files[0].size} != ${png.length}`,
-  );
+  assert(files[0].size === png.length, `selected size ${files[0].size} != ${png.length}`);
   assert(files[0].type === "image/png", `selected type ${files[0].type}`);
 
   const ready = await prepareReload(page, context.sessionId);
@@ -626,14 +574,9 @@ async function runPhotoCapture(page, context) {
   await waitForText("Take photo", 10000, "take photo action");
   assert(tapText("Take photo"), "Take photo action is missing");
   if (hasText("While using the app")) {
-    assert(
-      tapText("While using the app"),
-      "camera permission allow action is missing",
-    );
+    assert(tapText("While using the app"), "camera permission allow action is missing");
   }
-  const camera = await waitForPackage("com.android.camera2", 20000).catch(
-    () => undefined,
-  );
+  const camera = await waitForPackage("com.android.camera2", 20000).catch(() => undefined);
   if (!camera) {
     cancelActiveChooser();
     await waitForPackage(appId, 10000);
@@ -642,26 +585,16 @@ async function runPhotoCapture(page, context) {
     });
     return;
   }
-  assert(
-    tapResourceId("com.android.camera2:id/shutter_button"),
-    "camera shutter is missing",
-  );
+  assert(tapResourceId("com.android.camera2:id/shutter_button"), "camera shutter is missing");
   await waitFor(
     () =>
       Boolean(
-        findNode(
-          (node) =>
-            attribute(node, "resource-id") ===
-            "com.android.camera2:id/done_button",
-        ),
+        findNode((node) => attribute(node, "resource-id") === "com.android.camera2:id/done_button"),
       ),
     15000,
     "camera confirm action",
   );
-  assert(
-    tapResourceId("com.android.camera2:id/done_button"),
-    "camera done action is missing",
-  );
+  assert(tapResourceId("com.android.camera2:id/done_button"), "camera done action is missing");
   const captured = await waitFor(
     async () => {
       const files = await selectedInputFiles(page, "photo");
@@ -674,14 +607,8 @@ async function runPhotoCapture(page, context) {
     /^zody-photo-.+\.jpg$/u.test(captured[0].name),
     `unexpected photo name ${captured[0].name}`,
   );
-  assert(
-    captured[0].type === "image/jpeg",
-    `unexpected photo type ${captured[0].type}`,
-  );
-  assert(
-    captured[0].size > 1000,
-    `captured photo is too small: ${captured[0].size}`,
-  );
+  assert(captured[0].type === "image/jpeg", `unexpected photo type ${captured[0].type}`);
+  assert(captured[0].size > 1000, `captured photo is too small: ${captured[0].size}`);
 
   // 取消拍照：相机返回后页面必须收到空结果，原生 busy 解除。
   await injectFileInput(page, "photo-cancel");
@@ -691,15 +618,9 @@ async function runPhotoCapture(page, context) {
   cancelActiveChooser();
   await waitForPackage(appId, 10000);
   const cancelled = await selectedInputFiles(page, "photo-cancel");
-  assert(
-    cancelled.length === 0,
-    `cancelled capture returned files: ${JSON.stringify(cancelled)}`,
-  );
+  assert(cancelled.length === 0, `cancelled capture returned files: ${JSON.stringify(cancelled)}`);
   const ready = await prepareReload(page, context.sessionId);
-  assert(
-    ready.ok === true,
-    `cancelled capture did not release: ${JSON.stringify(ready)}`,
-  );
+  assert(ready.ok === true, `cancelled capture did not release: ${JSON.stringify(ready)}`);
   record("photo-capture", "pass", {
     captured,
     cancelledFiles: cancelled,
@@ -720,14 +641,8 @@ async function runChunkedSaveAndOpen(page, context) {
     fixture.chunks,
     null,
   );
-  assert(
-    saved.begin?.ok && saved.finish?.ok,
-    `chunked save failed: ${JSON.stringify(saved)}`,
-  );
-  assert(
-    saved.appends.length === 3,
-    `expected 3 chunks, got ${saved.appends.length}`,
-  );
+  assert(saved.begin?.ok && saved.finish?.ok, `chunked save failed: ${JSON.stringify(saved)}`);
+  assert(saved.appends.length === 3, `expected 3 chunks, got ${saved.appends.length}`);
   assert(
     saved.appends.every((entry) => entry === "ok"),
     `append failure: ${JSON.stringify(saved.appends)}`,
@@ -745,9 +660,7 @@ async function runChunkedSaveAndOpen(page, context) {
   assert(sha256 === fixture.sha256, "chunked save content hash mismatch");
   const chunkedRow = await waitFor(
     () => {
-      const row = queryDownloadRows().find(
-        (entry) => entry.name === CHUNKED_FILE_NAME,
-      );
+      const row = queryDownloadRows().find((entry) => entry.name === CHUNKED_FILE_NAME);
       return row && !row.pending ? row : undefined;
     },
     10000,
@@ -769,18 +682,14 @@ async function runChunkedSaveAndOpen(page, context) {
     opened.opened?.opened === true,
     `openFile did not start a viewer: ${JSON.stringify(opened.opened)}`,
   );
-  const viewer = await waitForPackage(
-    "com.google.android.apps.photos",
-    10000,
-  ).catch(() => undefined);
+  const viewer = await waitForPackage("com.google.android.apps.photos", 10000).catch(
+    () => undefined,
+  );
   // 返回到 Remote，继续后续场景。
   cancelActiveChooser();
   await waitForPackage(appId, 15000);
   const ready = await prepareReload(page, context.sessionId);
-  assert(
-    ready.ok === true,
-    `finished save blocked reload: ${JSON.stringify(ready)}`,
-  );
+  assert(ready.ok === true, `finished save blocked reload: ${JSON.stringify(ready)}`);
 
   record("chunked-save-and-open", "pass", {
     chunks: saved.appends.length,
@@ -814,10 +723,7 @@ async function runSaveFailureAndCancel(page, context) {
     failure.append.error?.code === "invalid-argument",
     `unexpected append error: ${JSON.stringify(failure.append)}`,
   );
-  assert(
-    failure.abort.ok === true,
-    `abort failed: ${JSON.stringify(failure.abort)}`,
-  );
+  assert(failure.abort.ok === true, `abort failed: ${JSON.stringify(failure.abort)}`);
   assert(
     !queryDownloadRows().some((row) => row.name === "0-m4-t1-oversized.bin"),
     "failed save left a Downloads row",
@@ -845,10 +751,7 @@ async function runSaveFailureAndCancel(page, context) {
     "cancelled save left a Downloads row",
   );
   const ready = await prepareReload(page, context.sessionId);
-  assert(
-    ready.ok === true,
-    `cancelled save blocked reload: ${JSON.stringify(ready)}`,
-  );
+  assert(ready.ok === true, `cancelled save blocked reload: ${JSON.stringify(ready)}`);
   record("save-failure-and-cancel", "pass", {
     oversized: failure,
     cancelled,
@@ -874,9 +777,7 @@ async function runWebViewDownload(page) {
   })()`);
   const row = await waitFor(
     () => {
-      const created = queryDownloadRows().filter(
-        (entry) => !beforeIds.has(entry.id),
-      );
+      const created = queryDownloadRows().filter((entry) => !beforeIds.has(entry.id));
       return created.find((entry) => !entry.pending) ?? undefined;
     },
     20000,
@@ -891,9 +792,7 @@ async function runWebViewDownload(page) {
     `download content mismatch: ${JSON.stringify(bytes.toString("utf8"))}`,
   );
   // DownloadListener 成功后会用系统应用打开；确保后续场景回到 Remote 前台。
-  const top = adbShell(
-    "dumpsys activity activities | grep -m1 topResumedActivity",
-  );
+  const top = adbShell("dumpsys activity activities | grep -m1 topResumedActivity");
   if (!top.includes(appId)) {
     cancelActiveChooser();
     await waitForPackage(appId, 10000).catch(() => undefined);
@@ -940,22 +839,13 @@ async function runCspProbes(page) {
     .map((part) => part.trim())
     .find((part) => part.startsWith("connect-src"));
   assert(connect, `connect-src missing from CSP: ${probes.csp}`);
-  assert(
-    connect.includes(new URL(publicGatewayUrl).origin),
-    `gateway origin missing: ${connect}`,
-  );
-  assert(
-    !connect.includes("*"),
-    `connect-src must not use a wildcard: ${connect}`,
-  );
+  assert(connect.includes(new URL(publicGatewayUrl).origin), `gateway origin missing: ${connect}`);
+  assert(!connect.includes("*"), `connect-src must not use a wildcard: ${connect}`);
   assert(
     !connect.includes("example.com"),
     `connect-src must not allow arbitrary origins: ${connect}`,
   );
-  assert(
-    probes.gateway.ok,
-    `gateway sourceUrl fetch failed: ${JSON.stringify(probes.gateway)}`,
-  );
+  assert(probes.gateway.ok, `gateway sourceUrl fetch failed: ${JSON.stringify(probes.gateway)}`);
   assert(
     !probes.arbitrary.ok,
     `arbitrary origin fetch was not blocked by CSP: ${JSON.stringify(probes.arbitrary)}`,
@@ -990,10 +880,7 @@ async function runStaleSessionSwitch(page, context) {
     [png.toString("base64")],
     null,
   );
-  assert(
-    saved.finish?.ok,
-    `stale uri fixture failed: ${JSON.stringify(saved)}`,
-  );
+  assert(saved.finish?.ok, `stale uri fixture failed: ${JSON.stringify(saved)}`);
 
   try {
     await page.evaluate(
@@ -1016,10 +903,7 @@ async function runStaleSessionSwitch(page, context) {
   const next = await clickBackend(shell, selected.id);
   await sleep(1500);
   const nextContext = await remoteContext(next);
-  assert(
-    nextContext.sessionId !== context.sessionId,
-    "session id did not rotate",
-  );
+  assert(nextContext.sessionId !== context.sessionId, "session id did not rotate");
 
   const stale = await next.evaluate(`(() => {
     const bridge = window.ZodyRemoteBridge;
@@ -1052,13 +936,8 @@ async function runStaleSessionSwitch(page, context) {
   // markRemoteReady（页面业务 ready）应立即回收旧 session 的未完成保存；
   // 等 MediaStore 完成清理后再断言旧文件名没有残留行。
   await sleep(1000);
-  const leftover = queryDownloadRows().filter(
-    (row) => row.name === STALE_FILE_NAME,
-  );
-  assert(
-    leftover.length === 0,
-    `orphan save row not reclaimed: ${JSON.stringify(leftover)}`,
-  );
+  const leftover = queryDownloadRows().filter((row) => row.name === STALE_FILE_NAME);
+  assert(leftover.length === 0, `orphan save row not reclaimed: ${JSON.stringify(leftover)}`);
   record("stale-session-switch", "pass", {
     previousSession: context.sessionId,
     nextSession: nextContext.sessionId,
@@ -1135,9 +1014,7 @@ try {
   await cleanupArtifacts().catch(() => {});
 }
 
-const failed = Object.values(report.scenarios).some(
-  (scenario) => scenario.status === "fail",
-);
+const failed = Object.values(report.scenarios).some((scenario) => scenario.status === "fail");
 const output = `${JSON.stringify(report, null, 2)}\n`;
 await new Promise((resolve) => process.stdout.write(output, resolve));
 process.exit(report.error || failed ? 1 : 0);

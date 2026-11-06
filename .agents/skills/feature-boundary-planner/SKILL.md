@@ -27,9 +27,9 @@ Infer the least expansive mode from the user's request. A request to scan, expla
 For every impact scan, read:
 
 - `docs/feature-impact-discovery.md`
-- `references/zcode-feature-graph.yaml`
+- `references/zody-feature-graph.yaml`
 - `references/impact-brief-template.md`
-- the relevant rows in `references/zcode-domain-cross-products.md`
+- the relevant rows in `references/zody-domain-cross-products.md`
 
 For `planning` or `implementation-handoff`, also read:
 
@@ -64,7 +64,7 @@ Do a low-cost scan before asking the user to classify an ambiguous change. Ask o
 
 ## Discover Feature And UI Impact
 
-1. Match the user's terms to capability aliases in `references/zcode-feature-graph.yaml`.
+1. Match the user's terms to capability aliases in `references/zody-feature-graph.yaml`.
 2. Load the matched capability, its declared UI surfaces, shared implementation, state owners, invariants, docs, and one-hop semantic neighbors.
 3. Use codegraph before text search for indexed code:
    - Explore every declared symbol/file seed.
@@ -116,7 +116,7 @@ If the user has not named any capability or behavior, ask one concise scope ques
 Turn confirmed scan results into reusable retrieval data.
 
 - In `impact-only` mode, include a proposed graph delta in the Impact Brief but do not edit the graph.
-- In `planning` and `implementation-handoff` modes, update `references/zcode-feature-graph.yaml` after the relevant product semantics are confirmed.
+- In `planning` and `implementation-handoff` modes, update `references/zody-feature-graph.yaml` after the relevant product semantics are confirmed.
 - Add or update capability aliases, source docs, exact code seeds, UI surfaces, state owners, services, persistence nodes, delivery boundaries, typed edges, ranks, and conditions.
 - Use one UI surface node per distinct user scenario and state/commit contract. Put nested component call sites for that same surface into multiple `codeSeeds` instead of inventing duplicate product surfaces.
 - Keep node IDs stable. Add aliases when terminology changes; do not rename IDs merely to match new UI copy.

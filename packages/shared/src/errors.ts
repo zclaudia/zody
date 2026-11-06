@@ -27,7 +27,8 @@ export interface NormalizedUnknownError {
   code?: string;
 }
 
-export const ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE = "ZCODE_FILE_LOCK_TIMEOUT" as const;
+// 旧品牌码不能命中当前进程的锁竞争分支；历史错误仍按原值读取。
+export const ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE = "ZODY_FILE_LOCK_TIMEOUT" as const;
 
 export function stringifyUnknownValue(value: unknown): string {
   if (typeof value === "string") {
@@ -87,8 +88,8 @@ export function normalizeUnknownError(error: unknown): NormalizedUnknownError {
   };
 }
 
-export function isZCodeFileLockTimeoutError(error: unknown): boolean {
-  return normalizeUnknownError(error).code === ZCODE_FILE_LOCK_TIMEOUT_ERROR_CODE;
+export function isZodyFileLockTimeoutError(error: unknown): boolean {
+  return normalizeUnknownError(error).code === ZODY_FILE_LOCK_TIMEOUT_ERROR_CODE;
 }
 
 // fork（F4.11）：以下凭据解密错误常量原先定义在 oauth.ts；OAuth 类型删除后迁到通用

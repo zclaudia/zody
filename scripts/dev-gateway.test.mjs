@@ -114,9 +114,9 @@ describe("dev-gateway.mjs", () => {
     const envFile = join(await tempDir(), "gateway.env");
     try {
       const result = await runScript({
-        ZCODE_GATEWAY_IT_URL: gateway.url,
-        ZCODE_GATEWAY_IT_ADMIN_TOKEN: adminToken,
-        ZCODE_GATEWAY_ENV_FILE: envFile,
+        ZODY_GATEWAY_IT_URL: gateway.url,
+        ZODY_GATEWAY_IT_ADMIN_TOKEN: adminToken,
+        ZODY_GATEWAY_ENV_FILE: envFile,
       });
 
       expect(result.code).toBe(0);
@@ -129,11 +129,11 @@ describe("dev-gateway.mjs", () => {
       ]);
 
       const written = parseEnv(await readFile(envFile, "utf8"));
-      expect(written.ZCODE_GATEWAY_IT_URL).toBe(gateway.url);
-      expect(written.ZCODE_GATEWAY_IT_ADMIN_TOKEN).toBe(adminToken);
-      expect(written.ZCODE_GATEWAY_NAMESPACE).toBe("zody");
-      expect(written.ZCODE_GATEWAY_BACKEND_CREDENTIAL).toBe(gateway.state.issued[0].token);
-      expect(written.ZCODE_GATEWAY_DEVICE_CREDENTIAL).toBe(gateway.state.issued[1].token);
+      expect(written.ZODY_GATEWAY_IT_URL).toBe(gateway.url);
+      expect(written.ZODY_GATEWAY_IT_ADMIN_TOKEN).toBe(adminToken);
+      expect(written.ZODY_GATEWAY_NAMESPACE).toBe("zody");
+      expect(written.ZODY_GATEWAY_BACKEND_CREDENTIAL).toBe(gateway.state.issued[0].token);
+      expect(written.ZODY_GATEWAY_DEVICE_CREDENTIAL).toBe(gateway.state.issued[1].token);
     } finally {
       await gateway.close();
     }
@@ -144,9 +144,9 @@ describe("dev-gateway.mjs", () => {
     const envFile = join(await tempDir(), "gateway.env");
     try {
       const env = {
-        ZCODE_GATEWAY_IT_URL: gateway.url,
-        ZCODE_GATEWAY_IT_ADMIN_TOKEN: adminToken,
-        ZCODE_GATEWAY_ENV_FILE: envFile,
+        ZODY_GATEWAY_IT_URL: gateway.url,
+        ZODY_GATEWAY_IT_ADMIN_TOKEN: adminToken,
+        ZODY_GATEWAY_ENV_FILE: envFile,
       };
       await runScript(env);
       const first = await readFile(envFile, "utf8");
@@ -169,9 +169,9 @@ describe("dev-gateway.mjs", () => {
     const envFile = join(await tempDir(), "gateway.env");
     try {
       const env = {
-        ZCODE_GATEWAY_IT_URL: gateway.url,
-        ZCODE_GATEWAY_IT_ADMIN_TOKEN: adminToken,
-        ZCODE_GATEWAY_ENV_FILE: envFile,
+        ZODY_GATEWAY_IT_URL: gateway.url,
+        ZODY_GATEWAY_IT_ADMIN_TOKEN: adminToken,
+        ZODY_GATEWAY_ENV_FILE: envFile,
       };
       await runScript(env);
       const [backend, device] = gateway.state.issued;
@@ -181,8 +181,8 @@ describe("dev-gateway.mjs", () => {
       expect(result.code).toBe(0);
       expect(gateway.state.issued).toHaveLength(3);
       const written = parseEnv(await readFile(envFile, "utf8"));
-      expect(written.ZCODE_GATEWAY_DEVICE_CREDENTIAL).toBe(gateway.state.issued[2].token);
-      expect(written.ZCODE_GATEWAY_BACKEND_CREDENTIAL).toBe(backend.token);
+      expect(written.ZODY_GATEWAY_DEVICE_CREDENTIAL).toBe(gateway.state.issued[2].token);
+      expect(written.ZODY_GATEWAY_BACKEND_CREDENTIAL).toBe(backend.token);
       expect(gateway.state.issued[2].namespace).toBe("zody");
     } finally {
       await gateway.close();
@@ -194,13 +194,13 @@ describe("dev-gateway.mjs", () => {
     const envFile = join(await tempDir(), "gateway.env");
     try {
       const result = await runScript({
-        ZCODE_GATEWAY_IT_URL: gateway.url,
-        ZCODE_GATEWAY_ENV_FILE: envFile,
+        ZODY_GATEWAY_IT_URL: gateway.url,
+        ZODY_GATEWAY_ENV_FILE: envFile,
       });
 
       expect(result.code).toBe(1);
       expect(result.stdout).toBe("");
-      expect(result.stderr).toContain("ZCODE_GATEWAY_IT_ADMIN_TOKEN");
+      expect(result.stderr).toContain("ZODY_GATEWAY_IT_ADMIN_TOKEN");
       expect(existsSync(envFile)).toBe(false);
       expect(gateway.state.issued).toHaveLength(0);
     } finally {
@@ -213,9 +213,9 @@ describe("dev-gateway.mjs", () => {
     const envFile = join(await tempDir(), "gateway.env");
     try {
       const result = await runScript({
-        ZCODE_GATEWAY_IT_URL: gateway.url,
-        ZCODE_GATEWAY_IT_ADMIN_TOKEN: "wrong-admin-token",
-        ZCODE_GATEWAY_ENV_FILE: envFile,
+        ZODY_GATEWAY_IT_URL: gateway.url,
+        ZODY_GATEWAY_IT_ADMIN_TOKEN: "wrong-admin-token",
+        ZODY_GATEWAY_ENV_FILE: envFile,
       });
 
       expect(result.code).toBe(1);

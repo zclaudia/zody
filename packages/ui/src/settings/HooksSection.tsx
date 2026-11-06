@@ -1,14 +1,14 @@
 /* eslint-disable max-lines -- Hooks 页面聚合 Scope、插件投影、搜索与配置写入流程。 */
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Plus } from "lucide-react";
-import type { Hook, HookConfig, ZCodeInstalledPluginSummary, ZCodePluginInfo } from "@zcode/shared";
+import type { Hook, HookConfig, ZodyInstalledPluginSummary, ZodyPluginInfo } from "@zody/shared";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
 import { useConfirmDialog } from "@/hooks/useConfirmDialog.js";
 import { useWorkspaceServicesResolution } from "@/hooks/useWorkspaceServices.js";
-import { useZCodeSessionService } from "@/hooks/useZCodeSessionService.js";
-import { useZCodeIntl } from "@/i18n/IntlProvider.js";
-import { invalidateDeferredDraftSessionForRuntimeChange } from "@/lib/zcodeDraftSkillInvalidation.js";
+import { useZodySessionService } from "@/hooks/useZodySessionService.js";
+import { useZodyIntl } from "@/i18n/IntlProvider.js";
+import { invalidateDeferredDraftSessionForRuntimeChange } from "@/lib/zodyDraftSkillInvalidation.js";
 import { useHooksStore } from "@/store/hooksStore.js";
 import { usePluginManagementStore } from "@/store/pluginManagementStore.js";
 import { HookForm } from "./HookForm.js";
@@ -51,12 +51,12 @@ function isEditableHook(hook: Hook): boolean {
 // 里的只读工作区 Hook」。它们不是外部格式兼容导入源，塞进 Legacy 会让 Import 按钮
 // 必然失败（importHook 拒绝 source=zcode），也违反「只读但可逐条 Trust」的约定。
 // 这类行应留在 Installed 分组，由信任状态门控 Switch，走行内 Trust 流程。
-export function isReadOnlyZCodeHook(hook: Hook): boolean {
+export function isReadOnlyZodyHook(hook: Hook): boolean {
   return hook.editable === false && (hook.location?.source ?? "zcode") === "zcode";
 }
 
 function isInCompatibilitySection(hook: Hook): boolean {
-  return !isEditableHook(hook) && !isReadOnlyZCodeHook(hook);
+  return !isEditableHook(hook) && !isReadOnlyZodyHook(hook);
 }
 
 /**
@@ -101,8 +101,8 @@ export function resolveLatestReviewScopeTarget(
 }
 
 export function buildPluginHookRows(
-  plugins: readonly Pick<ZCodePluginInfo, "enabled" | "hookDetails" | "id" | "name">[],
-  installedPlugins: readonly Pick<ZCodeInstalledPluginSummary, "id" | "scope">[],
+  plugins: readonly Pick<ZodyPluginInfo, "enabled" | "hookDetails" | "id" | "name">[],
+  installedPlugins: readonly Pick<ZodyInstalledPluginSummary, "id" | "scope">[],
   scopeMetadataKnown: boolean,
 ): PluginHookRow[] {
   const scopeByPluginId = new Map(installedPlugins.map((plugin) => [plugin.id, plugin.scope] as const));
@@ -125,7 +125,7 @@ export function filterPluginHooksByScope(pluginHooks: readonly PluginHookRow[], 
 }
 
 export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionProps) {
-  const { intl, locale } = useZCodeIntl();
+  const { intl, locale } = useZodyIntl();
   const confirmDialog = useConfirmDialog();
   const hooksState = useHooksStore();
   const plugins = usePluginManagementStore((state) => state.plugins);
@@ -169,7 +169,7 @@ export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionP
   // Scope 切到另一个远程 workspace 后，路径已切换但 hooks/plugin 服务仍来自
   // 当前激活 workspace。这里让服务 host 与 target 身份同源，等待连接时不发送越界 RPC。
   const { hooksService, pluginManagementService } = targetServiceResolution.services;
-  const zcodeSessionService = useZCodeSessionService(
+  const zodySessionService = useZodySessionService(
     targetWorkspacePath ?? undefined,
     undefined,
     targetWorkspaceIdentity,
@@ -181,6 +181,7 @@ export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionP
   const { trustActionAvailable, trustingHookId, trustHook } = useWorkspaceHookInlineTrust({
     workspacePath: targetWorkspacePath,
     workspaceIdentity: targetWorkspaceIdentity,
+    remoteSessionId: targetServiceResolution.remoteSessionId ?? undefined,
     hooksService: targetServiceResolution.rpcReady ? hooksService : undefined,
     rpcReady: targetServiceResolution.rpcReady,
   });
@@ -189,7 +190,7 @@ export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionP
   const editableHooks = useMemo(
     () =>
       hooksState.hooks.filter(
-        (hook) => (isEditableHook(hook) || isReadOnlyZCodeHook(hook)) && (hook.location?.scope ?? "user") === activeScope,
+        (hook) => (isEditableHook(hook) || isReadOnlyZodyHook(hook)) && (hook.location?.scope ?? "user") === activeScope,
       ),
     [activeScope, hooksState.hooks],
   );
@@ -329,10 +330,10 @@ export function HooksSection({ workspacePath, workspaceIdentity }: HooksSectionP
         reason,
         workspaceIdentity: targetWorkspaceIdentity,
         workspacePath: targetWorkspacePath,
-        zcodeSessionService,
+        zodySessionService: zodySessionService,
       });
     },
-    [targetWorkspaceIdentity, targetWorkspacePath, zcodeSessionService],
+    [targetWorkspaceIdentity, targetWorkspacePath, zodySessionService],
   );
 
   const handleSaveHook = useCallback(

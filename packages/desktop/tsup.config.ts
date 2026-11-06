@@ -30,8 +30,8 @@ const buildTimeConfigDefines = createBuildTimeConfigDefines(
 // undefined define and normal Host path.
 const cuaDemoBuildSelection = await resolveMacosCuaDemoBuildSelection({
   env: process.env,
-  targetOs: process.env.ZCODE_TARGET_OS ?? process.platform,
-  targetArch: process.env.ZCODE_TARGET_ARCH ?? process.arch,
+  targetOs: process.env.ZODY_TARGET_OS ?? process.platform,
+  targetArch: process.env.ZODY_TARGET_ARCH ?? process.arch,
 });
 const cuaNarrowAgentDefine = resolveCuaNarrowAgentDefine(cuaDemoBuildSelection?.profileJson);
 
@@ -55,8 +55,8 @@ function loadEnvFiles(): Record<string, string> {
     }
   }
   // 真实环境变量优先级最高
-  if (process.env.ZCODE_ENV) vars.ZCODE_ENV = process.env.ZCODE_ENV;
-  if (process.env.ZCODE_BASE_URL) vars.ZCODE_BASE_URL = process.env.ZCODE_BASE_URL;
+  if (process.env.ZODY_ENV) vars.ZODY_ENV = process.env.ZODY_ENV;
+  if (process.env.ZODY_BASE_URL) vars.ZODY_BASE_URL = process.env.ZODY_BASE_URL;
   if (process.env.VITE_ZCODE_BASE_URL) vars.VITE_ZCODE_BASE_URL = process.env.VITE_ZCODE_BASE_URL;
   // OAuth origin/client_id 由 host runtime 读取；这里保留覆盖入口，方便开发构建时观察统一 env 来源。
   if (process.env.ZAI_OAUTH_CLIENT_ID) vars.ZAI_OAUTH_CLIENT_ID = process.env.ZAI_OAUTH_CLIENT_ID;
@@ -80,9 +80,9 @@ function loadEnvFiles(): Record<string, string> {
 
 const env = loadEnvFiles();
 const { environment: zcodeEnv } = await loadBuiltinProviderConfig();
-// 安装包身份与后端环境分轴：ZCODE_PREVIEW_IDENTITY=1 让生产后端的构建仍以 Zody Preview 身份打包运行。
-const zcodeProductFlavor = resolveDesktopProductFlavor({ ...process.env, ZCODE_ENV: zcodeEnv });
-console.log(`[tsup] ZCODE_ENV=${zcodeEnv} ZCODE_PRODUCT_FLAVOR=${zcodeProductFlavor}`);
+// 安装包身份与后端环境分轴：ZODY_PREVIEW_IDENTITY=1 让生产后端的构建仍以 Zody Preview 身份打包运行。
+const zodyProductFlavor = resolveDesktopProductFlavor({ ...process.env, ZODY_ENV: zcodeEnv });
+console.log(`[tsup] ZODY_ENV=${zcodeEnv} ZODY_PRODUCT_FLAVOR=${zodyProductFlavor}`);
 
 function parseCsvEnv(value: string | undefined): string[] {
   return (value ?? "")
@@ -118,9 +118,9 @@ export function resolveBuildPackagedAgentTelemetryEnv(
   runtimeEnv: Record<string, string | undefined>,
 ): Record<string, string> {
   const configuredKey = [
-    "ZCODE_PACKAGED_AGENT_OTEL_ENDPOINT",
-    "ZCODE_PACKAGED_AGENT_OTEL_HEADERS",
-    "ZCODE_PACKAGED_AGENT_OTEL_SERVICE_NAME",
+    "ZODY_PACKAGED_AGENT_OTEL_ENDPOINT",
+    "ZODY_PACKAGED_AGENT_OTEL_HEADERS",
+    "ZODY_PACKAGED_AGENT_OTEL_SERVICE_NAME",
   ].find((key) => runtimeEnv[key]?.trim());
   if (configuredKey) {
     throw new Error(
@@ -135,7 +135,7 @@ export function resolveDesktopTsupBundleSecurityOptions(
   runtimeEnv: Record<string, string | undefined> = process.env,
 ) {
   const isProduction = runtimeEnv.NODE_ENV === "production";
-  const isE2ECoverageBuild = runtimeEnv.ZCODE_E2E_COVERAGE === "1";
+  const isE2ECoverageBuild = runtimeEnv.ZODY_E2E_COVERAGE === "1";
   return {
     // 发布包的 main/host/preload 之前没有随 NODE_ENV=production 压缩，
     // 产物保留大量源码注释与格式化换行，增加逆向和内部实现暴露风险。
@@ -163,21 +163,21 @@ const desktopTsupBundleSecurityOptions = resolveDesktopTsupBundleSecurityOptions
 
 function createSharedDefines() {
   return {
-    __ZCODE_VERSION__: JSON.stringify(buildMetadata.appVersion),
-    __ZCODE_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
-    __ZCODE_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
-    __ZCODE_ENV__: JSON.stringify(zcodeEnv),
-    __ZCODE_PRODUCT_FLAVOR__: JSON.stringify(zcodeProductFlavor),
+    __ZODY_VERSION__: JSON.stringify(buildMetadata.appVersion),
+    __ZODY_COMMIT__: JSON.stringify(buildMetadata.buildCommitId),
+    __ZODY_BUILD_TIME__: JSON.stringify(buildMetadata.buildTime),
+    __ZODY_ENV__: JSON.stringify(zcodeEnv),
+    __ZODY_PRODUCT_FLAVOR__: JSON.stringify(zodyProductFlavor),
     ...buildTimeConfigDefines,
     // Computer Use Helper build identity — helperInstaller 读它决定下载哪个 Helper bundle。
     // 缺失时 installer 抛 "Packaged ZCode is missing its embedded Computer Use Helper build identity"。
-    // CI 构建时通过 ZCODE_CUA_HELPER_BUILD_ID env 注入；dev 为空串走兜底（dev helper 不走下载）。
-    __ZCODE_CUA_HELPER_BUILD_ID__: JSON.stringify(
-      process.env.ZCODE_CUA_HELPER_BUILD_ID?.trim() ?? "",
+    // CI 构建时通过 ZODY_CUA_HELPER_BUILD_ID env 注入；dev 为空串走兜底（dev helper 不走下载）。
+    __ZODY_CUA_HELPER_BUILD_ID__: JSON.stringify(
+      process.env.ZODY_CUA_HELPER_BUILD_ID?.trim() ?? "",
     ),
     // Bugfix: remote runtime CDN 根之前硬编码在 main bundle 里，OSS/CDN 切换必须改代码。
     // 这里改成构建期从 CI 的 CDN_DOMAIN/OSS_PATH_PREFIX 注入；没有配置时注入空列表，remote runtime 只走随包本地制品。
-    __ZCODE_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify(resolveBuildRemoteCdnReleaseRoots(env)),
+    __ZODY_REMOTE_CDN_RELEASE_ROOTS__: JSON.stringify(resolveBuildRemoteCdnReleaseRoots(env)),
   };
 }
 
@@ -186,18 +186,18 @@ function createMainDefines() {
     ...createSharedDefines(),
     // 正式安装包无法继承 GitLab Runner 或开发终端环境。这里只把 CI 提供的低权限写入配置
     // 编译进 Desktop Main，再由既有 Main -> Host -> Agent 安全边界定向传递。
-    __ZCODE_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify(
+    __ZODY_PACKAGED_AGENT_TELEMETRY_ENV__: JSON.stringify(
       resolveBuildPackagedAgentTelemetryEnv(process.env),
     ),
     // 独立 candidate UI 构建可在构建期注入固定 native launcher 配置。这里只接受
     // 构建机提供的 JSON；它不是运行时环境开关，也不是签名/TCC 验证结果。普通构建
     // 编译为 undefined，保持既有 Electron utilityProcess Host 路径。
-    __ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH__: resolveCandidateNativeHostLaunchDefine(
-      process.env.ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON,
+    __ZODY_CANDIDATE_NATIVE_HOST_LAUNCH__: resolveCandidateNativeHostLaunchDefine(
+      process.env.ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON,
     ),
     // Normal CUA candidate UI identity is injected only by its dedicated assembly builder.
     // The regular desktop main build never selects this identity at runtime.
-    __ZCODE_NORMAL_CUA_CANDIDATE_UI_NAME__: "undefined",
+    __ZODY_NORMAL_CUA_CANDIDATE_UI_NAME__: "undefined",
   };
 }
 
@@ -209,25 +209,25 @@ export function resolveCandidateNativeHostLaunchDefine(raw: string | undefined):
     parsed = JSON.parse(value);
   } catch (error) {
     throw new Error(
-      `ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON is not valid JSON: ${
+      `ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON is not valid JSON: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
   }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON must be a JSON object");
+    throw new Error("ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON must be a JSON object");
   }
   const candidate = parsed as Record<string, unknown>;
   const launcherPath = candidate.launcherPath;
   const cwd = candidate.cwd;
   if (typeof launcherPath !== "string" || !isAbsolute(launcherPath)) {
-    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.launcherPath must be absolute");
+    throw new Error("ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.launcherPath must be absolute");
   }
   if (typeof cwd !== "string" || !isAbsolute(cwd)) {
-    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.cwd must be absolute");
+    throw new Error("ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.cwd must be absolute");
   }
   if (candidate.entryName !== undefined && candidate.entryName !== "host-entry.mjs") {
-    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.entryName must be host-entry.mjs");
+    throw new Error("ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.entryName must be host-entry.mjs");
   }
   if (
     candidate.bridgeFd !== undefined &&
@@ -235,7 +235,7 @@ export function resolveCandidateNativeHostLaunchDefine(raw: string | undefined):
       (candidate.bridgeFd as number) < 3 ||
       (candidate.bridgeFd as number) > 1_024)
   ) {
-    throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.bridgeFd must be 3..1024");
+    throw new Error("ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.bridgeFd must be 3..1024");
   }
   if (candidate.env !== undefined) {
     if (
@@ -243,15 +243,15 @@ export function resolveCandidateNativeHostLaunchDefine(raw: string | undefined):
       candidate.env === null ||
       Array.isArray(candidate.env)
     ) {
-      throw new Error("ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env must be an object");
+      throw new Error("ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env must be an object");
     }
     for (const [key, envValue] of Object.entries(candidate.env as Record<string, unknown>)) {
       if (typeof envValue !== "string") {
-        throw new Error(`ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env.${key} must be a string`);
+        throw new Error(`ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env.${key} must be a string`);
       }
       if (key === "ELECTRON_RUN_AS_NODE") {
         throw new Error(
-          "ZCODE_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env must not set ELECTRON_RUN_AS_NODE",
+          "ZODY_CANDIDATE_NATIVE_HOST_LAUNCH_JSON.env must not set ELECTRON_RUN_AS_NODE",
         );
       }
     }
@@ -281,13 +281,13 @@ export function resolveCuaNarrowAgentDefine(raw: string | undefined): string {
     parsed = JSON.parse(value);
   } catch (error) {
     throw new Error(
-      `ZCODE_CUA_NARROW_AGENT_JSON is not valid JSON: ${
+      `ZODY_CUA_NARROW_AGENT_JSON is not valid JSON: ${
         error instanceof Error ? error.message : String(error)
       }`,
     );
   }
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    throw new Error("ZCODE_CUA_NARROW_AGENT_JSON must be a JSON object");
+    throw new Error("ZODY_CUA_NARROW_AGENT_JSON must be a JSON object");
   }
   return JSON.stringify(parsed);
 }
@@ -327,19 +327,19 @@ export default defineConfig([
     // desktop 保持 undici 为外部依赖，remote 单文件 bundle 再单独内联。
     external: desktopNodeRuntimeExternals,
     noExternal: [
-      "@zcode/server",
-      "@zcode/shared",
-      "@zcode/rpc",
-      "@zcode/services",
-      "@zcode/client",
+      "@zody/server",
+      "@zody/shared",
+      "@zody/rpc",
+      "@zody/services",
+      "@zody/client",
       // Provider Refactor 的 workspace 包导出 TypeScript 源码；Electron 生产运行时没有
       // TS loader，必须随 Desktop bundle 内联，不能留下指向 src/index.ts 的裸包引用。
-      "@zcode/provider",
-      "@zcode/provider-node",
+      "@zody/provider",
+      "@zody/provider-node",
       // services 已内联进 main，但其 producer import 曾被保留为裸包引用；
       // electron-builder 又会排除 node_modules/@zcode，导致安装包启动即 ERR_MODULE_NOT_FOUND。
       // producer 的 JS broker 必须跟随 services 一起内联，原生 addon 仍只存在于独立 Helper。
-      "@zcode/zcode-cua",
+      "@zody/zody-cua",
       // 远程访问改走 zclaudia-gateway。@zclaudia/gateway-backend 运行时 import "@zclaudia/gateway-client"
       // （解析到它自己声明的 0.2.x），安装包不随包发布 node_modules，所以三个包都必须内联进 main bundle；
       // 漏掉 gateway-client 会让打包后的安装包在启动远程访问时报 ERR_MODULE_NOT_FOUND。
@@ -375,7 +375,7 @@ export default defineConfig([
     platform: "node",
     target: "node22",
     external: ["electron"],
-    noExternal: ["@zcode/shared"],
+    noExternal: ["@zody/shared"],
     outExtension: () => ({ js: ".cjs" }),
     define: createSharedDefines(),
     esbuildOptions(options) {
@@ -424,19 +424,19 @@ export default defineConfig([
     // 这里同样保留为外部依赖，避免 desktop 开发态和打包态 host 进程启动失败。
     external: desktopNodeRuntimeExternals,
     noExternal: [
-      "@zcode/server",
-      "@zcode/shared",
-      "@zcode/rpc",
-      "@zcode/services",
-      "@zcode/client",
-      "@zcode/provider",
-      "@zcode/provider-node",
-      "@zcode/zcode-cua",
+      "@zody/server",
+      "@zody/shared",
+      "@zody/rpc",
+      "@zody/services",
+      "@zody/client",
+      "@zody/provider",
+      "@zody/provider-node",
+      "@zody/zody-cua",
     ],
     define: {
       ...createSharedDefines(),
       // darwin/arm64 self-use default, with explicit build-profile override preserved.
-      __ZCODE_CUA_NARROW_AGENT__: cuaNarrowAgentDefine,
+      __ZODY_CUA_NARROW_AGENT__: cuaNarrowAgentDefine,
     },
     // 与 main 保持一致的 chunk 隔离策略，避免 host/main 产物相互覆盖。
     esbuildOptions(options) {
@@ -457,14 +457,14 @@ export default defineConfig([
     // 同样保留 undici 等为外部依赖，避免 Electron ESM runtime 的 dynamic require 崩溃。
     external: desktopNodeRuntimeExternals,
     noExternal: [
-      "@zcode/server",
-      "@zcode/shared",
-      "@zcode/rpc",
-      "@zcode/services",
-      "@zcode/client",
-      "@zcode/provider",
-      "@zcode/provider-node",
-      "@zcode/zcode-cua",
+      "@zody/server",
+      "@zody/shared",
+      "@zody/rpc",
+      "@zody/services",
+      "@zody/client",
+      "@zody/provider",
+      "@zody/provider-node",
+      "@zody/zody-cua",
     ],
     define: createSharedDefines(),
     esbuildOptions(options) {

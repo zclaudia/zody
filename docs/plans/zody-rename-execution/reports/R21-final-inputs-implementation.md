@@ -1,0 +1,9 @@
+# R21 最终生成输入与图符号中间批
+
+基线 `4ea9400c76d5bd0d1760c03c3447dc27f9af217d`。仅更新 feature graph 的两个已确认当前声明：`IZCodeTaskService` → `IZodyTaskService`、`ZCodeProtocolAgentDependencies` → `ZodyProtocolAgentDependencies`；仅更新 `third-party/copied-components.json` 的 Fig autocomplete registry、VS Code wire-codec、Superpowers LICENSE 三条 `roots` 的已移动路径。对照旧 inventory 中这三项 file SHA-256，新路径内容均逐字节相同；证据 `output/zody-rename-r21/final-closure-preflight/copied-path-proof.json`。
+
+严格按预期替换重建整个文件并逐字节比较：graph 除两个 symbol 值外无其他文本变化，YAML 解析 372 nodes / 726 edges，全部 edges 不变；节点 ID、label、invariants 与其它所有内容不变。copied-components JSON 解析且除三个 roots 字符串外无其他变化；作者、版权、revision、原文 hash、reviewRequired 与 skills-lock 未动。此前九项及其余既有失效 seed 没有变更，语义裁决不属于此批。
+
+验证：dev-docs `pnpm --dir apps/dev-docs exec vitest run --config vitest.config.ts test/featureBoundaryGraph.test.ts` 退出 0，4/4；`pnpm typecheck` 退出 0；`pnpm lint` 退出 0（303 warnings）；`pnpm architecture:check --changed` 在编辑前后均退出 0、0 违规；`git diff --check` 退出 0。全量 `pnpm architecture:check` 编辑前退出 1：gen-ui-service 缺 contract.test.ts、pluginUiBridgeService.ts 404/400 行，不能写作通过。日志 `output/zody-rename-r21/final-closure-preflight/{architecture-before,architecture-full-before,final-check-0,final-check-1,final-check-2,final-check-3}.log`。未安装、生成 notices/inventory、建立新 worktree 或运行全仓 build。
+
+精确输入 patch `output/zody-rename-r21/final-closure-preflight/inputs.patch` SHA-256 `4e4e7be6c05ac1452c56322ba03b689b692344a9ebce3e97099c31cf18dbfba6`。graph before/after SHA-256 `9515c3754c22813de4945725e65354f6b5d87d9429bb56fc583d1bb0933b99e7` / `d14c8c4fde4e3928a1433617328af39ae6faca20ef6ceec5c2c8b1cdc21ced3f`；copied JSON before/after `c39849cf13ab9660754fcda693b45f6c5f9f91d196789620dba54941a23d3443` / `83eaa4066afd1ea13eb1536330460467f8c0b79ac383cc11ce6c030771a3fdec`。下一步须冻结完整候选，再于授权隔离 worktree 根 frozen install 后用真实工具成对生成 inventory/notices 并审核差异；本批非最终 R21 通过。

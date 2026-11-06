@@ -1,4 +1,4 @@
-import type { ProviderFamilyConnectionSelection } from "@zcode/shared";
+import type { ProviderFamilyConnectionSelection } from "@zody/shared";
 
 /**
  * fork（F4.5）：官方套餐权益查询与企业 pricing 已删除，连接方式推导不再读取
