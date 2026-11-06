@@ -3561,6 +3561,24 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 
 组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/yolo-confirmation.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过）；桌面 conversation-session 链路由 PA158 既有 pending 用例补「先确认一次」步骤（`packages/desktop` 不在本卡落点，缺口登记待协调）。automation/offpeak 表单接入剪枝，后续单独评估。accepted 表示产品合同，不代表已实现。
 
+## PA160. 任务重启与 /reload（F27）
+
+产品规格见 [任务重启与 /reload](task-restart-and-reload.md)（上游 v3.17.1 `a60ba6a7` 参考适配；services 侧 `restartTask` 契约见 `specs/task-restart-service-slice.md`，commit 45ae1981 已实现）。共享进程架构下「重启任务」= workspace 进程换代 + 目标任务 cold-resume + 兄弟任务按需恢复；任务菜单「重启任务」与 `/reload` 本地斜杠命令（面板选中即执行 + 提交前截获，任何形态不进模型输入）共用同一重启链；「重启 Agent 进程」确认框只在同 workspace 存在 running 兄弟任务（资源无法安全释放）时出现，取消不动作。
+
+| Case     | 前置/动作                                                          | 预期结果                                                                                              | Review   |
+| -------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | -------- |
+| PA160-01 | 会话空闲且同 workspace 无 running 兄弟任务，菜单选「重启任务」     | 不弹确认；调用 restartTask；视图按结果 meta 收敛，会话历史保留（cold-resume 续跑）                    | accepted |
+| PA160-02 | 同 workspace 有 running 兄弟任务，菜单选「重启任务」               | 先弹「重启 Agent 进程」确认（中断共用进程任务提示、会话历史保留）；取消/Escape/遮罩不动作；确认后重启 | accepted |
+| PA160-03 | `/` 面板选中 `/reload`；CLI catalog 存在同名命令                   | token 移除并立即执行，不发送不插 mention；App 层 recovery 命令屏蔽 CLI 同名 `/reload`                 | accepted |
+| PA160-04 | 输入恰好 `/reload` 后 Enter/发送                                   | 模型配置前截获执行；成功清空输入；失败 toast 且草稿保留                                               | accepted |
+| PA160-05 | 输入 `/reload foo` 或 `/reload` 带附件/引用                        | 静默丢弃本次提交，不发送给模型；附件与草稿保留                                                        | accepted |
+| PA160-06 | 重启 pending 期间重复触发（菜单连点/Enter 连按/两入口混用）        | 单 flight 合并，restartTask 只调一次；菜单项禁用显示「正在重启任务…」                                 | accepted |
+| PA160-07 | 重启成功后打开同 workspace 兄弟任务；目标任务自身 streaming 时重启 | 兄弟任务不自动恢复、打开时按需 cold-resume；目标自身轮次不触发确认框（中断它正是重启目的）            | accepted |
+| PA160-08 | 未知/已删除任务触发（菜单残留、已删除会话 `/reload`）              | restartTask 抛 ZODY_TASK_NOT_FOUND → toast 重启失败，不弹确认框                                       | accepted |
+| PA160-09 | 手机 390/桌面 1200、深浅主题、中英文                               | 菜单项与确认框布局符合 DESIGN.md；无横向溢出、无 pageerror                                            | accepted |
+
+组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/task-restart.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过，mock restartTask）；services 侧进程换代/cold-resume 契约由 `packages/services/test/zodyLegacyTaskCompatTaskIndex.test.ts` 的「F27 restartTask」组覆盖（已实现）。真实进程换代与续跑的桌面 conversation-session E2E 需 `packages/desktop`（不在本卡落点，缺口登记待协调）；手机远控真实链路不由组件测试冒充。host 范围任务搜索/按未读视图属任务列表改版跟进项，本卡不实施。accepted 表示产品合同，不代表已实现。
+
 ## CMP：Composer 压缩与 provider 身份
 
 沿用 CUA composer 七档布局契约。providerName 缺失的自定义 provider 使用菜单已有的 providerId 兜底，内置账号套餐规则不变。
