@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import {
   ZODY_OFFICIAL_PLUGIN_MARKETPLACE,
@@ -28,11 +28,16 @@ function canonicalPluginManifestPath(rootPath: string): string {
  * 按 S1 优先规则选择渲染源：新格式存在即唯一 manifest，否则回退旧格式。
  * 新格式存在但不可读时直接抛错，不静默改用旧格式（不合并 manifest）。
  */
-function resolveRuntimeManifestReadPath(rootPath: string): string {
-  const canonicalPath = canonicalPluginManifestPath(rootPath);
-  return existsSync(canonicalPath)
-    ? canonicalPath
-    : join(rootPath, ...LEGACY_PLUGIN_MANIFEST_SEGMENTS);
+function readRuntimeManifest(rootPath: string): { path: string; contents: string } {
+  const path = canonicalPluginManifestPath(rootPath);
+  try {
+    return { path, contents: readFileSync(path, "utf8") };
+  } catch (error) {
+    // existsSync=false 还可能是 EACCES/EPERM；快慢路径都只能在明确 ENOENT 时回退。
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  const legacyPath = join(rootPath, ...LEGACY_PLUGIN_MANIFEST_SEGMENTS);
+  return { path: legacyPath, contents: readFileSync(legacyPath, "utf8") };
 }
 
 export function createBundledMcpRuntimeConfig(input: {
@@ -71,12 +76,13 @@ export function writeOfficialPluginRuntimeManifest(input: OfficialRuntimeManifes
   const manifestPath = canonicalPluginManifestPath(input.rootPath);
   // 升级首跑：旧缓存只有 `.zcode-plugin/plugin.json`（内含旧隐藏命令），此时以它为渲染源，
   // 结果写入新路径；旧文件字节保持不动，发现层按 S1 读新路径得到重渲染后的命令。
-  const currentContents = readFileSync(resolveRuntimeManifestReadPath(input.rootPath), "utf8");
+  const { path: readPath, contents: currentContents } = readRuntimeManifest(input.rootPath);
   const nextContents = renderOfficialPluginRuntimeManifest(input, currentContents);
   if (nextContents === undefined) return;
   // 启动时无条件 rename 同内容的 plugin.json 会放大 Windows 杀毒/索引器
   // 的短暂文件占用。字节完全一致时不触碰文件；真正有更新时仍保持原子的失败语义。
-  if (nextContents === currentContents) return;
+  // legacy 即使字节已是当前渲染结果，也仍需首次提交 canonical，才能结束升级慢路径。
+  if (nextContents === currentContents && readPath === manifestPath) return;
   // 升级首跑时缓存里只有旧格式目录；新目标目录必须由这里补齐，否则临时文件 rename
   // 会以 ENOENT 失败并被 seed 降级路径吞成“可用旧缓存”，重渲染永远不会发生。
   mkdirSync(dirname(manifestPath), { recursive: true });
@@ -96,10 +102,13 @@ export function isOfficialPluginRuntimeManifestCurrent(
   input: OfficialRuntimeManifestInput,
 ): boolean {
   try {
-    // 只读“目标路径”决定是否可复用：旧缓存只有 `.zcode-plugin/plugin.json` 时读新路径
-    // 必然 ENOENT → 返回 false，进入慢路径触发重渲染并写入新路径（升级闭环）。
     const manifestPath = canonicalPluginManifestPath(input.rootPath);
-    const currentContents = readFileSync(manifestPath, "utf8");
+    const { path, contents: currentContents } = readRuntimeManifest(input.rootPath);
+    if (path !== manifestPath) {
+      // 无 MCP 的 legacy seed 不会生成新 manifest；只读验证后即可复用，避免热读永久取写锁。
+      const legacy = parseOfficialRuntimeManifest(input, currentContents);
+      return legacy.mcpServers === undefined;
+    }
     const nextContents = renderOfficialPluginRuntimeManifest(input, currentContents);
     return nextContents === undefined || nextContents === currentContents;
   } catch {
@@ -107,12 +116,24 @@ export function isOfficialPluginRuntimeManifestCurrent(
   }
 }
 
+function parseOfficialRuntimeManifest(
+  input: OfficialRuntimeManifestInput,
+  contents: string,
+): Record<string, unknown> {
+  const manifest: unknown = JSON.parse(contents);
+  // JSON 可解析不等于插件身份合法；否则空对象/错名会被无 MCP 的快路径当作提交态。
+  if (!isRecord(manifest) || manifest.name !== input.pluginName) {
+    throw new Error("Official plugin manifest has invalid name.");
+  }
+  return manifest;
+}
+
 /** 计算重写后的 manifest 内容；无需重写（无 mcpServers 或无可用的 host 入口）时返回 undefined。 */
 function renderOfficialPluginRuntimeManifest(
   input: OfficialRuntimeManifestInput,
   currentContents: string,
 ): string | undefined {
-  const manifest = JSON.parse(currentContents) as Record<string, unknown>;
+  const manifest = parseOfficialRuntimeManifest(input, currentContents);
   // skill-only / command-only 类型的 official plugin 不带 mcpServers，直接跳过 rewrite。
   // 之前这里无脑 asRecord(manifest.mcpServers) 会对 undefined 抛错，
   // 把 seed 流程整个阻断，连带 listZodySkills 拉不出 plugin skill。

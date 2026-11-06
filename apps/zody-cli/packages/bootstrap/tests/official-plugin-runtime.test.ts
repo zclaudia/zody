@@ -1,18 +1,38 @@
-import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   isOfficialPluginRuntimeManifestCurrent,
   writeOfficialPluginRuntimeManifest,
 } from "../src/app/official-plugin-runtime.js";
+
+const deniedCanonical = vi.hoisted(() => ({ path: "", legacyPath: "", legacyReads: 0 }));
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  return {
+    ...actual,
+    existsSync: (path: Parameters<typeof actual.existsSync>[0]) =>
+      path === deniedCanonical.path ? false : actual.existsSync(path),
+    readFileSync: (...args: Parameters<typeof actual.readFileSync>) => {
+      if (args[0] === deniedCanonical.path) {
+        throw Object.assign(new Error("synthetic canonical access denied"), { code: "EACCES" });
+      }
+      if (args[0] === deniedCanonical.legacyPath) deniedCanonical.legacyReads += 1;
+      return actual.readFileSync(...args);
+    },
+  };
+});
 
 describe("official plugin runtime manifest", () => {
   const cleanups: string[] = [];
   const originalEntrypoint = process.argv[1];
 
   afterEach(async () => {
+    deniedCanonical.path = "";
+    deniedCanonical.legacyPath = "";
+    deniedCanonical.legacyReads = 0;
     process.argv[1] = originalEntrypoint;
     await Promise.all(cleanups.splice(0).map((root) => rm(root, { force: true, recursive: true })));
   });
@@ -83,6 +103,98 @@ describe("official plugin runtime manifest", () => {
         rootPath: root,
       }),
     ).toBe(true);
+  });
+
+  it("reuses a skill-only legacy manifest without writing or changing its bytes", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zody-plugin-runtime-skill-only-"));
+    cleanups.push(root);
+    const legacyPath = join(root, ".zcode-plugin", "plugin.json");
+    const canonicalPath = join(root, ".zody-plugin", "plugin.json");
+    await writeJson(legacyPath, { name: "computer-use", skills: "skills" });
+    const bytes = await readFile(legacyPath);
+    const before = await stat(legacyPath);
+    const input = { pluginName: "computer-use", rootPath: root };
+
+    expect(isOfficialPluginRuntimeManifestCurrent(input)).toBe(true);
+    writeOfficialPluginRuntimeManifest(input);
+    expect(isOfficialPluginRuntimeManifestCurrent(input)).toBe(true);
+    expect(await readFile(legacyPath)).toEqual(bytes);
+    expect((await stat(legacyPath)).mtimeMs).toBe(before.mtimeMs);
+    await expect(stat(canonicalPath)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it.each(["invalid-json", "directory"] as const)(
+    "does not reuse skill-only legacy when canonical is %s",
+    async (kind) => {
+      const root = await mkdtemp(join(tmpdir(), "zody-plugin-runtime-no-fallback-"));
+      cleanups.push(root);
+      await writeJson(join(root, ".zcode-plugin", "plugin.json"), {
+        name: "computer-use",
+        skills: "skills",
+      });
+      const canonical = join(root, ".zody-plugin", "plugin.json");
+      await mkdir(dirname(canonical), { recursive: true });
+      if (kind === "directory") await mkdir(canonical);
+      else await writeFile(canonical, "{not json", "utf8");
+      const input = { pluginName: "computer-use", rootPath: root };
+
+      expect(isOfficialPluginRuntimeManifestCurrent(input)).toBe(false);
+      expect(() => writeOfficialPluginRuntimeManifest(input)).toThrow();
+    },
+  );
+
+  it.each([null, [], {}, { name: "wrong" }])(
+    "rejects a canonical JSON value without the expected official identity: %j",
+    async (manifest) => {
+      const root = await mkdtemp(join(tmpdir(), "zody-plugin-runtime-identity-"));
+      cleanups.push(root);
+      await writeJson(join(root, ".zcode-plugin", "plugin.json"), { name: "computer-use" });
+      await writeJson(join(root, ".zody-plugin", "plugin.json"), manifest);
+      const input = { pluginName: "computer-use", rootPath: root };
+
+      expect(isOfficialPluginRuntimeManifestCurrent(input)).toBe(false);
+      expect(() => writeOfficialPluginRuntimeManifest(input)).toThrow();
+    },
+  );
+
+  it("writes canonical for an already rendered MCP legacy manifest", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zody-plugin-runtime-rendered-legacy-"));
+    cleanups.push(root);
+    process.argv[1] = join(root, "zody.cjs");
+    const legacyPath = join(root, ".zcode-plugin", "plugin.json");
+    const canonicalPath = join(root, ".zody-plugin", "plugin.json");
+    const input = { pluginName: "browser-use", rootPath: root };
+    await writeRaw(legacyPath, legacyManifestContents("__zcode-plugin-host"));
+    writeOfficialPluginRuntimeManifest(input);
+    const rendered = await readFile(canonicalPath, "utf8");
+    await writeRaw(legacyPath, rendered);
+    await rm(canonicalPath);
+
+    expect(isOfficialPluginRuntimeManifestCurrent(input)).toBe(false);
+    writeOfficialPluginRuntimeManifest(input);
+
+    expect(await readFile(canonicalPath, "utf8")).toBe(rendered);
+    expect(await readFile(legacyPath, "utf8")).toBe(rendered);
+    expect(isOfficialPluginRuntimeManifestCurrent(input)).toBe(true);
+  });
+
+  it("does not read legacy after canonical stat/read is denied", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zody-plugin-runtime-eacces-"));
+    cleanups.push(root);
+    const canonicalPath = join(root, ".zody-plugin", "plugin.json");
+    const legacyPath = join(root, ".zcode-plugin", "plugin.json");
+    await writeJson(canonicalPath, { name: "computer-use", skills: "canonical-skills" });
+    await writeJson(legacyPath, { name: "computer-use", skills: "legacy-skills" });
+    deniedCanonical.path = canonicalPath;
+    deniedCanonical.legacyPath = legacyPath;
+    const input = { pluginName: "computer-use", rootPath: root };
+
+    expect(isOfficialPluginRuntimeManifestCurrent(input)).toBe(false);
+    expect(() => writeOfficialPluginRuntimeManifest(input)).toThrow(
+      "synthetic canonical access denied",
+    );
+    expect(deniedCanonical.legacyReads).toBe(0);
+    expect(JSON.parse(await readFile(canonicalPath, "utf8")).skills).toBe("canonical-skills");
   });
 
   it("keeps invalid mcpServers structural errors fatal", async () => {
