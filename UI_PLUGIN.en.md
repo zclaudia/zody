@@ -294,11 +294,11 @@ Use the ordinary plugin installation directory and marketplace entry. Source pac
     "app": {
       "type": "stdio",
       "command": "node",
-      "args": ["${ZCODE_PLUGIN_ROOT}/dist/server.mjs"],
+      "args": ["${ZODY_PLUGIN_ROOT}/dist/server.mjs"],
       "cwd": "${ZCODE_PROJECT_DIR}",
       "env": {
         "ZCODE_WORKSPACE_ROOT": "${ZCODE_PROJECT_DIR}",
-        "ZCODE_PLUGIN_DATA": "${ZCODE_PLUGIN_DATA}"
+        "ZODY_PLUGIN_DATA": "${ZODY_PLUGIN_DATA}"
       }
     }
   },
@@ -318,7 +318,7 @@ Use the ordinary plugin installation directory and marketplace entry. Source pac
 
 The server must register the `ui://my-panel/editor.html` resource and return it as `text/html;profile=mcp-app`. To use this panel for a tool result, set `_meta.ui.resourceUri` and `_meta.ui.surface: "editor"` on the tool definition. `_meta.ui.visibility: ["model", "app"]` allows both model and App calls; use `["app"]` for App-only tools. `ui.surfaces` is optional: tool metadata can still provide an inline page without it.
 
-Locate plugin files with `${ZCODE_PLUGIN_ROOT}`, perform workspace file operations under `${ZCODE_PROJECT_DIR}`, and store persistent data under `${ZCODE_PLUGIN_DATA}`. Define user configuration through manifest `userConfig`, then reference it in the server configuration with `${user_config.<key>}`. Pages perform file operations through the server; they do not access the main application's source or Node APIs directly.
+Locate plugin files with `${ZODY_PLUGIN_ROOT}`, perform workspace file operations under `${ZCODE_PROJECT_DIR}`, and store persistent data under `${ZODY_PLUGIN_DATA}`. Plugin subprocesses, hooks, and custom commands receive both `ZODY_PLUGIN_ROOT/DATA/ID/NAME` and `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` with identical values; `CLAUDE_PLUGIN_ROOT/DATA` remains available, and `${ZCODE_PLUGIN_ROOT}`, `${ZCODE_PLUGIN_DATA}`, `${CLAUDE_PLUGIN_ROOT}`, and `${CLAUDE_PLUGIN_DATA}` keep expanding from the same plugin context until 1.0. Define user configuration through manifest `userConfig`, then reference it in the server configuration with `${user_config.<key>}`. Pages perform file operations through the server; they do not access the main application's source or Node APIs directly.
 
 ## Page API Reference
 

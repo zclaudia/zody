@@ -294,11 +294,11 @@ stdio MCP 服务的 stdout 只输出协议消息，调试日志写 stderr。定�
     "app": {
       "type": "stdio",
       "command": "node",
-      "args": ["${ZCODE_PLUGIN_ROOT}/dist/server.mjs"],
+      "args": ["${ZODY_PLUGIN_ROOT}/dist/server.mjs"],
       "cwd": "${ZCODE_PROJECT_DIR}",
       "env": {
         "ZCODE_WORKSPACE_ROOT": "${ZCODE_PROJECT_DIR}",
-        "ZCODE_PLUGIN_DATA": "${ZCODE_PLUGIN_DATA}"
+        "ZODY_PLUGIN_DATA": "${ZODY_PLUGIN_DATA}"
       }
     }
   },
@@ -318,7 +318,7 @@ stdio MCP 服务的 stdout 只输出协议消息，调试日志写 stderr。定�
 
 服务端需要实际注册 `ui://my-panel/editor.html` 资源并返回 `text/html;profile=mcp-app`。让工具结果使用该面板时，在工具定义中设置 `_meta.ui.resourceUri` 和 `_meta.ui.surface: "editor"`；`_meta.ui.visibility: ["model", "app"]` 允许模型与页面调用，仅页面工具使用 `["app"]`。`ui.surfaces` 可省略，此时仍可通过工具元数据提供内联页面。
 
-插件文件使用 `${ZCODE_PLUGIN_ROOT}` 定位，工作区文件操作使用 `${ZCODE_PROJECT_DIR}`，持久数据使用 `${ZCODE_PLUGIN_DATA}`。用户配置通过清单 `userConfig` 定义，并在服务配置里用 `${user_config.<key>}` 引用。页面通过服务执行文件操作，不直接访问主应用源码或 Node API。
+插件文件使用 `${ZODY_PLUGIN_ROOT}` 定位，工作区文件操作使用 `${ZCODE_PROJECT_DIR}`，持久数据使用 `${ZODY_PLUGIN_DATA}`。插件子进程、hook 与自定义命令同时获得 `ZODY_PLUGIN_ROOT/DATA/ID/NAME` 和 `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` 两套同源 env，`CLAUDE_PLUGIN_ROOT/DATA` 继续可用；`${ZCODE_PLUGIN_ROOT}`、`${ZCODE_PLUGIN_DATA}`、`${CLAUDE_PLUGIN_ROOT}`、`${CLAUDE_PLUGIN_DATA}` 在 1.0 前仍按同一插件上下文展开。用户配置通过清单 `userConfig` 定义，并在服务配置里用 `${user_config.<key>}` 引用。页面通过服务执行文件操作，不直接访问主应用源码或 Node API。
 
 ## 页面 API 速查
 
