@@ -107,6 +107,12 @@ export default defineConfig({
             // Gen UI 目录回归位于源码旁，默认入口也必须执行，避免只在手动定向运行时生效。
             "packages/shared/src/node/genUiPaths.test.ts",
             "packages/services/src/gen-ui/**/*.test.ts",
+            // 修复依据：插件源码旁回归曾被默认/affected 门禁漏收，related 还能无测试绿灯。
+            "packages/ui/src/gen-ui/**/*.test.ts",
+            "packages/ui/src/plugin-ui/**/*.test.ts",
+            "packages/desktop/src/renderer/src/plugin-sandbox/**/*.test.ts",
+            // 收集回归自身也进入默认门禁，防止只靠人工执行后再次漏收。
+            "scripts/test/zody-rename-plugin-test-collection.test.mjs",
             "scripts/assert-safe-cua-helper-zip.test.mjs",
             "scripts/check-official-refs.test.mjs",
             "scripts/ci/ci-telemetry-keyword-guard.test.mjs",
