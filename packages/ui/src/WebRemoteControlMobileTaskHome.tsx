@@ -60,7 +60,7 @@ import type { WebRemoteControlWorkspaceTaskGroup } from "@/lib/webRemoteControlT
 import { logger } from "@/logger.js";
 import type { WebRemoteControlWorkspaceSwitcherApi } from "@/root/types.js";
 import { WebRemoteControlRecentProjectsSection } from "@/WebRemoteControlRecentProjects.js";
-import { WebRemoteControlMobileSettingsMenu } from "@/WebRemoteControlMobileSettingsMenu.js";
+import { WebRemoteControlMobileSettingsButton } from "@/WebRemoteControlMobileSettingsButton.js";
 import { WebRemoteControlThemeMenu } from "@/WebRemoteControlThemeMenu.js";
 
 export { buildWebRemoteControlMobileTaskHomeModel } from "@/lib/webRemoteControlMobileTaskHome.js";
@@ -895,7 +895,7 @@ export function WebRemoteControlMobileTaskHome({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <WebRemoteControlMobileSettingsMenu onOpenAppSettings={onOpenAppSettings} />
+            <WebRemoteControlMobileSettingsButton onOpenAppSettings={onOpenAppSettings} />
             {onOpenSearch ? (
               <Button
                 variant="ghost"

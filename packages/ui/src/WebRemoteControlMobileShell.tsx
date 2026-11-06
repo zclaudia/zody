@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button.js";
 import { MobileNotificationsFeature } from "@/MobileNotificationsFeature.js";
 import { MobileWorkspacePicker } from "@/MobileWorkspacePicker.js";
 import { WebRemoteControlMobileHomePage } from "@/WebRemoteControlMobileHomePage.js";
-import { WebRemoteControlMobileSettingsMenu } from "@/WebRemoteControlMobileSettingsMenu.js";
+import { WebRemoteControlMobileSettingsButton } from "@/WebRemoteControlMobileSettingsButton.js";
 import type { MobileFileBrowserOpenRequest } from "@/MobileWorkspaceFileBrowser.js";
 import {
   MobileFeatureOverlay,
@@ -344,7 +344,7 @@ export function WebRemoteControlMobileShell({
                     <Bell className="size-4" />
                   </Button>
                 ) : null}
-                <WebRemoteControlMobileSettingsMenu onOpenAppSettings={onOpenAppSettings} />
+                <WebRemoteControlMobileSettingsButton onOpenAppSettings={onOpenAppSettings} />
                 {/* 走查 shell-3/touch-3：size-11 经 ThemeMenu 的 className 透传到触发钮
                     （icon-sm 视觉不变），补齐顶栏第 5 个 44px 命中区。 */}
                 <WebRemoteControlThemeMenu className="size-11" />
