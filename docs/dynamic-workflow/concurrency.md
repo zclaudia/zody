@@ -1,6 +1,8 @@
 # Dynamic Workflow: Concurrency (spec)
 
-Status: implemented. This document describes how many model requests a workflow run may
+Status: implemented, except the F24 additions marked inline (the cap on unknown provider
+codes in the policy table below, and quota auto-resume, both specified in
+`quota-resume.md`). This document describes how many model requests a workflow run may
 have in flight and how that number moves; its sibling
 `apps/zcode-cli/packages/dynamic-workflow/docs/execution-engine.md` owns what happens to a
 run when a model error is not recoverable.
@@ -672,7 +674,8 @@ time, to tell a stop from a throttle on a failed attempt ("Reading a ticket").
 | error code `model_not_found` | `stop`, kind `model_unavailable` |
 | reason `context_exceeded` | `context_exceeded` |
 | reason `invalid_request`, unless the code is `invalid_model_response` | `stop`, kind `invalid_request` |
-| anything else: rate limits, overload, 5xx, timeouts, network and TLS errors, unknown provider codes, a response the adapter could not parse | `retry` |
+| reason `unknown` with a provider code (a code the classifier does not know, such as `1113`), the 10th time in a row within one request (planned, F24) | `stop`, kind `other` |
+| anything else: rate limits, overload, 5xx, timeouts, network and TLS errors, an unknown provider code fewer than 10 times in a row within one request, a response the adapter could not parse | `retry` |
 
 Under `unbounded`, `retry` means retry; `stop` and `context_exceeded` mean the attempt loop
 ends and the turn rejects. Under `default` the classifier's flag is consulted exactly as
@@ -680,8 +683,23 @@ before, so main-conversation behaviour is untouched. The quota check comes befor
 reason check on purpose: code `1005` classifies as `invalid_request`, and a stopped run
 that reads "quota" is the one the user can act on.
 
+The cap on unknown provider codes (`WORKFLOW_UNRECOGNIZED_CODE_MAX_CONSECUTIVE`, 10;
+planned as F24, specified in `quota-resume.md` "R3 — Shutdown on unrecognized business
+codes") exists because such a code can be deterministic: on 2026-10-16 the server returned
+`1113` to a set of accounts on every request, the classifier did not know it, and workflow
+runs retried it forever under the unbounded budget, leaving only the stall notice. An
+unknown code may also be transient, so the first occurrence does not stop the run; the
+count is consecutive within one request, not the attempt number — any other failure (a
+network error, 5xx, a rate limit) resets it, so nine network errors followed by one
+unknown code is a streak of one and retries, while ten unknown codes in a row stop the
+run as `stopped(provider)`, kind `other`, resumable once the cause is fixed. The runner
+keeps the streak per request and passes it into the table, and the adapter error carries
+it as `unrecognizedCodeStreak`, so the driver's inspection reads the same number and
+reaches the same stop.
+
 The `stop` kinds are the vocabulary of `ProviderStop`; how a stopped run is presented and
-resumed is in `execution-engine.md`.
+resumed is in `execution-engine.md`, and how a run stopped on a usage cap resumes by
+itself after the reset (planned, F24) is specified in `quota-resume.md`.
 
 ### Where the two layers meet
 
