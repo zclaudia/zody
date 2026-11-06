@@ -1530,6 +1530,13 @@ const zhCN: Record<string, string> = {
   "taskList.renameFailed": "重命名任务失败",
   "taskList.pinFailed": "更新置顶状态失败",
   "taskList.markAsUnread": "标记为未读",
+  // F27 任务重启（docs/task-restart-and-reload.md，来源 a60ba6a7）
+  "taskList.restart": "重启任务",
+  "taskList.restarting": "正在重启任务…",
+  "taskList.restartFailed": "重启失败，请查看任务状态后重试",
+  "taskList.recoverWorkspace": "重启 Agent 进程",
+  "taskList.recoverWorkspaceDescription":
+    "任务资源未能安全释放。继续会中断同工作区共用此 Agent 进程的其他任务。会话历史会保留。",
   "taskList.openInSplitPane": "在分屏打开",
   "chat.toolCall.agent.openInSidePane": "在右侧打开",
   "v4Pane.splitRight": "向右拆分",
@@ -4873,6 +4880,9 @@ const zhCN: Record<string, string> = {
   "chat.slash.title": "命令与能力",
   "chat.slash.searchHint": "输入内容以搜索命令、技能或子智能体",
   "chat.slash.app.side.description": "新建并打开一个辅助对话",
+  // F27：/reload 本地恢复命令；命令说明沿用 CLI 英文目录（与上游 a60ba6a7 同约定）。
+  "chat.slash.app.reload.description":
+    "Reload the task runtime, preserving history and stopping current execution.",
   "chat.slash.commands.title": "命令",
   "chat.slash.skills.title": "技能",
   "chat.slash.skills.empty": "没有匹配的技能",

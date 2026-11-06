@@ -42,12 +42,11 @@ import { MentionPanel } from "./mentions/components/MentionPanel.js";
 // 与 @ 面板共用 IME 组合期 Enter 判定，避免 / 面板确认拼音时被拦截为选中建议（走查 composer-2）。
 import { isImeCompositionEnterEvent } from "./mentions/MentionPlugin.js";
 import {
-  buildAppSlashCommandSuggestions,
   buildSkillSuggestions,
   buildSubagentSuggestions,
-  buildSlashSuggestions,
   getTextAroundCursor,
   isAppSlashCommandSuggestion,
+  mergeCommandSuggestions,
   normalizeSlashCommandValue,
   type SlashCommandPluginProps,
 } from "./slashCommandHelpers.js";
@@ -95,18 +94,18 @@ export function SlashCommandPlugin({
   const dismissedSignatureRef = useRef<string | null>(null);
   const activeSignatureRef = useRef<string | null>(null);
   const activeTokenRef = useRef<ActivePromptInputTokenSnapshot | null>(null);
-  const commandSuggestions = useMemo(() => {
-    const excluded = new Set((excludedCommandNames ?? []).map(normalizeSlashCommandValue));
-    const cliSuggestions = buildSlashSuggestions(commands).filter(
-      (item) => !excluded.has(item.value),
-    );
-    // App 层命令追加在 CLI catalog 之后展示；CLI 已提供同名命令时以 CLI 为准，避免遮蔽。
-    const cliValues = new Set(cliSuggestions.map((item) => item.value));
-    const appSuggestions = buildAppSlashCommandSuggestions(appCommands ?? []).filter(
-      (item) => !cliValues.has(item.value) && !excluded.has(item.value),
-    );
-    return [...cliSuggestions, ...appSuggestions];
-  }, [appCommands, commands, excludedCommandNames]);
+  const commandSuggestions = useMemo(
+    () =>
+      // F27（docs/task-restart-and-reload.md，来源 a60ba6a7）：合并规则提取到
+      // slashCommandHelpers.mergeCommandSuggestions 纯函数——recovery 类 App 命令
+      // （/reload）屏蔽 CLI 同名命令，其余保持「CLI 同名优先」不变。
+      mergeCommandSuggestions({
+        cliCommands: commands,
+        appCommands,
+        excludedCommandNames,
+      }),
+    [appCommands, commands, excludedCommandNames],
+  );
   const subagentSuggestions = useMemo(() => buildSubagentSuggestions(agents), [agents]);
   const skillSuggestions = useMemo(
     () =>

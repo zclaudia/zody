@@ -31,6 +31,8 @@ export function TaskActionMenuContent({
   onStartRenameTask,
   onArchiveTask,
   onMarkTaskAsUnread,
+  onRestartTask,
+  restartPending = false,
   onOpenInSplitPane,
   openInSplitPaneDisabled = false,
   onOpenTaskFeedback,
@@ -69,6 +71,12 @@ export function TaskActionMenuContent({
   onStartRenameTask: () => void;
   onArchiveTask: () => void;
   onMarkTaskAsUnread: () => void;
+  /**
+   * F27「重启任务」（docs/task-restart-and-reload.md，来源 a60ba6a7）：仅在调用方
+   * 提供时渲染（已有任务的可重启入口）；pending 期间禁用并显示「正在重启任务…」。
+   */
+  onRestartTask?: () => void;
+  restartPending?: boolean;
   /** 「在分屏打开」（仅桌面 shell 传入；手机远控不显示该入口）。 */
   onOpenInSplitPane?: () => void;
   /** 当前 session 或 pane 数达上限且目标无已有归属时禁用（保留布局与层级）。 */
@@ -131,6 +139,24 @@ export function TaskActionMenuContent({
       >
         {intl.formatMessage({ id: "taskList.markAsUnread" })}
       </Item>
+      {onRestartTask ? (
+        // F27 任务级重启入口：共享进程架构下重启 = workspace 进程换代 + 本任务
+        // cold-resume（是否先弹确认由 useTaskRestart 按兄弟任务运行态统一裁决）。
+        <Item
+          data-testid="task-restart"
+          disabled={taskTargetActionsDisabled || restartPending}
+          title={taskTargetActionsDisabled ? disabledReason : undefined}
+          onSelect={() => {
+            if (!taskTargetActionsDisabled && !restartPending) {
+              onRestartTask();
+            }
+          }}
+        >
+          {intl.formatMessage({
+            id: restartPending ? "taskList.restarting" : "taskList.restart",
+          })}
+        </Item>
+      ) : null}
       {onOpenInSplitPane ? (
         <Item
           data-testid={TID_V4_TASK_OPEN_IN_SPLIT}

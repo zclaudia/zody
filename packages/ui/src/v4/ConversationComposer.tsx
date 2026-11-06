@@ -115,6 +115,7 @@ import {
   useIsMobileTextInputViewport,
 } from "@/lib/mobileTextInput.js";
 import { appendPromptHistoryEntry } from "@/lib/promptHistory.js";
+import { findRecoveryReloadCommand, resolveTypedReloadSubmission } from "@/lib/taskRestart.js";
 import {
   persistPromptHistoryEntries,
   readPromptHistoryEntries,
@@ -1218,6 +1219,54 @@ function ConversationComposerImpl({
       const currentConversationSelections = conversationSelectionReferences;
       const hasPendingConversationSelections = currentConversationSelections.length > 0;
       const submittedShareContext = pendingShareContext;
+      // F27（docs/task-restart-and-reload.md，来源 a60ba6a7）：/reload 是本地操作，
+      // 必须在模型配置、队列和消息历史处理之前截获；任何形态的 /reload 文本都不发给模型。
+      const reloadDecision = resolveTypedReloadSubmission({
+        text: trimmed,
+        hasReloadCommand: Boolean(findRecoveryReloadCommand(appSlashCommands)),
+        busy: pendingRef.current,
+        hasAttachmentsOrContexts:
+          hasPendingAttachments ||
+          hasPendingCodeCommentContexts ||
+          hasPendingWebElementContexts ||
+          hasPendingPluginUiContexts ||
+          hasPendingPptxElementReferences ||
+          hasPendingConversationSelections ||
+          Boolean(submittedShareContext),
+      });
+      if (reloadDecision.kind !== "not-reload") {
+        if (reloadDecision.kind === "drop") {
+          // `/reload foo`（带参数）或门禁不满足（pending/附件/引用）：静默丢弃本次提交，
+          // 不执行也不落入普通发送——参数和附件不发给模型（上游 a60ba6a7 同语义）。
+          return;
+        }
+        const recoveryCommand = findRecoveryReloadCommand(appSlashCommands);
+        if (!recoveryCommand) {
+          return;
+        }
+        // 与普通发送一致的 pending 边界：执行期间禁止重复提交。
+        const revision = contentRevisionRef.current;
+        const scope = draftScopeRef.current;
+        pendingRef.current = true;
+        setPending(true);
+        try {
+          const completed = await recoveryCommand.run();
+          if (
+            completed !== false &&
+            scope === draftScopeRef.current &&
+            revision === contentRevisionRef.current
+          ) {
+            // 重启成功才清空输入并持久化草稿；失败（run 返回 false）保留草稿供直接重试。
+            inputApiRef.current?.clear();
+            updateText("");
+            persistDraftNow(scope);
+          }
+        } finally {
+          pendingRef.current = false;
+          setPending(false);
+        }
+        return;
+      }
       // 草稿首发 accepted 后同一 composer 会原地从 __draft__ promotion 到
       // session scope；若成功清理时再读可变 ref，会误清新 scope，并把首条输入残留在
       // __draft__，下次新建任务又恢复。发送开始时冻结真正提交的 scope。
@@ -1514,6 +1563,7 @@ function ConversationComposerImpl({
       }
     },
     [
+      appSlashCommands,
       attachmentsApi,
       conversationSelectionReferences,
       conversationTelemetry,
@@ -1521,6 +1571,7 @@ function ConversationComposerImpl({
       createSubmissionFromComposer,
       submissionReady,
       getCodeCommentContexts,
+      persistDraftNow,
       telemetryDraftConfig,
       modelSelectionView,
       onSendText,

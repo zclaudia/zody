@@ -33,10 +33,18 @@ export interface AppSlashCommand {
   value: string;
   /** 本地化描述，直接展示在 `/` 面板。 */
   description: string;
-  /** 额外搜索关键词；应同时包含中英文别名，保证两种输入习惯都能搜到。 */
+  /** 额外搜索关键词；应同时包含中英文别名，保证两种输入习惯都能搜索到。 */
   keywords?: readonly string[];
-  /** 选中命令后立即执行的 UI 行为。 */
-  run: () => void;
+  /**
+   * 恢复类命令（来源 a60ba6a7，F27 /reload）：合并命令面板时屏蔽 CLI catalog 同名命令，
+   * 保证该命令永远由 App 层本地截获，绝不回落到 CLI/模型。
+   */
+  recovery?: boolean;
+  /**
+   * 选中命令后立即执行的 UI 行为。返回 false 表示执行失败——typed 提交路径
+   * （如输入 `/reload` 后回车）据此保留草稿不清空输入，供用户直接重试。
+   */
+  run: () => void | boolean | Promise<void | boolean>;
 }
 
 const APP_SLASH_SUGGESTION_ID_PREFIX = "app-slash:";
@@ -64,6 +72,36 @@ export function buildAppSlashCommandSuggestions(
 
 export function isAppSlashCommandSuggestion(suggestion: PromptInputSuggestionItem): boolean {
   return suggestion.id.startsWith(APP_SLASH_SUGGESTION_ID_PREFIX);
+}
+
+/**
+ * 合并 CLI slash commands 与 App 层命令为 `/` 面板建议列表（F27 从 SlashCommandPlugin
+ * 提取为纯函数以便单测）。规则（来源 a60ba6a7 适配）：
+ * - 普通命令：CLI catalog 同名优先（保持既有「App 命令不遮蔽 CLI」语义）；
+ * - recovery 命令：反过来屏蔽 CLI 同名命令——`/reload` 必须始终本地截获，不进模型输入；
+ * - excludedCommandNames 对两类命令都生效。
+ */
+export function mergeCommandSuggestions(params: {
+  cliCommands: readonly ZodySlashCommand[];
+  appCommands?: readonly AppSlashCommand[];
+  excludedCommandNames?: readonly string[];
+}): PromptInputSuggestionItem[] {
+  const excluded = new Set((params.excludedCommandNames ?? []).map(normalizeSlashCommandValue));
+  // recovery 类 App 命令优先于 CLI 同名命令，避免本地恢复入口被 CLI catalog 遮蔽。
+  const recoveryNames = new Set(
+    (params.appCommands ?? [])
+      .filter((command) => command.recovery)
+      .map((command) => normalizeSlashCommandValue(command.value)),
+  );
+  const cliSuggestions = buildSlashSuggestions([...params.cliCommands]).filter(
+    (item) => !excluded.has(item.value) && !recoveryNames.has(item.value),
+  );
+  // App 层命令追加在 CLI catalog 之后展示；CLI 已提供同名命令时以 CLI 为准，避免遮蔽。
+  const cliValues = new Set(cliSuggestions.map((item) => item.value));
+  const appSuggestions = buildAppSlashCommandSuggestions(params.appCommands ?? []).filter(
+    (item) => !cliValues.has(item.value) && !excluded.has(item.value),
+  );
+  return [...cliSuggestions, ...appSuggestions];
 }
 
 /**

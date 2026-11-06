@@ -53,6 +53,7 @@ import { WORKSPACE_FILE_DRAG_MIME } from "@/lib/workspaceFileDrag.js";
 import { buildChatSessionScrollMemoryKey } from "@/lib/chatSessionScrollMemory.js";
 import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js";
 import { useServices } from "@/hooks/useServices.js";
+import { useTaskRestart } from "@/hooks/useTaskRestart.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
 import type { SessionOpenTrigger } from "@/lib/sessionOpenArmsTelemetry.js";
 import { useDynamicWorkflowAvailability } from "@/hooks/useDynamicWorkflowAvailability.js";
@@ -2062,7 +2063,32 @@ export function SessionPane({
   // `/side` App 层斜杠命令。命令目录仍以 CLI catalog 为权威，这里只在渲染层
   // 按门禁注入"选中即打开辅助对话"的本地命令；草稿态（无父 session 可挂 child）、
   // 辅助对话自身、只读与手机 viewport 均不提供。
+  // F27 任务级重启（docs/task-restart-and-reload.md，来源 a60ba6a7）：/reload 与
+  // 任务菜单「重启任务」共用 useTaskRestart 单 flight 与确认框判定。SessionPane 已位于
+  // 目标 Workspace 的 ServiceProvider 内（见上方 baseWorkspaceServices 注释），这里
+  // 不传 workspace 路由参数，直接订阅该 Host 的 task 服务。
+  const { restartTask: restartTaskViaHook } = useTaskRestart({ intl });
   const appSlashCommands = useMemo<AppSlashCommand[] | undefined>(() => {
+    // F27 `/reload` 本地恢复命令：仅已存在会话且非只读时提供；recovery 标记让
+    // 命令面板屏蔽 CLI 同名命令，保证 /reload 永远本地截获、不进入模型输入。
+    const reloadAction: AppSlashCommand[] | null =
+      sessionId && !readOnly
+        ? [
+            {
+              value: "reload",
+              recovery: true,
+              description: intl.formatMessage({ id: "chat.slash.app.reload.description" }),
+              keywords: ["reload", "restart", "重启"],
+              run: () =>
+                restartTaskViaHook({
+                  taskId: sessionId,
+                  workspacePath,
+                  ...(workspaceIdentity?.trim() ? { workspaceIdentity } : {}),
+                  ...(provider ? { provider } : {}),
+                }),
+            },
+          ]
+        : null;
     if (
       !sessionId ||
       !onOpenSelectionSideChat ||
@@ -2073,48 +2099,49 @@ export function SessionPane({
         isMobileViewport: isMobileTextInputViewport,
       })
     ) {
-      return undefined;
+      return reloadAction ?? undefined;
     }
     const openNewSelectionSideChat = () => {
       void handleOpenSelectionSideConversation(undefined, true);
     };
-    // 关键词固定同时包含中英文别名，任一 locale 下输入 side / btw / 辅助 都能搜到。
+    // 关键词固定同时包含中英文别名，任一 locale 下输入 side / btw / 辅助 都能搜索到。
     // `/btw` 是 `/side` 的等价别名，适配不同用户输入习惯，面板中各自独立展示。
-    const sharedKeywords = [
-      "side",
-      "btw",
-      "side chat",
-      "auxiliary",
-      "辅助对话",
-      "辅助",
-      "侧边",
-    ];
+    const sharedKeywords = ["side", "btw", "side chat", "auxiliary", "辅助对话", "辅助", "侧边"];
     const description = intl.formatMessage({
       id: "chat.slash.app.side.description",
     });
     return [
-      {
-        value: "side",
-        description,
-        keywords: sharedKeywords,
-        run: openNewSelectionSideChat,
-      },
-      {
-        value: "btw",
-        description,
-        keywords: sharedKeywords,
-        run: openNewSelectionSideChat,
-      },
-    ].filter((command) => !cliSlashCommandNames.has(command.value));
+      ...(reloadAction ?? []),
+      ...(
+        [
+          {
+            value: "side",
+            description,
+            keywords: sharedKeywords,
+            run: openNewSelectionSideChat,
+          },
+          {
+            value: "btw",
+            description,
+            keywords: sharedKeywords,
+            run: openNewSelectionSideChat,
+          },
+        ] as const
+      ).filter((command) => !cliSlashCommandNames.has(command.value)),
+    ];
   }, [
     cliSlashCommandNames,
     handleOpenSelectionSideConversation,
     intl,
     isMobileTextInputViewport,
     onOpenSelectionSideChat,
+    provider,
     readOnly,
+    restartTaskViaHook,
     selectionSideChat,
     sessionId,
+    workspaceIdentity,
+    workspacePath,
   ]);
 
   const chatLoadingBlockedByInteraction = hasChatLoadingBlockingInteraction(

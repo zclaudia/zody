@@ -17,6 +17,8 @@ export function TaskListItemContextMenu({
   onStartRenameTask,
   onArchiveTask,
   onMarkTaskAsUnread,
+  onRestartTask,
+  restartPending = false,
   onOpenInSplitPane,
   openInSplitPaneDisabled,
   onOpenTaskFeedback,
@@ -50,6 +52,9 @@ export function TaskListItemContextMenu({
   onStartRenameTask: () => void;
   onArchiveTask: () => void;
   onMarkTaskAsUnread: () => void;
+  /** F27「重启任务」（docs/task-restart-and-reload.md）；省略时不渲染该菜单项。 */
+  onRestartTask?: () => void;
+  restartPending?: boolean;
   /** 「在分屏打开」（仅桌面 shell 传入）。 */
   onOpenInSplitPane?: () => void;
   /** 叶子数达上限且该 session 未在任何 pane 时禁用。 */
@@ -81,6 +86,8 @@ export function TaskListItemContextMenu({
         onStartRenameTask={onStartRenameTask}
         onArchiveTask={onArchiveTask}
         onMarkTaskAsUnread={onMarkTaskAsUnread}
+        onRestartTask={onRestartTask}
+        restartPending={restartPending}
         onOpenInSplitPane={onOpenInSplitPane}
         openInSplitPaneDisabled={openInSplitPaneDisabled}
         onOpenTaskFeedback={onOpenTaskFeedback}

@@ -36,6 +36,7 @@ import { buildTaskWorkspaceKey } from "@/lib/taskQueryCache.js";
 import { useV4SplitPaneEntry } from "@/v4/splitPaneEntryContext.js";
 import { buildWorkbenchSessionKey, useWorkbenchGroupStore } from "@/v4/workbenchGroupStore.js";
 import { useTaskInteractionAutoResolutionSnooze } from "@/hooks/useTaskInteractionAutoResolutionSnooze.js";
+import { useTaskRestart } from "@/hooks/useTaskRestart.js";
 import {
   WORKBENCH_SESSION_DRAG_MIME,
   clearActiveWorkbenchSessionDragPayload,
@@ -898,6 +899,17 @@ export function TaskListItemContextMenuContent({
         : "taskList.untitled",
     });
 
+  // F27 任务级重启（docs/task-restart-and-reload.md，来源 a60ba6a7）：任务右键菜单
+  // 「重启任务」与 /reload 共用 useTaskRestart 单 flight；确认框按同 workspace 兄弟
+  // 任务运行态统一裁决。菜单按目标 task 自身的 workspace 作用域解析服务。
+  const { restartTask, isRestartPending } = useTaskRestart({
+    intl,
+    workspacePath,
+    remoteSessionId,
+    workspaceIdentity: task.workspaceIdentity ?? null,
+  });
+  const taskRestartPending = isRestartPending(task.taskId);
+
   const handleOpenTaskFeedback = useCallback(async () => {
     // 任务右键菜单之前只能复制日志/路径，反馈时缺少任务上下文。
     // 这里复用反馈中心 draft，只预填脱敏后的任务线索，附件由用户主动选择。
@@ -957,6 +969,17 @@ export function TaskListItemContextMenuContent({
       onMarkTaskAsUnread={() => {
         onMarkTaskAsUnread(task.taskId);
       }}
+      onRestartTask={() => {
+        void restartTask({
+          taskId: task.taskId,
+          workspacePath: task.workspacePath,
+          ...(task.workspaceIdentity?.trim()
+            ? { workspaceIdentity: task.workspaceIdentity }
+            : {}),
+          ...(task.provider ? { provider: task.provider } : {}),
+        });
+      }}
+      restartPending={taskRestartPending}
       onOpenInSplitPane={
         splitPaneEntryEnabled
           ? () => {

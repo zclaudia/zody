@@ -6,6 +6,7 @@ import {
   buildSubagentSuggestions,
   buildSlashSuggestions,
   isAppSlashCommandSuggestion,
+  mergeCommandSuggestions,
   replaceActiveSlashToken,
   shouldOfferSideSlashCommand,
 } from "../src/slashCommandHelpers.js";
@@ -294,5 +295,54 @@ describe("slashCommandHelpers", () => {
     expect(shouldOfferSideSlashCommand({ ...base, selectionSideChat: true })).toBe(false);
     expect(shouldOfferSideSlashCommand({ ...base, readOnly: true })).toBe(false);
     expect(shouldOfferSideSlashCommand({ ...base, isMobileViewport: true })).toBe(false);
+  });
+
+  // F27（docs/task-restart-and-reload.md，来源 a60ba6a7）：recovery App 命令必须
+  // 屏蔽 CLI 同名命令，保证 /reload 永远本地截获；普通 App 命令仍让位 CLI 同名。
+  describe("mergeCommandSuggestions", () => {
+    const cliCommands: ZodySlashCommand[] = [
+      { name: "reload", description: "cli reload", source: "builtin" },
+      { name: "side", description: "cli side", source: "builtin" },
+      { name: "review", description: "run review", source: "custom" },
+    ];
+
+    it("recovery /reload 屏蔽 CLI 同名命令（本地截获优先）", () => {
+      const result = mergeCommandSuggestions({
+        cliCommands,
+        appCommands: [
+          {
+            value: "reload",
+            recovery: true,
+            description: "Reload the task runtime",
+            run: () => {},
+          },
+        ],
+      });
+      expect(result.map((item) => item.id)).toEqual([
+        "slash:side",
+        "slash:review",
+        "app-slash:reload",
+      ]);
+    });
+
+    it("普通 App 命令仍被 CLI 同名命令遮蔽（既有语义回归守卫）", () => {
+      const result = mergeCommandSuggestions({
+        cliCommands,
+        appCommands: [{ value: "side", description: "app side", run: () => {} }],
+      });
+      expect(result.map((item) => item.id)).toEqual(["slash:reload", "slash:side", "slash:review"]);
+    });
+
+    it("excludedCommandNames 对 CLI 与 App 命令都生效", () => {
+      const result = mergeCommandSuggestions({
+        cliCommands,
+        appCommands: [
+          { value: "reload", recovery: true, description: "r", run: () => {} },
+          { value: "extra", description: "e", run: () => {} },
+        ],
+        excludedCommandNames: ["reload", "review"],
+      });
+      expect(result.map((item) => item.id)).toEqual(["slash:side", "app-slash:extra"]);
+    });
   });
 });

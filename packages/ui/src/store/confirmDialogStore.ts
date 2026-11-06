@@ -6,7 +6,11 @@ export interface ConfirmDialogRequest {
   testId?: string;
   description?: string;
   /** 特定业务弹框的稳定视觉规范；默认确认框不受影响。 */
-  presentation?: "automation-confirmation";
+  presentation?:
+    | "automation-confirmation"
+    // F27（docs/task-restart-and-reload.md）：任务重启前「重启 Agent 进程」确认；
+    // 渲染走通用确认框，该标记用于业务识别与 E2E 定位。
+    | "workspace-restart-confirmation";
   confirmLabel?: string;
   cancelLabel?: string;
   confirmVariant?: "default" | "destructive";

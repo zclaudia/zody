@@ -1596,6 +1596,13 @@ const enUS: Record<string, string> = {
   "taskList.renameFailed": "Could not rename task",
   "taskList.pinFailed": "Could not update pinned state",
   "taskList.markAsUnread": "Mark as unread",
+  // F27 task restart (docs/task-restart-and-reload.md, upstream a60ba6a7)
+  "taskList.restart": "Restart task",
+  "taskList.restarting": "Restarting task…",
+  "taskList.restartFailed": "Could not restart task. Check the task state and retry",
+  "taskList.recoverWorkspace": "Restart agent process",
+  "taskList.recoverWorkspaceDescription":
+    "Task resources could not be released safely. Continuing interrupts other tasks in this workspace that share the agent process. Session history is preserved.",
   "taskList.openInSplitPane": "Open in split view",
   "chat.toolCall.agent.openInSidePane": "Open in side pane",
   "v4Pane.splitRight": "Split right",
@@ -5055,6 +5062,9 @@ const enUS: Record<string, string> = {
   "chat.slash.title": "Commands and capabilities",
   "chat.slash.searchHint": "Type to search commands, skills, or agents",
   "chat.slash.app.side.description": "Open a new side conversation",
+  // F27: /reload local recovery command (CLI catalog wording, upstream a60ba6a7).
+  "chat.slash.app.reload.description":
+    "Reload the task runtime, preserving history and stopping current execution.",
   "chat.slash.commands.title": "Commands",
   "chat.slash.skills.title": "Skills",
   "chat.slash.skills.empty": "No matching skills",
