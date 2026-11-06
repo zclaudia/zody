@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "caseName": "zody-rename-plugin-env",
+  "spec": "./test/e2e/plugins/zody-rename-plugin-env.test.ts",
+  "providerFixtures": [],
+  "providerRequestPolicy": "none",
+  "fileFixtures": [
+    "runtime-generated marketplace under the E2E app home fixtures root: one plugin with a .zody-plugin manifest whose MCP server args and SessionStart hook command use ${ZODY_PLUGIN_ROOT}, and whose manifest env pre-seeds forged ZODY_/ZCODE_ identity keys"
+  ],
+  "requests": []
+}

@@ -7,6 +7,7 @@ import {
   createTraceId,
   createTurnId,
   type ExecutionPort,
+  type ExecutionResult,
   type HookExecutionDescriptor,
   type HookRunLifecyclePayload,
   type SessionEvent,
@@ -16,7 +17,11 @@ import {
   createInMemoryHookRunner,
   sanitizeHookDisplayText,
 } from "../src/hooks/index.js";
-import { resolveHookTimeoutMs } from "../src/hooks/configured-runner-input.js";
+import {
+  createPluginEnvOverlay,
+  expandPluginVariables,
+  resolveHookTimeoutMs,
+} from "../src/hooks/configured-runner-input.js";
 
 const visibleDescriptor: HookExecutionDescriptor = {
   clientVisible: true,
@@ -409,5 +414,164 @@ describe("Hook runner lifecycle", () => {
     expect(lifecyclePayload(events[0])?.hookCount).toBe(1);
     expect(lifecyclePayload(events[0])?.hookIndex).toBe(0);
     expect(lifecyclePayload(events[0])?.errorCode).toBe("workspace_hooks_pending_trust");
+  });
+});
+
+// R55：插件 hook 的身份 env 与模板展开。两套组必须来自同一个 HookPluginContext，
+// 外部宿主 env 不能分别覆盖任一组；`${ZODY_PLUGIN_ROOT/DATA}` 与既有前缀同源。
+describe("plugin identity env and template expansion (R55)", () => {
+  const plugin = {
+    dataPath: "/tmp/plugin-data",
+    id: "policy@example",
+    name: "Policy",
+    rootPath: "/tmp/policy-plugin",
+    sourcePath: "/tmp/policy-plugin/hooks/hooks.json",
+  };
+  const hookInput = { ...promptInput(), cwd: "/workspace" };
+
+  function completedResult(): ExecutionResult {
+    const now = new Date();
+    return {
+      cancelled: false,
+      completedAt: now,
+      durationMs: 2,
+      exitCode: 0,
+      startedAt: now,
+      status: "completed",
+      stderr: { bytes: 0, text: "", truncated: false },
+      stdout: { bytes: 0, text: "", truncated: false },
+      timedOut: false,
+    };
+  }
+
+  it("writes both identity groups from one plugin context, overriding inherited env", () => {
+    const overlay = createPluginEnvOverlay(plugin, hookInput, "/workspace");
+    expect(overlay.set).toMatchObject({
+      CLAUDE_PLUGIN_DATA: plugin.dataPath,
+      CLAUDE_PLUGIN_ROOT: plugin.rootPath,
+      ZCODE_PLUGIN_DATA: plugin.dataPath,
+      ZCODE_PLUGIN_ID: plugin.id,
+      ZCODE_PLUGIN_NAME: plugin.name,
+      ZCODE_PLUGIN_ROOT: plugin.rootPath,
+      ZODY_PLUGIN_DATA: plugin.dataPath,
+      ZODY_PLUGIN_ID: plugin.id,
+      ZODY_PLUGIN_NAME: plugin.name,
+      ZODY_PLUGIN_ROOT: plugin.rootPath,
+    });
+    expect(overlay.set.ZODY_PLUGIN_ROOT).toBe(overlay.set.ZCODE_PLUGIN_ROOT);
+    expect(overlay.set.ZODY_PLUGIN_DATA).toBe(overlay.set.ZCODE_PLUGIN_DATA);
+
+    // ExecutionEnvOverlay 的 set 覆盖继承环境：宿主进程预设任一组身份键都不能生效。
+    const inherited = {
+      ZCODE_PLUGIN_DATA: "/host/zcode-data",
+      ZCODE_PLUGIN_ID: "host@evil",
+      ZCODE_PLUGIN_NAME: "host",
+      ZCODE_PLUGIN_ROOT: "/host/zcode-root",
+      ZCODE_PROJECT_DIR: "/host/project",
+      ZODY_PLUGIN_DATA: "/host/zody-data",
+      ZODY_PLUGIN_ID: "host@evil",
+      ZODY_PLUGIN_NAME: "host",
+      ZODY_PLUGIN_ROOT: "/host/zody-root",
+    };
+    const merged = { ...inherited, ...overlay.set };
+    expect(merged).toMatchObject({
+      ZCODE_PLUGIN_DATA: plugin.dataPath,
+      ZCODE_PLUGIN_ID: plugin.id,
+      ZCODE_PLUGIN_ROOT: plugin.rootPath,
+      ZODY_PLUGIN_DATA: plugin.dataPath,
+      ZODY_PLUGIN_ID: plugin.id,
+      ZODY_PLUGIN_ROOT: plugin.rootPath,
+    });
+    expect(Object.values(merged)).not.toContain("/host/zody-root");
+    expect(Object.values(merged)).not.toContain("/host/zcode-root");
+    expect(Object.values(merged)).not.toContain("host@evil");
+
+    // 没有插件上下文时不凭外部 env 伪造身份。
+    const bare = createPluginEnvOverlay(undefined, hookInput, "/workspace");
+    for (const key of [
+      "CLAUDE_PLUGIN_DATA",
+      "CLAUDE_PLUGIN_ROOT",
+      "ZCODE_PLUGIN_DATA",
+      "ZCODE_PLUGIN_ID",
+      "ZCODE_PLUGIN_NAME",
+      "ZCODE_PLUGIN_ROOT",
+      "ZODY_PLUGIN_DATA",
+      "ZODY_PLUGIN_ID",
+      "ZODY_PLUGIN_NAME",
+      "ZODY_PLUGIN_ROOT",
+    ]) {
+      expect(bare.set).not.toHaveProperty(key);
+    }
+  });
+
+  it("expands ZODY plugin templates from the same context and keeps ID/NAME env-only", () => {
+    expect(
+      expandPluginVariables(
+        "${ZODY_PLUGIN_ROOT}/a ${ZODY_PLUGIN_DATA}/b ${ZCODE_PLUGIN_ROOT}/c ${CLAUDE_PLUGIN_DATA}/d",
+        plugin,
+        hookInput,
+        "/workspace",
+      ),
+    ).toBe("/tmp/policy-plugin/a /tmp/plugin-data/b /tmp/policy-plugin/c /tmp/plugin-data/d");
+    // ID/NAME 只作为 env 提供，不是模板前缀。
+    expect(expandPluginVariables("${ZODY_PLUGIN_ID}", plugin, hookInput, "/workspace")).toBe(
+      "${ZODY_PLUGIN_ID}",
+    );
+    expect(expandPluginVariables("${ZODY_PLUGIN_NAME}", plugin, hookInput, "/workspace")).toBe(
+      "${ZODY_PLUGIN_NAME}",
+    );
+    // 缺少插件上下文时保持既有语义：模板字面量保留，不展开成空串。
+    expect(
+      expandPluginVariables("${ZODY_PLUGIN_ROOT}", undefined, hookInput, "/workspace"),
+    ).toBe("${ZODY_PLUGIN_ROOT}");
+  });
+
+  it("passes both identity groups to a configured plugin hook process", async () => {
+    let capturedRequest: Parameters<ExecutionPort["run"]>[0] | undefined;
+    const executionPort: ExecutionPort = {
+      async run(request) {
+        capturedRequest = request;
+        return completedResult();
+      },
+    };
+    const runner = createConfiguredHookRunner({
+      config: {
+        enabled: true,
+        events: {
+          UserPromptSubmit: [
+            {
+              hooks: [
+                {
+                  type: "process",
+                  command: "${ZODY_PLUGIN_ROOT}/hooks/check.mjs",
+                  args: ["--data", "${ZODY_PLUGIN_DATA}"],
+                  plugin,
+                },
+              ],
+            },
+          ],
+        },
+        maxOutputBytes: 1_024,
+        timeoutMs: 60_000,
+      },
+      emitEvent: async () => {},
+      executionPort,
+      getWorkingDirectory: () => "/workspace",
+    });
+
+    await runner?.run(promptInput());
+
+    expect(capturedRequest?.env?.set).toMatchObject({
+      CLAUDE_PLUGIN_DATA: plugin.dataPath,
+      CLAUDE_PLUGIN_ROOT: plugin.rootPath,
+      ZCODE_PLUGIN_DATA: plugin.dataPath,
+      ZCODE_PLUGIN_ID: plugin.id,
+      ZCODE_PLUGIN_NAME: plugin.name,
+      ZCODE_PLUGIN_ROOT: plugin.rootPath,
+      ZODY_PLUGIN_DATA: plugin.dataPath,
+      ZODY_PLUGIN_ID: plugin.id,
+      ZODY_PLUGIN_NAME: plugin.name,
+      ZODY_PLUGIN_ROOT: plugin.rootPath,
+    });
   });
 });

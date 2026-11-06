@@ -84,11 +84,17 @@ export function createPluginEnvOverlay(
     ZCODE_SESSION_ID: input.sessionId,
   };
   if (!plugin) return { set };
+  // R55：两套身份组从同一 HookPluginContext 一次生成（specs/zody-rename-plugin-env.md §S1）。
+  // ExecutionEnvOverlay.set 覆盖继承的宿主 env，因此外部预设的任一组键都不能改变最终值。
   return {
     set: {
       ...set,
       CLAUDE_PLUGIN_DATA: plugin.dataPath,
       CLAUDE_PLUGIN_ROOT: plugin.rootPath,
+      ZODY_PLUGIN_DATA: plugin.dataPath,
+      ZODY_PLUGIN_ID: plugin.id,
+      ZODY_PLUGIN_NAME: plugin.name,
+      ZODY_PLUGIN_ROOT: plugin.rootPath,
       ZCODE_PLUGIN_DATA: plugin.dataPath,
       ZCODE_PLUGIN_ID: plugin.id,
       ZCODE_PLUGIN_NAME: plugin.name,
@@ -115,9 +121,12 @@ export function expandPluginVariables(
     replacements.CLAUDE_PLUGIN_ROOT = plugin.rootPath;
     replacements.ZCODE_PLUGIN_DATA = plugin.dataPath;
     replacements.ZCODE_PLUGIN_ROOT = plugin.rootPath;
+    // R55：新增模板前缀与既有 ZCODE/CLAUDE 前缀从同一上下文展开，结果相同。
+    replacements.ZODY_PLUGIN_DATA = plugin.dataPath;
+    replacements.ZODY_PLUGIN_ROOT = plugin.rootPath;
   }
   return value.replace(
-    /\$\{(CLAUDE_CODE_SESSION_ID|CLAUDE_PLUGIN_DATA|CLAUDE_PLUGIN_ROOT|CLAUDE_PROJECT_DIR|CLAUDE_SESSION_ID|CLAUDE_SKILL_DIR|ZCODE_PLUGIN_DATA|ZCODE_PLUGIN_ROOT|ZCODE_PROJECT_DIR|ZCODE_SESSION_ID|ZCODE_SKILL_DIR)\}/gu,
+    /\$\{(CLAUDE_CODE_SESSION_ID|CLAUDE_PLUGIN_DATA|CLAUDE_PLUGIN_ROOT|CLAUDE_PROJECT_DIR|CLAUDE_SESSION_ID|CLAUDE_SKILL_DIR|ZCODE_PLUGIN_DATA|ZCODE_PLUGIN_ROOT|ZCODE_PROJECT_DIR|ZCODE_SESSION_ID|ZCODE_SKILL_DIR|ZODY_PLUGIN_DATA|ZODY_PLUGIN_ROOT)\}/gu,
     (_match, key: string) => {
       if (key === "CLAUDE_SKILL_DIR" || key === "ZCODE_SKILL_DIR") {
         // hook 运行时没有“当前 skill”语义，不能把该变量交给 shell 展开为空字符串。

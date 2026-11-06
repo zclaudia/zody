@@ -773,6 +773,101 @@ describe("NodePluginAdapter", () => {
     }
   });
 
+  // R55：两套身份组必须从同一个 LoadedPlugin + dataPath 生成，manifest 自定义 env
+  // 不能分别覆盖任一组；ZODY_PLUGIN_* 模板与 ZCODE/CLAUDE 前缀同源展开。
+  it("injects both plugin identity env groups and ignores manifest identity overrides", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "zody-plugin-identity-env-"));
+    const storageRoot = join(dir, "storage");
+    const pluginRoot = join(dir, "identity-plugin");
+
+    try {
+      await writePluginManifest(pluginRoot, {
+        mcpServers: {
+          verify: {
+            args: [
+              "${ZODY_PLUGIN_ROOT}/server.mjs",
+              "${ZCODE_PROJECT_DIR}/known",
+              // 未登记的 ZODY_ 前缀不获得通用环境变量展开（普通旧 env 不因此获得别名）。
+              "${ZODY_PROJECT_DIR}/unregistered",
+            ],
+            command: "node",
+            env: {
+              CUSTOM_KEEP: "kept",
+              ZCODE_PLUGIN_DATA: "/forged/plugin-data",
+              ZCODE_PLUGIN_ID: "forged@evil",
+              ZCODE_PLUGIN_NAME: "forged",
+              ZCODE_PLUGIN_ROOT: "/forged/zcode-root",
+              ZODY_PLUGIN_DATA: "/forged/plugin-data",
+              ZODY_PLUGIN_ID: "forged@evil",
+              ZODY_PLUGIN_NAME: "forged",
+              ZODY_PLUGIN_ROOT: "/forged/zody-root",
+            },
+            type: "stdio",
+          },
+        },
+        name: "identity-env",
+      });
+
+      const workingDirectory = join(dir, "workspace");
+      const outcome = await createNodePluginAdapter({ storageRoot }).discoverPlugins({
+        config: { dirs: [pluginRoot], enabled: true, enabledPlugins: {}, options: {} },
+        // 宿主进程已预设两组身份键（值彼此不同）：resolver 仍须用权威上下文覆盖两套值。
+        env: {
+          ZCODE_PLUGIN_DATA: "/host/zcode-data",
+          ZCODE_PLUGIN_ID: "host@evil",
+          ZCODE_PLUGIN_NAME: "host",
+          ZCODE_PLUGIN_ROOT: "/host/zcode-root",
+          ZODY_PLUGIN_DATA: "/host/zody-data",
+          ZODY_PLUGIN_ID: "host@evil",
+          ZODY_PLUGIN_NAME: "host",
+          ZODY_PLUGIN_ROOT: "/host/zody-root",
+        },
+        storageRoot,
+        workingDirectory,
+      });
+
+      const plugin = outcome.plugins[0];
+      expect(plugin?.id).toBe("identity-env@inline");
+      const server = outcome.mcpServers["plugin:identity-env:verify"];
+      expect(server?.type).toBe("stdio");
+      const env: Record<string, string> =
+        server?.type === "stdio" ? (server.env ?? {}) : {};
+      expect(env).toMatchObject({
+        CLAUDE_PLUGIN_DATA: plugin?.dataPath,
+        CLAUDE_PLUGIN_ROOT: pluginRoot,
+        CUSTOM_KEEP: "kept",
+        ZCODE_PLUGIN_DATA: plugin?.dataPath,
+        ZCODE_PLUGIN_ID: "identity-env@inline",
+        ZCODE_PLUGIN_NAME: "identity-env",
+        ZCODE_PLUGIN_ROOT: pluginRoot,
+        ZODY_PLUGIN_DATA: plugin?.dataPath,
+        ZODY_PLUGIN_ID: "identity-env@inline",
+        ZODY_PLUGIN_NAME: "identity-env",
+        ZODY_PLUGIN_ROOT: pluginRoot,
+      });
+      // 两套组逐键一致，且 manifest 的伪造值没有留下。
+      expect(env.ZODY_PLUGIN_ROOT).toBe(env.ZCODE_PLUGIN_ROOT);
+      expect(env.ZODY_PLUGIN_DATA).toBe(env.ZCODE_PLUGIN_DATA);
+      expect(Object.values(env)).not.toContain("/forged/zcode-root");
+      expect(Object.values(env)).not.toContain("/forged/zody-root");
+      expect(Object.values(env)).not.toContain("/forged/plugin-data");
+      expect(Object.values(env)).not.toContain("forged@evil");
+      // 宿主环境里两组不同取值也没有留下（外部 env 不能分别覆盖任一组）。
+      expect(Object.values(env)).not.toContain("/host/zcode-root");
+      expect(Object.values(env)).not.toContain("/host/zody-root");
+      expect(Object.values(env)).not.toContain("/host/zcode-data");
+      expect(Object.values(env)).not.toContain("/host/zody-data");
+      expect(Object.values(env)).not.toContain("host@evil");
+      expect(server?.type === "stdio" ? server.args : undefined).toEqual([
+        join(pluginRoot, "server.mjs"),
+        join(workingDirectory, "known"),
+        "${ZODY_PROJECT_DIR}/unregistered",
+      ]);
+    } finally {
+      await rm(dir, { force: true, recursive: true });
+    }
+  });
+
   it("loads ten Claude marketplace plugins that provide skills, commands, and MCP servers", async () => {
     const dir = await mkdtemp(join(tmpdir(), "zcode-plugin-triplet-marketplace-"));
     const storageRoot = join(dir, "storage");

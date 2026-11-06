@@ -17258,9 +17258,20 @@
       "docs/plans/zody-full-divergence-rename-survey.md"
     ],
     "writeSet": [
-      "apps/zcode-cli/packages/adapters/src/plugins/mcp.ts",
-      "apps/zcode-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
-      "apps/zcode-cli/packages/core/src/hooks/configured-runner-input.ts",
+      "apps/zody-cli/packages/adapters/src/plugins/mcp.ts",
+      "apps/zody-cli/packages/core/src/hooks/configured-runner-input.ts",
+      "apps/zody-cli/packages/bootstrap/src/custom-command-shell-expansion.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/official-plugin-runtime.ts",
+      "apps/zody-cli/packages/bootstrap/src/app/built-in-node-repl.ts",
+      "apps/zody-cli/packages/bootstrap/tests/plugin-runtime-features.test.ts",
+      "apps/zody-cli/packages/adapters/tests/plugins.test.ts",
+      "apps/zody-cli/packages/core/tests/tool-executor-trace.test.ts",
+      "apps/zody-cli/packages/core/tests/hook-runner-lifecycle.test.ts",
+      "UI_PLUGIN.md",
+      "UI_PLUGIN.en.md",
+      "specs/zody-rename-plugin-env.md",
+      "packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-env.test.ts",
+      "packages/desktop/test/e2e/fixtures/cases/plugins/zody-rename-plugin-env.json",
       "docs/plans/zody-rename-execution/reports/R55.md"
     ],
     "excludeSet": [
@@ -17272,8 +17283,8 @@
     "plannedPaths": [
       "docs/plans/zody-rename-execution/reports/R55.md"
     ],
-    "scopeStatus": "structural-seed-not-authorized",
-    "gate": "R01 固化合同/case 后主控按任务卡和当前源码补齐并锁定精确集合；报告路径可写",
+    "scopeStatus": "reviewable-dispatch-scope",
+    "gate": "主控已按预案落锁（2026-11-06，基线 2a9096947200d456862bb53e5fe4afa2e9f3d204，即 R54 独立验收提交）：writeSet 取 w7-dispatch-proposal.md §3 全项（12 路径 = 5 源文件：adapters `plugins/mcp.ts`、core `hooks/configured-runner-input.ts`、bootstrap `custom-command-shell-expansion.ts`、继承 R54 锁的 `app/official-plugin-runtime.ts` 与 `app/built-in-node-repl.ts` + 1 测试 seed `bootstrap/tests/plugin-runtime-features.test.ts` + 2 文档 env/模板条款 `UI_PLUGIN.md`/`UI_PLUGIN.en.md` + 1 新增 spec `specs/zody-rename-plugin-env.md` + 1 pending E2E `packages/desktop/test/e2e/plugins/manual-review/pending/zody-rename-plugin-env.test.ts`（test-map :18 已登记）+ 1 case-local fixture `packages/desktop/test/e2e/fixtures/cases/plugins/zody-rename-plugin-env.json` + 1 报告 `reports/R55.md`）。另经主控升级 dwfq-378e03ba-2 增补 3 条测试扩锁路径：`apps/zody-cli/packages/adapters/tests/plugins.test.ts`、`apps/zody-cli/packages/core/tests/tool-executor-trace.test.ts`、`apps/zody-cli/packages/core/tests/hook-runner-lifecycle.test.ts`（只增不改既有用例），writeSet 共 15 条。预授权（不在上述 15 条 writeSet 内）：`packages/desktop/test/e2e/fixtures/upstream/plugin-management/zody-rename-plugin-env.json` 为主控预授权路径（沿用升级 dwfq-378e03ba-1 的 `scripts/check-e2e-fixtures.mjs` `fixturePaths` 固定契约先例，空 provider 最小形状 `fixtures: []`），仅当 RENAME-PLUGIN-ENV E2E 需要时创建，不作为扩大其他文件的先例。语义边界：双注入 `ZODY_PLUGIN_ROOT/DATA/ID/NAME` + `ZCODE_PLUGIN_ROOT/DATA/ID/NAME` 同源自权威上下文、外部 env 不得分别覆盖；`CLAUDE_PLUGIN_ROOT/DATA` 保留；模板新增 `${ZODY_PLUGIN_ROOT/DATA}` 两前缀；普通 `ZCODE_*` 不获兼容；`ZCODE_CUA_PLUGIN_ROOT` 已由 R30 硬切、不属 R55。文件锁：official-plugin-runtime.ts 不得改回 `.zody-plugin/plugin.json` 写入路径或重新引入旧隐藏命令别名；R54 的发现/同步文件（adapters index/zip-source/marketplace、skills/index、mcp/control-only-contract、bootstrap bundled-plugins/mcp-config、services 五文件、server 两文件、contracts plugins/index）、R54 的 spec/用例/fixture 与公共 fixture、shared 三契约（R50 冻结）、R60 冻结副本均不得触碰；UI_PLUGIN 仅改 env/模板条款（R54 仅碰 :286 manifest 行，行级互斥）。mcp/hooks/expansion 的既有测试未列入本轮 12 条（预案 §3 标“派发时定”），需要改动时回主控扩锁。RENAME-PLUGIN-ENV 真实 E2E 执行归 R56，R55 只写 pending 用例与 fixture、不执行。R55 执行与门禁结果（定向 4 files / 160 tests 由主控合成 HOME 复跑，根 typecheck、lint 303 warnings / 0 errors、architecture 0/0/0，E2E 编译与 fixture check exit 0）见 `reports/R55.md`；R55 通过不等于 R56/发布。派发扩锁（2026-11-06，升级 dwfq-378e03ba-2）：派发 ask 在 12 条与预授权 upstream fixture 之外，明确授权 `apps/zody-cli/packages/adapters/tests/plugins.test.ts`、`apps/zody-cli/packages/core/tests/tool-executor-trace.test.ts`、`apps/zody-cli/packages/core/tests/hook-runner-lifecycle.test.ts` 三个既有测试（即上文“mcp/hooks/expansion 的既有测试……回主控扩锁”的对应扩锁）以及 `docs/plans/zody-rename-execution/file-assignments.json` 与本台账的登记写入；实施结果与真实门禁结果见 `reports/R55.md`。scopeStatus 取现有 reviewable-dispatch-scope（主控授权可派发）；原生独立验收 PASS 见台账 W7 R55 closure 节，R55 通过不等于 R56/发布。",
     "structureScope": [
       "插件 env/template 生产者、模板文档及测试"
     ]

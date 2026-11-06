@@ -186,20 +186,18 @@ function resolveMcpServerConfig(server: unknown, context: VariableContext): McpS
     const env = resolveStringRecord(
       {
         CLAUDE_PROJECT_DIR: context.workingDirectory,
-        ZCODE_PLUGIN_DATA: context.dataPath,
-        ZCODE_PLUGIN_ROOT: context.loaded.rootPath,
         ZCODE_PROJECT_DIR: context.workingDirectory,
-        CLAUDE_PLUGIN_DATA: context.dataPath,
-        CLAUDE_PLUGIN_ROOT: context.loaded.rootPath,
         ...(isRecord(server.env) ? server.env : {}),
       },
       context,
       { allowSensitive: true },
     );
-    // 插件 manifest 可自定义 env，但插件身份必须由 resolver 权威写入（loaded.id 来自本地 plugin
-    // registry，不是可序列化配置），不能让第三方伪造 official zcode-cua 身份后获得只应定向注入给
-    // 内置插件的 broker 凭据。manifest env spread 之后覆写，确保 user/manifest 无法覆盖。
-    env[ZODY_PLUGIN_ID_ENV_KEY] = context.loaded.id;
+    // R55：插件身份必须由 resolver 权威写入（loaded.id 来自本地 plugin registry，不是可序列化
+    // 配置），不能让第三方伪造 official zcode-cua 身份后获得只应定向注入给内置插件的 broker 凭据。
+    // 两套身份组（ZODY_/ZCODE_ 的 ROOT/DATA/ID/NAME 加 CLAUDE_ 的 ROOT/DATA）从同一上下文一次
+    // 生成，并在 manifest env 展开之后覆盖；宿主环境由 MCP transport 先合并，因此外部 env 也无法
+    // 分别覆盖任一组。依据 specs/zody-rename-plugin-env.md §S1。
+    Object.assign(env, createPluginIdentityEnv(context.loaded, context.dataPath));
     return {
       type: "stdio",
       command: resolveTemplate(command, context, { allowSensitive: false }),
@@ -234,6 +232,29 @@ function resolveMcpServerConfig(server: unknown, context: VariableContext): McpS
     source,
     timeoutMs: typeof server.timeoutMs === "number" ? server.timeoutMs : undefined,
   } as McpServerConfig;
+}
+
+/**
+ * R55：从同一个权威插件上下文生成两套身份 env 与 Claude 兼容 ROOT/DATA。
+ * `ZODY_PLUGIN_ID_ENV_KEY`（shared 冻结常量）仍是 legacy `ZCODE_PLUGIN_ID` 的单一来源，
+ * 避免与 official zcode-cua broker 的识别逻辑漂移；其余键成对出现且取值相同。
+ */
+function createPluginIdentityEnv(
+  loaded: LoadedPlugin,
+  dataPath: string,
+): Record<string, string> {
+  return {
+    CLAUDE_PLUGIN_DATA: dataPath,
+    CLAUDE_PLUGIN_ROOT: loaded.rootPath,
+    ZODY_PLUGIN_DATA: dataPath,
+    ZODY_PLUGIN_ID: loaded.id,
+    ZODY_PLUGIN_NAME: loaded.manifest.name,
+    ZODY_PLUGIN_ROOT: loaded.rootPath,
+    [ZODY_PLUGIN_ID_ENV_KEY]: loaded.id,
+    ZCODE_PLUGIN_DATA: dataPath,
+    ZCODE_PLUGIN_NAME: loaded.manifest.name,
+    ZCODE_PLUGIN_ROOT: loaded.rootPath,
+  };
 }
 
 function resolveMcpOAuthConfig(
@@ -329,9 +350,11 @@ function resolveTemplate(
     switch (name) {
       case "CLAUDE_PLUGIN_ROOT":
       case "ZCODE_PLUGIN_ROOT":
+      case "ZODY_PLUGIN_ROOT":
         return context.loaded.rootPath;
       case "CLAUDE_PLUGIN_DATA":
       case "ZCODE_PLUGIN_DATA":
+      case "ZODY_PLUGIN_DATA":
         return context.dataPath;
       case "CLAUDE_PROJECT_DIR":
       case "ZCODE_PROJECT_DIR":

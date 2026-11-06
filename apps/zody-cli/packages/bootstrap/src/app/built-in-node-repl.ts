@@ -35,7 +35,15 @@ export function resolveBuiltInNodeReplMcpServers(input: {
     cwd: input.workingDirectory,
     env: {
       // 领域 root 各自注入，且只在对应能力启用时注入：宿主据此决定哪一半文档可用。
-      ...(browserUsePackage ? { ZCODE_PLUGIN_ROOT: browserUsePackage.rootPath } : {}),
+      // R55：Browser Use 的 root 同时给出 ZODY_（canonical）与 ZCODE_（1.0 前兼容）两套键，
+      // 取值同源。node_repl 是共享宿主而非某个插件的 MCP，所以不注入插件 ID/NAME/DATA；
+      // CUA 的 root 走 R30 已硬切的 ZODY_CUA_PLUGIN_ROOT（specs/zody-rename-plugin-env.md §S2）。
+      ...(browserUsePackage
+        ? {
+            ZODY_PLUGIN_ROOT: browserUsePackage.rootPath,
+            ZCODE_PLUGIN_ROOT: browserUsePackage.rootPath,
+          }
+        : {}),
       ...(cuaPackage ? { ZODY_CUA_PLUGIN_ROOT: cuaPackage.rootPath } : {}),
     },
     rootPath: hostPackage.rootPath,

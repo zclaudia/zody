@@ -1392,14 +1392,21 @@ describe("ToolExecutor trace propagation", () => {
     expect(capturedRequest?.captureCwdAfterSuccess).toBeUndefined();
     expect(capturedRequest?.env?.set).toMatchObject({
       CLAUDE_CODE_SESSION_ID: sessionId,
+      CLAUDE_PLUGIN_DATA: "/tmp/plugin-data",
       CLAUDE_PLUGIN_ROOT: "/tmp/superpowers",
       CLAUDE_PROJECT_DIR: "/workspace",
       CLAUDE_SESSION_ID: sessionId,
       ZCODE_PLUGIN_DATA: "/tmp/plugin-data",
       ZCODE_PLUGIN_ID: "superpowers@zcode-plugins-official",
+      ZCODE_PLUGIN_NAME: "superpowers",
       ZCODE_PLUGIN_ROOT: "/tmp/superpowers",
       ZCODE_PROJECT_DIR: "/workspace",
       ZCODE_SESSION_ID: sessionId,
+      // R55：ZODY_ 组与 ZCODE_ 组从同一 HookPluginContext 生成，逐键一致。
+      ZODY_PLUGIN_DATA: "/tmp/plugin-data",
+      ZODY_PLUGIN_ID: "superpowers@zcode-plugins-official",
+      ZODY_PLUGIN_NAME: "superpowers",
+      ZODY_PLUGIN_ROOT: "/tmp/superpowers",
     });
     expect(JSON.parse(String(capturedRequest?.stdin))).toMatchObject({
       hook_event_name: "SessionStart",

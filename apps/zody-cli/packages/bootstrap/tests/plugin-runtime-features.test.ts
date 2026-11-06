@@ -1,7 +1,18 @@
-import { describe, expect, it } from "vitest";
-import type { PluginLoadOutcome, PluginMetadata } from "@zody/contracts";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+import type {
+  CustomCommandContent,
+  ExecutionPort,
+  ExecutionResult,
+  PluginLoadOutcome,
+  PluginMetadata,
+} from "@zody/contracts";
 import { resolvePluginRuntimeFeatures } from "../src/app/plugin-runtime-features.js";
 import { resolveBuiltInNodeReplMcpServers } from "../src/app/built-in-node-repl.js";
+import { writeOfficialPluginRuntimeManifest } from "../src/app/official-plugin-runtime.js";
+import { expandCustomCommandShellSyntax } from "../src/custom-command-shell-expansion.js";
 
 function plugin(id: string, enabled: boolean, rootPath = "/tmp/plugin"): PluginMetadata {
   const [name = id, marketplace = "test"] = id.split("@");
@@ -49,12 +60,22 @@ describe("resolvePluginRuntimeFeatures", () => {
     expect(enabledServers.node_repl).toMatchObject({
       command: process.execPath,
       cwd: "/workspace",
-      env: { ELECTRON_RUN_AS_NODE: "1", ZCODE_PLUGIN_ROOT: "/tmp/plugin" },
+      env: {
+        ELECTRON_RUN_AS_NODE: "1",
+        ZODY_PLUGIN_ROOT: "/tmp/plugin",
+        ZCODE_PLUGIN_ROOT: "/tmp/plugin",
+      },
       timeoutMs: 600_000,
       isolation: "workspace",
       protocolVersion: "2026-07-28",
       type: "stdio",
     });
+    // R55：两套 root 必须同源，且 node_repl 不是插件 MCP，不注入插件 ID/NAME/DATA。
+    const env = nodeReplEnv(enabledServers);
+    expect(env?.ZODY_PLUGIN_ROOT).toBe(env?.ZCODE_PLUGIN_ROOT);
+    expect(env).not.toHaveProperty("ZODY_PLUGIN_ID");
+    expect(env).not.toHaveProperty("ZODY_PLUGIN_NAME");
+    expect(env).not.toHaveProperty("ZODY_PLUGIN_DATA");
     // 产物来自宿主自己的 root，不再来自 browser-use 的 root。
     expect(
       enabledServers.node_repl?.type === "stdio"
@@ -91,6 +112,9 @@ describe("resolvePluginRuntimeFeatures", () => {
     // browser-use 不在时不注入它的 root，宿主据此知道浏览器那半边不可用。
     expect(
       servers.node_repl?.type === "stdio" ? servers.node_repl.env?.ZCODE_PLUGIN_ROOT : undefined,
+    ).toBeUndefined();
+    expect(
+      servers.node_repl?.type === "stdio" ? servers.node_repl.env?.ZODY_PLUGIN_ROOT : undefined,
     ).toBeUndefined();
   });
 
@@ -168,5 +192,186 @@ describe("resolvePluginRuntimeFeatures", () => {
     expect(resolvePluginRuntimeFeatures(outcome([plugin("browser@third-party", true)]))).toEqual(
       {},
     );
+  });
+});
+
+function nodeReplEnv(servers: ReturnType<typeof resolveBuiltInNodeReplMcpServers>) {
+  const server = servers.node_repl;
+  return server?.type === "stdio" ? server.env : undefined;
+}
+
+describe("official plugin runtime identity env (R55)", () => {
+  const cleanups: string[] = [];
+  const originalEntrypoint = process.argv[1];
+
+  afterEach(async () => {
+    process.argv[1] = originalEntrypoint;
+    await Promise.all(cleanups.splice(0).map((root) => rm(root, { force: true, recursive: true })));
+  });
+
+  it("writes both identity groups from one plugin context and overrides manifest env", async () => {
+    const root = await mkdtemp(join(tmpdir(), "zody-plugin-runtime-identity-"));
+    cleanups.push(root);
+    const manifestPath = join(root, ".zody-plugin", "plugin.json");
+    await mkdir(join(root, ".zody-plugin"), { recursive: true });
+    await writeFile(
+      manifestPath,
+      `${JSON.stringify(
+        {
+          mcpServers: {
+            "browser-use": {
+              args: [],
+              command: "old-node",
+              env: {
+                CUSTOM_KEEP: "kept",
+                ZODY_FORGED: "/forged-zody-root",
+                ZCODE_PLUGIN_ID: "forged@evil",
+                ZCODE_PLUGIN_ROOT: "/forged-zcode-root",
+                ZODY_PLUGIN_ID: "forged@evil",
+                ZODY_PLUGIN_ROOT: "/forged-zody-root",
+              },
+            },
+          },
+          name: "browser-use",
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    process.argv[1] = join(root, "zody.cjs");
+
+    writeOfficialPluginRuntimeManifest({ pluginName: "browser-use", rootPath: root });
+
+    const rendered = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      mcpServers: Record<string, { env: Record<string, string> }>;
+    };
+    const env = rendered.mcpServers["browser-use"]?.env ?? {};
+    expect(env).toMatchObject({
+      CUSTOM_KEEP: "kept",
+      ELECTRON_RUN_AS_NODE: "1",
+      ZCODE_PLUGIN_ID: "browser-use@zcode-plugins-official",
+      ZCODE_PLUGIN_NAME: "browser-use",
+      ZCODE_PLUGIN_ROOT: root,
+      ZODY_PLUGIN_ID: "browser-use@zcode-plugins-official",
+      ZODY_PLUGIN_NAME: "browser-use",
+      ZODY_PLUGIN_ROOT: root,
+    });
+    // R55：两套身份必须逐键同源；seed 阶段没有 dataPath，不伪造 DATA。
+    expect(env.ZODY_PLUGIN_ID).toBe(env.ZCODE_PLUGIN_ID);
+    expect(env.ZODY_PLUGIN_ROOT).toBe(env.ZCODE_PLUGIN_ROOT);
+    expect(env.ZODY_PLUGIN_DATA).toBeUndefined();
+    expect(env.ZCODE_PLUGIN_DATA).toBeUndefined();
+  });
+});
+
+describe("custom command shell expansion identity env (R55)", () => {
+  const pluginContext = {
+    dataPath: "/tmp/plugin-data",
+    id: "policy@example",
+    name: "Policy",
+    rootPath: "/tmp/policy-plugin",
+  };
+
+  function customCommand(
+    content: string,
+    options: { plugin?: typeof pluginContext; source?: "plugin" | "zcode" },
+  ): CustomCommandContent {
+    const source = options.source ?? "plugin";
+    return {
+      bytesRead: content.length,
+      content,
+      metadata: {
+        allowedTools: [],
+        description: "identity env check",
+        disableNonInteractive: false,
+        frontmatterKeys: [],
+        name: "identity-env",
+        path: "/tmp/commands/identity-env.md",
+        ...(options.plugin ? { plugin: options.plugin } : {}),
+        rootPath: "/tmp/commands",
+        scope: source === "plugin" ? "project" : "user",
+        skills: [],
+        source,
+      },
+      sizeBytes: content.length,
+      truncated: false,
+    };
+  }
+
+  function completedResult(): ExecutionResult {
+    const now = new Date();
+    return {
+      cancelled: false,
+      completedAt: now,
+      durationMs: 1,
+      exitCode: 0,
+      startedAt: now,
+      status: "completed",
+      stderr: { bytes: 0, text: "", truncated: false },
+      stdout: { bytes: 2, text: "ok", truncated: false },
+      timedOut: false,
+    };
+  }
+
+  it("injects both identity groups so ZODY plugin templates expand in the shell", async () => {
+    let capturedRequest: Parameters<ExecutionPort["run"]>[0] | undefined;
+    const executionPort: ExecutionPort = {
+      async run(request) {
+        capturedRequest = request;
+        return completedResult();
+      },
+    };
+    const content = '```!\necho "${ZODY_PLUGIN_ROOT}/a" "${ZODY_PLUGIN_DATA}/b"\n```';
+
+    const output = await expandCustomCommandShellSyntax({
+      command: customCommand(content, { plugin: pluginContext }),
+      content,
+      executionPort,
+      sessionId: "session-1",
+      workingDirectory: "/workspace",
+    });
+
+    expect(output).toBe("ok");
+    expect(capturedRequest?.env?.set).toMatchObject({
+      CLAUDE_PLUGIN_DATA: pluginContext.dataPath,
+      CLAUDE_PLUGIN_ROOT: pluginContext.rootPath,
+      ZCODE_PLUGIN_DATA: pluginContext.dataPath,
+      ZCODE_PLUGIN_ID: pluginContext.id,
+      ZCODE_PLUGIN_NAME: pluginContext.name,
+      ZCODE_PLUGIN_ROOT: pluginContext.rootPath,
+      ZODY_PLUGIN_DATA: pluginContext.dataPath,
+      ZODY_PLUGIN_ID: pluginContext.id,
+      ZODY_PLUGIN_NAME: pluginContext.name,
+      ZODY_PLUGIN_ROOT: pluginContext.rootPath,
+    });
+    const envSet = capturedRequest?.env?.set ?? {};
+    expect(envSet.ZODY_PLUGIN_ROOT).toBe(envSet.ZCODE_PLUGIN_ROOT);
+    expect(envSet.ZODY_PLUGIN_DATA).toBe(envSet.ZCODE_PLUGIN_DATA);
+
+    // 宿主继承环境里的冲突值被 overlay 覆盖（set 后写入），两套组都不能被分别改写。
+    const merged = {
+      ZCODE_PLUGIN_ROOT: "/host/zcode-root",
+      ZODY_PLUGIN_ROOT: "/host/zody-root",
+      ...envSet,
+    };
+    expect(merged.ZODY_PLUGIN_ROOT).toBe(pluginContext.rootPath);
+    expect(merged.ZCODE_PLUGIN_ROOT).toBe(pluginContext.rootPath);
+  });
+
+  it("rejects ZODY plugin templates without a plugin context instead of expanding empty", async () => {
+    const content = '```!\necho "${ZODY_PLUGIN_ROOT}/a"\n```';
+    await expect(
+      expandCustomCommandShellSyntax({
+        command: customCommand(content, { source: "zcode" }),
+        content,
+        executionPort: {
+          async run() {
+            return completedResult();
+          },
+        },
+        sessionId: "session-1",
+        workingDirectory: "/workspace",
+      }),
+    ).rejects.toThrow(/requires a plugin context: ZODY_PLUGIN_ROOT/);
   });
 });
