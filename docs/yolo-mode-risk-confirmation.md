@@ -115,7 +115,10 @@ PermissionDialog.respondWithOption（fullAccess 选项）─────┼─�
 用例裁决登记于 [conversation-session case catalog](conversation-session-case-catalog.md) 的 **PA159** 组（accepted，产品合同，不代表已实现）。可用入口：
 
 - **浏览器组件测试（本卡落点内，组件交互验收主入口）**：`packages/ui/test/browser/manual-review/pending/yolo-confirmation.test.mjs` + 同名 `.fixture.tsx`，矩阵 390/1200 × 深浅主题 × zh-CN/en-US，覆盖 A1–A12；沿用 `permission-full-access.test.mjs` 的 vite + playwright 入口模式。未转正前不计为正式 Desktop 通过。
-- **桌面 conversation-session E2E（本卡落点外，缺口登记）**：PA158 既有 pending 用例 `packages/desktop/test/e2e/conversation-session/manual-review/pending/conversation-session-permission-full-access.test.ts` 覆盖审批框→完全访问链路，确认弹窗落地后需在该 spec 补「先确认一次」步骤；`packages/desktop` 不在本卡落点（本卡仅 `packages/ui/src`、`packages/ui/test`、`docs`），由 controller 协调后续卡片或放宽落点后实施。
+- **桌面 conversation-session E2E（F26④ 落地，controller 放宽落点）**：controller 经 F26④前置（commit a550ed627 适配 `switchV4Mode` helper）将本步落点放宽至 `packages/desktop/test/e2e/`。F26④ 落地两处（均 manual-review/pending，人工评审与转正未完成，不计为正式 Desktop 通过）：
+  - 新增 `conversation-session-yolo-confirmation.test.ts`（镜像上游 `YC01/02/07`，对应 PA159-01/02/03）：**菜单 + `cycleSessionMode` 快捷键**两入口——取消/Escape 后模式不变、勾选前确认按钮 disabled、快捷键 pending 期间热键静默、Space 反选后 Enter 不确认、确认后进入 yolo；配套 case manifest 与 provider fixture（`noProviderRequests`，纯 UI）。
+  - PA158 既有 pending 用例补「先确认一次」步骤（**权限对话框入口**，对应 PA159-04）：fullAccess 点击先弹确认，取消/未确认期间断言审批仍 pending（应答未发送、会话模式与队列不变、目标文件未写出），确认后走 PA158 既有 fullAccess 授权链路；同段按上游正式版适配 `build` 起点与 `edit→guarded`（菜单已隐藏 edit，旧步骤在授权前超时）。
+  - 执行证据（replay 模式，无真实 provider）：两个 spec 均真实运行通过；针对性反例（临时移除确认步骤）实证 fullAccess 点击后应答被确认门拦截、任务停在「Awaiting approval」直至超时。
 - 手机远控（web-remote-replayable）真实链路、Windows 原生、真实 provider 的 E2E 不由组件测试冒充覆盖，维持 PA158 既有缺口口径。
 
 ## 剪枝与非目标

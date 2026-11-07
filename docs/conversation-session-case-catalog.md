@@ -3585,7 +3585,7 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 | PA159-05 | 确认 pending 期间目标换代（任务/草稿回调/权限请求变化）                                | 弹窗自动关闭且不应用（stale 防护）；新目标重新触发时再弹                                          | accepted |
 | PA159-06 | 手机 390/桌面 1200、深浅主题、中英文                                                   | 三类风险可读、无横向溢出、手机双列等宽触控按钮；焦点落取消按钮                                    | accepted |
 
-组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/yolo-confirmation.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过）；桌面 conversation-session 链路由 PA158 既有 pending 用例补「先确认一次」步骤（`packages/desktop` 不在本卡落点，缺口登记待协调）。automation/offpeak 表单接入剪枝，后续单独评估。accepted 表示产品合同，不代表已实现。
+组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/yolo-confirmation.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过）；桌面 conversation-session 链路已由 F26④ 落地（controller 经前置 a550ed627 放宽落点）：新增 pending spec `conversation-session-yolo-confirmation.test.ts`（菜单+快捷键两入口，镜像上游 YC01/02/07）并给 PA158 pending 用例补「先确认一次」步骤（权限对话框入口，含 `build` 起点与 `edit→guarded` 适配），两者已在 replay 模式真实执行通过（未转正，人工评审未完成）。automation/offpeak 表单接入剪枝，后续单独评估。accepted 表示产品合同，不代表已实现。
 
 ## PA160. 任务重启与 /reload（F27）
 
