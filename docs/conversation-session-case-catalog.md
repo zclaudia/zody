@@ -3605,6 +3605,24 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 
 组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/task-restart.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过，mock restartTask）；services 侧进程换代/cold-resume 契约由 `packages/services/test/zodyLegacyTaskCompatTaskIndex.test.ts` 的「F27 restartTask」组覆盖（已实现）。真实进程换代与续跑的桌面 conversation-session E2E 需 `packages/desktop`（不在本卡落点，缺口登记待协调）；手机远控真实链路不由组件测试冒充。host 范围任务搜索/按未读视图属任务列表改版跟进项，本卡不实施。accepted 表示产品合同，不代表已实现。
 
+## PA161. 图片标注编辑器与加入草稿（F15）
+
+产品规格见 [图片标注编辑器](ui/image-preview-editor.md)（上游 v3.17.1 `a60ba6a7` 参考适配，独立模块落地）。Composer 草稿图片附件 chip 新增「标注」动作，打开独立编辑器 Dialog（画笔/文字/矩形/椭圆/箭头/橡皮擦、选择移动、颜色、撤销重做、平移缩放 50%–300%）；保存导出**自然尺寸 PNG**（源像素 ≤ 32M）并同步捕获焦点 Composer receiver、经既有 `addAttachmentFiles` 追加为草稿新附件；无 receiver 提示 `imageEditor.noComposer`，失败保留标注可重试；不发送、不覆盖原附件、不并入任何只读预览弹窗（`ChatMediaAttachmentPreviewDialog` 与共享画廊保持只读，裁决 4）。承接 fork 旧候选 I12 的「加入草稿」线；须先于 F28 落地。
+
+| Case     | 前置/动作                                                                        | 预期结果                                                                                                  | Review   |
+| -------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------- |
+| PA161-01 | 草稿图片附件 →「标注」→ 逐工具绘制、select 选择移动、eraser 擦除、undo/redo 往返 | 原图片像素不被修改；标注与历史渲染一致；橡皮擦整条移除标注                                                | accepted |
+| PA161-02 | 打开编辑器 → 滚轮/按钮/双指缩放与拖拽平移、窗口 resize                           | 缩放锚定指针且限 50%–300%；平移始终有界；未溢出图普通光标，仅 select+溢出才 grab/grabbing                 | accepted |
+| PA161-03 | 文字工具输入（含输入法 Enter）、Escape 取消、切工具自动提交                      | 文字按锚点提交/取消正确；输入期间 Ctrl/Cmd+Z 与方向键不触发画布快捷键                                     | accepted |
+| PA161-04 | 已知像素 fixture → 标注 → 保存                                                   | PNG 尺寸 = 原图 naturalWidth/Height（不受视口缩放影响）、标注颜色落在预期像素、文件名 `<base>-edited.png` | accepted |
+| PA161-05 | Composer 已有正文与附件 → 标注保存                                               | 恰好新增 1 个 PNG 草稿附件；正文与原附件保留；零发送（不产生 sendText/queue command）                     | accepted |
+| PA161-06 | 无活跃 Composer（未注册或 disabled）→ 保存                                       | 提示 `imageEditor.noComposer`；不导出、不产生文件                                                         | accepted |
+| PA161-07 | 导出中关闭/换 scope、append 拒绝（满额/超尺寸）、编码失败、>32M 源像素           | 无迟到或重复追加；失败保留可编辑历史并可重试；重复保存单次生效                                            | accepted |
+| PA161-08 | 保存 pending 期间重复点击、工具与缩放操作                                        | 单次导出、单次追加；saving 期间输入禁用且有状态文案                                                       | accepted |
+| PA161-09 | 手机 390/桌面 1200、深浅主题、中英文                                             | 工具栏/保存可达、无横向溢出；toolbar role 与逐工具 aria-label                                             | accepted |
+
+组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/image-preview-editor.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过；fixture 以假 receiver 断言 append 合同、导出像素与失效路径）。桌面 conversation-session 真实 Composer 保存链路需 `packages/desktop`（不在本卡落点，缺口登记待协调；F28 草稿事务须把附件插入纳入 claim/restore 测试）。已发送 user row、Markdown/工具图片与视频、PDF 不设标注入口；剪枝见 spec。accepted 表示产品合同，不代表已实现。
+
 ## CMP：Composer 压缩与 provider 身份
 
 沿用 CUA composer 七档布局契约。providerName 缺失的自定义 provider 使用菜单已有的 providerId 兜底，内置账号套餐规则不变。

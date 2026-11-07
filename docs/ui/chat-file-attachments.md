@@ -176,6 +176,15 @@ relay / desktop main：只转发，不保存 bytes、cache、row 或 preview 状
 - 旧历史没有可读 ref、文件已移动/删除或 artifact 已回收时不尝试猜路径，也不回退把 base64
   塞进 row；明确进入不可预览状态。
 
+## 标注图片加入草稿（F15）
+
+图片标注编辑器（`packages/ui/src/image-preview-editor/`，独立模块与独立入口，不并入
+`ChatMediaAttachmentPreviewDialog` 等预览弹窗）保存时同步捕获焦点 Composer receiver，
+导出自然尺寸 PNG 后仍以本文件的 `addAttachmentFiles` 为**唯一入队路径**追加草稿附件：
+满额（`MAX_CHAT_ATTACHMENTS`）、超尺寸（`platform.maxAttachmentBytes`）与上传调度/重试
+沿用本节既有状态机，编辑器不建第二套 admission。产品规则、事件顺序与失效边界见
+[image-preview-editor.md](./image-preview-editor.md)。
+
 ```text
 文件拖入 pane / 桌面草稿标题栏
   -> 目标 SessionPane 的 ConversationComposer drop controller
