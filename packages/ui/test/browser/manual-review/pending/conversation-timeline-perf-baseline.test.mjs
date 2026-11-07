@@ -18,10 +18,7 @@ import { chromium } from "playwright-core";
 const root = fileURLToPath(new URL("../../../../../../", import.meta.url));
 const entry =
   "/packages/ui/test/browser/manual-review/pending/conversation-timeline-perf-baseline.fixture.tsx";
-const artifacts = join(
-  root,
-  "packages/desktop/.e2e-artifacts/conversation-timeline-perf-baseline",
-);
+const artifacts = join(root, "packages/desktop/.e2e-artifacts/conversation-timeline-perf-baseline");
 let server, browser, origin;
 before(async () => {
   await mkdir(artifacts, { recursive: true });
@@ -79,10 +76,7 @@ const STREAM_MODE = process.env.F17_BASELINE_STREAM_MODE === "append" ? "append"
 
 function percentile(sorted, p) {
   if (sorted.length === 0) return Number.NaN;
-  const index = Math.min(
-    sorted.length - 1,
-    Math.max(0, Math.ceil((p / 100) * sorted.length) - 1),
-  );
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1));
   return sorted[index];
 }
 
@@ -155,9 +149,18 @@ test("F17 baseline stream-frame cost across history sizes", async () => {
   const results = {};
   for (const turns of sizes) {
     const { page, errors, meta } = await openFixture(turns);
-    const streamed = await page.evaluate((options) => {
-      return window.__timelinePerf.streamFrames(options);
-    }, { frames: STREAM_FRAMES, chunkChars: STREAM_CHUNK_CHARS, rafBetweenFrames: true, warmupFrames: 10, mode: STREAM_MODE });
+    const streamed = await page.evaluate(
+      (options) => {
+        return window.__timelinePerf.streamFrames(options);
+      },
+      {
+        frames: STREAM_FRAMES,
+        chunkChars: STREAM_CHUNK_CHARS,
+        rafBetweenFrames: true,
+        warmupFrames: 10,
+        mode: STREAM_MODE,
+      },
+    );
     // 行为断言：流式全程保持吸底、无页面错误。
     assert.equal(streamed.scroll.following, "true", JSON.stringify(streamed.scroll));
     assert.ok(
@@ -181,12 +184,9 @@ test("F17 baseline stream-frame cost across history sizes", async () => {
     await page.close();
     assert.deepEqual(errors, []);
   }
-  const growth =
-    Number((results[1000].p50Ms / results[50].p50Ms).toFixed(2)) || null;
+  const growth = Number((results[1000].p50Ms / results[50].p50Ms).toFixed(2)) || null;
   record.metrics.stream = { sizes: results, growth1000Over50: growth };
-  console.log(
-    `[F17-baseline][${RUN_LABEL}] stream growth p50(1000turns)/p50(50turns)=${growth}`,
-  );
+  console.log(`[F17-baseline][${RUN_LABEL}] stream growth p50(1000turns)/p50(50turns)=${growth}`);
 });
 
 // M3 定位跳转挂载量基线：从底部 locate 到中段后，已挂载 turn group 数与
@@ -229,9 +229,18 @@ test("F17 baseline locate-jump mount footprint@500-turns", async () => {
 test("F17 baseline find-active stream cost@500-turns", async () => {
   const { page, errors, meta } = await openFixture(500);
   await page.evaluate(() => window.__timelinePerf.setFind("F17_NEEDLE_MARKER"));
-  const streamed = await page.evaluate((options) => {
-    return window.__timelinePerf.streamFrames(options);
-  }, { frames: Math.min(60, STREAM_FRAMES), chunkChars: STREAM_CHUNK_CHARS, rafBetweenFrames: true, warmupFrames: 10, mode: STREAM_MODE });
+  const streamed = await page.evaluate(
+    (options) => {
+      return window.__timelinePerf.streamFrames(options);
+    },
+    {
+      frames: Math.min(60, STREAM_FRAMES),
+      chunkChars: STREAM_CHUNK_CHARS,
+      rafBetweenFrames: true,
+      warmupFrames: 10,
+      mode: STREAM_MODE,
+    },
+  );
   const summary = summarizeDurations(streamed.durations);
   assert.ok(
     summary.p95Ms < 250,

@@ -76,21 +76,17 @@ async function findState(page) {
   return page.evaluate((needle) => {
     const timeline = document.querySelector('[data-testid="v4-timeline"]');
     // CSS Custom Highlight API（Chrome 156 支持）：查找命中与活动命中的注册表。
-    const highlightNames = timeline
-      ? Array.from(window.CSS?.highlights?.keys?.() ?? [])
-      : [];
+    const highlightNames = timeline ? Array.from(window.CSS?.highlights?.keys?.() ?? []) : [];
     // 首个命中的行：turn-1 的 userInput（含 needle）。检查它是否在滚动视口内。
-    const row = document.querySelector(
-      `[data-v4-timeline-virtual-history] [data-row-id="2"]`,
-    );
+    const row = document.querySelector(`[data-v4-timeline-virtual-history] [data-row-id="2"]`);
     const timelineRect = timeline?.getBoundingClientRect();
     const rowRect = row?.getBoundingClientRect();
     const rowVisible = Boolean(
       timelineRect &&
-        rowRect &&
-        rowRect.bottom > timelineRect.top &&
-        rowRect.top < timelineRect.bottom &&
-        row.textContent?.includes(needle),
+      rowRect &&
+      rowRect.bottom > timelineRect.top &&
+      rowRect.top < timelineRect.bottom &&
+      row.textContent?.includes(needle),
     );
     return {
       following: timeline?.dataset.following ?? null,

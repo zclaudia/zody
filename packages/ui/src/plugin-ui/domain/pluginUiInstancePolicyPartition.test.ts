@@ -38,7 +38,11 @@ function assistant(rowId: number, turnId: string, text: string): AssistantTextRo
   };
 }
 
-function pluginToolCall(rowId: number, turnId: string, status: ToolCallRow["status"] = "success"): ToolCallRow {
+function pluginToolCall(
+  rowId: number,
+  turnId: string,
+  status: ToolCallRow["status"] = "success",
+): ToolCallRow {
   return {
     rowId,
     turnId,

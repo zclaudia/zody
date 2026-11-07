@@ -14,9 +14,7 @@ describe("ConversationTimeline 批量测高与 measuredLayoutRevision", () => {
   it("revision 状态被捕获（不再丢弃）并进入 mountedRowsKey 与底部锚定 effect 依赖", () => {
     const source = readTimelineSource();
 
-    expect(source).toContain(
-      "const [measuredLayoutRevision, commitMeasuredLayout] = useState(0);",
-    );
+    expect(source).toContain("const [measuredLayoutRevision, commitMeasuredLayout] = useState(0);");
     // mountedRowsKey 以 revision 为失效代际：测高提交后挂载 DOM 对账重查。
     expect(source).toContain("String(measuredLayoutRevision),");
     expect(source).toContain("[liveUnit, measuredLayoutRevision, virtualRows]");
@@ -28,9 +26,7 @@ describe("ConversationTimeline 批量测高与 measuredLayoutRevision", () => {
     const source = readTimelineSource();
 
     expect(source).toContain("contentMeasurementPendingRef.current = measurements.length > 0;");
-    expect(source).toMatch(
-      /querySelectorAll\(":scope > \[data-index\]"\)[^\n]*\?\? \[\]/,
-    );
+    expect(source).toMatch(/querySelectorAll\(":scope > \[data-index\]"\)[^\n]*\?\? \[\]/);
   });
 
   it("pending 期间三个 effect 让位（滚动记忆恢复/前插锚点/底部锚定）", () => {
@@ -44,9 +40,7 @@ describe("ConversationTimeline 批量测高与 measuredLayoutRevision", () => {
     const source = readTimelineSource();
 
     // settle 定时器内发布既有生命周期结束（待定位搜索接管）：null 复位后、吸底前提交 revision。
-    const timerIdx = source.indexOf(
-      "contentWidthResizeSettleTimerRef.current = window.setTimeout",
-    );
+    const timerIdx = source.indexOf("contentWidthResizeSettleTimerRef.current = window.setTimeout");
     const settleIdx =
       timerIdx === -1
         ? -1
@@ -56,9 +50,7 @@ describe("ConversationTimeline 批量测高与 measuredLayoutRevision", () => {
         ? -1
         : source.indexOf("commitMeasuredLayout((revision) => revision + 1);", settleIdx);
     const bottomIdx =
-      settleIdx === -1
-        ? -1
-        : source.indexOf("if (followingRef.current) {", settleIdx);
+      settleIdx === -1 ? -1 : source.indexOf("if (followingRef.current) {", settleIdx);
     expect(settleIdx).toBeGreaterThan(-1);
     expect(publishIdx).toBeGreaterThan(settleIdx);
     expect(bottomIdx).toBeGreaterThan(publishIdx);

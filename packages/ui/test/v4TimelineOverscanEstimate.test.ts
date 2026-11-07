@@ -22,8 +22,6 @@ describe("ConversationTimeline overscan 与未知轮估高", () => {
     const source = readTimelineSource();
 
     // 一屏估高（clientHeight）必须作为 estimate 的 fallback 接入，且保留 0/undefined 回落。
-    expect(source).toContain(
-      "scrollRef.current?.clientHeight || DEFAULT_ROW_HEIGHT_ESTIMATE_PX",
-    );
+    expect(source).toContain("scrollRef.current?.clientHeight || DEFAULT_ROW_HEIGHT_ESTIMATE_PX");
   });
 });

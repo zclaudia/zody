@@ -18,9 +18,7 @@ import {
   createConversationTurnRenderUnitsSelector,
 } from "@/v4/conversationTurnRenderUnits.js";
 import { splitConversationTimelineLiveTail } from "@/v4/conversationTimelineLiveTail.js";
-import {
-  createConversationTurnNavigatorQueryRowIdsSelector,
-} from "@/v4/conversationTurnNavigatorHelpers.js";
+import { createConversationTurnNavigatorQueryRowIdsSelector } from "@/v4/conversationTurnNavigatorHelpers.js";
 
 function baseRow<T extends ConversationRow>(
   row: Omit<T, "createdAt" | "createdAtSeq" | "rowId" | "turnId"> & {
@@ -243,11 +241,9 @@ describe("F17 render units 分区选择器：引用稳定性（流式帧只算�
         ? { ...row, text: row.text + append }
         : row,
     );
-    advanceConversationRowsPartition(
-      rows,
-      next,
-      [{ op: "row.delta", rowId: last.rowId, path: "text", append }],
-    );
+    advanceConversationRowsPartition(rows, next, [
+      { op: "row.delta", rowId: last.rowId, path: "text", append },
+    ]);
     return next;
   }
 
@@ -311,18 +307,12 @@ describe("F17 render units 分区选择器：引用稳定性（流式帧只算�
     const newTurnBase = nextRows[nextRows.length - 1]!.rowId;
     const newTurnHeader = turnHeader(newTurnBase + 1, "turn-7", "running");
     const newTurnInput = userInput(newTurnBase + 2, "turn-7", "新问题");
-    const newTurnRows = [
-      ...completeTurnHeader(nextRows, "turn-6"),
-      newTurnHeader,
-      newTurnInput,
-    ];
+    const newTurnRows = [...completeTurnHeader(nextRows, "turn-6"), newTurnHeader, newTurnInput];
     advanceConversationRowsPartition(nextRows, newTurnRows, [
       { op: "row.appended", row: newTurnHeader },
       { op: "row.appended", row: newTurnInput },
     ]);
-    const third = selectRowIds(
-      selector(getConversationRowsPartition(newTurnRows), { nowMs: NOW }),
-    );
+    const third = selectRowIds(selector(getConversationRowsPartition(newTurnRows), { nowMs: NOW }));
     expect(third).not.toBe(second);
     expect(third.has(newTurnInput.rowId)).toBe(true);
     expect([...third].sort((a, b) => a - b)).toEqual(

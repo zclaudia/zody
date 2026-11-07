@@ -340,18 +340,15 @@ describe("useConversationTimelineFind 分区 renderUnits", () => {
     const partitionReport = onMatchStateChange.mock.calls.at(-1)?.[0];
 
     const onFlatStateChange = vi.fn();
-    renderHook(
-      (props: UseConversationTimelineFindOptions) => useConversationTimelineFind(props),
-      {
-        initialProps: {
-          ...hookProps(historyRows, {
-            conversationFindQuery: "needle",
-            onConversationFindMatchStateChange: onFlatStateChange,
-          }),
-          renderUnits: partitionUnits(historyRows),
-        },
+    renderHook((props: UseConversationTimelineFindOptions) => useConversationTimelineFind(props), {
+      initialProps: {
+        ...hookProps(historyRows, {
+          conversationFindQuery: "needle",
+          onConversationFindMatchStateChange: onFlatStateChange,
+        }),
+        renderUnits: partitionUnits(historyRows),
       },
-    );
+    });
     await flushFrames();
     const flatReport = onFlatStateChange.mock.calls.at(-1)?.[0];
 

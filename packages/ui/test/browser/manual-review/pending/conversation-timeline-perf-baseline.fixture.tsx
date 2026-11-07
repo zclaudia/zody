@@ -135,19 +135,13 @@ function scrollState(): ScrollState | null {
 // ROW_OVERSCAN 收紧（F17 overscan 步）后 historyTurnUnits/historyElements 应确定性下降。
 function mountedStats(): MountedStats {
   const timeline = findTimeline();
-  const messageLayer = timeline?.querySelector<HTMLElement>(
-    "[data-v4-timeline-message-layer]",
-  );
-  const history = timeline?.querySelector<HTMLElement>(
-    "[data-v4-timeline-virtual-history]",
-  );
+  const messageLayer = timeline?.querySelector<HTMLElement>("[data-v4-timeline-message-layer]");
+  const history = timeline?.querySelector<HTMLElement>("[data-v4-timeline-virtual-history]");
   return {
     mountedTurnUnits: messageLayer
       ? messageLayer.querySelectorAll("[data-v4-turn-unit]").length
       : 0,
-    historyTurnUnits: history
-      ? history.querySelectorAll("[data-v4-turn-unit]").length
-      : 0,
+    historyTurnUnits: history ? history.querySelectorAll("[data-v4-turn-unit]").length : 0,
     historyElements: history ? history.querySelectorAll("*").length : 0,
   };
 }
@@ -187,9 +181,7 @@ function Fixture() {
   const [rows, setRows] = useState<ConversationRow[]>(initial.rows);
   const [findQuery, setFindQuery] = useState("");
   const back = useRef<(() => void) | null>(null);
-  const locate = useRef<
-    ((target: { unitIndex: number; rowId: number }) => void) | null
-  >(null);
+  const locate = useRef<((target: { unitIndex: number; rowId: number }) => void) | null>(null);
   const rowsRef = useRef(rows);
   rowsRef.current = rows;
 
@@ -212,21 +204,16 @@ function Fixture() {
     warmupFrames: number;
     mode: "replace" | "append";
   }) => {
-    const {
-      frames,
-      chunkChars,
-      rafBetweenFrames,
-      warmupFrames,
-      mode = "replace",
-    } = options;
+    const { frames, chunkChars, rafBetweenFrames, warmupFrames, mode = "replace" } = options;
     const durations: number[] = [];
-    const baseChunk = `${FIND_NEEDLE} 流式增量段落，保持与真实 provider chunk 同量级的文本长度。`.repeat(
-      Math.max(1, Math.round(chunkChars / 32)),
-    );
+    const baseChunk =
+      `${FIND_NEEDLE} 流式增量段落，保持与真实 provider chunk 同量级的文本长度。`.repeat(
+        Math.max(1, Math.round(chunkChars / 32)),
+      );
     const tailRowId = initial.tailAssistantRowId;
-    const baseTailText = initial.rows
-      .find((row) => row.rowId === tailRowId && row.kind === "assistantText")
-      ?.text;
+    const baseTailText = initial.rows.find(
+      (row) => row.rowId === tailRowId && row.kind === "assistantText",
+    )?.text;
     if (baseTailText === undefined) throw new Error("tail assistant row missing");
     for (let frame = 0; frame < warmupFrames + frames; frame += 1) {
       const current = rowsRef.current;
@@ -234,14 +221,11 @@ function Fixture() {
       const frameTag = String(frame % 10);
       const tailText =
         mode === "append"
-          ? (current.find(
-              (row) => row.rowId === tailRowId && row.kind === "assistantText",
-            )?.text ?? baseTailText) + baseChunk
+          ? (current.find((row) => row.rowId === tailRowId && row.kind === "assistantText")?.text ??
+              baseTailText) + baseChunk
           : baseTailText.slice(0, -1) + frameTag + baseChunk;
       const next = current.map((row) =>
-        row.rowId === tailRowId && row.kind === "assistantText"
-          ? { ...row, text: tailText }
-          : row,
+        row.rowId === tailRowId && row.kind === "assistantText" ? { ...row, text: tailText } : row,
       );
       // 与生产一致：ConversationProjectionStore 在 delta 应用后、setState 前调用
       // advanceConversationRowsPartition 登记「只改尾轮」的分区（F17 步骤②）。

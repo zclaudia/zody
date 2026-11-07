@@ -28,7 +28,11 @@ function baseRow<T extends ConversationRow>(
   } as T;
 }
 
-function turnHeader(rowId: number, turnId: string, state: "running" | "completedSuccess" = "completedSuccess"): TurnHeaderRow {
+function turnHeader(
+  rowId: number,
+  turnId: string,
+  state: "running" | "completedSuccess" = "completedSuccess",
+): TurnHeaderRow {
   return baseRow<TurnHeaderRow>({
     rowId,
     turnId,
@@ -50,7 +54,12 @@ function userInput(rowId: number, turnId: string, text = "问题"): UserInputRow
   });
 }
 
-function assistant(rowId: number, turnId: string, text: string, state: AssistantTextRow["state"] = "streaming"): AssistantTextRow {
+function assistant(
+  rowId: number,
+  turnId: string,
+  text: string,
+  state: AssistantTextRow["state"] = "streaming",
+): AssistantTextRow {
   return baseRow<AssistantTextRow>({
     rowId,
     turnId,
@@ -121,9 +130,7 @@ describe("F17 冻结历史 + 尾轮分区", () => {
     const rows = buildRows();
     const before = getConversationRowsPartition(rows);
     const nextRows = rows.map((row) =>
-      row.rowId === 9 && row.kind === "assistantText"
-        ? { ...row, text: row.text + " 新增" }
-        : row,
+      row.rowId === 9 && row.kind === "assistantText" ? { ...row, text: row.text + " 新增" } : row,
     );
     const deltas: ConversationDelta[] = [
       { op: "row.delta", rowId: 9, path: "text", append: " 新增" },
@@ -140,10 +147,7 @@ describe("F17 冻结历史 + 尾轮分区", () => {
     const before = getConversationRowsPartition(rows);
 
     // 尾轮内追加工具/正文行：沿用。
-    const appendedTailRows = [
-      ...rows,
-      assistant(10, "turn-3", "尾轮再追加一段", "streaming"),
-    ];
+    const appendedTailRows = [...rows, assistant(10, "turn-3", "尾轮再追加一段", "streaming")];
     advanceConversationRowsPartition(rows, appendedTailRows, [
       { op: "row.appended", row: appendedTailRows.at(-1)! },
     ]);
@@ -174,9 +178,7 @@ describe("F17 冻结历史 + 尾轮分区", () => {
 
     // 历史行 upsert（旧行反馈/结构变化）：history 引用必须更换。
     const historyUpserted = rows.map((row) =>
-      row.rowId === 6 && row.kind === "assistantText"
-        ? { ...row, feedback: "like" as const }
-        : row,
+      row.rowId === 6 && row.kind === "assistantText" ? { ...row, feedback: "like" as const } : row,
     );
     advanceConversationRowsPartition(rows, historyUpserted, [
       { op: "row.upserted", row: historyUpserted[5]! },
@@ -200,17 +202,13 @@ describe("F17 冻结历史 + 尾轮分区", () => {
     const before = getConversationRowsPartition(rows);
     // rewind：从尾轮首行（rowId 7 = tailStartRowId）开始裁剪，历史前缀即将变化，不沿用。
     const removedRows = rows.filter((row) => row.rowId < 7);
-    advanceConversationRowsPartition(rows, removedRows, [
-      { op: "row.removed", fromRowId: 7 },
-    ]);
+    advanceConversationRowsPartition(rows, removedRows, [{ op: "row.removed", fromRowId: 7 }]);
     const after = getConversationRowsPartition(removedRows);
     expect(after.history).not.toBe(before.history);
 
     // 只裁尾轮内部（fromRowId 8 > tailStartRowId 7）：历史不受影响，沿用。
     const tailTrimmedRows = rows.filter((row) => row.rowId < 8);
-    advanceConversationRowsPartition(rows, tailTrimmedRows, [
-      { op: "row.removed", fromRowId: 8 },
-    ]);
+    advanceConversationRowsPartition(rows, tailTrimmedRows, [{ op: "row.removed", fromRowId: 8 }]);
     expect(getConversationRowsPartition(tailTrimmedRows).history).toBe(before.history);
   });
 
@@ -218,9 +216,7 @@ describe("F17 冻结历史 + 尾轮分区", () => {
     const rows = buildRows();
     const before = getConversationRowsPartition(rows);
     const nextRows = [...rows];
-    advanceConversationRowsPartition(rows, nextRows, [
-      { op: "state.updated", patch: {} },
-    ]);
+    advanceConversationRowsPartition(rows, nextRows, [{ op: "state.updated", patch: {} }]);
     expect(getConversationRowsPartition(nextRows).history).toBe(before.history);
   });
 
