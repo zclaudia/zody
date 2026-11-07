@@ -44,6 +44,9 @@ export function createHomeOnlyWebRemoteControlServices(): RootServices {
     update: async () => {},
     updateDataBaseDir: async () => {},
     ensureDefaultProject: async (path: string) => ({ path, created: false }),
+    // F25（上游 a60ba6a7）：Web 远控 home-only 桥不支持用户指令读写，unsupported 占位保持类型完整。
+    getUserInstructions: unsupported("setting.getUserInstructions"),
+    saveUserInstructions: unsupported("setting.saveUserInstructions"),
   };
 
   const emptyGitSummary = (workspacePath: string) => ({

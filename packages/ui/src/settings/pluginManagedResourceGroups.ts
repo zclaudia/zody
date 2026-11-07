@@ -335,5 +335,16 @@ function mapPluginRuntimeStatus(
         status: "unknown",
         toolCount: snapshot.toolCount,
       };
+    // fork（F23，上游 a60ba6a7）：workspace MCP 信任门新状态（pending_trust）。
+    // plugin-managed 分组本身不会出现 workspace 声明，这里只为枚举扩展后的映射
+    // 完备性兜底；完整 UI 在 F23③ 落地。
+    case "pending_trust":
+      return {
+        error: snapshot.error ?? "Workspace MCP server is pending trust review.",
+        failureKind: snapshot.failureKind ?? "status_unavailable",
+        serverRequestId: snapshot.serverRequestId,
+        status: "unknown",
+        toolCount: snapshot.toolCount,
+      };
   }
 }

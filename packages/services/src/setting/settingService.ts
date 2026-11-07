@@ -1,20 +1,28 @@
 import { access, readFile, mkdir, rename } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import type { AppSettings } from "@zody/shared";
 import {
+  USER_INSTRUCTIONS_MAX_BYTES,
+  USER_INSTRUCTIONS_TOO_LARGE_ERROR_CODE,
   ZODY_DATA_ROOT_DIR_NAME,
   appSettingsPatchSchema,
   appSettingsSchema,
   formatLogPrefix,
   formatZodError,
 } from "@zody/shared";
+import { atomicWritePrivateTextFile } from "@zody/shared/node";
 import type { ISettingService } from "./setting.js";
 import { normalizeSettingsPatch } from "#src/setting/normalizeSettingsPatch.js";
-import { copyDataDirectory, getDataBaseDir, validateDataBaseDirTarget } from "../paths.js";
+import {
+  copyDataDirectory,
+  getAgentUserInstructionsFilePath,
+  getDataBaseDir,
+  validateDataBaseDirTarget,
+} from "../paths.js";
 import { isEffectiveDevelopmentNodeEnv } from "../runtime-tools/nodeEnv.js";
 import { maybeThrowInjectedFsFault } from "../fs/fsFaultInjection.js";
-import { atomicWriteText } from "../fs/atomicFileUtils.js";
+import { atomicWriteText, withAtomicFileLock } from "../fs/atomicFileUtils.js";
 import { withSettingsWriteQueueTimeout } from "./settingsWriteQueue.js";
 import {
   migrateLegacyAccountConnectionSettings,
@@ -234,7 +242,17 @@ export function createSettingServiceWithMigrations(): { service: ISettingService
   let updateQueue = Promise.resolve();
   let commitQueue = Promise.resolve();
   let writeQueueGeneration = 0;
-
+  // 个性化指令（userInstructions）读写队列：与 settings 写队列分离（不同文件、互不阻塞）。
+  // 修复原因（上游 a60ba6a7 评审 CR-01）：atomicWriteText 只保证单次替换完整，不保证多次
+  // 保存的提交顺序；慢 IO 下旧写的 rename 可能晚于新写落地，用旧内容覆盖已保存的新内容。
+  // 个性化指令的写入必须进程内 FIFO 排队（组件按草稿新旧顺序入队，队尾即最新内容），
+  // 跨实例写入由文件锁再兜一层；读取先排空队列，避免保存后立即重开读到旧内容。
+  let userInstructionsWriteQueue: Promise<unknown> = Promise.resolve();
+  const enqueueUserInstructionsWrite = <T>(write: () => Promise<T>): Promise<T> => {
+    const queued = userInstructionsWriteQueue.then(write, write);
+    userInstructionsWriteQueue = queued.catch(() => {});
+    return queued;
+  };
   const runSettingsCommit = async (commit: () => Promise<void>) => {
     const queued = commitQueue.then(commit, commit);
     commitQueue = queued.catch(() => {});
@@ -365,6 +383,57 @@ export function createSettingServiceWithMigrations(): { service: ISettingService
       }
 
       return { path, created: !existedBefore };
+    },
+
+    // 个性化指令（用户自定义指令）读写：来源上游 v3.17.1（commit a60ba6a7）
+    // settingService.getUserInstructions/saveUserInstructions，路径按本仓 ZODY 数据根适配。
+    // 路径与 setting.json 同理按当前环境解析（Windows 下测试只改 HOME，导入期固化会串目录），
+    // 但 home 解析规则不同：只认 HOME/USERPROFILE（见 paths.getAgentUserInstructionsFilePath）。
+    async getUserInstructions(): Promise<{ content: string; filePath: string }> {
+      // 读取等待已接纳的写入排空：保存后立即重开分区时不能把旧内容当基线。
+      await userInstructionsWriteQueue;
+      const userInstructionsFile = getAgentUserInstructionsFilePath();
+      try {
+        const content = await readFile(userInstructionsFile, "utf8");
+        return { content, filePath: userInstructionsFile };
+      } catch (error) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "code" in error &&
+          (error as { code?: string }).code === "ENOENT"
+        ) {
+          // 文件不存在等价于未配置个性化指令，不算错误。
+          return { content: "", filePath: userInstructionsFile };
+        }
+        throw error;
+      }
+    },
+
+    async saveUserInstructions(content: string): Promise<{ filePath: string }> {
+      // 最终校验用与 CLI 读取一致的共享常量，防止其他 RPC 调用方绕过 UI 写入超限内容
+      // （Agent 只读前 100KB，超限保存会让用户误以为全部生效）。
+      if (Buffer.byteLength(content, "utf8") > USER_INSTRUCTIONS_MAX_BYTES) {
+        const error = new Error(`user instructions exceed ${USER_INSTRUCTIONS_MAX_BYTES} bytes`);
+        (error as Error & { code: string }).code = USER_INSTRUCTIONS_TOO_LARGE_ERROR_CODE;
+        throw error;
+      }
+      const userInstructionsFile = getAgentUserInstructionsFilePath();
+      await enqueueUserInstructionsWrite(async () => {
+        // 修复原因（上游 a60ba6a7 评审 CR-01 回归）：acquireFileLock 以不带 recursive 的
+        // mkdir(lockFile) 创建锁文件，父目录 {home}/.zody 不存在时会 ENOENT 抛出——建目录
+        // 必须发生在取锁之前，否则首次保存（CLI 从未运行过的 home）永远失败。
+        maybeThrowInjectedFsFault({ operation: "mkdir", path: dirname(userInstructionsFile) });
+        await mkdir(dirname(userInstructionsFile), { recursive: true });
+        await withAtomicFileLock(userInstructionsFile, async () => {
+          maybeThrowInjectedFsFault({ operation: "writeFile", path: userInstructionsFile });
+          // 修复原因（上游 a60ba6a7 评审 CR-01 权限）：atomicWriteText 的临时文件不带 mode，
+          // rename 换 inode 后会把既有 0600 文件放宽为 umask 默认（常见 0644），同机其他账号
+          // 可读。私有写入固定 0600，只会收紧不会放宽权限。
+          await atomicWritePrivateTextFile(userInstructionsFile, content);
+        });
+      });
+      return { filePath: userInstructionsFile };
     },
   };
 

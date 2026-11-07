@@ -65,6 +65,13 @@ function createSettingService(): ISettingService {
     async ensureDefaultProject(path: string) {
       return { path, created: false };
     },
+    // F25：ISettingService 扩展了个性化指令读写，测试基座需补齐占位实现。
+    async getUserInstructions() {
+      return { content: "", filePath: "" };
+    },
+    async saveUserInstructions() {
+      return { filePath: "" };
+    },
   };
 }
 

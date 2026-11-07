@@ -7,6 +7,7 @@ export type SettingsSectionId =
   | "migration"
   | "browser"
   | "modelProvider"
+  | "personalization"
   | "memory"
   | "plugin"
   | "mcp"
@@ -65,6 +66,7 @@ function isSettingsSectionId(value: string): value is SettingsSectionId {
     value === "migration" ||
     value === "browser" ||
     value === "modelProvider" ||
+    value === "personalization" ||
     value === "memory" ||
     value === "plugin" ||
     value === "mcp" ||
@@ -224,7 +226,7 @@ export function setPendingSettingsSectionIntent(
     pluginOrigin?: SettingsPluginNavigationOrigin;
     pluginScopeKey?: string;
     modelProviderId?: string;
-    } = {},
+  } = {},
 ): void {
   if (typeof window === "undefined") {
     return;
@@ -289,9 +291,10 @@ function clearPendingSettingsSectionIntent(): void {
   }
 }
 
-function consumePendingSettingsSectionWithSource(
-  fallbackSection: SettingsSectionId,
-): { section: SettingsSectionId; explicit: boolean } {
+function consumePendingSettingsSectionWithSource(fallbackSection: SettingsSectionId): {
+  section: SettingsSectionId;
+  explicit: boolean;
+} {
   if (typeof window === "undefined") {
     return { section: fallbackSection, explicit: false };
   }

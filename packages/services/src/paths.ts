@@ -61,6 +61,24 @@ export function getAppConfigDir(): string {
   return join(getZodyDataRootDir(), "v2");
 }
 
+/**
+ * Agent 侧用户级默认指令（个性化）文件的 home 解析。
+ * 来源：上游 v3.17.1（commit a60ba6a7）packages/services/src/paths.ts，路径按本仓
+ * ZODY 数据根适配。必须与 CLI adapter（apps/zody-cli/packages/adapters/src/context/index.ts
+ * 的 resolveUserHomeDir）保持完全一致：只认 HOME/USERPROFILE。不能复用 getDataBaseDir()
+ * （它认 setDataBaseDir() 与 ZODY_DATA_BASE_DIR，CLI 读该文件时忽略两者），也不能认
+ * ZODY_DESKTOP_HOME_DIR（agent 子进程不认）；否则 App 写的文件和 Agent 读的文件会分叉。
+ */
+export function resolveAgentUserInstructionsHomeDir(env: NodeJS.ProcessEnv = process.env): string {
+  const envHome = env.HOME?.trim() || env.USERPROFILE?.trim();
+  return envHome && envHome.length > 0 ? envHome : homedir();
+}
+
+/** `{home}/.zody/AGENTS.md`：用户自定义指令（个性化）的唯一事实源文件（目录名只用共享常量）。 */
+export function getAgentUserInstructionsFilePath(env: NodeJS.ProcessEnv = process.env): string {
+  return join(resolveAgentUserInstructionsHomeDir(env), ZODY_DATA_ROOT_DIR_NAME, "AGENTS.md");
+}
+
 function readEnvValue(env: Record<string, string | undefined>, key: string): string | undefined {
   const direct = env[key]?.trim();
   if (direct) {

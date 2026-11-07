@@ -19,6 +19,7 @@ import {
   Keyboard,
   FileSearch,
   MonitorSmartphone,
+  User,
 } from "lucide-react";
 import { isSettingsSectionEnabled, type SettingsSectionId } from "@/lib/settingsNavigation.js";
 import type { Theme } from "@/useTheme.js";
@@ -81,6 +82,15 @@ const BASE_SETTINGS_SECTIONS: SettingsSectionDefinition[] = [
     icon: Package,
     titleId: "settings.modelProviderTitle",
     groupId: "basics",
+  },
+  // 个性化（用户自定义指令）是 Agent 能力组的第一项：编辑 {home}/.zody/AGENTS.md，
+  // 对本机 Agent 的所有后续会话生效（spec：docs/ui/settings-personalization.md）。
+  // 来源：上游 v3.17.1（commit a60ba6a7）settingsPageConfig，路径按本仓数据根适配。
+  {
+    id: "personalization",
+    icon: User,
+    titleId: "settings.personalization.title",
+    groupId: "agentCapabilities",
   },
   {
     id: "memory",
