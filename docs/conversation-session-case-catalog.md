@@ -3636,12 +3636,15 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 | PA162-03 | 草稿输入 → 发送失败（同 scope，不切换）                             | 正文恢复到输入框与持久草稿；等待期间无新输入时失败回包完整回填                                                                  | accepted |
 | PA162-04 | 输入框进入 IME 组合态（compositionstart，不派发 compositionend）→ 输入中文 → 切 task → 切回 | 组合中正文完整恢复（步④引入发布抑制后仍不得丢：快照须读编辑器事实）                                               | accepted |
 | PA162-05 | F15 捕获通道播种图片附件 + 正文 → 发送失败                          | 正文与附件（store 文件名保留 shot.png）一并恢复、零重发（步③ 2026-11-08 已落地可执行子测 F28E-5）                                 | accepted |
+| PA162-06 | 输入框组合态输入（不派发 compositionend）→ 等过防抖窗 → compositionend → Enter | 组合期间持久草稿不含组合正文（发布通道静默）；compositionend 后正文发布落盘；Enter 提交成功并清空（步④ 2026-11-08 已落地 F28E-6） | accepted |
 
 组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/composer-draft-transaction.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过；真实 ConversationComposer + 真实 useDraftConfigControl，fake Platform/Services 最小注入，可在草稿/task scope 间切换并控制 onSendText 挂起/失败）。单元层复现（`packages/ui/test/composerDraftTransactionBaseline.test.ts`）：信封 `sess_` 幂等缺失、组合期间照常发布、A₁→B→A₂ 旧回调写入复用 scope 三项以 `it.fails` 登记（对应移植步翻转）。剪枝：真实系统 IME、Desktop 全窗口切任务、手机远控链路不由浏览器组件测试冒充（缺口与 PA161 同口径待协调）。accepted 表示产品合同，不代表已实现。
 
 2026-11-07 执行记录（F28 基线步）：browser pending 连续三轮 `# tests 4 / # pass 3 / # fail 1`（PA162-02 稳定复现草稿丢失，期望 `"等待ACK期间切走的草稿"` 实际 `""`、持久草稿 `{}`；证据 `packages/desktop/.e2e-artifacts/composer-draft-transaction-browser/`）。已知非致命 console error：fake services 缺 subagents 服务（与 F15④ 同源，无 pageerror）。人工评审与转正未完成。
 
 2026-11-08 执行记录（F28 步① staged 暂存热路径落地）：PA162-01 增补断言——连续击键窗口草稿键写盘 ≤1（正常 0；基线 9 写/10 字符；负载卡顿>350ms 时防抖合法落盘 1 次）且防抖空闲窗合并落盘 1 次；同命令连续四轮 `# tests 4 / # pass 3 / # fail 1`（PA162-01/03/04 通过、PA162-02 失败形态与基线一致，待步③）。步①使三 staged props 挂载即消费，F15④ 真实 Composer 夹具补最小 no-op 后 `image-preview-editor.test.mjs` 复测 16/16。人工评审与转正未完成。
+
+2026-11-08 执行记录（F28 步④ IME composition 抑制落地，四步收口）：E2E 扩至 6 用例连续三轮 `# tests 6 / # pass 6 / # fail 0`——PA162-04 持续通过（现依赖 snapshotDraftOfEditor 读编辑器事实）；新增 PA162-06（F28E-6：组合期间发布通道静默、compositionend 后发布落盘并可发送）。反例：去组合态门禁→F28-B5 失败（`been called 1 times`）；快照回退 textRef→F28E-4 失败。vitest 基线文件 11 用例全过、expected-fail 清零（B2/B4/B5 全部翻转为护栏）；20 个相关文件 256 用例全绿；F15 E2E 复测 16/16。组合中真实 IME Enter 确认键无法用合成事件忠实复刻，由单元层 composerImeCompositionEnter.test.ts 覆盖（剪枝登记）。四步最终对比见 spec「四步最终基线对比汇总」。人工评审与转正未完成。
 
 2026-11-08 执行记录（F28 步③ claim/restore/finalize 事务 + createSession 信封幂等落地）：E2E 扩至 5 用例并连续多轮 `# tests 5 / # pass 5 / # fail 0`——PA162-02（F28E-2）由基线复现翻转为通过（持久草稿经事务 target 恢复、task scope 不被污染）；新增 PA162-05（F28E-5，F15 附件路径：真实捕获通道播种 shot.png → 发送失败 → 正文与附件一并恢复、零重发；夹具最小 fake attachmentPut + fixture attachmentSessionId）。反例：临时禁用事务恢复写盘后 F28E-2 失败且单元 F28-G5 `applied:false`；临时移除 sess_ 分配后 F28-B4 失败。信封层幂等已落地（sess_ 首次构造分配/重试沿用）；跨进程消费需 shared schema + CLI 扩展（卡外缺口，spec 登记）。20 个相关文件 255 用例全绿；F15 E2E 复测 16/16（ErrorBanner 夹具补事务 props 消除 unhandled rejection）。人工评审与转正未完成。
 

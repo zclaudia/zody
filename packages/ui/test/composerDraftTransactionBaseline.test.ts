@@ -17,7 +17,10 @@ import { useZodySessionStore } from "@/store/zodySessionStore.js";
 import { useDraftConfigControl as useActualDraftConfigControl } from "@/v4/composer/useDraftConfigControl.js";
 import { readV4ComposerDraft } from "@/v4/composer/composerDraftStore.js";
 import { createCommandEnvelope } from "@/v4/commandFactory.js";
-import { createTextContentSyncController } from "@/LexicalChatInput.js";
+import {
+  createTextContentSyncController,
+  resolveTextContentPublication,
+} from "@/LexicalChatInput.js";
 
 const { prepareWorkspaceMock } = vi.hoisted(() => ({
   prepareWorkspaceMock: vi.fn(),
@@ -180,23 +183,69 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
     expect((sendText.payload as { sessionId?: string }).sessionId).toBeUndefined();
   });
 
-  // ── 步④ IME composition 抑制发布 ──
-  it.fails("F28-B5 复现：IME 组合期间正文仍向 React 草稿 owner 发布", async () => {
+  // ── 步④ IME composition 抑制发布（2026-11-08 落地，由 it.fails 翻转为 it）──
+  it("F28-B5 护栏：IME 组合期间不发布；compositionend 后按终态发布一次并去重", async () => {
     const onChange = vi.fn();
+    let composing = true;
     const controller = createTextContentSyncController({
       onChange,
       taskId: null,
-      getIsComposing: () => true,
+      getIsComposing: () => composing,
     });
-    controller.handleEditorUpdate({ isDirty: true, nextText: "候选中" });
+    controller.handleEditorUpdate({ isDirty: true, nextText: "组合候选中间态" });
+    controller.handleEditorUpdate({ isDirty: true, nextText: "组合最终正文" });
     // 冲刷走 queueMicrotask（见 createTextContentSyncController.schedule）。
     await Promise.resolve();
     await Promise.resolve();
-    // 上游 TextContentPlugin：composing 期间 publish=null，仅 presence 布尔量；
-    // 组合正文留在 Lexical，compositionend 后的最终 update 才序列化发布。
-    // 本仓组合期间照常发布（composingRef 只用于卡顿统计短路），热路径逐候选触发
-    // 父级 re-render + 草稿写盘，且未来叠加发布抑制后必须改读编辑器事实防丢稿。
+    // 上游语义（a60ba6a7）：composing 期间 publish=null——组合候选留在 Lexical，不逐候选
+    // 触发父级热路径。基线（2026-11-07，it.fails）：组合期间照常发布
+    //（`expected "vi.fn()" to not be called at all, but actually been called 1 times`）。
     expect(onChange).not.toHaveBeenCalled();
+    // compositionend：组合结束兜底冲刷按编辑器终态发布一次。
+    composing = false;
+    controller.handleCompositionEnd("组合最终正文");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith("组合最终正文");
+    // 组合结束后常规输入恢复微任务发布；重复终态（净回退到已发布值）不重复发布。
+    controller.handleCompositionEnd("组合最终正文");
+    expect(onChange).toHaveBeenCalledTimes(1);
+    controller.handleEditorUpdate({ isDirty: true, nextText: "后续输入" });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange).toHaveBeenLastCalledWith("后续输入");
+    controller.dispose();
+  });
+
+  it("F28-B5 纯函数：resolveTextContentPublication 组合抑制与组合后去重状态机", () => {
+    const initial = { lastPublishedText: "旧正文", pendingComposition: false };
+    // 组合期间：不发布，置 pendingComposition。
+    const duringComposition = resolveTextContentPublication({
+      composing: true,
+      nextText: "组合中",
+      state: initial,
+    });
+    expect(duringComposition.publish).toBeNull();
+    expect(duringComposition.state.pendingComposition).toBe(true);
+    // 组合结束、终态与已发布文本相同：清标记不发布。
+    const sameAsPublished = resolveTextContentPublication({
+      composing: false,
+      nextText: "旧正文",
+      state: duringComposition.state,
+    });
+    expect(sameAsPublished.publish).toBeNull();
+    expect(sameAsPublished.state.pendingComposition).toBe(false);
+    // 组合结束、终态不同：发布一次并更新 lastPublishedText。
+    const committed = resolveTextContentPublication({
+      composing: false,
+      nextText: "组合最终正文",
+      state: duringComposition.state,
+    });
+    expect(committed.publish).toBe("组合最终正文");
+    expect(committed.state).toEqual({
+      lastPublishedText: "组合最终正文",
+      pendingComposition: false,
+    });
   });
 
   // ── 步② scope incarnation token（2026-11-08 落地，由 it.fails 翻转为 it）──

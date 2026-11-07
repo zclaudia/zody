@@ -4,8 +4,9 @@
  * 运行：`node --test packages/ui/test/browser/manual-review/pending/composer-draft-transaction.test.mjs`。
  * F28 草稿丢失复现基线：真实 ConversationComposer + 真实 useDraftConfigControl，
  * 夹具可在草稿/task scope 间切换并控制 onSendText 挂起/失败。
- * 预期（步③落地后 2026-11-08）：F28E-1/2/3/4/5 全部通过——F28E-2 已由复现翻转为护栏
- * （事务 restore 写回提交 scope）；F28E-5 为 PA162-05（F15 附件路径 claim/restore）。
+ * 预期（步④落地后 2026-11-08 收口）：F28E-1/2/3/4/5/6 全部通过——F28E-2（事务恢复）、
+ * F28E-5（PA162-05 附件路径）已翻转/落地；F28E-4 现依赖编辑器事实快照；
+ * F28E-6 为 PA162-06（组合中 Enter 不提交、compositionend 后发布并可发送）。
  */
 /* oxlint-disable eslint(max-lines) -- e2e-case-lifecycle 以单个 spec 文件为登记/晋升单元，
    PA162 场景共用同一 fixture/server 生命周期，拆文件会割裂案例登记。 */
@@ -264,6 +265,8 @@ test("F28E-4 护栏（步④）：compositionend 前切 task 再切回，组合�
   const text = "中文组合输入中";
   await editor.click();
   // 进入 IME 组合态（compositionend 故意不派发：模拟候选窗口未确认时切换任务）。
+  // 步④起组合期间正文不向 React 发布（textRef 落后于 Lexical），往返恢复依赖
+  // snapshotDraftOfEditor 直接读取编辑器事实。
   await editor.evaluate((element) => {
     element.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
   });
@@ -277,6 +280,47 @@ test("F28E-4 护栏（步④）：compositionend 前切 task 再切回，组合�
   assert.deepEqual(errors, []);
   await page.screenshot({
     path: join(artifacts, "f28e4-composition-roundtrip.png"),
+    fullPage: true,
+  });
+  await page.close();
+});
+
+test("F28E-6 交互（PA162-06，步④）：组合期间正文不发布；compositionend 后发布落盘并可发送", async () => {
+  const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await openComposer(page);
+  const editor = page.getByTestId("v4-composer-input");
+  const text = "组合完成后发送";
+  await editor.click();
+  await editor.evaluate((element) => {
+    element.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
+  });
+  await page.keyboard.insertText(text);
+  await waitForEditorText(page, text);
+  // 步④核心断言：组合候选留在 Lexical、不向 React 草稿 owner 发布——即使等过 350ms
+  // 防抖窗，持久草稿也不含组合正文（基线：组合期间照常发布并落盘）。
+  // 注：组合中真实 IME 的 Enter 确认携带 isComposing=true，合成事件无法忠实复刻该键，
+  // 该路径由单元层 composerImeCompositionEnter.test.ts 覆盖（登记于 spec）。
+  await page.waitForTimeout(700);
+  assert.equal(await page.evaluate(() => window.readPersistedDrafts().__draft__), undefined);
+  // compositionend：最终正文发布一次 → staged → 防抖落盘（发布到达草稿 owner 的证据）。
+  await editor.evaluate((element) => {
+    element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true }));
+  });
+  await page.waitForFunction(
+    () => window.readPersistedDrafts().__draft__?.text === "组合完成后发送",
+    { timeout: 3_000, polling: 100 },
+  );
+  // 组合结束后 Enter 正常提交（挂起后放行，验证发送链路未被抑制破坏）。
+  await page.evaluate(() => window.hangNextSend());
+  await editor.press("Enter");
+  await page.waitForFunction(() => window.sendStartedCount === 1);
+  await page.evaluate(() => window.settleHungSend("resolve"));
+  await waitForEditorText(page, "");
+  assert.deepEqual(errors, []);
+  await page.screenshot({
+    path: join(artifacts, "f28e6-composition-submit.png"),
     fullPage: true,
   });
   await page.close();

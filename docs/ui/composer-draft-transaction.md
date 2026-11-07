@@ -18,7 +18,7 @@
 | staged 暂存热路径           | `stageComposerContent`（输入热路径只写 ref，不触发父级 render/localStorage）                                                                                                               | **步①已落地（2026-11-08）**：`stageComposerContent`/`persistComposerContent`/`captureComposerContentLifecycleCommit`；击键热路径 0 父级 render、0 草稿键写盘（见「步①设计」）   |
 | scope incarnation token     | `scopeKey` 含 `draftFocusVersion` + root scope；`incarnation: Symbol(scopeKey)`；`isCurrentScope` 同时校验 mounted + incarnation                                                           | **步②已落地（2026-11-08）**：`incarnation: Symbol(scopeKey)` 随 scopeKey 重载换代；`isCurrentScope` 三重校验（mounted + scopeKey + incarnation）门禁全部写路径（见「步②设计」） |
 | claim/restore/finalize 事务 | `captureComposerSubmissionDraftTransaction`（事务绑定捕获时 scope + contentRevision；claim 置空、失败 restore、成功 finalize；restore/finalize 不写入后来切换的 scope）                    | **步③已落地（2026-11-08）**：`captureComposerSubmissionDraftTransaction` 事务绑定捕获时 target + contentRevision，claim/restore/finalize 只写事务 scope（见「步③设计」）        |
-| IME composition 抑制        | TextContentPlugin `resolveTextContentPublication`：composing 期间 `publish=null`，compositionend 后最终 update 才发布；`snapshotDraftOfEditor` 改读 `inputApi.getMarkdown()`（编辑器事实） | `createTextContentSyncController` 组合期间照常发布（`composingRef` 只用于卡顿统计短路）；`snapshotDraftOfEditor` 读 `textRef`                                                   |
+| IME composition 抑制        | TextContentPlugin `resolveTextContentPublication`：composing 期间 `publish=null`，compositionend 后最终 update 才发布；`snapshotDraftOfEditor` 改读 `inputApi.getMarkdown()`（编辑器事实） | **步④已落地（2026-11-08）**：`resolveTextContentPublication` 发布门禁 + 组合期间不发布 + compositionend 兜底冲刷；`snapshotDraftOfEditor` 改读编辑器事实（见「步④设计」）       |
 | createSession 信封幂等      | `createCommandEnvelope`：`payload.sessionId ?? sess_${crypto.randomUUID()}`（首次构造分配，重试沿用）；schema `createSession.sessionId`（上游 shared command.ts）                          | **步③已落地（2026-11-08，信封层）**：`createCommandEnvelope` 首次构造分配 `sess_<uuid>`、重试沿用；跨进程消费需 shared/CLI 扩展（卡外，缺口登记）                               |
 
 上游配套（本卡范围外或部分参考）：`composerSubmissionSettlement.ts`（R3A-B-07 模块级结算账本）、
@@ -110,12 +110,17 @@
   也不消费），携带该键安全；完整幂等作为缺口登记待 controller 裁决扩落点（建议随
   packages/shared + apps/zody-cli 各一条 additive 变更）。
 
-### F28-B5 IME composition 期间正文照常发布（修复步④）
+### F28-B5 IME composition 期间正文照常发布（修复步④，2026-11-08 已修复）
 
 - 现象：`createTextContentSyncController` 在 `getIsComposing()===true` 时仍发布 onChange，
   每个候选帧触发 B1 热路径（父级 re-render + 写盘）；上游为 `publish=null` + presence 布尔量。
 - 复现：vitest F28-B5（`it.fails`）实测翻转后失败：`expected "vi.fn()" to not be called at
 all, but actually been called 1 times`。
+- 修复（步④）：`resolveTextContentPublication` 发布门禁 + 控制器组合态冲刷门禁 +
+  `handleCompositionEnd` 兜底冲刷；`snapshotDraftOfEditor` 改读编辑器事实（见「步④设计」）。
+  F28-B5 已翻转为普通 `it`（组合期间不发布、compositionend 终态发布一次并去重）+ 纯函数
+  状态机单测；反例：临时移除冲刷门禁后同一测试失败于同一断言；临时回退快照读 textRef 后
+  E2E PA162-04（compositionend 前切任务）失败——编辑器事实快照是该护栏的承重构件。
 - 伴随约束：一旦抑制发布，`snapshotDraftOfEditor` 必须改读编辑器事实
   （`inputApi.getMarkdown()`，上游注释：「IME 候选阶段不向 React 发布正文，textRef 会暂时
   落后于 Lexical。生命周期 flush 必须直接读取编辑器事实，否则 compositionend 前切任务或
@@ -130,8 +135,9 @@ all, but actually been called 1 times`。
   PA162-01/04 通过；mention pill 保真由 editorStateJson 随快照携带）。
 - **F28-S2 首发等待期间切走 → `promoteComposerDraft` 被守卫跳过 → root 草稿残留已发送
   正文（幽灵草稿）**：未复现；步③事务化时验证 promotion 与事务结算的先后边界。
-- **F28-S3 步④后 compositionend rAF 延迟发布成为新的迟到回调来源**：与 F28-B2 同源，
-  步②incarnation 必须先于/随步④生效（顺序已在四步串行中保证）。
+- **F28-S3 步④后 compositionend 延迟发布成为新的迟到回调来源（已随②④收口）**：
+  compositionend 兜底冲刷经 handleEditorChange → stageComposerContent 写回，由步②
+  incarnation 三重门禁拒绝跨世代写入（F28-B2 护栏持续通过）。
 
 ## 步①设计：staged 暂存热路径（2026-11-08 落地，先于代码写入本节）
 
@@ -275,6 +281,61 @@ scope 状态（本仓语义），故事务无需上游 promotedRevisionSourceKey
 （信封 sess\_）+ 新增 G5（事务跨 scope 恢复不写新 scope）/G6（revision 变化拒 claim）/
 G7（finalize 幂等）；护栏 8/8 与既有套件不回退；B5 仍 expected-fail（步④）。
 
+## 步④设计：IME composition 抑制发布 + compositionend 前不丢草稿（2026-11-08 落地，先于代码写入本节）
+
+产品规则：**IME 组合期间（compositionstart→compositionend）正文不向 React 草稿 owner
+发布**——组合候选只留在 Lexical 编辑器内，compositionend 后的最终正文才发布（一次），
+避免逐候选触发 staged/owner 热路径；**任何生命周期落盘（切任务/卸载/失焦）必须直接读取
+编辑器事实**（`inputApi.getMarkdown()`），不得依赖发布后的 `textRef`——否则组合期间切任务
+或关窗会丢草稿（F28-B5/S3）。
+
+实现（`packages/ui/src/LexicalChatInput.tsx` + `ConversationComposer.tsx`）：
+
+- **发布门禁（纯函数，上游同名同义）**：`resolveTextContentPublication({composing, nextText,
+state})` → `{publish, state}`——composing 时 `publish=null` 且置 `pendingComposition`；
+  组合结束后正文与 `lastPublishedText` 相同则清标记不发布，不同则发布一次。
+  `TextContentPublicationState { lastPublishedText, pendingComposition }` 由
+  `createTextContentSyncController` 持有（取代裸 `lastEmittedText`）。
+- **控制器**：`handleEditorUpdate` 的微任务冲刷在 `getIsComposing()` 为真时不发布（pending
+  保留给组合结束）；新增 `handleCompositionEnd(nextText)`——组合结束兜底冲刷（Chrome 最终
+  input 早于 compositionend、Firefox/Safari 可能随后，双路径最终一致）。插件在
+  compositionend 的微任务里复位 `composingRef` 后读取编辑器 markdown 主动冲刷一次。
+- **编辑器事实快照**：`ConversationComposer.snapshotDraftOfEditor` 改读
+  `inputApi.getMarkdown()`（a60ba6a7 注释：「IME 候选阶段不向 React 发布正文，textRef 会
+  暂时落后于 Lexical。生命周期 flush 必须直接读取编辑器事实」）——步①③ 的生命周期提交/
+  事务快照因此对组合中的正文同样成立。
+- **迟到回调防护**：compositionend 兜底冲刷构成新的延迟回调来源（F28-S3），其写回经
+  `handleEditorChange` → `scheduleDraftPersist` → `stageComposerContent`，由步②incarnation
+  三重门禁拒绝跨世代写入（四步串行顺序保证）。
+
+与上游差异（登记）：上游 TextContentPlugin 另有 `onUserInputPresenceChange` 布尔通道，组合
+期间让发送键感知候选正文；本仓无该通道，发送键在组合期间保持上一次已发布值（组合态
+Enter 不提交的既有语义一致），compositionend 后一帧内随最终发布更新。本地控制器的微任务
+批量发布架构保留（上游为同步发布），门禁语义等价。
+
+验收（步④，已写入测试）：vitest F28-B5 由 it.fails 翻转为 it（组合期间不发布）并扩
+compositionend 最终发布/去重断言；E2E PA162-04 持续通过（现经编辑器事实快照保护）；
+新增交互 E2E PA162-06（组合中 Enter 不提交、compositionend 后发布落盘并可发送）；护栏
+14/14 与既有套件不回退；无 expected-fail 复现遗留。
+
+## 四步最终基线对比汇总（2026-11-08 收口）
+
+| 维度                 | 2026-11-07 基线                                                 | 2026-11-08 四步后                                                                   |
+| -------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| B1 热路径（①）       | 每击键父级 re-render + 写盘：9 写/10 字符、5 更新=7 render+5 写 | typing 窗口 0 render/0 写盘（负载卡顿容忍 ≤1）；防抖空闲窗合并落盘 1 次             |
+| B2 跨世代误写（②）   | A₁→B→A₂ 旧闭包覆盖 A₂（复现：`'A₁ 旧回调' ≠ 'A₂ 新正文'`）      | incarnation 三重门禁拒绝；同世代写入不受影响                                        |
+| B3 发送失败丢稿（③） | 挂起中切任务后失败→草稿永久丢失（E2E 稳定复现）                 | 事务 restore 写回提交 scope 且不污染新 scope（PA162-02 翻转通过）                   |
+| B4 信封幂等（③）     | createSession 信封无会话 ID                                     | 信封首次构造分配 `sess_<uuid>`、重试/重放沿用（跨进程消费缺口登记）                 |
+| B5 IME 发布（④）     | 组合期间照常发布（复现：`vi.fn() been called 1 times`）         | 组合期间不发布；compositionend 最终发布一次；快照读编辑器事实                       |
+| S1 防抖窗富文本丢失  | 切 scope 丢 editorStateJson/mention（未复现登记）               | 随①生命周期提交收口（快照携带 editorStateJson）                                     |
+| 护栏通过数           | 5/5（vitest 2 + E2E 3）                                         | **17/17**（vitest 11：G1/G2/G3/G4/B2/B4/B5/G5/G6/G7 + 纯函数；E2E 6：PA162-01～06） |
+| 复现 expected-fail   | 3（B2/B4/B5）                                                   | **0**（全部翻转为护栏）                                                             |
+| 既有相关套件         | 全绿                                                            | 20 文件 255+ 用例全绿、F15 E2E 16/16（多轮）                                        |
+
+遗留缺口（登记，不随本卡收口）：`sess_` 跨进程幂等（需 packages/shared + CLI，卡外）；
+R3A-B-07「ACK 丢失+卸载」结算账本（未引入，场景未复现）；真实系统 IME/Desktop 全窗口/
+手机远控链路按 catalog 剪枝登记。
+
 ## 状态所有者与事件顺序
 
 现状（基线，草稿 owner = SessionPane 挂载的 `useDraftConfigControl`；composer 只消费回调）：
@@ -334,9 +395,11 @@ createSession → 信封首次构造分配 sess_<uuid>，重试沿用           
    失败回包覆盖（步③，PA162-02 断言 B 侧不被污染）。
 4. **createSession 幂等（步③信封层 2026-11-08 已落地）**：信封携带 `sess_<uuid>` 且重试/
    重放沿用（vitest F28-B4 已翻转 + 非 createSession 信封不携带）；跨进程消费缺口如上登记。
-5. **IME 安全**：组合期间不发布（vitest F28-B5 翻转）；compositionend 前切任务/关窗不丢
-   （PA162-04 持续通过）；组合态 Enter 不误提交（既有 `composerImeCompositionEnter.test.ts`
-   不回退）。
+5. **IME 安全（步④ 2026-11-08 已落地）**：组合期间不发布（vitest F28-B5 已翻转 + 纯函数
+   状态机）；compositionend 前切任务/关窗不丢（PA162-04 持续通过，现依赖编辑器事实快照）；
+   compositionend 后发布落盘并可发送（PA162-06）；组合态 Enter 不误提交（既有
+   `composerImeCompositionEnter.test.ts` 不回退——合成事件无法忠实复刻真实 IME 的
+   isComposing 键，该路径由单元层覆盖并登记）。
 6. **热路径（步①，2026-11-08 已落地）**：击键热路径 0 父级 re-render / 0 草稿键写盘
    （F28-G1 改写为 staged 断言、E2E PA162-01 断言 typing 窗口写盘 ≤1——正常 0，负载
    卡顿>350ms 时防抖合法落盘 1 次；旧热路径 ≥9）；防抖空闲窗 1 次合并落盘（带
@@ -361,6 +424,11 @@ Desktop 通过。场景登记于
   步③落地后**翻转为通过**，断言扩展为：持久草稿经事务恢复 + task scope 不被污染）。
 - **PA162-03 同 scope 发送失败恢复**＝F28E-3（基线通过）。
 - **PA162-04 compositionend 前切任务不丢**＝F28E-4（基线通过；步④防回退护栏）。
+- **PA162-06 组合发布抑制交互（步④ 2026-11-08 已落地）**＝F28E-6：组合期间（不派发
+  compositionend）编辑器持有正文但持久草稿在防抖窗后仍不含组合正文（发布通道静默）；
+  compositionend 后最终正文发布→staged→防抖落盘，随后 Enter 正常提交并成功清空。
+  组合中真实 IME 的 Enter 确认（isComposing=true 键）无法用合成事件忠实复刻，该路径由
+  单元层 `composerImeCompositionEnter.test.ts` 覆盖（剪枝登记）。
 - **PA162-05 claim/restore 含附件（F15 addAttachmentFiles 路径）**＝F28E-5（步③已落地：
   经 F15 真实捕获通道播种图片 → 发送失败 → 正文与附件（`draftAttachmentFilenames` 含
   shot.png）一并恢复、零重发；夹具以最小 fake attachmentPut + fixture attachmentSessionId
@@ -387,6 +455,18 @@ F28E-1 间歇失败（机器负载把某次击键间隔拖过 350ms，防抖合�
 F15④ 真实 Composer 夹具（`image-annotate-to-draft.fixture.tsx`）因步①三 props 挂载即
 消费而崩溃，已补最小 no-op 注入并复测 `image-preview-editor.test.mjs` **16/16 通过**。
 
+2026-11-08 执行记录（步④落地，四步收口）：E2E 扩至 6 用例并连续三轮 `# tests 6 /
+
+# pass 6 / # fail 0`——F28E-4（PA162-04）持续通过且现依赖编辑器事实快照；新增 F28E-6
+
+（PA162-06）通过（组合期间持久草稿静默、compositionend 后发布落盘、Enter 提交成功清空，
+截图 `f28e6-composition-submit.png`）。反例：临时移除组合态冲刷门禁后 F28-B5 失败
+（`expected "vi.fn()" to not be called at all, but actually been called 1 times`）；临时把
+snapshotDraftOfEditor 回退为读 textRef 后 F28E-4 失败（compositionend 前切任务丢稿）。
+vitest 基线文件 11 用例全通过——**expected-fail 清零**（B2/B4/B5 全部翻转为护栏）；20 个
+composer/SessionPane 相关文件 256 用例全绿；F15 E2E 复测 16/16；`composerImeCompositionEnter`
+4 用例不回退。四步最终对比见「四步最终基线对比汇总」。
+
 2026-11-08 执行记录（步③落地）：E2E 扩至 5 用例并连续多轮 `# tests 5 / # pass 5 /
 
 # fail 0`——F28E-2（PA162-02）由基线复现翻转为通过（等待期间切 task 后失败，持久草稿
@@ -406,19 +486,19 @@ F28-B2 由 `it.fails` 翻转为 `it` 并通过（含旧世代 staged 回调拒�
 20 个 composer/SessionPane 相关文件 252 用例全绿（250 通过 + 2 expected-fail）；
 F15 E2E 复测 16/16。
 
-## 基线指标（2026-11-07 基线 / 2026-11-08 步①②③后，后续各步以此判回退）
+## 基线指标（2026-11-07 基线 / 2026-11-08 四步收口终值）
 
-| 指标                    | 2026-11-07 基线                                                         | 2026-11-08 步①后                                                                                                   | 2026-11-08 步②后                                                             | 2026-11-08 步③后                                                                       | 用例                                       |
-| ----------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------ |
-| vitest 基线用例         | 5：**2 通过**（G1 刻画、G2 护栏）+ **3 expected-fail**（B2/B4/B5 复现） | 7：**4 通过**（G1 改写 staged、G2、G3 staged 合并、G4 切换 flush）+ **3 expected-fail**（不变，分属步②③④）         | 7：**5 通过**（+B2 翻转并扩同世代断言）+ **2 expected-fail**（B4/B5 属步③④） | 10：**9 通过**（+B4 翻转并加重放复用、G5/G6/G7 事务）+ **1 expected-fail**（B5 属步④） | `composerDraftTransactionBaseline.test.ts` |
-| 复现用例反例验证        | it.fails 翻转为 it 后 3 个断言真实失败（见 B2/B4/B5 引文）              | 步①新增反例：G3 去 staged 合并→`expected {text:'旧正文'} to match {text:'未落盘的新正文'}`；E2E 旧热路径→`1 !== 0` | 步②反例：去世代校验→`expected 'A₁ 旧回调' to be 'A₂ 新正文'`（还原后通过）   | 步③反例：禁事务恢复→F28E-2 超时 + G5 `applied:false`；去 sess\_ 分配→B4 失败           | 同上 + E2E                                 |
-| 浏览器 E2E              | 4：**3 通过** + **1 失败**（PA162-02 复现），三轮一致                   | 同分布（3 通过 + PA162-02 失败，失败形态不变），连续四轮稳定                                                       | 同分布，连续三轮稳定（步②为 hook 内部门禁，组件级无差异）                    | **5/5 通过**（PA162-02 翻转 + 新增 PA162-05 附件用例），连续多轮稳定                   | `composer-draft-transaction.test.mjs`      |
-| 热路径写盘（E2E）       | 输入 10 字符 → 9 次草稿键 setItem（另有防抖补写）                       | typing 窗口 **0** 次（负载卡顿容忍 ≤1）；防抖空闲窗 1 次合并落盘                                                   | 不变                                                                         | 不变                                                                                   | PA162-01 指标                              |
-| 热路径渲染（vitest G1） | 5 次正文更新 → 7 次 owner render（含 1 次无关 settle）+ 5 次写盘        | 5 次 staged 暂存 → **0** render / **0** 写盘；冲刷 1 写                                                            | 不变                                                                         | 不变                                                                                   | F28-G1                                     |
-| 既有相关套件            | `useDraftConfigControl` / `composerDraftStore` / IME Enter 等全绿       | 20 个 composer/SessionPane 相关文件 252 用例全绿（249 通过 + 3 expected-fail）；F15 E2E 16/16                      | 252 用例全绿（250 通过 + 2 expected-fail）；F15 E2E 16/16                    | 255 用例全绿（254 通过 + 1 expected-fail）；F15 E2E 16/16                              | 回归验证                                   |
+| 指标                    | 2026-11-07 基线                                                         | 2026-11-08 步①后                                                                                               | 2026-11-08 步②后                                                             | 2026-11-08 步③后                                                                 | 2026-11-08 步④后（终值）                                                                        | 用例                                       |
+| ----------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| vitest 基线用例         | 5：**2 通过**（G1 刻画、G2 护栏）+ **3 expected-fail**（B2/B4/B5 复现） | 7：**4 通过**（G1 改写 staged、G2、G3 staged 合并、G4 切换 flush）+ **3 expected-fail**（不变，分属步②③④）     | 7：**5 通过**（+B2 翻转并扩同世代断言）+ **2 expected-fail**（B4/B5 属步③④） | 10：**9 通过**（+B4 翻转并加重放复用、G5/G6/G7 事务）+ **1 expected-fail**（B5） | 11：**11 通过**（+B5 翻转并扩 compositionend 发布/去重 + 纯函数状态机）——**expected-fail 清零** | `composerDraftTransactionBaseline.test.ts` |
+| 复现用例反例验证        | it.fails 翻转为 it 后 3 个断言真实失败（见 B2/B4/B5 引文）              | 步①反例：G3 去 staged 合并→`expected {text:'旧正文'} to match {text:'未落盘的新正文'}`；E2E 旧热路径→`1 !== 0` | 步②反例：去世代校验→`expected 'A₁ 旧回调' to be 'A₂ 新正文'`（还原后通过）   | 步③反例：禁事务恢复→F28E-2 超时 + G5 `applied:false`；去 sess\_ 分配→B4 失败     | 步④反例：去组合态门禁→B5 `been called 1 times`；快照回退 textRef→F28E-4 失败                    | 同上 + E2E                                 |
+| 浏览器 E2E              | 4：**3 通过** + **1 失败**（PA162-02 复现），三轮一致                   | 同分布（3 通过 + PA162-02 失败，失败形态不变），连续四轮稳定                                                   | 同分布，连续三轮稳定（步②为 hook 内部门禁，组件级无差异）                    | **5/5 通过**（PA162-02 翻转 + 新增 PA162-05 附件用例），连续多轮稳定             | **6/6 通过**（+新增 PA162-06 交互用例），连续三轮稳定                                           | `composer-draft-transaction.test.mjs`      |
+| 热路径写盘（E2E）       | 输入 10 字符 → 9 次草稿键 setItem（另有防抖补写）                       | typing 窗口 **0** 次（负载卡顿容忍 ≤1）；防抖空闲窗 1 次合并落盘                                               | 不变                                                                         | 不变                                                                             | 不变；组合期间发布通道静默（PA162-06 断言防抖窗后持久草稿仍无组合正文）                         | PA162-01/06 指标                           |
+| 热路径渲染（vitest G1） | 5 次正文更新 → 7 次 owner render（含 1 次无关 settle）+ 5 次写盘        | 5 次 staged 暂存 → **0** render / **0** 写盘；冲刷 1 写                                                        | 不变                                                                         | 不变                                                                             | 不变                                                                                            | F28-G1                                     |
+| 既有相关套件            | `useDraftConfigControl` / `composerDraftStore` / IME Enter 等全绿       | 20 个 composer/SessionPane 相关文件 252 用例全绿（249 通过 + 3 expected-fail）；F15 E2E 16/16                  | 252 用例全绿（250 通过 + 2 expected-fail）；F15 E2E 16/16                    | 255 用例全绿（254 通过 + 1 expected-fail）；F15 E2E 16/16                        | **256 用例全绿（256 通过 + 0 expected-fail）**；F15 E2E 16/16                                   | 回归验证                                   |
 
-护栏通过数（步③后 vitest G1/G2/G3/G4/B2/B4/G5/G6/G7 + E2E PA162-01/02/03/04/05 = **14/14**）
-为「草稿丢失复现基线不回退」的量化口径：任何一步移植后护栏掉绿即基线回退，停止该步。
+护栏通过数（步④后 vitest 11 + E2E 6 = **17/17**，expected-fail 清零）为「草稿丢失复现基线
+不回退」的量化口径；四步各步落地时的护栏数依次为 7/7 → 8/8 → 14/14 → 17/17，均无回退。
 
 ## 风险与缺口登记
 

@@ -857,11 +857,18 @@ function ConversationComposerImpl({
     text: string;
     editorStateJson?: string;
   } => {
-    const currentText = textRef.current;
+    let currentText = textRef.current;
     let editorStateJson: string | undefined;
     try {
-      const editorState = inputApiRef.current?.getEditorState();
-      editorStateJson = editorState ? JSON.stringify(editorState.toJSON()) : undefined;
+      const inputApi = inputApiRef.current;
+      const editorState = inputApi?.getEditorState();
+      if (inputApi && editorState) {
+        // Bug 根因（F28 步④，来源 a60ba6a7）：IME 候选阶段不向 React 发布正文，textRef
+        // 会暂时落后于 Lexical。生命周期 flush 必须直接读取编辑器事实，否则
+        // compositionend 前切任务或关窗会丢草稿。
+        currentText = inputApi.getMarkdown();
+        editorStateJson = JSON.stringify(editorState.toJSON());
+      }
     } catch (error) {
       logger.warn(`[v4-composer] 草稿 editorState 序列化失败: ${String(error)}`);
     }
