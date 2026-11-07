@@ -128,6 +128,12 @@ function formatBackgroundInfoForModel(result: BashOutput): string {
   const readHint = outputText
     ? ` To check interim output, use ${READ_TOOL_NAME} on that file path.`
     : "";
+  // F21（上游 a60ba6a7）：超时被迫转后台时告知超时秒数，模型才能决定加大 timeout、拆分工作或改用后台；
+  // 优先级低于 assistant/用户手动转后台分支；不足 1 秒按 1 秒展示，不显示 0s。
+  if (result.timedOutAfterMs !== undefined) {
+    const timeoutSeconds = Math.max(1, Math.round(result.timedOutAfterMs / 1000));
+    return `Command did not complete within its ${timeoutSeconds}s timeout and was moved to the background (ID: ${result.backgroundTaskId}).${outputText} You will be notified when it completes.${readHint}`;
+  }
   return `Command running in background with ID: ${result.backgroundTaskId}.${outputText} You will be notified when it completes.${readHint}`;
 }
 

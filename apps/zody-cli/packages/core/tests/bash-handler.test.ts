@@ -2,7 +2,11 @@ import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { CoreErrorType, SessionEventType, createImageProcessorError } from "@zody/contracts";
+import {
+  BashOutputSchema,
+  SessionEventType,
+  createImageProcessorError,
+} from "@zody/contracts";
 import { isErrorForToolResult } from "../src/runtime/helpers/tool-result.js";
 import { decideBashCwdPolicy } from "../src/tool/handlers/bash-cwd-policy.js";
 import { bashHandler, bashToolEntry, createBashToolEntry } from "../src/tool/handlers/bash.js";
@@ -721,6 +725,93 @@ describe("bashHandler", () => {
       shellProfile: "posix-bash",
     });
     expect(observedCwd).toBeUndefined();
+  });
+
+  it("records the timeout when a foreground command is auto-backgrounded on timeout", async () => {
+    // F21-B1（上游 v3.17.1 a60ba6a7）：前台超时转后台时，tool result 记录触发转后台的超时毫秒数，
+    // 模型才能区分「显式后台」与「超时被迫转后台」。
+    const executionPort: BashBackgroundLifecycleExecutionPort = {
+      async run() {
+        throw new Error("run should not be called");
+      },
+      runBashWithBackgroundLifecycle: vi.fn(
+        async (_request: ExecutionRequest, lifecycle: { mode: string }) => {
+          expect(lifecycle.mode).toBe("auto_on_timeout");
+          return {
+            kind: "backgrounded" as const,
+            task: {
+              taskId: "exec_bg",
+              status: "running" as const,
+              startedAt: new Date(),
+              outputPath: "/tmp/exec_bg.output",
+            },
+          };
+        },
+      ),
+    };
+
+    const output = (await bashHandler(
+      { command: "long-running command", timeout: 90_000 } satisfies BashInput,
+      contextWith(executionPort),
+    )) as BashOutput;
+
+    expect(output.status).toBe("backgrounded");
+    expect(output.backgroundTaskId).toBe("exec_bg");
+    expect(output.timedOutAfterMs).toBe(90_000);
+  });
+
+  it("keeps a decimal timeout in the auto-background output and schema-valid", async () => {
+    // F21-B4：输入 timeout 允许小数，超时转后台原样记录；schema 不带 .int()，
+    // 否则小数 timeout 的转后台结果会被输出校验判为工具失败。
+    const executionPort: BashBackgroundLifecycleExecutionPort = {
+      async run() {
+        throw new Error("run should not be called");
+      },
+      runBashWithBackgroundLifecycle: vi.fn(async () => ({
+        kind: "backgrounded" as const,
+        task: {
+          taskId: "exec_bg_decimal",
+          status: "running" as const,
+          startedAt: new Date(),
+          outputPath: "/tmp/exec_bg_decimal.output",
+        },
+      })),
+    };
+
+    const output = (await bashHandler(
+      { command: "long-running command", timeout: 1500.5 } satisfies BashInput,
+      contextWith(executionPort),
+    )) as BashOutput;
+
+    expect(output.timedOutAfterMs).toBe(1500.5);
+    expect(BashOutputSchema.safeParse(output).success).toBe(true);
+    // 只有 > 0 才写：0 不是合法记录值，schema 拒绝（写入侧由结算点守卫）。
+    expect(BashOutputSchema.safeParse({ ...output, timedOutAfterMs: 0 }).success).toBe(false);
+  });
+
+  it("does not record a timeout for explicit background execution", async () => {
+    // F21-B2：显式 run_in_background 没有前台超时语义，不写 timedOutAfterMs。
+    const executionPort: BashBackgroundLifecycleExecutionPort = {
+      async run() {
+        throw new Error("run should not be used for background execution");
+      },
+      runBashWithBackgroundLifecycle: vi.fn(async () => ({
+        kind: "backgrounded" as const,
+        task: {
+          taskId: "exec_bg_explicit",
+          status: "running" as const,
+          startedAt: new Date(),
+        },
+      })),
+    };
+
+    const output = (await bashHandler(
+      { command: "long-running command", run_in_background: true } satisfies BashInput,
+      contextWith(executionPort),
+    )) as BashOutput;
+
+    expect(output.status).toBe("backgrounded");
+    expect(output.timedOutAfterMs).toBeUndefined();
   });
 
   it.each([

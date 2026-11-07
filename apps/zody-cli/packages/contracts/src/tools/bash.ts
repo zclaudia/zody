@@ -176,6 +176,10 @@ export interface BashOutput {
    */
   assistantAutoBackgrounded?: boolean;
   /**
+   * 前台命令超过超时时间后被转到后台时，记录当时的超时毫秒数
+   */
+  timedOutAfterMs?: number;
+  /**
    * Flag to indicate if sandbox mode was overridden
    */
   dangerouslyDisableSandbox?: boolean;
@@ -246,6 +250,8 @@ export const BashOutputSchema = z
     backgroundTaskId: z.string().optional(),
     backgroundedByUser: z.boolean().optional(),
     assistantAutoBackgrounded: z.boolean().optional(),
+    // 输入 timeout 允许小数，这里原样记录；修复原因：带 .int() 时小数 timeout 超时转后台会被判为工具失败。
+    timedOutAfterMs: z.number().positive().optional(),
     dangerouslyDisableSandbox: z.boolean().optional(),
     returnCodeInterpretation: z.string().optional(),
     noOutputExpected: z.boolean().optional(),

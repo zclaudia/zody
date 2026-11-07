@@ -99,6 +99,8 @@ export class NodeExecutionAdapterBase {
       outputPath,
       persistOutput,
       aggregatePersistedBudget,
+      // F21（上游 a60ba6a7）：请求级尾部的唯一接线点；Bash merged 输出请求不下发该字段。
+      requestedTailBytes: request.outputLimit?.tailBytes,
     });
   }
 

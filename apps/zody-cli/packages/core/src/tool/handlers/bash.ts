@@ -229,7 +229,11 @@ async function executeBashHandler(
     : await runCommand();
 
   if (runResult.kind === "backgrounded") {
-    return toBackgroundedBashOutput(runResult.task, parsed);
+    // F21（上游 a60ba6a7）：auto_on_timeout 只在超时计时器到点时转后台，
+    // 所以这里记录的就是触发转后台的超时；显式后台没有前台超时语义，不写。
+    const timedOutAfterMs =
+      !parsed.run_in_background && eligibleForAutoBackground ? request.timeoutMs : undefined;
+    return toBackgroundedBashOutput(runResult.task, parsed, timedOutAfterMs);
   }
 
   const result = runResult.result;
@@ -276,6 +280,7 @@ function emptyBashOutput(input: BashInput): BashOutput {
 function toBackgroundedBashOutput(
   task: BackgroundExecutionStartResult,
   input: BashInput,
+  timedOutAfterMs: number | undefined,
 ): BashOutput {
   return attachToolExecutionTelemetry(
     {
@@ -284,6 +289,8 @@ function toBackgroundedBashOutput(
       interrupted: false,
       status: "backgrounded",
       backgroundTaskId: task.taskId,
+      // 只有 > 0 才写：缺省/非法 timeout 不产生「0ms 超时」噪声（单次事实，之后不再更新）。
+      ...(timedOutAfterMs !== undefined && timedOutAfterMs > 0 ? { timedOutAfterMs } : {}),
       rawOutputPath: task.outputPath,
       persistedOutputPath: task.outputPath,
       stdoutPersistedOutputPath: task.stdoutPersistedOutputPath,

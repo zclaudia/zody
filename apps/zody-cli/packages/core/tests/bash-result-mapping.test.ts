@@ -267,6 +267,60 @@ describe("Bash result mapping", () => {
     expect(result.modelContent).toBe(result.content);
   });
 
+  it("names the timeout when a foreground command was moved to the background", () => {
+    // F21-B3（上游 v3.17.1 a60ba6a7）：timedOutAfterMs 在场且 assistant/user 分支未命中时
+    // 优先生效，模型能看到「超时 N 秒被迫转后台」；N 按 max(1, round(ms/1000))。
+    expect(
+      formatText(
+        bashOutput({
+          status: "backgrounded",
+          backgroundTaskId: "exec_bg",
+          persistedOutputPath: "/tmp/exec_bg.output",
+          timedOutAfterMs: 120_000,
+        }),
+      ),
+    ).toBe(
+      "Command did not complete within its 120s timeout and was moved to the background (ID: exec_bg). Output is being written to: /tmp/exec_bg.output. You will be notified when it completes. To check interim output, use Read on that file path.",
+    );
+
+    // 不足 1 秒按 1 秒展示，不显示 0s。
+    expect(
+      formatText(
+        bashOutput({
+          status: "backgrounded",
+          backgroundTaskId: "exec_bg_fast",
+          timedOutAfterMs: 400,
+        }),
+      ),
+    ).toBe(
+      "Command did not complete within its 1s timeout and was moved to the background (ID: exec_bg_fast). You will be notified when it completes.",
+    );
+
+    // 小数 timeout 原样换算：round(1500.5 / 1000) = 2。
+    expect(
+      formatText(
+        bashOutput({
+          status: "backgrounded",
+          backgroundTaskId: "exec_bg_decimal",
+          timedOutAfterMs: 1500.5,
+        }),
+      ),
+    ).toContain("its 2s timeout");
+
+    // 优先级：assistant 自动转后台的既有分支优先于 timedOutAfterMs。
+    expect(
+      formatText(
+        bashOutput({
+          status: "backgrounded",
+          backgroundTaskId: "exec_bg",
+          assistantAutoBackgrounded: true,
+          persistedOutputPath: "/tmp/exec_bg.output",
+          timedOutAfterMs: 120_000,
+        }),
+      ),
+    ).toContain("assistant-mode blocking budget");
+  });
+
   it("formats background results with background wording and without persisted-output envelopes", () => {
     expect(
       formatText(
