@@ -1750,6 +1750,7 @@ const enUS: Record<string, string> = {
   "chat.previewCards.audio": "Audio",
   "chat.previewCards.openExternal": "Open in browser",
   "chat.previewCards.noOpenApps": "No apps found",
+  "chat.previewCards.openDefaultApp": "Open with default app",
   "chat.previewCards.openFileFailed": "Failed to open this file",
   "chat.previewCards.openCard": "Open {title}",
   "chat.turnNavigator.label": "Conversation query map",

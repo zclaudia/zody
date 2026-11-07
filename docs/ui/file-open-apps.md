@@ -31,6 +31,8 @@
   新增 `renderCard` 供整卡复用；下拉与右键共用同一份查询与动作。
 - `AssistantPreviewCards`（I15）：整卡点击与主按钮执行同一预览动作（详见
   [assistant-preview-cards.md](./assistant-preview-cards.md) 的整卡打开章节）。
+- 产物 tab 头「作为文件打开」迁移到 `file-menu/ArtifactOpenAsFileButton`（见「产物入口」章节），
+  原 `app-shell/workflow-artifacts/ArtifactOpenAsFileButton` 静态菜单模块随之移除。
 - shared 新增 `FileApplicationInfo` / `FileApplicationTarget` 类型与两条 IPC channel。
 
 ## 非目标
@@ -91,6 +93,26 @@
 - 本表规则适用于所有「按格式打开」入口：`OpenSplitButton` 下拉/右键（消息文件卡、文件变更
   摘要面板）与产物「作为文件打开」（`ArtifactOpenAsFileButton`，本机副本同样有真实扩展名）。
   两处入口共用同一份查询与菜单组件，不各自维护第二份列表。
+
+## 产物入口（ArtifactOpenAsFileButton 迁移，2026-11-08 补落）
+
+工作流产物 tab 头的「作为文件打开」原是 `app-shell/workflow-artifacts` 下的本地模块
+（`getInstalledEditors` 静态列表）。按共存章节「两处入口共用同一份查询与菜单组件」，它迁移到
+`file-menu/ArtifactOpenAsFileButton`（上游 SHA a60ba6a7 同名模块）：
+
+- **查询/打开走系统关联**：下拉菜单列出当前副本格式（`fileName` 扩展名）的系统关联应用，
+  选择后经 `openFileWithApplication(id, target)` 打开；不再展示静态编辑器列表。产物入口不回退
+  静态菜单（产物必有真实扩展名，空关联时给中性「使用默认应用打开」项走 `openExternalFile`）。
+- **先物化再查询**：副本由 `materializeWorkflowArtifactFile` 落盘后才能查询关联，因此查询只能由
+  用户打开菜单触发；挂载、加载字节或翻版本不为预取列表/图标而写副本（与上游注释一致）。
+- **主按钮**：默认应用已知（`isDefault`）时经 `openFileWithApplication` 打开并显示其身份；
+  未知时中性「使用默认应用打开」走 `openExternalFile`。
+- **另存为字节来源不同**：产物保存的是 renderer **正在看的那一版**字节（`bytes` prop，
+  journal 读取），不经 workspace Host 的 `stat/readFileRange` 分块链路——副本此时尚未落盘、
+  没有 Host 路径可读；限额（50 MiB）与成功/取消/失败提示规则与统一另存为章节一致。
+- **仅保存宿主（Web）**：无 `materializeWorkflowArtifactFile` 但有 `saveFile` 时整个打开菜单
+  缺席，降级为独立「另存为」按钮（`useCanSaveArtifactAsFile`）；「在工作区显示」只在本机打开
+  菜单存在时收进菜单（`revealInMenu`），否则保持头部独立按钮，不随保存能力一起隐藏。
 
 ## 状态所有者
 
@@ -218,7 +240,10 @@ packages/desktop  main file-open-apps 模块（createFileApplicationService）
   边界，不冒充系统枚举或实际启动）；>50 MiB 限额、1 MiB 分块边界、读取期间变更由 focused
   tests（`packages/ui/test`、`packages/desktop/test`）守住；Windows WPS 图标与 AppsFolder 行为
   由 main 侧单测（fake/脚本适配器）守住，不在 macOS runner 上伪造；Web/手机远端无本机应用
-  菜单由 focused tests 守住；light/dark、locale 不与本菜单做全排列。
+  菜单由 focused tests 守住；light/dark、locale 不与本菜单做全排列。产物入口
+  （`WorkflowArtifactSidePane` 头部）与 APC15 同一查询/菜单组件，其系统关联菜单、中性默认项、
+  另存为与 Web 仅保存降级由 focused tests（`packages/ui/test/workflowArtifactSidePane.test.ts`）
+  守住，不另开窗口 E2E case。
 
 ## 兼容性
 

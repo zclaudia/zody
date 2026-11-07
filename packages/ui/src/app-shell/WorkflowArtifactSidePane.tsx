@@ -13,10 +13,13 @@ import {
   isArtifactPresetKind,
   isTextArtifactContentType,
 } from "@/app-shell/workflow-artifacts/artifactPresentation.js";
+// F16（SHA a60ba6a7）：产物「作为文件打开」迁移到 file-menu——系统关联为唯一事实源，
+// 静态编辑器列表模块随之移除（docs/ui/file-open-apps.md「产物入口」章节）。
 import {
   ArtifactOpenAsFileButton,
   useCanOpenArtifactAsFile,
-} from "@/app-shell/workflow-artifacts/ArtifactOpenAsFileButton.js";
+  useCanSaveArtifactAsFile,
+} from "@/file-menu/index.js";
 import { WorkflowArtifactBody } from "@/app-shell/workflow-artifacts/WorkflowArtifactBody.js";
 import { artifactPresetFieldPaths } from "@/app-shell/workflow-artifacts/presets/spec.js";
 import { useWorkflowRunArtifactBytes } from "@/hooks/useWorkflowRunArtifactBytes.js";
@@ -209,7 +212,10 @@ function WorkflowArtifactView({
 
   // 头部只留一个文件控件：能「作为文件打开」时「在工作区显示」收进它的菜单，否则独立成按钮。
   const canOpenAsFile = useCanOpenArtifactAsFile();
-  const openAsFile = !preset && canOpenAsFile;
+  // Web 只有保存按钮，没有本机打开菜单，不能随保存能力一起隐藏原来的定位入口（SHA a60ba6a7）。
+  const canSaveAsFile = useCanSaveArtifactAsFile();
+  const openAsFile = !preset && canSaveAsFile;
+  const revealInMenu = !preset && canOpenAsFile;
   const reveal =
     localSourcePath !== undefined && onRevealFileInTree !== undefined
       ? () => onRevealFileInTree(localSourcePath)
@@ -270,7 +276,7 @@ function WorkflowArtifactView({
                 {...(reveal === undefined ? {} : { onReveal: reveal })}
               />
             ) : null}
-            {!openAsFile && reveal !== undefined ? (
+            {!revealInMenu && reveal !== undefined ? (
               <Button
                 data-testid="workflow-artifact-reveal"
                 onClick={reveal}

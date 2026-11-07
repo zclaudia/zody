@@ -1680,6 +1680,7 @@ const zhCN: Record<string, string> = {
   "chat.previewCards.audio": "音频",
   "chat.previewCards.openExternal": "在浏览器中打开",
   "chat.previewCards.noOpenApps": "未找到可用 App",
+  "chat.previewCards.openDefaultApp": "使用默认应用打开",
   "chat.previewCards.openFileFailed": "无法打开此文件",
   "chat.previewCards.openCard": "打开 {title}",
   "chat.previewCards.previewInSidePane": "预览",

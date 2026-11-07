@@ -20,12 +20,15 @@ export function FileApplicationChoices<T extends ApplicationChoice>({
   disabled = false,
   variant = "dropdown",
   onSelect,
+  onOpenDefault,
 }: {
   applications: readonly T[];
   loading?: boolean;
   disabled?: boolean;
   variant?: "dropdown" | "context";
   onSelect: (application: T) => void;
+  /** 空关联时的中性系统默认动作；不回退借用首个候选的身份（SHA a60ba6a7）。 */
+  onOpenDefault?: () => void;
 }) {
   const { intl } = useZodyIntl();
   const ordered = useMemo(() => {
@@ -72,9 +75,14 @@ export function FileApplicationChoices<T extends ApplicationChoice>({
           label={intl.formatMessage({ id: "fileActions.moreOpenWith" })}
         />
       )}
-      {ordered.length === 0 && loading && (
-        <Item disabled>{intl.formatMessage({ id: "common.loading" })}</Item>
-      )}
+      {ordered.length === 0 &&
+        (loading ? (
+          <Item disabled>{intl.formatMessage({ id: "common.loading" })}</Item>
+        ) : onOpenDefault ? (
+          <Item disabled={disabled} onSelect={onOpenDefault}>
+            <DefaultFileApplicationLabel />
+          </Item>
+        ) : null)}
     </>
   );
 }

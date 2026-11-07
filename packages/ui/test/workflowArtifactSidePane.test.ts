@@ -427,15 +427,12 @@ describe("WorkflowArtifactSidePane 版本步进器", () => {
     const versionStepTimeoutMs = 5_000;
     await waitFor(
       () =>
-        expect(view.getByTestId("workflow-artifact-version").textContent).toBe(
-          "第 2 版 / 共 3 版",
-        ),
+        expect(view.getByTestId("workflow-artifact-version").textContent).toBe("第 2 版 / 共 3 版"),
       { timeout: versionStepTimeoutMs },
     );
-    await waitFor(
-      () => expect(workflowRunArtifactRead.mock.calls.at(-1)?.[0]?.version).toBe(2),
-      { timeout: versionStepTimeoutMs },
-    );
+    await waitFor(() => expect(workflowRunArtifactRead.mock.calls.at(-1)?.[0]?.version).toBe(2), {
+      timeout: versionStepTimeoutMs,
+    });
   });
 
   it("journal 读不到版本历史时不凭最新版号编造 1..n", async () => {
@@ -756,10 +753,16 @@ describe("WorkflowArtifactSidePane 作为文件打开", () => {
     expect(platform.openExternalFile).not.toHaveBeenCalled();
   });
 
-  it("选择打开方式：列出已装 App（文件管理器在前），选中即用它打开副本", async () => {
+  it("选择打开方式：列出系统关联应用（默认项在前），选中经 openFileWithApplication 打开副本", async () => {
     workflowRunArtifacts.mockResolvedValue({ artifacts: [markdownRecord()] });
     workflowRunArtifactRead.mockResolvedValue(textChunk("# hi", "text/markdown"));
-    const platform = desktopPlatform();
+    const platform = desktopPlatform({
+      getFileApplications: vi.fn(async () => [
+        { id: "sys-pages", name: "Pages" },
+        { id: "sys-wps", name: "WPS Office", isDefault: true },
+      ]),
+      openFileWithApplication: vi.fn(async () => ({ success: true })),
+    });
     const view = renderPane({ tab: tabOf({ artifactId: "notes" }), platform });
 
     await waitFor(() => expect(view.getByTestId("markdown-response")).toBeTruthy());
@@ -767,17 +770,117 @@ describe("WorkflowArtifactSidePane 作为文件打开", () => {
       button: 0,
       ctrlKey: false,
     });
-    await waitFor(() => expect(view.getByText("VS Code")).toBeTruthy());
-    const names = view.getAllByRole("menuitem").map((item) => item.textContent);
-    expect(names.slice(0, 2)).toEqual(["Finder", "VS Code"]);
-
-    fireEvent.click(view.getByText("VS Code"));
+    // F16（SHA a60ba6a7）：产物入口共用 file-menu 的系统关联查询——默认项渲染为
+    // 「用 WPS Office 打开」，非默认项直显应用名；静态编辑器列表不再出现。
+    await waitFor(() => expect(view.getByText("用 WPS Office 打开")).toBeTruthy());
+    expect(view.getByText("Pages")).toBeTruthy();
+    expect(view.queryByText("VS Code")).toBeNull();
+    // 查询发生在副本物化之后，目标是本机副本路径。
     await waitFor(() =>
-      expect(platform.openInEditor).toHaveBeenCalledWith("vscode", "/copies/notes.md", {
+      expect(platform.getFileApplications).toHaveBeenCalledWith({
+        path: "/copies/notes.md",
+        pathKind: "file",
+      }),
+    );
+
+    fireEvent.click(view.getByText("Pages"));
+    await waitFor(() =>
+      expect(platform.openFileWithApplication).toHaveBeenCalledWith("sys-pages", {
+        path: "/copies/notes.md",
+        pathKind: "file",
+      }),
+    );
+    expect(platform.openInEditor).not.toHaveBeenCalled();
+  });
+
+  it("系统关联为空时菜单给中性「使用默认应用打开」，走 openExternalFile", async () => {
+    workflowRunArtifacts.mockResolvedValue({ artifacts: [markdownRecord()] });
+    workflowRunArtifactRead.mockResolvedValue(textChunk("# hi", "text/markdown"));
+    const platform = desktopPlatform({
+      getFileApplications: vi.fn(async () => []),
+      openFileWithApplication: vi.fn(async () => ({ success: true })),
+    });
+    const view = renderPane({ tab: tabOf({ artifactId: "notes" }), platform });
+
+    await waitFor(() => expect(view.getByTestId("markdown-response")).toBeTruthy());
+    fireEvent.pointerDown(view.getByTestId("workflow-artifact-open-as-file-menu"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    // 产物入口不回退静态编辑器菜单：空关联给中性的系统默认动作（SHA a60ba6a7）。
+    const neutral = await view.findByText("使用默认应用打开");
+    expect(view.queryByText("VS Code")).toBeNull();
+    fireEvent.click(neutral);
+    await waitFor(() => expect(platform.openExternalFile).toHaveBeenCalledWith("/copies/notes.md"));
+    expect(platform.openFileWithApplication).not.toHaveBeenCalled();
+  });
+
+  it("主按钮在默认应用已知时经 openFileWithApplication 打开，不再走 openExternalFile", async () => {
+    workflowRunArtifacts.mockResolvedValue({ artifacts: [markdownRecord()] });
+    workflowRunArtifactRead.mockResolvedValue(textChunk("# hi", "text/markdown"));
+    const platform = desktopPlatform({
+      getFileApplications: vi.fn(async () => [
+        { id: "sys-wps", name: "WPS Office", isDefault: true },
+      ]),
+      openFileWithApplication: vi.fn(async () => ({ success: true })),
+    });
+    const view = renderPane({ tab: tabOf({ artifactId: "notes" }), platform });
+
+    await waitFor(() => expect(view.getByTestId("markdown-response")).toBeTruthy());
+    // 先开一次菜单，让默认应用身份进入按钮状态（挂载不预取，见 docs/ui/file-open-apps.md）。
+    fireEvent.pointerDown(view.getByTestId("workflow-artifact-open-as-file-menu"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    await waitFor(() => expect(view.getByText("用 WPS Office 打开")).toBeTruthy());
+    fireEvent.click(view.getByText("用 WPS Office 打开"));
+    await waitFor(() => expect(view.getByTestId("markdown-response")).toBeTruthy());
+    fireEvent.click(view.getByTestId("workflow-artifact-open-as-file"));
+    await waitFor(() =>
+      expect(platform.openFileWithApplication).toHaveBeenCalledWith("sys-wps", {
+        path: "/copies/notes.md",
         pathKind: "file",
       }),
     );
     expect(platform.openExternalFile).not.toHaveBeenCalled();
+  });
+
+  it("另存为：菜单保存正在看的那一版字节，成功提示已保存", async () => {
+    workflowRunArtifacts.mockResolvedValue({ artifacts: [markdownRecord()] });
+    workflowRunArtifactRead.mockResolvedValue(textChunk("# hi", "text/markdown"));
+    const saveFile = vi.fn(async () => ({ success: true }));
+    const platform = desktopPlatform({ saveFile });
+    const view = renderPane({ tab: tabOf({ artifactId: "notes" }), platform });
+
+    await waitFor(() => expect(view.getByTestId("markdown-response")).toBeTruthy());
+    fireEvent.pointerDown(view.getByTestId("workflow-artifact-open-as-file-menu"), {
+      button: 0,
+      ctrlKey: false,
+    });
+    const saveItem = await view.findByText("另存为…");
+    fireEvent.click(saveItem);
+    await waitFor(() => expect(saveFile).toHaveBeenCalledTimes(1));
+    const payload = saveFile.mock.calls[0]?.[0] as { data: ArrayBuffer; suggestedName: string };
+    expect(payload.suggestedName).toBe("notes.md");
+    expect(new TextDecoder().decode(payload.data)).toBe("# hi");
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("已保存"));
+  });
+
+  it("Web 只有保存能力：降级为独立另存为按钮，「在工作区显示」保持头部独立", async () => {
+    const saveFile = vi.fn(async () => ({ success: true }));
+    const view = renderPane({ platform: { saveFile } });
+
+    await waitFor(() => expect(view.getByTestId("pdf-viewer")).toBeTruthy());
+    // 打开菜单缺席，只有独立保存按钮；reveal 不随保存能力收进菜单（revealInMenu）。
+    expect(view.queryByTestId("workflow-artifact-open-as-file")).toBeNull();
+    expect(view.getByTestId("workflow-artifact-save-as")).toBeTruthy();
+    expect(view.getByTestId("workflow-artifact-reveal")).toBeTruthy();
+
+    fireEvent.click(view.getByTestId("workflow-artifact-save-as"));
+    await waitFor(() => expect(saveFile).toHaveBeenCalledTimes(1));
+    const payload = saveFile.mock.calls[0]?.[0] as { data: ArrayBuffer; suggestedName: string };
+    expect(payload.suggestedName).toBe("book.pdf");
+    await waitFor(() => expect(toast).toHaveBeenCalledWith("已保存"));
   });
 
   it("有工作区出处时，「在工作区显示」收进菜单，头部只剩一个文件控件", async () => {
@@ -801,8 +904,9 @@ describe("WorkflowArtifactSidePane 作为文件打开", () => {
 
     fireEvent.click(view.getByTestId("workflow-artifact-open-as-file-reveal"));
     expect(onRevealFileInTree).toHaveBeenCalledWith("/workspace/out/book.pdf");
-    // 显示位置不落副本。
-    expect(platform.materializeWorkflowArtifactFile).not.toHaveBeenCalled();
+    // F16 后打开菜单会先物化副本以查询系统关联（恰好一次）；「在工作区显示」本身
+    // 不再追加第二次物化。
+    expect(platform.materializeWorkflowArtifactFile).toHaveBeenCalledTimes(1);
   });
 
   it("没有工作区出处（markdown）或远程工作区时，菜单里没有「在工作区显示」", async () => {
