@@ -128,6 +128,14 @@ function getMountedRowElement(
   return root.querySelector<HTMLElement>(`[data-row-id="${rowId}"]`);
 }
 
+/** F17 步骤⑤（上游 a60ba6a7）：活动命中居中前的挂载判定——无 Range 且无挂载行才继续粗定位。 */
+export function getMountedConversationFindRow(
+  root: HTMLElement,
+  rowId: number,
+): HTMLElement | null {
+  return getMountedRowElement(root, rowId);
+}
+
 export function getMountedConversationFindRange(
   root: HTMLElement,
   query: string,

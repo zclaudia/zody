@@ -102,7 +102,7 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
 | ② 分区 | `getConversationRowsPartition`/`memoizeByRows`/`advanceConversationRowsPartition` 与消费方接入 | M1 growth | 2.49x → 向 1.x 收敛；p50@3003 行显著下降 |
 | ③ overscan | `ROW_OVERSCAN` 8 → 2 + 未知长轮一屏估高 | M3 | historyTurnUnits 18 → 6、historyElements 972 → 324（实测 −67%，见基线记录） |
 | ④ 测量 revision | `measuredLayoutRevision` 批量测高与 mountedRowsKey 失效 | M1/M2/M3 不回退 + SRM10 resize 回归 | 不回退（实测持平，见基线记录；收益为正确性与时序） |
-| ⑤ 查找 | 查找索引按分区缓存（history 段按引用复用，每帧只算尾轮） | M4 + 代码级分区缓存测试 | M4 不回退（现有 unit 缓存已把墙钟增量压到噪声级，验收以代码级测试为主） |
+| ⑤ 查找 | 查找索引按分区缓存（history 段按引用复用，每帧只算尾轮）+ 文本缓存 + measured 交接 + activeIndex 降噪 | M4 + 代码级分区缓存测试 | M4 17.2→11.0（−36%，见基线记录）；交互 E2E 浏览器入口通过 |
 
 ### 步骤②契约：冻结历史 + 尾轮分区
 
@@ -200,6 +200,36 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
      （SRM01-04 单测）、前插锚点（HLP 单测/正式 E2E 既有覆盖不回退）。
   3. 基线复测：M1–M4 不回退，三轮数据追加进基线记录文件。
 
+### 步骤⑤契约：查找索引分区缓存、宽度校正后定位与 activeIndex 降噪
+
+- **命中索引分区缓存（上游 a60ba6a7 移植）**：查找索引按「历史 + 尾轮」分区构建——历史段命中
+  按 `renderUnits.history` 引用缓存（段内再按 unit 引用校验：`entry.unit === unit`，历史修订
+  同 key 换对象即失效），流式帧只重建尾段；两段缓存表在轮次迁移时互查兜底。未查找时返回固定
+  空索引（不随流式帧重建），查询关闭即清空两段缓存。文本准备（代码注释投影 + 小写化）按不可变
+  row 对象 WeakMap 缓存（`createConversationFindIndexBuilder`），query 逐字变化不重扫全部历史。
+  兼容入参：扁平 `renderUnits` 数组仍被接受（语义 = 全窗口当尾段重建），既有调用与测试不破坏。
+- **宽度校正后定位（isMountedLayoutMeasured 交接，上游 a60ba6a7 移植）**：活动命中的居中
+  （`scrollIntoView`）只在「挂载布局已测量」时执行：内容列宽度未在变化中，且每个虚拟行的
+  DOM 实测高度与 virtualizer 已提交尺寸一致；否则本帧只应用高亮，由 `mountedRowsKey`
+  （含 measuredLayoutRevision）唤醒后重新交接。目标行未挂载（无 Range 且无 `[data-row-id]`
+  DOM）时先 `scrollToUnit` 粗定位；已挂载但无 Range（源码标记/链接地址）则结束本次请求，
+  不反复拉回。搜索结果高亮同规则。
+- **activeIndex 不触发整 App 更新（上游 a60ba6a7 移植）**：App 层
+  `handleConversationFindMatchStateChange` 对被动命中回报做同值守卫——`current.activeIndex ===
+  activeIndex` 时返回原状态对象，React bail-out，流式帧反复回报相同命中不再重渲染整个 App；
+  用户导航（change/navigate）路径不变。
+- **不变量**：命中结构（globalIndex/unitIndex/rowMatchIndex/sourceText）与高亮 DOM 契约不变；
+  自动补拉（FIND_AUTO_LOAD_ROW_LIMIT）、搜索结果高亮 3s 清理、单命中环绕导航语义不变。
+- **验收场景**：
+  1. 单测（等价性 + 缓存）：builder 输出与直接构建逐项相等；同一 row 跨 query 重复构建只投影/
+     小写一次；投影标志变化缓存失效；分区入参与扁平入参产出一致命中集；流式尾轮帧命中回报
+     稳定、历史行 upsert 后命中数更新。
+  2. 交互 E2E（浏览器 harness，node --test 入口）：长会话激活查找 → 自动定位首个命中并居中
+     可见 → 流式期间命中高亮保持 → 视口宽度变化并稳定后活动命中仍在视口（measured 交接）。
+  3. 桌面 E2E：对齐 coverage matrix `session-find-highlight`（W01-W06，planned）——用例文件在
+     packages/desktop，本卡落点外，登记缺口由 controller 扩卡/另行分配。
+  4. 基线终测：M1–M4 三轮复测 + 五步总对比汇总（growth 2.49 → 终值），追加进基线记录文件。
+
 ### 性能指标定义与测量方法
 
 测量入口：`node --test packages/ui/test/browser/manual-review/pending/conversation-timeline-perf-baseline.test.mjs`
@@ -236,7 +266,7 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
 | F17-PREPEND-02 历史前插锚点回归 | 既有 HLP01-HLP02 正式 E2E | 复用，②③ 步回归 |
 | F17-RESIZE-03 resize/批量测高行为 | 既有 SRM10 浏览器回归 conversation-timeline-resize.test.mjs | 复用，④ 步回归 |
 | F17-LOCATE-04 跳转定位完整显示与屏外挂载（overscan 收紧后目标轮完整、滚动边界不回退） | 浏览器 harness 本身断言（M3）+ 桌面草案 `packages/desktop/test/e2e/conversation-session/manual-review/pending/`（lifecycle pending 入口） | 待 ③ 步登记；桌面用例文件在本卡落点（packages/ui、docs）之外，登记时由 controller 扩卡或另行分配 |
-| F17-FIND-05 长会话查找跳转高亮与运行中更新 | 桌面草案对齐 coverage matrix `session-find-highlight`（W01-W06，planned） | 待 ⑤ 步登记；同上受落点限制 |
+| F17-FIND-05 长会话查找跳转高亮与运行中更新 | 浏览器交互用例已落：`node --test packages/ui/test/browser/manual-review/pending/conversation-timeline-find-interaction.test.mjs`（定位首个命中→流式保持→宽度校正后仍在视口）；桌面草案对齐 coverage matrix `session-find-highlight`（W01-W06，planned） | 浏览器入口已验证通过；桌面用例文件在 packages/desktop（落点外），缺口待 controller 扩卡/另行分配 |
 
 本卡落点为 `packages/ui/src`、`packages/ui/test`、`docs`；桌面 E2E 用例的物理文件与 coverage
 matrix 登记不在落点内，上表已列明对应入口与缺口，实际登记在对应步骤完成（见各步汇报）。

@@ -637,9 +637,14 @@ export function App({
     (state: ConversationFindMatchState) => {
       setConversationFindMatchCount(state.matchCount);
       if (state.activeIndex !== undefined) {
-        setConversationFindState((current) =>
-          changeTaskFindSelection(current, current.query, state.activeIndex ?? -1),
-        );
+        setConversationFindState((current) => {
+          const activeIndex = state.activeIndex ?? -1;
+          // F17 步骤⑤（上游 a60ba6a7）：消息索引随流式帧反复回报相同命中；被动回报没有
+          // 导航意图，不能让整个 App 跟着更新。同值返回原状态对象触发 React bail-out。
+          return current.activeIndex === activeIndex
+            ? current
+            : changeTaskFindSelection(current, current.query, activeIndex);
+        });
       }
     },
     [],

@@ -309,3 +309,105 @@ describe("useConversationTimelineFind searchResultHighlight (MS06)", () => {
     expect(scrollToUnit).not.toHaveBeenCalled();
   });
 });
+
+// F17 步骤⑤（上游 a60ba6a7 移植）：查找索引按「历史 + 尾轮」分区构建——历史段按
+// renderUnits.history 引用缓存（段内按 unit 引用校验失效），流式帧只重建尾段；
+// 扁平数组入参仍被接受（语义 = 全窗口当尾段），与分区入参产出一致命中集。
+describe("useConversationTimelineFind 分区 renderUnits", () => {
+  const historyRows: ConversationRow[] = [
+    turnHeader(1, "turn-1"),
+    userInput(2, "needle question about history", "turn-1"),
+    assistantText(3, "needle answer in older turn", "turn-1"),
+    turnHeader(10, "turn-2"),
+    userInput(11, "latest message", "turn-2"),
+    assistantText(12, "latest answer streaming", "turn-2"),
+  ];
+
+  function partitionUnits(rows: readonly ConversationRow[]) {
+    const all = buildConversationTurnRenderUnits(rows, { nowMs: 1_700_000_100_000 });
+    return { history: all.slice(0, -1), tail: all.slice(-1) };
+  }
+
+  it("分区入参与扁平入参产出一致命中集", async () => {
+    const onMatchStateChange = vi.fn();
+    renderHook((props: UseConversationTimelineFindOptions) => useConversationTimelineFind(props), {
+      initialProps: hookProps(historyRows, {
+        conversationFindQuery: "needle",
+        onConversationFindMatchStateChange: onMatchStateChange,
+      }),
+    });
+    await flushFrames();
+    const partitionReport = onMatchStateChange.mock.calls.at(-1)?.[0];
+
+    const onFlatStateChange = vi.fn();
+    renderHook(
+      (props: UseConversationTimelineFindOptions) => useConversationTimelineFind(props),
+      {
+        initialProps: {
+          ...hookProps(historyRows, {
+            conversationFindQuery: "needle",
+            onConversationFindMatchStateChange: onFlatStateChange,
+          }),
+          renderUnits: partitionUnits(historyRows),
+        },
+      },
+    );
+    await flushFrames();
+    const flatReport = onFlatStateChange.mock.calls.at(-1)?.[0];
+
+    expect(flatReport.matchCount).toBe(partitionReport.matchCount);
+    expect(flatReport.activeIndex).toBe(partitionReport.activeIndex);
+    expect(flatReport.matchCount).toBe(2);
+  });
+
+  it("流式尾轮帧（history 引用不变）命中回报稳定；历史行 upsert 后命中数更新", async () => {
+    const onMatchStateChange = vi.fn();
+    const hook = renderHook(
+      (props: UseConversationTimelineFindOptions) => useConversationTimelineFind(props),
+      {
+        initialProps: {
+          ...hookProps(historyRows, {
+            conversationFindQuery: "needle",
+            onConversationFindMatchStateChange: onMatchStateChange,
+          }),
+          renderUnits: partitionUnits(historyRows),
+        },
+      },
+    );
+    await flushFrames();
+    expect(onMatchStateChange.mock.calls.at(-1)?.[0].matchCount).toBe(2);
+
+    // 尾轮流式：rows 新数组、history 行引用与分区 history 引用均不变（store advance 语义）。
+    const streamedRows = historyRows.map((row) =>
+      row.rowId === 12 && row.kind === "assistantText"
+        ? { ...row, text: row.text + " more needle tokens" }
+        : row,
+    );
+    hook.rerender({
+      ...hookProps(streamedRows, {
+        conversationFindQuery: "needle",
+        onConversationFindMatchStateChange: onMatchStateChange,
+      }),
+      renderUnits: partitionUnits(streamedRows),
+    });
+    await flushFrames();
+    // 尾轮新增一处命中，历史两处不受影响。
+    expect(onMatchStateChange.mock.calls.at(-1)?.[0].matchCount).toBe(3);
+
+    // 历史行 upsert（同 key 新 row 对象）：历史段缓存按 unit 引用失效，命中数更新。
+    const upsertedRows = streamedRows.map((row) =>
+      row.rowId === 3 && row.kind === "assistantText"
+        ? { ...row, text: row.text + " another needle" }
+        : row,
+    );
+    hook.rerender({
+      ...hookProps(upsertedRows, {
+        conversationFindQuery: "needle",
+        onConversationFindMatchStateChange: onMatchStateChange,
+      }),
+      renderUnits: partitionUnits(upsertedRows),
+    });
+    await flushFrames();
+    expect(onMatchStateChange.mock.calls.at(-1)?.[0].matchCount).toBe(4);
+  });
+});

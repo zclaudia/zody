@@ -37,7 +37,19 @@ interface ConversationFindTarget {
   rowId: number;
   rowKind: ConversationFindRowKind;
   text: string;
+  normalizedText: string;
 }
+
+// F17 步骤⑤（上游 a60ba6a7）：文本准备（代码注释投影 + 小写化）按不可变 row 对象缓存；
+// query 逐字变化时不能反复投影和转小写全部历史。
+type FindTextCache = WeakMap<
+  UserInputRow | AssistantTextRow,
+  {
+    projected: boolean;
+    text: string;
+    normalizedText: string;
+  }
+>;
 
 export function normalizeConversationFindQuery(query: string): string {
   return query.trim().toLocaleLowerCase();
@@ -48,6 +60,7 @@ function addTargetsForUnit(
   unit: ConversationTurnRenderUnit,
   unitIndex: number,
   projectCodeComments: boolean,
+  cache?: FindTextCache,
 ) {
   const latestAssistantState = unit.latestAssistantTextRow?.state;
   const projectUnitCodeComments =
@@ -56,37 +69,64 @@ function addTargetsForUnit(
       latestAssistantState === "complete" ||
       latestAssistantState === "interrupted");
   for (const row of unit.visibleUserInputs) {
-    targets.push(createTarget(unitIndex, row));
+    targets.push(createTarget(unitIndex, row, false, cache));
   }
   for (const row of unit.assistantTextRows) {
-    targets.push({
-      ...createTarget(unitIndex, row),
-      text:
-        projectUnitCodeComments
-          ? projectAssistantCodeComments(row.text, {
-              streaming: row.state === "streaming",
-            }).visibleText
-          : row.text,
-    });
+    targets.push(createTarget(unitIndex, row, projectUnitCodeComments, cache));
   }
 }
 
 function createTarget(
   unitIndex: number,
   row: UserInputRow | AssistantTextRow,
+  projected: boolean,
+  cache?: FindTextCache,
 ): ConversationFindTarget {
+  let prepared = cache?.get(row);
+  if (!prepared || prepared.projected !== projected) {
+    const text =
+      projected && row.kind === "assistantText"
+        ? projectAssistantCodeComments(row.text, {
+            streaming: row.state === "streaming",
+          }).visibleText
+        : row.text;
+    prepared = { projected, text, normalizedText: text.toLocaleLowerCase() };
+    cache?.set(row, prepared);
+  }
   return {
     unitIndex,
     rowId: row.rowId,
     rowKind: row.kind,
-    text: row.text,
+    text: prepared.text,
+    normalizedText: prepared.normalizedText,
   };
 }
+
+type FindOptions = { projectAssistantCodeComments?: boolean };
 
 export function buildConversationFindIndex(
   units: readonly ConversationTurnRenderUnit[],
   query: string,
-  options: { projectAssistantCodeComments?: boolean } = {},
+  options: FindOptions = {},
+): ConversationFindIndex {
+  return buildFindIndex(units, query, options);
+}
+
+/** 带文本缓存的构建入口（上游 a60ba6a7）：query 逐字变化复用已准备的投影/小写文本。 */
+export function createConversationFindIndexBuilder() {
+  const cache: FindTextCache = new WeakMap();
+  return (
+    units: readonly ConversationTurnRenderUnit[],
+    query: string,
+    options: FindOptions = {},
+  ) => buildFindIndex(units, query, options, cache);
+}
+
+function buildFindIndex(
+  units: readonly ConversationTurnRenderUnit[],
+  query: string,
+  options: FindOptions,
+  cache?: FindTextCache,
 ): ConversationFindIndex {
   const normalizedQuery = normalizeConversationFindQuery(query);
   const targets: ConversationFindTarget[] = [];
@@ -96,6 +136,7 @@ export function buildConversationFindIndex(
       unit,
       unitIndex,
       options.projectAssistantCodeComments === true,
+      cache,
     ),
   );
 
@@ -110,7 +151,7 @@ export function buildConversationFindIndex(
 
   const matches: ConversationFindMatch[] = [];
   for (const target of targets) {
-    const normalizedText = target.text.toLocaleLowerCase();
+    const normalizedText = target.normalizedText;
     let searchStart = 0;
     let rowMatchIndex = 0;
     while (searchStart < normalizedText.length) {

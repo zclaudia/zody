@@ -1620,9 +1620,23 @@ function ConversationTimelineImpl({
     ],
   );
 
+  // F17 步骤⑤（上游 a60ba6a7）：挂载布局已测量 = 宽度未在变化中，且每个虚拟行的 DOM
+  // 实测高度与 virtualizer 已提交尺寸一致；活动命中的居中交接以此为门槛，避免在估计
+  // 坐标上居中后被测量修正推出视口。
+  const isMountedLayoutMeasured = useCallback(
+    () =>
+      !isContentWidthChanging() &&
+      virtualizer.getVirtualItems().every((row) => {
+        const node = virtualizer.elementsCache.get(row.key);
+        return node?.isConnected && measureRowHeight(node, undefined) === row.size;
+      }),
+    [isContentWidthChanging, virtualizer],
+  );
+
   useConversationTimelineFind({
     rootRef: scrollRef,
-    renderUnits,
+    // 分区入参：历史段命中按 history 引用缓存，流式帧只重建尾段（步骤⑤）。
+    renderUnits: renderUnitsPartition,
     rows,
     mountedRowsKey,
     canLoadOlder,
@@ -1636,6 +1650,7 @@ function ConversationTimelineImpl({
     searchResultHighlightRequest,
     onSearchResultHighlightDone,
     scrollToUnit,
+    isMountedLayoutMeasured,
   });
 
   const saveCurrentScrollMemoryRef = useRef(saveCurrentScrollMemory);

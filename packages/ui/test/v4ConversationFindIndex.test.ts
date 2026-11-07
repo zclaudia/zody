@@ -9,6 +9,7 @@ import type {
 } from "@zody/shared/zody-protocol-v4";
 import {
   buildConversationFindIndex,
+  createConversationFindIndexBuilder,
   findConversationMatchIndexByKey,
   getConversationFindMatchKey,
   resolveConversationFindActiveMatch,
@@ -210,5 +211,51 @@ describe("resolveSearchResultHighlightMatch", () => {
         snippet: "...target snippet with alpha...",
       })?.rowId,
     ).toBe(3);
+  });
+});
+
+// F17 步骤⑤（上游 a60ba6a7 移植）：查找文本准备（代码注释投影 + 小写化）按不可变 row
+// 对象 WeakMap 缓存——query 逐字变化时不重扫全部历史。
+describe("createConversationFindIndexBuilder（文本缓存）", () => {
+  it("输出与直接构建逐项相等（等价性）", () => {
+    const rows = [
+      turnHeader(1),
+      userInput(2, "alpha first"),
+      assistantText(3, "alpha answer with alpha twice"),
+      turnHeader(4, "turn-2"),
+      userInput(5, "beta question alpha", "turn-2"),
+    ];
+    const builder = createConversationFindIndexBuilder();
+    for (const query of ["alpha", "ALPHA", "answer", ""]) {
+      expect(builder(units(rows), query)).toEqual(
+        buildConversationFindIndex(units(rows), query),
+      );
+    }
+  });
+
+  it("同一 row 对象跨 query 重复构建只投影/小写一次；投影标志变化时缓存失效", () => {
+    const rows = [
+      turnHeader(1),
+      userInput(2, "plain alpha"),
+      assistantText(3, "alpha `comment` code comment body"),
+    ];
+    const built = units(rows);
+    const builder = createConversationFindIndexBuilder();
+    // 三次不同 query：row 文本准备应命中 WeakMap 缓存。
+    builder(built, "alpha");
+    const first = builder(built, "comment");
+    builder(built, "body");
+    // 正文 "comment" 出现两次，两处命中都在 row 3。
+    expect(first.matches.map((match) => match.rowId)).toEqual([3, 3]);
+
+    // 投影标志变化（projectAssistantCodeComments 开/关）时同一 row 重新准备。
+    const projected = builder(built, "comment", { projectAssistantCodeComments: true });
+    expect(projected).toEqual(
+      buildConversationFindIndex(built, "comment", {
+        projectAssistantCodeComments: true,
+      }),
+    );
+    // 关回投影标志后回到缓存路径，结果与首份一致。
+    expect(builder(built, "comment")).toEqual(first);
   });
 });
