@@ -147,6 +147,10 @@ export function useDraftConfigControl(params: {
   const loadedScope = useMemo(
     () => ({
       scopeKey,
+      // F28 步②（来源 a60ba6a7）：scope 世代 token。scopeKey 在 A₁→B→A₂ 后复用，仅按
+      // scopeKey 判定会把 A₁ 挂载期的迟到回调放进 A₂；Symbol 随每次 scope 重载新生成
+      // （离开再返回即换代），与 stateRef.current 的世代一起参与写入门禁。
+      incarnation: Symbol(scopeKey),
       draft: readV4ComposerDraft(workspacePath, workspaceIdentity, scopeId) ?? {
         text: "",
         updatedAt: 0,
@@ -228,10 +232,16 @@ export function useDraftConfigControl(params: {
       mountedRef.current = false;
     };
   }, []);
-  // 本步身份校验仍是 scopeKey（incarnation 属步②）；mounted 防卸载后迟到回调写盘。
+  // F28 步②（来源 a60ba6a7）：三重身份校验 mounted + scopeKey + incarnation。
+  // scopeKey 会在 A₁→B→A₂ 后复用；旧世代挂载闭包（编辑器/生命周期迟到回调、staged
+  // 暂存、全量写）必须被世代 token 拒绝，不得写入新世代草稿；同世代写入不受影响。
+  const incarnation = currentState.incarnation;
   const isCurrentScope = useCallback(
-    () => mountedRef.current && stateRef.current.scopeKey === scopeKey,
-    [scopeKey],
+    () =>
+      mountedRef.current &&
+      stateRef.current.scopeKey === scopeKey &&
+      stateRef.current.incarnation === incarnation,
+    [scopeKey, incarnation],
   );
   const stagedContentRef = useRef<
     | (ComposerDraftPersistenceTarget & {
@@ -239,15 +249,16 @@ export function useDraftConfigControl(params: {
       })
     | null
   >(null);
-  // 当前 scope 的落盘目标：生命周期提交（captureComposerContentLifecycleCommit）即使
-  // 无 staged 内容也要写编辑器事实，因此独立于 stagedContentRef 存在。
+  // 当前 scope 世代的落盘目标：生命周期提交（captureComposerContentLifecycleCommit）
+  // 即使无 staged 内容也要写编辑器事实，因此独立于 stagedContentRef 存在；
+  // incarnation 入 deps 使 A₂ 世代拿到全新 target（A₁ 闭包持有旧对象互不串写）。
   const scopePersistenceTarget = useMemo<ComposerDraftPersistenceTarget>(
     () => ({
       scopeKey,
       baseDraft: stateRef.current.draft,
       persist: draftPersistenceRef.current,
     }),
-    [scopeKey],
+    [scopeKey, incarnation],
   );
   // baseDraft/persist 随配置演进同步，避免生命周期提交把陈旧 mode/model 写回旧 scope。
   useEffect(() => {
@@ -394,7 +405,7 @@ export function useDraftConfigControl(params: {
   const stageComposerContent = useCallback(
     (content: ComposerDraftContent) => {
       // 热路径只更新 staged ref：不 setStoredState、不写 localStorage（F28 步①）。
-      // scopeKey 会在 A₁→B→A₂ 后复用；旧输入回调的挂载身份校验由步②incarnation 补齐。
+      // scopeKey 会在 A₁→B→A₂ 后复用；旧世代回调由步② incarnation 门禁拒绝。
       if (!isCurrentScope()) return;
       stagedContentRef.current = {
         scopeKey,

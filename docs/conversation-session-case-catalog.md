@@ -3643,6 +3643,8 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 
 2026-11-08 执行记录（F28 步① staged 暂存热路径落地）：PA162-01 增补断言——连续击键窗口草稿键写盘 ≤1（正常 0；基线 9 写/10 字符；负载卡顿>350ms 时防抖合法落盘 1 次）且防抖空闲窗合并落盘 1 次；同命令连续四轮 `# tests 4 / # pass 3 / # fail 1`（PA162-01/03/04 通过、PA162-02 失败形态与基线一致，待步③）。步①使三 staged props 挂载即消费，F15④ 真实 Composer 夹具补最小 no-op 后 `image-preview-editor.test.mjs` 复测 16/16。人工评审与转正未完成。
 
+2026-11-08 执行记录（F28 步② scope incarnation token 落地）：hook 内部世代门禁（mounted + scopeKey + incarnation 三重校验，A₁→B→A₂ 旧世代回调拒写），组件级行为无差异——E2E 同命令连续三轮分布不变（PA162-01/03/04 通过、PA162-02 待步③）；单元层 F28-B2 由 it.fails 翻转为 it 并通过（反例：临时移除世代校验后失败于 `expected 'A₁ 旧回调' to be 'A₂ 新正文'`）；20 个 composer/SessionPane 相关文件 252 用例全绿、F15 E2E 复测 16/16。人工评审与转正未完成。
+
 ## CMP：Composer 压缩与 provider 身份
 
 沿用 CUA composer 七档布局契约。providerName 缺失的自定义 provider 使用菜单已有的 providerId 兜底，内置账号套餐规则不变。

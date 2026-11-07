@@ -181,8 +181,8 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  // ── 步② scope incarnation token ──
-  it.fails("F28-B2 复现：A₁→B→A₂ 后旧 scope 闭包回调仍写入复用的 scope（scopeKey 无挂载身份）", async () => {
+  // ── 步② scope incarnation token（2026-11-08 落地，由 it.fails 翻转为 it）──
+  it("F28-B2 护栏：A₁→B→A₂ 后旧世代闭包回调（全量写/staged 暂存）不写入复用的 scope", async () => {
     const { container } = installMinimalDom();
     const root = createRoot(container);
     const workspacePath = "/f28-incarnation";
@@ -200,8 +200,9 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
       root.render(createElement(Probe, { sessionId: "a" }));
     });
     act(() => control!.updateComposerContent({ text: "A₁ 正文" }));
-    // 捕获 A₁ 挂载期的旧回调（对应迟到的编辑器/生命周期回调）。
+    // 捕获 A₁ 挂载期的旧回调（对应迟到的编辑器/生命周期回调与 staged 热路径）。
     const staleWrite = control!.updateComposerContent;
+    const staleStage = control!.stageComposerContent;
     await act(async () => {
       root.render(createElement(Probe, { sessionId: "b" }));
     });
@@ -210,10 +211,15 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
       root.render(createElement(Probe, { sessionId: "a" }));
     });
     act(() => control!.updateComposerContent({ text: "A₂ 新正文" }));
+    // 旧世代回调必须被 incarnation token 拒绝（基线 2026-11-07：scopeKey 相同即放行，
+    // 旧回调覆盖 A₂，it.fails 记录 `expected 'A₁ 旧回调' to be 'A₂ 新正文'`）。
     act(() => staleWrite({ text: "A₁ 旧回调" }));
-    // 上游 isCurrentScope：scopeKey 会在 A₁→B→A₂ 后复用，旧回调必须同时校验
-    // 本次挂载身份（incarnation symbol）。基线：scopeKey 相同即放行，旧回调覆盖 A₂。
+    act(() => staleStage({ text: "A₁ 旧暂存" }));
     expect(readV4ComposerDraft(workspacePath, undefined, "a")?.text).toBe("A₂ 新正文");
+    // 同世代（A₂）写入不受影响：staged 暂存后冲刷仍正常落盘。
+    act(() => control!.stageComposerContent({ text: "A₂ 暂存" }));
+    act(() => control!.persistComposerContent({ text: "A₂ 暂存" }));
+    expect(readV4ComposerDraft(workspacePath, undefined, "a")?.text).toBe("A₂ 暂存");
     act(() => root.unmount());
   });
 
