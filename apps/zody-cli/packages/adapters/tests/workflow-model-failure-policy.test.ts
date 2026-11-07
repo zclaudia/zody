@@ -287,6 +287,26 @@ describe("unrecognized provider codes", () => {
     expect(decisions.every((decision) => decision === "retry")).toBe(true);
   });
 
+  // 未知码与网络错误交替：每次都被网络错误清零，连续计数永远到不了上限，永不停（MR !3072 评审）。
+  it("never stops when unknown codes alternate with network errors", () => {
+    const decisions = decide(
+      Array.from({ length: 4 * limit }, (_, index) =>
+        index % 2 === 0 ? { failure: network } : { failure: unknown, code: "1113" },
+      ),
+    );
+    expect(decisions.every((decision) => decision === "retry")).toBe(true);
+  });
+
+  // 先网络错误、后连续 10 次未知码：前面全 retry，第 10 次未知码停（序列视角的 S1+S2 组合）。
+  it("stops after ten unknown codes in a row that follow network errors", () => {
+    const decisions = decide([
+      ...Array.from({ length: 3 }, () => ({ failure: network })),
+      ...Array.from({ length: limit }, () => ({ failure: unknown, code: "1113" })),
+    ]);
+    expect(decisions.slice(0, -1).every((decision) => decision === "retry")).toBe(true);
+    expect(decisions.at(-1)).toBe("stop");
+  });
+
   it("retries below the limit and stops at it", () => {
     expect(resolveWorkflowModelFailurePolicy(unknown, "1113", limit - 1)).toEqual({
       decision: "retry",
@@ -320,6 +340,8 @@ describe("unrecognized provider codes", () => {
     expect(
       retryAllowedByFailurePolicy(unknown, ModelRetryBudget.Default, "1113", limit),
     ).toBe(false);
+    // 预算缺席同样视为有界：streak 不改变主对话行为。
+    expect(retryAllowedByFailurePolicy(unknown, undefined, "1113", 1)).toBe(false);
     expect(
       retryAllowedByFailurePolicy(unknown, ModelRetryBudget.Unbounded, "1113", limit),
     ).toBe(false);
@@ -363,6 +385,10 @@ describe("quota reset time provenance", () => {
         now,
       ),
     ).toBe(Date.parse("2026-10-15T10:50:42.000Z"));
+    // 周/月额度（1310 一族）的文案形态：同样是北京时间。
+    expect(
+      parseQuotaResetAt("您已达到每周/每月使用上限，您的限额将在 2026-10-20 00:00:00 重置", now),
+    ).toBe(Date.parse("2026-10-19T16:00:00.000Z"));
   });
 
   it("ignores messages without a reset time, and times far outside a plausible window", () => {
@@ -431,7 +457,7 @@ describe("quota reset time provenance", () => {
         }),
       );
     const thirtyYears = 30 * 365 * 24 * 60 * 60 * 1000;
-    for (const retryAfterMs of [thirtyYears, 36 * 24 * 60 * 60 * 1000, -60_000, 0, NaN]) {
+    for (const retryAfterMs of [thirtyYears, 36 * 24 * 60 * 60 * 1000, -60_000, 0, NaN, Infinity]) {
       expect(quotaError(retryAfterMs)?.resetAt).toBeUndefined();
     }
     // header 不可信、原文里有可信的时刻：用原文的。
@@ -441,5 +467,9 @@ describe("quota reset time provenance", () => {
     expect(quotaError(thirtyYears, `[1308] 您的限额将在 ${text} 重置`)?.resetAt).toBe(
       Math.floor(soon.getTime() / 1000) * 1000,
     );
+    // 窗口上沿以内（35 天）照常采用 header：月度额度（30 天）不被窗口误杀。
+    const before = Date.now();
+    const monthly = quotaError(30 * 24 * 60 * 60 * 1000)?.resetAt;
+    expect(monthly).toBeGreaterThanOrEqual(before + 30 * 24 * 60 * 60 * 1000);
   });
 });
