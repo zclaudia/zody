@@ -302,3 +302,16 @@ ui:// 资源 _meta.ui.backgroundRetention(布尔)
 
 - 30 分钟/4 页常量在真实 Electron E2E 中不可等待；E2E-F18-03 需要保留策略提供可注入时钟/常量覆盖的测试通道（实现步骤的 UI 侧测试注入点），否则该 case 只能以单测覆盖、E2E 标 blocked。
 - E2E 需要承载 `ui://` 资源 `_meta` 声明的插件 MCP server fixture（现有 `fixtures/plugin-mcp-skill` 可扩展）；E2E-F18-04 依赖同一 fixture 的两资源变体。
+
+### 12.9 E2E 执行状态（2026-11-07，F18④ 定向验证步）
+
+**结论：F18 的 4 个 E2E 候选均未创建、未执行，标 blocked。** 具体缺口与证据：
+
+1. **无 `ui://` 插件 UI fixture**：`packages/desktop/test/e2e/fixtures/` 全树 grep 无任何 `ui://` 资源 fixture（`plugin-mcp-skill` 仅为 MCP ping 插件，无插件 UI 面）；现有 E2E 也从未覆盖 plugin-ui 沙箱面（grep `plugin-ui-webview`/`prepareSandbox` 于 `test/e2e` 无命中）。四个候选都依赖新建该类 fixture，而 fixture 与 pending spec 均位于 `packages/desktop/test/`，不在本卡落点。
+2. **声明链路在 services 桥断链**：`packages/services/src/plugin-ui-bridge/pluginUiBridgeService.ts` 缺一行 `backgroundRetention` 透传（F18② 登记、落点外未决）。不补齐前，真实运行时 `handle.resourceMeta.backgroundRetention` 恒为 undefined，E2E-F18-01/02/04 会断言到错误的默认语义。
+3. **app 级时钟通道缺失**：`PluginUiBackgroundRetention` 支持构造注入 timer/now（单测已用），但 `pluginUiPageRegistry` 以真实 `Date.now`/`setTimeout` 模块级实例化、无 E2E 覆盖通道；E2E-F18-03 的 30 分钟不可等待。
+4. **wdio 生命周期 E2E 环境不可用**：本会话无桌面 E2E 运行通道（manual-review 运行 + 人工评审晋级链路不可达）。
+
+**部分执行（非生命周期 E2E）**：仓内自带 Electron host-fixture harness（`packages/desktop/scripts/mcp-apps-host-e2e.mjs`，retention 模式驱动真实 `PluginUiPageManager`/plane/controller/pluginSandbox host，与上游 a60ba6a7 同款）在本步实际执行两次：`--retention-only` 与差分 `--storage-only` 均在首个 guest 的 app-bridge 握手 60s `SdkError: Request timed out` 后被 90s watchdog 杀死（两种场景同一超时特征）。判定为 harness 存量/环境问题、非 F18 差异所致（F18 改动不触及 guest↔renderer 端口握手路径；storage 模式不含保留策略且同样失败）。该 harness 修复属独立问题，不随本卡。
+
+**解锁清单（后续步骤）**：① controller 授权 services 桥一行透传（见 §12.4 缺口）；② 扩落点至 `packages/desktop/test/e2e/`（fixture + pending spec + 矩阵登记）；③ 新建带 `_meta.ui.backgroundRetention` 两态资源的插件 fixture；④ 为保留常量提供 app 级测试覆盖通道（或 E2E-F18-03 降级为单测覆盖并注明）；⑤ 修复/复跑 host-fixture harness 的握手超时作为桌面级补充证据。
