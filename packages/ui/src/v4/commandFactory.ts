@@ -59,6 +59,18 @@ export function createCommandEnvelope<T extends CommandType>(
   if (ROW_TARGETING_COMMANDS.has(input.type) && !input.baseLogEpoch) {
     throw new Error(`command ${input.type} 是 row target 命令，必须携带 baseLogEpoch`);
   }
+  // F28 步③（来源 a60ba6a7）：createSession 会话 ID 在信封首次构造时分配（`sess_` UUID），
+  // 重试/恢复把已分配 ID 回传 payload 时沿用——避免 transport 重试重新生成并预留另一条
+  // 任务。跨进程消费需 shared schema + CLI 扩展（卡外，spec 步③「跨进程缺口」登记）：
+  // CLI 网关按 zod 默认剥离未知键，携带该键安全（不拒绝也不消费）。
+  const payload =
+    input.type === "createSession"
+      ? {
+          ...input.payload,
+          sessionId:
+            (input.payload as { sessionId?: string }).sessionId ?? `sess_${crypto.randomUUID()}`,
+        }
+      : input.payload;
   return {
     commandId: uuidv7(),
     clientId: getV4ClientId(),
@@ -66,7 +78,7 @@ export function createCommandEnvelope<T extends CommandType>(
     ...(input.baseRevision !== undefined ? { baseRevision: input.baseRevision } : {}),
     ...(input.baseLogEpoch ? { baseLogEpoch: input.baseLogEpoch } : {}),
     type: input.type,
-    payload: input.payload,
+    payload,
     issuedAt: Date.now(),
   };
 }

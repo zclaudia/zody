@@ -148,18 +148,36 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
     delete (globalThis as { IS_REACT_ACT_ENVIRONMENT?: unknown }).IS_REACT_ACT_ENVIRONMENT;
   });
 
-  // ── 步③ createSession 信封幂等 ──
-  it.fails("F28-B4 复现：createSession 信封未在首次构造时分配幂等 sess_ 会话 ID（a60ba6a7 上游语义）", () => {
+  // ── 步③ createSession 信封幂等（2026-11-08 落地，由 it.fails 翻转为 it）──
+  it("F28-B4 护栏：createSession 信封首次构造分配幂等 sess_ 会话 ID，重试沿用同一 ID", () => {
+    const payload = { workspaceId: "/workspace" };
     const envelope = createCommandEnvelope({
       type: "createSession",
       sessionId: null,
-      payload: { workspaceId: "/workspace" },
+      payload,
     });
-    // 上游 commandFactory：sessionId 在信封首次构造时分配（`sess_` + UUID），
+    // 上游 commandFactory（a60ba6a7）：sessionId 在信封首次构造时分配（`sess_` + UUID），
     // 同一提交的重试沿用同一 ID，避免 transport 重试重复预留另一条任务。
-    // 本仓 payload schema 尚无该字段（packages/shared 侧缺口，见 spec 步③风险登记）。
-    const payload = envelope.payload as { sessionId?: string };
-    expect(payload.sessionId).toMatch(/^sess_[0-9a-f-]{36}$/i);
+    // 基线（2026-11-07，it.fails）：payload.sessionId 为 undefined。
+    // 跨进程消费需 shared schema + CLI 扩展（卡外，spec 步③「跨进程缺口」登记）。
+    const assigned = (envelope.payload as { sessionId?: string }).sessionId;
+    expect(assigned).toMatch(
+      /^sess_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
+    // 重试/重放把已分配 ID 回传 payload 时必须沿用（pendingCommandRegistry 重放路径）。
+    const retried = createCommandEnvelope({
+      type: "createSession",
+      sessionId: null,
+      payload: { ...payload, sessionId: assigned },
+    });
+    expect((retried.payload as { sessionId?: string }).sessionId).toBe(assigned);
+    // 非 createSession 信封不携带该键（sendText 等 payload 语义不变）。
+    const sendText = createCommandEnvelope({
+      type: "sendText",
+      sessionId: "session-a",
+      payload: { text: "hi" },
+    });
+    expect((sendText.payload as { sessionId?: string }).sessionId).toBeUndefined();
   });
 
   // ── 步④ IME composition 抑制发布 ──
@@ -363,6 +381,117 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
     const draft = readV4ComposerDraft(workspacePath, undefined, "session");
     // claim 只隐藏正文（失败可恢复）；mode/modelSelection 属于草稿配置事实，不得连带清除。
     expect(draft).toMatchObject({ text: "", mode: "yolo" });
+    act(() => root.unmount());
+  });
+
+  // ── 步③ 提交事务：跨 scope 失败恢复（B3 的单元层修复证明）──
+  it("F28-G5 事务：claim 后切走任务，失败 restore 仍写回提交 scope 且不写新 scope", async () => {
+    const { container } = installMinimalDom();
+    const root = createRoot(container);
+    const workspacePath = "/f28-transaction-restore";
+    let control: ReturnType<typeof useActualDraftConfigControl>;
+    function Probe({ sessionId }: { sessionId: string }) {
+      control = useActualDraftConfigControl({
+        workspacePath,
+        sessionId,
+        agentStartupAllowed: false,
+        modelSelectionService: null,
+      });
+      return null;
+    }
+    await act(async () => {
+      root.render(createElement(Probe, { sessionId: "a" }));
+    });
+    act(() => control!.updateComposerContent({ text: "提交正文" }));
+    // 提交前捕获事务（对应 ConversationComposer.submit 的 capture 调用）。
+    const token = control!.composerDraftScopeToken;
+    const transaction = control!.captureComposerSubmissionDraftTransaction({
+      text: "提交正文",
+    });
+    expect(transaction.matchesTarget(token)).toBe(true);
+    expect(transaction.claim()).toBe(true);
+    // claim 置空提交 scope 草稿（等待期间其他视图不得把已发送正文当草稿恢复）。
+    // 无 mode/modelSelection 的纯正文草稿在置空后记录被删除（persist 语义）。
+    expect(readV4ComposerDraft(workspacePath, undefined, "a")?.text ?? "").toBe("");
+    // 等待期间切走任务：事务的身份不再匹配当前世代。
+    await act(async () => {
+      root.render(createElement(Probe, { sessionId: "b" }));
+    });
+    expect(transaction.matchesTarget(control!.composerDraftScopeToken)).toBe(false);
+    // 失败回包：restore 经事务自己的 persistence target 写回提交 scope a
+    // （基线 B3：旧闭包 updateComposerContent 被守卫拒绝 → 草稿永久丢失）。
+    const restored = transaction.restore();
+    expect(restored).toEqual({ current: false, applied: true });
+    expect(readV4ComposerDraft(workspacePath, undefined, "a")?.text).toBe("提交正文");
+    // 事务永不写入后来切换到的 scope b。
+    expect(readV4ComposerDraft(workspacePath, undefined, "b")).toBeNull();
+    act(() => root.unmount());
+  });
+
+  // ── 步③ 提交事务：revision 门禁与幂等 ──
+  it("F28-G6 事务：捕获后产生新输入（revision 变化）时 claim 被拒绝，新输入获胜", async () => {
+    const { container } = installMinimalDom();
+    const root = createRoot(container);
+    const workspacePath = "/f28-transaction-revision";
+    let control: ReturnType<typeof useActualDraftConfigControl>;
+    function Probe() {
+      control = useActualDraftConfigControl({
+        workspacePath,
+        sessionId: "session",
+        agentStartupAllowed: false,
+        modelSelectionService: null,
+      });
+      return null;
+    }
+    await act(async () => {
+      root.render(createElement(Probe));
+    });
+    act(() => control!.updateComposerContent({ text: "提交正文" }));
+    const transaction = control!.captureComposerSubmissionDraftTransaction({
+      text: "提交正文",
+    });
+    // 发送准备期间（prepareForSend 等 await）用户继续输入 → revision 已变化。
+    act(() => control!.stageComposerContent({ text: "等待期间新输入" }));
+    expect(transaction.claim()).toBe(false);
+    // claim 未生效：草稿保持提交前状态，等待期间的新输入不被旧提交隐藏。
+    const failedRestore = transaction.restore();
+    expect(failedRestore.applied).toBe(false);
+    act(() => root.unmount());
+  });
+
+  it("F28-G7 事务：finalize 只结算一次（重复调用返回 null），成功清空提交 scope", async () => {
+    const { container } = installMinimalDom();
+    const root = createRoot(container);
+    const workspacePath = "/f28-transaction-finalize";
+    let control: ReturnType<typeof useActualDraftConfigControl>;
+    function Probe() {
+      control = useActualDraftConfigControl({
+        workspacePath,
+        sessionId: "session",
+        agentStartupAllowed: false,
+        modelSelectionService: null,
+      });
+      return null;
+    }
+    await act(async () => {
+      root.render(createElement(Probe));
+    });
+    act(() => control!.handleDraftSwitchMode("yolo"));
+    act(() => control!.updateComposerContent({ text: "已接纳正文" }));
+    const transaction = control!.captureComposerSubmissionDraftTransaction({
+      text: "已接纳正文",
+    });
+    expect(transaction.claim()).toBe(true);
+    // ACK、投影和发送 Promise 可先后到达；副作用只执行一次，重复 finalize 幂等。
+    const finalized = transaction.finalize();
+    expect(finalized).toEqual({ current: true, applied: true });
+    expect(transaction.finalize()).toBeNull();
+    expect(transaction.restore().applied).toBe(false);
+    // 成功结算清空正文但保留配置（claim 语义延续）。
+    expect(readV4ComposerDraft(workspacePath, undefined, "session")).toMatchObject({
+      text: "",
+      mode: "yolo",
+    });
     act(() => root.unmount());
   });
 });

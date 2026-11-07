@@ -301,6 +301,8 @@ function renderComposerElement(
   submissionReady = true,
 ) {
   const scopeId = sessionId ?? V4_DRAFT_SCOPE_ROOT;
+  // F28 步②世代 token：同一 harness 元素每次构造（scope 切换/重渲染）换代。
+  const scopeToken = Symbol(scopeId);
   let ownedDraft = composerDraft ??
     readV4ComposerDraft("/workspace", undefined, scopeId) ?? {
       text: "",
@@ -351,6 +353,43 @@ function renderComposerElement(
             ...ownedDraft,
             ...mergeStaged(content),
           });
+        };
+      },
+      // F28 步③：提交事务最小双重（与真实 useDraftConfigControl 同语义）——
+      // claim 置空提交 scope 草稿、失败 restore 回填、成功 finalize 清空一次。
+      composerDraftScopeToken: scopeToken,
+      captureComposerSubmissionDraftTransaction: (content) => {
+        let state: "captured" | "claimed" | "restored" | "finalized" = "captured";
+        const persistTarget = (text: string) => {
+          ownedDraft = { ...ownedDraft, text };
+          persistV4ComposerDraft("/workspace", undefined, scopeId, ownedDraft);
+        };
+        return {
+          matchesTarget: (token: symbol) => token === scopeToken,
+          claim: () => {
+            if (state !== "captured") return false;
+            state = "claimed";
+            stagedContent.current = null;
+            persistTarget("");
+            return true;
+          },
+          restore: () => {
+            if (state !== "claimed") return { current: true, applied: state === "restored" };
+            state = "restored";
+            persistTarget(content.text);
+            return { current: true, applied: true };
+          },
+          finalize: () => {
+            if (state === "finalized") return null;
+            const applied = state === "claimed" || state === "restored";
+            state = "finalized";
+            stagedContent.current = null;
+            if (applied) persistTarget("");
+            return { current: true, applied };
+          },
+          release: () => {
+            state = "finalized";
+          },
         };
       },
       replaceComposerDraft: (next) => {

@@ -1028,6 +1028,8 @@ export function SessionPane({
     stageComposerContent,
     persistComposerContent,
     captureComposerContentLifecycleCommit,
+    composerDraftScopeToken,
+    captureComposerSubmissionDraftTransaction,
   } = useDraftConfigControl({
     workspacePath,
     workspaceIdentity,
@@ -3856,6 +3858,8 @@ export function SessionPane({
         stageComposerContent,
         persistComposerContent,
         captureComposerContentLifecycleCommit,
+        composerDraftScopeToken,
+        captureComposerSubmissionDraftTransaction,
         createSubmissionFromComposer,
         telemetryDraftConfig,
         contextHeader: isDraft ? draftComposerHeader : undefined,

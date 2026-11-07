@@ -3632,16 +3632,18 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 | Case     | 前置/动作                                                           | 预期结果                                                                                                                        | Review   |
 | -------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | PA162-01 | 草稿输入正文 → 切 task → 切回草稿（记录草稿键写盘次数作热路径指标） | 正文完整恢复；基线指标 10 字符 9 次写盘（步①后须显著下降）                                                                      | accepted |
-| PA162-02 | 草稿输入 → 发送（onSendText 挂起）→ 切 task → 发送失败 → 切回草稿  | 原提交 scope 的草稿恢复正文（基线 2026-11-07 失败＝复现 F28-B3：claim 删记录且 restore 被守卫拒绝；步③修复后通过）              | accepted |
+| PA162-02 | 草稿输入 → 发送（onSendText 挂起）→ 切 task → 发送失败 → 切回草稿  | 原提交 scope 的草稿经事务恢复正文且 task scope 不被污染（基线失败＝复现 F28-B3；步③ 2026-11-08 翻转为通过）                     | accepted |
 | PA162-03 | 草稿输入 → 发送失败（同 scope，不切换）                             | 正文恢复到输入框与持久草稿；等待期间无新输入时失败回包完整回填                                                                  | accepted |
 | PA162-04 | 输入框进入 IME 组合态（compositionstart，不派发 compositionend）→ 输入中文 → 切 task → 切回 | 组合中正文完整恢复（步④引入发布抑制后仍不得丢：快照须读编辑器事实）                                               | accepted |
-| PA162-05 | F15 捕获通道播种图片附件 + 正文 → 发送失败                          | 正文与附件 chip 一并恢复、零重发（claim/restore 须覆盖附件插入路径；可执行子测随 F28 步③落地）                                   | accepted |
+| PA162-05 | F15 捕获通道播种图片附件 + 正文 → 发送失败                          | 正文与附件（store 文件名保留 shot.png）一并恢复、零重发（步③ 2026-11-08 已落地可执行子测 F28E-5）                                 | accepted |
 
 组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/composer-draft-transaction.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过；真实 ConversationComposer + 真实 useDraftConfigControl，fake Platform/Services 最小注入，可在草稿/task scope 间切换并控制 onSendText 挂起/失败）。单元层复现（`packages/ui/test/composerDraftTransactionBaseline.test.ts`）：信封 `sess_` 幂等缺失、组合期间照常发布、A₁→B→A₂ 旧回调写入复用 scope 三项以 `it.fails` 登记（对应移植步翻转）。剪枝：真实系统 IME、Desktop 全窗口切任务、手机远控链路不由浏览器组件测试冒充（缺口与 PA161 同口径待协调）。accepted 表示产品合同，不代表已实现。
 
 2026-11-07 执行记录（F28 基线步）：browser pending 连续三轮 `# tests 4 / # pass 3 / # fail 1`（PA162-02 稳定复现草稿丢失，期望 `"等待ACK期间切走的草稿"` 实际 `""`、持久草稿 `{}`；证据 `packages/desktop/.e2e-artifacts/composer-draft-transaction-browser/`）。已知非致命 console error：fake services 缺 subagents 服务（与 F15④ 同源，无 pageerror）。人工评审与转正未完成。
 
 2026-11-08 执行记录（F28 步① staged 暂存热路径落地）：PA162-01 增补断言——连续击键窗口草稿键写盘 ≤1（正常 0；基线 9 写/10 字符；负载卡顿>350ms 时防抖合法落盘 1 次）且防抖空闲窗合并落盘 1 次；同命令连续四轮 `# tests 4 / # pass 3 / # fail 1`（PA162-01/03/04 通过、PA162-02 失败形态与基线一致，待步③）。步①使三 staged props 挂载即消费，F15④ 真实 Composer 夹具补最小 no-op 后 `image-preview-editor.test.mjs` 复测 16/16。人工评审与转正未完成。
+
+2026-11-08 执行记录（F28 步③ claim/restore/finalize 事务 + createSession 信封幂等落地）：E2E 扩至 5 用例并连续多轮 `# tests 5 / # pass 5 / # fail 0`——PA162-02（F28E-2）由基线复现翻转为通过（持久草稿经事务 target 恢复、task scope 不被污染）；新增 PA162-05（F28E-5，F15 附件路径：真实捕获通道播种 shot.png → 发送失败 → 正文与附件一并恢复、零重发；夹具最小 fake attachmentPut + fixture attachmentSessionId）。反例：临时禁用事务恢复写盘后 F28E-2 失败且单元 F28-G5 `applied:false`；临时移除 sess_ 分配后 F28-B4 失败。信封层幂等已落地（sess_ 首次构造分配/重试沿用）；跨进程消费需 shared schema + CLI 扩展（卡外缺口，spec 登记）。20 个相关文件 255 用例全绿；F15 E2E 复测 16/16（ErrorBanner 夹具补事务 props 消除 unhandled rejection）。人工评审与转正未完成。
 
 2026-11-08 执行记录（F28 步② scope incarnation token 落地）：hook 内部世代门禁（mounted + scopeKey + incarnation 三重校验，A₁→B→A₂ 旧世代回调拒写），组件级行为无差异——E2E 同命令连续三轮分布不变（PA162-01/03/04 通过、PA162-02 待步③）；单元层 F28-B2 由 it.fails 翻转为 it 并通过（反例：临时移除世代校验后失败于 `expected 'A₁ 旧回调' to be 'A₂ 新正文'`）；20 个 composer/SessionPane 相关文件 252 用例全绿、F15 E2E 复测 16/16。人工评审与转正未完成。
 

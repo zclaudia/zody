@@ -77,6 +77,20 @@ export function shouldHydrateWorkspaceCatalog(params: {
 /** 正文类字段：staged 暂存与生命周期提交只携带这些键，永不覆盖配置/授权标记。 */
 export type ComposerDraftContent = Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention">;
 
+export interface ComposerSubmissionDraftTransactionResult {
+  current: boolean;
+  applied: boolean;
+}
+
+/** F28 步③（来源 a60ba6a7）：提交事务——claim 置空、失败 restore、成功 finalize。 */
+export interface ComposerSubmissionDraftTransaction {
+  claim: () => boolean;
+  restore: () => ComposerSubmissionDraftTransactionResult;
+  finalize: () => ComposerSubmissionDraftTransactionResult | null;
+  release: () => void;
+  matchesTarget: (scopeToken: symbol) => boolean;
+}
+
 export interface DraftConfigControl {
   modelSelectionRead: ModelSelectionRead;
   /** Renderer 下一次提交的配置；Session 只在 scope 首次初始化时提供种子。 */
@@ -86,6 +100,8 @@ export interface DraftConfigControl {
   /** 当前草稿生命周期冻结的初始化 config；只供 prewarm/createSession 建立时使用。 */
   resolveInitialDraftConfig: () => Partial<SessionConfigState> | undefined;
   composerDraft: V4ComposerDraft;
+  /** 当前 scope 世代 token（F28 步②/③）：提交事务经 matchesTarget 匹配提交时挂载身份。 */
+  composerDraftScopeToken: symbol;
   /**
    * 输入热路径唯一入口（F28 步①，来源 a60ba6a7）：只写 staged ref，
    * 不触发父级 re-render、不写 localStorage；落盘由防抖/配置变更/生命周期提交合并完成。
@@ -95,6 +111,14 @@ export interface DraftConfigControl {
   persistComposerContent: (content: ComposerDraftContent) => void;
   /** effect setup 捕获的一次性生命周期提交；scope 切换/卸载后仍只写回捕获时 scope。 */
   captureComposerContentLifecycleCommit: () => (content: ComposerDraftContent) => void;
+  /**
+   * F28 步③（来源 a60ba6a7）：提交前捕获的事务。claim 置空提交 scope 草稿；失败
+   * restore / 成功 finalize 只写事务自己的 scope persistence target——即使等待期间
+   * 已切走任务，原 scope 仍可恢复（修复 B3），且不写入后来切换到的 scope。
+   */
+  captureComposerSubmissionDraftTransaction: (
+    content: ComposerDraftContent,
+  ) => ComposerSubmissionDraftTransaction;
   updateComposerContent: (content: ComposerDraftContent) => void;
   replaceComposerDraft: (draft: Omit<V4ComposerDraft, "updatedAt">) => void;
   /** 新任务被接纳后，把当前完整 Root Draft 原子式转移到真实 Session scope。 */
@@ -109,9 +133,21 @@ export interface DraftConfigControl {
   handleDraftSwitchMode: (mode: string) => void;
 }
 
+function hasSameComposerDraftContent(left: V4ComposerDraft, right: V4ComposerDraft): boolean {
+  return (
+    left.text === right.text &&
+    left.editorStateJson === right.editorStateJson &&
+    left.mention === right.mention
+  );
+}
+
 /** staged 暂存与生命周期提交的落盘目标：绑定捕获时 scope 的 baseDraft 与 persist 闭包。 */
 interface ComposerDraftPersistenceTarget {
   scopeKey: string;
+  /** 事务身份（步②世代 token）：matchesTarget 与 claim 的挂载身份比对基准。 */
+  incarnation: symbol;
+  /** 内容版本（步③）：每次正文变化 +1；revision 不匹配时 restore/finalize 不落盘。 */
+  contentRevision: { current: number };
   baseDraft: V4ComposerDraft;
   persist: (draft: V4ComposerDraft) => boolean;
 }
@@ -249,19 +285,32 @@ export function useDraftConfigControl(params: {
       })
     | null
   >(null);
-  // 当前 scope 世代的落盘目标：生命周期提交（captureComposerContentLifecycleCommit）
-  // 即使无 staged 内容也要写编辑器事实，因此独立于 stagedContentRef 存在；
+  // 当前 scope 世代的落盘目标：生命周期提交（captureComposerContentLifecycleCommit）与
+  // 提交事务（步③）即使无 staged 内容也要写事实，因此独立于 stagedContentRef 存在；
   // incarnation 入 deps 使 A₂ 世代拿到全新 target（A₁ 闭包持有旧对象互不串写）。
-  const scopePersistenceTarget = useMemo<ComposerDraftPersistenceTarget>(
-    () => ({
+  // contentRevision（步③）：per scopeKey 的内容版本，事务用它判定「等待期间是否有新输入」。
+  const scopeContentRevisionRef = useRef(new Map<string, { current: number }>());
+  const scopePersistenceTarget = useMemo<ComposerDraftPersistenceTarget>(() => {
+    const contentRevision = scopeContentRevisionRef.current.get(scopeKey) ?? { current: 0 };
+    scopeContentRevisionRef.current.set(scopeKey, contentRevision);
+    return {
       scopeKey,
+      incarnation,
+      contentRevision,
       baseDraft: stateRef.current.draft,
       persist: draftPersistenceRef.current,
-    }),
-    [scopeKey, incarnation],
-  );
+    };
+  }, [scopeKey, incarnation]);
+  const bumpScopeContentRevision = useCallback((target: ComposerDraftPersistenceTarget) => {
+    target.contentRevision.current += 1;
+  }, []);
   // baseDraft/persist 随配置演进同步，避免生命周期提交把陈旧 mode/model 写回旧 scope。
+  // 配置演进改正文（如 replaceComposerDraft）时 bump revision——事务在等待期间发现的
+  // 任何内容变化都属于下一次提交。
   useEffect(() => {
+    if (!hasSameComposerDraftContent(scopePersistenceTarget.baseDraft, currentState.draft)) {
+      bumpScopeContentRevision(scopePersistenceTarget);
+    }
     scopePersistenceTarget.baseDraft = currentState.draft;
     scopePersistenceTarget.persist = draftPersistenceRef.current;
     const pending = stagedContentRef.current;
@@ -269,7 +318,7 @@ export function useDraftConfigControl(params: {
       pending.baseDraft = currentState.draft;
       pending.persist = draftPersistenceRef.current;
     }
-  }, [currentState.draft, scopeKey, scopePersistenceTarget]);
+  }, [currentState.draft, scopeKey, scopePersistenceTarget, bumpScopeContentRevision]);
   // scope 切换/卸载时把未落盘的 staged 正文写回旧 scope（修复防抖窗口内的丢失）。
   // 子组件（ConversationComposer）的生命周期提交先执行并清 staged，这里兜底剩余 staged。
   useEffect(
@@ -319,6 +368,9 @@ export function useDraftConfigControl(params: {
       // 全量写路径先吸收 staged 正文再应用更新；staged 被合并消费后清除。
       const previous = mergeStagedContent(stateRef.current.draft);
       const next = update(previous);
+      if (!hasSameComposerDraftContent(previous, next)) {
+        bumpScopeContentRevision(scopePersistenceTarget);
+      }
       const staged = stagedContentRef.current;
       if (staged?.scopeKey === scopeKey) stagedContentRef.current = null;
       const nextState = { ...stateRef.current, draft: next };
@@ -409,12 +461,15 @@ export function useDraftConfigControl(params: {
       if (!isCurrentScope()) return;
       stagedContentRef.current = {
         scopeKey,
+        incarnation,
+        contentRevision: scopePersistenceTarget.contentRevision,
         content,
         baseDraft: stateRef.current.draft,
         persist: draftPersistenceRef.current,
       };
+      bumpScopeContentRevision(scopePersistenceTarget);
     },
-    [isCurrentScope, scopeKey],
+    [bumpScopeContentRevision, incarnation, isCurrentScope, scopeKey, scopePersistenceTarget],
   );
   const persistComposerContent = useCallback(
     (content: ComposerDraftContent) => {
@@ -440,11 +495,140 @@ export function useDraftConfigControl(params: {
         ...content,
       };
       target.baseDraft = draft;
+      bumpScopeContentRevision(target);
       target.persist(draft);
       const pending = stagedContentRef.current;
       if (pending?.scopeKey === target.scopeKey) stagedContentRef.current = null;
     };
-  }, [scopePersistenceTarget]);
+  }, [bumpScopeContentRevision, scopePersistenceTarget]);
+  const captureComposerSubmissionDraftTransaction = useCallback(
+    (content: ComposerDraftContent): ComposerSubmissionDraftTransaction => {
+      const target = scopePersistenceTarget;
+      const submittedContent = {
+        text: content.text,
+        editorStateJson: content.editorStateJson,
+        mention: content.mention,
+      };
+      const capturedRevision = target.contentRevision.current;
+      let state: "captured" | "claimed" | "restored" | "finalized" = "captured";
+      let claimedRevision: number | null = null;
+      let restoredRevision: number | null = null;
+      // 事务身份只认捕获时的世代与正文：等待期间切走任务（incarnation 不匹配）或
+      // 产生新输入（正文变化）都不再是「当前」，但落盘仍走事务自己的 target。
+      const isCurrent = () =>
+        mountedRef.current &&
+        stateRef.current.incarnation === target.incarnation &&
+        stateRef.current.draft.text === target.baseDraft.text;
+      const clearPending = () => {
+        const pending = stagedContentRef.current;
+        if (pending?.scopeKey === target.scopeKey && pending.incarnation === target.incarnation) {
+          stagedContentRef.current = null;
+        }
+      };
+      return {
+        matchesTarget: (candidateScopeToken) => candidateScopeToken === target.incarnation,
+        claim: () => {
+          if (
+            state !== "captured" ||
+            !isCurrent() ||
+            target.contentRevision.current !== capturedRevision
+          ) {
+            return false;
+          }
+          const claimedDraft = {
+            ...target.baseDraft,
+            text: "",
+            editorStateJson: undefined,
+            mention: undefined,
+          };
+          target.baseDraft = claimedDraft;
+          bumpScopeContentRevision(target);
+          claimedRevision = target.contentRevision.current;
+          state = "claimed";
+          target.persist(claimedDraft);
+          const nextState = { ...stateRef.current, draft: claimedDraft };
+          stateRef.current = nextState;
+          setStoredState(nextState);
+          clearPending();
+          return true;
+        },
+        restore: () => {
+          if (state !== "claimed" || claimedRevision === null) {
+            return { current: isCurrent(), applied: state === "restored" };
+          }
+          const current = isCurrent();
+          const restored = target.contentRevision.current === claimedRevision;
+          if (restored) {
+            const restoredDraft = {
+              ...target.baseDraft,
+              ...submittedContent,
+            };
+            target.baseDraft = restoredDraft;
+            bumpScopeContentRevision(target);
+            restoredRevision = target.contentRevision.current;
+            target.persist(restoredDraft);
+            if (current) {
+              const nextState = { ...stateRef.current, draft: restoredDraft };
+              stateRef.current = nextState;
+              setStoredState(nextState);
+            }
+            state = "restored";
+          }
+          clearPending();
+          return { current, applied: restored };
+        },
+        release: () => {
+          state = "finalized";
+        },
+        finalize: () => {
+          // ACK、投影和发送 Promise 可先后到达；事务唯一持有结算状态，副作用只执行一次。
+          if (state === "finalized") return null;
+          const current = isCurrent();
+          const pending = stagedContentRef.current;
+          if (pending?.scopeKey === target.scopeKey && pending.incarnation === target.incarnation) {
+            target.baseDraft = {
+              ...pending.baseDraft,
+              editorStateJson: undefined,
+              mention: undefined,
+              ...pending.content,
+            };
+            bumpScopeContentRevision(target);
+            target.persist(target.baseDraft);
+            stagedContentRef.current = null;
+            if (current) {
+              const nextState = { ...stateRef.current, draft: target.baseDraft };
+              stateRef.current = nextState;
+              setStoredState(nextState);
+            }
+          }
+          const expectedRevision =
+            state === "claimed" ? claimedRevision : state === "restored" ? restoredRevision : null;
+          const finalized =
+            expectedRevision !== null && target.contentRevision.current === expectedRevision;
+          if (finalized) {
+            const finalizedDraft = {
+              ...target.baseDraft,
+              text: "",
+              editorStateJson: undefined,
+              mention: undefined,
+            };
+            target.baseDraft = finalizedDraft;
+            bumpScopeContentRevision(target);
+            target.persist(finalizedDraft);
+            if (current) {
+              const nextState = { ...stateRef.current, draft: finalizedDraft };
+              stateRef.current = nextState;
+              setStoredState(nextState);
+            }
+          }
+          state = "finalized";
+          clearPending();
+          return { current, applied: finalized };
+        },
+      };
+    },
+    [bumpScopeContentRevision, scopePersistenceTarget],
+  );
   const replaceComposerDraft = useCallback(
     (replacement: Omit<V4ComposerDraft, "updatedAt">) => {
       // 撤回编辑替换正文/配置，但不能忘记已经消费的授权，否则旧快照会再次覆盖新选择。
@@ -646,9 +830,11 @@ export function useDraftConfigControl(params: {
     draftConfigRef,
     resolveInitialDraftConfig,
     composerDraft: draft,
+    composerDraftScopeToken: incarnation,
     stageComposerContent,
     persistComposerContent,
     captureComposerContentLifecycleCommit,
+    captureComposerSubmissionDraftTransaction,
     updateComposerContent,
     replaceComposerDraft,
     promoteComposerDraft,

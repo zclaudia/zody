@@ -13,13 +13,13 @@
 
 上游 `packages/ui/src/v4/composer/useDraftConfigControl.ts` 相对本仓多出的机制：
 
-| 机制                        | 上游锚点                                                                                                                                                                                   | 本仓现状                                                                                                                                                                            |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| staged 暂存热路径           | `stageComposerContent`（输入热路径只写 ref，不触发父级 render/localStorage）                                                                                                               | **步①已落地（2026-11-08）**：`stageComposerContent`/`persistComposerContent`/`captureComposerContentLifecycleCommit`；击键热路径 0 父级 render、0 草稿键写盘（见「步①设计」）       |
-| scope incarnation token     | `scopeKey` 含 `draftFocusVersion` + root scope；`incarnation: Symbol(scopeKey)`；`isCurrentScope` 同时校验 mounted + incarnation                                                           | **步②已落地（2026-11-08）**：`incarnation: Symbol(scopeKey)` 随 scopeKey 重载换代；`isCurrentScope` 三重校验（mounted + scopeKey + incarnation）门禁全部写路径（见「步②设计」）     |
-| claim/restore/finalize 事务 | `captureComposerSubmissionDraftTransaction`（事务绑定捕获时 scope + contentRevision；claim 置空、失败 restore、成功 finalize；restore/finalize 不写入后来切换的 scope）                    | 手写 `claimSubmittedDraft`/`restoreSubmittedDraft`/`finalizeSubmittedDraft` 闭包（ConversationComposer submit 内），restore 走旧闭包 `updateComposerContent`，切 scope 后被守卫拒绝 |
-| IME composition 抑制        | TextContentPlugin `resolveTextContentPublication`：composing 期间 `publish=null`，compositionend 后最终 update 才发布；`snapshotDraftOfEditor` 改读 `inputApi.getMarkdown()`（编辑器事实） | `createTextContentSyncController` 组合期间照常发布（`composingRef` 只用于卡顿统计短路）；`snapshotDraftOfEditor` 读 `textRef`                                                       |
-| createSession 信封幂等      | `createCommandEnvelope`：`payload.sessionId ?? sess_${crypto.randomUUID()}`（首次构造分配，重试沿用）；schema `createSession.sessionId`（上游 shared command.ts）                          | 信封不带会话 ID；本仓 `packages/shared/src/zody-protocol-v4/command.ts` 的 `createSession` payload schema 无 `sessionId` 字段                                                       |
+| 机制                        | 上游锚点                                                                                                                                                                                   | 本仓现状                                                                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| staged 暂存热路径           | `stageComposerContent`（输入热路径只写 ref，不触发父级 render/localStorage）                                                                                                               | **步①已落地（2026-11-08）**：`stageComposerContent`/`persistComposerContent`/`captureComposerContentLifecycleCommit`；击键热路径 0 父级 render、0 草稿键写盘（见「步①设计」）   |
+| scope incarnation token     | `scopeKey` 含 `draftFocusVersion` + root scope；`incarnation: Symbol(scopeKey)`；`isCurrentScope` 同时校验 mounted + incarnation                                                           | **步②已落地（2026-11-08）**：`incarnation: Symbol(scopeKey)` 随 scopeKey 重载换代；`isCurrentScope` 三重校验（mounted + scopeKey + incarnation）门禁全部写路径（见「步②设计」） |
+| claim/restore/finalize 事务 | `captureComposerSubmissionDraftTransaction`（事务绑定捕获时 scope + contentRevision；claim 置空、失败 restore、成功 finalize；restore/finalize 不写入后来切换的 scope）                    | **步③已落地（2026-11-08）**：`captureComposerSubmissionDraftTransaction` 事务绑定捕获时 target + contentRevision，claim/restore/finalize 只写事务 scope（见「步③设计」）        |
+| IME composition 抑制        | TextContentPlugin `resolveTextContentPublication`：composing 期间 `publish=null`，compositionend 后最终 update 才发布；`snapshotDraftOfEditor` 改读 `inputApi.getMarkdown()`（编辑器事实） | `createTextContentSyncController` 组合期间照常发布（`composingRef` 只用于卡顿统计短路）；`snapshotDraftOfEditor` 读 `textRef`                                                   |
+| createSession 信封幂等      | `createCommandEnvelope`：`payload.sessionId ?? sess_${crypto.randomUUID()}`（首次构造分配，重试沿用）；schema `createSession.sessionId`（上游 shared command.ts）                          | **步③已落地（2026-11-08，信封层）**：`createCommandEnvelope` 首次构造分配 `sess_<uuid>`、重试沿用；跨进程消费需 shared/CLI 扩展（卡外，缺口登记）                               |
 
 上游配套（本卡范围外或部分参考）：`composerSubmissionSettlement.ts`（R3A-B-07 模块级结算账本）、
 `composerDraftStore.ts` 的 project/taskGroup 草稿与 pendingTaskDraft（属上游任务分组体系，
@@ -77,7 +77,7 @@
   incarnation + draftFocusVersion）明确修复的防护缺口；步④引入 compositionend rAF
   延迟发布后将成为真实迟到回调来源。
 
-### F28-B3 提交事务在等待期间切 scope 后无法恢复 → 草稿永久丢失（修复步③，E2E 稳定复现）
+### F28-B3 提交事务在等待期间切 scope 后无法恢复 → 草稿永久丢失（修复步③，2026-11-08 已修复）
 
 - 序列：草稿输入 → 发送（`onSendText` 挂起）→ `claimSubmittedDraft` 置
   `suppressDraftPersistRef=true` 并 `updateComposerContent({text:""})`（root 草稿记录被删，
@@ -91,17 +91,24 @@
 - 修复方向（步③）：事务捕获时绑定 scope（上游 `captureComposerSubmissionDraftTransaction`
   的 `scopePersistenceTarget` + `matchesTarget(scopeToken)`）；restore/finalize 只写事务自己的
   target，不依赖挂载期闭包是否仍为当前 scope；成功结算与失败恢复各自唯一一次。
+- 修复（2026-11-08）：事务已按「步③设计」落地；E2E PA162-02（F28E-2）由复现翻转为通过
+  （等待期间切 task 后失败，持久草稿经事务 target 恢复且 task scope 不被污染）；反例：临时
+  禁用事务恢复写盘后 F28E-2 与单元 F28-G5 同时失败（`applied:false` / 持久草稿丢失）。
 
-### F28-B4 createSession 信封不携带幂等 `sess_` 会话 ID（修复步③）
+### F28-B4 createSession 信封不携带幂等 `sess_` 会话 ID（修复步③信封层，2026-11-08 已落地）
 
 - 现象：本仓 `createCommandEnvelope` 对 `createSession` 不分配
   `payload.sessionId`（`sess_<uuid>`）；同一提交的重试/恢复无法沿用同一会话 ID，重试重新
   预留另一条任务（上游注释：「在信封首次构造时分配，避免重试重新生成并预留另一条任务」）。
 - 复现：vitest F28-B4（`it.fails`）：`payload.sessionId` 为 undefined，不匹配
   `/^sess_[0-9a-f-]{36}$/i`。
-- ⚠️ 落点风险：上游 `createSession` payload schema 含 `sessionId: z.string().min(1).optional()`
-  （packages/shared）；本仓 schema 无该字段。**完整上游形态需要 packages/shared 的
-  additive schema 扩展（落点外）**，步③立项时需 controller 裁决：扩落点或 UI-only 变体。
+- ⚠️ 落点裁决（按卡内落点默认执行并登记）：上游 `createSession` payload schema 含
+  `sessionId: z.string().min(1).optional()`（packages/shared）；本仓 schema 无该字段。步③
+  按卡内落点交付**信封层幂等**（`createCommandEnvelope` 首次构造分配 `sess_<uuid>`、重试/
+  重放沿用；vitest F28-B4 翻转）。跨进程消费需 shared schema（additive）+ CLI createSession
+  处理，均在卡外：已核实 CLI 网关 `parseCommandEnvelope` 按 zod 默认**剥离**未知键（不拒绝
+  也不消费），携带该键安全；完整幂等作为缺口登记待 controller 裁决扩落点（建议随
+  packages/shared + apps/zody-cli 各一条 additive 变更）。
 
 ### F28-B5 IME composition 期间正文照常发布（修复步④）
 
@@ -210,6 +217,64 @@ stateRef.current.incarnation === incarnation`（闭包捕获当前世代 Symbol�
   `stageComposerContent` 在 A₂ 被拒（持久 A₂ 保持新正文），同世代写入不受影响；护栏
   7/7 与既有套件不回退；E2E PA162-01/03/04 持续通过、PA162-02 仍为步③复现。
 
+## 步③设计：claim/restore/finalize 提交事务 + createSession 信封幂等（2026-11-08 落地，先于代码写入本节）
+
+产品规则：**一次提交是一个绑定捕获时 scope 世代与内容版本的事务**——claim 把提交 scope 的
+草稿置空隐藏，失败 restore 只写回**事务自己的 scope**（等待期间切走任务后原 scope 仍可
+恢复，修复 F28-B3），成功 finalize 结算一次；等待期间的新输入（revision 变化）属于下一次
+提交，旧回包不得覆盖。createSession 信封在**首次构造时**分配 `sess_<uuid>`，同一提交的
+重试/重放沿用同一会话 ID。
+
+事务（`captureComposerSubmissionDraftTransaction(content)`，hook 导出，SessionPane 注入
+ConversationComposer）：
+
+- 状态机 `captured → claimed → restored|finalized`（`release` 直接 finalized）；每个事务
+  副作用至多一次，重复 `finalize` 幂等返回 `null`。
+- 绑定：捕获时 `scopePersistenceTarget`（scopeKey + incarnation + contentRevision +
+  baseDraft + persist 闭包）。`claim()` 仅当 mounted + incarnation 匹配 + 正文与
+  baseDraft 一致 + revision 未变；`restore()/finalize()` 只经事务自己的 `persist` 写盘，
+  **不依赖当前挂载 scope 是否仍是提交 scope**——这是 B3 的修复点。
+- contentRevision（per scopeKey 计数，随 target/staged/lifecycle 携带）：updateComposerDraft
+  内容变化、stage、生命周期提交、claim/restore/finalize 各 bump 一次；revision 不匹配时
+  restore/finalize 不落盘（新输入获胜）。
+- `matchesTarget(scopeToken)`：候选 token === 事务捕获的 incarnation。ConversationComposer
+  持 `activeSubmissionDraftTransactionRef`，三个哨口改为事务判定（取代步①临时的
+  `suppressDraftPersistRef`，该 ref 删除）：防抖/失焦冲刷（persistDraftNow）、scope 切换的
+  转移 flush、卸载/切换生命周期提交——claim 挂起期间不得把已置空草稿复活，也不得阻塞
+  **其他 scope** 的正常落盘（matchesTarget 为 false 即放行）。
+- submit 接线（本仓形态，不引入上游 R3A-B-07 账本与 commandResolution 订阅——见非目标与
+  风险 5）：捕获事务 →（附件 prepare）→ `claim()`（失败＝等待前已有新输入，不隐藏草稿）
+  → await onSendText → blocked/confirmationRequired/异常 → `restore()`；成功 →
+  `settleSubmittedContent()`（finalize 一次 + 附件 adopt/clear + 引用清理 + revision 未变
+  才清编辑器）。restore 后编辑器回填仅当 `applied && current && 仍在提交 scope`；
+  `!applied && current` 时补一次 owner flush（A₂ 新正文落盘）。
+- 附件（F15 路径）：claim/restore 不触碰附件——附件只在成功结算 adopt/clear；失败时正文
+  经事务恢复、附件 chip 原样保留、零重发（PA162-05 E2E）。
+
+createSession 信封幂等（`commandFactory.createCommandEnvelope`）：
+
+- `type === "createSession"` 且 payload 无 `sessionId` 时分配 `sess_${crypto.randomUUID()}`
+  （上游语义：「在信封首次构造时分配，避免重试重新生成并预留另一条任务」）；重放/重试把
+  已分配 ID 回传 payload 时沿用。UI 侧 pendingCommandRegistry 记录-重放链路因此可复用
+  同一 ID。
+- **跨进程缺口（如实登记）**：本仓 `packages/shared` 的 createSession payload schema 尚无
+  `sessionId` 字段，CLI 网关 `parseCommandEnvelope` 按 zod 默认**剥离**未知键（已核实
+  apps/zody-cli bootstrap v4-gateway.ts:2464/2478 → shared command.ts:333-353）——信封携带
+  的 `sess_` 会被剥离，不拒绝也不消费。完整上游形态需要 shared schema（additive optional）
+  - CLI createSession 消费，均在卡外落点；本步按卡内落点交付信封层幂等（分配/沿用/重放
+    保留 + 单测翻转 B4），跨进程幂等作为缺口登记待 controller 裁决扩落点（建议随
+    packages/shared + apps/zody-cli 各一条 additive 变更）。
+
+与上游差异（登记）：不引入 `composerSubmissionSettlement.ts` 模块账本与
+`subscribeToCommandResolution`（上游 R3A-B-07 的「ACK 丢失+卸载」收口）——本仓 submit 以
+onSendText Promise 结果结算，账本场景未在本仓复现，维持风险 5 登记；promotion 不改内存
+scope 状态（本仓语义），故事务无需上游 promotedRevisionSourceKey 跨 scope revision 迁移。
+
+验收（步③，已写入测试）：PA162-02 由失败翻转为通过（等待期间切 task 后失败，原 scope
+草稿恢复——B3 修复反例）；PA162-05 落地（附件+正文失败恢复、零重发）；vitest B4 翻转
+（信封 sess\_）+ 新增 G5（事务跨 scope 恢复不写新 scope）/G6（revision 变化拒 claim）/
+G7（finalize 幂等）；护栏 8/8 与既有套件不回退；B5 仍 expected-fail（步④）。
+
 ## 状态所有者与事件顺序
 
 现状（基线，草稿 owner = SessionPane 挂载的 `useDraftConfigControl`；composer 只消费回调）：
@@ -260,14 +325,15 @@ createSession → 信封首次构造分配 sess_<uuid>，重试沿用           
 
 1. **草稿不丢（切任务）**：任意输入（含组合中、含防抖窗口内）切 task/草稿往返，正文与
    mention/editorState 完整恢复（PA162-01/04 持续通过；步①后 editorState 不再依赖 350ms 窗）。
-2. **草稿不丢（发送失败）**：同 scope 失败恢复正文（PA162-03）；等待期间切 scope 后失败，
-   原提交 scope 的草稿恢复（PA162-02 由失败翻转为通过——步③反例证据）。
+2. **草稿不丢（发送失败，步③ 2026-11-08 已落地）**：同 scope 失败恢复正文（PA162-03）；
+   等待期间切 scope 后失败，原提交 scope 的草稿经事务恢复（PA162-02 已由失败翻转为通过，
+   反例：临时禁用事务恢复写盘后复现丢失）。
 3. **跨世代/跨 scope 不误写（步②世代门禁 2026-11-08 已落地）**：A₁→B→A₂ 后旧世代闭包
    回调（全量写/staged）被 incarnation token 拒绝（vitest F28-B2 已翻转 + 同世代正向
    断言）；提交事务 claim/restore/finalize 绑定捕获时 scope、A 等待期间 B 的新输入不被
    失败回包覆盖（步③，PA162-02 断言 B 侧不被污染）。
-4. **createSession 幂等**：信封携带 `sess_<uuid>`（vitest F28-B4 翻转）；同一提交重试不重复
-   预留会话。
+4. **createSession 幂等（步③信封层 2026-11-08 已落地）**：信封携带 `sess_<uuid>` 且重试/
+   重放沿用（vitest F28-B4 已翻转 + 非 createSession 信封不携带）；跨进程消费缺口如上登记。
 5. **IME 安全**：组合期间不发布（vitest F28-B5 翻转）；compositionend 前切任务/关窗不丢
    （PA162-04 持续通过）；组合态 Enter 不误提交（既有 `composerImeCompositionEnter.test.ts`
    不回退）。
@@ -291,12 +357,14 @@ Desktop 通过。场景登记于
 
 - **PA162-01 草稿输入切任务往返不丢（+热路径写盘指标）**＝F28E-1（基线通过；步①后加
   typing 窗口写盘 ≤1 断言与防抖合并落盘断言，持续通过）。
-- **PA162-02 发送挂起中切任务后失败，草稿可恢复**＝F28E-2（基线**失败＝复现 F28-B3**，
-  三轮一致；步③修复后必须通过）。
+- **PA162-02 发送挂起中切任务后失败，草稿可恢复**＝F28E-2（基线失败＝复现 F28-B3；
+  步③落地后**翻转为通过**，断言扩展为：持久草稿经事务恢复 + task scope 不被污染）。
 - **PA162-03 同 scope 发送失败恢复**＝F28E-3（基线通过）。
 - **PA162-04 compositionend 前切任务不丢**＝F28E-4（基线通过；步④防回退护栏）。
-- **PA162-05 claim/restore 含附件（F15 addAttachmentFiles 路径）**：accepted；可执行子测随
-  步③落地（经 F15 捕获通道播种图片附件 → 发送失败 → 正文与附件 chip 恢复、零重发）。
+- **PA162-05 claim/restore 含附件（F15 addAttachmentFiles 路径）**＝F28E-5（步③已落地：
+  经 F15 真实捕获通道播种图片 → 发送失败 → 正文与附件（`draftAttachmentFilenames` 含
+  shot.png）一并恢复、零重发；夹具以最小 fake attachmentPut + fixture attachmentSessionId
+  承载上传，不拉起真实上传链路）。
 
 剪枝登记：真实系统 IME（macOS/Windows 输入法差异）、真实 Desktop 全窗口切任务、手机远控
 `web-remote-replayable` 链路不由浏览器组件测试冒充（Desktop conversation-session E2E 需
@@ -319,6 +387,18 @@ F28E-1 间歇失败（机器负载把某次击键间隔拖过 350ms，防抖合�
 F15④ 真实 Composer 夹具（`image-annotate-to-draft.fixture.tsx`）因步①三 props 挂载即
 消费而崩溃，已补最小 no-op 注入并复测 `image-preview-editor.test.mjs` **16/16 通过**。
 
+2026-11-08 执行记录（步③落地）：E2E 扩至 5 用例并连续多轮 `# tests 5 / # pass 5 /
+
+# fail 0`——F28E-2（PA162-02）由基线复现翻转为通过（等待期间切 task 后失败，持久草稿
+
+`__draft__.text` 恢复且 `task-b` 不被污染，截图 `f28e2-transaction-restore.png`）；新增
+F28E-5（PA162-05，F15 附件路径）通过（正文与 shot.png 附件恢复、sendStartedCount 不变＝
+零重发，截图 `f28e5-attachment-restore.png`）。反例：临时禁用事务恢复写盘后 F28E-2 失败
+（持久草稿 waitForFunction 超时）且单元 F28-G5 失败（`applied:false`）；临时移除 sess\_
+分配后 F28-B4 失败。vitest 基线文件 10 用例（9 通过 + B5 expected-fail）；20 个
+composer/SessionPane 相关文件 255 用例全绿（含 ErrorBanner 夹具补事务 props 消除
+unhandled rejection）；F15 E2E 复测 16/16。
+
 2026-11-08 执行记录（步②落地）：E2E 同命令连续三轮 `# tests 4 / # pass 3 / # fail 1`
 （分布与失败形态不变；incarnation 为 hook 内部门禁，组件级行为无差异）。vitest 基线文件
 F28-B2 由 `it.fails` 翻转为 `it` 并通过（含旧世代 staged 回调拒绝与同世代正向断言）；
@@ -326,30 +406,29 @@ F28-B2 由 `it.fails` 翻转为 `it` 并通过（含旧世代 staged 回调拒�
 20 个 composer/SessionPane 相关文件 252 用例全绿（250 通过 + 2 expected-fail）；
 F15 E2E 复测 16/16。
 
-## 基线指标（2026-11-07 基线 / 2026-11-08 步①②后，后续各步以此判回退）
+## 基线指标（2026-11-07 基线 / 2026-11-08 步①②③后，后续各步以此判回退）
 
-| 指标                    | 2026-11-07 基线                                                         | 2026-11-08 步①后                                                                                                   | 2026-11-08 步②后                                                             | 用例                                       |
-| ----------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------ |
-| vitest 基线用例         | 5：**2 通过**（G1 刻画、G2 护栏）+ **3 expected-fail**（B2/B4/B5 复现） | 7：**4 通过**（G1 改写 staged、G2、G3 staged 合并、G4 切换 flush）+ **3 expected-fail**（不变，分属步②③④）         | 7：**5 通过**（+B2 翻转并扩同世代断言）+ **2 expected-fail**（B4/B5 属步③④） | `composerDraftTransactionBaseline.test.ts` |
-| 复现用例反例验证        | it.fails 翻转为 it 后 3 个断言真实失败（见 B2/B4/B5 引文）              | 步①新增反例：G3 去 staged 合并→`expected {text:'旧正文'} to match {text:'未落盘的新正文'}`；E2E 旧热路径→`1 !== 0` | 步②反例：去世代校验→`expected 'A₁ 旧回调' to be 'A₂ 新正文'`（还原后通过）   | 同上 + E2E                                 |
-| 浏览器 E2E              | 4：**3 通过** + **1 失败**（PA162-02 复现），三轮一致                   | 同分布（3 通过 + PA162-02 失败，失败形态不变），连续四轮稳定                                                       | 同分布，连续三轮稳定（步②为 hook 内部门禁，组件级无差异）                    | `composer-draft-transaction.test.mjs`      |
-| 热路径写盘（E2E）       | 输入 10 字符 → 9 次草稿键 setItem（另有防抖补写）                       | typing 窗口 **0** 次（负载卡顿容忍 ≤1）；防抖空闲窗 1 次合并落盘                                                   | 不变                                                                         | PA162-01 指标                              |
-| 热路径渲染（vitest G1） | 5 次正文更新 → 7 次 owner render（含 1 次无关 settle）+ 5 次写盘        | 5 次 staged 暂存 → **0** render / **0** 写盘；冲刷 1 写                                                            | 不变                                                                         | F28-G1                                     |
-| 既有相关套件            | `useDraftConfigControl` / `composerDraftStore` / IME Enter 等全绿       | 20 个 composer/SessionPane 相关文件 252 用例全绿（249 通过 + 3 expected-fail）；F15 E2E 16/16                      | 252 用例全绿（250 通过 + 2 expected-fail）；F15 E2E 16/16                    | 回归验证                                   |
+| 指标                    | 2026-11-07 基线                                                         | 2026-11-08 步①后                                                                                                   | 2026-11-08 步②后                                                             | 2026-11-08 步③后                                                                       | 用例                                       |
+| ----------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------ |
+| vitest 基线用例         | 5：**2 通过**（G1 刻画、G2 护栏）+ **3 expected-fail**（B2/B4/B5 复现） | 7：**4 通过**（G1 改写 staged、G2、G3 staged 合并、G4 切换 flush）+ **3 expected-fail**（不变，分属步②③④）         | 7：**5 通过**（+B2 翻转并扩同世代断言）+ **2 expected-fail**（B4/B5 属步③④） | 10：**9 通过**（+B4 翻转并加重放复用、G5/G6/G7 事务）+ **1 expected-fail**（B5 属步④） | `composerDraftTransactionBaseline.test.ts` |
+| 复现用例反例验证        | it.fails 翻转为 it 后 3 个断言真实失败（见 B2/B4/B5 引文）              | 步①新增反例：G3 去 staged 合并→`expected {text:'旧正文'} to match {text:'未落盘的新正文'}`；E2E 旧热路径→`1 !== 0` | 步②反例：去世代校验→`expected 'A₁ 旧回调' to be 'A₂ 新正文'`（还原后通过）   | 步③反例：禁事务恢复→F28E-2 超时 + G5 `applied:false`；去 sess\_ 分配→B4 失败           | 同上 + E2E                                 |
+| 浏览器 E2E              | 4：**3 通过** + **1 失败**（PA162-02 复现），三轮一致                   | 同分布（3 通过 + PA162-02 失败，失败形态不变），连续四轮稳定                                                       | 同分布，连续三轮稳定（步②为 hook 内部门禁，组件级无差异）                    | **5/5 通过**（PA162-02 翻转 + 新增 PA162-05 附件用例），连续多轮稳定                   | `composer-draft-transaction.test.mjs`      |
+| 热路径写盘（E2E）       | 输入 10 字符 → 9 次草稿键 setItem（另有防抖补写）                       | typing 窗口 **0** 次（负载卡顿容忍 ≤1）；防抖空闲窗 1 次合并落盘                                                   | 不变                                                                         | 不变                                                                                   | PA162-01 指标                              |
+| 热路径渲染（vitest G1） | 5 次正文更新 → 7 次 owner render（含 1 次无关 settle）+ 5 次写盘        | 5 次 staged 暂存 → **0** render / **0** 写盘；冲刷 1 写                                                            | 不变                                                                         | 不变                                                                                   | F28-G1                                     |
+| 既有相关套件            | `useDraftConfigControl` / `composerDraftStore` / IME Enter 等全绿       | 20 个 composer/SessionPane 相关文件 252 用例全绿（249 通过 + 3 expected-fail）；F15 E2E 16/16                      | 252 用例全绿（250 通过 + 2 expected-fail）；F15 E2E 16/16                    | 255 用例全绿（254 通过 + 1 expected-fail）；F15 E2E 16/16                              | 回归验证                                   |
 
-护栏通过数（步②后 vitest G1/G2/G3/G4/B2 + E2E PA162-01/03/04 = **8/8**）为「草稿丢失复现
-基线不回退」的量化口径：任何一步移植后护栏掉绿即基线回退，停止该步。
+护栏通过数（步③后 vitest G1/G2/G3/G4/B2/B4/G5/G6/G7 + E2E PA162-01/02/03/04/05 = **14/14**）
+为「草稿丢失复现基线不回退」的量化口径：任何一步移植后护栏掉绿即基线回退，停止该步。
 
 ## 风险与缺口登记
 
-1. **步①遗留窗口（步③收口）**：发送等待期间（suppress 窗口）的新击键只进 staged ref 与
-   编辑器内存——suppress 期间防抖冲刷被门禁，若命令长时间 pending 且 renderer 崩溃，
-   该段正文可能未落盘。上游由步③事务的 `finalize`（合并 staged 落盘一次）收口；本步以
-   生命周期提交兜底（卸载/切换即落盘），不新增等待超时。`v4ConversationComposerPromptHistory`
-   的「迟到的发送成功」用例已按新确定性落盘点（卸载后断言）适配。
-2. **步③落点外依赖**：`sess_` 幂等的完整上游形态需要 `packages/shared` 的 createSession
-   payload schema 增加 `sessionId`（additive、optional），且 CLI 侧行为（拒绝覆盖既有会话）
-   未验证——本卡落点不含 packages/shared / CLI，步③立项时需 controller 裁决。
+1. **步①遗留窗口（步③已收口，2026-11-08）**：发送等待期间的新击键原先只进 staged ref 与
+   编辑器内存；步③事务 `finalize` 已把 pending staged 合并落盘一次（settleSubmittedContent），
+   成功结算不再依赖卸载兜底。`v4ConversationComposerPromptHistory` 的「迟到的发送成功」用例
+   仍按卸载后断言（确定性落盘点语义未变）。
+2. **sess\_ 跨进程缺口（步③按卡内落点交付信封层，待 controller 裁决）**：完整上游形态需要
+   `packages/shared` 的 createSession payload schema 增加 `sessionId`（additive、optional）与
+   CLI 侧消费（拒绝覆盖既有会话）；已核实 CLI 网关剥离未知键（安全），跨进程幂等未实现。
 3. **步②可疑性（2026-11-08 已落地）**：F28-B2 修复时点仍无用户可直接触发的复现路径
    （防护缺口），验收以单元翻转 + 反例（去世代校验失败）落地；步④引入 compositionend
    rAF 延迟发布后将成为真实迟到回调来源；若步④实现方式不产生延迟发布回调，incarnation

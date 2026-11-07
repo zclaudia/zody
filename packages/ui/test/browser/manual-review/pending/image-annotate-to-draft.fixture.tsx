@@ -112,6 +112,15 @@ function Fixture() {
                   stageComposerContent: () => {},
                   persistComposerContent: () => {},
                   captureComposerContentLifecycleCommit: () => () => {},
+                  // F28 步③：提交事务与世代 token（本夹具断言零发送，最小 no-op）。
+                  composerDraftScopeToken: Symbol("image-annotate-fixture"),
+                  captureComposerSubmissionDraftTransaction: () => ({
+                    claim: () => false,
+                    restore: () => ({ current: false, applied: false }),
+                    finalize: () => null,
+                    release: () => {},
+                    matchesTarget: () => false,
+                  }),
                   sessionId: null,
                   snapshot: null,
                   workspacePath: "/workspace",

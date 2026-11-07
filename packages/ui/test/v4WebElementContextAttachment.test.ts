@@ -273,6 +273,9 @@ function flushAsyncWork() {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+// F28 步③ harness 世代 token：文件级单例（本 harness 不做 scope 切换，单世代足够）。
+const webElementFixtureScopeToken = Symbol("web-element-fixture");
+
 function renderComposer(onSendText: (text: string, options?: unknown) => Promise<void>) {
   const container = installMinimalDom();
   const root: Root = createRoot(container);
@@ -288,6 +291,34 @@ function renderComposer(onSendText: (text: string, options?: unknown) => Promise
           stageComposerContent: vi.fn(),
           persistComposerContent: vi.fn(),
           captureComposerContentLifecycleCommit: () => vi.fn(),
+          // F28 步③：提交事务最小双重（状态机与真实 hook 同语义；本 harness 无草稿
+          // owner，落盘 no-op）。finalize 必须返回结果，成功路径的上下文清理才会执行。
+          composerDraftScopeToken: webElementFixtureScopeToken,
+          captureComposerSubmissionDraftTransaction: () => {
+            let state: "captured" | "claimed" | "restored" | "finalized" = "captured";
+            return {
+              matchesTarget: (token: symbol) => token === webElementFixtureScopeToken,
+              claim: () => {
+                if (state !== "captured") return false;
+                state = "claimed";
+                return true;
+              },
+              restore: () => {
+                if (state !== "claimed") return { current: true, applied: state === "restored" };
+                state = "restored";
+                return { current: true, applied: true };
+              },
+              finalize: () => {
+                if (state === "finalized") return null;
+                const applied = state === "claimed" || state === "restored";
+                state = "finalized";
+                return { current: true, applied };
+              },
+              release: () => {
+                state = "finalized";
+              },
+            };
+          },
           replaceComposerDraft: vi.fn(),
           draftMode: true,
           onSelectModel: vi.fn(),

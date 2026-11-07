@@ -4,8 +4,8 @@
  * 运行：`node --test packages/ui/test/browser/manual-review/pending/composer-draft-transaction.test.mjs`。
  * F28 草稿丢失复现基线：真实 ConversationComposer + 真实 useDraftConfigControl，
  * 夹具可在草稿/task scope 间切换并控制 onSendText 挂起/失败。
- * 预期（步①落地后 2026-11-08）：F28E-1/3/4 通过（F28E-1 另断言热路径 0 写盘）；F28E-2 仍失败
- * （复现步③要修的「提交事务写不回已切换 scope」草稿丢失）；如实记录，不把失败写成通过。
+ * 预期（步③落地后 2026-11-08）：F28E-1/2/3/4/5 全部通过——F28E-2 已由复现翻转为护栏
+ * （事务 restore 写回提交 scope）；F28E-5 为 PA162-05（F15 附件路径 claim/restore）。
  */
 /* oxlint-disable eslint(max-lines) -- e2e-case-lifecycle 以单个 spec 文件为登记/晋升单元，
    PA162 场景共用同一 fixture/server 生命周期，拆文件会割裂案例登记。 */
@@ -169,7 +169,7 @@ test("F28E-1 护栏：草稿输入后切 task 再切回，正文不丢（含热�
   await page.close();
 });
 
-test("F28E-2 复现：发送挂起中切 task 后失败，草稿无法恢复（步③事务要修的丢失）", async () => {
+test("F28E-2 护栏（步③翻转）：发送挂起中切 task 后失败，草稿经事务恢复回提交 scope", async () => {
   const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -182,24 +182,22 @@ test("F28E-2 复现：发送挂起中切 task 后失败，草稿无法恢复（�
   await page.waitForFunction(() => window.sendStartedCount === 1);
   await switchScope(page, "task");
   await waitForEditorText(page, "");
-  // 模拟 transport error：发送失败必须把草稿恢复回提交前 scope。
+  // 模拟 transport error：失败 restore 经事务自己的 scope target 写回提交前 scope
+  // （基线 2026-11-07 复现 B3：claim 删记录且 restore 被旧闭包守卫拒绝 → 永久丢失；
+  // 步③事务落地后本用例翻转为通过——见 baseline-metrics.json 历史记录）。
   await page.evaluate(() => window.settleHungSend("reject"));
-  await page.waitForTimeout(150);
+  await page.waitForFunction(
+    () => window.readPersistedDrafts().__draft__?.text === "等待ACK期间切走的草稿",
+    { timeout: 3_000, polling: 100 },
+  );
+  // 事务只写提交 scope：task scope 不被失败回包污染。
+  const drafts = await page.evaluate(() => window.readPersistedDrafts());
+  assert.equal(drafts["task-b"], undefined);
   await switchScope(page, "draft");
-  // 基线（2026-11-07）实测：claim 已清空 root 草稿且 restore 被 scope 守卫拒绝 → 丢失。
-  // 本断言在步③落地后必须通过；当前按复现记录失败（见 baseline-metrics.json）。
-  await waitForEditorText(page, text, 2_000).catch(async (error) => {
-    baselineMetrics.cases.F28E2 = {
-      expected: text,
-      actual: await editorText(page),
-      persistedDrafts: await page.evaluate(() => window.readPersistedDrafts()),
-    };
-    await page.screenshot({ path: join(artifacts, "f28e2-draft-lost.png"), fullPage: true });
-    await page.close();
-    throw error;
-  });
+  await waitForEditorText(page, text);
   assert.equal(await editorText(page), text);
   assert.deepEqual(errors, []);
+  await page.screenshot({ path: join(artifacts, "f28e2-transaction-restore.png"), fullPage: true });
   await page.close();
 });
 
@@ -219,6 +217,41 @@ test("F28E-3 护栏：同 scope 发送失败，正文恢复且持久草稿还原
   const drafts = await page.evaluate(() => window.readPersistedDrafts());
   assert.equal(drafts.__draft__?.text, text);
   assert.deepEqual(errors, []);
+  await page.close();
+});
+
+test("F28E-5 护栏（PA162-05，F15 附件路径）：图片标注入草稿后发送失败，正文与附件一并恢复、零重发", async () => {
+  const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await openComposer(page);
+  const editor = page.getByTestId("v4-composer-input");
+  // 经 F15 真实捕获通道播种草稿图片（图片标注保存 → addAttachmentFiles 入队路径）。
+  await page.evaluate(() => window.seedDraftImage());
+  await page.waitForFunction(() => window.draftAttachmentFilenames().includes("shot.png"), {
+    timeout: 5_000,
+    polling: 100,
+  });
+  const text = "正文与附件一起恢复";
+  await typeDraft(page, editor, text);
+  await page.evaluate(() => window.hangNextSend());
+  await editor.press("Enter");
+  await page.waitForFunction(() => window.sendStartedCount === 1);
+  await page.evaluate(() => window.settleHungSend("reject"));
+  // 失败恢复：正文回到输入框与持久草稿；附件 chip 不被清除（只在成功结算 adopt/clear）。
+  await waitForEditorText(page, text);
+  await page.waitForFunction(
+    () => window.readPersistedDrafts().__draft__?.text === "正文与附件一起恢复",
+    { timeout: 3_000, polling: 100 },
+  );
+  const filenames = await page.evaluate(() => window.draftAttachmentFilenames());
+  assert.deepEqual(filenames, ["shot.png"]);
+  // 零重发：失败后不自动再次发送。
+  const sentCount = await page.evaluate(() => window.sendStartedCount);
+  await page.waitForTimeout(250);
+  assert.equal(await page.evaluate(() => window.sendStartedCount), sentCount);
+  assert.deepEqual(errors, []);
+  await page.screenshot({ path: join(artifacts, "f28e5-attachment-restore.png"), fullPage: true });
   await page.close();
 });
 

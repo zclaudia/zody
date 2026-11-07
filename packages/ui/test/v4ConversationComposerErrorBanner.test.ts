@@ -102,6 +102,16 @@ const AnyConversationComposer = ConversationComposer as unknown as ComponentType
   Record<string, unknown>
 >;
 
+// F28 步③：静态渲染外调用的 submit 闭包会在早返回门前捕获提交事务，必须提供最小实现。
+const errorBannerScopeToken = Symbol("error-banner-fixture");
+const captureErrorBannerSubmissionTransaction = () => ({
+  claim: () => false,
+  restore: () => ({ current: false, applied: false }),
+  finalize: () => null,
+  release: () => {},
+  matchesTarget: (token: symbol) => token === errorBannerScopeToken,
+});
+
 function makeSnapshot(): ConversationSnapshot {
   return {
     protocolVersion: 1,
@@ -166,6 +176,8 @@ function renderComposerWithError(
         snapshot: null,
         sessionId: "session-1",
         workspacePath: "/workspace",
+        composerDraftScopeToken: errorBannerScopeToken,
+        captureComposerSubmissionDraftTransaction: captureErrorBannerSubmissionTransaction,
         provider: undefined,
         onSendText: vi.fn(async () => {}),
         onStop: vi.fn(),
@@ -197,6 +209,8 @@ function renderComposerWithSnapshot(
         snapshot,
         sessionId: "session-1",
         workspacePath: "/workspace",
+        composerDraftScopeToken: errorBannerScopeToken,
+        captureComposerSubmissionDraftTransaction: captureErrorBannerSubmissionTransaction,
         provider: undefined,
         onSendText: vi.fn(async () => {}),
         onStop: vi.fn(),

@@ -18,6 +18,8 @@ import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { ConversationComposer } from "@/v4/ConversationComposer.js";
 import { useDraftConfigControl } from "@/v4/composer/useDraftConfigControl.js";
 import { getV4ComposerDraftStorageKey } from "@/v4/composer/composerDraftStore.js";
+import { captureImageComposerTarget } from "@/image-preview-editor/index.js";
+import { useComposerAttachmentUploadStore } from "@/store/composerAttachmentUploadStore.js";
 import "@/styles.css";
 
 const WORKSPACE_PATH = "/workspace";
@@ -46,6 +48,8 @@ const fixture = window as unknown as {
   switchScope: (next: "draft" | "task") => void;
   readPersistedDrafts: () => Record<string, { text: string; mode?: string }>;
   resetDraftWriteCount: () => void;
+  seedDraftImage: () => boolean;
+  draftAttachmentFilenames: () => string[];
 };
 fixture.sentCount = 0;
 fixture.sendStartedCount = 0;
@@ -92,6 +96,33 @@ fixture.settleHungSend = (outcome) => {
   else gate.reject(new Error("E2E simulated transport error"));
 };
 
+// PA162-05（F15 附件路径）：经真实捕获通道播种草稿图片（与 image-annotate 夹具同款），
+// 并直接读真实附件 store 断言失败恢复后附件仍保留。
+async function makeDraftPng() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 96;
+  canvas.height = 64;
+  const context = canvas.getContext("2d")!;
+  context.fillStyle = "white";
+  context.fillRect(0, 0, 96, 64);
+  context.fillStyle = "skyblue";
+  context.fillRect(8, 8, 80, 48);
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob((value) => (value ? resolve(value) : reject(new Error("no blob"))), "image/png"),
+  );
+  return new File([blob], "shot.png", { type: "image/png" });
+}
+fixture.seedDraftImage = () => {
+  void makeDraftPng().then((file) => {
+    captureImageComposerTarget()?.append(file);
+  });
+  return true;
+};
+fixture.draftAttachmentFilenames = () =>
+  Object.values(useComposerAttachmentUploadStore.getState().scopes).flatMap((items) =>
+    items.map((item) => item.filename),
+  );
+
 // scope 切换：模拟侧栏切换任务（SessionPane 固定 key 复用同一 composer 实例）。
 let switchScopeExternal: ((next: "draft" | "task") => void) | null = null;
 fixture.switchScope = (next) => switchScopeExternal?.(next);
@@ -127,6 +158,9 @@ function ComposerHost({ scope }: { scope: "draft" | "task" }) {
     onSelectThought: () => {},
     sessionId,
     snapshot: null,
+    // PA162-05：草稿附件需要上传载体 session 才能从 waitingSession 进入 queued→ready；
+    // 上传本身由上面的 attachmentPut fake 承担。
+    attachmentSessionId: "fixture-attachment-session",
     workspacePath: WORKSPACE_PATH,
     composerDraft: control.composerDraft,
     updateComposerContent: control.updateComposerContent,
@@ -134,9 +168,10 @@ function ComposerHost({ scope }: { scope: "draft" | "task" }) {
     stageComposerContent: control.stageComposerContent,
     persistComposerContent: control.persistComposerContent,
     captureComposerContentLifecycleCommit: control.captureComposerContentLifecycleCommit,
-    attachmentPut: async () => {
-      throw new Error("fixture: attachment put unavailable");
-    },
+    composerDraftScopeToken: control.composerDraftScopeToken,
+    captureComposerSubmissionDraftTransaction: control.captureComposerSubmissionDraftTransaction,
+    // PA162-05：附件上传走最小 fake（ref 即就绪），避免夹具拉起真实上传。
+    attachmentPut: async () => ({ ref: "fixture-attachment-ref" }),
   });
 }
 

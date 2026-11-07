@@ -137,7 +137,10 @@ import {
   type ComposerAutoFocusOptions,
 } from "@/v4/composer/composerAutoFocus.js";
 import { V4_DRAFT_SCOPE_ROOT, type V4ComposerDraft } from "@/v4/composer/composerDraftStore.js";
-import type { ComposerDraftContent } from "@/v4/composer/useDraftConfigControl.js";
+import type {
+  ComposerDraftContent,
+  ComposerSubmissionDraftTransaction,
+} from "@/v4/composer/useDraftConfigControl.js";
 import {
   resolveOppositeFollowupDelivery,
   resolveFollowupModifierTooltip,
@@ -383,6 +386,8 @@ export interface ConversationComposerProps {
   draftConfig?: Partial<SessionConfigState>;
   /** SessionPane 注入的完整 Draft owner；生产路径不再由编辑器直接覆盖持久记录。 */
   composerDraft: V4ComposerDraft;
+  /** 当前 scope 世代 token（F28 步②③）：提交事务经 matchesTarget 匹配提交时挂载身份。 */
+  composerDraftScopeToken: symbol;
   /**
    * 输入热路径唯一入口（F28 步①，来源 a60ba6a7）：只写 staged ref，
    * 不触发父级 re-render、不写 localStorage；防抖冲刷与生命周期提交合并落盘。
@@ -392,6 +397,13 @@ export interface ConversationComposerProps {
   persistComposerContent: (content: ComposerDraftContent) => void;
   /** scope 切换/卸载的一次性生命周期提交（写捕获时 scope 的编辑器事实）。 */
   captureComposerContentLifecycleCommit: () => (content: ComposerDraftContent) => void;
+  /**
+   * F28 步③（来源 a60ba6a7）：提交事务。claim 置空提交 scope 草稿；失败 restore /
+   * 成功 finalize 只写事务自己的 scope——等待期间切走任务后原 scope 仍可恢复。
+   */
+  captureComposerSubmissionDraftTransaction: (
+    content: ComposerDraftContent,
+  ) => ComposerSubmissionDraftTransaction;
   updateComposerContent: (content: ComposerDraftContent) => void;
   replaceComposerDraft: (draft: Omit<V4ComposerDraft, "updatedAt">) => void;
   /** 当前 Composer 是否能构造完整 Submission；空模型或空 Reasoning 时为 false。 */
@@ -513,9 +525,11 @@ function ConversationComposerImpl({
   draftMode = false,
   draftConfig,
   composerDraft,
+  composerDraftScopeToken,
   stageComposerContent,
   persistComposerContent,
   captureComposerContentLifecycleCommit,
+  captureComposerSubmissionDraftTransaction,
   updateComposerContent,
   replaceComposerDraft,
   submissionReady = true,
@@ -822,6 +836,7 @@ function ConversationComposerImpl({
     workspacePath,
     workspaceIdentity,
     scopeId: draftScopeId,
+    scopeToken: composerDraftScopeToken,
   });
   const ownerDraftRef = useRef({
     draft: composerDraft,
@@ -830,7 +845,13 @@ function ConversationComposerImpl({
     scopeId: draftScopeId,
   });
   const draftPersistTimerRef = useRef<number | null>(null);
-  const suppressDraftPersistRef = useRef(false);
+  // F28 步③（来源 a60ba6a7）：claim 挂起期间的活动提交事务。三处哨口（防抖/失焦冲刷、
+  // scope 切换转移 flush、卸载生命周期提交）改为事务判定——只有事务仍匹配当前挂载
+  // 世代（matchesTarget）时才抑制落盘，避免把已 claim 置空的草稿复活；切到其他 scope
+  // 后（token 不匹配）照常落盘，不阻塞新 scope 的正常保存。
+  const activeSubmissionDraftTransactionRef = useRef<ComposerSubmissionDraftTransaction | null>(
+    null,
+  );
 
   const snapshotDraftOfEditor = useCallback((): {
     text: string;
@@ -851,7 +872,9 @@ function ConversationComposerImpl({
 
   const persistDraftNow = useCallback(
     (scopeId: string) => {
-      if (suppressDraftPersistRef.current) return;
+      if (activeSubmissionDraftTransactionRef.current?.matchesTarget(composerDraftScopeToken)) {
+        return;
+      }
       const content = snapshotDraftOfEditor();
       if (scopeId === draftScopeRef.current) {
         // F28 步①（a60ba6a7）：冲刷走暂存+合并落盘，不再触发配置 setState 整页刷新。
@@ -859,7 +882,13 @@ function ConversationComposerImpl({
         return;
       }
     },
-    [snapshotDraftOfEditor, persistComposerContent, workspaceIdentity, workspacePath],
+    [
+      snapshotDraftOfEditor,
+      persistComposerContent,
+      composerDraftScopeToken,
+      workspaceIdentity,
+      workspacePath,
+    ],
   );
 
   const scheduleDraftPersist = useCallback(() => {
@@ -1014,7 +1043,12 @@ function ConversationComposerImpl({
       previousTarget.workspacePath !== workspacePath ||
       previousTarget.workspaceIdentity !== workspaceIdentity;
     let transferredDraft: ReturnType<typeof snapshotDraftOfEditor> | null = null;
-    if (targetChanged && !suppressDraftPersistRef.current) {
+    // F28 步③（a60ba6a7）：提交事务 claim 挂起且仍绑定旧 scope 世代时不做转移 flush——
+    // 已 claim 置空的草稿不得被切换路径复活；事务 restore/finalize 自会结算旧 scope。
+    if (
+      targetChanged &&
+      !activeSubmissionDraftTransactionRef.current?.matchesTarget(previousTarget.scopeToken)
+    ) {
       if (draftPersistTimerRef.current !== null) {
         window.clearTimeout(draftPersistTimerRef.current);
         draftPersistTimerRef.current = null;
@@ -1040,6 +1074,7 @@ function ConversationComposerImpl({
       workspacePath,
       workspaceIdentity,
       scopeId: draftScopeId,
+      scopeToken: composerDraftScopeToken,
     };
 
     const draft = transferredDraft ?? composerDraft;
@@ -1077,6 +1112,7 @@ function ConversationComposerImpl({
     return undefined;
     // 依赖收敛到 scope/workspace：draft 恢复只应发生在 scope 切换或 workspace 切换。
   }, [
+    composerDraftScopeToken,
     draftScopeId,
     persistDraftNow,
     requestComposerFocus,
@@ -1147,15 +1183,14 @@ function ConversationComposerImpl({
     if (typeof window === "undefined") return;
     // F28 步①（a60ba6a7）：scope 切换/卸载改走一次性生命周期提交，把编辑器快照写进
     // setup 捕获时 scope 的落盘目标——不依赖卸载后已失效的可变 ref/scopeKey 闭包，
-    // 防抖窗内的正文（含 editorStateJson）不再因切换被丢弃。提交 claim 窗口
-    // （suppressDraftPersistRef）内不提交，避免把已 claim 清空的草稿复活；步③事务
-    // 落地后由事务 matchesTarget 接管该门禁。
+    // 防抖窗内的正文（含 editorStateJson）不再因切换被丢弃。提交事务 claim 挂起且
+    // 仍绑定当前世代（步③ matchesTarget）时不提交，避免把已 claim 清空的草稿复活。
     const commitLifecycleContent = captureComposerContentLifecycleCommit();
     const flush = () => persistDraftNow(draftScopeRef.current);
     window.addEventListener("pagehide", flush);
     window.addEventListener("blur", flush);
     return () => {
-      if (!suppressDraftPersistRef.current) {
+      if (!activeSubmissionDraftTransactionRef.current?.matchesTarget(composerDraftScopeToken)) {
         commitLifecycleContent(snapshotDraftOfEditor());
       }
       window.removeEventListener("pagehide", flush);
@@ -1165,7 +1200,12 @@ function ConversationComposerImpl({
         draftPersistTimerRef.current = null;
       }
     };
-  }, [captureComposerContentLifecycleCommit, persistDraftNow, snapshotDraftOfEditor]);
+  }, [
+    captureComposerContentLifecycleCommit,
+    composerDraftScopeToken,
+    persistDraftNow,
+    snapshotDraftOfEditor,
+  ]);
 
   // ── prompt history（per-workspace localStorage，↑/↓ 导航由 PromptHistoryPlugin 消费）──
   const [promptHistory, setPromptHistory] = useState<readonly string[]>(() =>
@@ -1301,6 +1341,11 @@ function ConversationComposerImpl({
       // session scope；若成功清理时再读可变 ref，会误清新 scope，并把首条输入残留在
       // __draft__，下次新建任务又恢复。发送开始时冻结真正提交的 scope。
       const submittedDraft = snapshotDraftOfEditor();
+      // F28 步③（来源 a60ba6a7）：提交事务在发送前捕获——claim/restore/finalize 只经
+      // 事务自己的 scope persistence target 落盘。等待期间切走任务后失败回包仍能把
+      // 正文恢复回提交 scope（修复 B3），且不写入后来切换到的 scope。
+      const submissionDraftTransaction = captureComposerSubmissionDraftTransaction(submittedDraft);
+      const submittedScopeId = draftScopeRef.current;
       let cleanupRevision = contentRevisionRef.current;
       const submission = createSubmissionFromComposer?.() ?? null;
       const submittedAttachmentIds = attachmentsApi.attachments.map((item) => item.id);
@@ -1372,8 +1417,9 @@ function ConversationComposerImpl({
       let promptHistoryBeforeSend: readonly string[] | null = null;
       let promptHistoryAfterAppend: readonly string[] | null = null;
       let promptHistoryWasPersisted = false;
-      let draftSubmissionClaimed = false;
       let editorClearedOptimistically = false;
+      // F28 步③（来源 a60ba6a7）：claim/restore/finalize 经事务结算。claim 失败＝发送前
+      // 已有新输入（revision 变化），草稿不隐藏、新输入获胜。
       const claimSubmittedDraft = () => {
         if (draftPersistTimerRef.current !== null) {
           window.clearTimeout(draftPersistTimerRef.current);
@@ -1382,32 +1428,61 @@ function ConversationComposerImpl({
         // 首发 promotion 会在 onSendText 返回前切换 scope 或重建 Composer。
         // 若仍允许旧 scope effect 落盘，新 Composer 会把已经发送的正文当草稿恢复。
         // 提交前先占用并隐藏该草稿；失败路径再恢复，避免用等待时间掩盖竞态。
-        suppressDraftPersistRef.current = true;
-        updateComposerContent({ text: "" });
-        draftSubmissionClaimed = true;
+        activeSubmissionDraftTransactionRef.current = submissionDraftTransaction.claim()
+          ? submissionDraftTransaction
+          : null;
       };
       const restoreSubmittedDraft = () => {
-        if (!draftSubmissionClaimed) return;
-        // 用户在等待期间已经产生更新时，当前完整正文是更新后的事实；旧失败回包不能覆盖。
-        if (contentRevisionRef.current === cleanupRevision) {
-          updateComposerContent(submittedDraft);
-        }
-        suppressDraftPersistRef.current = false;
-        draftSubmissionClaimed = false;
-        if (editorClearedOptimistically && contentRevisionRef.current === cleanupRevision) {
+        const result = submissionDraftTransaction.restore();
+        const shouldRestoreEditor =
+          result.applied && result.current && draftScopeRef.current === submittedScopeId;
+        // 正文恢复给用户后，claim 抑制立即结束；其他 scope 的落盘不再被事务阻塞。
+        activeSubmissionDraftTransactionRef.current = null;
+        if (editorClearedOptimistically && shouldRestoreEditor) {
           if (submittedDraft.editorStateJson) {
             inputApiRef.current?.setEditorStateJson(submittedDraft.editorStateJson);
           } else {
             inputApiRef.current?.setText(submittedDraft.text);
           }
           updateText(submittedDraft.text);
+          // 程序化恢复不是用户新编辑；清编辑器的 revision 门禁同步刷新。
+          cleanupRevision = contentRevisionRef.current;
           editorClearedOptimistically = false;
+        } else if (
+          !result.applied &&
+          result.current &&
+          draftScopeRef.current === submittedScopeId
+        ) {
+          // 原 scope 在等待期间已产生新正文；claim 解除后只补当前 owner 的冲刷落盘。
+          persistDraftNow(submittedScopeId);
         }
       };
-      const finalizeSubmittedDraft = () => {
-        if (!draftSubmissionClaimed) return;
-        suppressDraftPersistRef.current = false;
-        draftSubmissionClaimed = false;
+      const settleSubmittedContent = async () => {
+        const result = submissionDraftTransaction.finalize();
+        if (!result) return;
+        activeSubmissionDraftTransactionRef.current = null;
+        if (
+          result.applied &&
+          result.current &&
+          draftScopeRef.current === submittedScopeId &&
+          contentRevisionRef.current === cleanupRevision
+        ) {
+          inputApiRef.current?.clear();
+          updateText("");
+        }
+        // 正文先按事务结算；附件交接失败或发送 Promise 迟到异常，都不能复活已接纳的正文。
+        // 暂存内容只有在发送成功后才移交给 task；失败仍保留为可重试草稿（F15 附件路径）。
+        await attachmentsApi.adoptSentAttachments(submittedAttachmentIds);
+        attachmentsApi.clearAttachments(submittedAttachmentIds);
+        currentCodeCommentContexts.forEach(removeCodeCommentContext);
+        currentWebElementContexts.forEach((context) => removeWebElementContext(context.id));
+        currentPluginUiContexts.forEach((context) => removePluginUiContext(context.id));
+        currentPptxElementReferences.forEach((reference) =>
+          removePptxElementReference(reference.id),
+        );
+        currentConversationSelections.forEach((reference) =>
+          removeConversationSelectionReference(reference.id),
+        );
       };
       const rollbackPromptHistory = () => {
         if (!promptHistoryWasPersisted || !promptHistoryBeforeSend || !promptHistoryAfterAppend) {
@@ -1550,27 +1625,10 @@ function ConversationComposerImpl({
           return;
         }
         setHeldQueueConfirmation(null);
-        // 暂存内容只有在发送成功后才移交给 task；失败仍保留为可重试草稿。
-        await attachmentsApi.adoptSentAttachments(submittedAttachmentIds);
-        // Bug 原因：发送等待期间产生的新正文属于下一次 Submission，旧 ACK 不能清除。
-        if (contentRevisionRef.current === cleanupRevision) {
-          inputApiRef.current?.clear();
-          updateText("");
-        }
-        attachmentsApi.clearAttachments(submittedAttachmentIds);
-        // 与附件相同，只移除本次冻结的引用；等待期间新加入的引用属于下一条消息。
-        currentCodeCommentContexts.forEach(removeCodeCommentContext);
-        currentWebElementContexts.forEach((context) => removeWebElementContext(context.id));
-        currentPluginUiContexts.forEach((context) => removePluginUiContext(context.id));
-        currentPptxElementReferences.forEach((reference) =>
-          removePptxElementReference(reference.id),
-        );
-        currentConversationSelections.forEach((reference) =>
-          removeConversationSelectionReference(reference.id),
-        );
-        // 发送成功：清本次提交捕获的 scope 草稿；prompt history 已在真实发送前同步写盘，
-        // 避免首发 promote 丢失或误清 promotion 后的新 scope。
-        finalizeSubmittedDraft();
+        // 发送成功：经事务 finalize 清本次提交捕获的 scope 草稿并交接附件/引用；
+        // prompt history 已在真实发送前同步写盘，避免首发 promote 丢失或误清 promotion
+        // 后的新 scope。等待期间产生的新正文属于下一次 Submission，旧 ACK 不能清除。
+        await settleSubmittedContent();
         sendAction.complete({ resultSource: "authority_ack", admissionResult: "accepted" });
       } catch (error) {
         rollbackPromptHistory();
