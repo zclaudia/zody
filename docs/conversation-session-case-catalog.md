@@ -3625,6 +3625,22 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 
 2026-11-07 执行记录（F15③/④）：browser pending 16/16 通过（PA161-01～09 + PA161-05 真实 Composer 保真变体：`image-annotate-to-draft.fixture.tsx` 挂载真实 ConversationComposer/useComposerAttachments，经真实捕获通道播种→chip 标注→保存→真实附件 store 出现 `shot-edited.png`、零发送；含 390/1100 × 深浅 × 中英文矩阵与自然尺寸像素断言；截图在 `packages/desktop/.e2e-artifacts/image-preview-editor-browser/`）。执行中发现并修复 `ImageAnnotationDialog` 的 tailwind-merge position 冲突缺陷（`relative` 顶掉基类 `fixed` 致弹窗渲染到视口外）。`packages/desktop` 全窗口用例仍为缺口待协调。人工评审与转正未完成。
 
+## PA162. Composer 草稿事务与 IME 安全（F28 基线）
+
+产品规格见 [Composer 草稿事务与 IME 安全](ui/composer-draft-transaction.md)（上游 v3.17.1 `a60ba6a7` 参考适配；tier2 F28 四步串行移植的**基线步**）。草稿 owner 为 SessionPane 挂载的 `useDraftConfigControl`（scope = sessionId，draft 态 `__draft__`）；四步：①staged 暂存热路径（击键不触发父级 re-render/localStorage）→ ②scope incarnation token（A₁→B→A₂ 旧回调拒写）→ ③claim/restore/finalize 提交事务（失败恢复不写已切换 scope、不丢草稿）+ createSession 信封 `sess_` UUID 幂等 → ④IME composition 抑制发布且 compositionend 前切任务不丢草稿。基线护栏（下表 01/03/04 + 单元 G1/G2）持续通过＝「草稿丢失复现基线不回退」；02 为基线**失败复现**（F28-B3），步③修复后必须通过。
+
+| Case     | 前置/动作                                                           | 预期结果                                                                                                                        | Review   |
+| -------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| PA162-01 | 草稿输入正文 → 切 task → 切回草稿（记录草稿键写盘次数作热路径指标） | 正文完整恢复；基线指标 10 字符 9 次写盘（步①后须显著下降）                                                                      | accepted |
+| PA162-02 | 草稿输入 → 发送（onSendText 挂起）→ 切 task → 发送失败 → 切回草稿  | 原提交 scope 的草稿恢复正文（基线 2026-11-07 失败＝复现 F28-B3：claim 删记录且 restore 被守卫拒绝；步③修复后通过）              | accepted |
+| PA162-03 | 草稿输入 → 发送失败（同 scope，不切换）                             | 正文恢复到输入框与持久草稿；等待期间无新输入时失败回包完整回填                                                                  | accepted |
+| PA162-04 | 输入框进入 IME 组合态（compositionstart，不派发 compositionend）→ 输入中文 → 切 task → 切回 | 组合中正文完整恢复（步④引入发布抑制后仍不得丢：快照须读编辑器事实）                                               | accepted |
+| PA162-05 | F15 捕获通道播种图片附件 + 正文 → 发送失败                          | 正文与附件 chip 一并恢复、零重发（claim/restore 须覆盖附件插入路径；可执行子测随 F28 步③落地）                                   | accepted |
+
+组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/composer-draft-transaction.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过；真实 ConversationComposer + 真实 useDraftConfigControl，fake Platform/Services 最小注入，可在草稿/task scope 间切换并控制 onSendText 挂起/失败）。单元层复现（`packages/ui/test/composerDraftTransactionBaseline.test.ts`）：信封 `sess_` 幂等缺失、组合期间照常发布、A₁→B→A₂ 旧回调写入复用 scope 三项以 `it.fails` 登记（对应移植步翻转）。剪枝：真实系统 IME、Desktop 全窗口切任务、手机远控链路不由浏览器组件测试冒充（缺口与 PA161 同口径待协调）。accepted 表示产品合同，不代表已实现。
+
+2026-11-07 执行记录（F28 基线步）：browser pending 连续三轮 `# tests 4 / # pass 3 / # fail 1`（PA162-02 稳定复现草稿丢失，期望 `"等待ACK期间切走的草稿"` 实际 `""`、持久草稿 `{}`；证据 `packages/desktop/.e2e-artifacts/composer-draft-transaction-browser/`）。已知非致命 console error：fake services 缺 subagents 服务（与 F15④ 同源，无 pageerror）。人工评审与转正未完成。
+
 ## CMP：Composer 压缩与 provider 身份
 
 沿用 CUA composer 七档布局契约。providerName 缺失的自定义 provider 使用菜单已有的 providerId 兜底，内置账号套餐规则不变。
