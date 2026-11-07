@@ -1,5 +1,6 @@
 /* oxlint-disable eslint(max-lines) -- 附件采集、分 scope 上传调度和生命周期必须在同一 hook 中原子收口。 */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { registerImageComposerTarget } from "@/image-preview-editor/index.js";
 import { toast } from "@/components/ui/toast.js";
 import { nanoid } from "nanoid";
 import type { AttachmentRef } from "@zody/shared/zody-protocol-v4";
@@ -738,6 +739,16 @@ export function useComposerAttachments(
     },
     [addPreparedAttachments, platform, showAttachmentSizeWarning],
   );
+
+  useLayoutEffect(() => {
+    if (!listenAddToChatEvents || disabled) return;
+    // F15（上游 a60ba6a7 useComposerAttachments 同款注册）：图片标注编辑器保存时同步捕获
+    // 焦点 Composer 接收方，仍以既有 addAttachmentFiles 为唯一入队路径。导出 PNG 是异步的，
+    // 在 commit 阶段释放旧接收方，避免 passive effect 前的回调把文件写进旧草稿 scope。
+    return registerImageComposerTarget({
+      append: (file) => addAttachmentFiles([file]).length === 1,
+    });
+  }, [listenAddToChatEvents, disabled, addAttachmentFiles, scopeKey]);
 
   const addAttachmentLocalPaths = useCallback(
     (selectedPaths: string[]) => {

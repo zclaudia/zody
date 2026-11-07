@@ -56,6 +56,7 @@ import {
   ArrowUpIcon,
   ClipboardPenLineIcon,
   InfoIcon,
+  PencilIcon,
   RotateCcwIcon,
   SquareIcon,
   XIcon,
@@ -88,6 +89,7 @@ import {
   ChatMediaAttachmentPreviewDialog,
   type ChatMediaAttachmentPreviewTarget,
 } from "@/ChatMediaAttachmentPreviewDialog.js";
+import { ImageAnnotationDialog } from "@/image-preview-editor/index.js";
 import type { LexicalChatInputHandle } from "@/LexicalChatInput.js";
 import { ChatPromptEditor } from "@/prompt-editor/ChatPromptEditor.js";
 import { usePromptEditorDragState } from "@/prompt-editor/usePromptEditorDragState.js";
@@ -743,6 +745,11 @@ function ConversationComposerImpl({
   const [pdfAttachmentPreview, setPdfAttachmentPreview] =
     useState<ChatMediaAttachmentPreviewTarget | null>(null);
   const [pdfAttachmentPreviewOpen, setPdfAttachmentPreviewOpen] = useState(false);
+  // F15：草稿图片标注入口（裁决 4——独立编辑器，不并入只读预览弹窗）。
+  const [imageAnnotationTarget, setImageAnnotationTarget] = useState<{
+    filename: string;
+    src: string;
+  } | null>(null);
   const attachmentPreviewTitle = intl.formatMessage({
     id: "chat.attachments.preview.open",
   });
@@ -2081,6 +2088,31 @@ function ConversationComposerImpl({
                       <RotateCcwIcon className="size-3" />
                     </button>
                   ) : null}
+                  {/* F15（上游 a60ba6a7）：草稿图片附件的「标注」动作——独立编辑器入口，
+                      不进只读预览弹窗（裁决 4）。命中区样式与右上角 × 同款，避免手机误触。 */}
+                  {canPreviewImageAttachment ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      data-composer-attachment-annotate=""
+                      aria-label={intl.formatMessage({ id: "imageEditor.annotate" })}
+                      title={intl.formatMessage({ id: "imageEditor.annotate" })}
+                      className="absolute bottom-0.5 left-0.5 z-20 size-3.5 rounded-full bg-primary p-0 text-primary-foreground opacity-0 transition-opacity hover:bg-primary/80 hover:text-primary-foreground group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 [@media(hover:none)_and_(pointer:coarse)]:after:absolute [@media(hover:none)_and_(pointer:coarse)]:after:left-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:top-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:size-11 [@media(hover:none)_and_(pointer:coarse)]:after:-translate-x-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:-translate-y-1/2 [@media(hover:none)_and_(pointer:coarse)]:after:rounded-full [@media(hover:none)_and_(pointer:coarse)]:after:content-['']"
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (!attachment.objectUrl) return;
+                        setImageAnnotationTarget({
+                          filename: attachment.filename,
+                          src: attachment.objectUrl,
+                        });
+                      }}
+                    >
+                      <PencilIcon className="size-2.5" />
+                    </Button>
+                  ) : null}
                   <Button
                     type="button"
                     variant="ghost"
@@ -2476,6 +2508,14 @@ function ConversationComposerImpl({
           setPdfAttachmentPreviewOpen(open);
           if (!open) setPdfAttachmentPreview(null);
         }}
+      />
+      <ImageAnnotationDialog
+        open={imageAnnotationTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setImageAnnotationTarget(null);
+        }}
+        src={imageAnnotationTarget?.src ?? ""}
+        filename={imageAnnotationTarget?.filename ?? ""}
       />
       <Dialog
         open={heldQueueConfirmation !== null}

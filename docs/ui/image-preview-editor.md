@@ -26,7 +26,8 @@
 
 - `packages/ui/src/image-preview-editor/` 全模块：几何与历史纯函数（geometry）、标注渲染与
   PNG 导出（annotations）、工具栏（ImageEditorToolbar）、编辑器 Surface（ImagePreviewSurface）、
-  焦点 Composer 捕获通道（composerTarget）、类型契约（contract）与公开入口（index/module）。
+  独立编辑器弹窗宿主（ImageAnnotationDialog，2026-11-07 F15② 落地）、焦点 Composer 捕获通道
+  （composerTarget）、类型契约（contract）与公开入口（index）。
 - 捕获通道：`registerImageComposerTarget` / `captureImageComposerTarget`，DOM CustomEvent
   `zcode:image-preview-composer-target`，同步单次请求-应答（事件名沿用本仓 composer 域既有
   add-to-chat 事件前缀：`WORKSPACE_FILE_ADD_TO_CHAT_EVENT`、`CODE_COMMENT_ADD_TO_CHAT_EVENT`
@@ -153,10 +154,14 @@ imageTestId?; onSaved; onClose }`。
 - `geometry.ts` 为纯函数（`clampOffset` / `zoomAtPoint` / `updateHistory` / `undoHistory` /
   `redoHistory` 与 Point/Size/Transform/History/Annotation/AnnotationTool 类型），无 DOM 依赖，
   可直接单测。
-- `module.ts`：`id: "image-preview-editor"`，`requires: ["ui"]`，`publicEntrypoints:
-["index.ts", "contract.ts"]`。
+- 上游 `module.ts` / `CONTRACT.md` / `contract.example.ts` 不随本卡落地：本仓
+  `architecture-policy.yaml` 中 `packages/ui/src` 整体是**非托管**模块（`managed: false`，
+  同 `file-menu` 先例），模块契约文件不会进入架构门禁，只会成为无人消费的死文件；本模块的
+  公开入口即 `index.ts` 与 `contract.ts`（2026-11-07 F15② 登记）。
 - 渲染层纯前端能力：不调用 `window.zody`、不新增 IPC / 平台服务方法；桌面与手机 Web 同一
   renderer 路径。
+- Pointer Capture API 采用可选调用（`setPointerCapture?.`）：浏览器内行为与上游一致，
+  jsdom（无该 API）下组件测试仍可驱动绘制路径（2026-11-07 F15② 适配登记）。
 - 失败路径日志用 `packages/ui/src/logger.ts` 的 `logger.warn`，禁止 `console.log`。
 
 ## 幂等边界
@@ -208,6 +213,14 @@ append 合同、导出像素与失效路径。manual-review/pending 未转正不
 - 剪枝登记：真实触屏设备、Windows/Linux 原生窗口、真实手机远控链路不由浏览器组件测试冒充；
   upload / 发送 / queue / fork / replay 组合剪枝（保存只走既有 draft admission，不新增第二条
   发送路径）；light/dark × locale × 宽度取代表组合不做全集。
+
+实现锚点（2026-11-07 F15②，供 E2E 与回归定位）：入口按钮
+`data-composer-attachment-annotate`（仅 `canPreviewImageAttachment` 的草稿图片 chip 渲染）；
+编辑器弹窗 `ImageAnnotationDialog`；工具按钮 `data-image-preview-tool="{tool}"`、保存按钮
+`data-image-preview-save`、画布视口 `data-image-preview-viewport`；文案键 `imageEditor.*`
+（zh-CN / en-US 已同步）；单测见 `packages/ui/test/imagePreviewEditor{Geometry,ComposerTarget,Surface}.test.*`
+与 `useComposerAttachmentsAddToChatGate.test.ts` 的 F15 注册组、
+`v4ConversationComposerAttachmentProgress.test.ts` 的标注入口组。
 
 ## 兼容性
 

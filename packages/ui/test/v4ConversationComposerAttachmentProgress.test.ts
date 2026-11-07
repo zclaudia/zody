@@ -476,3 +476,62 @@ describe("ConversationComposer attachment upload progress", () => {
     expect(html).toContain("text-destructive");
   });
 });
+
+describe("F15 草稿图片标注入口（image-preview-editor，上游 a60ba6a7）", () => {
+  const baseImage = {
+    adopted: false,
+    autoRetryCount: 0,
+    filename: "shot.png",
+    id: "image-annotate-1",
+    localZeroCopy: false,
+    referenceOwnership: "composer",
+    mimeType: "image/png",
+    objectUrl: "blob:image-annotate-1",
+    operationId: "operation-image-annotate-1",
+    showComplete: false,
+    sizeBytes: 100,
+    staged: false,
+    uploadProgress: 100,
+    uploadStatus: "ready",
+  };
+
+  it("图片附件 chip 渲染「标注」动作（独立入口，不进预览弹窗）；视频与 PDF 附件不渲染", () => {
+    attachmentState.attachments = [
+      { ...baseImage },
+      {
+        ...baseImage,
+        filename: "clip.mp4",
+        id: "video-annotate-1",
+        mimeType: "video/mp4",
+        objectUrl: "blob:video-annotate-1",
+        operationId: "operation-video-annotate-1",
+      },
+      {
+        ...baseImage,
+        filename: "doc.pdf",
+        id: "pdf-annotate-1",
+        mimeType: "application/pdf",
+        objectUrl: "blob:pdf-annotate-1",
+        operationId: "operation-pdf-annotate-1",
+      },
+    ];
+
+    const html = renderComposer();
+
+    // 唯一入口：草稿图片 chip 上的标注按钮（E2E 锚点 data-composer-attachment-annotate）。
+    expect(html).toContain('data-composer-attachment-annotate=""');
+    expect(html).toContain('aria-label="标注"');
+    // 预览弹窗保持只读：静态输出中不出现编辑器工具栏锚点。
+    expect(html).not.toContain('data-image-preview-tool="pen"');
+  });
+
+  it("没有 objectUrl 的图片附件（路径态）不提供标注入口", () => {
+    attachmentState.attachments = [
+      { ...baseImage, id: "path-image", objectUrl: undefined as unknown as string },
+    ];
+
+    const html = renderComposer();
+
+    expect(html).not.toContain('data-composer-attachment-annotate=""');
+  });
+});

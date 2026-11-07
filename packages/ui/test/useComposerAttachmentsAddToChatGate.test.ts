@@ -7,10 +7,8 @@ import {
   useComposerAttachments,
   type ComposerAttachmentsApi,
 } from "@/v4/composer/useComposerAttachments.js";
-import {
-  dispatchWhiteboardAddToChat,
-  WHITEBOARD_ADD_TO_CHAT_EVENT,
-} from "@/lib/whiteboard.js";
+import { dispatchWhiteboardAddToChat, WHITEBOARD_ADD_TO_CHAT_EVENT } from "@/lib/whiteboard.js";
+import { captureImageComposerTarget } from "@/image-preview-editor/composerTarget.js";
 
 const mocks = vi.hoisted(() => ({
   platform: {
@@ -177,5 +175,49 @@ describe("useComposerAttachments add-to-chat 门控", () => {
 
   it("事件常量与监听名保持稳定", () => {
     expect(WHITEBOARD_ADD_TO_CHAT_EVENT).toBe("zcode:add-whiteboard-to-chat");
+  });
+});
+
+describe("useComposerAttachments F15 图片标注接收方注册（上游 a60ba6a7）", () => {
+  function annotatedPng() {
+    return new File([new Uint8Array([137, 80, 78, 71])], "shot-edited.png", {
+      type: "image/png",
+    });
+  }
+
+  it("listenAddToChatEvents=true 注册接收方：append 走既有 addAttachmentFiles 入草稿并返回 true", () => {
+    const root = renderProbe({ listenAddToChatEvents: true });
+
+    const target = captureImageComposerTarget();
+    expect(target).not.toBeNull();
+    const before = latestApi!.attachments.length;
+    let accepted = false;
+    act(() => {
+      accepted = target!.append(annotatedPng());
+    });
+    expect(accepted).toBe(true);
+    expect(latestApi!.attachments.length).toBe(before + 1);
+    expect(latestApi!.attachments.at(-1)?.filename).toBe("shot-edited.png");
+
+    act(() => root.unmount());
+  });
+
+  it("listenAddToChatEvents=false 不注册：捕获为 null（无接收方提示的来源）", () => {
+    const root = renderProbe({ listenAddToChatEvents: false });
+
+    expect(captureImageComposerTarget()).toBeNull();
+
+    act(() => root.unmount());
+  });
+
+  it("卸载后接收方释放：capture 回到 null，旧引用 append 恒 false 不写入旧 scope", () => {
+    const root = renderProbe({ listenAddToChatEvents: true });
+
+    const stale = captureImageComposerTarget();
+    act(() => root.unmount());
+    expect(captureImageComposerTarget()).toBeNull();
+    const before = latestApi!.attachments.length;
+    expect(stale!.append(annotatedPng())).toBe(false);
+    expect(latestApi!.attachments.length).toBe(before);
   });
 });
