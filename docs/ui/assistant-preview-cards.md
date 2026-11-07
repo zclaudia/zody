@@ -219,6 +219,33 @@ instead of path existence booleans.
   visible, but does not auto-open when the current surface has no usable right-
   side Preview Pane.
 
+## Whole-card open (I15)
+
+- The whole card body is one click target: a transparent button covering the
+  card executes the same open action as the right-side primary "Open" button
+  (in-app preview for the card type — Preview Pane, Browser, or file link), not
+  a second action source. One click hits exactly one target and never triggers
+  two opens.
+- The right-side open/dropdown controls stack above the transparent button
+  (higher stacking order), so clicking them does not fall through to the card
+  body.
+- When the card has no usable open action (`canPreview=false`), the transparent
+  button is disabled and the card is not clickable.
+- The transparent button carries an accessible label
+  (`chat.previewCards.openCard` with the card title) and the card row keeps the
+  `data-preview-card-title` attribute used by E2E anchors.
+- The right-click context menu and the open-with dropdown share the same
+  per-target application query and the same action set (preview, open-with
+  system associations with static-editor fallback, save-as, copy paths);
+  card right-click never maintains a second, different open list. Menu rules
+  follow [file-open-apps.md](./file-open-apps.md).
+- Remote-workspace and Web `/remote` cards keep the existing projection rules;
+  whole-card open only reuses the primary action, so remote targets keep
+  failing closed instead of being handed to local applications.
+- Whole-card open is renderer-local UI behavior: it adds no protocol rows,
+  snapshot fields, relay state, or Agent metadata, and does not change the
+  automatic PPTX open policy above.
+
 ## Compatibility
 
 - Desktop stays on the existing `desktop-continuous` message path.

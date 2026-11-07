@@ -2092,6 +2092,32 @@ assistantText rows
 
 本地 URL case 使用 spec 内 `node:http` 随机端口 server；用户 prompt 传入 `E2E_BROWSER_FIXTURE_URL:<url>`，provider replay text 通过已有 `{{browserFixtureUrl}}` 请求级变量回填同一 URL。这样 Browser side pane 可加载真实本地页，同时不依赖固定端口或公网。
 
+### APC F16 增补范围：整卡打开与统一文件菜单（2026-11-07 已确认）
+
+F16「按格式选择打开应用」在 Preview Card 表面落地 I15 整卡打开与统一文件菜单，产品规则见
+[ui/file-open-apps.md](./ui/file-open-apps.md) 与
+[ui/assistant-preview-cards.md](./ui/assistant-preview-cards.md) 的整卡打开章节。系统关联
+枚举依平台而变，窗口 E2E 用 IPC probe（只替换目标文件的 `GetFileApplications` /
+`OpenFileWithApplication` handler）固定边界，不启动或安装任何真实外部应用，也不冒充系统枚举。
+
+| ID    | 前置状态                                                                 | 用户/系统事件                                                                     | 规则命中                              | 期望结果                                                                                                                                                                                              | Review   |
+| ----- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| APC14 | completed turn 渲染文件卡（Office/PDF 代表）与 Website 卡各一张           | 先点击右侧主按钮，再点击卡片主体（标题区域透明按钮）                              | assistantPreviewCardWholeCardOpen     | 两次点击各自打开同一 Preview Pane/Browser 目标，动作等价且每次只触发一次打开；整卡层带 aria-label 且不可预览态 disabled；右键菜单与下拉不出现两套不同打开列表                                          | accepted |
+| APC15 | completed turn 渲染一张本机文件卡；IPC probe 按 0/1/3/10 个应用（含默认项）注入目标文件 | 打开下拉与右键菜单，分别选择默认项、直显项与「更多」子菜单项                        | assistantPreviewCardOpenWithSystemApps | 列表内容与顺序来自系统关联（默认项在前、前三直显、其余进「更多」）；选择动作经 renderer 分发后 probe 收到预期 `applicationId` 与 `target`（pathKind=file、无远端身份）；0 应用时回退静态编辑器菜单，系统关联非空时静态列表不出现 | accepted |
+| APC16 | completed turn 渲染含中文空格路径的本机文件卡（≤50 MiB）                   | 下拉/右键执行「另存为」，保存到临时目录；另执行一次取消                            | assistantPreviewCardSaveAsChunkedCopy | 保存完成后目标文件字节与源一致（尺寸/内容）；取消是正常结果且不弹提示；>50 MiB 限额、1 MiB 分块边界与读取期间变更由 focused tests 守住，不进窗口 E2E                                                | accepted |
+
+剪枝登记：
+
+- 原生平台枚举（macOS Launch Services、Windows Shell/ProgID/WPS 套件图标、Linux GIO）不进窗口
+  E2E：结果依平台而变，统一用 probe 固定边界；平台差异由 `packages/desktop/test` 的 main 侧
+  单测（可注入 fake 原生适配器）守住。
+- 远程 workspace / Web `/remote` 不提供本机应用菜单（远端身份失败关闭）：由 focused tests 用
+  fake platform 守住，不设窗口 case；远程文件入口维持 `openInEditor(remoteTarget)` 现状。
+- `>50 MiB` 限额、分块边界、读取前后 `stat` 核对、`file_changed` 检测：focused tests
+  （`packages/ui/test`，mock `FileCopySource`）。
+- light/dark、locale、macOS/Windows/Linux 不与菜单排列组合；Website 卡与文件卡的整卡打开各取
+  一张代表，不逐格式展开。
+
 ## ACC. Assistant Code Comment Cards / 助手代码审查卡片
 
 Assistant Code Comment Cards 从当前 turn 已持久化的 Assistant text 中解析 `::code-comment{...}`，在灰度开启时从正文隐藏完整合法指令，并在 latest terminal assistant row 下展示审查卡片。卡片点击直接打开 workspace-scoped `code-review` CodeViewer；不要求文件处于 Git 变更中，不新增协议、snapshot、Host 文件检查或历史 diff 快照。
