@@ -334,6 +334,53 @@ describe("digest：args 预置与稳定性（spec §2.1/§5.2，S2）", () => {
     ).not.toBe(httpOriginal);
   });
 
+  it("Windows cmd /c 拆包进摘要：外壳与内核命令是同一执行身份（S2 评审补充，上游 a60ba6a7）", () => {
+    // fork（F23③ 安全评审）：锁定 normalizeWorkspaceMcpStdioCommand 的 win32 拆包
+    // 语义——授权必须绑定内核命令（cmd /c 只是外壳，不构成安全边界），防止
+    // 「批准 cmd /c npx、执行 npx」或反向被误判为两种声明。
+    const digestOf = (config: McpServerConfig) =>
+      computeWorkspaceMcpDeclarationDigest({ ...base, config });
+    const originalPlatform = process.platform;
+    let navigatorPlatformDescriptor: PropertyDescriptor | undefined;
+    const navigatorLike = globalThis.navigator as { platform?: string } | undefined;
+    if (navigatorLike) {
+      navigatorPlatformDescriptor = Object.getOwnPropertyDescriptor(navigatorLike, "platform");
+    }
+    try {
+      Object.defineProperty(process, "platform", { value: "win32", configurable: true });
+      if (navigatorLike && navigatorPlatformDescriptor) {
+        Object.defineProperty(navigatorLike, "platform", {
+          value: "MacIntel",
+          configurable: true,
+        });
+      }
+      const wrapped = digestOf({
+        type: "stdio",
+        command: "cmd.exe",
+        args: ["/c", "npx", "-y", "some-mcp"],
+      });
+      const kernel = digestOf({
+        type: "stdio",
+        command: "npx",
+        args: ["-y", "some-mcp"],
+      });
+      // 同一执行身份：批准外壳 = 批准内核（display 同样展示内核命令行）。
+      expect(wrapped).toBe(kernel);
+      // 拆包后内核参数仍全部参与摘要（args 预置不因拆包丢失）。
+      expect(digestOf({ type: "stdio", command: "npx", args: ["-y", "other-mcp"] })).not.toBe(
+        kernel,
+      );
+    } finally {
+      Object.defineProperty(process, "platform", {
+        value: originalPlatform,
+        configurable: true,
+      });
+      if (navigatorLike && navigatorPlatformDescriptor) {
+        Object.defineProperty(navigatorLike, navigatorPlatformDescriptor);
+      }
+    }
+  });
+
   it("键序不同的同语义配置摘要一致；sourcePaths/身份参与摘要", () => {
     const a = stdioConfig({ env: { A: "1", B: "2" } });
     const b: McpServerConfig = {
