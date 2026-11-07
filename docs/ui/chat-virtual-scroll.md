@@ -101,7 +101,7 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
 | ① 基线 | 本节 + 基线记录文件 + 浏览器测量 harness | M1–M4 建档 | —（本步已完成） |
 | ② 分区 | `getConversationRowsPartition`/`memoizeByRows`/`advanceConversationRowsPartition` 与消费方接入 | M1 growth | 2.49x → 向 1.x 收敛；p50@3003 行显著下降 |
 | ③ overscan | `ROW_OVERSCAN` 8 → 2 + 未知长轮一屏估高 | M3 | historyTurnUnits 18 → 6、historyElements 972 → 324（实测 −67%，见基线记录） |
-| ④ 测量 revision | `measuredLayoutRevision` 批量测高与 mountedRowsKey 失效 | M1/M2/M3 不回退 + SRM10 resize 回归 | 不回退 |
+| ④ 测量 revision | `measuredLayoutRevision` 批量测高与 mountedRowsKey 失效 | M1/M2/M3 不回退 + SRM10 resize 回归 | 不回退（实测持平，见基线记录；收益为正确性与时序） |
 | ⑤ 查找 | 查找索引按分区缓存（history 段按引用复用，每帧只算尾轮） | M4 + 代码级分区缓存测试 | M4 不回退（现有 unit 缓存已把墙钟增量压到噪声级，验收以代码级测试为主） |
 
 ### 步骤②契约：冻结历史 + 尾轮分区
@@ -174,6 +174,31 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
   4. SRM10 resize 回归：desktop 全组合通过（Grow 后上滚保持离底）；mobile 的既有
      ResizeObserver loop 失败与本步无关（步骤②已归因）。
   5. 基线复测：M1/M2/M4 不回退（M3 改善），三轮数据追加进基线记录文件。
+
+### 步骤④契约：批量测高与 measuredLayoutRevision
+
+- **批量测高（前插/冷恢复路径，上游 a60ba6a7 移植）**：`rowWindowKey`/`virtualRows` 变化的
+  commit 上，layout 阶段批量读取已挂载 `[data-index]` 节点高度，差量 `virtualizer.resizeItem`
+  并同步提交；本批存在差量时置 `contentMeasurementPendingRef = true`。pending 期间：
+  - `shouldAdjustVirtualizerForItemSizeChange` 在「前插进行中（rows 首行 rowId < 锚点基线）」时
+    抑制逐行滚动补偿（前插锚点 effect 统一补偿一次），item 坐标比较改用 virtualizer 同批
+    `scrollOffset`，避免混用原生 scrollTop 与未重算坐标；
+  - 滚动记忆恢复 effect、前插锚点 effect、底部锚定 effect 让位（跳过本 commit），
+    由 revision 提交触发的下一轮以已提交高度重新对账。
+- **measuredLayoutRevision（宽度校正后发布）**：revision 是「测高布局已提交」的代际。
+  发布点：宽度 RO 批量测高 flushSync 提交（本仓已有）、宽度校正 settle 结束
+  （`CONTENT_WIDTH_RESIZE_SETTME_MS` 定时器：发布既有生命周期结束，待定位搜索此时接管，
+  避免过早居中后新挂载的上方缓冲行把命中推离视口）、前插批量测高提交。
+  消费点：`mountedRowsKey` 纳入 revision（挂载 DOM 对账在测高提交后失效重查）；
+  底部锚定 effect 与滚动记忆恢复 effect 依赖 revision。
+- **不变量**：前插锚点「绘制前平移、无闪动」、滚动记忆恢复「先记忆后内容」、跟随权裁决
+  （用户意图优先）契约不变；本步只改变测高提交的时机与锚定对账的顺序（先测高、后对账）。
+- **验收场景**：
+  1. 源级守卫（沿用源断言约定）：revision 被捕获并进入 mountedRowsKey/锚定 effect 依赖、
+     批量测高 effect 与三个让位守卫、settle 发布、suppressAdjustment 前插条件在源码中存在。
+  2. 行为回归：SRM10 resize desktop 全组合通过（宽度校正批量测高路径）；滚动记忆
+     （SRM01-04 单测）、前插锚点（HLP 单测/正式 E2E 既有覆盖不回退）。
+  3. 基线复测：M1–M4 不回退，三轮数据追加进基线记录文件。
 
 ### 性能指标定义与测量方法
 

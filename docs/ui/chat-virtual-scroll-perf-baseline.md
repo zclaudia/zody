@@ -162,3 +162,34 @@ growth 1.75/1.86/1.79（中位 1.79）vs 步骤② 1.54：比率上升来自分�
 
 - 无回退：M3 主指标 −67%，M1 三档绝对值全部下降，M2 挂载量确定性改善且 mountMs 持平，
   M4 持平略降；SRM10 desktop 回归修复并由单测固化。可进入步骤④。
+
+## 2026-11-07 步骤④复测（批量测高与 measuredLayoutRevision 合入后）
+
+- 实现内容（来源 a60ba6a7，spec「步骤④契约」）：捕获 `measuredLayoutRevision` 并纳入
+  `mountedRowsKey`/底部锚定/滚动记忆恢复依赖；新增 `contentMeasurementPendingRef` 与
+  前插/冷恢复批量测高 layout effect（差量 resizeItem + 提交 revision，pending 期间三个
+  锚定 effect 让位）；宽度校正 settle 结束发布 revision；
+  `shouldAdjustVirtualizerForItemSizeChange` 前插期间抑制逐行补偿并改用 virtualizer
+  同批 `scrollOffset` 比较。
+- 本仓适配：批量测高只对账「virtualizer 当前渲染范围拥有的行」（上游无此过滤）——
+  本仓 SRM 滚动记忆测试的最小 DOM 桩中 resizeItem 为 no-op、getVirtualItems 恒为新空数组，
+  不过滤会对范围外节点形成无效差量无限循环；真实浏览器中 DOM [data-index] 节点本就由
+  virtualRows 渲染，过滤不改变行为。
+- 3 轮（`m4r1`/`m4r2`/`m4r3`）均 5/5 通过；SRM10 desktop 2/2 通过（mobile 为步骤②已归因
+  既有 RO-loop 失败）；区域单测 17 文件 221 用例全绿。
+
+| 指标 | 三轮值 | 中位数 | 对比步骤③ |
+| --- | --- | --- | --- |
+| M1 p50 @153 行 | 7.6 / 7.4 / 7.4 | 7.4 | 7.1（+0.3ms，批量测高 effect 在窗口变化 commit 的开销，噪声带内） |
+| M1 p50 @1503 行 | 10.7 / 12.2 / 11.3 | 11.3 | 11.7（持平） |
+| M1 p50 @3003 行 | 12.5 / 13.1 / 12.6 | 12.6 | 12.9（持平） |
+| M1 growth | 1.64 / 1.77 / 1.70 | 1.70 | 1.79（持平） |
+| M2 mountMs | 3630 / 3283 / 3060 | 3283 | 3297（持平）；units 3 / elements 162 不变 |
+| M3 跳转挂载 | 6 / 324 / 7（零波动） | — | 不变 |
+| M4 查找激活 p50 | 11.8 / 11.7 / 11.4 | 11.7 | 11.7（持平） |
+
+### 结论
+
+- 无回退：M1/M2/M4 与步骤③持平（153 行档 +0.3ms 属批量测高 effect 的常数开销、在轮次间
+  波动带内），M3 不变；SRM10 desktop 与 SRM 滚动记忆/前插锚点单测全绿。本步收益主要是
+  正确性与时序（测高先于锚定对账、前插不再逐行补偿），非性能指标。可进入步骤⑤。

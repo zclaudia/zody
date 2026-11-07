@@ -499,6 +499,9 @@ function ConversationTimelineImpl({
   const contentWidthResizeActiveRef = useRef(false);
   const contentWidthResizeSettleTimerRef = useRef<number | null>(null);
   const committingMeasuredLayoutRef = useRef(false);
+  // F17 步骤④（上游 a60ba6a7）：本 commit 的批量测高仍有差量未提交时为 true；
+  // 滚动记忆恢复、前插锚点与底部锚定 effect 让位，等 revision 提交后以最终高度对账。
+  const contentMeasurementPendingRef = useRef(false);
   const messageLayerMaskObserverRef = useRef<ResizeObserver | null>(null);
   const isContentWidthChanging = useCallback(() => {
     const currentContentWidth = virtualHistoryRef.current?.clientWidth ?? null;
@@ -748,7 +751,9 @@ function ConversationTimelineImpl({
     [],
   );
 
-  const [, commitMeasuredLayout] = useState(0);
+  // F17 步骤④（上游 a60ba6a7）：measuredLayoutRevision 是「测高布局已提交」的代际，
+  // 消费方（mountedRowsKey、底部锚定 effect）在测高提交后失效重查。
+  const [measuredLayoutRevision, commitMeasuredLayout] = useState(0);
   const virtualizer = useVirtualizer({
     count: virtualizedUnits.length,
     getScrollElement,
@@ -760,11 +765,20 @@ function ConversationTimelineImpl({
   });
   virtualizer.shouldAdjustScrollPositionOnItemSizeChange = (item) => {
     return shouldAdjustVirtualizerForItemSizeChange({
-      suppressAdjustment: suppressVirtualizerAdjustmentDuringRestoreRef.current,
+      // F17 步骤④（上游 a60ba6a7）：前插批次由 prepend 锚点 effect 统一补偿一次；
+      // 测高 pending 期间再逐行补偿会把阅读位置反复推离锚点。
+      suppressAdjustment:
+        suppressVirtualizerAdjustmentDuringRestoreRef.current ||
+        (contentMeasurementPendingRef.current &&
+          prependAnchorRef.current.firstRowId !== null &&
+          (rowsRef.current[0]?.rowId ?? Infinity) <
+            prependAnchorRef.current.firstRowId),
       following: followingRef.current,
       contentWidthChanging: isContentWidthChanging(),
       itemEnd: item.end,
-      scrollTop: scrollRef.current?.scrollTop ?? 0,
+      // 同批 RO 的 item 坐标尚未重算，原生 scrollTop 已含前一行补偿；混用会把目标
+      // 之后的行也判为视口上方。比较 virtualizer 同一测量批次的偏移（上游同款）。
+      scrollTop: virtualizer.scrollOffset ?? scrollRef.current?.scrollTop ?? 0,
     });
   };
   const virtualRows = virtualizer.getVirtualItems();
@@ -792,8 +806,11 @@ function ConversationTimelineImpl({
       [
         ...virtualRows.map((row) => String(row.key)),
         ...(liveUnit === null ? [] : [String(liveUnit.key)]),
+        // F17 步骤④（上游 a60ba6a7）：测高布局提交代际纳入失效键——挂载 DOM 对账
+        //（查找高亮等）不能依赖未提交的中间高度。
+        String(measuredLayoutRevision),
       ].join(":"),
-    [liveUnit, virtualRows],
+    [liveUnit, measuredLayoutRevision, virtualRows],
   );
 
   const markProgrammaticScroll = useCallback(() => {
@@ -1225,6 +1242,10 @@ function ConversationTimelineImpl({
         stableContentWidthRef.current = contentColumn.clientWidth;
         contentWidthResizeActiveRef.current = false;
         contentWidthResizeSettleTimerRef.current = null;
+        // F17 步骤④（上游 a60ba6a7）：宽度校正期间禁用测高补偿；发布既有生命周期的
+        // 结束，使待定位搜索此时接管。否则过早居中后，新挂载的上方缓冲行会把命中
+        // 推离视口。
+        commitMeasuredLayout((revision) => revision + 1);
         if (followingRef.current) {
           scrollToBottom();
         }
@@ -1700,7 +1721,33 @@ function ConversationTimelineImpl({
     virtualizer,
   ]);
 
+  // F17 步骤④（上游 a60ba6a7）：冷恢复先展示末尾窗口，再补齐同一 turnId 的正文；
+  // 稳定 ref 不会重新测高，只等 ResizeObserver 会先画出新正文和旧坐标，造成一帧重叠。
+  // 提交后批量读取已挂载轮次，在 layout 阶段更新既有 virtualizer；下一次同步提交后
+  // 再对账锚点（下方三个 effect 在 pending 期间让位）。
   useLayoutEffect(() => {
+    const renderedSizes = new Map(virtualRows.map((row) => [row.index, row.size]));
+    const measurements = Array.from(
+      virtualHistoryRef.current?.querySelectorAll(":scope > [data-index]") ?? [],
+      (node) => ({
+        index: Number(node.getAttribute("data-index")),
+        height: measureElement(node, undefined),
+      }),
+    ).filter(
+      // 只对账 virtualizer 当前拥有的行：DOM 里的 [data-index] 由 virtualRows 渲染，
+      // 不在当前渲染范围内的节点是陈旧残留（或在最小 DOM 测试桩里不存在虚拟范围），
+      // 对它们反复 resizeItem 会形成无效差量循环。
+      (item) => renderedSizes.has(item.index) && renderedSizes.get(item.index) !== item.height,
+    );
+    contentMeasurementPendingRef.current = measurements.length > 0;
+    if (measurements.length === 0) return;
+    for (const item of measurements) virtualizer.resizeItem(item.index, item.height);
+    // RO 可能已写入缓存但尚未提交 DOM；此时 resizeItem 无差量，也要提交坐标。
+    commitMeasuredLayout((revision) => revision + 1);
+  }, [measureElement, rowWindowKey, virtualRows, virtualizer]);
+
+  useLayoutEffect(() => {
+    if (contentMeasurementPendingRef.current) return;
     const pendingRestore = pendingDetachedScrollRestoreRef.current;
     if (
       rowCount === 0 ||
@@ -1751,6 +1798,8 @@ function ConversationTimelineImpl({
     restoreScrollMemory,
     rowCount,
     rowWindowKey,
+    // F17 步骤④：测高提交代际变化后按最终高度重放恢复位置。
+    measuredLayoutRevision,
     scrollMemoryKey,
     totalCount,
     totalSize,
@@ -1760,7 +1809,10 @@ function ConversationTimelineImpl({
   // 既有 turn key=turnId 且测量缓存不失效 → 前插只把总高度撑高 delta，scrollTop += delta
   // 即恢复锚点（绘制前完成，无闪动）；本效应声明在会话切换效应之后，切换 commit 上
   // 先重置基线再对账，防跨会话 rowId 误判为前插。
+  // F17 步骤④：批量测高仍有差量未提交时让位——前插补偿必须按提交后的最终高度计算，
+  // 逐行测高补偿也已在 pending 期间抑制（shouldAdjustVirtualizerForItemSizeChange）。
   useLayoutEffect(() => {
+    if (contentMeasurementPendingRef.current) return;
     const prev = prependAnchorRef.current;
     const nextFirstRowId = rowsRef.current[0]?.rowId ?? null;
     const nextTotalSize = virtualizer.getTotalSize();
@@ -1827,7 +1879,9 @@ function ConversationTimelineImpl({
   // terminal 会同时迁移 live tail、自动折叠历史并
   // 触发 virtualizer 多阶段测高；这些 scrollTop 回退属于布局，必须保持 following。
   // 若同帧有用户向上滚动，capture handler 会先登记 awayFromBottom，本 effect 必须让位。
+  // F17 步骤④：批量测高差量未提交时让位，revision 提交后按最终高度对账。
   useLayoutEffect(() => {
+    if (contentMeasurementPendingRef.current) return;
     const element = scrollRef.current;
     markLayoutScrollGuard();
     if (element) {
@@ -1856,6 +1910,8 @@ function ConversationTimelineImpl({
     isContentWidthChanging,
     markLayoutScrollGuard,
     commitFollowing,
+    // F17 步骤④：测高提交代际变化后重新对账（pending 守卫放行的下一轮）。
+    measuredLayoutRevision,
     pendingGuideKey,
     rowCount,
     rows,
