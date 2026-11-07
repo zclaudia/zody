@@ -51,7 +51,10 @@ import type {
   ResolvedAiSdkModel,
 } from "./runner-runtime.js";
 import { resolveModelForAttempt, RuntimeHeadersRefreshError } from "./runner-runtime-headers.js";
-import { retryAllowedByFailurePolicy } from "./workflow-model-failure-policy.js";
+import {
+  nextUnrecognizedCodeStreak,
+  retryAllowedByFailurePolicy,
+} from "./workflow-model-failure-policy.js";
 import { modelFailureStatusFields, providerRequestIdFromHeaders } from "./runner-telemetry.js";
 import { repairReasoningHistoryAfterSignatureRejection } from "./reasoning-history-normalization.js";
 import { admitAttempt, type AttemptAdmission } from "./request-admission.js";
@@ -90,6 +93,9 @@ export async function runGenerateText(input: {
   let requestMessages = input.request.messages;
   let signatureRepairAttempted = false;
   let emptyCompletionRetryCount = 0;
+  // 不认识的业务码在本次请求里连续出现的次数：workflow 策略表据此停下，见 workflow-model-failure-policy.ts。
+  // 来源：上游 a60ba6a7（F24 未识别业务码连续计数停机）。
+  let unrecognizedCodeStreak = 0;
 
   for (
     let attempt = 1;
@@ -339,6 +345,13 @@ export async function runGenerateText(input: {
       }
       // fork（F4.3）：off-peak 特判（排队 429 豁免预算/票据过期标记）随闲时任务全链路删除。
       const failure: ClassifiedModelFailure = classified;
+      const providerCode = inspectProviderFailure(error).providerErrorCode;
+      // 连续计数只认「不认识的业务码」：其余任何失败（网络错误、5xx、限流）都从零重数。
+      unrecognizedCodeStreak = nextUnrecognizedCodeStreak(
+        unrecognizedCodeStreak,
+        failure,
+        providerCode,
+      );
       const responseHeaders = sanitizeModelNetworkHeaders(
         getResponseHeaders(unwrapRetryError(error)),
       );
@@ -361,11 +374,7 @@ export async function runGenerateText(input: {
       const canRetryWithFailurePolicy =
         retryBudgetAllows(retryBudget, retryBudgetAttempt, input.retry.maxAttempts) &&
             // workflow 流量（无上限预算）读策略表而不是分类器的 retryable；有界预算逐字不变。
-            retryAllowedByFailurePolicy(
-              failure,
-              retryBudget,
-              inspectProviderFailure(error).providerErrorCode,
-            );
+            retryAllowedByFailurePolicy(failure, retryBudget, providerCode, unrecognizedCodeStreak);
       const canRetry = retryWithRepairedHistory || canRetryWithFailurePolicy;
 
       if (options) {
@@ -418,6 +427,8 @@ export async function runGenerateText(input: {
         });
         throw toAdapterError(error, failure, statusContext, attempt, {
           errorPhase: requestInvocationCompleted ? "response" : "prepare",
+          // 连续计数随错误带出去：driver 侧的策略表读同一个数，在与 runner 相同的计数上停下。
+          unrecognizedCodeStreak,
         });
       }
 

@@ -79,7 +79,10 @@ import type {
 } from "./runner-runtime.js";
 import { isRequestVerificationRejection } from "./request-security-edition/recovery.js";
 import { resolveModelForAttempt, RuntimeHeadersRefreshError } from "./runner-runtime-headers.js";
-import { retryAllowedByFailurePolicy } from "./workflow-model-failure-policy.js";
+import {
+  nextUnrecognizedCodeStreak,
+  retryAllowedByFailurePolicy,
+} from "./workflow-model-failure-policy.js";
 import {
   modelFailureStatusFields,
   providerRequestIdFromHeaders,
@@ -120,6 +123,16 @@ export async function* runStreamText(input: {
   let requestMessages = input.request.messages;
   let signatureRepairAttempted = false;
   let emptyCompletionRetryCount = 0;
+  // 不认识的业务码在本次请求里连续出现的次数：workflow 策略表据此停下，见 workflow-model-failure-policy.ts。
+  // 每次失败（外层 catch 与流内错误块两条路径）都经它更新一次。
+  // 来源：上游 a60ba6a7（F24 未识别业务码连续计数停机）。
+  let unrecognizedCodeStreak = 0;
+  const countUnrecognizedCode = (failure: ClassifiedModelFailure, error: unknown): number =>
+    (unrecognizedCodeStreak = nextUnrecognizedCodeStreak(
+      unrecognizedCodeStreak,
+      failure,
+      inspectProviderFailure(error).providerErrorCode,
+    ));
 
   for (
     let attempt = 1;
@@ -356,6 +369,7 @@ export async function* runStreamText(input: {
             admission,
             attempt,
             chunk: next.value,
+            countUnrecognizedCode,
             diagnostics,
             emittedRetryBoundaryEvent,
             input,
@@ -486,15 +500,16 @@ export async function* runStreamText(input: {
             hiddenProviderBusinessError,
             input.request.abortSignal,
           );
-          throw new TerminalStreamChunkError(
-            toAdapterError(hiddenProviderBusinessError, failure, statusContext, attempt, {
-              ...compactStreamFailureContext(
-                input.request.preserveProviderStreamBoundaries,
-                "response_body",
-              ),
-              errorPhase: "stream",
-            }),
-          );
+            throw new TerminalStreamChunkError(
+              toAdapterError(hiddenProviderBusinessError, failure, statusContext, attempt, {
+                ...compactStreamFailureContext(
+                  input.request.preserveProviderStreamBoundaries,
+                  "response_body",
+                ),
+                errorPhase: "stream",
+                unrecognizedCodeStreak: countUnrecognizedCode(failure, hiddenProviderBusinessError),
+              }),
+            );
         }
 
         if (isSuspiciousStreamDiagnostics(diagnostics)) {
@@ -526,6 +541,10 @@ export async function* runStreamText(input: {
                   "response_body",
                 ),
                 errorPhase: "stream",
+                unrecognizedCodeStreak: countUnrecognizedCode(
+                  failure,
+                  streamEndedWithoutOutputError,
+                ),
               }),
             );
           }
@@ -704,6 +723,7 @@ export async function* runStreamText(input: {
         streamErrorChunkObserved: Boolean(
           diagnostics.lastErrorChunk || diagnostics.lastFinishChunk,
         ),
+        unrecognizedCodeStreak: countUnrecognizedCode(failure, error),
       });
       if (retryWithRepairedHistory) {
         failureDecision.canRetry = true;
@@ -776,6 +796,8 @@ export async function* runStreamText(input: {
         throw toAdapterError(error, failure, statusContext, attempt, {
           ...failureDecision.context,
           errorPhase,
+          // 连续计数随错误带出去：driver 侧的策略表读同一个数，在与 runner 相同的计数上停下。
+          unrecognizedCodeStreak,
         });
       }
 
@@ -967,6 +989,8 @@ async function handleStreamChunk(input: {
   admission: AttemptAdmission;
   attempt: number;
   chunk: TextStreamPart<ToolSet>;
+  /** 记一次失败，返回不认识的业务码连续出现的次数（含这一次）。 */
+  countUnrecognizedCode: (failure: ClassifiedModelFailure, error: unknown) => number;
   diagnostics: ReturnType<typeof createStreamDiagnostics>;
   emittedRetryBoundaryEvent: boolean;
   input: {
@@ -1186,6 +1210,7 @@ async function handleStreamErrorEvent(
   // fork（F4.3）：off-peak 特判（SSE 首块即错的排队 429 豁免）随闲时任务全链路删除。
   const failure: ClassifiedModelFailure = classified;
   const responseHeaders = sanitizeModelNetworkHeaders(getResponseHeaders(unwrapRetryError(error)));
+  const unrecognizedCodeStreak = input.countUnrecognizedCode(failure, error);
   const failureDecision = resolveStreamFailureDecision({
     attempt: input.retryBudgetAttempt,
     emittedRetryBoundaryEvent: input.emittedRetryBoundaryEvent,
@@ -1196,6 +1221,7 @@ async function handleStreamErrorEvent(
     responseHeaders,
     retryBudget: input.input.request.modelRetryBudget,
     streamErrorChunkObserved: true,
+    unrecognizedCodeStreak,
   });
   if (retryWithRepairedHistory) {
     failureDecision.canRetry = true;
@@ -1259,6 +1285,8 @@ async function handleStreamErrorEvent(
         toAdapterError(error, failure, statusContext, input.attempt, {
           ...failureDecision.context,
           errorPhase: "stream",
+          // 连续计数随错误带出去：driver 侧的策略表读同一个数，在与 runner 相同的计数上停下。
+          unrecognizedCodeStreak,
         }),
       ),
     });
@@ -1371,6 +1399,7 @@ function resolveStreamFailureDecision(input: {
   retryBudget?: ModelRetryBudget;
   streamErrorChunkObserved?: boolean;
   streamIteratorCreated?: boolean;
+  unrecognizedCodeStreak: number;
 }): { canRetry: boolean; context?: Record<string, unknown> } {
   const httpResponseStatus = input.preserveProviderStreamBoundaries
     ? resolveCompactHttpResponseStatus(input.error)
@@ -1396,6 +1425,7 @@ function resolveStreamFailureDecision(input: {
       preserveProviderStreamBoundaries: input.preserveProviderStreamBoundaries,
       retryBudget: input.retryBudget,
       streamFailurePhase,
+      unrecognizedCodeStreak: input.unrecognizedCodeStreak,
     }),
     context: compactStreamFailureContext(
       input.preserveProviderStreamBoundaries,
@@ -1415,6 +1445,7 @@ function canRetryStreamFailure(input: {
   preserveProviderStreamBoundaries?: boolean;
   retryBudget?: ModelRetryBudget;
   streamFailurePhase?: StreamFailurePhase;
+  unrecognizedCodeStreak: number;
 }): boolean {
   // workflow 流量（无上限预算）不读分类器的 retryable，读策略表：只有确定性的模型侧错误
   // 才不重试；3008/3009/3010 这类并发上限在这里是 retry。
@@ -1440,7 +1471,14 @@ function canRetryStreamFailure(input: {
     return true;
   }
 
-  if (!retryAllowedByFailurePolicy(input.failure, input.retryBudget, providerCode)) {
+  if (
+    !retryAllowedByFailurePolicy(
+      input.failure,
+      input.retryBudget,
+      providerCode,
+      input.unrecognizedCodeStreak,
+    )
+  ) {
     return false;
   }
 

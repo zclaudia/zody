@@ -1,8 +1,8 @@
 # Dynamic Workflow: Quota Resume and Failure Shutdown (spec)
 
-Status: planned (F24, tier2 upstream v3.17.1, source SHA a60ba6a7). This document is the
-product spec for two rules that keep a workflow run from being stranded when the provider
-refuses it in a way the failure classifier does not fully understand:
+Status: implemented (F24, tier2 upstream v3.17.1, source SHA a60ba6a7). This document is
+the product spec for two rules that keep a workflow run from being stranded when the
+provider refuses it in a way the failure classifier does not fully understand:
 
 1. **Quota auto-resume** — a run stopped on a usage cap resumes by itself once the cap
    resets, when the stop record carries a reset time. Implemented by a new host module in
@@ -14,8 +14,12 @@ refuses it in a way the failure classifier does not fully understand:
    (`model/workflow-model-failure-policy.ts`); the table itself is documented in
    `concurrency.md` ("The policy table").
 
-Until the implementation steps land, the current code stops quota runs (they are manually
-resumable) and retries unknown business codes without limit. Nothing here changes
+Implementation landed in step F24② (adapters: streak semantics + reset-time provenance in
+`workflow-model-failure-policy.ts`, streak counting in `runner-generate.ts` /
+`runner-stream.ts`; bootstrap: `dynamic-workflow-quota-resume.ts` wired in `create-app.ts`
+after the workflow facade, disposed before the run service closes). Acceptance scenarios
+S1–S9 are covered by `adapters/tests/workflow-model-failure-policy.test.ts` and
+`bootstrap/tests/dynamic-workflow-quota-resume.test.ts`. Nothing here changes
 main-conversation behaviour: under a `default` (bounded) retry budget the classifier's
 `retryable` flag is consulted exactly as before.
 
@@ -159,8 +163,10 @@ wakes; the execution boundary owns the resume; the journal is read-only to the m
 Unit level, per package (naming follows each suite, e.g. `dynamic-workflow-quota-resume.test.ts`
 in `bootstrap/tests/`, additions to `workflow-model-failure-policy.test.ts` in
 `adapters/tests/`). Each numbered scenario is a behaviour change with a counter-example:
-S1, S2 and S4–S9 do not hold on the current code (no module, no streak, no message-parsed
-reset time); S3 is the unchanged-behaviour guard and must pass before and after.
+S1, S2 and S4–S9 did not hold before the implementation landed (no module, no streak, no
+message-parsed reset time — verified by running the new tests against the pre-F24② code,
+five adapter assertions failing and the bootstrap suite failing on the missing module);
+S3 is the unchanged-behaviour guard and passes before and after.
 
 Adapters — policy and provenance:
 
@@ -199,8 +205,9 @@ E2E posture: this feature has no interactive surface (no UI, no protocol change)
 host-side policy, so it is not in the e2e-case-lifecycle registry. The existing
 fault-matrix bed (`bootstrap/tests/workflow-fault-matrix.stop.test.ts`, `FakeProviderServer`
 on loopback, cell B11 "五小时用量上限 429/1308") already exercises the quota stop
-end-to-end against a fake provider and is the natural place to extend with an
-unknown-code cell and a resume-after-reset cell when the implementation lands.
+end-to-end against a fake provider and remains the natural place to extend with an
+unknown-code cell and a resume-after-reset cell if field evidence asks for one; the
+F24② port is validated by the two unit suites above.
 
 ## Non-goals
 

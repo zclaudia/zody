@@ -674,7 +674,7 @@ time, to tell a stop from a throttle on a failed attempt ("Reading a ticket").
 | error code `model_not_found` | `stop`, kind `model_unavailable` |
 | reason `context_exceeded` | `context_exceeded` |
 | reason `invalid_request`, unless the code is `invalid_model_response` | `stop`, kind `invalid_request` |
-| reason `unknown` with a provider code (a code the classifier does not know, such as `1113`), the 10th time in a row within one request (planned, F24) | `stop`, kind `other` |
+| reason `unknown` with a provider code (a code the classifier does not know, such as `1113`), the 10th time in a row within one request (F24) | `stop`, kind `other` |
 | anything else: rate limits, overload, 5xx, timeouts, network and TLS errors, an unknown provider code fewer than 10 times in a row within one request, a response the adapter could not parse | `retry` |
 
 Under `unbounded`, `retry` means retry; `stop` and `context_exceeded` mean the attempt loop
@@ -684,7 +684,7 @@ reason check on purpose: code `1005` classifies as `invalid_request`, and a stop
 that reads "quota" is the one the user can act on.
 
 The cap on unknown provider codes (`WORKFLOW_UNRECOGNIZED_CODE_MAX_CONSECUTIVE`, 10;
-planned as F24, specified in `quota-resume.md` "R3 — Shutdown on unrecognized business
+F24, specified in `quota-resume.md` "R3 — Shutdown on unrecognized business
 codes") exists because such a code can be deterministic: on 2026-10-16 the server returned
 `1113` to a set of accounts on every request, the classifier did not know it, and workflow
 runs retried it forever under the unbounded budget, leaving only the stall notice. An
@@ -699,7 +699,7 @@ reaches the same stop.
 
 The `stop` kinds are the vocabulary of `ProviderStop`; how a stopped run is presented and
 resumed is in `execution-engine.md`, and how a run stopped on a usage cap resumes by
-itself after the reset (planned, F24) is specified in `quota-resume.md`.
+itself after the reset (F24) is specified in `quota-resume.md`.
 
 ### Where the two layers meet
 
