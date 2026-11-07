@@ -218,6 +218,14 @@ packages/ui/test/browser/manual-review/pending/image-preview-editor.test.mjs` 15
   基类 `fixed` 同组而删除后者，弹窗掉进文档流渲染到视口外（E2E `elementFromPoint` 反例定位）；
   修复为不写 position 类、依赖基类 `fixed` 作定位祖先（组件内已注释原因）。pending 未转正，
   不计为正式 Desktop 通过。
+- 2026-11-07 执行记录（F15④）：新增 **PA161-05 真实 Composer 保真变体**——
+  `image-annotate-to-draft.fixture.tsx` 挂载真实 `ConversationComposer`（真实
+  `useComposerAttachments` 捕获注册与 `addAttachmentFiles` 入队；仅 Platform/Services 以 fake
+  provider 注入，补 TabStoreProvider 与 clientConfigService.getSnapshot fake），经真实捕获通道
+  播种草稿图片后走「chip 标注入口 → 编辑器 → 保存」，断言真实附件 store 文件名列表
+  `["shot.png", "shot-edited.png"]`、双 chip 均具备标注入口、零发送（sentCount=0）、新 chip 可
+  再次打开编辑器。同文件合计 **16/16 通过**（连续三轮稳定）；浏览器级真实 Composer 链路由此
+  收口，`packages/desktop` 全窗口用例仍为缺口待协调。
 - 剪枝登记：真实触屏设备、Windows/Linux 原生窗口、真实手机远控链路不由浏览器组件测试冒充；
   upload / 发送 / queue / fork / replay 组合剪枝（保存只走既有 draft admission，不新增第二条
   发送路径）；light/dark × locale × 宽度取代表组合不做全集。

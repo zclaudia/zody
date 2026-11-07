@@ -19,6 +19,9 @@ import { chromium } from "playwright-core";
 
 const root = fileURLToPath(new URL("../../../../../../", import.meta.url));
 const entry = "/packages/ui/test/browser/manual-review/pending/image-preview-editor.fixture.tsx";
+// F15④：PA161-05 真实 Composer 保真入口（真实 useComposerAttachments 捕获注册与入队）。
+const composerEntry =
+  "/packages/ui/test/browser/manual-review/pending/image-annotate-to-draft.fixture.tsx";
 let server, browser, origin;
 const artifacts = join(root, "packages/desktop/.e2e-artifacts/image-preview-editor-browser");
 
@@ -35,12 +38,13 @@ before(async () => {
         name: "image-preview-editor-fixture",
         configureServer(vite) {
           vite.middlewares.use(async (req, res, next) => {
-            if (!req.url?.startsWith("/fixture?")) return next();
+            const composerFixture = req.url?.startsWith("/composer-fixture?");
+            if (!req.url?.startsWith("/fixture?") && !composerFixture) return next();
             res.setHeader("Content-Type", "text/html");
             res.end(
               await vite.transformIndexHtml(
                 req.url,
-                `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1" /></head><body><div id="root"></div><script type="module" src="${entry}"></script></body></html>`,
+                `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1" /></head><body><div id="root"></div><script type="module" src="${composerFixture ? composerEntry : entry}"></script></body></html>`,
               ),
             );
           });
@@ -48,7 +52,7 @@ before(async () => {
       },
     ],
     resolve: { alias: { "@": `${root}packages/ui/src` } },
-    optimizeDeps: { entries: [entry.slice(1)] },
+    optimizeDeps: { entries: [entry.slice(1), composerEntry.slice(1)] },
     server: {
       host: "127.0.0.1",
       port: 0,
@@ -502,3 +506,53 @@ for (const width of [390, 1100])
         }
       });
     }
+
+test("PA161-05 真实 Composer：chip 标注入口 → 编辑器 → 保存 → 草稿新增 shot-edited.png，零发送", async () => {
+  const page = await browser.newPage({ viewport: { width: 1100, height: 844 } });
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  try {
+    await page.goto(`${origin}composer-fixture?`);
+    // 真实 ConversationComposer 挂载完成（composer 根节点出现）。
+    await page.locator(".chat-composer-region").waitFor({ timeout: 10000 });
+    const chips = page.locator('[data-composer-attachment-kind="image"]');
+    assert.equal(await chips.count(), 0);
+    // 经真实捕获通道播种草稿图片：证明真实 useComposerAttachments 已注册接收方，
+    // 且 append 即真实 addAttachmentFiles 入队（不经任何 mock）。
+    await page.evaluate(() => window.seedDraftImage());
+    await chips.first().waitFor({ timeout: 5000 });
+    assert.equal(await chips.count(), 1);
+    assert.equal(await page.locator("[data-composer-attachment-annotate]").count(), 1);
+    // 打开真实编辑器弹窗，画笔标注后保存。
+    await page.locator("[data-composer-attachment-annotate]").click();
+    await page.locator("[role=dialog]").waitFor({ timeout: 5000 });
+    await page.waitForFunction(() => {
+      const pen = document.querySelector('[data-image-preview-tool="pen"]');
+      return pen instanceof HTMLButtonElement && !pen.disabled;
+    });
+    await draw(page);
+    await page.locator("[data-image-preview-save]").click();
+    await page.locator("[role=dialog]").waitFor({ state: "hidden", timeout: 5000 });
+    // 真实入草稿：第二个图片 chip 出现且同样具备标注入口；文件名走 <base>-edited.png 规则。
+    await chips.nth(1).waitFor({ timeout: 5000 });
+    assert.equal(await chips.count(), 2, "保存后草稿应新增一个图片附件 chip");
+    assert.equal(await page.locator("[data-composer-attachment-annotate]").count(), 2);
+    assert.deepEqual(await page.evaluate(() => window.draftFilenames()), [
+      "shot.png",
+      "shot-edited.png",
+    ]);
+    assert.equal(await page.evaluate(() => window.sentCount), 0, "零发送（不产生 sendText）");
+    // 新 chip 可再次打开编辑器（入口对导出产物同样可用），Escape 关闭不改草稿。
+    await page.locator("[data-composer-attachment-annotate]").nth(1).click();
+    await page.locator("[role=dialog]").waitFor({ timeout: 5000 });
+    await page.keyboard.press("Escape");
+    await page.locator("[role=dialog]").waitFor({ state: "hidden", timeout: 3000 });
+    assert.equal(await chips.count(), 2);
+    assert.deepEqual(errors, []);
+  } catch (error) {
+    await page.screenshot({ path: join(artifacts, "failure-composer-draft.png") });
+    throw error;
+  } finally {
+    await page.close();
+  }
+});
