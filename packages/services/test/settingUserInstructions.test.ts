@@ -12,6 +12,10 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { USER_INSTRUCTIONS_MAX_BYTES, ZODY_DATA_ROOT_DIR_NAME } from "@zody/shared";
 import type { ISettingService } from "../src/setting/setting.js";
+// 跨树导入先例：packages/desktop/test/storagePreparationProtocol.test.ts 以相对路径引
+// apps/zody-cli 源码做跨域契约测试；本文件用同一方式实测 CLI adapter 的真实读取路径，
+// 避免「两侧上限同口径」只停留在常量比对（PZ07 源码扫描）而从未执行过 Agent 侧读取。
+import { createNodeContextSourceAdapter } from "../../../apps/zody-cli/packages/adapters/src/context/index.js";
 
 /**
  * 设置页「个性化」（用户自定义指令）服务层验收，对应 docs/ui/settings-personalization.md
@@ -178,5 +182,82 @@ describe("settingService user instructions（个性化指令）", () => {
     await service.saveUserInstructions("userprofile instructions");
     expect(existsSync(join(home, ZODY_DATA_ROOT_DIR_NAME, "AGENTS.md"))).toBe(true);
     expect((await service.getUserInstructions()).content).toBe("userprofile instructions");
+  });
+});
+
+/**
+ * 「两侧上限同口径」的实测补全（spec 验收口径：同一份 ≤100KB 内容经 saveUserInstructions
+ * 保存后由 CLI adapter 实际读取必须完整不截断且路径一致）。
+ * 修复原因：442b8000 落地的 PZ03 只经 settingService 自身 readFile 读回，同口径仅由
+ * PZ07 的常量源码扫描间接保证，从未执行过 Agent 侧真实读取路径——若服务写路径与
+ * adapter 读路径发生漂移（文件名/目录名/上限任一侧单独改动），现有测试无法发现
+ * 「App 写的文件 Agent 读不到」。这里用 CLI adapter 公开入口
+ * （apps/zody-cli/packages/adapters/src/context/index.ts，上游 a60ba6a7 语义，
+ * 本仓 2026-11-06 校准路径）跨树实测（导入先例见文件头注释）。
+ */
+describe("与 CLI adapter 读取同口径（PZ03 实测）", () => {
+  function makeAdapterHome(workspaceName: string): { home: string; workspace: string } {
+    const home = makeTempHome("zody-user-instructions-adapter-");
+    const workspace = join(home, workspaceName);
+    mkdirSync(workspace, { recursive: true });
+    return { home, workspace };
+  }
+
+  function readViaAdapter(home: string, workspace: string) {
+    const adapter = createNodeContextSourceAdapter({ env: { HOME: home } });
+    return adapter.resolveContextSources({
+      workingDirectory: workspace,
+      userInstructions: { workingDirectory: workspace },
+    });
+  }
+
+  it("saveUserInstructions 保存的 ≤100KB 内容经 CLI adapter 实际读取完整不截断且路径一致", async () => {
+    const { home, workspace } = makeAdapterHome("workspace");
+    const service = await createSettingServiceInHome(home);
+    const expectedPath = join(home, ZODY_DATA_ROOT_DIR_NAME, "AGENTS.md");
+
+    // 常规中文内容：路径一致（App 写的即 Agent 读的）。
+    await service.saveUserInstructions("每次回答末尾附一行总结");
+    const plain = await readViaAdapter(home, workspace);
+    expect(plain.userInstructions?.filePath).toBe(expectedPath);
+    expect(plain.userInstructions?.content).toBe("每次回答末尾附一行总结");
+    expect(plain.userInstructions?.truncated).toBe(false);
+    expect(plain.userInstructions?.sources).toEqual([
+      expect.objectContaining({ scope: "user", filePath: expectedPath, truncated: false }),
+    ]);
+
+    // 恰好 100KB（UTF-8 字节计，多字节 + ASCII 混合）：边界值两侧都不截断。
+    const atLimit = `${"ü".repeat(USER_INSTRUCTIONS_MAX_BYTES / 2 - 2)}abcd`;
+    expect(Buffer.byteLength(atLimit, "utf8")).toBe(USER_INSTRUCTIONS_MAX_BYTES);
+    await service.saveUserInstructions(atLimit);
+    const boundary = await readViaAdapter(home, workspace);
+    expect(boundary.userInstructions?.filePath).toBe(expectedPath);
+    expect(boundary.userInstructions?.content).toBe(atLimit);
+    expect(boundary.userInstructions?.truncated).toBe(false);
+  });
+
+  it("外部绕过保存侧写入的超限文件 adapter 只读前 100KB：保存侧拒绝、读取侧截断同口径", async () => {
+    const { home, workspace } = makeAdapterHome("workspace");
+    const service = await createSettingServiceInHome(home);
+
+    // 100KB + 3 字节（尾字节为多字节字符），前 100KB 为纯 ASCII，截断结果可精确断言。
+    const oversized = `${"a".repeat(USER_INSTRUCTIONS_MAX_BYTES)}尾`;
+    expect(Buffer.byteLength(oversized, "utf8")).toBe(USER_INSTRUCTIONS_MAX_BYTES + 3);
+
+    // 保存侧（最终防线）：同一内容直接硬拒，不落盘。
+    await expect(service.saveUserInstructions(oversized)).rejects.toMatchObject({
+      code: "user_instructions_too_large",
+    });
+
+    // 读取侧（Agent 实际语义）：用户手放大文件时 adapter 静默只读前 100KB 并标记 truncated。
+    // 两侧行为不同但口径同值（100KB）：保存侧拒绝的正是读取侧不会完整读取的内容。
+    mkdirSync(join(home, ZODY_DATA_ROOT_DIR_NAME), { recursive: true });
+    writeFileSync(join(home, ZODY_DATA_ROOT_DIR_NAME, "AGENTS.md"), oversized, "utf8");
+    const snapshot = await readViaAdapter(home, workspace);
+    expect(snapshot.userInstructions?.truncated).toBe(true);
+    expect(snapshot.userInstructions?.content).toBe("a".repeat(USER_INSTRUCTIONS_MAX_BYTES));
+    expect(Buffer.byteLength(snapshot.userInstructions?.content ?? "", "utf8")).toBe(
+      USER_INSTRUCTIONS_MAX_BYTES,
+    );
   });
 });

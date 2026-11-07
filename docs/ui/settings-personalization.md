@@ -50,6 +50,7 @@ packages/ui/src/settings/PersonalizationSection.tsx（新建，挂 SettingsPage�
 - 保存侧：超过 100KB 硬拒绝（错误码见上），杜绝「保存成功但 Agent 静默截断」的误判。
 - UI 预检：按 UTF-8 字节计数显示 `x KB / 100 KB`；超限阻断保存并提示（destructive 文案）。
 - 验收口径：同一份 ≤100KB 内容，经 `saveUserInstructions` 保存后由 CLI adapter `resolveUserInstructions` 读取必须完整不截断且路径一致；多字节字符按 UTF-8 字节计（非字符数）。
+  - 该口径由 `packages/services/test/settingUserInstructions.test.ts` 的「与 CLI adapter 读取同口径（PZ03 实测）」组**实测执行**：经 adapter 公开入口（`createNodeContextSourceAdapter().resolveContextSources`）真实读取服务侧保存的文件（常规内容 + 恰好 100KB 边界），断言路径一致、内容完整、`truncated` 为 false；并从读取侧实测外部超限文件只读前 100KB 且 `truncated` 为 true（与保存侧硬拒同口径）。常量比对（PZ07）只防「上限值漂移」，路径与读取语义漂移由这组实测兜住。
 
 ## UI 行为与状态所有权
 
@@ -112,6 +113,6 @@ UI 模块级草稿 store（PersonalizationSection 私有，卸载不失活）
 ## 剪枝
 
 - 不做多 Host 跨实例写仲裁（单 Host 是当前现实路径，登记为已知边界）。
-- 不覆盖 CLI adapter 读取截断本身的等价类（截断语义由 CLI 侧既有测试持有；本域只验「两侧上限同口径」，即 PZ03/PZ07）。
+- 不覆盖 CLI adapter 指令合并/优先级等一般等价类（由 `apps/zody-cli/packages/adapters/tests/fs-context.test.ts` 持有）。核实修正（2026-11-08）：CLI 侧既有测试**并未**覆盖用户指令 100KB 截断（fs-context 的 maxBytes 用例只针对 `fs.readBinaryFile`），用户指令读取侧截断由本域 `settingUserInstructions.test.ts` 经 adapter 公开入口实测持有（见「100KB 上限口径」节）。
 - 不新增协议命令、watcher、自动保存或外部编辑器打开能力。
 - 「应用已启动但 `{home}/.zody` 缺失」无法在 UI 级 E2E 构造（桌面 Host 启动即建目录），首次保存建目录分支由服务层测试（PZ01）与顺序结构保证。
