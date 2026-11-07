@@ -26,8 +26,10 @@ import {
   type WebRemoteControlTaskTarget,
   type WebRemoteControlWorkspaceTarget,
   type WindowControlsOverlayReadyPayload,
+  type FileApplicationTarget,
 } from "@zody/shared";
-import { getInstalledEditors } from "./editors.js";
+import { getAppIconDataUrl, getInstalledEditors } from "./editors.js";
+import { createFileApplicationService } from "./file-open-apps/index.js";
 import { getApplicationIcon } from "./applicationIcons.js";
 import { exportLogs } from "./exportLogs.js";
 import { resolveCommunityUrl } from "./desktopCommandHandlers.js";
@@ -447,6 +449,21 @@ export function registerPlatformIpcHandlers(options: {
     return resolveDesktopWindowChromeState(senderWindow?.isMaximized() ?? false);
   });
   ipcMain.handle(PlatformChannels.GetInstalledEditors, () => getInstalledEditors());
+  // F16 file-open-apps（upstream v3.17.1，SHA a60ba6a7）：系统关联为唯一事实源，
+  // 产品规则与共存裁决见 docs/ui/file-open-apps.md。macOS/Linux 图标复用既有
+  // getAppIconDataUrl 能力注入（与编辑器菜单同一来源）。
+  const fileApplications = createFileApplicationService({
+    getIcon: (id, path) => getAppIconDataUrl(id, path),
+    logger: options.logger,
+  });
+  ipcMain.handle(PlatformChannels.GetFileApplications, (_event, target: FileApplicationTarget) =>
+    fileApplications.getFileApplications(target),
+  );
+  ipcMain.handle(
+    PlatformChannels.OpenFileWithApplication,
+    (_event, payload: { applicationId: string; target: FileApplicationTarget }) =>
+      fileApplications.openFileWithApplication(payload?.applicationId, payload?.target),
+  );
   ipcMain.handle(
     PlatformChannels.GetApplicationIcon,
     (_event, request: string | ApplicationIconRequest) => getApplicationIcon(request),

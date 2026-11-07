@@ -223,6 +223,25 @@ export interface EditorInfo {
   iconDataUrl: string;
 }
 
+/**
+ * 系统对当前文件类型注册的关联应用（upstream v3.17.1 file-open-apps，来源 SHA a60ba6a7）。
+ * id 是宿主对原生应用身份的摘要，仅由宿主解析，不能当作命令执行。
+ */
+export interface FileApplicationInfo {
+  id: string;
+  name: string;
+  iconDataUrl?: string;
+  isDefault: boolean;
+}
+
+/** 本机文件目标；远端身份只用于拒绝本机查询（失败关闭），不参与路由。 */
+export interface FileApplicationTarget {
+  path: string;
+  pathKind: "file" | "directory";
+  workspaceIdentity?: string;
+  remoteTarget?: OpenInEditorRemoteTarget;
+}
+
 export interface ApplicationIconInfo {
   iconDataUrl: string;
 }
@@ -1326,6 +1345,16 @@ export interface IPlatformService {
 
   /** 获取系统中已安装的编辑器/终端列表（含图标） */
   getInstalledEditors(): Promise<EditorInfo[]>;
+
+  /** 本机文件的系统关联应用（upstream v3.17.1 file-open-apps，SHA a60ba6a7）；
+   *  Web/远端/目录不提供本机应用，可选方法缺席即按能力关闭。 */
+  getFileApplications?(target: FileApplicationTarget): Promise<FileApplicationInfo[]>;
+
+  /** 重新确认系统关联后，使用该应用打开本机文件；id 不会作为命令执行。 */
+  openFileWithApplication?(
+    applicationId: string,
+    target: FileApplicationTarget,
+  ): Promise<{ success: boolean; error?: string }>;
 
   /** 用指定编辑器打开路径 */
   openInEditor(

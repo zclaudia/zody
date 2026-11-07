@@ -163,8 +163,9 @@ packages/desktop  main file-open-apps 模块（createFileApplicationService）
 - **先完整读取原字节，再打开保存对话框**：用户在对话框中选择源文件本身也不会先把源文件截断。
 - 读取完成后核对 `stat`：类型、`size`、`mtimeMs` 任一变化按 `file_changed` 失败；chunk 为空或
   超出请求长度同样失败。不做文本解码（按原始字节交付）。
-- 成功提示区分宿主：桌面 `fileActions.saved`；浏览器只能确认交付下载，用
-  `fileActions.downloadStarted`，不把 `success` 误报成已写入磁盘。取消始终不提示。
+- 成功提示：本仓当前所有 `saveFile` 宿主（桌面保存对话框、手机远控原生保存）都以写盘收尾，
+  成功统一提示 `fileActions.saved`；上游按 `canOpenLocalFiles` 区分浏览器「已开始下载」的
+  文案随该能力位缺省不移植（本仓无浏览器下载型 saveFile 实现）。取消始终不提示。
 - 保存失败可见（`fileActions.saveAsFailed` / 限额 / 不可用文案），不只写日志。
 
 ## OpenSplitButton.renderCard 与 I15 整卡打开

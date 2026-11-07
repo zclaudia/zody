@@ -29,6 +29,8 @@ import type {
   EmbeddedBrowserSitePermissionResetRequest,
   EmbeddedBrowserSitePermissionsSnapshot,
   EditorInfo,
+  FileApplicationInfo,
+  FileApplicationTarget,
   ApplicationIconInfo,
   ApplicationIconRequest,
   Locale,
@@ -396,6 +398,13 @@ declare global {
       quitAndInstallUpdate(): Promise<void>;
       /** 获取已安装的编辑器/终端列表（含图标） */
       getInstalledEditors(): Promise<EditorInfo[]>;
+      /** 获取本机文件的系统关联应用（F16 file-open-apps，SHA a60ba6a7） */
+      getFileApplications(target: FileApplicationTarget): Promise<FileApplicationInfo[]>;
+      /** 重新确认系统关联后用该应用打开本机文件 */
+      openFileWithApplication(
+        applicationId: string,
+        target: FileApplicationTarget,
+      ): Promise<{ success: boolean; error?: string }>;
       /** 按兼容 bundle id 或结构化 locator 获取系统应用图标 */
       getApplicationIcon?(
         request: string | ApplicationIconRequest,

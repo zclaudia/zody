@@ -201,6 +201,9 @@ export function createDesktopPlatform(options: {
     skipUpdateVersion: (version) => window.zody.skipUpdateVersion?.(version) ?? Promise.resolve(),
     quitAndInstallUpdate: () => window.zody.quitAndInstallUpdate(),
     getInstalledEditors: () => window.zody.getInstalledEditors(),
+    getFileApplications: (target) => window.zody.getFileApplications(target),
+    openFileWithApplication: (applicationId, target) =>
+      window.zody.openFileWithApplication(applicationId, target),
     getApplicationIcon: (bundleId) =>
       window.zody.getApplicationIcon?.(bundleId) ?? Promise.resolve(null),
     openInEditor: (editorId, path, editorOptions) =>

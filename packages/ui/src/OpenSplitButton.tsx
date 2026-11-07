@@ -1,9 +1,16 @@
-import type { EditorInfo } from "@zody/shared";
-import { ChevronDownIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import type { EditorInfo, FileApplicationInfo } from "@zody/shared";
+import { ChevronDownIcon, CopyIcon, ExternalLinkIcon, PanelRightIcon } from "lucide-react";
+import { useCallback, useMemo, useState, type ReactElement, type ReactNode } from "react";
 import { Button } from "@/components/ui/button.js";
 import { toast } from "@/components/ui/toast.js";
 import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,11 +22,14 @@ import { usePlatform } from "@/hooks/usePlatform.js";
 import { useFileContextActions } from "@/hooks/useFileContextActions.js";
 import { useWorkspaceOpenInEditorTarget } from "@/hooks/useWorkspaceOpenInEditorTarget.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
-import { persistLastSelectedEditorId, readLastSelectedEditorId } from "@/lib/editorPreference.js";
+import { persistLastSelectedEditorId } from "@/lib/editorPreference.js";
 import type { CodeViewerSource } from "@/lib/codeViewer.js";
 import { getWorkspaceFileRelativePath } from "@/workspace-file-tree/model.js";
 import { resolveWorkspaceEditorSelection } from "@/lib/workspaceEditorSelection.js";
 import { logger } from "@/logger.js";
+import { FileApplicationChoices } from "@/file-menu/FileApplicationChoices.js";
+import { FileSaveAsMenuItem } from "@/file-menu/FileSaveAsMenuItem.js";
+import { useFileApplications } from "@/file-menu/useFileApplications.js";
 
 // 导出类型供共用时间线以 import type 引用（构建期擦除，不把 open-with 子树带进公开页 bundle）。
 export type OpenSplitButtonTarget =
@@ -43,6 +53,16 @@ interface OpenSplitButtonProps {
   onOpenCodeViewer?: (source: CodeViewerSource) => void;
   hideOpenWithMenu?: boolean;
   stopPropagation?: boolean;
+  /**
+   * 整张卡片复用按钮的操作与状态（upstream v3.17.1 OpenSplitButton.renderCard，
+   * 来源 SHA a60ba6a7）：右键和下拉不会维护两套动作；卡片主体通过透明按钮执行
+   * 与主按钮相同的预览动作（I15 整卡打开，docs/ui/assistant-preview-cards.md）。
+   */
+  renderCard?: (
+    button: ReactNode,
+    /** 卡片主体整卡点击复用主按钮的预览动作与可用状态。 */
+    actions: { handlePreview: () => void; canPreview: boolean },
+  ) => ReactElement;
 }
 
 export function OpenSplitButton({
@@ -52,6 +72,7 @@ export function OpenSplitButton({
   onOpenCodeViewer,
   hideOpenWithMenu = false,
   stopPropagation = false,
+  renderCard,
 }: OpenSplitButtonProps) {
   const { intl } = useZodyIntl();
   const platform = usePlatform();
@@ -68,6 +89,20 @@ export function OpenSplitButton({
     previewSource?.workspaceRemoteSessionId ||
     matchedOpenContext.isRemoteWorkspace,
   );
+  // F16（SHA a60ba6a7）：本机文件按格式打开以系统关联为唯一事实源；仅当系统
+  // 关联查询能力缺席或结果为空时回退静态编辑器菜单（docs/ui/file-open-apps.md
+  // 共存章节，裁决 4）。远程身份不查询系统关联，继续走 openInEditor(remoteTarget)。
+  const fileApplications = useFileApplications(
+    target.type === "file"
+      ? {
+          path: target.path,
+          pathKind: "file",
+          workspaceIdentity: previewSource?.workspaceIdentity,
+        }
+      : null,
+    isRemoteSource,
+  );
+  const systemAppsAvailable = !isRemoteSource && fileApplications.available;
   const [editors, setEditors] = useState<EditorInfo[]>([]);
   const [editorsLoaded, setEditorsLoaded] = useState(false);
   const [loadingEditors, setLoadingEditors] = useState(false);
@@ -86,12 +121,6 @@ export function OpenSplitButton({
     target.type === "website"
       ? Boolean(onOpenBrowserUrl)
       : Boolean(onOpenFileLink || onOpenCodeViewer);
-  const selectedEditor = useMemo(() => {
-    const selectedEditorId = readLastSelectedEditorId();
-    return (
-      sortedEditors.find((editor) => editor.id === selectedEditorId) ?? sortedEditors[0] ?? null
-    );
-  }, [sortedEditors]);
 
   const stopEventPropagation = (event: { stopPropagation: () => void }) => {
     if (stopPropagation) {
@@ -117,6 +146,14 @@ export function OpenSplitButton({
       setLoadingEditors(false);
     }
   }, [editorsLoaded, loadingEditors, platform, target]);
+
+  // 菜单打开时同时发起两份查询：系统关联是展示优先级的事实源；静态列表仅在
+  // 系统关联为空（或宿主无该能力）时作为回退渲染，提前并行加载避免回退时再等待。
+  const handleMenuOpenChange = (open: boolean) => {
+    if (!open || target.type !== "file") return;
+    if (systemAppsAvailable) void fileApplications.load();
+    if (!systemAppsAvailable || !fileApplications.apps.length) void loadEditors();
+  };
 
   const handlePreview = () => {
     if (target.type === "website") {
@@ -145,6 +182,13 @@ export function OpenSplitButton({
     });
   };
 
+  const handleOpenSystemApplication = (application: FileApplicationInfo) => {
+    if (target.type !== "file") {
+      return;
+    }
+    void fileApplications.open(application);
+  };
+
   const handleOpenInEditor = (editor: EditorInfo) => {
     if (target.type !== "file") {
       return;
@@ -167,6 +211,16 @@ export function OpenSplitButton({
           path: target.path,
           error: result.error ?? "unknown-error",
         });
+        // 返回失败和 IPC 拒绝都必须有可见反馈，不能只写日志后静默结束（SHA a60ba6a7）。
+        toast(intl.formatMessage({ id: "chat.previewCards.openFileFailed" }));
+      })
+      .catch((error: unknown) => {
+        logger.warn("[OpenSplitButton] 第三方 App 打开文件异常", {
+          editorId: editor.id,
+          path: target.path,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        toast(intl.formatMessage({ id: "chat.previewCards.openFileFailed" }));
       });
   };
 
@@ -192,8 +246,98 @@ export function OpenSplitButton({
       .catch(reportFailure);
   };
 
-  if (hideOpenWithMenu) {
+  /** 系统关联非空时渲染系统应用；为空/能力缺席时回退静态编辑器菜单（裁决 4）。 */
+  const renderOpenWithChoices = (variant: "dropdown" | "context") => {
+    if (systemAppsAvailable) {
+      if (fileApplications.loading && !fileApplications.apps.length) {
+        const Item = variant === "context" ? ContextMenuItem : DropdownMenuItem;
+        return <Item disabled>{intl.formatMessage({ id: "common.loading" })}</Item>;
+      }
+      if (fileApplications.apps.length) {
+        return (
+          <FileApplicationChoices
+            variant={variant}
+            applications={fileApplications.apps}
+            loading={fileApplications.loading}
+            onSelect={handleOpenSystemApplication}
+          />
+        );
+      }
+    }
+    if (loadingEditors && !sortedEditors.length) {
+      const Item = variant === "context" ? ContextMenuItem : DropdownMenuItem;
+      return <Item disabled>{intl.formatMessage({ id: "common.loading" })}</Item>;
+    }
+    if (!sortedEditors.length) {
+      const Item = variant === "context" ? ContextMenuItem : DropdownMenuItem;
+      return (
+        <Item disabled>
+          {intl.formatMessage({
+            id: loadingEditors ? "common.loading" : "chat.previewCards.noOpenApps",
+          })}
+        </Item>
+      );
+    }
+    const Item = variant === "context" ? ContextMenuItem : DropdownMenuItem;
+    return sortedEditors.map((editor) => (
+      <Item key={editor.id} onSelect={() => handleOpenInEditor(editor)}>
+        <img src={editor.iconDataUrl} alt={editor.name} className="size-4 shrink-0" />
+        <span>{editor.name}</span>
+      </Item>
+    ));
+  };
+
+  const renderFileMenuActions = (variant: "dropdown" | "context") => {
+    const Separator = variant === "context" ? ContextMenuSeparator : DropdownMenuSeparator;
+    const CopyItem = variant === "context" ? ContextMenuItem : DropdownMenuItem;
+    if (target.type !== "file") {
+      return (
+        <CopyItem onSelect={handleOpenExternal}>
+          <ExternalLinkIcon className="size-4" />
+          <span>{intl.formatMessage({ id: "chat.previewCards.openExternal" })}</span>
+        </CopyItem>
+      );
+    }
     return (
+      <>
+        {variant === "context" && (
+          <ContextMenuItem disabled={!canPreview} onSelect={handlePreview}>
+            <PanelRightIcon className="size-4" />
+            {intl.formatMessage({ id: "chat.previewCards.previewInSidePane" })}
+          </ContextMenuItem>
+        )}
+        {renderOpenWithChoices(variant)}
+        <Separator />
+        <FileSaveAsMenuItem
+          variant={variant}
+          path={target.path}
+          workspacePath={previewSource?.workspacePath}
+          workspaceIdentity={previewSource?.workspaceIdentity}
+          workspaceRemoteSessionId={previewSource?.workspaceRemoteSessionId}
+        />
+        <CopyItem onSelect={() => void fileActions.copyAbsolutePath({ path: target.path })}>
+          <CopyIcon className="size-4" />
+          {intl.formatMessage({ id: "fileActions.copyAbsolutePath" })}
+        </CopyItem>
+        <CopyItem
+          onSelect={() =>
+            void fileActions.copyRelativePath({
+              path: target.path,
+              relativePath: previewSource?.workspacePath
+                ? getWorkspaceFileRelativePath(previewSource.workspacePath, target.path)
+                : target.label,
+            })
+          }
+        >
+          <CopyIcon className="size-4" />
+          {intl.formatMessage({ id: "fileActions.copyRelativePath" })}
+        </CopyItem>
+      </>
+    );
+  };
+
+  if (hideOpenWithMenu) {
+    const openButton = (
       <div
         className="flex h-7 shrink-0 items-center overflow-hidden rounded-lg border border-border bg-input transition-all hover:border-border-hover"
         onClick={stopEventPropagation}
@@ -214,10 +358,22 @@ export function OpenSplitButton({
         </Button>
       </div>
     );
+    // renderCard 存在时仍然提供右键菜单：整卡与下拉/右键共用同一份动作（SHA a60ba6a7）。
+    if (!renderCard) return openButton;
+    return (
+      <ContextMenu onOpenChange={(open) => open && handleMenuOpenChange(open)}>
+        <ContextMenuTrigger asChild>
+          {renderCard(openButton, { handlePreview, canPreview })}
+        </ContextMenuTrigger>
+        <ContextMenuContent className="w-64 max-w-[calc(100vw-1rem)]">
+          {renderFileMenuActions("context")}
+        </ContextMenuContent>
+      </ContextMenu>
+    );
   }
 
-  return (
-    <DropdownMenu onOpenChange={(open) => open && void loadEditors()}>
+  const button = (
+    <DropdownMenu onOpenChange={(open) => open && handleMenuOpenChange(open)}>
       <div
         className="flex h-7 shrink-0 items-center overflow-hidden rounded-lg border border-border bg-input transition-all hover:border-border-hover"
         onClick={stopEventPropagation}
@@ -250,55 +406,25 @@ export function OpenSplitButton({
           </Button>
         </DropdownMenuTrigger>
       </div>
-      <DropdownMenuContent align="end" side="top" className="w-44" onClick={stopEventPropagation}>
-        {target.type === "website" ? (
-          <DropdownMenuItem onSelect={handleOpenExternal}>
-            <ExternalLinkIcon className="size-4" />
-            <span>
-              {intl.formatMessage({
-                id: "chat.previewCards.openExternal",
-              })}
-            </span>
-          </DropdownMenuItem>
-        ) : (
-          <>
-            {selectedEditor ? (
-              sortedEditors.map((editor) => (
-                <DropdownMenuItem key={editor.id} onSelect={() => handleOpenInEditor(editor)}>
-                  <img src={editor.iconDataUrl} alt={editor.name} className="size-4 shrink-0" />
-                  <span>{editor.name}</span>
-                </DropdownMenuItem>
-              ))
-            ) : (
-              <DropdownMenuItem disabled>
-                {intl.formatMessage({
-                  id: loadingEditors ? "common.loading" : "chat.previewCards.noOpenApps",
-                })}
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => void fileActions.copyAbsolutePath({ path: target.path })}
-            >
-              <CopyIcon className="size-4" />
-              {intl.formatMessage({ id: "fileActions.copyAbsolutePath" })}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onSelect={() =>
-                void fileActions.copyRelativePath({
-                  path: target.path,
-                  relativePath: target.previewSource?.workspacePath
-                    ? getWorkspaceFileRelativePath(target.previewSource.workspacePath, target.path)
-                    : target.label,
-                })
-              }
-            >
-              <CopyIcon className="size-4" />
-              {intl.formatMessage({ id: "fileActions.copyRelativePath" })}
-            </DropdownMenuItem>
-          </>
-        )}
+      <DropdownMenuContent
+        align="end"
+        side="top"
+        className="w-64 max-w-[calc(100vw-1rem)]"
+        onClick={stopEventPropagation}
+      >
+        {renderFileMenuActions("dropdown")}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+  if (!renderCard) return button;
+  return (
+    <ContextMenu onOpenChange={(open) => open && handleMenuOpenChange(open)}>
+      <ContextMenuTrigger asChild>
+        {renderCard(button, { handlePreview, canPreview })}
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-64 max-w-[calc(100vw-1rem)]">
+        {renderFileMenuActions("context")}
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }

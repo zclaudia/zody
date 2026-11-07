@@ -491,6 +491,10 @@ export const PlatformChannels = {
   QuitAndInstallUpdate: "zody:quit-and-install-update",
   /** Renderer → Main：获取系统中已安装的编辑器/终端列表（含图标） */
   GetInstalledEditors: "zody:get-installed-editors",
+  /** Renderer → Main：获取本机文件的系统关联应用（upstream v3.17.1 file-open-apps，SHA a60ba6a7） */
+  GetFileApplications: "zody:get-file-applications",
+  /** Renderer → Main：重新确认系统关联后用该应用打开本机文件 */
+  OpenFileWithApplication: "zody:open-file-with-application",
   /** Renderer → Main：按 bundle id 获取系统应用图标 */
   GetApplicationIcon: "zody:get-application-icon",
   /** Renderer → Main：用指定编辑器打开路径 */
@@ -1283,6 +1287,17 @@ export interface PlatformChannelMap {
   [PlatformChannels.GetInstalledEditors]: {
     request: void;
     response: EditorInfo[];
+  };
+  [PlatformChannels.GetFileApplications]: {
+    request: import("./platform.js").FileApplicationTarget;
+    response: import("./platform.js").FileApplicationInfo[];
+  };
+  [PlatformChannels.OpenFileWithApplication]: {
+    request: {
+      applicationId: string;
+      target: import("./platform.js").FileApplicationTarget;
+    };
+    response: { success: boolean; error?: string };
   };
   [PlatformChannels.GetApplicationIcon]: {
     request: string | import("./platform.js").ApplicationIconRequest;
