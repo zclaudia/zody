@@ -91,6 +91,10 @@ export {
   normalizeZodyEnv,
   normalizeZodyProductFlavor,
 } from "./env.js";
+export {
+  USER_INSTRUCTIONS_MAX_BYTES,
+  USER_INSTRUCTIONS_TOO_LARGE_ERROR_CODE,
+} from "./userInstructions.js";
 export * from "./errors.js";
 export * from "./rendererActionTrace.js";
 export * from "./validation.js";
@@ -224,6 +228,8 @@ export type {
   DesktopTitleBarTheme,
   DockerContainerInfo,
   EditorInfo,
+  FileApplicationInfo,
+  FileApplicationTarget,
   ApplicationIconInfo,
   ApplicationIconLocator,
   ApplicationIconRequest,
@@ -370,3 +376,9 @@ export type {
   MobileNotificationPushStatus,
   MobileNotificationPlatform,
 } from "./platform.js";
+
+// fork（F23，上游 a60ba6a7）：workspace MCP 信任门的 store 文件 schema 单源。
+// renderer-safe（仅 zod）；摘要计算在 core 的 mcp/workspace-mcp-trust.ts 单源实现
+// （需要 node:crypto/node:path，不能进入 shared 根导出图），见
+// docs/specs/workspace-mcp-trust.md §4。
+export * from "./workspace-mcp-trust-store-file.js";

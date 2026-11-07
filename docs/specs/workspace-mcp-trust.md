@@ -115,8 +115,13 @@ apps/zody-cli/packages/bootstrap（wiring：发现声明注入、guard 安装、
 
 - core 模块**不 import adapters**、不做 fs：声明发现、store 读写、锁均通过构造注入的
   port 函数（同 core `workspace-hook-trust-*` 系列的纯域定位）。
-- 摘要算法（`executionConfig` 规范化 + sha256 + 键排序稳定序列化）单源放 shared，
-  core 与 bootstrap 两侧共用，防止两套摘要漂移。
+- 摘要算法（`executionConfig` 规范化 + sha256 + 键排序稳定序列化）单源——**落位修订
+  （F23② 实施时登记）**：原计划放 shared，但 shared 根导出图必须保持 renderer-safe
+  （当前无 node 内建依赖，`node:crypto`/`node:path` 不可进入），而新增 subpath 导出需改
+  `packages/shared/package.json`（超出本卡落点）；故摘要算法单源落 core 的
+  `mcp/workspace-mcp-trust.ts`，bootstrap wiring 侧经 `@zody/core` 复用同一实现，单源
+  目标不变。store 文件 schema（纯 zod，renderer-safe）仍单源放 shared
+  （`workspace-mcp-trust-store-file.ts`，经 shared 根导出）。
 - 禁止：UI 直接读 trust store 文件；services 引用 core 具体实现（走 shared/contracts 类型）。
 
 ## 5. 声明发现与摘要
@@ -344,13 +349,13 @@ F23 含 UI 交互（双横幅），E2E 场景登记入口为
 
 落点内（可改）：
 
-| 层        | 落点                                                                                                     |
-| --------- | -------------------------------------------------------------------------------------------------------- |
-| shared    | `packages/shared/src/`：协议 schema（§6）、store 文件 schema、摘要算法单源（§5.2）                       |
-| core      | `apps/zody-cli/packages/core/src/mcp/`（信任域 + guard）＋ `core/tests/`（S1/S2/A1–A7/A10 对应单测）     |
-| contracts | `apps/zody-cli/packages/contracts/src/`：McpPort 守卫面类型、`WorkspaceMcpAdmissionUpdated` 事件 payload |
-| ui        | `packages/ui/src/`（横幅 A/B、store 映射、i18n）＋ `packages/ui/test/`（A8/A9）                          |
-| docs      | 本 spec 与相关文档更新                                                                                   |
+| 层        | 落点                                                                                                                                                     |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| shared    | `packages/shared/src/`：协议 schema（§6）、store 文件 schema（`workspace-mcp-trust-store-file.ts`）；摘要算法因 renderer-safe 约束落 core（§4 落位修订） |
+| core      | `apps/zody-cli/packages/core/src/mcp/`（信任域 + guard + 摘要算法单源）＋ `core/tests/`（S1/S2/A1–A7/A10 对应单测）                                      |
+| contracts | `apps/zody-cli/packages/contracts/src/`：McpPort 守卫面类型、`WorkspaceMcpAdmissionUpdated` 事件 payload                                                 |
+| ui        | `packages/ui/src/`（横幅 A/B、store 映射、i18n）＋ `packages/ui/test/`（A8/A9）                                                                          |
+| docs      | 本 spec 与相关文档更新                                                                                                                                   |
 
 **落点缺口（需 controller 裁决扩展或另立 wiring 卡，本卡不自行修改）**：实现上线需要
 以下落点外 wiring——bootstrap（`zody-protocol/mcp.ts` 默认信任注释与空集、
@@ -361,6 +366,26 @@ adapters（store 路径解析复用 hook store 同目录规则、声明发现 po
 exposure policy 是否放开 trust 命令——建议**不放开**，信任是 Host 本机用户域决策）、
 packages/desktop E2E。core 域模块与 shared schema 可先行开发并独立测试，wiring 缺口
 不阻塞本卡落点内交付。
+
+**编译伴随行（F23② 实施时发现；controller 2026-11-07 授权纳入本卡，已随 F23① 实现步落地）**：
+
+1. `apps/zody-cli/packages/tui/src/app-sidebar-mcp.tsx:105`——`copy.sidebar.mcp.status`
+   按 `McpServerStatusKind` 穷举索引；contracts 枚举新增 `pending_trust` 后需在 tui 文案
+   record 补一个键，否则 tui 包 typecheck 失败（与枚举扩展不可分离，需随本卡授权）。
+   **落位登记（F23① 实施时确认）**：TS7053 报错在 app-sidebar-mcp.tsx，但
+   `copy.sidebar.mcp.status` 的 record 实际单源在 `@zody/i18n`
+   （`apps/zody-cli/packages/i18n/src/types.ts` + `locales/en-US.ts`/`zh-CN.ts`，本地
+   locale 按 TuiCopy 类型约束，三处不可分离、各一行）；已按授权意图（补
+   `pending_trust` 文案键）落地，en `pending trust` / zh `待信任`。
+2. `apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/projection-state.ts`
+   `createInitialConversationSnapshot`——v4 snapshot 新增 `workspaceMcpAdmission`
+   （additive + default(null)）后，初始快照字面量需补 `workspaceMcpAdmission: null`
+   （同文件 92 行 `workspaceHookAdmission: null` 先例）；已随本卡落地（授权伴随行）。
+
+**随 F23① 落地的枚举完备映射**：`packages/ui/src/store/mcpStoreStatusList.ts` 的
+`mapRuntimeStatusToUi` 对 `pending_trust` 的 switch 分支（呈带安全说明的非成功配置态，
+`untrusted` 分支保持不动）——协议枚举扩展后 UI 映射必须完备才能编译，属枚举扩展的
+必陪改动；横幅 A/B 与设置页行级 UI 仍属步骤 ③。
 
 ## 12. 明确不做（本期）
 

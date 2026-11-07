@@ -71,4 +71,37 @@ describe("MCP store status diagnostics", () => {
       })[0],
     ).not.toHaveProperty("serverRequestId", "old-request");
   });
+
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门 pending_trust（裁决 2
+  // new-state 独立枚举）必须映射为带安全说明的非成功配置态，且不改动既有
+  // untrusted 映射（spec docs/specs/workspace-mcp-trust.md §8.2/A9）。
+  it("maps pending_trust to a non-success state without disturbing untrusted", () => {
+    const rows = mergeMcpServerStatusSnapshots(
+      [server, { ...server, id: "zcodeagentmcp:legacy", name: "legacy" }],
+      {
+        demo: {
+          status: "pending_trust",
+          toolCount: 0,
+          transport: "stdio",
+          updatedAt: "2026-11-07T00:00:00.000Z",
+        },
+        legacy: {
+          status: "untrusted",
+          toolCount: 0,
+          transport: "stdio",
+          updatedAt: "2026-11-07T00:00:00.000Z",
+        },
+      },
+    );
+    expect(rows[0]).toMatchObject({
+      status: "unknown",
+      error: "Workspace MCP server is pending trust review.",
+      failureKind: "status_unavailable",
+    });
+    // untrusted 槽位（官方 origin 信任校验的历史语义）保持原有文案不动。
+    expect(rows[1]).toMatchObject({
+      status: "unknown",
+      error: "Project MCP server requires explicit connection before use.",
+    });
+  });
 });

@@ -161,6 +161,9 @@ export const SessionEventType = {
   WorkspaceHookReviewSuperseded: "workspace_hook_review_superseded",
   // 软门禁:准入状态变化时发射,pendingCount=0 时投影层清空 snapshot 字段。
   WorkspaceHookAdmissionUpdated: "workspace_hook_admission_updated",
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门软门禁，语义与 hook admission
+  // 同族：pendingCount=0 时投影层将 snapshot.workspaceMcpAdmission 置 null。
+  WorkspaceMcpAdmissionUpdated: "workspace_mcp_admission_updated",
   HookRunStarted: "hook_run_started",
   HookRunProgress: "hook_run_progress",
   HookRunCompleted: "hook_run_completed",
@@ -1106,6 +1109,16 @@ export interface WorkspaceHookAdmissionUpdatedPayload {
   workspaceIdentity?: string;
 }
 
+// fork（F23，上游 a60ba6a7 WorkspaceMcpAdmissionUpdatedPayload）：
+// workspace MCP 信任门软门禁的准入上报。bundleDigest 仅供提示去重与 dismiss
+// 幂等键；逐条授权以各自 declarationDigest 为准（spec
+// docs/specs/workspace-mcp-trust.md §6）。
+export interface WorkspaceMcpAdmissionUpdatedPayload {
+  pendingCount: number;
+  bundleDigest: string;
+  workspaceIdentity?: string;
+}
+
 export type PermissionDecision = "allow" | "deny" | "escalate" | "modify";
 
 export type TargetChangedAction =
@@ -1311,6 +1324,7 @@ export type SessionEventPayload =
   | WorkspaceHookReviewSettledPayload
   | WorkspaceHookReviewSupersededPayload
   | WorkspaceHookAdmissionUpdatedPayload
+  | WorkspaceMcpAdmissionUpdatedPayload
   | HookRunLifecyclePayload
   | CompactLifecyclePayload
   | MicrocompactBoundaryEventPayload

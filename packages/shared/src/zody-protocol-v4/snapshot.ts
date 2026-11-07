@@ -468,6 +468,17 @@ export const workspaceHookAdmissionStateSchema = z.object({
 });
 export type WorkspaceHookAdmissionSnapshotState = z.infer<typeof workspaceHookAdmissionStateSchema>;
 
+// fork（F23，上游 a60ba6a7）：workspace MCP 信任门软门禁的会话级准入状态。
+// bundleDigest 是启用且未信任声明的有序集合摘要，仅用于提示条去重与 dismiss
+// 幂等键；逐条授权仍以各自 declarationDigest 为准。与 hook admission 同构但独立
+// 字段，避免两种待审核来源在投影层串扰。
+export const workspaceMcpAdmissionStateSchema = z.object({
+  pendingCount: z.number().int().nonnegative(),
+  bundleDigest: z.string().regex(/^[a-f0-9]{64}$/u),
+  workspaceIdentity: z.string().min(1).optional(),
+});
+export type WorkspaceMcpAdmissionSnapshotState = z.infer<typeof workspaceMcpAdmissionStateSchema>;
+
 export const conversationSnapshotSchema = z.object({
   protocolVersion: z.literal(1),
   sessionId: z.string(),
@@ -504,6 +515,9 @@ export const conversationSnapshotSchema = z.object({
   // 旧快照/旧发送端不携带此字段 → 解析得 null,不破坏兼容性(遵守冻结规则)。
   // pendingCount === 0 时投影层置 null(提示条消失)。
   workspaceHookAdmission: workspaceHookAdmissionStateSchema.nullable().default(null),
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门 admission，additive 且必须带
+  // default(null)（冻结规则，同上）；pendingCount === 0 时投影层置 null。
+  workspaceMcpAdmission: workspaceMcpAdmissionStateSchema.nullable().default(null),
   // （2026-09-12）：原 additive 字段 pluginUiSurfaces 已删除，插件面板 widgetState 只留在
   // 宿主 renderer 内存。
   // B 区

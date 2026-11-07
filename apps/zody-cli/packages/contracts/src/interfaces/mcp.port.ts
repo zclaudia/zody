@@ -80,7 +80,11 @@ export type McpServerStatusKind =
   | "disabled"
   | "disconnected"
   | "failed"
-  | "untrusted";
+  | "untrusted"
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门的独立待信任状态（裁决 2
+  // new-state）。与 "untrusted"（官方 origin 信任校验的历史槽位，当前无生产者）
+  // 语义分离：pending_trust 只表示「workspace 声明等待用户信任，未连接、零工具」。
+  | "pending_trust";
 
 export interface McpServerStatus {
   status: McpServerStatusKind;

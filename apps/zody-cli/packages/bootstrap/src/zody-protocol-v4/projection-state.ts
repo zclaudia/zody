@@ -90,6 +90,10 @@ export function createInitialConversationSnapshot(
     plan: null,
     // 软门禁：初始无待审核状态;activate() 上报后由投影写入。
     workspaceHookAdmission: null,
+    // fork（F23，上游 a60ba6a7）：workspace MCP 信任门 admission 同构初始 null；
+    // v4 snapshot schema 新增 default(null) 字段后的必陪行（授权伴随行，见
+    // docs/specs/workspace-mcp-trust.md §11 编译伴随行 2）。
+    workspaceMcpAdmission: null,
     rows: { window: [], totalCount: 0, firstRowId: null },
   };
 }

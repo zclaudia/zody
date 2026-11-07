@@ -104,6 +104,8 @@ function makeSnapshotFrame(title: string): ConversationTopicFrame {
     backgroundWorks: [],
     // 软门禁 additive 字段:归一化形态(带 default(null))
     workspaceHookAdmission: null,
+    // fork（F23，上游 a60ba6a7）：workspace MCP 信任门 admission，同 hook 先例。
+    workspaceMcpAdmission: null,
     goal: null,
     plan: null,
     rows: { window: [], totalCount: 0, firstRowId: null },

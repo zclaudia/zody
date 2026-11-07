@@ -40,6 +40,17 @@ function mapRuntimeStatusToUi(snapshot: ZodyMcpServerStatusSnapshot): MappedMcpS
         failureKind: snapshot.failureKind ?? "status_unavailable",
         serverRequestId: snapshot.serverRequestId,
       };
+    // fork（F23，上游 a60ba6a7）：workspace MCP 信任门新状态（裁决 2 new-state，
+    // 不复用 untrusted 槽位）。呈带安全说明的非成功配置态；完整横幅/行级 UI 在
+    // UI 步（③）落地，此处先保证枚举扩展后映射完备。
+    case "pending_trust":
+      return {
+        authorization: snapshot.authorization,
+        status: "unknown",
+        error: snapshot.error ?? "Workspace MCP server is pending trust review.",
+        failureKind: snapshot.failureKind ?? "status_unavailable",
+        serverRequestId: snapshot.serverRequestId,
+      };
   }
 }
 

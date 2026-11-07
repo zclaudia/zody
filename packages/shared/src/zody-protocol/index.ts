@@ -771,6 +771,10 @@ export const zodyMcpServerStatusKindSchema = z.enum([
   "disconnected",
   "failed",
   "untrusted",
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门的独立待信任状态。
+  // 裁决 2（new-state）：不复用 "untrusted"——该值的历史语义槽位属于官方
+  // origin 信任校验（F4.6 删除），两种「不可信」来源必须在协议与 UI 上可区分。
+  "pending_trust",
 ]);
 export const MCP_SERVER_FAILURE_KINDS = [
   "config_invalid",
@@ -795,9 +799,50 @@ export const MCP_SERVER_FAILURE_KINDS = [
 ] as const;
 export const mcpServerFailureKindSchema = z.enum(MCP_SERVER_FAILURE_KINDS);
 export type McpServerFailureKind = z.infer<typeof mcpServerFailureKindSchema>;
+// fork（F23，上游 a60ba6a7 workspaceMcpTrustReviewSchema）：workspace MCP 声明的
+// 脱敏审核摘要，随 mcp/list 状态快照下发。display 由 core 侧脱敏构造（不含
+// env/header 值与 URL 凭据），协议层只保证形状。
+export const workspaceMcpTrustReviewSchema = z
+  .object({
+    declarationDigest: z.string().regex(/^[a-f0-9]{64}$/u),
+    sourcePaths: z.array(nonEmptyString),
+    display: z.string(),
+    trusted: z.boolean(),
+    configuredEnabled: z.boolean(),
+    transport: z.enum(["stdio", "http", "sse"]),
+  })
+  .strict();
+export type WorkspaceMcpTrustReview = z.infer<typeof workspaceMcpTrustReviewSchema>;
+const workspaceMcpSha256DigestSchema = z.string().regex(/^[a-f0-9]{64}$/u);
+// fork（F23，上游 a60ba6a7）：workspace/mcp/trust 决策 RPC。decide 侧在文件锁内
+// 重读声明并精确匹配 declarationDigest，摘要不符返回 declaration_changed。
+export const zodyWorkspaceMcpTrustParamsSchema = z
+  .object({
+    workspace: zodyWorkspaceRefSchema,
+    serverName: nonEmptyString,
+    declarationDigest: workspaceMcpSha256DigestSchema,
+    trusted: z.boolean(),
+  })
+  .strict();
+export type ZodyWorkspaceMcpTrustParams = z.infer<typeof zodyWorkspaceMcpTrustParamsSchema>;
+export const zodyWorkspaceMcpTrustReasonCodeSchema = z.enum([
+  "workspace_mcp_declaration_changed",
+  "workspace_mcp_trust_unavailable",
+]);
+export type ZodyWorkspaceMcpTrustReasonCode = z.infer<typeof zodyWorkspaceMcpTrustReasonCodeSchema>;
+export const zodyWorkspaceMcpTrustResultSchema = z
+  .object({
+    accepted: z.boolean(),
+    reasonCode: zodyWorkspaceMcpTrustReasonCodeSchema.optional(),
+  })
+  .strict();
+export type ZodyWorkspaceMcpTrustResult = z.infer<typeof zodyWorkspaceMcpTrustResultSchema>;
 export const zodyMcpServerStatusSnapshotSchema = z
   .object({
     status: zodyMcpServerStatusKindSchema,
+    // fork（F23）：workspace 声明的审核摘要；非 workspace 作用域（user/plugin/builtin）
+    // 不携带该字段。additive 可选字段，旧发送端不带时不受影响。
+    workspaceTrust: workspaceMcpTrustReviewSchema.optional(),
     transport: z.enum(["stdio", "http", "sse"]),
     toolCount: z.number().int().nonnegative(),
     updatedAt: nonEmptyString,
@@ -3966,6 +4011,8 @@ export const zodyProtocolMethods = {
   workspaceCancelGenerateText: "workspace/cancelGenerateText",
   providerTestModelConnectivity: "provider/testModelConnectivity",
   mcpList: "mcp/list",
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任决策（信任/撤销精确声明摘要）。
+  workspaceMcpTrust: "workspace/mcp/trust",
   mcpReadResource: "mcp/readResource",
   mcpUiOpenInstance: "mcp/uiOpenInstance",
   mcpUiCloseInstance: "mcp/uiCloseInstance",
@@ -4075,6 +4122,10 @@ export const zodyProtocolSessionMethodContracts = {
   [zodyProtocolMethods.mcpList]: {
     params: zodyMcpListParamsSchema,
     result: zodyMcpListResultSchema,
+  },
+  [zodyProtocolMethods.workspaceMcpTrust]: {
+    params: zodyWorkspaceMcpTrustParamsSchema,
+    result: zodyWorkspaceMcpTrustResultSchema,
   },
   [zodyProtocolMethods.mcpReadResource]: {
     params: zodyMcpReadResourceParamsSchema,

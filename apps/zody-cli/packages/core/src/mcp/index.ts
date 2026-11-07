@@ -46,6 +46,25 @@ export {
   MCP_IMAGE_INLINE_RAW_BYTES,
 } from "./image-normalization.js";
 
+// fork（F23，上游 a60ba6a7）：workspace MCP 信任门（纯域 + guard；spec 见
+// docs/specs/workspace-mcp-trust.md）。
+export {
+  buildWorkspaceMcpTrustDisplay,
+  computeWorkspaceMcpAdmissionBundleDigest,
+  computeWorkspaceMcpDeclarationDigest,
+  createWorkspaceMcpTrust,
+  normalizeWorkspaceMcpStdioCommand,
+  sha256Stable,
+  type WorkspaceMcpTrustContract,
+  type WorkspaceMcpTrustDeclaration,
+  type WorkspaceMcpTrustDeclarationInput,
+  type WorkspaceMcpTrustDiscoveryPort,
+  type WorkspaceMcpTrustGuardedPort,
+  type WorkspaceMcpTrustOptions,
+  type WorkspaceMcpTrustReviewProjection,
+  type WorkspaceMcpTrustStorePort,
+} from "./workspace-mcp-trust.js";
+
 const MCP_TOOL_TIMEOUT_MS = 30_000;
 const OFFICIAL_CUA_PERMISSION_CAPABILITY_GROUP = "official_cua" satisfies PermissionCapabilityGroup;
 const CUA_USER_TITLE_SCHEMA = {

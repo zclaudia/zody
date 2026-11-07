@@ -124,6 +124,9 @@ function makeSnapshot(): ConversationSnapshot {
     backgroundWorks: [],
     // 软门禁 additive 字段:带 default(null),round-trip 归一化形态
     workspaceHookAdmission: null,
+    // fork（F23，上游 a60ba6a7）：workspace MCP 信任门 admission，同 hook 先例的
+    // additive 归一化形态。
+    workspaceMcpAdmission: null,
     goal: null,
     plan: null,
     rows: { window: [], totalCount: 0, firstRowId: null },
