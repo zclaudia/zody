@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "caseName": "plugin-ui-background-retention-two-state",
+  "spec": "./test/e2e/plugins/plugin-ui-background-retention-two-state.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/plugin-management/plugin-ui-background-retention-two-state.json"
+  ],
+  "fileFixtures": [
+    "runtime-generated plugin marketplace with two-state ui:// resources (retained/plain)"
+  ],
+  "requests": [
+    {
+      "id": "f18-04-retained-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Mount the retained-variant ui:// page (backgroundRetention true)."
+    },
+    {
+      "id": "f18-04-retained-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Close the retained turn."
+    },
+    {
+      "id": "f18-04-plain-tool",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Mount the plain-variant ui:// page (no backgroundRetention)."
+    },
+    {
+      "id": "f18-04-plain-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Close the plain turn."
+    },
+    {
+      "id": "f18-04-fill-ret-1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-4",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-5",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-6",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-7",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-8",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-9",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-10",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-11",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-12",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-13",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-14",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-ret-15",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the retained card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-4",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-5",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-6",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-7",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-8",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-9",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-10",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-11",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-12",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-13",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-14",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-fill-pln-15",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push the plain card out of the render window."
+    },
+    {
+      "id": "f18-04-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Session title generation triggered by the marker turn must succeed; replay fail-closed retries would keep the session busy."
+    }
+  ]
+}

@@ -187,6 +187,11 @@ export function createPluginUiBridgeService(
         ...(meta?.heightHint !== undefined ? { heightHint: meta.heightHint } : {}),
         ...(meta?.minFrameHeight !== undefined ? { minFrameHeight: meta.minFrameHeight } : {}),
         ...(meta?.showInline !== undefined ? { showInline: meta.showInline } : {}),
+        // F18⑤（上游 a60ba6a7 同款）：资源级 `_meta.ui.backgroundRetention` 必须在此透传；缺了这句
+        // 句柄 resourceMeta 恒为 undefined，已声明页会被当成默认页走隐藏即停回收（spec §12.4）。
+        ...(meta?.backgroundRetention !== undefined
+          ? { backgroundRetention: meta.backgroundRetention }
+          : {}),
       });
       log.info("prepareSandbox registered", {
         scopeId: params.scopeId,

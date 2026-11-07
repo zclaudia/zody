@@ -1,0 +1,479 @@
+{
+  "version": 1,
+  "caseName": "plugin-ui-background-retention-busy",
+  "spec": "./test/e2e/plugins/plugin-ui-background-retention-busy.test.ts",
+  "fixtures": [
+    {
+      "id": "f18-02-tool-call",
+      "description": "First retained app call that mounts the declared page.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_CASE_"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "_SLOW: Call"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_f18_02_a",
+          "name": "mcp__plugin_e2e-plugin-ui-retention_retention-demo__retained_app",
+          "input": {
+            "job": "a"
+          }
+        }
+      },
+      "replay": {
+        "consumeOnce": true
+      }
+    },
+    {
+      "id": "f18-02-final",
+      "description": "Close the first turn after the retained app reported readiness.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_F18_02_CASE_",
+          "toolu_f18_02_a",
+          "E2E_PLUGIN_UI_RETENTION_APP_READY"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "_SLOW"
+        ],
+        "lastUserMessageIncludes": []
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      },
+      "replay": {
+        "consumeOnce": true
+      }
+    },
+    {
+      "id": "f18-02-slow-tool",
+      "description": "Slow retained app call kept in flight while the declared page is off-screen.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "_SLOW: Call",
+          "E2E_F18_02_CASE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_f18_02_slow",
+          "name": "mcp__plugin_e2e-plugin-ui-retention_retention-demo__slow_retained_app",
+          "input": {
+            "job": "slow"
+          }
+        }
+      },
+      "replay": {
+        "consumeOnce": true
+      }
+    },
+    {
+      "id": "f18-02-slow-final",
+      "description": "Close the slow turn after its result was fully delivered.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "_SLOW",
+          "toolu_f18_02_slow",
+          "E2E_PLUGIN_UI_RETENTION_SLOW_DONE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": []
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "upstream-e2e-ok"
+      },
+      "replay": {
+        "consumeOnce": true
+      }
+    },
+    {
+      "id": "f18-02-fill-1",
+      "description": "Filler turn 1 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_1",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_1_0 E2E_F18_02_FILL_LINE_1_1 E2E_F18_02_FILL_LINE_1_2 E2E_F18_02_FILL_LINE_1_3 E2E_F18_02_FILL_LINE_1_4 E2E_F18_02_FILL_LINE_1_5 E2E_F18_02_FILL_LINE_1_6 E2E_F18_02_FILL_LINE_1_7 E2E_F18_02_FILL_LINE_1_8 E2E_F18_02_FILL_LINE_1_9 E2E_F18_02_FILL_LINE_1_10 E2E_F18_02_FILL_LINE_1_11 E2E_F18_02_FILL_LINE_1_12 E2E_F18_02_FILL_LINE_1_13 E2E_F18_02_FILL_LINE_1_14 E2E_F18_02_FILL_LINE_1_15 E2E_F18_02_FILL_LINE_1_16 E2E_F18_02_FILL_LINE_1_17 E2E_F18_02_FILL_LINE_1_18 E2E_F18_02_FILL_LINE_1_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-2",
+      "description": "Filler turn 2 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_2",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_2_0 E2E_F18_02_FILL_LINE_2_1 E2E_F18_02_FILL_LINE_2_2 E2E_F18_02_FILL_LINE_2_3 E2E_F18_02_FILL_LINE_2_4 E2E_F18_02_FILL_LINE_2_5 E2E_F18_02_FILL_LINE_2_6 E2E_F18_02_FILL_LINE_2_7 E2E_F18_02_FILL_LINE_2_8 E2E_F18_02_FILL_LINE_2_9 E2E_F18_02_FILL_LINE_2_10 E2E_F18_02_FILL_LINE_2_11 E2E_F18_02_FILL_LINE_2_12 E2E_F18_02_FILL_LINE_2_13 E2E_F18_02_FILL_LINE_2_14 E2E_F18_02_FILL_LINE_2_15 E2E_F18_02_FILL_LINE_2_16 E2E_F18_02_FILL_LINE_2_17 E2E_F18_02_FILL_LINE_2_18 E2E_F18_02_FILL_LINE_2_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-3",
+      "description": "Filler turn 3 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_3",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_3_0 E2E_F18_02_FILL_LINE_3_1 E2E_F18_02_FILL_LINE_3_2 E2E_F18_02_FILL_LINE_3_3 E2E_F18_02_FILL_LINE_3_4 E2E_F18_02_FILL_LINE_3_5 E2E_F18_02_FILL_LINE_3_6 E2E_F18_02_FILL_LINE_3_7 E2E_F18_02_FILL_LINE_3_8 E2E_F18_02_FILL_LINE_3_9 E2E_F18_02_FILL_LINE_3_10 E2E_F18_02_FILL_LINE_3_11 E2E_F18_02_FILL_LINE_3_12 E2E_F18_02_FILL_LINE_3_13 E2E_F18_02_FILL_LINE_3_14 E2E_F18_02_FILL_LINE_3_15 E2E_F18_02_FILL_LINE_3_16 E2E_F18_02_FILL_LINE_3_17 E2E_F18_02_FILL_LINE_3_18 E2E_F18_02_FILL_LINE_3_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-4",
+      "description": "Filler turn 4 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_4",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_4_0 E2E_F18_02_FILL_LINE_4_1 E2E_F18_02_FILL_LINE_4_2 E2E_F18_02_FILL_LINE_4_3 E2E_F18_02_FILL_LINE_4_4 E2E_F18_02_FILL_LINE_4_5 E2E_F18_02_FILL_LINE_4_6 E2E_F18_02_FILL_LINE_4_7 E2E_F18_02_FILL_LINE_4_8 E2E_F18_02_FILL_LINE_4_9 E2E_F18_02_FILL_LINE_4_10 E2E_F18_02_FILL_LINE_4_11 E2E_F18_02_FILL_LINE_4_12 E2E_F18_02_FILL_LINE_4_13 E2E_F18_02_FILL_LINE_4_14 E2E_F18_02_FILL_LINE_4_15 E2E_F18_02_FILL_LINE_4_16 E2E_F18_02_FILL_LINE_4_17 E2E_F18_02_FILL_LINE_4_18 E2E_F18_02_FILL_LINE_4_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-5",
+      "description": "Filler turn 5 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_5",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_5_0 E2E_F18_02_FILL_LINE_5_1 E2E_F18_02_FILL_LINE_5_2 E2E_F18_02_FILL_LINE_5_3 E2E_F18_02_FILL_LINE_5_4 E2E_F18_02_FILL_LINE_5_5 E2E_F18_02_FILL_LINE_5_6 E2E_F18_02_FILL_LINE_5_7 E2E_F18_02_FILL_LINE_5_8 E2E_F18_02_FILL_LINE_5_9 E2E_F18_02_FILL_LINE_5_10 E2E_F18_02_FILL_LINE_5_11 E2E_F18_02_FILL_LINE_5_12 E2E_F18_02_FILL_LINE_5_13 E2E_F18_02_FILL_LINE_5_14 E2E_F18_02_FILL_LINE_5_15 E2E_F18_02_FILL_LINE_5_16 E2E_F18_02_FILL_LINE_5_17 E2E_F18_02_FILL_LINE_5_18 E2E_F18_02_FILL_LINE_5_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-6",
+      "description": "Filler turn 6 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_6",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_6_0 E2E_F18_02_FILL_LINE_6_1 E2E_F18_02_FILL_LINE_6_2 E2E_F18_02_FILL_LINE_6_3 E2E_F18_02_FILL_LINE_6_4 E2E_F18_02_FILL_LINE_6_5 E2E_F18_02_FILL_LINE_6_6 E2E_F18_02_FILL_LINE_6_7 E2E_F18_02_FILL_LINE_6_8 E2E_F18_02_FILL_LINE_6_9 E2E_F18_02_FILL_LINE_6_10 E2E_F18_02_FILL_LINE_6_11 E2E_F18_02_FILL_LINE_6_12 E2E_F18_02_FILL_LINE_6_13 E2E_F18_02_FILL_LINE_6_14 E2E_F18_02_FILL_LINE_6_15 E2E_F18_02_FILL_LINE_6_16 E2E_F18_02_FILL_LINE_6_17 E2E_F18_02_FILL_LINE_6_18 E2E_F18_02_FILL_LINE_6_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-7",
+      "description": "Filler turn 7 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_7",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_7_0 E2E_F18_02_FILL_LINE_7_1 E2E_F18_02_FILL_LINE_7_2 E2E_F18_02_FILL_LINE_7_3 E2E_F18_02_FILL_LINE_7_4 E2E_F18_02_FILL_LINE_7_5 E2E_F18_02_FILL_LINE_7_6 E2E_F18_02_FILL_LINE_7_7 E2E_F18_02_FILL_LINE_7_8 E2E_F18_02_FILL_LINE_7_9 E2E_F18_02_FILL_LINE_7_10 E2E_F18_02_FILL_LINE_7_11 E2E_F18_02_FILL_LINE_7_12 E2E_F18_02_FILL_LINE_7_13 E2E_F18_02_FILL_LINE_7_14 E2E_F18_02_FILL_LINE_7_15 E2E_F18_02_FILL_LINE_7_16 E2E_F18_02_FILL_LINE_7_17 E2E_F18_02_FILL_LINE_7_18 E2E_F18_02_FILL_LINE_7_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-8",
+      "description": "Filler turn 8 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_8",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_8_0 E2E_F18_02_FILL_LINE_8_1 E2E_F18_02_FILL_LINE_8_2 E2E_F18_02_FILL_LINE_8_3 E2E_F18_02_FILL_LINE_8_4 E2E_F18_02_FILL_LINE_8_5 E2E_F18_02_FILL_LINE_8_6 E2E_F18_02_FILL_LINE_8_7 E2E_F18_02_FILL_LINE_8_8 E2E_F18_02_FILL_LINE_8_9 E2E_F18_02_FILL_LINE_8_10 E2E_F18_02_FILL_LINE_8_11 E2E_F18_02_FILL_LINE_8_12 E2E_F18_02_FILL_LINE_8_13 E2E_F18_02_FILL_LINE_8_14 E2E_F18_02_FILL_LINE_8_15 E2E_F18_02_FILL_LINE_8_16 E2E_F18_02_FILL_LINE_8_17 E2E_F18_02_FILL_LINE_8_18 E2E_F18_02_FILL_LINE_8_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-9",
+      "description": "Filler turn 9 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_9",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_9_0 E2E_F18_02_FILL_LINE_9_1 E2E_F18_02_FILL_LINE_9_2 E2E_F18_02_FILL_LINE_9_3 E2E_F18_02_FILL_LINE_9_4 E2E_F18_02_FILL_LINE_9_5 E2E_F18_02_FILL_LINE_9_6 E2E_F18_02_FILL_LINE_9_7 E2E_F18_02_FILL_LINE_9_8 E2E_F18_02_FILL_LINE_9_9 E2E_F18_02_FILL_LINE_9_10 E2E_F18_02_FILL_LINE_9_11 E2E_F18_02_FILL_LINE_9_12 E2E_F18_02_FILL_LINE_9_13 E2E_F18_02_FILL_LINE_9_14 E2E_F18_02_FILL_LINE_9_15 E2E_F18_02_FILL_LINE_9_16 E2E_F18_02_FILL_LINE_9_17 E2E_F18_02_FILL_LINE_9_18 E2E_F18_02_FILL_LINE_9_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-10",
+      "description": "Filler turn 10 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_10",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_10_0 E2E_F18_02_FILL_LINE_10_1 E2E_F18_02_FILL_LINE_10_2 E2E_F18_02_FILL_LINE_10_3 E2E_F18_02_FILL_LINE_10_4 E2E_F18_02_FILL_LINE_10_5 E2E_F18_02_FILL_LINE_10_6 E2E_F18_02_FILL_LINE_10_7 E2E_F18_02_FILL_LINE_10_8 E2E_F18_02_FILL_LINE_10_9 E2E_F18_02_FILL_LINE_10_10 E2E_F18_02_FILL_LINE_10_11 E2E_F18_02_FILL_LINE_10_12 E2E_F18_02_FILL_LINE_10_13 E2E_F18_02_FILL_LINE_10_14 E2E_F18_02_FILL_LINE_10_15 E2E_F18_02_FILL_LINE_10_16 E2E_F18_02_FILL_LINE_10_17 E2E_F18_02_FILL_LINE_10_18 E2E_F18_02_FILL_LINE_10_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-11",
+      "description": "Filler turn 11 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_11",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_11_0 E2E_F18_02_FILL_LINE_11_1 E2E_F18_02_FILL_LINE_11_2 E2E_F18_02_FILL_LINE_11_3 E2E_F18_02_FILL_LINE_11_4 E2E_F18_02_FILL_LINE_11_5 E2E_F18_02_FILL_LINE_11_6 E2E_F18_02_FILL_LINE_11_7 E2E_F18_02_FILL_LINE_11_8 E2E_F18_02_FILL_LINE_11_9 E2E_F18_02_FILL_LINE_11_10 E2E_F18_02_FILL_LINE_11_11 E2E_F18_02_FILL_LINE_11_12 E2E_F18_02_FILL_LINE_11_13 E2E_F18_02_FILL_LINE_11_14 E2E_F18_02_FILL_LINE_11_15 E2E_F18_02_FILL_LINE_11_16 E2E_F18_02_FILL_LINE_11_17 E2E_F18_02_FILL_LINE_11_18 E2E_F18_02_FILL_LINE_11_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-12",
+      "description": "Filler turn 12 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_12",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_12_0 E2E_F18_02_FILL_LINE_12_1 E2E_F18_02_FILL_LINE_12_2 E2E_F18_02_FILL_LINE_12_3 E2E_F18_02_FILL_LINE_12_4 E2E_F18_02_FILL_LINE_12_5 E2E_F18_02_FILL_LINE_12_6 E2E_F18_02_FILL_LINE_12_7 E2E_F18_02_FILL_LINE_12_8 E2E_F18_02_FILL_LINE_12_9 E2E_F18_02_FILL_LINE_12_10 E2E_F18_02_FILL_LINE_12_11 E2E_F18_02_FILL_LINE_12_12 E2E_F18_02_FILL_LINE_12_13 E2E_F18_02_FILL_LINE_12_14 E2E_F18_02_FILL_LINE_12_15 E2E_F18_02_FILL_LINE_12_16 E2E_F18_02_FILL_LINE_12_17 E2E_F18_02_FILL_LINE_12_18 E2E_F18_02_FILL_LINE_12_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-13",
+      "description": "Filler turn 13 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_13",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_13_0 E2E_F18_02_FILL_LINE_13_1 E2E_F18_02_FILL_LINE_13_2 E2E_F18_02_FILL_LINE_13_3 E2E_F18_02_FILL_LINE_13_4 E2E_F18_02_FILL_LINE_13_5 E2E_F18_02_FILL_LINE_13_6 E2E_F18_02_FILL_LINE_13_7 E2E_F18_02_FILL_LINE_13_8 E2E_F18_02_FILL_LINE_13_9 E2E_F18_02_FILL_LINE_13_10 E2E_F18_02_FILL_LINE_13_11 E2E_F18_02_FILL_LINE_13_12 E2E_F18_02_FILL_LINE_13_13 E2E_F18_02_FILL_LINE_13_14 E2E_F18_02_FILL_LINE_13_15 E2E_F18_02_FILL_LINE_13_16 E2E_F18_02_FILL_LINE_13_17 E2E_F18_02_FILL_LINE_13_18 E2E_F18_02_FILL_LINE_13_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-14",
+      "description": "Filler turn 14 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_14",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_14_0 E2E_F18_02_FILL_LINE_14_1 E2E_F18_02_FILL_LINE_14_2 E2E_F18_02_FILL_LINE_14_3 E2E_F18_02_FILL_LINE_14_4 E2E_F18_02_FILL_LINE_14_5 E2E_F18_02_FILL_LINE_14_6 E2E_F18_02_FILL_LINE_14_7 E2E_F18_02_FILL_LINE_14_8 E2E_F18_02_FILL_LINE_14_9 E2E_F18_02_FILL_LINE_14_10 E2E_F18_02_FILL_LINE_14_11 E2E_F18_02_FILL_LINE_14_12 E2E_F18_02_FILL_LINE_14_13 E2E_F18_02_FILL_LINE_14_14 E2E_F18_02_FILL_LINE_14_15 E2E_F18_02_FILL_LINE_14_16 E2E_F18_02_FILL_LINE_14_17 E2E_F18_02_FILL_LINE_14_18 E2E_F18_02_FILL_LINE_14_19"
+      }
+    },
+    {
+      "id": "f18-02-fill-15",
+      "description": "Filler turn 15 pushing earlier turns out of the virtual render window.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_FILL_15",
+          "E2E_F18_02_FILL_LINE"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "replay": {
+        "consumeOnce": true
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E_F18_02_FILL_LINE_15_0 E2E_F18_02_FILL_LINE_15_1 E2E_F18_02_FILL_LINE_15_2 E2E_F18_02_FILL_LINE_15_3 E2E_F18_02_FILL_LINE_15_4 E2E_F18_02_FILL_LINE_15_5 E2E_F18_02_FILL_LINE_15_6 E2E_F18_02_FILL_LINE_15_7 E2E_F18_02_FILL_LINE_15_8 E2E_F18_02_FILL_LINE_15_9 E2E_F18_02_FILL_LINE_15_10 E2E_F18_02_FILL_LINE_15_11 E2E_F18_02_FILL_LINE_15_12 E2E_F18_02_FILL_LINE_15_13 E2E_F18_02_FILL_LINE_15_14 E2E_F18_02_FILL_LINE_15_15 E2E_F18_02_FILL_LINE_15_16 E2E_F18_02_FILL_LINE_15_17 E2E_F18_02_FILL_LINE_15_18 E2E_F18_02_FILL_LINE_15_19"
+      }
+    },
+    {
+      "id": "f18-02-title",
+      "description": "Title generation request for the session opened by the marker turn; without it the title call fails closed and retries in the background.",
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_F18_02_CASE_"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": "E2E F18 02 Busy No Recycle"
+      }
+    }
+  ]
+}

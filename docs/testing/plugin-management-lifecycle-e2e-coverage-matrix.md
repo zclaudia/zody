@@ -45,6 +45,7 @@ Todo103 新增/迁接候选：PLM-LC-018/019 对应 `plugins/manual-review/pendi
 | `PBO`        | `plugins/manual-review/pending/plugin-management-bundled-install-ownership.test.ts` |
 | `PBS`        | `plugins/manual-review/pending/plugin-management-seed-runtime-separation.test.ts` |
 | `PML`        | `plugins/manual-review/pending/plugin-management-installed-menu-layout.test.ts`   |
+| `F18-01` / `F18-02` / `F18-04` | `plugins/manual-review/pending/plugin-ui-background-retention-{retained,busy,two-state}.test.ts`（F18-03 降级单测，无 E2E spec） |
 
 ## Latest targeted verification
 
@@ -130,3 +131,19 @@ PLM-LC-018/019/020：`plugins/manual-review/pending/plugin-localization-creator.
 `plugin-picker-order.test.mjs` 的 `PLUGIN-CREATOR-ICON` 用例覆盖 catalog 无远端 icon 时打开候选并插入标签，
 1200/390、中英、深浅主题；Session 消息及个人市场同名隔离由 `pluginCreatorMentionIcon.test.ts` 覆盖。
 状态为 manual-review，不自动转正；不向真实模型发送测试消息。
+
+## F18 后台页面保留（2026-11-08，上游 v3.17.1 a60ba6a7）
+
+对应 [plugin-ui-background-execution.md](../plugin-ui-background-execution.md) §12.8 候选与
+catalog「F18 后台页面保留」段。fixture：运行时生成 `e2e-plugin-ui-retention` 插件（两态
+`ui://` 资源 + ext-apps guest bundle）。
+
+| Case        | Spec abbreviation | UI automation | Runtime/storage evidence                                            | Human review | Formal spec | Linux Docker | macOS CI | Windows CI |
+| ----------- | ----------------- | ------------- | ------------------------------------------------------------------- | ------------ | ----------- | ------------ | -------- | ---------- |
+| `E2E-F18-01` | `F18-01`          | targeted pass ×2（run `desktop-e2e-20261107200832932-p86613-57a5d2c1a21facca` 首过 + 复跑） | webview 保留/parking/执行表面/src 不变 + guest iframe 挂载证据          | pending      | blocked     | blocked      | blocked  | blocked    |
+| `E2E-F18-02` | `F18-02`          | targeted pass ×2（含 connect 修复后复跑） | 离屏声明页跨慢调用保留 + SLOW_DONE 前置的回合终态投递证据            | pending      | blocked     | blocked      | blocked  | blocked    |
+| `E2E-F18-03` | —（降级单测）      | not run（真实 Electron 不可等待 30 分钟闲置；`pluginUiPageRegistry` 无注入通道，不为测试改产品代码） | vitest：`pluginUiBackgroundRetention.test.ts` + `pluginUiPageManager.test.ts` + `pluginUiManagedPage.test.ts` 24/24 通过 | pending      | blocked     | blocked      | blocked  | blocked    |
+| `E2E-F18-04` | `F18-04`          | targeted pass ×3 + 透传反例 ×1（移除 services 桥透传行后 `Expected "block" / Received "none"` 失败，恢复后回绿） | retained 执行表面 vs plain display:none 两态对照 + 反例 diff         | pending      | blocked     | blocked      | blocked  | blocked    |
+
+运行形态：`ZODY_E2E_MANUAL_REVIEW=1` + 显式 `E2E_PROVIDER_REPLAY_FIXTURE_PATH`（common + case-local，
+plugins 域 manual-review 不自动解析 case-local fixture）。均未人工晋级，不进入 Docker preset 或正式 CI。

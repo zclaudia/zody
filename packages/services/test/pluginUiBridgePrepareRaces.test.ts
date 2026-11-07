@@ -52,6 +52,54 @@ describe("MCP App preparation", () => {
       read.mock.calls.map(([input]) => input.instance.token),
     );
   });
+  it("passes resource-level backgroundRetention through the sandbox registration", async () => {
+    // F18⑤ 解锁①反例（docs/plugin-ui-background-execution.md §12.4 缺口）：
+    // 资源 `_meta.ui.backgroundRetention` 归一化后必须随 registerSandbox payload 透传，
+    // 否则真实运行时 handle.resourceMeta.backgroundRetention 恒为 undefined，
+    // 已声明页会被当成默认页走隐藏即停回收（上游 a60ba6a7 pluginUiBridgeService.ts:182 同款透传）。
+    const register = vi.fn(async (input: PluginSandboxRegisterInput) => ({
+      instance: input.instance,
+      sandboxId: input.instance.token,
+      initId: 1,
+      shellUrl: "url",
+      partition: "partition",
+    }));
+    const bridge = createPluginUiBridgeService({
+      openInstance: async () => instance,
+      readMcpResource: async () => ({
+        contents: [
+          {
+            uri: params.resourceUri,
+            mimeType: "text/html",
+            text: "<p>fixture</p>",
+            // 资源级 _meta（ui 命名空间下的布尔声明，与 showInline 同形）。
+            _meta: { ui: { backgroundRetention: true } },
+          },
+        ],
+      }),
+      registerSandbox: register,
+    });
+    await bridge.prepareSandbox(params);
+    expect(register).toHaveBeenCalledWith(expect.objectContaining({ backgroundRetention: true }));
+    // 反例另一侧：未声明时不得伪造缺省值（缺省即不保留），payload 中不应出现该键。
+    const registerWithoutMeta = vi.fn(async (input: PluginSandboxRegisterInput) => ({
+      instance: input.instance,
+      sandboxId: input.instance.token,
+      initId: 1,
+      shellUrl: "url",
+      partition: "partition",
+    }));
+    const bridgeWithoutMeta = createPluginUiBridgeService({
+      openInstance: async () => instance,
+      readMcpResource: async () => ({
+        contents: [{ uri: params.resourceUri, mimeType: "text/html", text: "<p>fixture</p>" }],
+      }),
+      registerSandbox: registerWithoutMeta,
+    });
+    await bridgeWithoutMeta.prepareSandbox(params);
+    const payload = registerWithoutMeta.mock.calls[0]![0] as Record<string, unknown>;
+    expect(payload).not.toHaveProperty("backgroundRetention");
+  });
   it("revokes the credential when resource validation fails", async () => {
     const close = vi.fn(async () => {});
     const bridge = createPluginUiBridgeService({

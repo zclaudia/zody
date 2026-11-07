@@ -140,3 +140,25 @@ PLM-LC-018（管理列表本地化）、PLM-LC-019（双入口创建插件草稿
 桌面/手机 × 中英文 × 深浅主题；预置管理分组、停用、缺项、个人同名隔离及服务端排序优先由单测覆盖。
 入口：`packages/ui/test/browser/manual-review/pending/plugin-store-mode-order.test.mjs`。
 此用例属于浏览器展示验证，不作为 Electron 安装生命周期或正式 CI 准入证据。
+
+## F18 后台页面保留（2026-11-08，上游 v3.17.1 a60ba6a7）
+
+对应 `docs/plugin-ui-background-execution.md` §12.8 的四个 E2E 候选。fixture 为运行时生成的
+本地市场插件 `e2e-plugin-ui-retention`（MCP server 暴露两个 `ui://` 资源：`retained` 声明
+`_meta.ui.backgroundRetention:true`，`plain` 无该键；guest HTML 内联 `@modelcontextprotocol/ext-apps`
+App bundle 完成 ui/initialize 握手），驱动真实产品链路（agent display 投影 → renderer
+prepareSandbox → Main registry → 句柄 resourceMeta → plane 承载层）。入口 helper：
+`packages/desktop/test/e2e/helpers/plugin-ui-background-retention.ts`。
+
+| Case                                | Setup                            | Action                                                       | Assertions                                                                                                        | Evidence                          | Initial status  |
+| ----------------------------------- | -------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- | --------------------------------- | --------------- |
+| `E2E-F18-01` 后台保留冒烟            | 安装并启用两态资源插件；工具调用挂载声明页 | 15 个填充 turn 把工具卡推出虚拟窗口（锚点卸载）；滚回顶部    | 离屏后 webview 保留在 parking（display:block + opacity:0.001 执行表面）、shell 内插件 iframe 仍挂载、src 不变（未重新握手）；滚回后 src 仍不变 | DOM + webview.executeJavaScript + screenshot | `manual-review` |
+| `E2E-F18-02` 忙时不回收              | 同上；声明页离屏（回收条件 armed） | 触发同插件 slow 工具调用（真实挂起 8s）并批准；等回合收束     | 挂起期间与完成后声明页均保留（src 不变、执行表面仍在）；慢调用结果完整投递（final fixture 以 SLOW_DONE 为前置的回合终态） | DOM + provider replay + screenshot | `manual-review` |
+| `E2E-F18-03` 闲置回收与重建          | 单测覆盖（降级）                 | —                                                            | 4/30 边界、claim 拒绝与同 owner 重建由 `pluginUiBackgroundRetention.test.ts`、`pluginUiPageManager.test.ts`、`pluginUiManagedPage.test.ts` 覆盖（24 tests）；真实 Electron 无法等待 30 分钟闲置且 `pluginUiPageRegistry` 模块级实例化无注入通道，不为测试改产品代码 | vitest | `manual-review`（降级单测） |
+| `E2E-F18-04` 声明两态对照            | 同一插件的 retained/plain 两资源 | 分别挂载后推出虚拟窗口                                       | retained 页离屏保持执行表面（display:block + opacity:0.001）；plain 页回落默认隐藏即停（display:none，无执行表面）；透传反例：移除 services 桥 `backgroundRetention` 透传后 retained 断言失败（Expected "block" / Received "none"） | DOM + 反例 diff + screenshot | `manual-review` |
+
+覆盖面如实登记：页面本地 busy 与 Agent 端 busy（pins ∪ `mcp/uiSetExecutionActive`，
+`onlyIfIdle` closed:false）的拒绝路径在 E2E 中不可注入（30 分钟闲置墙与 guest 内调用通道），
+由 F18③ 单测覆盖；「返回锚点」的旧行按「最近三回合自动展开」规则折叠，折叠行不再渲染插件
+卡片锚点（产品现状），E2E 不驱动展开交互，重建语义（§12.2.8）由单测覆盖。人工 review 晋级
+流程不变（pending 不转正）。

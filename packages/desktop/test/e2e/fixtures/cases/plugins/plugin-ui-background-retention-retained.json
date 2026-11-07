@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "caseName": "plugin-ui-background-retention-retained",
+  "spec": "./test/e2e/plugins/plugin-ui-background-retention-retained.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/plugin-management/plugin-ui-background-retention-retained.json"
+  ],
+  "fileFixtures": [
+    "runtime-generated plugin marketplace with two-state ui:// resources (retained/plain)"
+  ],
+  "requests": [
+    {
+      "id": "f18-01-tool-call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-tool-use",
+      "syntheticReason": "Prove the declared backgroundRetention ui:// page mounts through the real sandbox chain."
+    },
+    {
+      "id": "f18-01-final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Close the turn so the inline card settles before the anchor is unmounted."
+    },
+    {
+      "id": "f18-01-fill-1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-4",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-5",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-6",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-7",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-8",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-9",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-10",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-11",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-12",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-13",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-14",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-fill-15",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Filler turn to push earlier turns out of the virtual render window."
+    },
+    {
+      "id": "f18-01-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "Session title generation triggered by the marker turn must succeed; replay fail-closed retries would keep the session busy."
+    }
+  ]
+}
