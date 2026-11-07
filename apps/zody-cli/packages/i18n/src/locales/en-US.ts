@@ -168,6 +168,8 @@ Slash Commands:
           disconnected: "disconnected",
           failed: "failed",
           untrusted: "untrusted",
+          // fork（F23，上游 a60ba6a7）：workspace 声明待信任（区别于 untrusted）。
+          pending_trust: "pending trust",
         },
         summary: ({ connected, total }) => `${connected}/${total} connected`,
         tools: (count) => `${count} ${count === 1 ? "tool" : "tools"}`,

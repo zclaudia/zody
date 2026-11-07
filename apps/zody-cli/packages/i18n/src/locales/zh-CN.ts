@@ -167,6 +167,8 @@ Slash Commands:
           disconnected: "未连接",
           failed: "失败",
           untrusted: "未信任",
+          // fork（F23，上游 a60ba6a7）：workspace 声明待信任（区别于未信任）。
+          pending_trust: "待信任",
         },
         summary: ({ connected, total }) => `${connected}/${total} 已连接`,
         tools: (count) => `${count} 工具`,

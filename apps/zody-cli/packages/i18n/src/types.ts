@@ -116,6 +116,9 @@ export interface TuiCopy {
         disconnected: string;
         failed: string;
         untrusted: string;
+        // fork（F23，上游 a60ba6a7 无此键——其信任门复用 untrusted；本仓裁决 2
+        // new-state 新增 pending_trust 独立枚举，TuiCopy 必须同步补键）。
+        pending_trust: string;
       };
       summary(input: { connected: number; total: number }): string;
       tools(count: number): string;
