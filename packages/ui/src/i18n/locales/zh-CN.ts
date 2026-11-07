@@ -2215,13 +2215,17 @@ const zhCN: Record<string, string> = {
   "settings.browser.extension.install.title": "安装 Chrome 扩展",
   "settings.browser.extension.install.description":
     "Zody 控制当前 Chrome Profile 需要安装浏览器扩展。品牌版 Chrome 不支持一键安装，请手动加载：",
-  "settings.browser.extension.install.step1": "在 Chrome 打开 chrome://extensions 并开启开发者模式。",
+  // F26③：F26② 提交按文件粒度带入三行 browser.extension 文案的超宽单行（父提交 0bb4218f 为
+  // 换行形态），使 oxfmt 门在本文件回退；此处按 oxfmt 期望恢复换行，文案内容不变。
+  "settings.browser.extension.install.step1":
+    "在 Chrome 打开 chrome://extensions 并开启开发者模式。",
   "settings.browser.extension.install.step2": "先构建扩展，再点击“加载已解压的扩展程序”。",
   "settings.browser.extension.install.step3": "选择下方构建产物目录。",
   "settings.browser.extension.install.openDirectory": "打开构建产物目录",
   "settings.browser.extension.install.missing": "构建产物尚不存在，请先运行上面的命令。",
   "settings.browser.extension.status.listening": "Bridge 正在 127.0.0.1:{port} 监听。",
-  "settings.browser.extension.status.unavailable": "Bridge 当前不可用。端口被占用时请改端口后重试。",
+  "settings.browser.extension.status.unavailable":
+    "Bridge 当前不可用。端口被占用时请改端口后重试。",
   "settings.browser.extension.statusFailed": "读取 Chrome 扩展状态失败",
   "settings.browser.extension.port.title": "Bridge 端口",
   "settings.browser.extension.port.description":
@@ -2237,7 +2241,8 @@ const zhCN: Record<string, string> = {
   "settings.browser.extension.default.iab": "内置浏览器（IAB）",
   "settings.browser.extension.default.chrome": "Chrome 扩展",
   "settings.browser.extension.default.missing": "已配置但当前不可见：{browserId}",
-  "settings.browser.extension.default.failClosed": "默认 Profile 当前不可见或已离线，Browser Use 会 fail closed。",
+  "settings.browser.extension.default.failClosed":
+    "默认 Profile 当前不可见或已离线，Browser Use 会 fail closed。",
   "settings.browser.extension.pairing.title": "配对 Chrome Profile",
   "settings.browser.extension.pairing.description":
     "只在当前窗口生成一次性配对码。请核对扩展 Popup 中的 pairing session。",
