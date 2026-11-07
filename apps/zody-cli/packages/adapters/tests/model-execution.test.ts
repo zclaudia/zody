@@ -1,6 +1,9 @@
+import { readFile } from "node:fs/promises";
 import http, { type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { generateText, jsonSchema, Output } from "ai";
+import { join } from "node:path";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { generateText, jsonSchema, Output, streamText } from "ai";
 import { describe, expect, it, vi } from "vitest";
 import { createAnthropicCompatFetch } from "../src/model/anthropic-stream-compat.js";
 import {
@@ -547,7 +550,7 @@ describe("AI SDK Provider execution", () => {
 });
 
 describe("createAnthropicCompatFetch", () => {
-  it("filters assistant-side bare tool_result content blocks from Anthropic SSE", async () => {
+  it("rewrites provider built-in server tools into provider-executed MCP blocks", async () => {
     const fetch = createAnthropicCompatFetch(async () =>
       sseResponse([
         sseFrame("message_start", {
@@ -611,11 +614,194 @@ describe("createAnthropicCompatFetch", () => {
     const response = await fetch("https://example.test/v1/messages");
     const text = await response.text();
 
-    expect(text).toContain('"type":"server_tool_use"');
+    // AI SDK 只解析固定名单的 server_tool_use，也不接受裸 tool_result；改写成 mcp 块后
+    // 才能作为 provider 执行的调用和结果进入历史与界面（上游 a60ba6a7）。
+    expect(text).not.toContain('"type":"server_tool_use"');
+    expect(text).toContain(
+      '{"type":"mcp_tool_use","id":"call_image","name":"analyze_image","input":{},"server_name":"zody-provider-builtin"}',
+    );
+    expect(text).toContain(
+      '{"type":"mcp_tool_result","tool_use_id":"call_image","is_error":false,"content":[{"type":"text","text":"[\\"您尚未登录\\"]"}]}',
+    );
+    expect(text).not.toContain('"type":"tool_result"');
     expect(text).toContain("Output already summarized");
     expect(text).toContain("The image says");
+  });
+
+  it("drops server-rendered markdown copies around provider built-in tools", async () => {
+    const block = (index: number, text: string) => [
+      sseFrame("content_block_start", {
+        type: "content_block_start",
+        index,
+        content_block: { type: "text", text: "" },
+      }),
+      // 前缀被拆在多个 delta 里，缓冲需要跨 delta 判断。
+      sseFrame("content_block_delta", {
+        type: "content_block_delta",
+        index,
+        delta: { type: "text_delta", text: text.slice(0, 2) },
+      }),
+      sseFrame("ping", { type: "ping" }),
+      sseFrame("content_block_delta", {
+        type: "content_block_delta",
+        index,
+        delta: { type: "text_delta", text: text.slice(2) },
+      }),
+      sseFrame("content_block_stop", { type: "content_block_stop", index }),
+    ];
+    const fetch = createAnthropicCompatFetch(async () =>
+      sseResponse([
+        ...block(0, "先看图。"),
+        ...block(1, "**🌐 Built-in Tool: analyze_image** *Executing on server...*"),
+        sseFrame("content_block_start", {
+          type: "content_block_start",
+          index: 2,
+          content_block: {
+            type: "server_tool_use",
+            id: "call_x",
+            name: "analyze_image",
+            input: {},
+          },
+        }),
+        sseFrame("content_block_stop", { type: "content_block_stop", index: 2 }),
+        ...block(3, "**Output:** rendered result"),
+        sseFrame("content_block_start", {
+          type: "content_block_start",
+          index: 4,
+          content_block: { type: "tool_result", tool_use_id: "call_x", content: "result" },
+        }),
+        sseFrame("content_block_stop", { type: "content_block_stop", index: 4 }),
+        ...block(5, "**结论**：看完了。"),
+        // 没有配对调用的裸 tool_result 仍按旧规则丢弃。
+        sseFrame("content_block_start", {
+          type: "content_block_start",
+          index: 6,
+          content_block: { type: "tool_result", tool_use_id: "call_unknown", content: "orphan" },
+        }),
+        sseFrame("content_block_stop", { type: "content_block_stop", index: 6 }),
+      ]),
+    );
+
+    const text = await (await fetch("https://example.test/v1/messages")).text();
+
+    expect(text).toContain('"text":"先看"');
+    expect(text).not.toContain("Built-in Tool");
+    expect(text).not.toContain("rendered result");
+    expect(text).not.toContain('"index":1');
+    expect(text).not.toContain('"index":3');
+    // 结果之后的加粗正文是模型自己的回答，必须保留。
+    expect(text).toContain("看完了");
+    expect(text).toContain('"type":"mcp_tool_result"');
+    expect(text).not.toContain("orphan");
+  });
+
+  it("keeps bold text that is not followed by a provider built-in tool", async () => {
+    const fetch = createAnthropicCompatFetch(async () =>
+      sseResponse([
+        sseFrame("content_block_start", {
+          type: "content_block_start",
+          index: 0,
+          content_block: { type: "text", text: "" },
+        }),
+        sseFrame("content_block_delta", {
+          type: "content_block_delta",
+          index: 0,
+          delta: { type: "text_delta", text: "**🌐 not a tool header**" },
+        }),
+        sseFrame("content_block_stop", { type: "content_block_stop", index: 0 }),
+        sseFrame("message_delta", {
+          type: "message_delta",
+          delta: { stop_reason: "end_turn", stop_sequence: null },
+          usage: { output_tokens: 1 },
+        }),
+      ]),
+    );
+
+    const text = await (await fetch("https://example.test/v1/messages")).text();
+
+    expect(text).toContain("not a tool header");
+    expect(text.indexOf("not a tool header")).toBeLessThan(text.indexOf("message_delta"));
+  });
+
+  it("drops a bare tool_result that no server tool call paired", async () => {
+    const fetch = createAnthropicCompatFetch(async () =>
+      sseResponse([
+        sseFrame("content_block_start", {
+          type: "content_block_start",
+          index: 2,
+          content_block: { type: "tool_result", tool_use_id: "call_orphan", content: "orphan" },
+        }),
+        sseFrame("content_block_delta", {
+          type: "content_block_delta",
+          index: 2,
+          delta: { type: "text_delta", text: "orphan delta" },
+        }),
+        sseFrame("content_block_stop", { type: "content_block_stop", index: 2 }),
+        sseFrame("content_block_start", {
+          type: "content_block_start",
+          index: 3,
+          content_block: { type: "text", text: "" },
+        }),
+        sseFrame("content_block_delta", {
+          type: "content_block_delta",
+          index: 3,
+          delta: { type: "text_delta", text: "answer" },
+        }),
+        sseFrame("content_block_stop", { type: "content_block_stop", index: 3 }),
+      ]),
+    );
+
+    const response = await fetch("https://example.test/v1/messages");
+    const text = await response.text();
+
+    // 没有对应服务端调用的裸 tool_result 仍是非标块：start、delta、stop 一并丢弃，不改写成 MCP 结果。
     expect(text).not.toContain('"type":"tool_result"');
-    expect(text).not.toContain('"index":4');
+    expect(text).not.toContain("mcp_tool_result");
+    expect(text).not.toContain("orphan");
+    expect(text).not.toContain('"index":2');
+    expect(text).toContain("answer");
+  });
+
+  it("rewrites provider built-in tools in non-streaming JSON responses", async () => {
+    const fetch = createAnthropicCompatFetch(async () =>
+      Response.json({
+        id: "msg_json",
+        type: "message",
+        role: "assistant",
+        model: "glm-5.3",
+        content: [
+          { type: "text", text: "先看图。" },
+          { type: "text", text: "**🌐 Built-in Tool: analyze_image**" },
+          { type: "server_tool_use", id: "call_j", name: "analyze_image", input: { prompt: "p" } },
+          { type: "text", text: "**Output:** rendered" },
+          { type: "tool_result", tool_use_id: "call_j", content: "result" },
+          { type: "text", text: "答案" },
+        ],
+        stop_reason: "end_turn",
+        stop_sequence: null,
+        usage: { input_tokens: 1, output_tokens: 1 },
+      }),
+    );
+
+    const body = await (await fetch("https://example.test/v1/messages")).json();
+
+    expect(body.content).toEqual([
+      { type: "text", text: "先看图。" },
+      {
+        type: "mcp_tool_use",
+        id: "call_j",
+        name: "analyze_image",
+        input: { prompt: "p" },
+        server_name: "zody-provider-builtin",
+      },
+      {
+        type: "mcp_tool_result",
+        tool_use_id: "call_j",
+        is_error: false,
+        content: [{ type: "text", text: "result" }],
+      },
+      { type: "text", text: "答案" },
+    ]);
   });
 
   it("keeps typed Anthropic tool result blocks", async () => {
@@ -884,6 +1070,62 @@ describe("createAnthropicCompatFetch", () => {
     const response = await fetch("https://example.test/v1/messages");
 
     await expect(response.text()).resolves.toBe("event: comment\ndata: not-json\n\n");
+  });
+
+  it("replays a sanitized real GLM analyze_image stream as SDK-native provider tool calls", async () => {
+    // 真实流量样本（脱敏 fixture）：docs/provider-builtin-tool-rounds.md「真实 GLM 流量样本登记」④。
+    const fixture = await readFile(
+      join(import.meta.dirname, "fixtures", "provider-builtin-analyze-image.sse"),
+      "utf8",
+    );
+    const fixtureResponse = () =>
+      new Response(fixture, { headers: { "content-type": "text/event-stream" } });
+
+    // 线协议层：server_tool_use 与配对裸 tool_result 改写为 mcp 块，两段服务端渲染副本被去掉。
+    const wire = await (
+      await createAnthropicCompatFetch(fixtureResponse)("https://example.test/v1/messages")
+    ).text();
+    expect(wire).not.toContain('"type":"server_tool_use"');
+    expect(wire).toContain('"type":"mcp_tool_use"');
+    expect(wire).toContain('"type":"mcp_tool_result"');
+    expect(wire).not.toContain("Z.ai Built-in Tool");
+    expect(wire).not.toContain("analyze_image_result_summary");
+    // 尾轮正文块仍在（其文字按帧分片，具体内容由下方 AI SDK 层拼接断言）。
+    expect(wire).toContain('"index": 6');
+
+    // AI SDK 层：mcp 块是 SDK 原生的 provider 执行（dynamic）工具调用与结果，正文不再带渲染副本。
+    const anthropic = createAnthropic({
+      apiKey: "fixture-key",
+      fetch: createAnthropicCompatFetch(fixtureResponse),
+    });
+    const parts: Array<Record<string, unknown>> = [];
+    let text = "";
+    for await (const part of streamText({
+      model: anthropic("glm-5.3"),
+      prompt: "识别 shot.png 里的文字",
+    }).fullStream) {
+      parts.push(part as unknown as Record<string, unknown>);
+      if (part.type === "text-delta") text += part.text;
+    }
+
+    const toolCall = parts.find((part) => part.type === "tool-call");
+    expect(toolCall).toMatchObject({
+      toolCallId: "call_93e9e7ad911f4b1799a6c543",
+      toolName: "analyze_image",
+      providerExecuted: true,
+    });
+    const toolResult = parts.find((part) => part.type === "tool-result");
+    expect(toolResult).toMatchObject({
+      toolCallId: "call_93e9e7ad911f4b1799a6c543",
+      toolName: "analyze_image",
+      providerExecuted: true,
+      dynamic: true,
+    });
+    expect(text).not.toContain("**🌐");
+    expect(text).not.toContain("analyze_image_result_summary");
+    // adapter 层不切轮：第一轮正文与尾轮正文都在同一段 text 里（切轮是 core 的职责）。
+    expect(text).toContain("图片已上传为远程 URL");
+    expect(text).toContain("图片中的文字为");
   });
 });
 

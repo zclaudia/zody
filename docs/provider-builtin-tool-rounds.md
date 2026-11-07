@@ -1,6 +1,9 @@
 # Provider 内置工具兼容与切轮（GLM analyze_image / webReader）
 
-Status: L0 Spec（F20 两步链：① adapters 流兼容层 ② core 切轮；来源上游 a60ba6a7）
+Status: L0 Spec（F20 两步链：① adapters 流兼容层 ② core 切轮；来源上游 a60ba6a7）。
+实施进度：Step ① 已实现（2026-11-07，adapters provider-builtin-tool-compat + anthropic-stream-compat 接线，
+回归见 `apps/zody-cli/packages/adapters/tests/provider-builtin-tool-compat/contract.test.ts` 与
+`apps/zody-cli/packages/adapters/tests/model-execution.test.ts`）；Step ② 未实施。
 
 上游对应：`apps/zcode-cli/packages/adapters/src/model/provider-builtin-tool-compat/`（GLM 服务端工具流改写）与
 `apps/zcode-cli/packages/core/src/runtime/provider-tool-rounds/`（轮次切分/卡片/回放/compact 分组/tokens），

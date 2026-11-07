@@ -1,3 +1,9 @@
+import {
+  ProviderBuiltinToolStreamRewriter,
+  rewriteProviderBuiltinToolContent,
+  type SseFrame,
+} from "./provider-builtin-tool-compat/contract.js";
+
 type ProviderFetch = typeof globalThis.fetch;
 
 const SSE_FRAME_SEPARATOR_PATTERN = /\r\n\r\n|\n\n|\r\r/;
@@ -168,8 +174,11 @@ function sanitizeJsonThinkingBlocks(value: Record<string, unknown>): {
     return { changed: false, value };
   }
 
-  const content = value.content.filter((block) => !isUnsignedThinkingBlock(block));
-  if (content.length === value.content.length) {
+  // 修复原因（上游 a60ba6a7）：非流式 JSON 里 SDK 不认识的 server_tool_use 与配对裸
+  // tool_result 也要改写成 mcp 块，否则 provider 内置工具的调用与结果会在 JSON 解析时丢失。
+  const providerTools = rewriteProviderBuiltinToolContent(value.content);
+  const content = providerTools.content.filter((block) => !isUnsignedThinkingBlock(block));
+  if (!providerTools.changed && content.length === value.content.length) {
     return { changed: false, value };
   }
 
@@ -197,6 +206,7 @@ function isUnsignedThinkingBlock(value: unknown): boolean {
 interface AnthropicStreamCompatState {
   pendingThinkingSignatures: Map<number, string>;
   suppressedIndexes: Set<number>;
+  providerTools: ProviderBuiltinToolStreamRewriter;
 }
 
 function createAnthropicStreamCompatTransform(): TransformStream<Uint8Array, Uint8Array> {
@@ -205,6 +215,7 @@ function createAnthropicStreamCompatTransform(): TransformStream<Uint8Array, Uin
   const state: AnthropicStreamCompatState = {
     pendingThinkingSignatures: new Map(),
     suppressedIndexes: new Set(),
+    providerTools: new ProviderBuiltinToolStreamRewriter(),
   };
   let pending = "";
 
@@ -217,7 +228,11 @@ function createAnthropicStreamCompatTransform(): TransformStream<Uint8Array, Uin
       pending += decoder.decode();
       pending = emitCompleteFrames(pending, controller, encoder, state);
       if (pending.length > 0) {
-        emitFrame(pending, "", controller, encoder, state);
+        rewriteAndEmitFrame({ frame: pending, separator: "" }, controller, encoder, state);
+      }
+      // 流结束时补发仍在 provider 内置工具缓冲里的帧，不吞内容（上游 a60ba6a7）。
+      for (const held of state.providerTools.finish()) {
+        emitFrame(held.frame, held.separator, controller, encoder, state);
       }
     },
   });
@@ -239,7 +254,22 @@ function emitCompleteFrames(
     const separator = match[0] ?? "";
     const frame = pending.slice(0, match.index);
     pending = pending.slice(match.index + separator.length);
-    emitFrame(frame, separator, controller, encoder, state);
+    rewriteAndEmitFrame({ frame, separator }, controller, encoder, state);
+  }
+}
+
+// provider 内置工具改写先于 thinking 签名补全与裸 tool_result 抑制运行：
+// 改写后的 mcp_tool_result 不再命中抑制规则，未配对的裸 tool_result 维持原行为。
+function rewriteAndEmitFrame(
+  input: SseFrame,
+  controller: TransformStreamDefaultController<Uint8Array>,
+  encoder: TextEncoder,
+  state: AnthropicStreamCompatState,
+): void {
+  const data = readSseData(input.frame);
+  const parsed = data === undefined || data === "[DONE]" ? undefined : safeParseRecord(data);
+  for (const output of state.providerTools.push(input, parsed)) {
+    emitFrame(output.frame, output.separator, controller, encoder, state);
   }
 }
 
