@@ -210,6 +210,14 @@ append 合同、导出像素与失效路径。manual-review/pending 未转正不
 - 桌面 conversation-session 真实 Composer 保存链路 E2E 需 `packages/desktop`（不在本卡落点，
   缺口登记待协调，与 PA159/PA160 同口径）；**顺序约束：本卡先于 F28 完成**，F28 草稿事务须把
   「附件插入」纳入 claim/restore 测试。
+- 2026-11-07 执行记录（F15③）：`node --test
+packages/ui/test/browser/manual-review/pending/image-preview-editor.test.mjs` 15/15 通过
+  （PA161-01～09 全场景，390/1100 × 深浅 × 中英文矩阵截图落
+  `packages/desktop/.e2e-artifacts/image-preview-editor-browser/`）。执行中发现并修复真实缺陷：
+  `ImageAnnotationDialog` 的 className 写入 `relative` 被 tailwind-merge 判定与 `DialogContent`
+  基类 `fixed` 同组而删除后者，弹窗掉进文档流渲染到视口外（E2E `elementFromPoint` 反例定位）；
+  修复为不写 position 类、依赖基类 `fixed` 作定位祖先（组件内已注释原因）。pending 未转正，
+  不计为正式 Desktop 通过。
 - 剪枝登记：真实触屏设备、Windows/Linux 原生窗口、真实手机远控链路不由浏览器组件测试冒充；
   upload / 发送 / queue / fork / replay 组合剪枝（保存只走既有 draft admission，不新增第二条
   发送路径）；light/dark × locale × 宽度取代表组合不做全集。

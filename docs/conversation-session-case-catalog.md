@@ -3623,6 +3623,8 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 
 组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/image-preview-editor.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过；fixture 以假 receiver 断言 append 合同、导出像素与失效路径）。桌面 conversation-session 真实 Composer 保存链路需 `packages/desktop`（不在本卡落点，缺口登记待协调；F28 草稿事务须把附件插入纳入 claim/restore 测试）。已发送 user row、Markdown/工具图片与视频、PDF 不设标注入口；剪枝见 spec。accepted 表示产品合同，不代表已实现。
 
+2026-11-07 执行记录（F15③）：browser pending 15/15 通过（PA161-01～09，含 390/1100 × 深浅 × 中英文矩阵与自然尺寸像素断言；截图在 `packages/desktop/.e2e-artifacts/image-preview-editor-browser/`）。执行中发现并修复 `ImageAnnotationDialog` 的 tailwind-merge position 冲突缺陷（`relative` 顶掉基类 `fixed` 致弹窗渲染到视口外）。人工评审与转正未完成。
+
 ## CMP：Composer 压缩与 provider 身份
 
 沿用 CUA composer 七档布局契约。providerName 缺失的自定义 provider 使用菜单已有的 providerId 兜底，内置账号套餐规则不变。

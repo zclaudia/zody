@@ -23,7 +23,11 @@ export function ImageAnnotationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="relative flex h-[min(84vh,760px)] max-w-5xl flex-col overflow-hidden p-0"
+        // 不能写 `relative`：DialogContent 基类靠 `fixed` 定位居中，tailwind-merge 对
+        // position 组只保留后写的类，会把 fixed 删掉使弹窗掉进文档流、渲染到视口外
+        // （F15③ E2E 反例定位的真实缺陷）。fixed 本身就是定位祖先，Surface 的
+        // absolute 子元素可直接锚到弹窗内容。
+        className="flex h-[min(84vh,760px)] max-w-5xl flex-col overflow-hidden p-0"
         showCloseButton
       >
         <DialogTitle className="sr-only">{filename}</DialogTitle>
