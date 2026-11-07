@@ -3641,6 +3641,8 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 
 2026-11-07 执行记录（F28 基线步）：browser pending 连续三轮 `# tests 4 / # pass 3 / # fail 1`（PA162-02 稳定复现草稿丢失，期望 `"等待ACK期间切走的草稿"` 实际 `""`、持久草稿 `{}`；证据 `packages/desktop/.e2e-artifacts/composer-draft-transaction-browser/`）。已知非致命 console error：fake services 缺 subagents 服务（与 F15④ 同源，无 pageerror）。人工评审与转正未完成。
 
+2026-11-08 执行记录（F28 步① staged 暂存热路径落地）：PA162-01 增补断言——连续击键窗口草稿键写盘 ≤1（正常 0；基线 9 写/10 字符；负载卡顿>350ms 时防抖合法落盘 1 次）且防抖空闲窗合并落盘 1 次；同命令连续四轮 `# tests 4 / # pass 3 / # fail 1`（PA162-01/03/04 通过、PA162-02 失败形态与基线一致，待步③）。步①使三 staged props 挂载即消费，F15④ 真实 Composer 夹具补最小 no-op 后 `image-preview-editor.test.mjs` 复测 16/16。人工评审与转正未完成。
+
 ## CMP：Composer 压缩与 provider 身份
 
 沿用 CUA composer 七档布局契约。providerName 缺失的自定义 provider 使用菜单已有的 providerId 兜底，内置账号套餐规则不变。

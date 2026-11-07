@@ -4,7 +4,7 @@
  * 运行：`node --test packages/ui/test/browser/manual-review/pending/composer-draft-transaction.test.mjs`。
  * F28 草稿丢失复现基线：真实 ConversationComposer + 真实 useDraftConfigControl，
  * 夹具可在草稿/task scope 间切换并控制 onSendText 挂起/失败。
- * 基线预期（2026-11-07）：F28E-1/3/4 通过（护栏，四步移植不得回退）、F28E-2 失败
+ * 预期（步①落地后 2026-11-08）：F28E-1/3/4 通过（F28E-1 另断言热路径 0 写盘）；F28E-2 仍失败
  * （复现步③要修的「提交事务写不回已切换 scope」草稿丢失）；如实记录，不把失败写成通过。
  */
 /* oxlint-disable eslint(max-lines) -- e2e-case-lifecycle 以单个 spec 文件为登记/晋升单元，
@@ -128,9 +128,37 @@ test("F28E-1 护栏：草稿输入后切 task 再切回，正文不丢（含热�
   await openComposer(page);
   const editor = page.getByTestId("v4-composer-input");
   const text = "切走不丢的草稿正文";
+  // 预热：首个字符吸收冷启动的事件派发抖动，并等它的防抖落盘完成——保证计量窗口内
+  // 任何写盘都只能来自热路径本身，而不是迟到的预热定时器。
+  await editor.click();
+  await editor.pressSequentially("预", { delay: 20 });
+  await page.waitForFunction(() => window.readPersistedDrafts().__draft__?.text === "预", {
+    timeout: 5_000,
+    polling: 100,
+  });
+  await editor.press("Backspace");
   await page.evaluate(() => window.resetDraftWriteCount());
   await typeDraft(page, editor, text);
-  baselineMetrics.hotPathDraftWrites = await page.evaluate(() => window.draftWriteCount);
+  // 步①断言（2026-11-08 落地）：连续击键期间草稿键不做逐击键写盘——热路径只 staged
+  // 暂存（基线为 9 写/10 字符，见 spec 指标表）。正常为 0；机器负载导致某次击键间隔
+  // 超过 350ms 时防抖合法落盘一次（产品行为），故上界取 1——旧热路径每次击键同步写
+  // 盘（≥10 次），与 0/1 有数量级区分。Backspace 的防抖定时器被后续击键持续重置。
+  const hotPathDraftWrites = await page.evaluate(() => window.draftWriteCount);
+  baselineMetrics.hotPathDraftWrites = hotPathDraftWrites;
+  assert.ok(
+    hotPathDraftWrites <= 1,
+    `staged hot path should not write per keystroke, got ${hotPathDraftWrites}`,
+  );
+  // 防抖空闲窗结束后，staged 正文（含 editorStateJson）合并落盘一次。
+  await page.waitForFunction(
+    () => window.readPersistedDrafts().__draft__?.text === "切走不丢的草稿正文",
+    { timeout: 3_000, polling: 100 },
+  );
+  const writesAfterDebounce = await page.evaluate(() => window.draftWriteCount);
+  assert.ok(
+    writesAfterDebounce >= 1,
+    `debounce flush should persist once, got ${writesAfterDebounce}`,
+  );
   await switchScope(page, "task");
   await waitForEditorText(page, "");
   await switchScope(page, "draft");

@@ -106,6 +106,12 @@ function Fixture() {
                   onSwitchMode: () => {},
                   onSelectModel: () => {},
                   onSelectThought: () => {},
+                  // F28 步①（a60ba6a7）起 staged 暂存三 props 在挂载即被消费
+                  //（persist effect setup 捕获生命周期提交）；本夹具不挂草稿 owner、
+                  // 只断言附件链路，按最小 no-op 注入避免挂载崩溃。
+                  stageComposerContent: () => {},
+                  persistComposerContent: () => {},
+                  captureComposerContentLifecycleCommit: () => () => {},
                   sessionId: null,
                   snapshot: null,
                   workspacePath: "/workspace",

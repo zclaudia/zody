@@ -6,10 +6,7 @@ import {
   dispatchWebElementContextAddToChat,
   type WebElementContextPayload,
 } from "@/lib/webElementContext.js";
-import {
-  dispatchCodeCommentAddToChat,
-  type CodeCommentPayload,
-} from "@/lib/codeCommentContext.js";
+import { dispatchCodeCommentAddToChat, type CodeCommentPayload } from "@/lib/codeCommentContext.js";
 import { ConversationComposer } from "@/v4/ConversationComposer.js";
 import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 
@@ -287,6 +284,10 @@ function renderComposer(onSendText: (text: string, options?: unknown) => Promise
         createElement(ConversationComposer, {
           composerDraft: { text: "", updatedAt: 0 },
           updateComposerContent: vi.fn(),
+          // F28 步①：staged 暂存通道与生命周期提交 props（本测试只关注上下文附件，no-op）。
+          stageComposerContent: vi.fn(),
+          persistComposerContent: vi.fn(),
+          captureComposerContentLifecycleCommit: () => vi.fn(),
           replaceComposerDraft: vi.fn(),
           draftMode: true,
           onSelectModel: vi.fn(),

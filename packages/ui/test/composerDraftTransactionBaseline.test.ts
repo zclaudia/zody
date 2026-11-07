@@ -217,8 +217,8 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
     act(() => root.unmount());
   });
 
-  // ── 步① staged 暂存热路径（基线量化刻画；移植步改写为 staged 断言）──
-  it("F28-G1 基线刻画：每次正文更新即触发 owner re-render 与 localStorage 写盘（热路径成本）", async () => {
+  // ── 步① staged 暂存热路径（2026-11-08 落地后的 staged 语义断言）──
+  it("F28-G1 staged 热路径：击键暂存 0 父级 render、0 写盘；防抖冲刷一次合并落盘", async () => {
     const { container, windowMock } = installMinimalDom();
     const root = createRoot(container);
     const workspacePath = "/f28-hotpath";
@@ -243,18 +243,92 @@ describe("F28 基线：Composer 草稿事务与 IME 安全", () => {
     await act(async () => {
       root.render(createElement(Probe));
     });
+    // 等待与输入无关的一次性 settle（useModelSelectionServiceView 空服务读取落定），
+    // 让后续 render 计数只反映热路径本身。
+    await act(async () => {
+      root.render(createElement(Probe));
+    });
+    const rendersBeforeTyping = renders;
+    const writesBeforeTyping = setItemCalls;
     const updates = 5;
     for (let index = 0; index < updates; index += 1) {
-      act(() => control!.updateComposerContent({ text: `第 ${index + 1} 次输入` }));
+      act(() => control!.stageComposerContent({ text: `第 ${index + 1} 次输入` }));
     }
-    // 现状（步①前）：每个击键的正文更新都走 setStoredState（父级整页 re-render）
-    // 并同步 persistV4ComposerDraft 写 localStorage；额外 +1 渲染来自
-    // useModelSelectionServiceView 空服务读取的异步落定（与输入无关的一次性 settle）。
-    // 上游以 staged 暂存把热路径降为 ref 写入，本断言在步①落地时由该步改写为
-    // staged 语义（0 父级 render、热路径 0 写盘）。
-    expect(renders).toBe(updates + 2);
-    expect(setItemCalls).toBe(updates);
-    expect(readV4ComposerDraft(workspacePath, undefined, "__draft__")?.text).toBe("第 5 次输入");
+    // 步①核心断言（a60ba6a7）：击键热路径只写 staged ref——owner 0 次 re-render、
+    // 草稿键 0 次写盘（基线为 5 次更新 = 7 次 render + 5 次写盘，见 spec 指标表）。
+    expect(renders).toBe(rendersBeforeTyping);
+    expect(setItemCalls).toBe(writesBeforeTyping);
+    // 防抖冲刷（persistComposerContent）把 staged 正文与 editorStateJson 合并落盘一次。
+    act(() => control!.persistComposerContent({ text: "第 5 次输入", editorStateJson: "{}" }));
+    expect(setItemCalls).toBe(writesBeforeTyping + 1);
+    expect(readV4ComposerDraft(workspacePath, undefined, "__draft__")).toMatchObject({
+      text: "第 5 次输入",
+      editorStateJson: "{}",
+    });
+    act(() => root.unmount());
+  });
+
+  // ── 步① staged 合并：配置变更落盘不丢 staged 正文 ──
+  it("F28-G3 staged 合并：暂存正文后配置变更（mode）落盘包含最新正文", async () => {
+    const { container } = installMinimalDom();
+    const root = createRoot(container);
+    const workspacePath = "/f28-staged-merge";
+    let control: ReturnType<typeof useActualDraftConfigControl>;
+    function Probe() {
+      control = useActualDraftConfigControl({
+        workspacePath,
+        sessionId: "session",
+        agentStartupAllowed: false,
+        modelSelectionService: null,
+      });
+      return null;
+    }
+    await act(async () => {
+      root.render(createElement(Probe));
+    });
+    act(() => control!.updateComposerContent({ text: "旧正文" }));
+    act(() => control!.stageComposerContent({ text: "未落盘的新正文" }));
+    act(() => control!.handleDraftSwitchMode("yolo"));
+    // staged 正文必须在配置变更落盘时被合并吸收（等价旧的「正文先进入内存 Draft」），
+    // 否则暂存通道会把击键正文从持久草稿里丢掉。
+    expect(readV4ComposerDraft(workspacePath, undefined, "session")).toMatchObject({
+      text: "未落盘的新正文",
+      mode: "yolo",
+    });
+    act(() => root.unmount());
+  });
+
+  // ── 步① 切换 flush：staged 正文与生命周期提交都写回旧 scope ──
+  it("F28-G4 切换 flush：切 scope 时 staged 正文与生命周期快照写回旧 scope，不写新 scope", async () => {
+    const { container } = installMinimalDom();
+    const root = createRoot(container);
+    const workspacePath = "/f28-scope-flush";
+    let control: ReturnType<typeof useActualDraftConfigControl>;
+    function Probe({ sessionId }: { sessionId: string }) {
+      control = useActualDraftConfigControl({
+        workspacePath,
+        sessionId,
+        agentStartupAllowed: false,
+        modelSelectionService: null,
+      });
+      return null;
+    }
+    await act(async () => {
+      root.render(createElement(Probe, { sessionId: "a" }));
+    });
+    act(() => control!.updateComposerContent({ text: "已落盘" }));
+    act(() => control!.stageComposerContent({ text: "防抖窗内正文" }));
+    // 捕获 A 挂载期的一次性生命周期提交（对应 ConversationComposer persist effect setup）。
+    const commitForA = control!.captureComposerContentLifecycleCommit();
+    await act(async () => {
+      root.render(createElement(Probe, { sessionId: "b" }));
+    });
+    // scope 切换 cleanup 必须把 staged 正文写回旧 scope a（防抖窗内不丢稿）。
+    expect(readV4ComposerDraft(workspacePath, undefined, "a")?.text).toBe("防抖窗内正文");
+    // 迟到的生命周期快照也只写回捕获时 scope a，不得污染当前 scope b。
+    act(() => commitForA({ text: "编辑器快照" }));
+    expect(readV4ComposerDraft(workspacePath, undefined, "a")?.text).toBe("编辑器快照");
+    expect(readV4ComposerDraft(workspacePath, undefined, "b")).toBeNull();
     act(() => root.unmount());
   });
 

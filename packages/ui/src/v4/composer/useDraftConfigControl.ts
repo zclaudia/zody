@@ -74,6 +74,9 @@ export function shouldHydrateWorkspaceCatalog(params: {
   return params.slashCommands.length === 0 || !hasModePresentation;
 }
 
+/** 正文类字段：staged 暂存与生命周期提交只携带这些键，永不覆盖配置/授权标记。 */
+export type ComposerDraftContent = Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention">;
+
 export interface DraftConfigControl {
   modelSelectionRead: ModelSelectionRead;
   /** Renderer 下一次提交的配置；Session 只在 scope 首次初始化时提供种子。 */
@@ -83,9 +86,16 @@ export interface DraftConfigControl {
   /** 当前草稿生命周期冻结的初始化 config；只供 prewarm/createSession 建立时使用。 */
   resolveInitialDraftConfig: () => Partial<SessionConfigState> | undefined;
   composerDraft: V4ComposerDraft;
-  updateComposerContent: (
-    content: Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention">,
-  ) => void;
+  /**
+   * 输入热路径唯一入口（F28 步①，来源 a60ba6a7）：只写 staged ref，
+   * 不触发父级 re-render、不写 localStorage；落盘由防抖/配置变更/生命周期提交合并完成。
+   */
+  stageComposerContent: (content: ComposerDraftContent) => void;
+  /** 防抖/失焦冲刷：先暂存再合并落盘（每个 350ms 空闲窗至多一次写盘）。 */
+  persistComposerContent: (content: ComposerDraftContent) => void;
+  /** effect setup 捕获的一次性生命周期提交；scope 切换/卸载后仍只写回捕获时 scope。 */
+  captureComposerContentLifecycleCommit: () => (content: ComposerDraftContent) => void;
+  updateComposerContent: (content: ComposerDraftContent) => void;
   replaceComposerDraft: (draft: Omit<V4ComposerDraft, "updatedAt">) => void;
   /** 新任务被接纳后，把当前完整 Root Draft 原子式转移到真实 Session scope。 */
   promoteComposerDraft: (createdSessionId: string) => void;
@@ -97,6 +107,13 @@ export interface DraftConfigControl {
   handleDraftSelectModel: (modelProvider: string, model: string) => void;
   handleDraftSelectThought: (thought: string) => void;
   handleDraftSwitchMode: (mode: string) => void;
+}
+
+/** staged 暂存与生命周期提交的落盘目标：绑定捕获时 scope 的 baseDraft 与 persist 闭包。 */
+interface ComposerDraftPersistenceTarget {
+  scopeKey: string;
+  baseDraft: V4ComposerDraft;
+  persist: (draft: V4ComposerDraft) => boolean;
 }
 
 export function useDraftConfigControl(params: {
@@ -192,6 +209,85 @@ export function useDraftConfigControl(params: {
   );
   const draftConfigRef = useRef(draftConfig);
   draftConfigRef.current = draftConfig;
+  // ── staged 暂存热路径（F28 步①，来源 a60ba6a7）──
+  // Bug 根因：击键热路径走 updateComposerContent 的配置 setState，导致 SessionPane 级
+  // 整页 re-render（上游注释：「350ms 自动保存走配置 setState，导致整页、Logo 和
+  // Timeline 一起刷新」）并逐击键同步写 localStorage。正文改由 staged ref 持有；
+  // 防抖冲刷、配置变更与生命周期提交统一合并 staged 后落盘，输入不再丢稿。
+  const persistDraft = useCallback(
+    (value: V4ComposerDraft) =>
+      persistV4ComposerDraft(workspacePath, workspaceIdentity, scopeId, value),
+    [workspacePath, workspaceIdentity, scopeId],
+  );
+  const draftPersistenceRef = useRef(persistDraft);
+  draftPersistenceRef.current = persistDraft;
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+  // 本步身份校验仍是 scopeKey（incarnation 属步②）；mounted 防卸载后迟到回调写盘。
+  const isCurrentScope = useCallback(
+    () => mountedRef.current && stateRef.current.scopeKey === scopeKey,
+    [scopeKey],
+  );
+  const stagedContentRef = useRef<
+    | (ComposerDraftPersistenceTarget & {
+        content: ComposerDraftContent;
+      })
+    | null
+  >(null);
+  // 当前 scope 的落盘目标：生命周期提交（captureComposerContentLifecycleCommit）即使
+  // 无 staged 内容也要写编辑器事实，因此独立于 stagedContentRef 存在。
+  const scopePersistenceTarget = useMemo<ComposerDraftPersistenceTarget>(
+    () => ({
+      scopeKey,
+      baseDraft: stateRef.current.draft,
+      persist: draftPersistenceRef.current,
+    }),
+    [scopeKey],
+  );
+  // baseDraft/persist 随配置演进同步，避免生命周期提交把陈旧 mode/model 写回旧 scope。
+  useEffect(() => {
+    scopePersistenceTarget.baseDraft = currentState.draft;
+    scopePersistenceTarget.persist = draftPersistenceRef.current;
+    const pending = stagedContentRef.current;
+    if (pending?.scopeKey === scopeKey) {
+      pending.baseDraft = currentState.draft;
+      pending.persist = draftPersistenceRef.current;
+    }
+  }, [currentState.draft, scopeKey, scopePersistenceTarget]);
+  // scope 切换/卸载时把未落盘的 staged 正文写回旧 scope（修复防抖窗口内的丢失）。
+  // 子组件（ConversationComposer）的生命周期提交先执行并清 staged，这里兜底剩余 staged。
+  useEffect(
+    () => () => {
+      const pending = stagedContentRef.current;
+      if (!pending || pending.scopeKey !== scopeKey) return;
+      pending.persist({
+        ...pending.baseDraft,
+        editorStateJson: undefined,
+        mention: undefined,
+        ...pending.content,
+      });
+      stagedContentRef.current = null;
+    },
+    [scopeKey],
+  );
+  const mergeStagedContent = useCallback(
+    (current: V4ComposerDraft): V4ComposerDraft => {
+      const staged = stagedContentRef.current;
+      if (!staged || staged.scopeKey !== scopeKey) return current;
+      return {
+        ...current,
+        editorStateJson: undefined,
+        mention: undefined,
+        ...staged.content,
+      };
+    },
+    [scopeKey],
+  );
   const lastPersistedDraftRef = useRef<V4ComposerDraft | null>(null);
   useEffect(() => {
     if (
@@ -200,18 +296,24 @@ export function useDraftConfigControl(params: {
       stateRef.current.draft === draft &&
       stateRef.current.scopeKey === scopeKey
     ) {
-      persistV4ComposerDraft(workspacePath, workspaceIdentity, scopeId, draft);
+      // 配置初始化/变更落盘必须合并 staged 正文（等价旧的「正文先进入内存 Draft」）。
+      persistDraft(mergeStagedContent(draft));
       lastPersistedDraftRef.current = draft;
     }
-  }, [draft, scopeKey]);
+  }, [draft, scopeKey, persistDraft, mergeStagedContent]);
   const updateComposerDraft = useCallback(
     (update: (current: V4ComposerDraft) => V4ComposerDraft) => {
       // 旧 scope 的延迟编辑器回调不能写入刚切换到的会话。
-      if (stateRef.current.scopeKey !== scopeKey) return;
-      const previous = stateRef.current.draft;
+      if (!isCurrentScope()) return;
+      // 全量写路径先吸收 staged 正文再应用更新；staged 被合并消费后清除。
+      const previous = mergeStagedContent(stateRef.current.draft);
       const next = update(previous);
+      const staged = stagedContentRef.current;
+      if (staged?.scopeKey === scopeKey) stagedContentRef.current = null;
       const nextState = { ...stateRef.current, draft: next };
       stateRef.current = nextState;
+      scopePersistenceTarget.baseDraft = next;
+      scopePersistenceTarget.persist = draftPersistenceRef.current;
       const selection =
         next.modelSelection === previous.modelSelection
           ? draftConfigRef.current.modelSelection
@@ -225,10 +327,10 @@ export function useDraftConfigControl(params: {
         thought: selection?.options?.reasoningLevel ?? "",
       };
       setStoredState(nextState);
-      persistV4ComposerDraft(workspacePath, workspaceIdentity, scopeId, next);
+      persistDraft(next);
       lastPersistedDraftRef.current = next;
     },
-    [scopeKey, workspacePath, workspaceIdentity, scopeId],
+    [isCurrentScope, mergeStagedContent, persistDraft, scopeKey, scopePersistenceTarget],
   );
   const updateDraftConfig = useCallback(
     (update: (current: Partial<SessionConfigState>) => Partial<SessionConfigState>) => {
@@ -279,7 +381,7 @@ export function useDraftConfigControl(params: {
   }, [appFollowupMode]);
 
   const updateComposerContent = useCallback(
-    (content: Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention">) => {
+    (content: ComposerDraftContent) => {
       updateComposerDraft((current) => ({
         ...current,
         editorStateJson: undefined,
@@ -289,6 +391,49 @@ export function useDraftConfigControl(params: {
     },
     [updateComposerDraft],
   );
+  const stageComposerContent = useCallback(
+    (content: ComposerDraftContent) => {
+      // 热路径只更新 staged ref：不 setStoredState、不写 localStorage（F28 步①）。
+      // scopeKey 会在 A₁→B→A₂ 后复用；旧输入回调的挂载身份校验由步②incarnation 补齐。
+      if (!isCurrentScope()) return;
+      stagedContentRef.current = {
+        scopeKey,
+        content,
+        baseDraft: stateRef.current.draft,
+        persist: draftPersistenceRef.current,
+      };
+    },
+    [isCurrentScope, scopeKey],
+  );
+  const persistComposerContent = useCallback(
+    (content: ComposerDraftContent) => {
+      if (!isCurrentScope()) return;
+      // Bug 根因：350ms 自动保存曾走配置 setState，导致整页、Logo 和 Timeline 一起刷新
+      // （a60ba6a7）。冲刷只落盘合并后的完整草稿（每空闲窗至多一次），不改配置状态。
+      stageComposerContent(content);
+      persistDraft(mergeStagedContent(stateRef.current.draft));
+    },
+    [isCurrentScope, mergeStagedContent, persistDraft, stageComposerContent],
+  );
+  const captureComposerContentLifecycleCommit = useCallback(() => {
+    const target = scopePersistenceTarget;
+    let active = true;
+    return (content: ComposerDraftContent) => {
+      if (!active) return;
+      active = false;
+      // 一次性生命周期提交：scope 切换/卸载后仍写回捕获时 scope，不用可变 ref 定位目标。
+      const draft = {
+        ...target.baseDraft,
+        editorStateJson: undefined,
+        mention: undefined,
+        ...content,
+      };
+      target.baseDraft = draft;
+      target.persist(draft);
+      const pending = stagedContentRef.current;
+      if (pending?.scopeKey === target.scopeKey) stagedContentRef.current = null;
+    };
+  }, [scopePersistenceTarget]);
   const replaceComposerDraft = useCallback(
     (replacement: Omit<V4ComposerDraft, "updatedAt">) => {
       // 撤回编辑替换正文/配置，但不能忘记已经消费的授权，否则旧快照会再次覆盖新选择。
@@ -308,16 +453,20 @@ export function useDraftConfigControl(params: {
       if (!targetSessionId) return;
       // 首发成功曾直接删除 Root scope，真实 Session 没有 Composer Draft，
       // 重挂载后又从 Snapshot 初始化。先写目标、再删来源，保留完整正文/模式/选择。
+      // staged 正文必须并入提升草稿（F28 步①）：防抖未到期时 store 里还是旧正文。
+      const draftForPromotion = mergeStagedContent(stateRef.current.draft);
       const written = persistV4ComposerDraft(
         workspacePath,
         workspaceIdentity,
         targetSessionId,
-        stateRef.current.draft,
+        draftForPromotion,
       );
       if (!written) return;
+      const staged = stagedContentRef.current;
+      if (staged?.scopeKey === scopeKey) stagedContentRef.current = null;
       clearV4ComposerDraft(workspacePath, workspaceIdentity, V4_DRAFT_SCOPE_ROOT);
     },
-    [scopeId, scopeKey, workspaceIdentity, workspacePath],
+    [mergeStagedContent, scopeId, scopeKey, workspaceIdentity, workspacePath],
   );
 
   // ── workspace 目录水合（见文件头说明）──
@@ -486,6 +635,9 @@ export function useDraftConfigControl(params: {
     draftConfigRef,
     resolveInitialDraftConfig,
     composerDraft: draft,
+    stageComposerContent,
+    persistComposerContent,
+    captureComposerContentLifecycleCommit,
     updateComposerContent,
     replaceComposerDraft,
     promoteComposerDraft,

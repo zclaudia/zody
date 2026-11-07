@@ -131,6 +131,9 @@ function ComposerHost({ scope }: { scope: "draft" | "task" }) {
     composerDraft: control.composerDraft,
     updateComposerContent: control.updateComposerContent,
     replaceComposerDraft: control.replaceComposerDraft,
+    stageComposerContent: control.stageComposerContent,
+    persistComposerContent: control.persistComposerContent,
+    captureComposerContentLifecycleCommit: control.captureComposerContentLifecycleCommit,
     attachmentPut: async () => {
       throw new Error("fixture: attachment put unavailable");
     },

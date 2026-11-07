@@ -137,6 +137,7 @@ import {
   type ComposerAutoFocusOptions,
 } from "@/v4/composer/composerAutoFocus.js";
 import { V4_DRAFT_SCOPE_ROOT, type V4ComposerDraft } from "@/v4/composer/composerDraftStore.js";
+import type { ComposerDraftContent } from "@/v4/composer/useDraftConfigControl.js";
 import {
   resolveOppositeFollowupDelivery,
   resolveFollowupModifierTooltip,
@@ -382,9 +383,16 @@ export interface ConversationComposerProps {
   draftConfig?: Partial<SessionConfigState>;
   /** SessionPane 注入的完整 Draft owner；生产路径不再由编辑器直接覆盖持久记录。 */
   composerDraft: V4ComposerDraft;
-  updateComposerContent: (
-    content: Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention">,
-  ) => void;
+  /**
+   * 输入热路径唯一入口（F28 步①，来源 a60ba6a7）：只写 staged ref，
+   * 不触发父级 re-render、不写 localStorage；防抖冲刷与生命周期提交合并落盘。
+   */
+  stageComposerContent: (content: ComposerDraftContent) => void;
+  /** 防抖/失焦冲刷：暂存并合并落盘（每空闲窗至多一次写盘）。 */
+  persistComposerContent: (content: ComposerDraftContent) => void;
+  /** scope 切换/卸载的一次性生命周期提交（写捕获时 scope 的编辑器事实）。 */
+  captureComposerContentLifecycleCommit: () => (content: ComposerDraftContent) => void;
+  updateComposerContent: (content: ComposerDraftContent) => void;
   replaceComposerDraft: (draft: Omit<V4ComposerDraft, "updatedAt">) => void;
   /** 当前 Composer 是否能构造完整 Submission；空模型或空 Reasoning 时为 false。 */
   submissionReady?: boolean;
@@ -505,6 +513,9 @@ function ConversationComposerImpl({
   draftMode = false,
   draftConfig,
   composerDraft,
+  stageComposerContent,
+  persistComposerContent,
+  captureComposerContentLifecycleCommit,
   updateComposerContent,
   replaceComposerDraft,
   submissionReady = true,
@@ -843,15 +854,19 @@ function ConversationComposerImpl({
       if (suppressDraftPersistRef.current) return;
       const content = snapshotDraftOfEditor();
       if (scopeId === draftScopeRef.current) {
-        updateComposerContent(content);
+        // F28 步①（a60ba6a7）：冲刷走暂存+合并落盘，不再触发配置 setState 整页刷新。
+        persistComposerContent(content);
         return;
       }
     },
-    [snapshotDraftOfEditor, updateComposerContent, workspaceIdentity, workspacePath],
+    [snapshotDraftOfEditor, persistComposerContent, workspaceIdentity, workspacePath],
   );
 
   const scheduleDraftPersist = useCallback(() => {
     if (typeof window === "undefined") return;
+    // 正文先进入 staged 暂存（与 mode/model 共享同一内存草稿语义；F28 步①，a60ba6a7）；
+    // 防抖只负责在空闲窗结束时把带 editorStateJson 的完整快照合并落盘一次。
+    stageComposerContent({ text: textRef.current });
     if (draftPersistTimerRef.current !== null) {
       window.clearTimeout(draftPersistTimerRef.current);
     }
@@ -859,7 +874,7 @@ function ConversationComposerImpl({
       draftPersistTimerRef.current = null;
       persistDraftNow(draftScopeRef.current);
     }, 350);
-  }, [persistDraftNow]);
+  }, [persistDraftNow, stageComposerContent]);
 
   // ── 自动聚焦（新建任务 / 切会话 / 挂载后把光标交还输入框）──
   // 触发源：startDraft 递增的 draftFocusVersion（覆盖 Cmd/Ctrl+N 与所有「新建任务」入口）、
@@ -1130,11 +1145,19 @@ function ConversationComposerImpl({
   // 刷新/关窗前落盘当前草稿。
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // F28 步①（a60ba6a7）：scope 切换/卸载改走一次性生命周期提交，把编辑器快照写进
+    // setup 捕获时 scope 的落盘目标——不依赖卸载后已失效的可变 ref/scopeKey 闭包，
+    // 防抖窗内的正文（含 editorStateJson）不再因切换被丢弃。提交 claim 窗口
+    // （suppressDraftPersistRef）内不提交，避免把已 claim 清空的草稿复活；步③事务
+    // 落地后由事务 matchesTarget 接管该门禁。
+    const commitLifecycleContent = captureComposerContentLifecycleCommit();
     const flush = () => persistDraftNow(draftScopeRef.current);
     window.addEventListener("pagehide", flush);
     window.addEventListener("blur", flush);
     return () => {
-      flush();
+      if (!suppressDraftPersistRef.current) {
+        commitLifecycleContent(snapshotDraftOfEditor());
+      }
       window.removeEventListener("pagehide", flush);
       window.removeEventListener("blur", flush);
       if (draftPersistTimerRef.current !== null) {
@@ -1142,7 +1165,7 @@ function ConversationComposerImpl({
         draftPersistTimerRef.current = null;
       }
     };
-  }, [persistDraftNow]);
+  }, [captureComposerContentLifecycleCommit, persistDraftNow, snapshotDraftOfEditor]);
 
   // ── prompt history（per-workspace localStorage，↑/↓ 导航由 PromptHistoryPlugin 消费）──
   const [promptHistory, setPromptHistory] = useState<readonly string[]>(() =>
@@ -1606,11 +1629,12 @@ function ConversationComposerImpl({
     (value: string) => {
       conversationTelemetry?.recordComposerTextChange(value);
       updateText(value);
-      // 正文先进入与 mode/model 相同的内存 Draft；防抖只负责补充最新 Lexical JSON。
-      updateComposerContent({ text: value });
+      // F28 步①（a60ba6a7）：击键不再走 updateComposerContent 的配置 setState（整页
+      // re-render + 逐击键写盘）；scheduleDraftPersist 内先 staged 暂存正文，
+      // 防抖空闲窗再合并落盘一次，配置变更/生命周期提交同样合并 staged 不丢稿。
       scheduleDraftPersist();
     },
-    [conversationTelemetry, scheduleDraftPersist, updateComposerContent, updateText],
+    [conversationTelemetry, scheduleDraftPersist, updateText],
   );
 
   const handleEditorFocus = useCallback(() => {

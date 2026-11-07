@@ -301,16 +301,25 @@ function renderComposerElement(
   submissionReady = true,
 ) {
   const scopeId = sessionId ?? V4_DRAFT_SCOPE_ROOT;
-  let ownedDraft =
-    composerDraft ??
+  let ownedDraft = composerDraft ??
     readV4ComposerDraft("/workspace", undefined, scopeId) ?? {
       text: "",
       updatedAt: 0,
     };
+  // F28 步① staged 暂存通道的最小双重实现（与真实 useDraftConfigControl 同语义）：
+  // 热路径只进 staged；全量写/冲刷/生命周期提交合并 staged 后落盘一次。
+  const stagedContent: {
+    current: Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention"> | null;
+  } = { current: null };
+  const mergeStaged = (content: Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention">) => {
+    const staged = stagedContent.current;
+    stagedContent.current = null;
+    return staged ? { ...staged, ...content } : content;
+  };
   const persistOwnedContent =
     updateComposerContent ??
     ((content: Pick<V4ComposerDraft, "text" | "editorStateJson" | "mention">) => {
-      ownedDraft = { ...ownedDraft, ...content };
+      ownedDraft = { ...ownedDraft, ...mergeStaged(content) };
       persistV4ComposerDraft("/workspace", undefined, scopeId, ownedDraft);
     });
   return createElement(
@@ -325,6 +334,25 @@ function renderComposerElement(
       submissionReady,
       composerDraft: ownedDraft,
       updateComposerContent: persistOwnedContent,
+      stageComposerContent: (content) => {
+        stagedContent.current = content;
+      },
+      persistComposerContent: (content) => {
+        ownedDraft = { ...ownedDraft, ...mergeStaged(content) };
+        persistV4ComposerDraft("/workspace", undefined, scopeId, ownedDraft);
+      },
+      captureComposerContentLifecycleCommit: () => {
+        let active = true;
+        const targetScopeId = scopeId;
+        return (content) => {
+          if (!active) return;
+          active = false;
+          persistV4ComposerDraft("/workspace", undefined, targetScopeId, {
+            ...ownedDraft,
+            ...mergeStaged(content),
+          });
+        };
+      },
       replaceComposerDraft: (next) => {
         ownedDraft = { ...next, updatedAt: Date.now() };
         persistV4ComposerDraft("/workspace", undefined, scopeId, ownedDraft);
@@ -596,7 +624,10 @@ describe("ConversationComposer prompt history", () => {
   it("迟到的发送成功不能清除等待期间产生的新正文", async () => {
     let resolveSend!: () => void;
     const onSendText = vi.fn(
-      () => new Promise<void>((resolve) => { resolveSend = resolve; }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSend = resolve;
+        }),
     );
     const { root } = renderComposer(onSendText);
     const submit = chatPromptEditorProps.at(-1)!.onSubmit as (text: string) => boolean;
@@ -612,8 +643,10 @@ describe("ConversationComposer prompt history", () => {
       await flushAsyncWork();
     });
     expect(inputClear).not.toHaveBeenCalled();
-    expect(readV4ComposerDraft("/workspace", undefined, V4_DRAFT_SCOPE_ROOT)?.text).toBe("下一条");
+    // F28 步①（a60ba6a7）：击键改为 staged 暂存，等待期间的新正文不再逐击键写盘；
+    // 确定性落盘点是生命周期提交（卸载/切换）。此处先卸载再断言持久正文不丢。
     await act(async () => root.unmount());
+    expect(readV4ComposerDraft("/workspace", undefined, V4_DRAFT_SCOPE_ROOT)?.text).toBe("下一条");
   });
 
   it("二次门禁返回 null 时保留编辑器且不发送", async () => {
