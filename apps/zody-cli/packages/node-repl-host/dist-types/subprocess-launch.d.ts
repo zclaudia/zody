@@ -4,7 +4,7 @@ export interface CellLaunch {
     args: string[];
 }
 /**
- * 复用现有 single bundle：SEA 走 __zcode-plugin-host，开发 bundle 直接执行 server.js。
+ * 复用现有 single bundle：SEA 走 __zody-plugin-host，开发 bundle 直接执行 server.js。
  * 不传 process.execArgv，避免 inspector/loader 等调试入口进入 cell。
  */
 export declare function resolveCellLaunch(input: {
