@@ -504,7 +504,13 @@ describe("会话区 Background Runtime Task E2E", () => {
 
     const launchIndex = await waitForFirstRequestIndex(
       {
-        includes: ["E2E_BACKGROUND_AUTO_TIMEOUT_BASH", "Command running in background"],
+        // F21（0bb4218f）后超时转后台的 tool result 文案带 timedOutAfterMs 换算的秒数，
+        // 断言改用新文案中不含秒数的稳定片段，避免硬编码运行时长。
+        includes: [
+          "E2E_BACKGROUND_AUTO_TIMEOUT_BASH",
+          "did not complete within its",
+          "was moved to the background",
+        ],
       },
       requestCountBefore,
       "foreground Bash timeout 后没有返回 backgrounded tool result",

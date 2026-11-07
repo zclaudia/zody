@@ -475,10 +475,19 @@ function readLatestAgentId(value: string): string | undefined {
 
 function readLatestBashTaskId(value: string): string | undefined {
   // Bash task ID 每次运行都不同；只从真实 launch result 回填，不能把 Agent ID 当作 Bash ID。
+  // F21（0bb4218f）后超时转后台的结果文案变为
+  // "did not complete within its Ns timeout and was moved to the background (ID: xxx)."，
+  // ID 移入括号内；两种格式都要能解析，且同一请求混有多种结果时按出现位置取真正最后一条。
   const matches = [
     ...value.matchAll(/Command running in background with ID:\s*([A-Za-z0-9_-]+)\./gu),
+    ...value.matchAll(
+      /Command did not complete within its \d+s timeout and was moved to the background \(ID:\s*([A-Za-z0-9_-]+)\)\./gu,
+    ),
   ];
-  return matches.at(-1)?.[1];
+  return matches
+    .map((match) => ({ id: match[1] ?? "", index: match.index ?? 0 }))
+    .sort((a, b) => a.index - b.index)
+    .at(-1)?.id;
 }
 
 function readMemoryRoot(value: string): string | undefined {

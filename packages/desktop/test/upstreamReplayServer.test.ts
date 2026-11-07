@@ -139,6 +139,18 @@ describe("Upstream replay server", () => {
         "Command running in background with ID: bash_first. Output is being written to: /tmp/first.log.\nCommand running in background with ID: bash_last. Output is being written to: /tmp/last.log.",
       expected: "bash_last",
     },
+    {
+      // F21（0bb4218f）超时转后台新文案：ID 在括号内且文案带秒数，必须同样可回填。
+      output:
+        "Command did not complete within its 45s timeout and was moved to the background (ID: bash_timeout). You will be notified when it completes.",
+      expected: "bash_timeout",
+    },
+    {
+      // 同一请求混有显式后台（旧文案）与超时转后台（新文案）时，按出现位置取最后一条。
+      output:
+        "Command running in background with ID: bash_explicit. Output is being written to: /tmp/explicit.log.\nCommand did not complete within its 45s timeout and was moved to the background (ID: bash_timeout).",
+      expected: "bash_timeout",
+    },
     { output: "agentId: agent_other", expected: "{{latestBashTaskId}}" },
   ])(
     "resolves Bash task IDs from actual launch results: $expected",
