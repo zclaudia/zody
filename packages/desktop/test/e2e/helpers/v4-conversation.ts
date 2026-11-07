@@ -2702,13 +2702,26 @@ export async function clickV4SlashOption(optionId: string) {
   return dispatched;
 }
 
-/** 通过 composer 工具条切换协作模式（switchCollaborationMode 命令）。 */
+/** 通过 Composer 工具条切换草稿权限，显式确认进入完全访问。 */
 export async function switchV4Mode(mode: string) {
+  // F26②（a1eb45e5）合入「完全访问模式风险确认弹窗」后，切入 yolo 必弹确认框，
+  // helper 必须先勾选风险项再确认，否则用例会卡死在弹窗上；已是 yolo 的重复切换不弹不点。
+  // 逻辑来源：上游 a60ba6a7 packages/desktop/test/e2e/helpers/v4-conversation.ts switchV4Mode。
+  const previous = mode === "yolo" ? (await getV4ModelConfig()).mode : null;
   await selectRadixOption(
     TID_CHAT_MODE_SELECT_TRIGGER,
     testId(TID_CHAT_MODE_SELECT_ITEM, mode),
     `v4 模式选择器没有出现目标模式项: ${mode}`,
   );
+  if (mode === "yolo" && previous !== "yolo") {
+    const risk = $('[data-testid="yolo-confirmation-risk"]');
+    await risk.waitForClickable();
+    await risk.click();
+    const confirm = $('[data-testid="yolo-confirmation-confirm"]');
+    await confirm.waitForClickable();
+    await confirm.click();
+    await $('[data-testid="yolo-confirmation-dialog"]').waitForDisplayed({ reverse: true });
+  }
 }
 
 /** 读取 config 投影扩展锚点（data-mode / data-usage-*，M5 additive）。 */
