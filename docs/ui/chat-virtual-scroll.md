@@ -104,6 +104,46 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
 | ④ 测量 revision | `measuredLayoutRevision` 批量测高与 mountedRowsKey 失效 | M1/M2/M3 不回退 + SRM10 resize 回归 | 不回退 |
 | ⑤ 查找 | 查找索引按分区缓存（history 段按引用复用，每帧只算尾轮） | M4 + 代码级分区缓存测试 | M4 不回退（现有 unit 缓存已把墙钟增量压到噪声级，验收以代码级测试为主） |
 
+### 步骤②契约：冻结历史 + 尾轮分区
+
+- **状态所有者**：分区是 `rows.window` 的纯派生缓存（WeakMap 以 rows 数组引用为键），
+  不是第二份消息状态；唯一登记点是 `ConversationProjectionStore` 的 delta 应用路径
+  （`applyConversationDeltas` → `shareDeltaRows` → `advanceConversationRowsPartition` →
+  `setState`），订阅方在同一次通知里读取新 rows 时分区已就绪。
+- **分区语义**：`tail` = 最后一行所在轮的全部行（该轮在更早位置也出现过时起点前移，
+  直到两段轮次不相交；消费方不能假设 tail 只有一轮）；`history ++ tail` 逐项等于 rows。
+  流式帧只改尾轮时沿用上一份 `history` 数组引用，其余情况（新轮开始、旧行更新、rewind、
+  前插历史）首次读取时整窗重建。
+- **接口**（上游 a60ba6a7 移植，类型位置适配见下）：
+  - `conversationProjectionStore.ts`：`ConversationRowsPartition`、`getConversationRowsPartition`、
+    `advanceConversationRowsPartition`、`memoizeByRows`；
+  - `conversationTurnRenderUnits.ts`：`createConversationTurnRenderUnitsSelector`（输出
+    `{history, tail}`，与对全窗 `buildConversationTurnRenderUnits` 逐项相等；历史段结果按
+    history 引用缓存，仅当历史含无 header 轮（依赖 sessionPhase）、运行中轮（依赖时钟）或
+    可固定插件行（依赖 resolver）时缓存键追加对应输入）；扁平 `buildConversationTurnRenderUnits`
+    保留不删；
+  - `plugin-ui`：`createLogicalUiInstancesSelector`（history 引用 + 尾轮回合序列/插件行引用不变
+    时复用上一份推导，否则整窗重算）；
+  - `conversationTurnNavigatorHelpers.ts`：`createConversationTurnNavigatorQueryRowIdsSelector`
+    （目录成员不变时保持同一 Set 身份，锚点登记不随流式帧全量重建）；
+  - `conversationTimelineLiveTail.ts`：`splitConversationTimelineLiveTail` 接受分区入参
+    （running 尾轮时 `virtualizedUnits` 直接复用 history 引用），保留扁平入参兼容既有调用。
+- **类型位置偏离**：上游把 `ConversationRowsPartition` 放在 shared 协议包（让 plugin-ui domain
+  只依赖协议类型）；本卡落点不含 packages/shared，故类型定义在 `conversationProjectionStore.ts`，
+  plugin-ui 侧以结构兼容类型声明（`{ history, tail }`），不引入 plugin-ui → v4 store 的模块依赖。
+  后续若 shared 开放可再上移对齐上游。
+- **验收场景**：
+  1. 等价性：对「历史 + running 尾轮」「尾轮 unit 全被过滤（timelineOnly 等）」「无 header 轮」
+     「运行中历史轮（时钟推进）」「插件固定 resolver 变化」「新轮开始（turn 在两段间迁移）」等
+     场景，selector 的 `history ++ tail` 与全量 `buildConversationTurnRenderUnits(rows)` 逐项相等。
+  2. 引用稳定性：只改尾轮的流式帧后，`partition.history`、selector 历史段数组与其内 unit 引用、
+     `virtualizedUnits`（running 尾轮时）、目录 Set 身份、插件 UI 推导结果引用均不变；
+     历史行被 upsert / 新轮开始时相应引用更换。
+  3. advance 沿用判定：`row.appended`（新轮/尾轮）、`row.upserted`（历史/尾轮）、`row.delta`、
+     `row.removed`、state/pluginUi delta 的沿用与重建边界逐条覆盖。
+  4. 既有回归：扁平 API 及其测试（`v4ConversationTurnRenderUnits*`、`v4ConversationTimelineLiveTail`
+     等）不回退；M1 复测 growth 收敛、M2–M4 不回退（数值追加进基线记录文件）。
+
 ### 性能指标定义与测量方法
 
 测量入口：`node --test packages/ui/test/browser/manual-review/pending/conversation-timeline-perf-baseline.test.mjs`

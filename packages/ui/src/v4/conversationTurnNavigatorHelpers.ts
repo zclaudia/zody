@@ -1,4 +1,7 @@
-import type { ConversationTurnRenderUnit } from "@/v4/conversationTurnRenderUnits.js";
+import type {
+  ConversationTurnRenderUnit,
+  ConversationTurnRenderUnitsPartition,
+} from "@/v4/conversationTurnRenderUnits.js";
 
 export type ConversationTurnNavigatorAssistantPreviewKind =
   | "empty"
@@ -70,6 +73,49 @@ export interface ResolveConversationTurnNavigatorVisualFocusItemIndexOptions {
 }
 
 export const CONVERSATION_TURN_NAVIGATOR_MIN_WIDTH_PX = 864;
+
+function collectRealUserQueryRowIds(units: readonly ConversationTurnRenderUnit[]): number[] {
+  const rowIds: number[] = [];
+  for (const unit of units) {
+    for (const row of unit.visibleUserInputs) {
+      if (row.origin === "realUser") rowIds.push(row.rowId);
+    }
+  }
+  return rowIds;
+}
+
+function sameNumbers(a: readonly number[], b: readonly number[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index += 1) {
+    if (a[index] !== b[index]) return false;
+  }
+  return true;
+}
+
+/**
+ * 目录成员 selector（F17 步骤②，上游 a60ba6a7 移植，spec：docs/ui/chat-virtual-scroll.md
+ * 「步骤②契约」）：目录成员未变时保持 Set 身份，正文 token/时钟不能让 DOM 锚点登记跟着
+ * 全量重建。输入按「历史 + 尾轮」分区：历史段引用不变且尾轮成员不变时直接复用，
+ * 流式帧只收集尾轮；历史段变化时才整窗比较成员。
+ */
+export function createConversationTurnNavigatorQueryRowIdsSelector() {
+  let previous: ReadonlySet<number> = new Set<number>();
+  let previousHistory: readonly ConversationTurnRenderUnit[] | null = null;
+  let previousTailRowIds: number[] = [];
+  return (units: ConversationTurnRenderUnitsPartition): ReadonlySet<number> => {
+    const tailRowIds = collectRealUserQueryRowIds(units.tail);
+    if (previousHistory === units.history && sameNumbers(previousTailRowIds, tailRowIds)) {
+      return previous;
+    }
+    previousHistory = units.history;
+    previousTailRowIds = tailRowIds;
+    const next = new Set([...collectRealUserQueryRowIds(units.history), ...tailRowIds]);
+    if (next.size !== previous.size || [...next].some((rowId) => !previous.has(rowId))) {
+      previous = next;
+    }
+    return previous;
+  };
+}
 
 export type ConversationTurnNavigatorHydrationResult =
   | { status: "hydrated"; logEpoch: string }

@@ -104,3 +104,58 @@ export function deriveLogicalUiInstances(
   }
   return { instances, byToolCallId };
 }
+
+function sameRefs<T>(a: readonly T[], b: readonly T[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let index = 0; index < a.length; index += 1) {
+    if (a[index] !== b[index]) return false;
+  }
+  return true;
+}
+
+/**
+ * rows 的「历史 + 尾轮」分区入参（F17 步骤②，上游 a60ba6a7 移植）。
+ * 上游把 ConversationRowsPartition 定义在 shared 协议包让本 domain 只依赖协议类型；
+ * 本卡落点不含 packages/shared，这里以结构兼容类型声明（v4 store 的
+ * ConversationRowsPartition 可直接传入），不引入 plugin-ui → v4 store 的模块依赖。
+ */
+export interface PluginUiRowsPartition {
+  readonly history: readonly ConversationRow[];
+  readonly tail: readonly ConversationRow[];
+}
+
+/**
+ * 分区缓存版推导（上游 a60ba6a7 移植，spec：docs/ui/chat-virtual-scroll.md「步骤②契约」）：
+ * 调用方传入与 rows 对应的分区（两段回合不相交）。历史段引用不变，且尾轮的回合序列与
+ * 插件 UI 行引用都不变时，推导输入完全相同，直接复用上一份结果；否则整窗重新推导。
+ * 这让文本流式帧不再逐帧支付 deriveLogicalUiInstances 的全窗扫描成本。
+ */
+export function createLogicalUiInstancesSelector() {
+  let previous: {
+    history: readonly ConversationRow[];
+    tailTurnIds: string[];
+    tailUiRows: ToolCallRow[];
+    result: PluginUiInstanceDerivation;
+  } | null = null;
+  return (
+    rows: readonly ConversationRow[],
+    partition: PluginUiRowsPartition,
+  ): PluginUiInstanceDerivation => {
+    const tailTurnIds: string[] = [];
+    const tailUiRows: ToolCallRow[] = [];
+    for (const row of partition.tail) {
+      if (!tailTurnIds.includes(row.turnId)) tailTurnIds.push(row.turnId);
+      if (isPluginUiToolRow(row)) tailUiRows.push(row);
+    }
+    if (
+      previous?.history === partition.history &&
+      sameRefs(previous.tailTurnIds, tailTurnIds) &&
+      sameRefs(previous.tailUiRows, tailUiRows)
+    ) {
+      return previous.result;
+    }
+    const result = deriveLogicalUiInstances(rows);
+    previous = { history: partition.history, tailTurnIds, tailUiRows, result };
+    return result;
+  };
+}

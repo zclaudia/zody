@@ -80,3 +80,37 @@ unit 级缓存（`useConversationTimelineFind.ts`，稳定 unit 命中 string-ke
   仅保留远高于预期的 sanity 上限（p95 < 250ms）拦截环境损坏。
 - append 模式（真实文本增长）作为可选交叉验证（`F17_BASELINE_STREAM_MODE=append`）：尾轮渲染成本
   随帧增长会稀释 growth 信号（120 帧时 growth ≈1.25），故 M1 主口径采用 replace。
+
+## 2026-11-07 步骤②复测（冻结历史 + 尾轮分区合入后）
+
+- 实现内容：`getConversationRowsPartition`/`memoizeByRows`/`advanceConversationRowsPartition`
+  （含 store delta 路径登记）、render units 分区选择器、插件 UI 推导/目录 Set 分区缓存、
+  timeline 接线（来源 a60ba6a7，适配见 spec「步骤②契约」）。
+- 口径校准：fixture 流式驱动补上与生产一致的 `advanceConversationRowsPartition` 登记
+  （基线步分区函数不存在，两阶段 fixture 行为分别对应当时生产的 rows 产出语义，对比口径一致）。
+- 3 轮（`part1`/`part2`/`part3`）均 5/5 通过（含全部行为断言）。
+
+### M1 流式每帧成本（replace 口径）
+
+| 历史规模 | p50（ms，三轮） | p50 中位数 | 对比基线 | p95 中位数（基线） |
+| --- | --- | --- | --- | --- |
+| 50 轮 / 153 行 | 8.8 / 9.0 / 9.1 | 9.0 | ≈持平（9.4） | 29.3（29.9） |
+| 500 轮 / 1503 行 | 12.5 / 12.6 / 12.3 | 12.5 | −27%（17.1） | 38.3（43.0） |
+| 1000 轮 / 3003 行 | 14.8 / 13.9 / 13.5 | 13.9 | −41%（23.4） | 40.4（50.5） |
+
+- growth = p50(3003)/p50(153)：三轮 1.68/1.54/1.48，中位数 **1.54**（基线 2.49）。
+- 历史规模每帧增量：基线 ≈14.0ms @3003 行 → 本步 ≈4.9ms（−65%）。
+- 残余 ~4.9ms 的历史规模项与步骤⑤对位：`useConversationTimelineFind` 仍按扁平 renderUnits
+  每帧全 units 合并（查找分区缓存是⑤的目标）；另 renderUnits 扁平拼接为 O(N) memcpy（可忽略）。
+
+### M2/M3/M4
+
+- M2 mount：3094/3318/3812ms，中位数 3318（基线 3328）——持平，无回退；historyTurnUnits 9 不变。
+- M3 跳转挂载：18 units / 972 elements / 19 mounted（三轮零波动）——与基线一致；该项归步骤③ overscan。
+- M4 查找激活流式 p50：12.8/12.0/12.1，中位数 12.1（基线 17.2）——作为分区副产物改善，
+  查找索引分区缓存（步骤⑤）合入后继续复测。
+
+### 结论
+
+- 基线无回退（M1 显著改善、M2/M3/M4 持平或改善）；按 spec 步骤表，growth 未完全到 1.x 的
+  残余量已定位到步骤⑤的查找合并路径，不在本步扩大范围。

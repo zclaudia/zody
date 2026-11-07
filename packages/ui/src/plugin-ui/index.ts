@@ -11,8 +11,10 @@ export {
   type PluginUiRowPinResolver,
 } from "./domain/pluginUiRowPolicy.js";
 export {
+  createLogicalUiInstancesSelector,
   deriveLogicalUiInstances,
   type PluginUiInstanceDerivation,
+  type PluginUiRowsPartition,
 } from "./domain/pluginUiInstancePolicy.js";
 export {
   getPluginUiManualPin,

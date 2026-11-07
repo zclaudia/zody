@@ -15,6 +15,7 @@ import type {
 import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
 import { ConversationTimeline } from "@/v4/ConversationTimeline.js";
+import { advanceConversationRowsPartition } from "@/v4/conversationProjectionStore.js";
 import { TooltipProvider } from "@/components/ui/tooltip.js";
 import "@/styles.css";
 
@@ -242,6 +243,16 @@ function Fixture() {
           ? { ...row, text: tailText }
           : row,
       );
+      // 与生产一致：ConversationProjectionStore 在 delta 应用后、setState 前调用
+      // advanceConversationRowsPartition 登记「只改尾轮」的分区（F17 步骤②）。
+      // fixture 不经过真实 store，这里等价复现该登记步骤；基线步（分区不存在时）
+      // 语义等同于跳过此调用——两阶段的差异正是本步的实现内容。
+      // replace 模式整行替换尾轮 assistantText = row.upserted；append 模式 = row.delta。
+      advanceConversationRowsPartition(current, next, [
+        mode === "append"
+          ? { op: "row.delta", rowId: tailRowId, path: "text", append: baseChunk }
+          : { op: "row.upserted", row: next[next.length - 1]! },
+      ]);
       const start = performance.now();
       flushSync(() => {
         setRows(next);

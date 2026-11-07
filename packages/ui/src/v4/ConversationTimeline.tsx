@@ -35,7 +35,7 @@ import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { logger } from "@/logger.js";
 import { ConversationTurnGroup } from "@/v4/ConversationTurnGroup.js";
 import {
-  deriveLogicalUiInstances,
+  createLogicalUiInstancesSelector,
   getPluginUiDisclosureVersion,
   getPluginUiManualPin,
   setPluginUiInstanceDerivation,
@@ -53,10 +53,12 @@ import {
   getConversationStatusPanelOffsetClassName,
 } from "@/v4/conversationLayout.js";
 import {
-  buildConversationTurnRenderUnits,
+  createConversationTurnRenderUnitsSelector,
   type ConversationTurnRenderUnit,
 } from "@/v4/conversationTurnRenderUnits.js";
+import { getConversationRowsPartition } from "@/v4/conversationProjectionStore.js";
 import {
+  createConversationTurnNavigatorQueryRowIdsSelector,
   resolveConversationTurnNavigatorActiveQueryRowId,
   resolveConversationTurnNavigatorHydrationRetryDelayMs,
   shouldHydrateConversationTurnNavigatorDirectory,
@@ -403,10 +405,15 @@ function ConversationTimelineImpl({
   const scrollRef = useRef<HTMLDivElement>(null);
   // fork（F4.8）：headerSlot 高度跟踪/scrollMargin 随分享导入只读块删除。
   const [liveNowMs, setLiveNowMs] = useState(() => Date.now());
+  // F17 步骤②（上游 a60ba6a7）：rows 的「冻结历史 + 尾轮」分区是全部按行派生的缓存键。
+  // 流式帧只改尾轮时 history 引用不变（store 在 delta 应用后 advance 登记），下面的派生
+  // 都按 history 引用缓存历史段，每帧只算尾轮（spec：docs/ui/chat-virtual-scroll.md「步骤②契约」）。
+  const rowsPartition = getConversationRowsPartition(rows);
   // 插件卡片展示模型——同资源替代 + 最近三回合自动展开 + 手动固定；推导结果发布给卡片自己读。
+  const selectPluginUiDerivation = useMemo(() => createLogicalUiInstancesSelector(), []);
   const pluginUiDerivation = useMemo(
-    () => deriveLogicalUiInstances(rows),
-    [rows],
+    () => selectPluginUiDerivation(rows, rowsPartition),
+    [rows, rowsPartition, selectPluginUiDerivation],
   );
   useEffect(() => {
     setPluginUiInstanceDerivation(sessionKey, pluginUiDerivation);
@@ -426,42 +433,48 @@ function ConversationTimelineImpl({
   }, [pluginUiDerivation, sessionKey, pluginUiDisclosureVersion]);
   // fork（bot-channels 移除）：useBotTopicPreparations 订阅与 withTopicPreparationMessages
   // 话题准备投影随 bot channel 删除（specs/bot-channels-removal.md），渲染单元直接来自 CLI rows。
-  // perf-1/perf-2：把上一次 renderUnits 回传给 builder 做输入指纹比对，流式 delta 帧与
-  // 运行静默期 1s 时钟只有内容真正变化的 turn（流式尾轮/运行轮耗时）会重建，
-  // 其余 turn 复用旧引用，虚拟窗口内 ConversationTurnGroup 的 memo 不再无差别失效。
-  // ref 写入发生在 useMemo 内：React 丢弃本次渲染或 StrictMode 双调用时，
-  // previousUnits 只是等价输入，复用是幂等纯函数，不会产生错误状态。
-  const previousRenderUnitsRef = useRef<readonly ConversationTurnRenderUnit[]>(
+  // F17 步骤②（上游 a60ba6a7）：render units 改由分区选择器构建——历史段按 history 引用
+  // 缓存，流式帧只 materialize 尾轮；复用判定沿用 perf-1/perf-2 的输入指纹（选择器内部
+  // 按 turn key 分段查表，轮次在两段之间迁移时两边都查），输出与全量构建逐项相等
+  //（单测 v4ConversationTurnRenderUnitsPartition 覆盖等价性与引用稳定性）。
+  const selectRenderUnits = useMemo(() => createConversationTurnRenderUnitsSelector(), []);
+  const renderUnitsPartition = useMemo(
+    () =>
+      selectRenderUnits(rowsPartition, {
+        nowMs: liveNowMs,
+        sessionPhase,
+        pluginUiPinResolver,
+      }),
+    [liveNowMs, pluginUiPinResolver, rowsPartition, sessionPhase, selectRenderUnits],
+  );
+  // 扁平视图给仍按整窗消费的调用方（查找 hook、目录条目、空态判断）；尾段为空时直接
+  // 复用 history 引用，避免无谓的逐帧数组重建。
+  const renderUnits = useMemo(
+    () =>
+      renderUnitsPartition.tail.length === 0
+        ? renderUnitsPartition.history
+        : [...renderUnitsPartition.history, ...renderUnitsPartition.tail],
+    [renderUnitsPartition],
+  );
+  const { virtualizedUnits, liveUnit, liveUnitIndex } = useMemo(
+    () => splitConversationTimelineLiveTail(renderUnitsPartition),
+    [renderUnitsPartition],
+  );
+  // 流式帧 history 引用不变，历史段的 running 扫描随分区缓存跳过；尾段通常只有 1 轮。
+  const historyHasRunningUnit = useMemo(
+    () => renderUnitsPartition.history.some((unit) => unit.isRunning),
+    [renderUnitsPartition.history],
+  );
+  const hasRunningUnit =
+    historyHasRunningUnit || renderUnitsPartition.tail.some((unit) => unit.isRunning);
+  const selectTurnNavigatorQueryRowIds = useMemo(
+    () => createConversationTurnNavigatorQueryRowIdsSelector(),
     [],
   );
-  const renderUnits = useMemo(() => {
-    const nextUnits = buildConversationTurnRenderUnits(rows, {
-      nowMs: liveNowMs,
-      sessionPhase,
-      pluginUiPinResolver,
-      previousUnits: previousRenderUnitsRef.current,
-    });
-    previousRenderUnitsRef.current = nextUnits;
-    return nextUnits;
-  }, [liveNowMs, pluginUiPinResolver, rows, sessionPhase]);
-  const { virtualizedUnits, liveUnit, liveUnitIndex } = useMemo(
-    () => splitConversationTimelineLiveTail(renderUnits),
-    [renderUnits],
-  );
-  const hasRunningUnit = useMemo(
-    () => renderUnits.some((unit) => unit.isRunning),
-    [renderUnits],
-  );
+  // 按分区收集目录成员：流式帧只看尾轮，成员不变时保持同一个 Set（锚点登记按它的身份失效）。
   const turnNavigatorQueryRowIds = useMemo(
-    () =>
-      new Set(
-        renderUnits.flatMap((unit) =>
-          unit.visibleUserInputs
-            .filter((row) => row.origin === "realUser")
-            .map((row) => row.rowId),
-        ),
-      ),
-    [renderUnits],
+    () => selectTurnNavigatorQueryRowIds(renderUnitsPartition),
+    [renderUnitsPartition, selectTurnNavigatorQueryRowIds],
   );
   const turnNavigatorQueryRowIdsRef = useRef(turnNavigatorQueryRowIds);
   turnNavigatorQueryRowIdsRef.current = turnNavigatorQueryRowIds;
