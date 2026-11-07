@@ -93,6 +93,63 @@ describe("timelineScrollAnchor", () => {
     ).toBe(false);
   });
 
+  // F17 步骤③（上游 a60ba6a7 一屏估高移植的必要配套）：未测量轮按一屏估高会让
+  // 测量修正收缩 totalSize，浏览器把 scrollTop 钳到新底部；钳制产生的 scroll 事件
+  // 落在用户意图 TTL 内被归类为 user。旧逻辑「user 落底即重新跟随」会覆盖用户刚
+  // 取得的离底状态（SRM10 desktop Grow 后上滚用例复现）。不变量：数值上向上移动
+  // （scrollTop 减小）的 user scroll 不可能新落到底部——那是布局钳制，不是用户滚回。
+  it("钳制跟随权：未跟随态向上移动的 user scroll 落在底部也不重新跟随", () => {
+    expect(
+      resolveFollowingAfterScroll({
+        following: false,
+        // 测高修正收缩内容后：上一账目 17646，钳制落点 = 新底部 16928（数值向上移动）。
+        metrics: metrics(16928, 781, 17709),
+        source: "user",
+        previousScrollTop: 17646,
+      }),
+    ).toBe(false);
+  });
+
+  it("钳制跟随权：向下移动落底仍恢复跟随（真实滚回底部行为不变）", () => {
+    expect(
+      resolveFollowingAfterScroll({
+        following: false,
+        metrics: metrics(1400, 600, 2000),
+        source: "user",
+        previousScrollTop: 900,
+      }),
+    ).toBe(true);
+  });
+
+  it("钳制跟随权：已跟随态与无 previousScrollTop 输入时行为不变", () => {
+    // 已跟随：落底保持 true；数值向上移动钳制不改变已跟随状态。
+    expect(
+      resolveFollowingAfterScroll({
+        following: true,
+        metrics: metrics(16928, 781, 17709),
+        source: "user",
+        previousScrollTop: 17646,
+      }),
+    ).toBe(true);
+    // 未传 previousScrollTop（旧调用路径）：维持旧语义，仅按落点判定。
+    expect(
+      resolveFollowingAfterScroll({
+        following: false,
+        metrics: metrics(16928, 781, 17709),
+        source: "user",
+      }),
+    ).toBe(true);
+    // 亚像素抖动（<1px）不算向上移动。
+    expect(
+      resolveFollowingAfterScroll({
+        following: false,
+        metrics: metrics(16927.5, 781, 17709),
+        source: "user",
+        previousScrollTop: 16928,
+      }),
+    ).toBe(true);
+  });
+
   it("内容增长动作：跟随中贴底，解除跟随保持阅读位置（流式不拉回）", () => {
     expect(anchorActionAfterContentChange(true)).toBe("stickToBottom");
     expect(anchorActionAfterContentChange(false)).toBe("hold");

@@ -100,7 +100,7 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
 | --- | --- | --- | --- |
 | ① 基线 | 本节 + 基线记录文件 + 浏览器测量 harness | M1–M4 建档 | —（本步已完成） |
 | ② 分区 | `getConversationRowsPartition`/`memoizeByRows`/`advanceConversationRowsPartition` 与消费方接入 | M1 growth | 2.49x → 向 1.x 收敛；p50@3003 行显著下降 |
-| ③ overscan | `ROW_OVERSCAN` 8 → 2 | M3 | historyTurnUnits 18 → ~10–12，historyElements 同步下降 |
+| ③ overscan | `ROW_OVERSCAN` 8 → 2 + 未知长轮一屏估高 | M3 | historyTurnUnits 18 → 6、historyElements 972 → 324（实测 −67%，见基线记录） |
 | ④ 测量 revision | `measuredLayoutRevision` 批量测高与 mountedRowsKey 失效 | M1/M2/M3 不回退 + SRM10 resize 回归 | 不回退 |
 | ⑤ 查找 | 查找索引按分区缓存（history 段按引用复用，每帧只算尾轮） | M4 + 代码级分区缓存测试 | M4 不回退（现有 unit 缓存已把墙钟增量压到噪声级，验收以代码级测试为主） |
 
@@ -143,6 +143,37 @@ history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measur
      `row.removed`、state/pluginUi delta 的沿用与重建边界逐条覆盖。
   4. 既有回归：扁平 API 及其测试（`v4ConversationTurnRenderUnits*`、`v4ConversationTimelineLiveTail`
      等）不回退；M1 复测 growth 收敛、M2–M4 不回退（数值追加进基线记录文件）。
+
+### 步骤③契约：ROW_OVERSCAN 收紧与未知长轮一屏估高
+
+- **overscan 语义**（上游 a60ba6a7 移植）：`ROW_OVERSCAN` 由 8 收紧为 2。虚拟单元是一整轮长
+  正文，前后各 8 轮会在搜索/目录跳转时同步挂载大量屏外 Markdown——把小行列表的 overscan
+  放大为数十屏布局工作；保留两轮滚动缓冲即可。配合步骤②的分区缓存（跳转落点附近的轮次
+  重挂载成本被 memo/引用复用摊薄），收紧不引入可见空白回归。
+- **未知长轮一屏估高**（上游 a60ba6a7 移植）：`estimateSize` 对无测量缓存的轮次以滚动视口
+  一屏高度（`scrollRef.current?.clientHeight`）作保守预算，代替 72px 小行估计——一个虚拟单元
+  是一整轮，按 72px 估未知长轮会让首屏/跳转一次性挂载十几轮正文；实际尺寸仍由测高缓存与
+  ResizeObserver 决定。视口高度不可得（0/undefined，如 jsdom）时回落 `DEFAULT_ROW_HEIGHT_ESTIMATE_PX`。
+- **不变量**：`measureElement` 动态测高、测高缓存按 turnId 键控、滚动记忆与前插锚点契约不变；
+  本步只改「未测量时的预算」与「窗口外缓冲轮数」。
+- **钳制跟随权修复（本步必要配套，上游 a60ba6a7 同款估高下的隐患，由本仓 SRM10 回归暴露）**：
+  一屏估高使测量修正收缩 totalSize 时，浏览器会把 scrollTop 钳到新底部；钳制产生的 scroll
+  事件落在用户滚动意图 TTL 内会被归类为 user，旧逻辑「user 落底即重新跟随」会覆盖用户刚取得
+  的离底状态（SRM10 desktop Grow 后上滚用例 3/3 复现）。修复不变量：**数值上向上移动
+  （scrollTop 减小）的 user scroll 不可能新落到底部**——`resolveFollowingAfterScroll` 新增
+  `previousScrollTop` 入参，未跟随态下向上移动的事件一律保持离底；真实「滚回底部重新跟随」
+  只来自向下移动，行为不变。
+- **验收场景**：
+  1. 源级守卫（沿用 `v4ConversationTimelineScrollbarGutter.test.ts` 的源断言约定）：
+     `ROW_OVERSCAN = 2` 与一屏估高 fallback 在源码中存在，防止后续误回退。
+  2. 行为验证（浏览器 harness M3）：500 轮会话从底部 locate 到中段后，已挂载
+     historyTurnUnits 由 18 降到 ~10–12、historyElements 同步下降约 1/3；定位目标行仍完整
+     挂载、定位后离底。
+  3. 钳制跟随权（单测）：未跟随态 + 向上移动 + 落底的事件保持离底；向下移动落底仍恢复跟随；
+     已跟随态行为不变；layout/programmatic 来源不改变跟随权。
+  4. SRM10 resize 回归：desktop 全组合通过（Grow 后上滚保持离底）；mobile 的既有
+     ResizeObserver loop 失败与本步无关（步骤②已归因）。
+  5. 基线复测：M1/M2/M4 不回退（M3 改善），三轮数据追加进基线记录文件。
 
 ### 性能指标定义与测量方法
 

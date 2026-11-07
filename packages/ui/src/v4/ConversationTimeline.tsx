@@ -106,7 +106,10 @@ import type { ConversationSelectionReference } from "@/lib/conversationSelection
 // 让未传该属性的渲染绕过稳定引用边界；共享只读空数组可保持默认值恒定。
 const EMPTY_PENDING_GUIDES: readonly QueueItem[] = [];
 
-const ROW_OVERSCAN = 8;
+// F17 步骤③（上游 a60ba6a7）：Bug 根因——虚拟单元是一整轮长正文，前后各 8 轮会在搜索/目录
+// 跳转时同步挂载大量屏外 Markdown，把小行列表的 overscan 放大为数十屏布局工作。
+// 保留两轮滚动缓冲；跳转落点附近的重挂载成本由步骤②的分区缓存与 memo 摊薄。
+const ROW_OVERSCAN = 2;
 const RUNNING_WORK_DURATION_TICK_MS = 1000;
 const COMPOSER_MESSAGE_MASK_FADE_PX = 24;
 const COMPOSER_MESSAGE_MASK_TRANSPARENT_HEIGHT_PX = 96;
@@ -714,11 +717,15 @@ function ConversationTimelineImpl({
     [],
   );
   // 测高缓存兜底：行卸载重挂（甚至 virtualizer 重建）时用上次真实测量代替固定估计。
+  // 测高缓存兜底：行卸载重挂（甚至 virtualizer 重建）时用上次真实测量代替固定估计。
   const estimateSize = useCallback(
     (index: number) =>
       heightCacheRef.current?.estimate(
         getUnitHeightCacheKey(virtualizedUnitsRef.current[index]),
-        DEFAULT_ROW_HEIGHT_ESTIMATE_PX,
+        // F17 步骤③（上游 a60ba6a7）：一个虚拟单元是一整轮；未知长轮按小行的 72px 估会让
+        // 首屏/跳转一次性挂载十几轮正文。以一屏作保守预算，实际尺寸仍由测高缓存与
+        // ResizeObserver 决定；视口高度不可得（0/undefined）时回落固定估计。
+        scrollRef.current?.clientHeight || DEFAULT_ROW_HEIGHT_ESTIMATE_PX,
       ) ?? DEFAULT_ROW_HEIGHT_ESTIMATE_PX,
     [],
   );
@@ -1363,6 +1370,10 @@ function ConversationTimelineImpl({
     if (scrollSource !== "layout") {
       suppressVirtualizerAdjustmentDuringRestoreRef.current = false;
     }
+    // F17 步骤③：先取上一账目值再覆盖，供 resolveFollowingAfterScroll 识别
+    // 「数值向上移动却落底」的布局钳制（一屏估高测量修正收缩 totalSize 时浏览器
+    // 钳到新底部），钳制不得重新取得跟随权。
+    const previousObservedScrollTop = lastObservedScrollTopRef.current;
     lastObservedScrollTopRef.current = element.scrollTop;
     syncTurnNavigatorViewport(element);
     const following = resolveFollowingAfterScroll({
@@ -1373,6 +1384,7 @@ function ConversationTimelineImpl({
         viewportHeight: element.clientHeight,
         contentHeight: element.scrollHeight,
       },
+      previousScrollTop: previousObservedScrollTop,
     });
     commitFollowing(following);
     if (scrollSource === "user") {

@@ -53,14 +53,30 @@ export type TimelineScrollEventSource = "user" | "programmatic" | "layout";
 /**
  * scroll 事件后的滚动权裁决。布局/程序化 scroll 不得改变用户意图；只有用户输入
  * 才按最终落点决定是否跟随。
+ *
+ * F17 步骤③修复（上游 a60ba6a7 一屏估高移植的必要配套，SRM10 desktop 回归暴露）：
+ * 未测量轮按一屏估高会让测量修正收缩 totalSize，浏览器把 scrollTop 钳到新底部；
+ * 钳制产生的 scroll 事件落在用户滚动意图 TTL 内会被归类为 user。旧逻辑「user 落底
+ * 即重新跟随」会覆盖用户刚取得的离底状态。不变量：数值上向上移动（scrollTop 减小）
+ * 的 user scroll 不可能新落到底部——那是布局钳制，不是用户滚回；只有向下移动落底
+ * 才恢复跟随。未传 previousScrollTop 的调用维持旧语义。
  */
 export function resolveFollowingAfterScroll(input: {
   following: boolean;
   metrics: TimelineScrollMetrics;
   source: TimelineScrollEventSource;
   epsilonPx?: number;
+  /** 本次 scroll 事件前组件已入账的 scrollTop；用于识别布局钳制的向上移动。 */
+  previousScrollTop?: number;
 }): boolean {
   if (input.source !== "user") return input.following;
+  if (
+    !input.following &&
+    input.previousScrollTop !== undefined &&
+    input.metrics.scrollTop < input.previousScrollTop - 1
+  ) {
+    return false;
+  }
   return nextFollowingAfterScroll(input.metrics, input.epsilonPx);
 }
 
