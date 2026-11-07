@@ -52,6 +52,23 @@ describe("readFileCopy 分块读取防截断", () => {
     await expect(readFileCopy(source, "/workspace/a.md")).rejects.toThrow("file_changed");
   });
 
+  it("chunk 为空按 file_changed 失败，不把残缺字节交给保存对话框", async () => {
+    const { source } = chunkedSource(new Uint8Array(1024));
+    // F16③ 反例（SHA a60ba6a7）：Host 在读尽前返回空 chunk 视为并发改写，
+    // 防止把部分字节当完整副本落盘（fileCopy「空或超长」守卫）。
+    source.readFileRange.mockResolvedValue(new Uint8Array(0));
+    await expect(readFileCopy(source, "/workspace/a.md")).rejects.toThrow("file_changed");
+  });
+
+  it("chunk 超出请求长度按 file_changed 失败", async () => {
+    const { source } = chunkedSource(new Uint8Array(1024));
+    // 请求 1 MiB 中的 1024 字节，Host 却返回 1025 字节：读端与 stat 已不一致。
+    source.readFileRange.mockImplementation(async ({ offset }: { offset: number }) =>
+      new Uint8Array(1025).fill(1).subarray(offset, offset + 1025),
+    );
+    await expect(readFileCopy(source, "/workspace/a.md")).rejects.toThrow("file_changed");
+  });
+
   it("目录与无尺寸信息失败关闭", async () => {
     const { source, stat } = chunkedSource(new Uint8Array(0));
     stat.mockResolvedValue({ type: "directory", size: 0, mtimeMs: 1 });
