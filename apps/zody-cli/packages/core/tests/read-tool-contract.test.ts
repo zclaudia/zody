@@ -25,7 +25,7 @@ import {
 import { PermissionService, defaultPermissionConfig } from "../src/permission/service.js";
 import { createToolExecutor } from "../src/tool/executor.js";
 import { readHandler, readToolEntry } from "../src/tool/handlers/read.js";
-import { createReadFileStateKey } from "../src/tool/read-file-state.js";
+import { findLatestReadFileState } from "../src/tool/read-file-state.js";
 import { createToolRegistry } from "../src/tool/registry.js";
 import type { ReadFileStateMap, ToolExecutionContext } from "../src/tool/types.js";
 
@@ -171,7 +171,7 @@ describe("Read model-result harness", () => {
       context,
     );
 
-    expect(readFileState.get(createReadFileStateKey(file, 2, 1))).toMatchObject({
+    expect(findLatestReadFileState(readFileState, file)).toMatchObject({
       isPartialView: false,
       limit: 1,
       offset: 2,
@@ -193,6 +193,10 @@ describe("Read model-result harness", () => {
       startLine: 1,
       totalLines: 1,
     });
+    // 空文件读取结果被规范成 1 行（numLines=1）：按空文件提示，不再误报 offset 太大。
+    expect(asModelText(result.modelContent)).toBe(
+      "<system-reminder>Warning: the file exists but the contents are empty.</system-reminder>",
+    );
   });
 
   it("reads past 2000 lines by default when byte and token budgets allow", async () => {
@@ -511,8 +515,30 @@ describeReadStrictContract("Read strict model-result contract", () => {
       startLine: 1,
       totalLines: 1,
     });
+    // 修复（上游 a60ba6a7 handlers/read-text.ts）：空文件读取被规范成 1 行，只有 totalLines
+    // 为 0 才算空文件时，它被误报成「offset 太大」。空文件必须命中空文件提示。
     expect(asModelText(result.modelContent)).toBe(
-      "<system-reminder>Warning: the file exists but is shorter than the provided offset (1). The file has 1 lines.</system-reminder>",
+      "<system-reminder>Warning: the file exists but the contents are empty.</system-reminder>",
+    );
+  });
+
+  it("maps empty Read content the same way for an empty file and a blank line", async () => {
+    const empty = join(tmpDir, "empty-file.txt");
+    const blank = join(tmpDir, "blank-line.txt");
+    const fs = createMemoryFileSystem({ [empty]: "", [blank]: "a\n\nb" });
+    const context = contextWith(fs);
+
+    const emptyRead = await readForModel({ file_path: empty }, context);
+    const blankRead = await readForModel({ file_path: blank, offset: 2, limit: 1 }, context);
+    const pastEnd = await readForModel({ file_path: blank, offset: 5 }, context);
+
+    // 空文件说内容为空；按 offset 读到的空行按实际起始行编号；只有超出末尾才说 offset 太大。
+    expect(asModelText(emptyRead.modelContent)).toBe(
+      "<system-reminder>Warning: the file exists but the contents are empty.</system-reminder>",
+    );
+    expect(asModelText(blankRead.modelContent)).toBe("2\t");
+    expect(asModelText(pastEnd.modelContent)).toBe(
+      "<system-reminder>Warning: the file exists but is shorter than the provided offset (5). The file has 3 lines.</system-reminder>",
     );
   });
 
@@ -613,7 +639,7 @@ describeReadStrictContract("Read strict model-result contract", () => {
       content: "content",
       startLine: 2,
     });
-    expect(readFileState.get(createReadFileStateKey(file, 2, 1))).toMatchObject({
+    expect(findLatestReadFileState(readFileState, file)).toMatchObject({
       isPartialView: false,
       limit: 1,
       offset: 2,

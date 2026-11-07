@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   createReadFileStatePathKey,
-  findEditableReadFileState,
-  findStrictFullReadFileState,
+  findLatestReadFileState,
   normalizeReadFileStateMtimeMs,
+  setReadFileStateEntry,
 } from "../src/tool/read-file-state.js";
 import type { ReadFileStateMap } from "../src/tool/types.js";
 
@@ -70,42 +70,68 @@ describe("read file state path keys", () => {
 });
 
 describe("read file state lookup", () => {
-  it("uses the newest same-file entry for Edit freshness", () => {
-    const file = "/tmp/latest.txt";
-    const olderFull = createEntry(file, "old", {
+  it("keeps one entry per file; the newest view replaces the older one", () => {
+    const olderFull = createEntry("/tmp/latest.txt", "old", {
       isPartialView: false,
       readAt: new Date(1),
     });
-    const newerPartial = createEntry(file, "new slice", {
-      isPartialView: true,
+    const newerRange = createEntry("/tmp/latest.txt", "new slice", {
+      isPartialView: false,
       limit: 1,
+      offset: 2,
       readAt: new Date(2),
     });
-    const state: ReadFileStateMap = new Map([
-      ["older", olderFull],
-      ["newer", newerPartial],
-    ]);
+    const state: ReadFileStateMap = new Map();
 
-    expect(findEditableReadFileState(state, file, "linux")).toBe(newerPartial);
+    setReadFileStateEntry(state, olderFull, "linux");
+    setReadFileStateEntry(state, newerRange, "linux");
+
+    // 反例（旧多键模型）：完整视图与范围视图各占一键并存，同文件表里有两条。
+    expect(state.size).toBe(1);
+    expect(findLatestReadFileState(state, "/tmp/latest.txt", "linux")).toBe(newerRange);
+    expect(findLatestReadFileState(state, "/tmp/other.txt", "linux")).toBeUndefined();
   });
 
-  it("keeps Write on the newest strict full read only", () => {
-    const file = "/tmp/full-only.txt";
-    const olderFull = createEntry(file, "old", {
+  it("treats equivalent Windows drive-letter spellings as the same file entry", () => {
+    const state: ReadFileStateMap = new Map();
+    setReadFileStateEntry(
+      state,
+      createEntry("c:/repo/same.txt", "old", {
+        isPartialView: false,
+        readAt: new Date(1),
+      }),
+      "win32",
+    );
+    const newer = createEntry("C:\\repo\\same.txt", "new", {
+      isPartialView: false,
+      readAt: new Date(2),
+    });
+    setReadFileStateEntry(state, newer, "win32");
+
+    // 反例（旧多键模型）：键含 offset/limit 时不同写法各占一条；单条模型必须归并。
+    expect(state.size).toBe(1);
+    expect(findLatestReadFileState(state, "C:/repo/same.txt", "win32")).toBe(newer);
+  });
+
+  it("iterates the map in most-recently-written order", () => {
+    const state: ReadFileStateMap = new Map();
+    const first = createEntry("/tmp/a.txt", "a", {
       isPartialView: false,
       readAt: new Date(1),
     });
-    const newerPartial = createEntry(file, "new slice", {
-      isPartialView: true,
-      limit: 1,
-      readAt: new Date(2),
+    const second = createEntry("/tmp/b.txt", "b", {
+      isPartialView: false,
+      readAt: new Date(1),
     });
-    const state: ReadFileStateMap = new Map([
-      ["older", olderFull],
-      ["newer", newerPartial],
-    ]);
+    setReadFileStateEntry(state, first, "linux");
+    setReadFileStateEntry(state, second, "linux");
 
-    expect(findStrictFullReadFileState(state, file, "linux")).toBe(olderFull);
+    // Map 迭代顺序即最近写入顺序：compaction 补回按它判断候选新旧（先删再写保证）。
+    expect([...state.keys()]).toEqual([
+      createReadFileStatePathKey("/tmp/a.txt", "linux"),
+      createReadFileStatePathKey("/tmp/b.txt", "linux"),
+    ]);
+    expect([...state.values()]).toEqual([first, second]);
   });
 
   it("normalizes mtime to integer milliseconds", () => {
@@ -120,13 +146,14 @@ function createEntry(
   options: {
     isPartialView: boolean;
     limit?: number;
+    offset?: number;
     readAt: Date;
   },
 ) {
   return {
     path: filePath,
     content,
-    offset: undefined,
+    offset: options.offset,
     limit: options.limit,
     isPartialView: options.isPartialView,
     readAt: options.readAt,

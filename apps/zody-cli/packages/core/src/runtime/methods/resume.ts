@@ -139,6 +139,9 @@ export async function resumeFromStore(
   // Context 初始化前完成，确保随后单次加载的 MEMORY.md 状态与 provider 所见内容一致。
   const readFileStateHydration = await hydrateReadFileStateFromSession({
     branchCutAfterMessageId,
+    // resume 标记 restoredFromSession：compaction 补回对这些记录按读取时间（而不是 mtime）
+    // 排序（上游 a60ba6a7 methods/resume.ts）。
+    markRestoredFromSession: true,
     messages,
     readFileState: this.readFileState,
     rewindCreatedMessageId,
@@ -311,7 +314,6 @@ export async function resumeFromStore(
     module: "core.runtime",
     partCount: hydration.partCount,
     readFileStateRestoredCount: readFileStateHydration.restoredCount,
-    readFileStateSkippedRangeReadCount: readFileStateHydration.skippedRangeReadCount,
     readFileStateSkippedUnreadableEditCount: readFileStateHydration.skippedUnreadableEditCount,
     recoveredCompactTimelineCount,
     resumedTodoCount: resumedTodos.length,
@@ -327,7 +329,6 @@ export async function resumeFromStore(
     // messages 交给 V4，否则首帧会短暂复活 started/retrying 状态。
     persistedMessagesReloadRequired: recoveredCompactTimelineCount > 0,
     readFileStateRestoredCount: readFileStateHydration.restoredCount,
-    readFileStateSkippedRangeReadCount: readFileStateHydration.skippedRangeReadCount,
     readFileStateSkippedUnreadableEditCount: readFileStateHydration.skippedUnreadableEditCount,
     traceId: traceContext.traceId,
   };

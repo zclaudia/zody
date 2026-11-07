@@ -7,9 +7,9 @@ import type {
 import { relative } from "node:path";
 import { resolveWorkspacePath } from "../path-policy.js";
 import {
-  createReadFileStateKey,
   findLatestReadFileState,
   normalizeReadFileStateMtimeMs,
+  setReadFileStateEntry,
 } from "../read-file-state.js";
 import type { ReadFileStateEntry, ToolExecutionContext } from "../types.js";
 import { collectBashReadFileSources, selectReadContent } from "./bash-read-file-sources.js";
@@ -154,10 +154,9 @@ async function backfillReadFileStateFromBash(input: BashReadFileStateEffectsInpu
           ),
           sizeBytes: read.revision?.sizeBytes ?? stat.revision?.sizeBytes ?? stat.sizeBytes,
         };
-        readFileState.set(
-          createReadFileStateKey(resolvedPath, selected.offset ?? 1, selected.limit),
-          entry,
-        );
+        // 单条最新视图：Bash 回填走统一写入口（上游 a60ba6a7 handlers/bash-read-file-state.ts）。
+        // 上面的 findLatestReadFileState 守卫已保证只有该文件还没有记录时才会走到这里。
+        setReadFileStateEntry(readFileState, entry);
       } catch {
         // Bash 已经返回，read-state 回填失败不能改变 Bash 结果。
       }

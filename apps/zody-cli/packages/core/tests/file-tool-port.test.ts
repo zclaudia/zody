@@ -27,7 +27,7 @@ import { readHandler, readToolEntry } from "../src/tool/handlers/read.js";
 import { writeHandler } from "../src/tool/handlers/write.js";
 import { editHandler } from "../src/tool/handlers/edit.js";
 import { applyPatchHandler } from "../src/tool/handlers/apply-patch.js";
-import { createReadFileStateKey } from "../src/tool/read-file-state.js";
+import { createReadFileStatePathKey } from "../src/tool/read-file-state.js";
 import type { ReadFileStateMap, ToolExecutionContext } from "../src/tool/types.js";
 
 const workspaceRoot = resolve("/work");
@@ -1294,7 +1294,7 @@ function createReadFileState(filePath: string, content: string): ReadFileStateMa
   const revision = revisionFor(filePath, content);
   return new Map([
     [
-      createReadFileStateKey(filePath, 1, undefined),
+      createReadFileStatePathKey(filePath),
       {
         path: filePath,
         content: normalizeTestLineEndings(content),

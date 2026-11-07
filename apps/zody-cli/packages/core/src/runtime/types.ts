@@ -761,7 +761,8 @@ export interface ResumeSessionResult extends SessionHistoryHydrationResult {
   /** resume 是否写回了当前 materialization 无法完整反映的 compact 修补事实。 */
   persistedMessagesReloadRequired: boolean;
   readFileStateRestoredCount: number;
-  readFileStateSkippedRangeReadCount: number;
+  // 修复原因（上游 a60ba6a7）：range Read 与 live 一致按最新水位恢复，不再有「跳过的 range
+  // Read」这一概念，readFileStateSkippedRangeReadCount 字段随之删除。
   readFileStateSkippedUnreadableEditCount: number;
   traceId: TraceId;
 }

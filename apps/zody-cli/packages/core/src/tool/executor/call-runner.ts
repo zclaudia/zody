@@ -448,7 +448,14 @@ async function executeToolCallImpl(
         runtimeTaskRegistry: deps.runtimeTaskRegistry,
         readFileState: deps.readFileState,
         recordReadFileStateMetadata: (metadata) => {
-          readFileStateMetadata = metadata;
+          // 修复原因（上游 a60ba6a7 executor/call-runner.ts）：part 在工具开始前按声明顺序落盘、
+          // 完成时原地更新；工具结果返回的先后也不等于写入先后（handler 写入之后还有序列化、
+          // hook、结果事件等异步步骤）。冷恢复按这两种顺序重放快照，并行工具会选错视图。
+          // 工具写 live 状态后同步调用这里，此刻取号就是 live 的写入顺序。
+          readFileStateMetadata = {
+            ...metadata,
+            snapshotIndex: deps.nextReadFileStateSnapshotIndex(),
+          };
         },
         recordSkillTelemetryMetadata: (metadata) => {
           skillTelemetryMetadata = metadata;

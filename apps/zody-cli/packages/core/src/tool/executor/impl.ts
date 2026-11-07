@@ -25,6 +25,8 @@ import { validateInput } from "./validation.js";
 export class ToolExecutorImpl implements ToolExecutor {
   private readonly deps: ToolExecutorDeps;
   private readonly backgroundTasks: BackgroundTaskTracker;
+  // 读取状态快照的取号器：与写 live 状态在同一同步步骤取号，序号即 live 的写入顺序。
+  private readFileStateSnapshotCount = 0;
 
   constructor(options: ToolExecutorOptions) {
     this.deps = {
@@ -69,6 +71,7 @@ export class ToolExecutorImpl implements ToolExecutor {
       modelCatalogPort: options.modelCatalogPort,
       runtimeTaskRegistry: options.runtimeTaskRegistry,
       readFileState: options.readFileState ?? new Map(),
+      nextReadFileStateSnapshotIndex: () => this.readFileStateSnapshotCount++,
       hasLoadedSkill: options.hasLoadedSkill,
       subagentBackgroundBashMaxMs: options.subagentBackgroundBashMaxMs,
       bashShellSelection: options.bashShellSelection,

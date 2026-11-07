@@ -17,6 +17,14 @@ const EMPTY_FILE_REMINDER = formatReadToolResultWarning(
 );
 const READ_TOKEN_BUDGET_PARTIAL_TARGET = Math.floor(READ_MAX_OUTPUT_TOKENS * 0.85);
 
+/**
+ * 同视图、文件未变时 Read 的模型可见结果。从本文件导出作为唯一事实源：
+ * Read handler 与冷恢复 / compaction 补回都按它识别 file_unchanged 的结果。
+ * 来源：上游 a60ba6a7 handlers/read-text.ts。
+ */
+export const READ_FILE_UNCHANGED_STUB =
+  "Wasted call — file unchanged since your last Read. Refer to that earlier tool_result instead.";
+
 export interface ReadTextFileForModelOptions {
   abortSignal?: AbortSignal;
   allowPartialFallback?: boolean;
@@ -65,8 +73,14 @@ export function formatReadTextOutput(output: ReadTextOutput): string {
     : "";
 
   if (!output.content) {
+    // 修复原因（上游 a60ba6a7 handlers/read-text.ts）：只有 totalLines 为 0 才算空文件时，空文件
+    // 读取结果被规范成 1 行，空文件和按 offset 读到的空行都被说成 offset 太大。多行文件按 offset
+    // 读出的空视图返回按实际起始行编号的内容；只有真正的空文件才报空文件警告。
+    if (output.numLines >= 1 && output.totalLines > 1) {
+      return `${partialViewPrefix}${addReadLineNumbers({ content: "", startLine: output.startLine })}`;
+    }
     const warning =
-      output.totalLines === 0
+      output.numLines >= 1 || output.totalLines === 0
         ? EMPTY_FILE_REMINDER
         : formatReadToolResultWarning(
             `Warning: the file exists but is shorter than the provided offset (${output.startLine}). The file has ${output.totalLines} lines.`,

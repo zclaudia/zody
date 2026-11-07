@@ -2,11 +2,7 @@ import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import {
-  BashOutputSchema,
-  SessionEventType,
-  createImageProcessorError,
-} from "@zody/contracts";
+import { BashOutputSchema, SessionEventType, createImageProcessorError } from "@zody/contracts";
 import { isErrorForToolResult } from "../src/runtime/helpers/tool-result.js";
 import { decideBashCwdPolicy } from "../src/tool/handlers/bash-cwd-policy.js";
 import { bashHandler, bashToolEntry, createBashToolEntry } from "../src/tool/handlers/bash.js";
@@ -27,7 +23,11 @@ import type {
   SessionEvent,
   ToolExecutionSpanWriter,
 } from "@zody/contracts";
-import { createReadFileStateKey } from "../src/tool/read-file-state.js";
+import {
+  createReadFileStatePathKey,
+  findLatestReadFileState,
+  setReadFileStateEntry,
+} from "../src/tool/read-file-state.js";
 import type { ReadFileStateMap, ToolExecutionContext } from "../src/tool/types.js";
 
 const workspaceRoot = resolve("/work");
@@ -1956,7 +1956,7 @@ describe("bashHandler", () => {
       contextWith(executionPort, { fileSystemPort, readFileState }),
     );
 
-    const entry = readFileState.get(createReadFileStateKey(filePath, 1, undefined));
+    const entry = findLatestReadFileState(readFileState, filePath);
     expect(entry).toMatchObject({
       path: filePath,
       content: "FOO=bar\n",
@@ -2014,9 +2014,7 @@ describe("bashHandler", () => {
         contextWith(executionPort, { fileSystemPort, readFileState }),
       );
 
-      const entry = readFileState.get(
-        createReadFileStateKey(filePath, testCase.expectedOffset, testCase.expectedLimit),
-      );
+      const entry = findLatestReadFileState(readFileState, filePath);
       expect(entry).toMatchObject({
         path: filePath,
         content: testCase.expectedContent,
@@ -2051,7 +2049,7 @@ describe("bashHandler", () => {
       contextWith(successPort, { fileSystemPort, readFileState: successState }),
     );
 
-    expect(successState.get(createReadFileStateKey(filePath, 1, undefined))).toMatchObject({
+    expect(findLatestReadFileState(successState, filePath)).toMatchObject({
       path: filePath,
       content: "needle\nhaystack\n",
       offset: undefined,
@@ -2102,7 +2100,7 @@ describe("bashHandler", () => {
       contextWith(executionPort, { fileSystemPort, readFileState }),
     );
 
-    expect(readFileState.get(createReadFileStateKey(filePath, 1, undefined))).toBeUndefined();
+    expect(findLatestReadFileState(readFileState, filePath)).toBeUndefined();
   });
 
   it("does not backfill readFileState for complex or unsafe Bash read commands", async () => {
@@ -2147,7 +2145,7 @@ describe("bashHandler", () => {
   it("emits stale read hint when a write-like Bash command modifies a previously read file", async () => {
     const filePath = resolve(defaultCommandRoot, "fixture.ts");
     const readFileState: ReadFileStateMap = new Map();
-    readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       path: filePath,
       content: "old\n",
       isPartialView: false,
@@ -2186,7 +2184,7 @@ describe("bashHandler", () => {
   it("does not emit stale hint when write-like Bash exits with provider error", async () => {
     const filePath = resolve(defaultCommandRoot, "fixture.ts");
     const readFileState: ReadFileStateMap = new Map();
-    readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       path: filePath,
       content: "old\n",
       isPartialView: false,
@@ -2227,7 +2225,7 @@ describe("bashHandler", () => {
     );
     const readFileState: ReadFileStateMap = new Map();
     for (const filePath of changedFilePaths) {
-      readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+      setReadFileStateEntry(readFileState, {
         path: filePath,
         content: "old\n",
         isPartialView: false,
@@ -2276,7 +2274,7 @@ describe("bashHandler", () => {
     );
     const readFileState: ReadFileStateMap = new Map();
     for (const filePath of changedFilePaths) {
-      readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+      setReadFileStateEntry(readFileState, {
         path: filePath,
         content: "old\n",
         isPartialView: false,
@@ -2415,9 +2413,7 @@ describe("bashHandler", () => {
         contextWith(executionPort, { fileSystemPort, readFileState }),
       );
 
-      expect(
-        readFileState.get(createReadFileStateKey(filePath, testCase.keyOffset, testCase.keyLimit)),
-      ).toMatchObject({
+      expect(findLatestReadFileState(readFileState, filePath)).toMatchObject({
         content: testCase.expectedContent,
         offset: testCase.expectedOffset,
         limit: testCase.expectedLimit,
@@ -2456,7 +2452,7 @@ describe("bashHandler", () => {
   it("does not backfill readFileState for files over 10MB or existing read state paths", async () => {
     const largePath = resolve(defaultCommandRoot, "large.txt");
     const existingPath = resolve(defaultCommandRoot, "existing.txt");
-    const existingKey = createReadFileStateKey(existingPath, 1, undefined);
+    const existingKey = createReadFileStatePathKey(existingPath);
     const readFileState: ReadFileStateMap = new Map([
       [
         existingKey,
@@ -2500,7 +2496,7 @@ describe("bashHandler", () => {
       contextWith(executionPort, { fileSystemPort, readFileState }),
     );
 
-    expect(readFileState.get(createReadFileStateKey(largePath, 1, undefined))).toBeUndefined();
+    expect(findLatestReadFileState(readFileState, largePath)).toBeUndefined();
     expect(readFileState.get(existingKey)?.content).toBe("old\n");
   });
 
@@ -2529,7 +2525,7 @@ describe("bashHandler", () => {
       contextWith(executionPort, { fileSystemPort, readFileState }),
     );
 
-    expect(readFileState.get(createReadFileStateKey(filePath, 1, undefined))).toBeUndefined();
+    expect(findLatestReadFileState(readFileState, filePath)).toBeUndefined();
   });
 
   it("does not backfill readFileState when Bash stdout is truncated", async () => {
@@ -2557,7 +2553,7 @@ describe("bashHandler", () => {
       contextWith(executionPort, { fileSystemPort, readFileState }),
     );
 
-    expect(readFileState.get(createReadFileStateKey(filePath, 1, undefined))).toBeUndefined();
+    expect(findLatestReadFileState(readFileState, filePath)).toBeUndefined();
   });
 
   it("does not reject completed Bash output when read-state parsing sees an empty path", async () => {
@@ -2587,7 +2583,7 @@ describe("bashHandler", () => {
   it("ignores stale hint candidates unless mtime is newer than both Bash start and read state", async () => {
     const filePath = resolve(defaultCommandRoot, "fixture.ts");
     const readFileState: ReadFileStateMap = new Map();
-    readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       path: filePath,
       content: "old\n",
       isPartialView: false,
@@ -2624,7 +2620,7 @@ describe("bashHandler", () => {
   it("ignores stale hint candidates that cannot be stat'ed", async () => {
     const filePath = resolve(defaultCommandRoot, "missing.ts");
     const readFileState: ReadFileStateMap = new Map();
-    readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       path: filePath,
       content: "old\n",
       isPartialView: false,

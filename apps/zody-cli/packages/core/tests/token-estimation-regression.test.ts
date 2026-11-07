@@ -3,7 +3,7 @@ import { ESTIMATED_TOKEN_CHAR_DIVISOR } from "@zody/shared";
 import { estimateMessageTokens, shouldAutoCompact } from "../src/compact/index.js";
 import { estimateTokens } from "../src/context/utils.js";
 import { buildPostCompactReadStateReminderEntries } from "../src/runtime/helpers/compact-post-reminders.js";
-import { createReadFileStateKey } from "../src/tool/read-file-state.js";
+import { setReadFileStateEntry } from "../src/tool/read-file-state.js";
 import type { ReadFileStateMap } from "../src/tool/types.js";
 
 describe("token estimation regression", () => {
@@ -35,8 +35,7 @@ describe("token estimation regression", () => {
     const estimatedCharacters =
       content.length +
       toolCalls.reduce(
-        (total, toolCall) =>
-          total + (toolCall.name + JSON.stringify(toolCall.input ?? {})).length,
+        (total, toolCall) => total + (toolCall.name + JSON.stringify(toolCall.input ?? {})).length,
         0,
       );
 
@@ -86,8 +85,7 @@ describe("token estimation regression", () => {
     const estimatedTokenCount =
       Math.ceil(messages[0]!.content.length / ESTIMATED_TOKEN_CHAR_DIVISOR) +
       Math.ceil(
-        (toolCall.name + JSON.stringify(toolCall.input)).length /
-          ESTIMATED_TOKEN_CHAR_DIVISOR,
+        (toolCall.name + JSON.stringify(toolCall.input)).length / ESTIMATED_TOKEN_CHAR_DIVISOR,
       );
 
     expect(
@@ -112,7 +110,7 @@ describe("token estimation regression", () => {
     const filePath = "/tmp/zcode-compact-three-char-divisor.txt";
     const content = "x".repeat(31);
     const readFileState: ReadFileStateMap = new Map();
-    readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content,
       isPartialView: false,
       path: filePath,

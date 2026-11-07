@@ -18,7 +18,7 @@ import {
 import { createTestAgentRuntime } from "./test-agent-runtime.js";
 import { createTestModelSelection } from "./test-model-selection.js";
 import { resolveProjectMemoryRoot } from "../src/memory/project-root.js";
-import { createReadFileStateKey } from "../src/tool/read-file-state.js";
+import { setReadFileStateEntry } from "../src/tool/read-file-state.js";
 import { createToolRegistry, type ToolRegistry } from "../src/tool/registry.js";
 import { MemoryFileSystem } from "./memory-test-utils.js";
 import { createTestImageArtifactStore } from "./test-image-artifact-store.js";
@@ -532,7 +532,7 @@ describe("AgentRuntime background Memory extraction", () => {
         return textResult(request, "Nothing to save.");
       },
     });
-    (runtime as any).readFileState.set(createReadFileStateKey(memoryPath, 1, undefined), {
+    setReadFileStateEntry((runtime as any).readFileState, {
       path: memoryPath,
       content: "old fact",
       isPartialView: false,

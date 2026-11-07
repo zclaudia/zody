@@ -60,7 +60,7 @@ import {
   toTokenUsageInfo,
 } from "../src/runtime/helpers/index.js";
 import { createToolRegistry } from "../src/tool/registry.js";
-import { createReadFileStateKey } from "../src/tool/read-file-state.js";
+import { setReadFileStateEntry } from "../src/tool/read-file-state.js";
 import type { ReadFileStateMap } from "../src/tool/types.js";
 import { estimateCurrentModelInputTokens } from "../src/runtime/methods/compact.js";
 import { MemoryFileSystem } from "./memory-test-utils.js";
@@ -459,13 +459,13 @@ describe("runtime compact helpers", () => {
     const preservedFile = "/tmp/zcode-compact-preserved-read/src/current.ts";
     const reminderFile = "/tmp/zcode-compact-preserved-read/src/other.ts";
     const readFileState: ReadFileStateMap = new Map();
-    readFileState.set(createReadFileStateKey(preservedFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "export const preserved = 1;\n",
       isPartialView: false,
       path: preservedFile,
       readAt: new Date(5_000),
     });
-    readFileState.set(createReadFileStateKey(reminderFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "export const reminder = 2;\n",
       isPartialView: false,
       path: reminderFile,
@@ -516,7 +516,7 @@ describe("runtime compact helpers", () => {
   it("uses the file path, not range input JSON, for oversized post-compact read references", () => {
     const largeFile = "/tmp/zcode-compact-large-read/src/large.ts";
     const readFileState: ReadFileStateMap = new Map();
-    readFileState.set(createReadFileStateKey(largeFile, 100, 20), {
+    setReadFileStateEntry(readFileState, {
       content: "export const large = 1;\n".repeat(100),
       isPartialView: true,
       limit: 20,
@@ -1742,13 +1742,13 @@ describe("AgentRuntime manual compact", () => {
     const writtenFile = "/tmp/zcode-runtime-compact-read-state/src/written.ts";
     const planFile = "/tmp/zcode-runtime-compact-read-state/docs/superpowers/plans/secret-plan.md";
     const memoryFile = "/Users/dev/.codex/memories/private-note.md";
-    readFileState.set(createReadFileStateKey(smallFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "export const current = 42;\n",
       isPartialView: false,
       path: smallFile,
       readAt: new Date(4_000),
     });
-    readFileState.set(createReadFileStateKey(rangeFile, 3, 2), {
+    setReadFileStateEntry(readFileState, {
       content: "third line\nfourth line\n",
       isPartialView: false,
       limit: 2,
@@ -1756,26 +1756,26 @@ describe("AgentRuntime manual compact", () => {
       path: rangeFile,
       readAt: new Date(4_500),
     });
-    readFileState.set(createReadFileStateKey(largeFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "large-content ".repeat(25_000),
       isPartialView: false,
       path: largeFile,
       readAt: new Date(3_000),
     });
-    readFileState.set(createReadFileStateKey(writtenFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "do not expose write state",
       isPartialView: false,
       path: writtenFile,
       readAt: new Date(7_000),
       sourceTool: "Write",
     });
-    readFileState.set(createReadFileStateKey(planFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "do not expose plan file",
       isPartialView: false,
       path: planFile,
       readAt: new Date(5_000),
     });
-    readFileState.set(createReadFileStateKey(memoryFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "do not expose memory file",
       isPartialView: false,
       path: memoryFile,
@@ -1862,7 +1862,7 @@ describe("AgentRuntime manual compact", () => {
     const readFileState = (runtime as unknown as { readFileState: Map<string, unknown> })
       .readFileState;
     const filePath = "/tmp/zcode-runtime-compact-read-state-resume/src/current.ts";
-    readFileState.set(createReadFileStateKey(filePath, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "export const persisted = 42;\n",
       isPartialView: false,
       path: filePath,
@@ -3025,13 +3025,13 @@ describe("AgentRuntime manual compact", () => {
       .readFileState;
     const firstFile = "/tmp/zcode-runtime-compact-reminder-persist-fail/src/first.ts";
     const secondFile = "/tmp/zcode-runtime-compact-reminder-persist-fail/src/second.ts";
-    readFileState.set(createReadFileStateKey(firstFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: `export const first = "${firstReminderMarker}";\n`,
       isPartialView: false,
       path: firstFile,
       readAt: new Date(6_000),
     });
-    readFileState.set(createReadFileStateKey(secondFile, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: `export const second = "${secondReminderMarker}";\n`,
       isPartialView: false,
       path: secondFile,
@@ -4387,7 +4387,7 @@ describe("AgentRuntime manual compact", () => {
     const readFileState = (runtime as unknown as { readFileState: Map<string, unknown> })
       .readFileState;
     const readFilePath = "/tmp/zcode-reactive-compact-resume-tail/src/current.ts";
-    readFileState.set(createReadFileStateKey(readFilePath, 1, undefined), {
+    setReadFileStateEntry(readFileState, {
       content: "export const reactiveResume = 42;\n",
       isPartialView: false,
       path: readFilePath,

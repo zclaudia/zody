@@ -219,11 +219,22 @@ export interface ReadFileStateEntry {
   isPartialView: boolean;
   readAt: Date;
   sourceTool?: PersistedReadFileStateTool;
+  /**
+   * 工具输入里 `file_path` 的原始写法，和 path 不同时才有。读权限规则按原始字符串匹配，
+   * compaction 补回用它和 path 各判定一次 deny（见 specs/read-file-state-compact-restore.md）。
+   * 来源：上游 a60ba6a7 tool/types.ts。
+   */
+  requestedPath?: string;
   revisionId?: string;
   mtimeMs?: number;
   sizeBytes?: number;
+  /** 会话开始由 context 写入（MEMORY.md 索引）；只在进程内使用，不进 tool part metadata。 */
+  seededFromContext?: true;
+  /** 冷恢复从 tool part 快照写入；只在进程内使用。compaction 选择补回文件时按读取时间排序。 */
+  restoredFromSession?: true;
 }
 
+/** 键是 `createReadFileStatePathKey(path)`：每个文件一条（单条最新视图）。 */
 export type ReadFileStateMap = Map<string, ReadFileStateEntry>;
 
 // -----------------------------------------------

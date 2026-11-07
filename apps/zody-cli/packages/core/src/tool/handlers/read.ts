@@ -32,12 +32,21 @@ import {
   type TraceContext,
 } from "@zody/contracts";
 import { resolveWorkspacePath } from "../path-policy.js";
-import { createReadFileStateKey, normalizeReadFileStateMtimeMs } from "../read-file-state.js";
+import {
+  findLatestReadFileState,
+  normalizeReadFileStateMtimeMs,
+  requestedPathField,
+  setReadFileStateEntry,
+} from "../read-file-state.js";
 import { createReadFileStateMetadata } from "../read-file-state-metadata.js";
 import { inferImageMimeFromPath, readImageFile } from "./read-image.js";
 import { inferVideoMimeFromPath } from "../../runtime/helpers/attachment-video.js";
 import { readVideoFile } from "./read-video.js";
-import { formatReadTextOutput, readTextFileForModel } from "./read-text.js";
+import {
+  formatReadTextOutput,
+  readTextFileForModel,
+  READ_FILE_UNCHANGED_STUB,
+} from "./read-text.js";
 import {
   formatReadPdfOutput,
   formatReadPdfPagesOutput,
@@ -52,8 +61,7 @@ import {
 
 export { addReadLineNumbers } from "./read-text.js";
 
-const FILE_UNCHANGED_STUB =
-  "Wasted call — file unchanged since your last Read. Refer to that earlier tool_result instead.";
+const FILE_UNCHANGED_STUB = READ_FILE_UNCHANGED_STUB;
 const READ_PROVIDER_DESCRIPTION = [
   "Reads a file from the local filesystem.",
   "",
@@ -185,16 +193,12 @@ export const readHandler: ToolHandler = async (input, context) => {
     );
     const readFileState = getReadFileState(context);
     const cacheOffset = normalizeCacheOffset(offset);
-    const cacheKey = createReadFileStateKey(filePath, cacheOffset, limit);
-    const cached = readFileState.get(cacheKey);
-    if (cached && isCachedReadFresh(cached, stat)) {
-      const output = { type: "file_unchanged", filePath } satisfies ReadOutput;
-      recordReadFileStateMetadata(context, {
-        output,
-        readFileState,
-        toolInput: input,
-      });
-      return output;
+    const cached = findLatestReadFileState(readFileState, filePath);
+    if (cached && isSameReadView(cached, cacheOffset, limit) && isCachedReadFresh(cached, stat)) {
+      // 修复原因（上游 a60ba6a7 handlers/read.ts）：这里的快照只是当时最新记录的副本，冷恢复按它
+      // 重放会把读取时间改成这次调用的时间，还会恢复出已不在 active history 里的视图（例如那次
+      // 真实读取已被 compact 摘要）。不写 live 状态，也不记录快照。
+      return { type: "file_unchanged", filePath } satisfies ReadOutput;
     }
 
     let rangeReadRevision: FileSystemStatResult["revision"] | undefined;
@@ -209,9 +213,10 @@ export const readHandler: ToolHandler = async (input, context) => {
       offset,
       trace,
     });
-    updateReadFileState(readFileState, cacheKey, {
+    updateReadFileState(readFileState, {
       output,
       path: filePath,
+      requestedPath: file_path,
       stat,
       rangeReadRevision,
       offset,
@@ -332,6 +337,22 @@ function normalizeCacheOffset(offset: number | undefined): number {
   return offset === undefined ? 1 : offset;
 }
 
+// 只按该文件最近一次视图去重，且这个视图必须来自 Read。
+// 修复原因（上游 a60ba6a7 handlers/read.ts）：Edit/Write 写入后用完整视图的键记录状态，Read 按
+// 键命中时返回 Wasted call 存根，但模型没看过写入后的内容；中间读过别的范围后再读完整文件，
+// 也会命中更早的完整视图。单条最新视图 + 来源判定后，只有「同一次 Read 的同一视图且未变」才去重。
+function isSameReadView(
+  entry: ReadFileStateEntry,
+  offset: number,
+  limit: number | undefined,
+): boolean {
+  return (
+    (entry.sourceTool === undefined || entry.sourceTool === "Read") &&
+    normalizeCacheOffset(entry.offset) === offset &&
+    entry.limit === limit
+  );
+}
+
 function isCachedReadFresh(entry: ReadFileStateEntry, stat: FileSystemStatResult): boolean {
   if (entry.isPartialView) return false;
 
@@ -350,21 +371,25 @@ function isCachedReadFresh(entry: ReadFileStateEntry, stat: FileSystemStatResult
   return entry.sizeBytes !== undefined && entry.sizeBytes === stat.sizeBytes;
 }
 
-function updateReadFileState(
-  state: ReadFileStateMap,
-  key: string,
-  input: {
-    output: ReadTextOutput;
-    path: string;
-    stat: FileSystemStatResult;
-    rangeReadRevision?: FileSystemStatResult["revision"];
-    offset?: number;
-    limit?: number;
-  },
-): void {
+interface ReadTextFileStateInput {
+  output: ReadTextOutput;
+  path: string;
+  requestedPath?: string;
+  stat: FileSystemStatResult;
+  rangeReadRevision?: FileSystemStatResult["revision"];
+  offset?: number;
+  limit?: number;
+}
+
+function updateReadFileState(state: ReadFileStateMap, input: ReadTextFileStateInput): void {
+  setReadFileStateEntry(state, createReadTextFileStateEntry(input));
+}
+
+function createReadTextFileStateEntry(input: ReadTextFileStateInput): ReadFileStateEntry {
   const revision = input.stat.revision ?? input.rangeReadRevision;
-  state.set(key, {
+  return {
     path: input.path,
+    ...requestedPathField(input.requestedPath, input.path),
     content: input.output.content,
     offset: input.offset,
     limit: input.limit,
@@ -376,7 +401,7 @@ function updateReadFileState(
     revisionId: revision?.id,
     mtimeMs: normalizeReadFileStateMtimeMs(revision?.mtimeMs ?? input.stat.mtimeMs),
     sizeBytes: input.stat.sizeBytes,
-  });
+  };
 }
 
 function recordReadFileStateMetadata(

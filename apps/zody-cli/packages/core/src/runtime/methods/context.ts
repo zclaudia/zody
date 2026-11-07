@@ -22,8 +22,8 @@ import {
   type ProjectMemoryRetrievalBranch,
 } from "../../memory/project-memory-retrieval-branch.js";
 import {
-  createReadFileStateKey,
   normalizeReadFileStateMtimeMs,
+  setReadFileStateEntry,
 } from "../../tool/read-file-state.js";
 import { resolveEnabledProjectMemoryRoot } from "../helpers/project-memory.js";
 import { buildContextHistoryEntries } from "./context-history-entries.js";
@@ -192,7 +192,9 @@ export async function loadProjectMemoryIndexContent(
     const read = await fileSystemPort.readTextFile({ path: indexPath });
     const formattedContent = formatProjectMemoryIndexContent(read.content);
     if (!formattedContent) return undefined;
-    runtime.readFileState.set(createReadFileStateKey(indexPath, undefined, undefined), {
+    // seededFromContext（上游 a60ba6a7 methods/context.ts）：rewind 重建时保留这条记录——
+    // rewind 不重新加载 context，丢掉它会让之后的 Write MEMORY.md 误报未读。
+    setReadFileStateEntry(runtime.readFileState, {
       content: read.content,
       isPartialView: formattedContent !== read.content,
       limit: undefined,
@@ -201,6 +203,7 @@ export async function loadProjectMemoryIndexContent(
       path: indexPath,
       readAt: runtime.now(),
       revisionId: read.revision?.id,
+      seededFromContext: true,
       sizeBytes: read.sizeBytes,
     });
     return read.content;

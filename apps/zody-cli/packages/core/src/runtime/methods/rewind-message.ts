@@ -699,6 +699,9 @@ async function rebuildConversationDerivedState(
   await hydrateReadFileStateFromSession({
     messages: options.persistedMessages,
     readFileState: this.readFileState,
+    // rewind 不重新加载 context：保留会话开始写入的 MEMORY.md 记录，否则之后 Write
+    // MEMORY.md 误报未读（上游 a60ba6a7 methods/rewind-message.ts）。
+    retainContextSeeds: true,
     workingDirectory: this.workingDirectory,
     workspaceRoot: this.workspaceRoot,
     ...branchOptions,
