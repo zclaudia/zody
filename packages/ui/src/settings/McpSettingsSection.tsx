@@ -40,6 +40,11 @@ import { logger } from "@/logger.js";
 import { McpServerForm } from "@/settings/McpServerForm.js";
 import { McpServerList, McpStatusDot } from "@/settings/McpServerList.js";
 import {
+  resolveWorkspaceMcpTrustReasonMessageId,
+  resolveWorkspaceMcpTrustTarget,
+  type WorkspaceMcpTrustService,
+} from "@/settings/workspaceMcpTrustActions.js";
+import {
   formToConfig,
   type FormState,
   type McpEditorMode,
@@ -610,6 +615,12 @@ interface McpSettingsSectionProps {
   onFormScopeKeyChange?: (scopeKey: string | null) => void;
   onOpenPluginStore?: () => void;
   showMarketplaceBreadcrumb?: boolean;
+  /**
+   * fork（F23，上游 a60ba6a7）：workspace MCP 信任决策服务（spec §8.2 横幅 B 的
+   * 动作面）。services 转发接线在 wiring 卡落地前不注入——行级仍展示审核状态与
+   * 脱敏摘要，但不渲染信任/撤销按钮（接缝定义见 workspaceMcpTrustActions.ts）。
+   */
+  workspaceMcpTrustService?: WorkspaceMcpTrustService;
 }
 
 export function McpSettingsSection({
@@ -628,6 +639,7 @@ export function McpSettingsSection({
   onFormScopeKeyChange,
   onOpenPluginStore,
   showMarketplaceBreadcrumb = false,
+  workspaceMcpTrustService,
 }: McpSettingsSectionProps) {
   const { intl, locale } = useZodyIntl();
   const confirmDialog = useConfirmDialog();
@@ -989,6 +1001,54 @@ export function McpSettingsSection({
     requestMcpServerStatusList,
     services.mcpSyncService,
   ]);
+
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任/撤销（spec §8.2 横幅 B）。决策
+  // 绑定行内展示的精确声明摘要；被拒（常见为声明已变）或成功都以 manual 刷新收
+  // 尾——行摘要与 trusted 投影必须回到 Host 的当前事实，不能停在本地乐观态。
+  const handleWorkspaceTrust = useCallback(
+    async (server: ZodyMcpServer, trusted: boolean) => {
+      if (!workspaceMcpTrustService) return;
+      const target = resolveWorkspaceMcpTrustTarget(
+        server,
+        activeWorkspacePath,
+        trusted,
+        activeWorkspaceIdentity,
+      );
+      if (!target) {
+        logger.warn("[mcp] workspace trust decision skipped: no review digest", {
+          serverName: server.name,
+          workspacePath: activeWorkspacePath,
+        });
+        return;
+      }
+      try {
+        const result = await workspaceMcpTrustService.setWorkspaceMcpTrust(target);
+        if (!result.accepted) {
+          toast(
+            intl.formatMessage({
+              id: resolveWorkspaceMcpTrustReasonMessageId(result.reasonCode),
+            }),
+            { durationMs: 8_000 },
+          );
+        }
+      } catch (error) {
+        logger.warn("[mcp] workspace trust decision failed", {
+          error: error instanceof Error ? error.message : String(error),
+          serverName: server.name,
+          workspacePath: activeWorkspacePath,
+        });
+        toast(error instanceof Error ? error.message : String(error), { durationMs: 8_000 });
+      }
+      await requestMcpServerStatusList({ trigger: "manual" });
+    },
+    [
+      activeWorkspaceIdentity,
+      activeWorkspacePath,
+      intl,
+      requestMcpServerStatusList,
+      workspaceMcpTrustService,
+    ],
+  );
 
   useEffect(() => {
     lastPendingMcpOAuthAuthorizationRefreshRef.current = null;
@@ -1675,6 +1735,7 @@ export function McpSettingsSection({
               onEdit={handleEdit}
               onToggle={handleToggle}
               onOpenAuthorization={handleOpenAuthorization}
+              onWorkspaceTrust={workspaceMcpTrustService ? handleWorkspaceTrust : undefined}
               emptyTitle={intl.formatMessage({ id: "settings.mcp.emptyTitle" })}
               emptyDescription={intl.formatMessage({
                 id: "settings.mcp.emptyDescription",

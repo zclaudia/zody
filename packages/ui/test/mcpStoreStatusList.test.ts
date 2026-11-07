@@ -104,4 +104,49 @@ describe("MCP store status diagnostics", () => {
       error: "Project MCP server requires explicit connection before use.",
     });
   });
+
+  // fork（F23 横幅 B，上游 a60ba6a7）：mcp/list 快照的 workspaceTrust 审核摘要
+  // 必须原样投影到行（spec §8.2 数据源）；快照未携带时行上不得残留旧摘要。
+  it("carries the workspaceTrust review from the runtime snapshot onto the row", () => {
+    const review = {
+      declarationDigest: "a".repeat(64),
+      sourcePaths: ["/ws/.zody/config.json"],
+      display: '{\n  "command": "node server.js"\n}',
+      trusted: false,
+      configuredEnabled: true,
+      transport: "stdio" as const,
+    };
+    const withReview = mergeMcpServerStatusSnapshots([server], {
+      demo: {
+        status: "pending_trust",
+        toolCount: 0,
+        transport: "stdio",
+        updatedAt: "2026-11-07T00:00:00.000Z",
+        workspaceTrust: review,
+      },
+    })[0];
+    expect(withReview.workspaceTrust).toEqual(review);
+    // 已信任声明（连接后运行态接管）同样携带摘要，供撤销按钮绑定 digest。
+    const trustedReview = { ...review, trusted: true };
+    const trustedRow = mergeMcpServerStatusSnapshots([server], {
+      demo: {
+        status: "connected",
+        toolCount: 3,
+        transport: "stdio",
+        updatedAt: "2026-11-07T00:00:00.000Z",
+        workspaceTrust: trustedReview,
+      },
+    })[0];
+    expect(trustedRow.workspaceTrust).toEqual(trustedReview);
+    // 后续快照未携带（如旧 Agent）→ 清空，不保留陈旧审核摘要。
+    const cleared = mergeMcpServerStatusSnapshots([withReview], {
+      demo: {
+        status: "connected",
+        toolCount: 1,
+        transport: "stdio",
+        updatedAt: "2026-11-07T00:01:00.000Z",
+      },
+    })[0];
+    expect(cleared.workspaceTrust).toBeUndefined();
+  });
 });

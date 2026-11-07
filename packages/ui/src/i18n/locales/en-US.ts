@@ -1575,6 +1575,11 @@ const enUS: Record<string, string> = {
     "{count} workspace hook(s) pending review; disabled for this session",
   "chat.workspaceHookPending.review": "Review",
   "chat.workspaceHookPending.dismiss": "Dismiss",
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门横幅 A（spec §8.1）。
+  "chat.workspaceMcpPending.message":
+    "{count} workspace MCP server(s) pending trust; not connected in this session",
+  "chat.workspaceMcpPending.goToSettings": "Open settings",
+  "chat.workspaceMcpPending.dismiss": "Dismiss",
 
   // Task list
   "taskList.newTask": "New task",
@@ -2511,6 +2516,16 @@ const enUS: Record<string, string> = {
   "settings.mcp.plugin.authorizationRequiredDescription":
     "Open authorization to finish connecting this plugin MCP server.",
   "settings.mcp.oauth.openAuthorization": "Open authorization",
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门行级文案（spec §8.2）。
+  "settings.mcp.trust.pendingLabel": "Pending trust",
+  "settings.mcp.trust.pendingReason":
+    "Workspace MCP declaration pending trust; not connected in this session.",
+  "settings.mcp.trust.trustAction": "Trust",
+  "settings.mcp.trust.revokeAction": "Revoke",
+  "settings.mcp.trust.revokeBoundary": "Revocation takes effect in new or restarted sessions.",
+  "settings.mcp.trust.rejectedDeclarationChanged":
+    "The workspace MCP declaration changed. Review it and trust again.",
+  "settings.mcp.trust.rejectedUnavailable": "Workspace MCP trust is currently unavailable.",
   "settings.mcp.statusOnlyUnsupported":
     "This Zody Agent cannot refresh OAuth status. Upgrade or restart Zody, then reopen MCP settings to run a full refresh.",
   "settings.mcp.refreshFailed": "Failed to refresh MCP status: {error}",

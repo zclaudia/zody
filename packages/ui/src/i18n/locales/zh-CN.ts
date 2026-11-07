@@ -1503,6 +1503,10 @@ const zhCN: Record<string, string> = {
   "chat.workspaceHookPending.message": "{count} 个工作区 Hook 待审核，本会话暂未启用",
   "chat.workspaceHookPending.review": "去审核",
   "chat.workspaceHookPending.dismiss": "忽略",
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门横幅 A（spec §8.1）。
+  "chat.workspaceMcpPending.message": "{count} 个工作区 MCP server 待信任，本会话未连接",
+  "chat.workspaceMcpPending.goToSettings": "去设置",
+  "chat.workspaceMcpPending.dismiss": "忽略",
 
   // 任务列表
   "taskList.newTask": "新建任务",
@@ -2391,6 +2395,14 @@ const zhCN: Record<string, string> = {
   "settings.mcp.plugin.authorizationRequiredDescription":
     "打开授权后即可完成该插件 MCP 服务器连接。",
   "settings.mcp.oauth.openAuthorization": "打开授权",
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门行级文案（spec §8.2）。
+  "settings.mcp.trust.pendingLabel": "待信任",
+  "settings.mcp.trust.pendingReason": "工作区 MCP 声明待信任，本会话未连接。",
+  "settings.mcp.trust.trustAction": "信任",
+  "settings.mcp.trust.revokeAction": "撤销",
+  "settings.mcp.trust.revokeBoundary": "撤销在新建/重启会话后生效。",
+  "settings.mcp.trust.rejectedDeclarationChanged": "工作区 MCP 声明已变更，请重新审核后信任。",
+  "settings.mcp.trust.rejectedUnavailable": "工作区 MCP 信任当前不可用。",
   "settings.mcp.statusOnlyUnsupported":
     "当前 Zody Agent 不支持 OAuth 状态刷新。请升级或重启 Zody，然后重新打开 MCP 设置进行完整刷新。",
   "settings.mcp.refreshFailed": "刷新 MCP 状态失败：{error}",

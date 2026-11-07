@@ -4,7 +4,7 @@
  */
 
 import type { SettingsDirectoryLocation } from "./settings-source.js";
-import type { McpServerFailureKind } from "./zody-protocol/index.js";
+import type { McpServerFailureKind, WorkspaceMcpTrustReview } from "./zody-protocol/index.js";
 
 // CUA official plugin 身份常量（port 自 feat；UI 设置面板 + bootstrap 复用以避免字面量漂移）。
 export const ZODY_CUA_OFFICIAL_PLUGIN_ID = "computer-use@zcode-plugins-official";
@@ -122,6 +122,10 @@ export interface ZodyMcpServer {
     authorizationUrl: string;
     startedAt: string;
   };
+  // fork（F23，上游 a60ba6a7）：workspace MCP 声明的脱敏审核摘要（mcp/list 快照
+  // workspaceTrust 原样投影到设置页行）。非 workspace 作用域不携带；display 由
+  // Host/CLI 侧脱敏构造，UI 不得在此二次解析或还原敏感值。
+  workspaceTrust?: WorkspaceMcpTrustReview;
   source: McpSource;
   projectPath?: string;
   scope: McpScope;

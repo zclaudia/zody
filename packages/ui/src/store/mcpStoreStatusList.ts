@@ -1,4 +1,9 @@
-import type { McpServerStatus, ZodyMcpServer, ZodyMcpServerStatusSnapshot } from "@zody/shared";
+import type {
+  McpServerStatus,
+  WorkspaceMcpTrustReview,
+  ZodyMcpServer,
+  ZodyMcpServerStatusSnapshot,
+} from "@zody/shared";
 
 type MappedMcpServerStatus = {
   authorization?: ZodyMcpServerStatusSnapshot["authorization"];
@@ -6,6 +11,7 @@ type MappedMcpServerStatus = {
   failureKind?: ZodyMcpServerStatusSnapshot["failureKind"];
   serverRequestId?: string;
   status: McpServerStatus;
+  workspaceTrust?: WorkspaceMcpTrustReview;
 };
 
 function mapRuntimeStatusToUi(snapshot: ZodyMcpServerStatusSnapshot): MappedMcpServerStatus {
@@ -15,6 +21,9 @@ function mapRuntimeStatusToUi(snapshot: ZodyMcpServerStatusSnapshot): MappedMcpS
       return {
         authorization: snapshot.authorization,
         status: snapshot.status,
+        // fork（F23，上游 a60ba6a7）：workspace 声明的审核摘要随状态快照原样投影
+        // （spec docs/specs/workspace-mcp-trust.md §8.2），所有状态分支统一携带。
+        workspaceTrust: snapshot.workspaceTrust,
       };
     case "disconnected":
       return {
@@ -23,6 +32,7 @@ function mapRuntimeStatusToUi(snapshot: ZodyMcpServerStatusSnapshot): MappedMcpS
         error: snapshot.error,
         failureKind: snapshot.failureKind,
         serverRequestId: snapshot.serverRequestId,
+        workspaceTrust: snapshot.workspaceTrust,
       };
     case "failed":
       return {
@@ -30,19 +40,21 @@ function mapRuntimeStatusToUi(snapshot: ZodyMcpServerStatusSnapshot): MappedMcpS
         error: snapshot.error,
         failureKind: snapshot.failureKind ?? "connection_failed",
         serverRequestId: snapshot.serverRequestId,
+        workspaceTrust: snapshot.workspaceTrust,
       };
     case "disabled":
-      return { status: "unknown", error: snapshot.error };
+      return { status: "unknown", error: snapshot.error, workspaceTrust: snapshot.workspaceTrust };
     case "untrusted":
       return {
         status: "unknown",
         error: snapshot.error ?? "Project MCP server requires explicit connection before use.",
         failureKind: snapshot.failureKind ?? "status_unavailable",
         serverRequestId: snapshot.serverRequestId,
+        workspaceTrust: snapshot.workspaceTrust,
       };
     // fork（F23，上游 a60ba6a7）：workspace MCP 信任门新状态（裁决 2 new-state，
     // 不复用 untrusted 槽位）。呈带安全说明的非成功配置态；完整横幅/行级 UI 在
-    // UI 步（③）落地，此处先保证枚举扩展后映射完备。
+    // UI 步（②）落地，此处先保证枚举扩展后映射完备。
     case "pending_trust":
       return {
         authorization: snapshot.authorization,
@@ -50,6 +62,7 @@ function mapRuntimeStatusToUi(snapshot: ZodyMcpServerStatusSnapshot): MappedMcpS
         error: snapshot.error ?? "Workspace MCP server is pending trust review.",
         failureKind: snapshot.failureKind ?? "status_unavailable",
         serverRequestId: snapshot.serverRequestId,
+        workspaceTrust: snapshot.workspaceTrust,
       };
   }
 }
@@ -85,6 +98,7 @@ export function mergeMcpServerStatusSnapshots(
       error: mapped.error,
       failureKind: mapped.failureKind,
       serverRequestId: mapped.serverRequestId,
+      workspaceTrust: mapped.workspaceTrust,
       toolCount: snapshot.toolCount,
       changed: false,
       lastConnected:

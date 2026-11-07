@@ -113,6 +113,7 @@ import {
 // fork（F4.1b）：ConversationQuotaBanner（套餐横幅）挂载摘除，组件文件留给 F4.5 删除。
 import { PendingCommandRecoveryBanner } from "@/v4/PendingCommandRecoveryBanner.js";
 import { WorkspaceHookPendingBanner } from "@/v4/WorkspaceHookPendingBanner.js";
+import { WorkspaceMcpPendingBanner } from "@/v4/WorkspaceMcpPendingBanner.js";
 import { ConversationStatusPanel } from "@/v4/ConversationStatusPanel.js";
 import { SessionSubscriptionErrorPanel } from "@/v4/SessionSubscriptionErrorPanel.js";
 import { ConversationTimeline } from "@/v4/ConversationTimeline.js";
@@ -3955,6 +3956,15 @@ export function SessionPane({
             workspaceIdentity={workspaceIdentity}
             remoteSessionId={remoteSessionId ?? undefined}
             admission={snapshot.workspaceHookAdmission}
+          />
+        ) : null}
+        {/* fork（F23，上游 a60ba6a7）：workspace MCP 待信任横幅（spec §8.1），与 hook
+            横幅同族同位（conversationBottomDock、composer 之上）；snapshot 字段由
+            v4 投影 default(null)，无待信任时不渲染。 */}
+        {sessionId && snapshot?.workspaceMcpAdmission ? (
+          <WorkspaceMcpPendingBanner
+            sessionId={sessionId}
+            admission={snapshot.workspaceMcpAdmission}
           />
         ) : null}
         {sessionId && snapshot ? (

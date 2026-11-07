@@ -6,10 +6,12 @@ import {
 } from "../src/lib/userActionTraceCatalog.js";
 
 describe("user action trace catalog", () => {
-  it("固定 24 个 Core 与 15 个 Settings 叶子 feature", () => {
-    expect(Object.keys(CORE_USER_ACTION_FEATURES)).toHaveLength(24);
+  it("固定 25 个 Core 与 15 个 Settings 叶子 feature", () => {
+    // fork（F23，上游 a60ba6a7）：conversation.blocking.mcp_trust（review/dismiss）
+    // 加入 core 目录，24→25 feature、94→96 叶子。
+    expect(Object.keys(CORE_USER_ACTION_FEATURES)).toHaveLength(25);
     expect(Object.keys(SETTINGS_USER_ACTION_FEATURES)).toHaveLength(15);
-    expect(USER_ACTION_CATALOG.filter((entry) => entry.group === "core")).toHaveLength(94);
+    expect(USER_ACTION_CATALOG.filter((entry) => entry.group === "core")).toHaveLength(96);
     expect(USER_ACTION_CATALOG.filter((entry) => entry.group === "settings")).toHaveLength(44);
   });
 

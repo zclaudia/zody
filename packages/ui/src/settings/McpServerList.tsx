@@ -1,10 +1,14 @@
 import {
   TID_MCP_OPEN_AUTHORIZATION_BUTTON,
   TID_MCP_SERVER_ROW,
+  TID_MCP_WORKSPACE_REVOKE_BUTTON,
+  TID_MCP_WORKSPACE_TRUST_BUTTON,
+  TID_MCP_WORKSPACE_TRUST_SUMMARY,
   testId,
   type McpServerStatus,
   type ZodyMcpServer,
 } from "@zody/shared";
+import { useState } from "react";
 import { Button } from "@/components/ui/button.js";
 import { Switch } from "@/components/ui/switch.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
@@ -66,15 +70,23 @@ function McpServerItem({
   onEdit,
   onToggle,
   onOpenAuthorization,
+  onWorkspaceTrust,
   hideMetadata,
 }: {
   server: ZodyMcpServer;
   onEdit: (server: ZodyMcpServer) => void;
   onToggle: (id: string, enabled: boolean) => void;
   onOpenAuthorization?: (server: ZodyMcpServer) => void;
+  /**
+   * fork（F23，上游 a60ba6a7）：workspace 声明的信任/撤销回调（spec §8.2）。
+   * 注入方负责调用 workspace/mcp/trust 并刷新；未注入（wiring 未落地）时不渲染
+   * 动作按钮，仅展示审核状态与脱敏摘要。
+   */
+  onWorkspaceTrust?: (server: ZodyMcpServer, trusted: boolean) => void | Promise<void>;
   hideMetadata: boolean;
 }) {
   const { intl } = useZodyIntl();
+  const [trustBusy, setTrustBusy] = useState(false);
   const typeLabel = server.config.command
     ? "stdio"
     : (server.config.type ?? (server.config.url ? "http" : "?"));
@@ -83,18 +95,33 @@ function McpServerItem({
   const openAuthorizationLabel = intl.formatMessage({
     id: "settings.mcp.oauth.openAuthorization",
   });
+  const workspaceTrust = server.workspaceTrust;
+  const pendingWorkspaceTrust = Boolean(workspaceTrust && !workspaceTrust.trusted);
   const statusReason = intl.formatMessage({
     id:
-      server.status === "error"
-        ? resolveMcpFailureMessageId(server.failureKind)
-        : server.status === "connected"
-          ? "settings.mcp.status.connectedReason"
-          : server.status === "connecting"
-            ? "settings.mcp.status.connectingReason"
-            : server.status === "disconnected"
-              ? "settings.mcp.status.disconnectedReason"
-              : "settings.mcp.status.unknownReason",
+      pendingWorkspaceTrust && server.status !== "connected"
+        ? // 待信任是明确的安全状态文案，优先于 unknown 兜底（spec §8.2 warning 呈现）。
+          "settings.mcp.trust.pendingReason"
+        : server.status === "error"
+          ? resolveMcpFailureMessageId(server.failureKind)
+          : server.status === "connected"
+            ? "settings.mcp.status.connectedReason"
+            : server.status === "connecting"
+              ? "settings.mcp.status.connectingReason"
+              : server.status === "disconnected"
+                ? "settings.mcp.status.disconnectedReason"
+                : "settings.mcp.status.unknownReason",
   });
+
+  const handleWorkspaceTrust = async (trusted: boolean) => {
+    if (trustBusy || !onWorkspaceTrust) return;
+    setTrustBusy(true);
+    try {
+      await onWorkspaceTrust(server, trusted);
+    } finally {
+      setTrustBusy(false);
+    }
+  };
 
   const description = server.config.url
     ? `${typeLabel} · ${server.config.url}`
@@ -116,7 +143,11 @@ function McpServerItem({
       >
         <Cable className="size-4" aria-hidden="true" />
         <span className="absolute -right-1 -bottom-1 flex size-4 items-center justify-center rounded-full bg-background">
-          <McpStatusDot status={server.status} reason={statusReason} />
+          <McpStatusDot
+            status={server.status}
+            attention={pendingWorkspaceTrust}
+            reason={statusReason}
+          />
         </span>
       </div>
       <div className="min-w-0">
@@ -133,11 +164,57 @@ function McpServerItem({
           )}
         </div>
         <div className="mt-1 truncate text-ui-sm text-foreground-subtle">{description}</div>
+        {workspaceTrust ? (
+          <div className="mt-1" data-testid={testId(TID_MCP_WORKSPACE_TRUST_SUMMARY, server.name)}>
+            <div
+              className="whitespace-pre-wrap break-all rounded-md bg-surface px-2 py-1 text-ui-sm text-foreground-subtle ring-1 ring-border"
+              title={workspaceTrust.display}
+            >
+              {workspaceTrust.display}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              {!workspaceTrust.trusted ? (
+                <span className="text-ui-sm text-yellow-600 dark:text-yellow-400">
+                  {intl.formatMessage({ id: "settings.mcp.trust.pendingLabel" })}
+                </span>
+              ) : (
+                <span className="text-ui-sm text-foreground-subtle">
+                  {intl.formatMessage({ id: "settings.mcp.trust.revokeBoundary" })}
+                </span>
+              )}
+            </div>
+          </div>
+        ) : null}
         {server.status === "error" ? (
           <McpFailurePresentation error={server.error} failureKind={server.failureKind} />
         ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-2">
+        {workspaceTrust && onWorkspaceTrust ? (
+          !workspaceTrust.trusted ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={trustBusy}
+              data-testid={testId(TID_MCP_WORKSPACE_TRUST_BUTTON, server.name)}
+              title={intl.formatMessage({ id: "settings.mcp.trust.trustAction" })}
+              onClick={() => void handleWorkspaceTrust(true)}
+            >
+              {intl.formatMessage({ id: "settings.mcp.trust.trustAction" })}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={trustBusy}
+              data-testid={testId(TID_MCP_WORKSPACE_REVOKE_BUTTON, server.name)}
+              title={intl.formatMessage({ id: "settings.mcp.trust.revokeBoundary" })}
+              onClick={() => void handleWorkspaceTrust(false)}
+            >
+              {intl.formatMessage({ id: "settings.mcp.trust.revokeAction" })}
+            </Button>
+          )
+        ) : null}
         {canOpenAuthorization && (
           <Button
             variant="link"
@@ -171,6 +248,7 @@ export function McpServerList({
   onEdit,
   onToggle,
   onOpenAuthorization,
+  onWorkspaceTrust,
   emptyTitle,
   emptyDescription,
   hideMetadata = false,
@@ -180,6 +258,7 @@ export function McpServerList({
   onEdit: (server: ZodyMcpServer) => void;
   onToggle: (id: string, enabled: boolean) => void;
   onOpenAuthorization?: (server: ZodyMcpServer) => void;
+  onWorkspaceTrust?: (server: ZodyMcpServer, trusted: boolean) => void | Promise<void>;
   emptyTitle: string;
   emptyDescription: string;
   hideMetadata?: boolean;
@@ -213,6 +292,7 @@ export function McpServerList({
           onEdit={onEdit}
           onToggle={onToggle}
           onOpenAuthorization={onOpenAuthorization}
+          onWorkspaceTrust={onWorkspaceTrust}
           hideMetadata={hideMetadata}
         />
       )}

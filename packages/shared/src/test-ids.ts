@@ -340,6 +340,14 @@ export const TID_SETTINGS_PAGE = "settings-page";
 export const TID_SETTINGS_BACK_BUTTON = "settings-back-button";
 /** 设置页左侧分区入口（动态后缀为 section id） */
 export const TID_SETTINGS_SECTION_NAV = "settings-section-nav";
+/** 个性化（用户自定义指令）编辑器 */
+export const TID_SETTINGS_PERSONALIZATION_EDITOR = "settings-personalization-editor";
+/** 个性化保存按钮 */
+export const TID_SETTINGS_PERSONALIZATION_SAVE = "settings-personalization-save";
+/** 个性化取消按钮 */
+export const TID_SETTINGS_PERSONALIZATION_CANCEL = "settings-personalization-cancel";
+/** 个性化内容超限提示 */
+export const TID_SETTINGS_PERSONALIZATION_SIZE_HINT = "settings-personalization-size-hint";
 /** 常规设置中的增强 Find/Grep 开关 */
 export const TID_SETTINGS_NATIVE_SEARCH_SWITCH = "settings-native-search-switch";
 /** 常规设置中的数据存储路径只读输入框 */
@@ -432,6 +440,12 @@ export const TID_MCP_SERVER_ROW = "mcp-server-row";
 export const TID_PLUGIN_MCP_SERVER_ROW = "plugin-mcp-server-row";
 /** MCP OAuth 授权按钮（动态后缀为 MCP runtime 名称） */
 export const TID_MCP_OPEN_AUTHORIZATION_BUTTON = "mcp-open-authorization-button";
+/** 工作区 MCP 声明的信任按钮（动态后缀为 MCP runtime 名称；fork F23，上游 a60ba6a7） */
+export const TID_MCP_WORKSPACE_TRUST_BUTTON = "mcp-workspace-trust-button";
+/** 工作区 MCP 声明的撤销信任按钮（动态后缀为 MCP runtime 名称；fork F23，上游 a60ba6a7） */
+export const TID_MCP_WORKSPACE_REVOKE_BUTTON = "mcp-workspace-revoke-button";
+/** 工作区 MCP 声明脱敏摘要行（动态后缀为 MCP runtime 名称；fork F23，上游 a60ba6a7） */
+export const TID_MCP_WORKSPACE_TRUST_SUMMARY = "mcp-workspace-trust-summary";
 /** 子智能体列表行（动态后缀为子智能体名称） */
 export const TID_SUBAGENT_ROW = "subagent-row";
 /** 内置子智能体模型选择控件（动态后缀为子智能体名称） */
@@ -546,6 +560,12 @@ export const TID_V4_WORKSPACE_HOOK_PENDING_BANNER = "v4-workspace-hook-pending-b
 export const TID_V4_WORKSPACE_HOOK_PENDING_REVIEW = "v4-workspace-hook-pending-review";
 /** v4 工作区 Hook 待审核提示条「忽略」按钮 */
 export const TID_V4_WORKSPACE_HOOK_PENDING_DISMISS = "v4-workspace-hook-pending-dismiss";
+/** v4 工作区 MCP 待信任提示条容器（fork F23，上游 a60ba6a7） */
+export const TID_V4_WORKSPACE_MCP_PENDING_BANNER = "v4-workspace-mcp-pending-banner";
+/** v4 工作区 MCP 待信任提示条「去设置」按钮 */
+export const TID_V4_WORKSPACE_MCP_PENDING_REVIEW = "v4-workspace-mcp-pending-review";
+/** v4 工作区 MCP 待信任提示条「忽略」按钮 */
+export const TID_V4_WORKSPACE_MCP_PENDING_DISMISS = "v4-workspace-mcp-pending-dismiss";
 /** v4 composer 容器 */
 export const TID_V4_COMPOSER = "v4-composer";
 /** v4 composer 文本输入 */

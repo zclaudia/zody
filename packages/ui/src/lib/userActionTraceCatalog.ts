@@ -21,6 +21,8 @@ export const CORE_USER_ACTION_FEATURES = {
   "conversation.history.feedback": ["like", "dislike", "clear_feedback", "copy"],
   "conversation.blocking.user_input": ["select_option", "submit_text", "cancel"],
   "conversation.blocking.hook": ["review", "dismiss"],
+  // fork（F23，上游 a60ba6a7）：workspace MCP 信任门软门禁（横幅 A 的去设置/忽略）。
+  "conversation.blocking.mcp_trust": ["review", "dismiss"],
   "conversation.navigation": ["load_older", "jump_bottom", "open_turn"],
   "conversation.subagent": ["expand", "open_side_pane", "open_split"],
   "conversation.background_work": ["open", "cancel"],

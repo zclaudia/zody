@@ -281,6 +281,24 @@ bundleDigest`（bundle 变化后重现；不落盘）。
   `packages/ui/src/store/mcpStoreStatusList.ts`（呈现为带安全说明的非成功配置态，
   failureKind 用 `status_unavailable` 语义；`"untrusted"` 现有映射保留不动）。
 
+**F23② 实施登记（2026-11-07）**：
+
+- 横幅 A 已落地：组件 + SessionPane 挂载（hook 横幅同位之后）+ i18n
+  `chat.workspaceMcpPending.*`；dismiss 幂等 store 与 hook 横幅同构。
+- 横幅 B 已落地：`ZodyMcpServer.workspaceTrust`（shared mcp.ts）承载 review，
+  `mcpStoreStatusList` 各状态分支原样投影（快照未携带时清空，不残留旧摘要）；
+  行级摘要/`[信任]`/`[撤销]`/生效边界文案在 `McpServerList`；被拒（含
+  `workspace_mcp_declaration_changed`）与成功都以 manual 刷新收尾，行摘要回到
+  Host 当前事实。
+- **动作接缝（落位登记）**：services 转发（mcp-sync `setWorkspaceMcpTrust`）属
+  §11 wiring 卡，本步 UI 侧以结构化注入接缝
+  `WorkspaceMcpTrustService`（`packages/ui/src/settings/workspaceMcpTrustActions.ts`）
+  承接：`McpSettingsSection.workspaceMcpTrustService` 未注入时不渲染信任/撤销按钮
+  （审核状态与脱敏摘要仍展示），wiring 落地后注入即启用，行级组件无需再改。
+- 伴随改动：`userActionTraceCatalog` 新增
+  `conversation.blocking.mcp_trust`（review/dismiss，横幅 A dismiss 遥测；
+  hook 门禁同族先例），目录计数测试 24→25 feature、94→96 叶子同步更新。
+
 ### 8.3 生效边界（UI 侧状态机）
 
 ```
