@@ -1872,6 +1872,20 @@ const enUS: Record<string, string> = {
   "settings.nativeSearchEnhancementsDescription":
     "Use enhanced Find and Grep in new sessions and sessions restored after an app restart. Active sessions keep their current setting; Find remains unchanged on Windows.",
   "settings.memory": "Memory",
+  "settings.personalization.title": "Personalization",
+  "settings.personalization.description":
+    "Add custom instructions to personalize Agent responses. Instructions apply to future conversations of the local Agent; remote devices need separate configuration.",
+  "settings.personalization.placeholder": "Add custom instructions...",
+  "settings.personalization.editorLabel": "Custom instructions editor",
+  "settings.personalization.saved": "Saved; effective for new conversations",
+  "settings.personalization.saveFailed": "Failed to save. Check the logs",
+  "settings.personalization.loadFailed": "Failed to load custom instructions. Check the logs",
+  "settings.personalization.localOnly":
+    "Custom instructions can only be edited on the local desktop. Open Settings → Personalization in the desktop app.",
+  "settings.personalization.unsaved": "Unsaved changes",
+  "settings.personalization.sizeCount": "{used} / {limit}",
+  "settings.personalization.sizeOverLimit":
+    "Content exceeds the 100 KB limit the Agent reads; anything beyond it is ignored. Trim before saving.",
   "settings.memory.workspaceMemory": "Workspace Memory",
   "settings.memoryDescription":
     "Save and reuse long-term context in workspaces. Applies to new sessions and may increase model requests and token costs.",
@@ -5254,6 +5268,22 @@ const enUS: Record<string, string> = {
   "mode.description.glm.edit": "Edit files automatically.",
   "mode.description.glm.plan": "Plan before editing.",
   "mode.description.glm.yolo": "Run with fewer confirmations.",
+  "mode.yoloConfirmation.title": "Enable full access?",
+  "mode.yoloConfirmation.description":
+    "Tasks can perform the following actions without asking for your approval each time.",
+  "mode.yoloConfirmation.files": "Files and folders",
+  "mode.yoloConfirmation.files.description": "Read, create, change, and delete accessible files.",
+  "mode.yoloConfirmation.commands": "Terminal commands",
+  "mode.yoloConfirmation.commands.description":
+    "Run commands, install software, or change system settings.",
+  "mode.yoloConfirmation.network": "Network and apps",
+  "mode.yoloConfirmation.network.description":
+    "Access the network, send data, and use connected apps.",
+  "mode.yoloConfirmation.risk":
+    "These actions may cause data loss or disclosure. Enable only for tasks you trust. You can switch to another permission mode at any time.",
+  "mode.yoloConfirmation.acknowledgement":
+    "I understand the risks and take responsibility for my data security.",
+  "mode.yoloConfirmation.confirm": "Confirm",
   "todo.panel.title": "Todo",
   "todo.panel.currentTask": "Current task",
   "todo.panel.completed": "Todo completed",

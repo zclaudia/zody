@@ -139,6 +139,11 @@ describe("PermissionDialog focus", () => {
           },
           onRespond,
           workspacePath: "/tmp/workspace",
+          // F26（docs/yolo-mode-risk-confirmation.md 规则 4）：会话权威模式已 yolo 时
+          // 完全访问选项直接应答、不再弹确认。本用例聚焦键盘导航与 optionId 透传，
+          // 确认门本身（先弹窗、取消不发应答）由 browser 组件测试
+          // packages/ui/test/browser/manual-review/pending/yolo-confirmation.test.mjs 覆盖。
+          ...(fullAccess ? { permissionMode: "yolo" } : {}),
         }),
       ),
     );

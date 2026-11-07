@@ -1798,6 +1798,20 @@ const zhCN: Record<string, string> = {
   "settings.nativeSearchEnhancementsDescription":
     "在新建会话或应用重启后恢复的会话中使用增强 Find 和 Grep。当前会话保持现有设置；Windows 的 Find 保持不变。",
   "settings.memory": "记忆",
+  "settings.personalization.title": "个性化",
+  "settings.personalization.description":
+    "添加自定义指令来个性化 Agent 的回复，指令会应用到你本机 Agent 的后续会话；远程设备需单独配置。",
+  "settings.personalization.placeholder": "添加自定义指令…",
+  "settings.personalization.editorLabel": "个性化指令编辑器",
+  "settings.personalization.saved": "已保存，新会话生效",
+  "settings.personalization.saveFailed": "保存失败，请查看日志",
+  "settings.personalization.loadFailed": "读取个性化指令失败，请查看日志",
+  "settings.personalization.localOnly":
+    "个性化指令仅支持在本地桌面端设置，请前往本地桌面端的“个性化”设置。",
+  "settings.personalization.unsaved": "有未保存的修改",
+  "settings.personalization.sizeCount": "{used} / {limit}",
+  "settings.personalization.sizeOverLimit":
+    "内容超出 Agent 读取上限 100 KB，超出部分不会生效；请精简后再保存。",
   "settings.memory.workspaceMemory": "工作区记忆",
   "settings.memoryDescription":
     "在工作区中保存并复用长期上下文，新会话生效。开启后可能增加模型调用和 Token 成本。",
@@ -5071,6 +5085,18 @@ const zhCN: Record<string, string> = {
   "mode.description.glm.edit": "自动编辑文件。",
   "mode.description.glm.plan": "编辑前先出计划。",
   "mode.description.glm.yolo": "减少确认次数。",
+  "mode.yoloConfirmation.title": "要启用完全访问吗？",
+  "mode.yoloConfirmation.description": "启用后，任务可以直接执行以下操作，无需逐次请求你确认。",
+  "mode.yoloConfirmation.files": "文件和文件夹",
+  "mode.yoloConfirmation.files.description": "读取、创建、修改和删除可访问的文件。",
+  "mode.yoloConfirmation.commands": "终端命令",
+  "mode.yoloConfirmation.commands.description": "运行命令、安装软件或修改系统配置。",
+  "mode.yoloConfirmation.network": "网络和应用",
+  "mode.yoloConfirmation.network.description": "访问网络、发送数据，以及调用已连接的应用。",
+  "mode.yoloConfirmation.risk":
+    "这些操作可能造成数据丢失或泄露。请仅在信任任务内容时启用。你可以随时切回其他权限模式。",
+  "mode.yoloConfirmation.acknowledgement": "我已了解风险，并对自己的数据安全负责。",
+  "mode.yoloConfirmation.confirm": "确认启用",
   "todo.panel.title": "待办",
   "todo.panel.currentTask": "当前任务",
   "todo.panel.completed": "todo 已完成",

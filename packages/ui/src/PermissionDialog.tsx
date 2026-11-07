@@ -16,7 +16,10 @@ import {
   type ZodyPermissionRequest,
   type ZodyProvider,
 } from "@zody/shared";
-import { MAX_PERMISSION_FEEDBACK_CHARS } from "@zody/shared/zody-protocol-v4";
+import {
+  MAX_PERMISSION_FEEDBACK_CHARS,
+  PERMISSION_FULL_ACCESS_OPTION_ID,
+} from "@zody/shared/zody-protocol-v4";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
 import { Textarea } from "@/components/ui/textarea.js";
@@ -61,6 +64,7 @@ import { SaveWorkflowPermissionBlock } from "@/SaveWorkflowPermissionBlock.js";
 import { isSaveWorkflowToolCall } from "@/lib/workflowToolNames.js";
 import { useZodyStoreWithDefault } from "@/store/StoreProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
+import { useYoloModeConfirmation } from "@/hooks/useConfirmDialog.js";
 import { useZodyIntl } from "./i18n/IntlProvider.js";
 import { Info, CameraIcon, LoaderIcon, WrenchIcon } from "lucide-react";
 
@@ -580,10 +584,13 @@ export function PermissionDialog({
   isWebRemoteControl = false,
   responding = false,
   responseError,
+  permissionMode,
 }: {
   request: ZodyPermissionRequest;
   responding?: boolean;
   responseError?: string;
+  /** F26：会话权威模式（宿主从 snapshot config.mode 传入），已 yolo 时完全访问选项不再弹确认。 */
+  permissionMode?: string;
   /**
    * `content` 只在工作流确认窗的放行应答上出现：用户在窗里改过的设置（docs/dynamic-workflow/launch.md
    * 「Adjusting the settings in the window」）。没改过即不传。
@@ -603,6 +610,20 @@ export function PermissionDialog({
   isWebRemoteControl?: boolean;
 }) {
   const { intl } = useZodyIntl();
+  // F26（上游 a60ba6a7）：完全访问选项先过风险确认。scope 是本次应答的身份
+  // （workspace/task/request + responding），新权限请求到达即失效；
+  // PermissionDialog 不自取 store，会话权威模式由宿主传入。
+  const confirmMode = useYoloModeConfirmation(
+    JSON.stringify([
+      workspacePath,
+      workspaceIdentity,
+      remoteSessionId,
+      request.taskId,
+      request.requestId,
+      responding,
+    ]),
+    permissionMode,
+  );
   const isMobileTextInputViewport = useIsMobileTextInputViewport();
   // Bug 根因：反馈输入也会渲染在手机 Web 远控的 PermissionDialog 中，14px 输入框聚焦时会触发 iOS 页面放大。
   // 与 composer 复用同一套视口判断和 16px 兼容 token，桌面和非远控 Web 保持原有字号。
@@ -756,13 +777,21 @@ export function PermissionDialog({
         workflowSettingsContent !== undefined && isWorkflowSettingsCarrier(option)
           ? { ...workflowSettingsContent }
           : undefined;
-      if (content === undefined) {
-        onRespond(request.requestId, option, trimmedFeedback || undefined);
-      } else {
-        onRespond(request.requestId, option, trimmedFeedback || undefined, content);
-      }
+      // F26（上游 a60ba6a7）：完全访问选项在应答前先过 yolo 风险确认；取消/Escape/遮罩
+      // 关闭时不发送应答，本权限请求继续等待用户选择（可改选其他选项）。
+      confirmMode(
+        option.optionId === PERMISSION_FULL_ACCESS_OPTION_ID ? "yolo" : "unchanged",
+        () => {
+          if (content === undefined) {
+            onRespond(request.requestId, option, trimmedFeedback || undefined);
+          } else {
+            onRespond(request.requestId, option, trimmedFeedback || undefined, content);
+          }
+        },
+      );
     },
     [
+      confirmMode,
       feedback,
       isOptionBlocked,
       onRespond,

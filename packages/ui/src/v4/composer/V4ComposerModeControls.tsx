@@ -26,6 +26,8 @@ import {
   resolveModeOptionIcon,
 } from "@/chat-input-toolbar/display.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
+import { useYoloModeConfirmation } from "@/hooks/useConfirmDialog.js";
+import { useConfirmDialogStore } from "@/store/confirmDialogStore.js";
 import { isCoarseTouchDevice } from "@/lib/pickerFocus.js";
 import { useShortcutCommandLabel } from "@/shortcuts/useShortcutBindings.js";
 import { ControlHintTooltip } from "@/ControlHintTooltip.js";
@@ -57,6 +59,15 @@ function V4ComposerModeSwitchImpl({
   | "onSwitchMode"
 >) {
   const { intl } = useZodyIntl();
+  // F26（上游 a60ba6a7）：非 yolo → yolo 切换先过风险确认。原草稿回调随 scope 换代，
+  // 旧确认不能把权限写入后来选中的任务；disabled 时传 null 使确认门随之失效。
+  const confirmMode = useYoloModeConfirmation(disabled ? null : onSwitchMode, draftConfig?.mode);
+  const requestSwitchMode = useCallback(
+    (mode: string) => {
+      confirmMode(mode, () => onSwitchMode(mode));
+    },
+    [confirmMode, onSwitchMode],
+  );
   const displayProvider = provider ?? ZODY_AGENT_PROVIDER;
   const modeShortcutLabel = useShortcutCommandLabel("cycleSessionMode");
   const modes = getZodyAgentAvailableModes();
@@ -86,8 +97,8 @@ function V4ComposerModeSwitchImpl({
   );
   const cycle = useCallback(() => {
     const next = getNextConfigSelectValue(modeOption);
-    if (next) onSwitchMode(next);
-  }, [modeOption, onSwitchMode]);
+    if (next) requestSwitchMode(next);
+  }, [modeOption, requestSwitchMode]);
   useToolbarShortcutBindings({
     hasAnyOption: Boolean(selected),
     toolbarDisabled: disabled,
@@ -139,7 +150,9 @@ function V4ComposerModeSwitchImpl({
           className="w-64"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
-            if (!isCoarseTouchDevice())
+            // F26（上游 a60ba6a7）：选 yolo 后菜单先关、确认弹窗随后打开；此刻不能把
+            // 焦点还给输入框，否则弹窗打开前后的击键会写入 Composer（spec 产品规则 6）。
+            if (!useConfirmDialogStore.getState().pendingRequest && !isCoarseTouchDevice())
               document
                 .querySelector<HTMLElement>(`[data-testid="${TID_V4_COMPOSER_INPUT}"]`)
                 ?.focus();
@@ -162,7 +175,7 @@ function V4ComposerModeSwitchImpl({
             </span>
           </DropdownMenuCheckboxItem>
           <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup value={selected.id} onValueChange={onSwitchMode}>
+          <DropdownMenuRadioGroup value={selected.id} onValueChange={requestSwitchMode}>
             {permissions.map((mode) => {
               const ModeIcon = resolveModeOptionIcon(mode.id);
               const descriptionId = getModeOptionDescriptionMessageId(displayProvider, {

@@ -1,7 +1,8 @@
 /**
  * V4 composer 工具条键盘热键（composer parity）。
  *
- * 判定为纯逻辑（无 store / 协议依赖，仅消费 config 目录选项与回调）。
+ * 键位判定是纯逻辑（无 store / 协议依赖，仅消费 config 目录选项与回调）；
+ * F26 起 yolo 风险确认 pending 期间读 confirmDialogStore 静默全部工具条热键。
  * 绑定处的回调只修改 Composer：
  * - Ctrl+M        → 打开模型菜单（openRequestKey 递增，ModelConfigSelect 消费）
  * - Ctrl+Shift+M  → 循环下一次 Submission 的模式
@@ -20,6 +21,7 @@ import {
 } from "@/shortcuts/bindings.js";
 import { useEffectiveShortcutBindings } from "@/shortcuts/useShortcutBindings.js";
 import { logger } from "@/logger.js";
+import { useConfirmDialogStore } from "@/store/confirmDialogStore.js";
 
 type ChatToolbarShortcutKey = "m" | "ctrlShiftM" | "t" | null;
 
@@ -137,7 +139,10 @@ export function resolveToolbarShortcutAction(
     if (candidate.disabled) {
       continue;
     }
-    if (!candidate.option || getChatToolbarShortcutKey(candidate.option.category) !== candidate.expectedKey) {
+    if (
+      !candidate.option ||
+      getChatToolbarShortcutKey(candidate.option.category) !== candidate.expectedKey
+    ) {
       continue;
     }
     for (const binding of effective[candidate.commandId] ?? []) {
@@ -187,7 +192,12 @@ export function useToolbarShortcutBindings(params: {
     function handleWindowKeydown(event: KeyboardEvent) {
       // 录制态键盘归录制器独占。本监听先于录制监听注册（同 capture 阶段），
       // 不短路的话录制期按键预览会真的触发工具条动作。
-      if (isShortcutRecordingActive()) {
+      // F26（上游 a60ba6a7）：yolo 风险确认 pending 期间工具条热键静默，避免键盘
+      // 用户在确认未决时继续改状态或连锁触发第二弹窗（spec 产品规则 7）。
+      if (
+        isShortcutRecordingActive() ||
+        useConfirmDialogStore.getState().pendingRequest?.presentation === "yolo-confirmation"
+      ) {
         return;
       }
       // Windows/Linux 上 Cmd/Ctrl+P 已由 useAppKeyboard 用于「搜索

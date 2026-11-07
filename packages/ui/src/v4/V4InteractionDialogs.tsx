@@ -334,6 +334,9 @@ export function V4InteractionDialogs({
       <PermissionDialog
         key={pending.interactionId}
         request={request}
+        // F26（上游 a60ba6a7）：会话权威模式（snapshot config.mode）传给审批框的
+        // yolo 确认门——会话已 yolo 时选完全访问直接应答，不重复弹确认。
+        permissionMode={currentSnapshot?.config?.mode}
         workspacePath={workspacePath}
         {...(workspaceIdentity === undefined ? {} : { workspaceIdentity })}
         {...(remoteSessionId === undefined ? {} : { remoteSessionId })}
