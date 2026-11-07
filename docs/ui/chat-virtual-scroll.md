@@ -66,6 +66,85 @@
 - turn group 内传给单条消息的 retry、文件切换、feedback、fork 回调通过 `useCallback` 稳定，避免 memo 被 map 里的 inline function 抵消。
 - diff 只稳定 options 和 viewer 输入，不缓存实际 DOM；主题、字号、换行和行号设置变化时仍会正常重渲染。
 
+## 分区渲染与查找改进（F17）
+
+> 上游 v3.17.1（来源 commit `a60ba6a7`，`packages/ui/src/v4/ConversationTimeline.tsx` 及
+> `conversationProjectionStore.ts`）的时间线性能改进。本仓时间线已分叉，按本节分步移植；
+> 每步独立可合入，且只有当前一步的基线不回退时才进入下一步。
+
+### 现状：流式帧的每帧 O(N) 派生成本
+
+本仓已有 perf-1/perf-2 指纹复用（`ConversationTimeline.tsx` 的
+`buildConversationTurnRenderUnits` 以 `previousUnits` 比对输入、复用未变 turn 的引用），但流式帧
+`rows` 每帧都是新数组引用，以下派生仍逐帧全窗扫描，成本随历史长度线性增长（行号为 2026-11-07 基线）：
+
+- `buildConversationTurnRenderUnits(rows, …)`：每帧对全部 rows 做指纹比对（`ConversationTimeline.tsx:437-446`）；
+- `turnNavigatorQueryRowIds` Set 重建、`hasRunningUnit` 全 units 扫描（`ConversationTimeline.tsx:451-465`）；
+- `conversationFindIndex` 合并：unit 级缓存命中后仍要逐 unit 拼 key + Map 查找并重建 matches 数组
+  （`useConversationTimelineFind.ts:87-118`）；
+- `ROW_OVERSCAN = 8`（`ConversationTimeline.tsx:107`）：虚拟单元是一整轮长正文，搜索/目录跳转时
+  前后各 8 轮同步挂载大量屏外 Markdown（上游注释原话：会把小行列表的 overscan 放大为数十屏布局工作）。
+
+### 上游机制与移植顺序
+
+上游把「冻结历史 + 尾轮」分区缓存为 rows 的纯派生（`conversationProjectionStore.ts` 的
+`getConversationRowsPartition`，WeakMap 按 rows 数组引用缓存 `{history, tail}`；delta 应用后由
+`advanceConversationRowsPartition` 在只改尾轮时沿用上一份 history 引用；`memoizeByRows` 收拢按行
+数组引用缓存历史段派生的样板），render units、插件 UI 派生、highspeed 过期、查找索引等都改为
+history 引用缓存 + 每帧只算尾段。`ROW_OVERSCAN` 收紧为 2；`measuredLayoutRevision` 让
+`mountedRowsKey` 把「同批测高已提交」纳入失效条件，配合批量测高避免测高帧反复触发挂载键抖动。
+
+移植顺序（每步先补 spec 与测试，基线复测不回退才继续）：
+
+| 步骤 | 内容 | 主要指标 | 期望方向 |
+| --- | --- | --- | --- |
+| ① 基线 | 本节 + 基线记录文件 + 浏览器测量 harness | M1–M4 建档 | —（本步已完成） |
+| ② 分区 | `getConversationRowsPartition`/`memoizeByRows`/`advanceConversationRowsPartition` 与消费方接入 | M1 growth | 2.49x → 向 1.x 收敛；p50@3003 行显著下降 |
+| ③ overscan | `ROW_OVERSCAN` 8 → 2 | M3 | historyTurnUnits 18 → ~10–12，historyElements 同步下降 |
+| ④ 测量 revision | `measuredLayoutRevision` 批量测高与 mountedRowsKey 失效 | M1/M2/M3 不回退 + SRM10 resize 回归 | 不回退 |
+| ⑤ 查找 | 查找索引按分区缓存（history 段按引用复用，每帧只算尾轮） | M4 + 代码级分区缓存测试 | M4 不回退（现有 unit 缓存已把墙钟增量压到噪声级，验收以代码级测试为主） |
+
+### 性能指标定义与测量方法
+
+测量入口：`node --test packages/ui/test/browser/manual-review/pending/conversation-timeline-perf-baseline.test.mjs`
+（vite dev 编译真实 `ConversationTimeline` + TanStack virtualizer + Streamdown，Chromium headless，
+确定性合成数据：每轮 turnHeader + userInput + assistantText 三行；运行环境与数值记录见
+[chat-virtual-scroll-perf-baseline.md](./chat-virtual-scroll-perf-baseline.md)）。
+
+| 指标 | 口径 | 敏感步骤 |
+| --- | --- | --- |
+| M1 流式每帧成本 | 尾轮等长替换（隔离尾轮渲染变量）× 120 帧的 flushSync render+commit p50/p95；三档历史 153/1503/3003 行；growth = p50(3003)/p50(153) | ② 分区 |
+| M2 初始挂载 | 4503 行吸底挂载整页墙钟（同机前后对比）+ historyTurnUnits/historyElements 计数 | ③④ |
+| M3 定位跳转挂载量 | 底部 locate 至中段后的 historyTurnUnits / historyElements（确定性计数） | ③ overscan |
+| M4 查找激活流式成本 | `conversationFindQuery` 命中全部历史轮时的 M1 同口径 | ⑤ 查找 |
+
+墙钟只记录趋势、不做 CI pass/fail 门禁（与 `docs/testing/conversation-session-e2e-coverage-matrix.md`
+的 PERF03 口径一致）；harness 内仅保留远高于预期的 sanity 上限。每步合入前后各跑一轮并追加到
+基线记录文件，无前后对比数据不得声称改进。
+
+### 验收场景（每步通用）
+
+- 行为回归（harness 内置断言，每轮随跑）：1500 轮初始挂载吸底（gap ≤ 1px）；三档规模流式 120 帧
+  保持吸底（gap ≤ 2px）；定位跳转后离底且目标行已挂载；全程无页面错误。
+- 既有回归不回退：SRM 滚动记忆（`conversation-session-v4-scroll.test.ts` 桌面 E2E + UI unit）、
+  HLP01-HLP02 历史前插锚点（正式 E2E）、SRM10 resize 浏览器回归
+  （`packages/ui/test/browser/manual-review/pending/conversation-timeline-resize.test.mjs`）。
+- 单元级：分区/memoize 的纯函数测试（分区边界、delta 沿用 history 的判定、WeakMap 复用语义），
+  每个行为改动含反例（见各步任务卡）。
+
+### E2E 场景清单（按 e2e-case-lifecycle 规则）
+
+| 场景 | 入口 | 状态（2026-11-07 基线步） |
+| --- | --- | --- |
+| F17-STREAM-01 长会话流式吸底与滚动记忆回归 | 既有 `conversation-session-v4-scroll.test.ts`（SRM01-SRM04 已 covered） | 复用，每步回归 |
+| F17-PREPEND-02 历史前插锚点回归 | 既有 HLP01-HLP02 正式 E2E | 复用，②③ 步回归 |
+| F17-RESIZE-03 resize/批量测高行为 | 既有 SRM10 浏览器回归 conversation-timeline-resize.test.mjs | 复用，④ 步回归 |
+| F17-LOCATE-04 跳转定位完整显示与屏外挂载（overscan 收紧后目标轮完整、滚动边界不回退） | 浏览器 harness 本身断言（M3）+ 桌面草案 `packages/desktop/test/e2e/conversation-session/manual-review/pending/`（lifecycle pending 入口） | 待 ③ 步登记；桌面用例文件在本卡落点（packages/ui、docs）之外，登记时由 controller 扩卡或另行分配 |
+| F17-FIND-05 长会话查找跳转高亮与运行中更新 | 桌面草案对齐 coverage matrix `session-find-highlight`（W01-W06，planned） | 待 ⑤ 步登记；同上受落点限制 |
+
+本卡落点为 `packages/ui/src`、`packages/ui/test`、`docs`；桌面 E2E 用例的物理文件与 coverage
+matrix 登记不在落点内，上表已列明对应入口与缺口，实际登记在对应步骤完成（见各步汇报）。
+
 ## 远控边界
 
 本改动只影响 UI 层渲染，不改变 ZCode task 消息流、snapshot、queue 或恢复语义：
