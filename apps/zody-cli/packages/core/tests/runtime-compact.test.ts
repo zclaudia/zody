@@ -54,11 +54,11 @@ import {
 } from "../src/agent/message-history.js";
 import { createInMemoryHookRunner } from "../src/hooks/index.js";
 import {
-  buildPostCompactReadStateReminderEntries,
   buildPostCompactRuntimeEntries,
   selectCompactEntries,
   toTokenUsageInfo,
 } from "../src/runtime/helpers/index.js";
+import { buildPostCompactFileRestore } from "../src/runtime/helpers/compact-post-reminders.js";
 import { createToolRegistry } from "../src/tool/registry.js";
 import { setReadFileStateEntry } from "../src/tool/read-file-state.js";
 import type { ReadFileStateMap } from "../src/tool/types.js";
@@ -455,7 +455,7 @@ describe("runtime compact helpers", () => {
     expect(preservedText).toContain("attached file body");
   });
 
-  it("skips read reminders for files already present in preserved recent Read context", () => {
+  it("skips read reminders for files already present in preserved recent Read context", async () => {
     const preservedFile = "/tmp/zcode-compact-preserved-read/src/current.ts";
     const reminderFile = "/tmp/zcode-compact-preserved-read/src/other.ts";
     const readFileState: ReadFileStateMap = new Map();
@@ -464,12 +464,14 @@ describe("runtime compact helpers", () => {
       isPartialView: false,
       path: preservedFile,
       readAt: new Date(5_000),
+      sourceTool: "Read",
     });
     setReadFileStateEntry(readFileState, {
       content: "export const reminder = 2;\n",
       isPartialView: false,
       path: reminderFile,
       readAt: new Date(4_000),
+      sourceTool: "Read",
     });
     const preservedEntries: RuntimeMessageEntry[] = [
       {
@@ -495,11 +497,33 @@ describe("runtime compact helpers", () => {
       },
     ];
 
-    const reminders = buildPostCompactReadStateReminderEntries({
+    // 补回重读磁盘当前内容：返回与缓存不同的正文，确认不会把缓存视图放进上下文。
+    const restore = await buildPostCompactFileRestore({
       preservedEntries,
+      readFiles: async (filePaths) =>
+        filePaths.map((filePath) => ({
+          output: {
+            content: `disk ${filePath}`,
+            filePath,
+            numLines: 1,
+            startLine: 1,
+            totalLines: 1,
+            type: "text" as const,
+          },
+          readFileStateEntry: {
+            content: `disk ${filePath}`,
+            isPartialView: false,
+            path: filePath,
+            readAt: new Date(6_000),
+            revisionId: `rev:${filePath}`,
+            sizeBytes: 1,
+            sourceTool: "Read" as const,
+          },
+          type: "text" as const,
+        })),
       readFileState,
     });
-    const reminderText = reminders
+    const reminderText = restore.entries
       .map((entry) =>
         "message" in entry ? providerContentToText(entry.message.content) : entry.content,
       )
@@ -510,10 +534,10 @@ describe("runtime compact helpers", () => {
     expect(reminderText).toContain(
       `Called the Read tool with the following input: {"file_path":"${reminderFile}"}`,
     );
-    expect(reminderText).toContain("1\texport const reminder = 2;");
+    expect(reminderText).toContain("1\tdisk /tmp/zcode-compact-preserved-read/src/other.ts");
   });
 
-  it("uses the file path, not range input JSON, for oversized post-compact read references", () => {
+  it("uses the file path, not range input JSON, for oversized post-compact read references", async () => {
     const largeFile = "/tmp/zcode-compact-large-read/src/large.ts";
     const readFileState: ReadFileStateMap = new Map();
     setReadFileStateEntry(readFileState, {
@@ -523,13 +547,36 @@ describe("runtime compact helpers", () => {
       offset: 100,
       path: largeFile,
       readAt: new Date(5_000),
+      sourceTool: "Read",
     });
 
-    const reminders = buildPostCompactReadStateReminderEntries({
-      maxFileApproxTokens: 10,
+    // 重读得到的整文件正文超过单文件预算：转引用提示，read-state 记录为部分视图。
+    const restore = await buildPostCompactFileRestore({
+      maxFileTokens: 10,
+      readFiles: async (filePaths) =>
+        filePaths.map(() => ({
+          output: {
+            content: "x".repeat(31),
+            filePath: largeFile,
+            numLines: 1,
+            startLine: 1,
+            totalLines: 1,
+            type: "text" as const,
+          },
+          readFileStateEntry: {
+            content: "x".repeat(31),
+            isPartialView: false,
+            path: largeFile,
+            readAt: new Date(6_000),
+            revisionId: `rev:${largeFile}`,
+            sizeBytes: 31,
+            sourceTool: "Read" as const,
+          },
+          type: "text" as const,
+        })),
       readFileState,
     });
-    const reminderText = reminders
+    const reminderText = restore.entries
       .map((entry) =>
         "message" in entry ? providerContentToText(entry.message.content) : entry.content,
       )
@@ -539,6 +586,9 @@ describe("runtime compact helpers", () => {
       `Note: ${largeFile} was read before the last conversation was summarized`,
     );
     expect(reminderText).not.toContain(`{"file_path":"${largeFile}"`);
+    expect(restore.readFileStateEntries).toEqual([
+      expect.objectContaining({ isPartialView: true, path: largeFile }),
+    ]);
   });
 
   it("orders post-compact entries as summary, preserved recent context, then file reminders", () => {
@@ -1691,10 +1741,18 @@ describe("AgentRuntime manual compact", () => {
     expect(postCompactContext).not.toContain("2. [pending][medium] Add todo resume coverage");
   });
 
-  it("restores recent read file state as post-compact provider-visible reminders", async () => {
+  it("restores recent read files from disk as post-compact provider-visible reminders", async () => {
     const sessionId = createSessionId("runtime-compact-read-state-reminder");
     const requests: Array<Array<{ role: string; content: string }>> = [];
     let normalResponseCount = 0;
+    const smallFile = "/tmp/zcode-runtime-compact-read-state/src/current.ts";
+    const rangeFile = "/tmp/zcode-runtime-compact-read-state/src/range.ts";
+    const largeFile = "/tmp/zcode-runtime-compact-read-state/src/large.ts";
+    const writtenFile = "/tmp/zcode-runtime-compact-read-state/src/written.ts";
+    const planFile = "/tmp/zcode-runtime-compact-read-state/docs/superpowers/plans/secret-plan.md";
+    const memoryFile = "/Users/dev/.codex/memories/private-note.md";
+    // 42KB（低于 Read 的 256KB 字节上限）、约 14k 估算 token（超过单文件 5k 预算）。
+    const largeDiskContent = "large-content ".repeat(3_000);
 
     const runtime = createTestAgentRuntime(
       sessionId,
@@ -1704,6 +1762,15 @@ describe("AgentRuntime manual compact", () => {
       },
       {
         eventStore: createTestSessionEventStore(),
+        fileSystemPort: new MemoryFileSystem({
+          // 磁盘内容与读取状态里的缓存不同：补回必须是重读的当前内容。
+          [smallFile]: "export const currentOnDisk = 42;\n",
+          [rangeFile]: "first line\nsecond line\nthird line\nfourth line\nfifth line\n",
+          [largeFile]: largeDiskContent,
+          [writtenFile]: "written content on disk",
+          [planFile]: "do not expose plan file",
+          [memoryFile]: "do not expose memory file",
+        }),
         modelFactory: createTestModelFactory(
           withStreamTextFromGenerateText({
             async generateText(request) {
@@ -1736,17 +1803,12 @@ describe("AgentRuntime manual compact", () => {
 
     const readFileState = (runtime as unknown as { readFileState: Map<string, unknown> })
       .readFileState;
-    const smallFile = "/tmp/zcode-runtime-compact-read-state/src/current.ts";
-    const rangeFile = "/tmp/zcode-runtime-compact-read-state/src/range.ts";
-    const largeFile = "/tmp/zcode-runtime-compact-read-state/src/large.ts";
-    const writtenFile = "/tmp/zcode-runtime-compact-read-state/src/written.ts";
-    const planFile = "/tmp/zcode-runtime-compact-read-state/docs/superpowers/plans/secret-plan.md";
-    const memoryFile = "/Users/dev/.codex/memories/private-note.md";
     setReadFileStateEntry(readFileState, {
       content: "export const current = 42;\n",
       isPartialView: false,
       path: smallFile,
       readAt: new Date(4_000),
+      sourceTool: "Read",
     });
     setReadFileStateEntry(readFileState, {
       content: "third line\nfourth line\n",
@@ -1755,12 +1817,14 @@ describe("AgentRuntime manual compact", () => {
       offset: 3,
       path: rangeFile,
       readAt: new Date(4_500),
+      sourceTool: "Read",
     });
     setReadFileStateEntry(readFileState, {
-      content: "large-content ".repeat(25_000),
+      content: "stale cached large content",
       isPartialView: false,
       path: largeFile,
       readAt: new Date(3_000),
+      sourceTool: "Read",
     });
     setReadFileStateEntry(readFileState, {
       content: "do not expose write state",
@@ -1774,18 +1838,30 @@ describe("AgentRuntime manual compact", () => {
       isPartialView: false,
       path: planFile,
       readAt: new Date(5_000),
+      sourceTool: "Read",
     });
     setReadFileStateEntry(readFileState, {
       content: "do not expose memory file",
       isPartialView: false,
       path: memoryFile,
       readAt: new Date(6_000),
+      sourceTool: "Read",
     });
 
     await runtime.executeTurn("first read-state compact setup");
     await runtime.executeTurn("second read-state compact setup");
     await runtime.executeTurn("/compact");
-    expect(readFileState.size).toBe(0);
+    // 持久化成功后整表替换：live 表只保留补回重读的记录（Write 来源也补回），
+    // plan/memory 排除，超限文件转部分视图记录。
+    expect([...readFileState.values()]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ content: "export const currentOnDisk = 42;\n", path: smallFile }),
+        expect.objectContaining({ path: rangeFile }),
+        expect.objectContaining({ isPartialView: true, path: largeFile }),
+        expect.objectContaining({ content: "written content on disk", path: writtenFile }),
+      ]),
+    );
+    expect(readFileState.size).toBe(4);
     await runtime.executeTurn("continue after read-state compact");
 
     const postCompactContext = requests
@@ -1797,18 +1873,23 @@ describe("AgentRuntime manual compact", () => {
       `Called the Read tool with the following input: {"file_path":"${smallFile}"}`,
     );
     expect(postCompactContext).toContain("Result of calling the Read tool:");
-    expect(postCompactContext).toContain("1\texport const current = 42;");
+    // 补回的是磁盘上的当前内容，不是读取状态里缓存的旧视图。
+    expect(postCompactContext).toContain("1\texport const currentOnDisk = 42;");
+    expect(postCompactContext).not.toContain("export const current = 42;");
+    // range 记录按整文件语义重读：输入头不再带 offset/limit，正文从第 1 行编号。
     expect(postCompactContext).toContain(
-      `Called the Read tool with the following input: {"file_path":"${rangeFile}","offset":3,"limit":2}`,
+      `Called the Read tool with the following input: {"file_path":"${rangeFile}"}`,
     );
-    expect(postCompactContext).toContain("3\tthird line");
-    expect(postCompactContext).toContain("4\tfourth line");
+    expect(postCompactContext).toContain("1\tfirst line");
+    expect(postCompactContext).toContain("5\tfifth line");
     expect(postCompactContext).not.toContain("Recent file read before compact");
+    expect(postCompactContext).not.toContain("stale cached large content");
     expect(postCompactContext).toContain(
       `Note: ${largeFile} was read before the last conversation was summarized, but the contents are too large to include. Use Read tool if you need to access it.`,
     );
+    // 只补 Read/Write/Edit 来源：Write 记录同样重读磁盘当前内容。
+    expect(postCompactContext).toContain("1\twritten content on disk");
     expect(postCompactContext).not.toContain("do not expose write state");
-    expect(postCompactContext).not.toContain(writtenFile);
     expect(postCompactContext).not.toContain("do not expose plan file");
     expect(postCompactContext).not.toContain("do not expose memory file");
   });
@@ -1852,6 +1933,10 @@ describe("AgentRuntime manual compact", () => {
       },
       {
         eventStore: createTestSessionEventStore(),
+        fileSystemPort: new MemoryFileSystem({
+          "/tmp/zcode-runtime-compact-read-state-resume/src/current.ts":
+            "export const persisted = 42;\n",
+        }),
         modelFactory: createTestModelFactory(
           withStreamTextFromGenerateText(modelImplementation) as never,
         ),
@@ -1867,12 +1952,14 @@ describe("AgentRuntime manual compact", () => {
       isPartialView: false,
       path: filePath,
       readAt: new Date(4_000),
+      sourceTool: "Read",
     });
 
     await runtime.executeTurn("first persisted read-state compact setup");
     await runtime.executeTurn("second persisted read-state compact setup");
     await runtime.executeTurn("/compact");
-    expect(readFileState.size).toBe(0);
+    // compaction 持久化成功后整表替换：live 表留下补回重读的这一条记录。
+    expect(readFileState.size).toBe(1);
 
     const resumedRuntime = createTestAgentRuntime(
       sessionId,
@@ -2998,6 +3085,10 @@ describe("AgentRuntime manual compact", () => {
       },
       {
         eventStore,
+        fileSystemPort: new MemoryFileSystem({
+          "/tmp/zcode-runtime-compact-reminder-persist-fail/src/first.ts": `export const first = "${firstReminderMarker}";\n`,
+          "/tmp/zcode-runtime-compact-reminder-persist-fail/src/second.ts": `export const second = "${secondReminderMarker}";\n`,
+        }),
         modelFactory: createTestModelFactory(
           withStreamTextFromGenerateText({
             async generateText(request) {
@@ -3030,12 +3121,14 @@ describe("AgentRuntime manual compact", () => {
       isPartialView: false,
       path: firstFile,
       readAt: new Date(6_000),
+      sourceTool: "Read",
     });
     setReadFileStateEntry(readFileState, {
       content: `export const second = "${secondReminderMarker}";\n`,
       isPartialView: false,
       path: secondFile,
       readAt: new Date(5_000),
+      sourceTool: "Read",
     });
 
     await runtime.executeTurn("first reminder persistence failure setup");
@@ -4372,9 +4465,14 @@ describe("AgentRuntime manual compact", () => {
       sessionId,
       {
         systemPrompt: "You are a reactive compact resume-tail test agent.",
+        workingDirectory: "/tmp/zcode-reactive-compact-resume-tail",
       },
       {
         eventStore: createTestSessionEventStore(),
+        fileSystemPort: new MemoryFileSystem({
+          "/tmp/zcode-reactive-compact-resume-tail/src/current.ts":
+            "export const reactiveResume = 42;\n",
+        }),
         modelFactory: createTestModelFactory(
           withStreamTextFromGenerateText(modelImplementation) as never,
         ),
@@ -4392,6 +4490,7 @@ describe("AgentRuntime manual compact", () => {
       isPartialView: false,
       path: readFilePath,
       readAt: new Date(4_000),
+      sourceTool: "Read",
     });
     await runtime.executeTurn("trigger reactive resume overflow");
 

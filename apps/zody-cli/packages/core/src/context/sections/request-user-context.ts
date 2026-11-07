@@ -93,7 +93,8 @@ function buildInstructionContent(instructions: ResolvedUserInstructions): string
   return sections.length > 0 ? sections.join("\n\n") : null;
 }
 
-function normalizedInstructionSources(
+// 导出供 compaction 补回排除上下文指令文件（上游 a60ba6a7）：这些文件的内容已在系统提示里。
+export function normalizedInstructionSources(
   instructions: ResolvedUserInstructions,
 ): ResolvedUserInstructionSource[] {
   if (instructions.sources && instructions.sources.length > 0) {

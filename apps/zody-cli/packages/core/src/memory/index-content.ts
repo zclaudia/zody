@@ -1,5 +1,8 @@
 import { Lexer } from "marked";
 
+// 项目 Memory 索引文件名；context 种子与 compaction 补回排除共用同一常量（上游 a60ba6a7）。
+export const MEMORY_INDEX_FILE_NAME = "MEMORY.md";
+
 const MEMORY_INDEX_LINE_LIMIT = 200;
 const MEMORY_INDEX_CHARACTER_LIMIT = 25_000;
 const LEADING_FRONTMATTER_PATTERN = /^---\s*\n[\s\S]*?---\s*\n?/u;

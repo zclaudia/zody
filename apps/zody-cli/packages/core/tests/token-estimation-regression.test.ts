@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ESTIMATED_TOKEN_CHAR_DIVISOR } from "@zody/shared";
 import { estimateMessageTokens, shouldAutoCompact } from "../src/compact/index.js";
 import { estimateTokens } from "../src/context/utils.js";
-import { buildPostCompactReadStateReminderEntries } from "../src/runtime/helpers/compact-post-reminders.js";
+import { buildPostCompactFileRestore } from "../src/runtime/helpers/compact-post-reminders.js";
 import { setReadFileStateEntry } from "../src/tool/read-file-state.js";
 import type { ReadFileStateMap } from "../src/tool/types.js";
 
@@ -106,7 +106,7 @@ describe("token estimation regression", () => {
     });
   });
 
-  it("uses the shared divisor when deciding whether to inline post-compact read content", () => {
+  it("uses the shared divisor when deciding whether to inline post-compact read content", async () => {
     const filePath = "/tmp/zcode-compact-three-char-divisor.txt";
     const content = "x".repeat(31);
     const readFileState: ReadFileStateMap = new Map();
@@ -115,14 +115,36 @@ describe("token estimation regression", () => {
       isPartialView: false,
       path: filePath,
       readAt: new Date(5_000),
+      sourceTool: "Read",
     });
 
-    const reminderText = JSON.stringify(
-      buildPostCompactReadStateReminderEntries({
-        maxFileApproxTokens: 10,
-        readFileState,
-      }),
-    );
+    // 31 个估算字符（除数 3）约 11 token，超过 10 token 的单文件预算：转引用提示。
+    const restore = await buildPostCompactFileRestore({
+      maxFileTokens: 10,
+      readFiles: async (filePaths) =>
+        filePaths.map((path) => ({
+          output: {
+            content,
+            filePath: path,
+            numLines: 1,
+            startLine: 1,
+            totalLines: 1,
+            type: "text" as const,
+          },
+          readFileStateEntry: {
+            content,
+            isPartialView: false,
+            path,
+            readAt: new Date(6_000),
+            revisionId: `rev:${path}`,
+            sizeBytes: 31,
+            sourceTool: "Read" as const,
+          },
+          type: "text" as const,
+        })),
+      readFileState,
+    });
+    const reminderText = JSON.stringify(restore.entries);
 
     expect(reminderText).toContain(`Note: ${filePath} was read before`);
     expect(reminderText).not.toContain(content);

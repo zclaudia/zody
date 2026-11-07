@@ -21,6 +21,7 @@ import {
   ReadOutputSchema,
   createCoreError,
   getReadPdfPagesValidationFailure,
+  isCoreError,
   isFileSystemPortError,
   type ReadInput,
   type ReadImageOutput,
@@ -28,6 +29,7 @@ import {
   type ModelMessageContent,
   type ReadOutput,
   type ReadTextOutput,
+  type FileSystemPort,
   type FileSystemStatResult,
   type TraceContext,
 } from "@zody/contracts";
@@ -46,6 +48,7 @@ import {
   formatReadTextOutput,
   readTextFileForModel,
   READ_FILE_UNCHANGED_STUB,
+  READ_OUTPUT_TOO_MANY_TOKENS_CODE,
 } from "./read-text.js";
 import {
   formatReadPdfOutput,
@@ -103,6 +106,12 @@ function formatReadOutput(output: ReadOutput): ModelMessageContent {
     case "notebook":
       return stringifyReadOutputFallback(output);
   }
+}
+
+/** compaction 补回用的正文投影：带行号正文，不含 partial view 提示（提示由工具批次附件发送）。 */
+export function formatReadTextToolResult(output: ReadTextOutput): string {
+  const { partialViewNotice: _notice, ...textOutput } = output;
+  return formatReadTextOutput(textOutput);
 }
 
 function formatReadImageOutput(output: ReadImageOutput): ModelMessageContent {
@@ -402,6 +411,75 @@ function createReadTextFileStateEntry(input: ReadTextFileStateInput): ReadFileSt
     mtimeMs: normalizeReadFileStateMtimeMs(revision?.mtimeMs ?? input.stat.mtimeMs),
     sizeBytes: input.stat.sizeBytes,
   };
+}
+
+/** compaction 补回文件时一次整文件读取的结果。来源：上游 a60ba6a7 handlers/read.ts。 */
+export type PostCompactFileRead =
+  | {
+      type: "text";
+      output: ReadTextOutput;
+      /** 这次读取对应的读取状态记录；由调用方在 compaction 持久化成功后写入。 */
+      readFileStateEntry: ReadFileStateEntry;
+    }
+  /** 超过 Read 的文件大小或 token 上限，只能放引用提示。 */
+  | { type: "too_large" }
+  /** 不补回的路径：Read 预检不通过的二进制、设备文件，以及图片、视频、PDF。 */
+  | { type: "skipped" };
+
+/**
+ * compaction 补回文件：按 Read 的整文件语义（不带 offset / limit）读取磁盘上的当前内容。
+ * 不经过执行器，不写读取状态。权限由调用方判定；其余读取错误原样抛出。
+ * 修复原因（上游 a60ba6a7）：文件恢复曾用读取状态里缓存的视图，补回的可能是旧内容或片段。
+ */
+export async function readFileForCompactRestore(input: {
+  abortSignal?: AbortSignal;
+  filePath: string;
+  fileSystemPort: FileSystemPort;
+  trace?: TraceContext;
+  workingDirectory: string;
+  workspaceRoot: string;
+}): Promise<PostCompactFileRead> {
+  if (!ReadInputSchema.safeParse({ file_path: input.filePath }).success) return { type: "skipped" };
+  const filePath = resolveWorkspacePath({
+    inputPath: input.filePath,
+    operation: "read",
+    workingDirectory: input.workingDirectory,
+    workspaceRoot: input.workspaceRoot,
+  });
+  if (inferImageMimeFromPath(filePath) || inferVideoMimeFromPath(filePath) || isPdfPath(filePath)) {
+    return { type: "skipped" };
+  }
+
+  const { abortSignal, fileSystemPort, trace } = input;
+  try {
+    const stat = await fileSystemPort.stat({ path: filePath, trace }, { signal: abortSignal });
+    let rangeReadRevision: FileSystemStatResult["revision"] | undefined;
+    const output = await readTextFileForModel({
+      abortSignal,
+      filePath,
+      fileSystemPort,
+      onRead: (read) => {
+        rangeReadRevision = read.revision;
+      },
+      trace,
+    });
+    return {
+      type: "text",
+      output,
+      readFileStateEntry: createReadTextFileStateEntry({
+        output,
+        path: filePath,
+        rangeReadRevision,
+        stat,
+      }),
+    };
+  } catch (error) {
+    if (isFileSystemPortError(error) && error.code === "too_large") return { type: "too_large" };
+    if (isCoreError(error) && error.context?.code === READ_OUTPUT_TOO_MANY_TOKENS_CODE) {
+      return { type: "too_large" };
+    }
+    throw error;
+  }
 }
 
 function recordReadFileStateMetadata(

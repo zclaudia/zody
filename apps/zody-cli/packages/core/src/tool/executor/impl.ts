@@ -12,7 +12,7 @@ import { BackgroundTaskTracker } from "./background-tasks.js";
 import { executeToolBatch, executeToolSchedule } from "./batch-runner.js";
 import { executeToolCall } from "./call-runner.js";
 import { runPreToolUseHooks } from "./hook-flow.js";
-import { resolveToolPermission } from "./permission-flow.js";
+import { areReadsDeniedWithoutPrompt, resolveToolPermission } from "./permission-flow.js";
 import type {
   ToolBatchExecuteOptions,
   ToolExecuteOptions,
@@ -140,6 +140,15 @@ export class ToolExecutorImpl implements ToolExecutor {
     if (!decision.allowed)
       throw new Error(decision.result.error?.message ?? "Tool denied by host policy");
     return decision.executionInput;
+  }
+
+  // 不跑 hook、不弹确认的 Read deny 预检；compaction 补回用它跳过读权限 deny 的文件。
+  // 来源：上游 a60ba6a7 executor/impl.ts。
+  areReadsDeniedWithoutPrompt(
+    filePaths: readonly string[],
+    traceContext: TraceContext,
+  ): Promise<boolean[]> {
+    return areReadsDeniedWithoutPrompt(this.deps, filePaths, traceContext);
   }
 
   execute(

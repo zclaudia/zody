@@ -24,6 +24,8 @@ const READ_TOKEN_BUDGET_PARTIAL_TARGET = Math.floor(READ_MAX_OUTPUT_TOKENS * 0.8
  */
 export const READ_FILE_UNCHANGED_STUB =
   "Wasted call — file unchanged since your last Read. Refer to that earlier tool_result instead.";
+/** 整文件读取超过 token 上限、部分视图也放不下时的错误码（`CoreError.context.code`）。来源：上游 a60ba6a7。 */
+export const READ_OUTPUT_TOO_MANY_TOKENS_CODE = "read_output_too_many_tokens";
 
 export interface ReadTextFileForModelOptions {
   abortSignal?: AbortSignal;
@@ -255,7 +257,7 @@ function throwReadOutputTokenBudgetError(tokenCount: number, filePath: string): 
     `File content (${tokenCount} tokens) exceeds maximum allowed tokens (${READ_MAX_OUTPUT_TOKENS}). Use offset and limit parameters to read specific portions of the file, or search for specific content instead of reading the whole file.`,
     {
       context: {
-        code: "read_output_too_many_tokens",
+        code: READ_OUTPUT_TOO_MANY_TOKENS_CODE,
         filePath,
         maxTokens: READ_MAX_OUTPUT_TOKENS,
         tokenCount,

@@ -21,7 +21,6 @@ import type { SessionEvent, TraceContext } from "../deps.js";
 import {
   defaultCompactPhaseForTrigger,
   defaultCompactReasonForTrigger,
-  buildPostCompactReadStateReminderEntries,
   countCompactPreservedRuntimeMessages,
   buildPostCompactRuntimeEntries,
   compactFailureReasonFromError,
@@ -42,6 +41,8 @@ import {
   projectMessagesForModelMediaPolicy,
   logCompactMediaRetryProjection,
   readApprovedPlanFileReferenceEntry,
+  replaceReadFileStateAfterCompact,
+  restorePostCompactFiles,
 } from "../helpers/index.js";
 import type { CompactTimelineContext, RuntimeModelTextResult } from "../types.js";
 import type { Model } from "../deps.js";
@@ -485,15 +486,24 @@ async function compactActiveConversationImpl(
 
       const summary = formatCompactSummaryOrThrow(this, result);
       const persistedSummary = summary;
-      const planFileReferenceEntry = this.fileSystemPort
-        ? await readApprovedPlanFileReferenceEntry({
-            abortSignal: options.abortSignal,
-            fileSystemPort: this.fileSystemPort,
-            sessionId: this.sessionId,
-            traceContext: modelTraceContext,
-            workspaceRoot: this.workspaceRoot,
-          })
-        : undefined;
+      // 修复原因（上游 a60ba6a7 methods/compact-active.ts）：文件恢复曾用读取状态里缓存的视图，
+      // 补回的可能是旧内容或片段；现在重读磁盘当前内容。plan 文件和补回文件互不依赖，并行读取。
+      const [planFileReferenceEntry, fileRestore] = await Promise.all([
+        this.fileSystemPort
+          ? readApprovedPlanFileReferenceEntry({
+              abortSignal: options.abortSignal,
+              fileSystemPort: this.fileSystemPort,
+              sessionId: this.sessionId,
+              traceContext: modelTraceContext,
+              workspaceRoot: this.workspaceRoot,
+            })
+          : undefined,
+        restorePostCompactFiles(this, {
+          abortSignal: options.abortSignal,
+          preservedEntries,
+          traceContext: modelTraceContext,
+        }),
+      ]);
       const agentListingEntry = collectRuntimeAgentListing(
         this,
         preservedEntries,
@@ -502,10 +512,7 @@ async function compactActiveConversationImpl(
       const postCompactReminderEntries = [
         ...(agentListingEntry ? [agentListingEntry] : []),
         ...(planFileReferenceEntry ? [planFileReferenceEntry] : []),
-        ...buildPostCompactReadStateReminderEntries({
-          preservedEntries,
-          readFileState: this.readFileState,
-        }),
+        ...fileRestore.entries,
       ];
 
       const modelCompleteEvent = this.createEvent(
@@ -630,7 +637,10 @@ async function compactActiveConversationImpl(
             )
           : recordablePostCompactEntries,
       );
-      this.readFileState.clear();
+      // 修复原因（上游 a60ba6a7）：整表 clear 会把补回文件之外的所有已读记录一并丢掉，
+      // compaction 后模型对刚被摘要的文件一律报「未读」。持久化成功后原地清空同一 Map，
+      // 再写入补回重读的记录（含引用提示转部分视图的记录）。
+      replaceReadFileStateAfterCompact(this.readFileState, fileRestore.readFileStateEntries);
       resetProjectMemoryRecall(this);
 
       return {
