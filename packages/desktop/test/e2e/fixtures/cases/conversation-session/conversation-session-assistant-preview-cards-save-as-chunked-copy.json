@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-assistant-preview-cards-save-as-chunked-copy",
+  "spec": "./test/e2e/conversation-session/conversation-session-assistant-preview-cards-save-as-chunked-copy.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-assistant-preview-cards-save-as-chunked-copy.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "conversation-session-assistant-preview-cards-save-as-chunked-copy-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题不属于本 case 产品语义，只需避免 sidecar 请求误命中业务 fixture。"
+    },
+    {
+      "id": "conversation-session-assistant-preview-cards-save-as-chunked-copy-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定 assistant 文本中的文件引用与完成 marker；读取/保存与 native Save As 仍走真实产品链路（对话框由 electron mock 回落）。"
+    }
+  ]
+}

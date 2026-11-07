@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-assistant-preview-cards-whole-card-open",
+  "spec": "./test/e2e/conversation-session/conversation-session-assistant-preview-cards-whole-card-open.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-assistant-preview-cards-whole-card-open.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "conversation-session-assistant-preview-cards-whole-card-open-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题不属于本 case 产品语义，只需避免 sidecar 请求误命中业务 fixture。"
+    },
+    {
+      "id": "conversation-session-assistant-preview-cards-whole-card-open-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定 assistant 文本中的文件引用与完成 marker，文件存在性、卡片渲染与预览动作仍走真实产品链路。"
+    }
+  ]
+}

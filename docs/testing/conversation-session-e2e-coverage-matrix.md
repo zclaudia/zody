@@ -831,9 +831,9 @@ artifact 后人工观察”的软通过口径。
 | APC11      | partial  | APC + focused tests          | formal spec 已新增 A 收起、切换 B、返回 A 后保持收起及显式重开断言；focused tests 覆盖 owner 偏好和 BrowserView 生命周期。尚未完成人工 review、Docker replay-isolated 与 verified preset 准入                     |
 | APC12      | partial  | APC + focused tests          | formal replay：case-local MP4/WAV 进入同一存在性和逆序卡片投影；点击 WAV 后 Preview Pane 挂载原生 `audio[controls]`，媒体不触发 `fileChanges`；Desktop SSH/WSL/Docker Range Proxy 与手机大媒体预览暂不纳入本 case |
 | APC13      | planned  | focused + SSH/WSL/Docker E2E | Desktop remote attachment 打开大于 8 MiB MP4，Host loopback Range Proxy 返回 `206` 并支持 seek；断言无 OSS 请求、无媒体字节进入 conversation/replay；手机 `/remote` 不复用 loopback URL                           |
-| APC14      | planned  | APC（F16 增补）              | 计划窗口 case（2026-11-07 catalog accepted）：文件卡与 Website 卡先点主按钮再点卡片主体，两次动作打开同一目标且各只触发一次；整卡层 aria-label 与 disabled 态；实现见 docs/ui/file-open-apps.md 与 assistant-preview-cards.md 整卡打开章节 |
-| APC15      | planned  | APC（F16 增补）              | 计划窗口 case（2026-11-07 catalog accepted）：IPC probe 注入 0/1/3/10 个应用固定边界，断言系统关联列表默认项/前三直显/「更多」子菜单分发、右键与下拉同列表、0 应用回退静态编辑器菜单；不启动真实应用 |
-| APC16      | planned  | APC（F16 增补）+ focused tests | 计划窗口 case（2026-11-07 catalog accepted）：中文空格路径文件卡另存为后字节完整、取消不提示；>50 MiB 限额、分块边界与读取期间变更由 packages/ui/test focused tests 守住                       |
+| APC14      | pending  | APC（F16 增补）pending spec | pending spec `manual-review/pending/conversation-session-assistant-preview-cards-whole-card-open.test.ts`（2026-11-08 真实执行 1 passing：主按钮与整卡先后各点一次打开同一 Preview Pane 且不双触发、整卡层 aria-label 与 disabled）；文件卡路径已验，Website 卡整卡打开由后续人工 review 补充；待 promote（e2e-case-lifecycle） |
+| APC15      | pending  | APC（F16 增补）pending spec | pending spec `manual-review/pending/conversation-session-assistant-preview-cards-open-with-system-apps.test.ts`（2026-11-08 真实执行 1 passing：probe 固定 3/10/0 应用边界，默认项直显分发、probe 收到 applicationId+target、0 应用回退静态编辑器菜单）；不启动真实应用；右键菜单路径与 1 应用边界由后续人工 review 补充；待 promote |
+| APC16      | pending  | APC（F16 增补）pending spec + focused tests | pending spec `manual-review/pending/conversation-session-assistant-preview-cards-save-as-chunked-copy.test.ts`（2026-11-08 真实执行 1 passing：中文空格路径文件卡另存为后目标字节与源一致、成功提示可见、取消不落盘不提示；native Save As 由 electron mock 回落）；>50 MiB 限额、分块边界与读取期间变更由 packages/ui/test focused tests 守住；待 promote |
 
 ### Conversation Share Candidate 覆盖
 

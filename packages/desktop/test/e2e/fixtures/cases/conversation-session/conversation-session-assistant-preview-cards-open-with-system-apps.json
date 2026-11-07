@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-assistant-preview-cards-open-with-system-apps",
+  "spec": "./test/e2e/conversation-session/conversation-session-assistant-preview-cards-open-with-system-apps.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-assistant-preview-cards-open-with-system-apps.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "conversation-session-assistant-preview-cards-open-with-system-apps-title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "标题不属于本 case 产品语义，只需避免 sidecar 请求误命中业务 fixture。"
+    },
+    {
+      "id": "conversation-session-assistant-preview-cards-open-with-system-apps-main",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定 assistant 文本中的文件引用与完成 marker；系统关联候选由 main 侧 probe 固定边界，不冒充系统枚举。"
+    }
+  ]
+}

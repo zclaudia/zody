@@ -21,7 +21,7 @@ const CASE_MARKER = "E2E_APC14_WHOLE_CARD_OPEN";
 const CASE_ROOT = join(DEFAULT_WORKSPACE, "apc14-whole-card");
 const OFFICE_FIXTURE_ROOT = fileURLToPath(
   new URL(
-    "../../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
+    "../../../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
     import.meta.url,
   ),
 );

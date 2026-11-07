@@ -236,6 +236,15 @@ packages/desktop  main file-open-apps 模块（createFileApplicationService）
   `applicationId` + `target`；0 应用时回退静态编辑器菜单。
 - **APC16 另存为**：预置含中文空格路径的 ≤50 MiB 文件，另存为后对比目标字节完整；取消无
   提示。
+
+执行登记（2026-11-08，F16④）：三个 case 的 pending spec 已在桌面 manual-review 入口真实执行
+通过（APC14/15/16 各 1 passing，含稳定性复跑）；provider 回复由 case-local 合成 fixture
+（title + main，`fixtures/upstream/conversation-session/conversation-session-assistant-preview-cards-*.json`）
+固定，菜单交互按 Electron E2E 输入通道适配（CDP 合成输入不产生 PointerEvent，spec 内在渲染
+进程派发 pointerdown/ArrowDown 打开 Radix DropdownMenu）；APC16 的 native Save As 由
+`browser.electron.mock("dialog","showSaveDialog")` 回落（MIG08 同型）。仍为 pending：待人工
+review 与 fixture 合同定稿后 promote（e2e-case-lifecycle）。
+
 - 剪枝（accepted 之外的登记见 catalog）：原生枚举结果依平台而变，不进窗口 E2E（用 probe 固定
   边界，不冒充系统枚举或实际启动）；>50 MiB 限额、1 MiB 分块边界、读取期间变更由 focused
   tests（`packages/ui/test`、`packages/desktop/test`）守住；Windows WPS 图标与 AppsFolder 行为

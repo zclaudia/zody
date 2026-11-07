@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-assistant-preview-cards-open-with-system-apps",
+  "spec": "./test/e2e/conversation-session/conversation-session-assistant-preview-cards-open-with-system-apps.test.ts",
+  "fixtures": [
+    {
+      "id": "conversation-session-assistant-preview-cards-open-with-system-apps-title",
+      "description": "conversation-session-assistant-preview-cards-open-with-system-apps 的标题 sidecar 固定响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题不属于本 case 产品语义，只需避免 sidecar 请求误命中业务 fixture。"
+      },
+      "maxMatches": 20,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_APC15_OPEN_WITH_SYSTEM_APPS"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "conversation-session-assistant-preview-cards-open-with-system-apps-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"Assistant Preview Cards E2E\"}"
+        }
+      }
+    },
+    {
+      "id": "conversation-session-assistant-preview-cards-open-with-system-apps-main",
+      "description": "APC15 回复提及本机文件卡，菜单内容由 IPC probe 注入，不依赖系统真实安装的应用。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定 assistant 文本中的文件引用与完成 marker；系统关联候选由 main 侧 probe 固定边界，不冒充系统枚举。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_APC15_OPEN_WITH_SYSTEM_APPS"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "conversation-session-assistant-preview-cards-open-with-system-apps-main",
+          "inputTokens": 128,
+          "outputTokens": 48,
+          "text": "apc15-open-with/产品 路线.pptx\nE2E_APC15_OPEN_WITH_SYSTEM_APPS_DONE"
+        }
+      }
+    }
+  ]
+}

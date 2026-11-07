@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-assistant-preview-cards-whole-card-open",
+  "spec": "./test/e2e/conversation-session/conversation-session-assistant-preview-cards-whole-card-open.test.ts",
+  "fixtures": [
+    {
+      "id": "conversation-session-assistant-preview-cards-whole-card-open-title",
+      "description": "conversation-session-assistant-preview-cards-whole-card-open 的标题 sidecar 固定响应。",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "标题不属于本 case 产品语义，只需避免 sidecar 请求误命中业务 fixture。"
+      },
+      "maxMatches": 20,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_APC14_WHOLE_CARD_OPEN"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "conversation-session-assistant-preview-cards-whole-card-open-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"Assistant Preview Cards E2E\"}"
+        }
+      }
+    },
+    {
+      "id": "conversation-session-assistant-preview-cards-whole-card-open-main",
+      "description": "APC14 回复提及中文空格路径的 PPTX 文件卡，供整卡打开与主按钮动作等价断言。",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定 assistant 文本中的文件引用与完成 marker，文件存在性、卡片渲染与预览动作仍走真实产品链路。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_APC14_WHOLE_CARD_OPEN"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "conversation-session-assistant-preview-cards-whole-card-open-main",
+          "inputTokens": 128,
+          "outputTokens": 48,
+          "text": "apc14-whole-card/产品 路线.pptx\nE2E_APC14_WHOLE_CARD_OPEN_DONE"
+        }
+      }
+    }
+  ]
+}
