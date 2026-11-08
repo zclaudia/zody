@@ -1,6 +1,6 @@
 // MCP Port - Model Context Protocol adapter boundary
 
-import type { McpServerFailureKind } from "@zody/shared";
+import type { McpServerFailureKind, WorkspaceMcpTrustReview } from "@zody/shared";
 import type {
   McpAppsMetaKeyDirection,
   McpAppsMetaKeyPair,
@@ -95,6 +95,12 @@ export interface McpServerStatus {
   failureKind?: McpServerFailureKind;
   serverRequestId?: string;
   protocolEra?: "legacy" | "modern";
+  // fork（F23④，上游 a60ba6a7）：mcp/list 状态快照携带的 workspace 声明审核摘要
+  // （脱敏 display；wire schema 单源在 shared zody-protocol 的
+  // zodyMcpServerStatusSnapshotSchema.workspaceTrust，F23① 已落）。F23① 扩展枚举时
+  // 漏了本接口的伴随字段，wiring（bootstrap mcp/list withReviews）落地后暴露，
+  // 补齐为可选 additive 字段。UI 侧消费面仍是 shared ZodyMcpServer.workspaceTrust。
+  workspaceTrust?: WorkspaceMcpTrustReview;
   authorization?: {
     type: "oauth_authorization_code";
     authorizationUrl: string;

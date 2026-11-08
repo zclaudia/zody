@@ -489,3 +489,12 @@ export {
   type ConfigFactoryOptions,
   type ConfigResult,
 } from "./config-factory.js";
+// fork（F23④，上游 a60ba6a7）：workspace MCP 信任门声明发现 port（spec
+// docs/specs/workspace-mcp-trust.md §5；结构上与 core 的
+// WorkspaceMcpTrustDiscoveryPort 同构，adapters 不依赖 core，靠结构化类型对齐）。
+export {
+  createWorkspaceMcpTrustDiscoveryPort,
+  type WorkspaceMcpTrustDeclarationInput,
+  type WorkspaceMcpTrustDiscoveryOptions,
+  type WorkspaceMcpTrustDiscoveryPort,
+} from "./workspace-mcp-trust-discovery.js";

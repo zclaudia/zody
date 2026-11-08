@@ -94,7 +94,7 @@ import {
   updateSavedWorkflowMetaOp,
 } from "./saved-workflows.js";
 import { findSavedWorkflowForRunOp, saveSavedWorkflowFromRunOp } from "./saved-workflows-run.js";
-import { listMcpServers } from "./mcp.js";
+import { listMcpServers, setWorkspaceMcpTrust } from "./mcp.js";
 import {
   callMcpUiTool,
   sampleMcpUi,
@@ -705,6 +705,10 @@ export class ZodyProtocolAgentServer {
         return await testProviderModelConnectivity(this.context, request.params);
       case zodyProtocolMethods.mcpList:
         return await listMcpServers(this.context, request.params);
+      // fork（F23④，上游 a60ba6a7）：workspace/mcp/trust 方法注册（spec §6 条目 1；
+      // wire 名与上游一致，schema/校验单源在 shared zody-protocol/index.ts）。
+      case zodyProtocolMethods.workspaceMcpTrust:
+        return await setWorkspaceMcpTrust(this.context, request.params);
       case zodyProtocolMethods.mcpReadResource:
         return await readMcpUiResource(this.context, request.params);
       case zodyProtocolMethods.mcpUiOpenInstance:

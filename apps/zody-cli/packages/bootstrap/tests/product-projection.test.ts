@@ -9076,6 +9076,45 @@ describe("软门禁(D2): workspaceHookAdmission snapshot 投影", () => {
   });
 });
 
+// fork（F23④，上游 a60ba6a7）：workspace MCP 信任门 admission 投影（spec
+// docs/specs/workspace-mcp-trust.md §6 条目 7；横幅 A 数据链的 snapshot 端）。
+// 反例形态：投影 case 缺失（接线前）时事件落入默认分支，snapshot.workspaceMcpAdmission
+// 恒为初始 null——下方第一条断言即失败。
+describe("workspace MCP 信任门: workspaceMcpAdmission snapshot 投影", () => {
+  it("WorkspaceMcpAdmissionUpdated pendingCount>0 写入 snapshot.workspaceMcpAdmission", () => {
+    const log = new EventLog();
+    log.push(SessionEventType.SessionCreated, { mode: "default" });
+    log.push(SessionEventType.WorkspaceMcpAdmissionUpdated, {
+      pendingCount: 2,
+      bundleDigest: "a".repeat(64),
+      workspaceIdentity: "local:/workspace",
+    });
+
+    const { projection } = runAll(log.events);
+    expect(projection.getSnapshot().workspaceMcpAdmission).toEqual({
+      pendingCount: 2,
+      bundleDigest: "a".repeat(64),
+      workspaceIdentity: "local:/workspace",
+    });
+  });
+
+  it("WorkspaceMcpAdmissionUpdated pendingCount===0 → 置 null(提示条消失)", () => {
+    const log = new EventLog();
+    log.push(SessionEventType.SessionCreated, { mode: "default" });
+    log.push(SessionEventType.WorkspaceMcpAdmissionUpdated, {
+      pendingCount: 1,
+      bundleDigest: "a".repeat(64),
+    });
+    log.push(SessionEventType.WorkspaceMcpAdmissionUpdated, {
+      pendingCount: 0,
+      bundleDigest: "a".repeat(64),
+    });
+
+    const { projection } = runAll(log.events);
+    expect(projection.getSnapshot().workspaceMcpAdmission).toBeNull();
+  });
+});
+
 // ── CreateWorkflow 运行确认（docs/dynamic-workflow/launch.md）──
 
 describe("workflow 运行确认的 ask 预览", () => {

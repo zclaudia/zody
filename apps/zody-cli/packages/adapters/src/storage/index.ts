@@ -496,3 +496,7 @@ function parseArtifactUri(uri: string): { artifactId: string; sessionId: string 
   return { artifactId, sessionId };
 }
 export * from "./workspace-hook-trust-store.js";
+// fork（F23④，上游 a60ba6a7）：workspace MCP 信任门用户域 store port（与 hook
+// trust store 同目录规则；结构上与 core 的 WorkspaceMcpTrustStorePort 同构，
+// adapters 不依赖 core，靠结构化类型对齐）。
+export * from "./workspace-mcp-trust-store.js";

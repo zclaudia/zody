@@ -35,6 +35,7 @@ import {
   type TraceContext,
   createSessionId,
   createSessionEvent,
+  SessionEventType,
   type CuaSubmissionProjection,
   type ExecutionShellSelection,
   type MessageId,
@@ -80,7 +81,11 @@ import { captureCuaRuntimeOnce } from "./cua-runtime-native-capture.js";
 import { createPluginFacadeForApp } from "./plugin-facade.js";
 import { resolvePluginRuntimeFeatures } from "./plugin-runtime-features.js";
 import { createSessionFacade } from "./session-facade.js";
-import { resolveAppRuntimeConfig, runtimeConfigLogContext } from "./runtime-config.js";
+import {
+  createAppWorkspaceMcpTrust,
+  resolveAppRuntimeConfig,
+  runtimeConfigLogContext,
+} from "./runtime-config.js";
 import { resolveBundledSkillRoots } from "./bundled-skills.js";
 import { collectDynamicWorkflowDisabledSkillPaths } from "./dynamic-workflow-gate.js";
 import { createWorkspaceHookRuntimeSecurity } from "./workspace-hook-trust.js";
@@ -454,7 +459,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
     const ownsBaseMcpPort = options.mcpPort === undefined && baseMcpPort !== undefined;
     // 只有显式可信 composition 同时提供 native capture 与 node_repl 工厂时才包装；
     // 普通 CLI/server/placeholder 保持原端口，不自动激活真实 node_repl。
-    const mcpPort =
+    const baseOrCuaMcpPort =
       baseMcpPort && captureCuaOnce && options.cuaNodeReplMcpPortFactory
         ? options.cuaNodeReplMcpPortFactory({
             port: baseMcpPort,
@@ -483,7 +488,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
     if (
       cuaLocalNodeReplServerConfig &&
       baseMcpPort !== undefined &&
-      mcpPort !== baseMcpPort &&
+      baseOrCuaMcpPort !== baseMcpPort &&
       runtimeConfig.mcp?.enabled !== false
     ) {
       runtimeConfig.mcp = {
@@ -494,6 +499,42 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
         },
       };
     }
+    // fork（F23④，上游 a60ba6a7）：workspace MCP 信任门 guard 包住整个 MCP lease
+    // （spec §7.2：准入包住 lease 而非 UI 入口——subagent、旧连接和资源读取也经过同一边界；
+    // 上游 a60ba6a7 create-app.ts 的 mcpPort = createWorkspaceMcpTrust(...).guard(rawMcpPort)）。
+    // guard 挂在 cua wrapper 之外（包住最终交给 runtime/facade 的端口）；未信任
+    // workspace 声明零 spawn/零工具，授权变化在下次连接准入生效（不劫持当下）。
+    // admission 事件经 runtime.appendEvent 发 WorkspaceMcpAdmissionUpdated（横幅 A
+    // 数据链：事件 → v4 投影 → snapshot.workspaceMcpAdmission）。
+    const workspaceMcpTrust =
+      baseOrCuaMcpPort && runtimeConfig.mcp?.enabled !== false
+        ? createAppWorkspaceMcpTrust({
+            workingDirectory,
+            workspaceIdentity: options.runtimeConfig?.memory?.workspaceIdentity,
+            env: options.env,
+            userConfigPath: options.userConfigPath,
+            projectConfigPath: options.projectConfigPath,
+            skipUserConfig: options.skipUserConfig,
+            ...(options.workspaceMcpTrustHomeDir
+              ? { homeDir: options.workspaceMcpTrustHomeDir }
+              : {}),
+            onAdmissionChanged: async (payload) => {
+              if (!runtime) return;
+              await runtime.appendEvent(
+                createSessionEvent(
+                  SessionEventType.WorkspaceMcpAdmissionUpdated,
+                  sessionId,
+                  payload,
+                  { traceId: traceContext.traceId },
+                ),
+                traceContext,
+              );
+            },
+          })
+        : undefined;
+    const workspaceMcpGuardedPort =
+      baseOrCuaMcpPort && workspaceMcpTrust ? workspaceMcpTrust.guard(baseOrCuaMcpPort) : undefined;
+    const mcpPort = workspaceMcpGuardedPort ?? baseOrCuaMcpPort;
     // wrapper 的资源由 app 自己关闭；base 端口是否一并关闭由 closePort 决定。
     const ownsMcpPort = mcpPort !== undefined && (mcpPort !== baseMcpPort || ownsBaseMcpPort);
     const executionPort =
@@ -607,6 +648,18 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
           traceContext: resumeTraceContext,
         });
         await runtime.activatePausedTargetAfterResume(resumeTraceContext);
+        // fork（F23④，上游 a60ba6a7）：SessionResumed 已清理旧投影；即使声明未变也要
+        // 重新发布当前 MCP 准入（reannounce），否则冷恢复会话的横幅 A 数据链断供
+        // （snapshot.workspaceMcpAdmission 回落 default null）。
+        try {
+          await workspaceMcpGuardedPort?.refreshWorkspaceTrustAdmission(true);
+        } catch (error) {
+          logger.warn("MCP trust admission publication failed after resume", {
+            event: "mcp.trust.admission.failed",
+            sessionId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
         resumePrepared = true;
         return { ...result, modelSelection };
       } finally {
@@ -1259,6 +1312,11 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
       // session 的 coordinator 并重发 admission 状态（详见 types.ts 注释）。
       reloadWorkspaceHookTrust: () =>
         workspaceHookRuntimeSecurity?.reloadTrust() ?? Promise.resolve(),
+      // fork（F23④，上游 a60ba6a7）：workspace/mcp/trust 落盘后由 server 按 workspace
+      // 调用：重读本会话 guard 的 admission 投影并重发事件（只刷新提示，不连接、
+      // 不授予权限；guard 缺席的 MCP disabled 会话为安全 no-op）。
+      reloadWorkspaceMcpTrust: () =>
+        workspaceMcpGuardedPort?.refreshWorkspaceTrustAdmission() ?? Promise.resolve(),
       setModelIoFullRetentionEnabled: (enabled) =>
         modelAdapter.setModelIoFullRetentionEnabled(enabled),
       readToolResultArtifact: (uri) =>

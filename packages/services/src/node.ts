@@ -1256,6 +1256,10 @@ export function createLocalServices(options: {
   const mcpSyncService = createMcpSyncService({
     // mcp/list 的 host 消费点收拢到 mcpSync 服务；真实状态检查仍在 agent 进程。
     listMcpServerStatuses: (params) => zodyAgentService.listMcpServerStatuses(params),
+    // fork（F23④，上游 a60ba6a7）：workspace/mcp/trust 决策转发（spec
+    // docs/specs/workspace-mcp-trust.md §6/§11）；真实 decide 在 agent 进程锁内
+    // 重读声明后落盘用户域 store。手机远控的 homeOnlyServices 桩不提供本入口。
+    setWorkspaceMcpTrust: (params) => zodyAgentService.setWorkspaceMcpTrust(params),
   });
   const pluginSyncService = createPluginSyncService();
   // fork（F4.7）：插件 UI 的官方账号上下文（accountContext/invalidate）随账号链删除，

@@ -78,6 +78,12 @@ export interface McpSyncServiceDependencies {
    * 构造（纯目录同步用途/单测）调用 listWorkspaceMcpServerStatuses 会显式抛错。
    */
   listMcpServerStatuses?: IMcpSyncService["listWorkspaceMcpServerStatuses"];
+  /**
+   * fork（F23④，上游 a60ba6a7）：workspace MCP 信任决策的执行面。真实 decide
+   * （锁内重读声明 + 摘要精确匹配 + 用户域 store 落盘）必须发生在 agent 进程；
+   * 无该依赖的构造调用 setWorkspaceMcpTrust 显式抛错（与状态检查同一模式）。
+   */
+  setWorkspaceMcpTrust?: IMcpSyncService["setWorkspaceMcpTrust"];
 }
 
 export function createMcpSyncService(
@@ -92,6 +98,14 @@ export function createMcpSyncService(
         throw new Error("MCP server status listing is unavailable in this runtime");
       }
       return dependencies.listMcpServerStatuses(params);
+    },
+    // fork（F23④，上游 a60ba6a7）：转发到注入的 agent 执行面；未注入的运行时
+    // （手机远控 homeOnly 桩之外还有纯目录同步用途构造）显式拒绝而不是静默成功。
+    async setWorkspaceMcpTrust(params) {
+      if (!dependencies.setWorkspaceMcpTrust) {
+        throw new Error("MCP workspace trust decision is unavailable in this runtime");
+      }
+      return dependencies.setWorkspaceMcpTrust(params);
     },
     async saveMcpToUserDirectory(payload) {
       await saveMcpToUserDirectory(payload);

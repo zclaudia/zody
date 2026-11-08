@@ -82,6 +82,7 @@ import type {
   ZodyWorkspaceGenerateTextResult,
   ZodyWorkspaceGenerateTextParams,
   ZodyWorkspaceHookTrustGrantResult,
+  ZodyWorkspaceMcpTrustResult,
 } from "@zody/shared";
 import type {
   ClientHello,
@@ -280,6 +281,17 @@ export type ZodyAgentReadWorkspacePresentationParams = ZodyAgentWorkspaceTarget;
 export interface ZodyAgentGrantWorkspaceHookTrustParams extends ZodyAgentWorkspaceTarget {
   bundleDigest: string;
   hookDeclarationDigest: string;
+}
+
+// fork（F23④，上游 a60ba6a7）：workspace MCP 信任/撤销决策参数（spec
+// docs/specs/workspace-mcp-trust.md §6；wire schema 单源 shared
+// zodyWorkspaceMcpTrustParamsSchema，与 UI 注入接缝 WorkspaceMcpTrustDecisionParams
+// 结构一致）。无 task/session 的 Settings 决策：Agent 会锁内重读声明并精确匹配摘要，
+// 陈旧摘要拒绝（workspace_mcp_declaration_changed）。
+export interface ZodyAgentSetWorkspaceMcpTrustParams extends ZodyAgentWorkspaceTarget {
+  serverName: string;
+  declarationDigest: string;
+  trusted: boolean;
 }
 
 export interface ZodyAgentSendPromptParamsBase extends ZodyAgentSessionTarget {
@@ -652,6 +664,14 @@ export interface IZodyAgentService {
   grantWorkspaceHookTrust(
     params: ZodyAgentGrantWorkspaceHookTrustParams,
   ): Promise<ZodyWorkspaceHookTrustGrantResult>;
+  /**
+   * fork（F23④，上游 a60ba6a7）：workspace MCP 信任/撤销决策转发。信任是 Host
+   * 本机用户域决策（spec §11），Agent 在锁内重读声明并精确匹配摘要后落盘用户域
+   * store；accepted=false 携带 reasonCode（声明已变更/决策面不可用）。
+   */
+  setWorkspaceMcpTrust(
+    params: ZodyAgentSetWorkspaceMcpTrustParams,
+  ): Promise<ZodyWorkspaceMcpTrustResult>;
   listMcpServerStatuses(params: ZodyAgentListMcpServerStatusesParams): Promise<ZodyMcpListResult>;
   listPlugins(params: ZodyAgentPluginViewParams): Promise<ZodyPluginsListResult>;
   /**

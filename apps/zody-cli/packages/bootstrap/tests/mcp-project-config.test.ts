@@ -35,7 +35,11 @@ describe("project MCP config", () => {
   // 共享 node_repl 宿主），因此官方 CUA server 不出现在任何默认连接集合里。
   // 「用户同名配置不得获产品凭据」这条不变量改由本文件下方的 zcode-cua 用例覆盖
   //（"fails closed by omitting the global zcode-cua..." 与 "retired direct-CLI ..."）。
-  it("lists project MCP servers as trusted and auto-connects on startup", async () => {
+  // fork（F23④，上游 a60ba6a7）：断言随信任门 spec（docs/specs/workspace-mcp-trust.md）
+  // 从「默认 trusted 自动连接」更新为 default-deny——本用例即接线前反例：wiring 前
+  // connectConfiguredServers 收到 ["project","node_repl"]（旧期望），wiring 后未信任
+  // project 声明被 guard 准入拦截，只有内建 node_repl 连接。
+  it("keeps an untrusted project MCP server disconnected (pending_trust) on startup", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-bootstrap-mcp-"));
     const cwd = join(root, "workspace");
     const connectedServerSets: string[][] = [];
@@ -68,6 +72,7 @@ describe("project MCP config", () => {
         },
         sessionStore,
         skipUserConfig: true,
+        workspaceMcpTrustHomeDir: join(root, "home"),
       });
 
       const statuses = await app.listMcpServers();
@@ -75,7 +80,12 @@ describe("project MCP config", () => {
       expect(statuses.project?.error).toBeUndefined();
 
       await app.submitPrompt("hello");
-      expect(connectedServerSets).toEqual([["project", "node_repl"]]);
+      // 未信任 workspace 声明零连接（S1）：只有内建 node_repl 过审。
+      expect(connectedServerSets).toEqual([["node_repl"]]);
+      // guard 的 blocked 投影：pending_trust + toolCount 0。
+      const blocked = await app.listMcpServers();
+      expect(blocked.project?.status).toBe("pending_trust");
+      expect(blocked.project?.toolCount).toBe(0);
 
       await app.close();
     } finally {
@@ -193,7 +203,10 @@ describe("project MCP config", () => {
     );
   });
 
-  it("treats user-overridden project MCP servers as trusted user config", async () => {
+  // fork（F23④，上游 a60ba6a7）：期望随信任门 spec 更新——project-only 未信任被拒；
+  // 用户作用域覆盖的 shared（serverSources === "user"）不是 workspace 声明，保持连接。
+  // 接线前反例：旧期望 [["project-only","shared","node_repl"]]（project-only 被默认信任）。
+  it("blocks an untrusted project-only server while user-overridden names stay trusted user config", async () => {
     const root = await mkdtemp(join(tmpdir(), "zcode-bootstrap-mcp-user-priority-"));
     const cwd = join(root, "workspace");
     const userConfigPath = join(root, "home", "config.json");
@@ -245,6 +258,7 @@ describe("project MCP config", () => {
         },
         sessionStore,
         userConfigPath,
+        workspaceMcpTrustHomeDir: join(root, "trust-home"),
       });
 
       const statuses = await app.listMcpServers();
@@ -252,15 +266,14 @@ describe("project MCP config", () => {
       expect(statuses.shared?.status).toBe("disconnected");
 
       await app.submitPrompt("hello");
-      expect(connectedServerSets).toEqual([["project-only", "shared", "node_repl"]]);
-      expect(connectedConfigs[0]?.["project-only"]).toMatchObject({
-        command: "project-only-server",
-        type: "stdio",
-      });
+      expect(connectedServerSets).toEqual([["shared", "node_repl"]]);
+      expect(connectedConfigs[0]?.["project-only"]).toBeUndefined();
       expect(connectedConfigs[0]?.shared).toMatchObject({
         command: "user-server",
         type: "stdio",
       });
+      const blocked = await app.listMcpServers();
+      expect(blocked["project-only"]?.status).toBe("pending_trust");
 
       await app.close();
     } finally {

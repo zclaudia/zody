@@ -240,6 +240,13 @@ export interface ZodyAppOptions {
    * 缺省时保持原端口与 placeholder，不自动启用。
    */
   cuaNodeReplMcpPortFactory?: CuaNodeReplMcpPortFactory;
+  /**
+   * fork（F23④，上游 a60ba6a7）：workspace MCP 信任门（spec
+   * docs/specs/workspace-mcp-trust.md）的测试注入临时 HOME；生产不传，trust store
+   * 落在真实 ~/.zody/security/workspace-mcp-trust-v1.json（hook trust 的 homeDir
+   * 先例同构）。信任门本身无 rollout 开关（spec §12：不做开关/过期）。
+   */
+  workspaceMcpTrustHomeDir?: string;
 }
 
 export interface SubmitPromptOptionsBase {
@@ -389,6 +396,14 @@ export interface ZodyApp {
    * coordinator 并重发 admission 状态，否则已信任 Hook 继续被拒、banner 不刷新。
    */
   reloadWorkspaceHookTrust(): Promise<void>;
+  /**
+   * fork（F23④，上游 a60ba6a7 reloadWorkspaceMcpTrust）：workspace/mcp/trust 落盘后
+   * 由 server 按 workspace 调用：重读本会话 guard 的 admission 投影并重发
+   * WorkspaceMcpAdmissionUpdated 事件（横幅 A 数据链）。授权作用于未来：只刷新会话
+   * 提示，不连接、不授予权限；连接准入在新建/重启会话或下一次 connect 时重验
+   * （spec §3.2 规则 5/6）。
+   */
+  reloadWorkspaceMcpTrust(): Promise<void>;
   close?(): Promise<void>;
   getMode(): CollaborationMode;
   getModel(): string;

@@ -385,6 +385,41 @@ exposure policy 是否放开 trust 命令——建议**不放开**，信任是 H
 packages/desktop E2E。core 域模块与 shared schema 可先行开发并独立测试，wiring 缺口
 不阻塞本卡落点内交付。
 
+**F23④ 实施登记（2026-11-08，wiring 已落地）**：
+
+- 五项接线全部完成：① `zody-protocol/server.ts` 注册
+  `zodyProtocolMethods.workspaceMcpTrust` → `setWorkspaceMcpTrust` handler（锁内重读
+  落盘 + 按 workspace 通知活跃会话）；② `app/create-app.ts` 在 cua wrapper 之外用
+  `createWorkspaceMcpTrust(...).guard()` 包住整个 MCP lease，admission 变化经
+  `runtime.appendEvent` 发 `WorkspaceMcpAdmissionUpdated`，resume 后 reannounce，
+  `ZodyApp.reloadWorkspaceMcpTrust()` 为 server 通知面；③
+  `zody-protocol-v4/product-projection.ts` 投影 `WorkspaceMcpAdmissionUpdated` →
+  `snapshot.workspaceMcpAdmission`（pendingCount 0 → null）；④ services
+  `IMcpSyncService.setWorkspaceMcpTrust` → `zodyAgentService.setWorkspaceMcpTrust` →
+  协议转发（UI 注入接缝签名一致）；⑤ adapters `storage/workspace-mcp-trust-store.ts`
+  （hook store 同目录 + `@zody/shared/node` withFileLock/atomicWrite 单源）与
+  `config/workspace-mcp-trust-discovery.ts`（createConfig project 作用域 + `.agents/mcp.json`
+  fallback）。
+- 组装单点：`app/runtime-config.ts` 的 `createAppWorkspaceMcpTrust()`（core 纯域 + 两个
+  adapters port 的唯一拼装处；上游内联在 bootstrap workspace-mcp-trust 模块，本仓按
+  §4 依赖方向拆分）。`runtime-config.ts:110` 空集语义保留：拦截移交给 guard 连接准入
+  （本仓无同步 workspace 来源标记；上游的同步 untrusted 集在本仓由 guarded port 的
+  blocked 状态投影承载）。
+- 手机远控：现状默认拒绝已核验——`packages/web/src/mobile-remote/homeOnlyServices.ts`
+  将 `mcpSyncService` 整体替换为 unsupported home-only 桩，trust 写入面远端不可达，
+  未新增任何放开逻辑（§11 建议照准执行）。
+- **落位差异登记（提请 controller 确认）**：① 事件投影与「非活动事件」黑名单物理落位
+  在 `zody-protocol-v4/product-projection.ts` 与 `zody-protocol/server-operations.ts`
+  （卡面命名 `projection-state.ts` 只含初始快照工厂，F23① 已落伴随行；事件分派在
+  product-projection.ts，同族 hook 投影先例同位）；② `contracts/src/interfaces/mcp.port.ts`
+  的 `McpServerStatus.workspaceTrust?` 可选字段系 F23① 扩枚举时的漏陪字段（上游在位），
+  wiring 的 withReviews 落地后补齐，additive；③ 测试注入面：`ZodyAppOptions.workspaceMcpTrustHomeDir`
+  （hook homeDir 先例）与 `setWorkspaceMcpTrust` handler 的 dependencies 注入
+  （grantWorkspaceHookTrustForProtocol 先例）。
+- `.agents/mcp.json` 坏邻项处置：校验失败条目以 `enabled:false` 占位声明收口（allows
+  一律拒绝、投影 disabled、不计入 admission pending）——语义等价上游 requiredNames
+  拒连，且不把校验失败误当用户可信配置。
+
 **编译伴随行（F23② 实施时发现；controller 2026-11-07 授权纳入本卡，已随 F23① 实现步落地）**：
 
 1. `apps/zody-cli/packages/tui/src/app-sidebar-mcp.tsx:105`——`copy.sidebar.mcp.status`

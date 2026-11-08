@@ -50,6 +50,7 @@ import type {
   WorkspaceHookReviewRequestedPayload,
   WorkspaceHookReviewSettledPayload,
   WorkspaceHookReviewSupersededPayload,
+  WorkspaceMcpAdmissionUpdatedPayload,
 } from "@zody/contracts";
 import {
   AMEND_WORKFLOW_TOOL_NAME,
@@ -1449,6 +1450,15 @@ export class ProductProjection {
         return this.onWorkspaceHookReviewSuperseded(event);
       case SessionEventType.WorkspaceHookAdmissionUpdated:
         return this.onWorkspaceHookAdmissionUpdated(event);
+      // fork（F23④，上游 a60ba6a7）：workspace MCP 信任门 admission 投影（spec §6
+      // 条目 7）：pendingCount > 0 → 写 snapshot.workspaceMcpAdmission（横幅 A 数据源）；
+      // pendingCount === 0 → 置 null（提示条消失）。payload 形状与 snapshot 字段
+      // 同构，直接透传（workspaceIdentity 可选字段原样保留）。
+      case SessionEventType.WorkspaceMcpAdmissionUpdated: {
+        const payload = event.payload as WorkspaceMcpAdmissionUpdatedPayload;
+        const workspaceMcpAdmission = payload.pendingCount > 0 ? payload : null;
+        return [{ op: "state.updated", patch: { workspaceMcpAdmission } }];
+      }
       case SessionEventType.HookRunStarted:
       case SessionEventType.HookRunProgress:
       case SessionEventType.HookRunCompleted:

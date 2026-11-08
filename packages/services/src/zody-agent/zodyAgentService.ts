@@ -117,6 +117,7 @@ import {
   zodyWorkspaceCancelGenerateTextResultSchema,
   zodyWorkspaceGenerateTextResultSchema,
   zodyWorkspaceHookTrustGrantResultSchema,
+  zodyWorkspaceMcpTrustResultSchema,
   zodyWorkspaceUpdateInteractionPreferencesResultSchema,
   zodyWorkspaceUpdateModelIoPreferencesResultSchema,
   zodyProviderUpdateAccountConfigResultSchema,
@@ -177,6 +178,7 @@ import type {
   ZodyAgentTestModelConnectivityParams,
   ZodyAgentGoalParams,
   ZodyAgentGrantWorkspaceHookTrustParams,
+  ZodyAgentSetWorkspaceMcpTrustParams,
   ZodyAgentInitializeResult,
   ZodyAgentListSessionsParams,
   ZodyAgentListSessionSubagentsParams,
@@ -3635,6 +3637,24 @@ export function createZodyAgentService(
           hookDeclarationDigest: params.hookDeclarationDigest,
         },
         zodyWorkspaceHookTrustGrantResultSchema,
+      );
+    },
+
+    // fork（F23④，上游 a60ba6a7）：workspace/mcp/trust 决策转发。与 hook 预信任同构：
+    // 无 task/session 的 Settings 操作走 read-only Agent 控制面；Agent 在锁内重读
+    // 声明并精确匹配摘要后才落盘（spec §3.3），落盘成功后按 workspace 通知活跃会话
+    // 重发 admission（server 侧 setWorkspaceMcpTrust handler 完成，本层只转发）。
+    async setWorkspaceMcpTrust(params: ZodyAgentSetWorkspaceMcpTrustParams) {
+      const client = await getReadOnlyClient(params);
+      return client.request(
+        zodyProtocolMethods.workspaceMcpTrust,
+        {
+          workspace: buildWorkspaceRef(params),
+          serverName: params.serverName,
+          declarationDigest: params.declarationDigest,
+          trusted: params.trusted,
+        },
+        zodyWorkspaceMcpTrustResultSchema,
       );
     },
 

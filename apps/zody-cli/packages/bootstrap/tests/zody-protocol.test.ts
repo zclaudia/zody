@@ -1670,10 +1670,9 @@ describe("ZodyProtocolAgentServer", () => {
         command: "plugin-server",
         type: "stdio",
       });
-      expect(connectedConfigs[0]?.["project-only"]).toMatchObject({
-        command: "project-server",
-        type: "stdio",
-      });
+      // fork（F23④，上游 a60ba6a7）：workspace 声明（zcode.json project 条目）未信任
+      // 不进入连接集合（omit + guard 双拦截）；接线前反例为 project-only connected/3。
+      expect(connectedConfigs[0]?.["project-only"]).toBeUndefined();
       expect(result).toMatchObject({
         statuses: {
           "plugin:status-plugin:plugin-live": {
@@ -1682,11 +1681,16 @@ describe("ZodyProtocolAgentServer", () => {
             transport: "stdio",
           },
           "project-only": {
-            status: "connected",
-            toolCount: 3,
+            status: "pending_trust",
+            toolCount: 0,
             transport: "stdio",
           },
         },
+      });
+      // 审核摘要随快照下发（横幅 B 数据源；display 脱敏）。
+      expect(result.statuses["project-only"]?.workspaceTrust).toMatchObject({
+        trusted: false,
+        transport: "stdio",
       });
     } finally {
       await rm(root, { force: true, recursive: true });
@@ -1826,18 +1830,72 @@ describe("ZodyProtocolAgentServer", () => {
 
       expect(connectedConfigs).toHaveLength(0);
       expect(disconnectedNames).not.toContain("everything");
+      // fork（F23④，上游 a60ba6a7 settingsPorts）：status-only 轮询在本 workspace 尚未
+      // 经默认/connect 模式取得 settings lease 所有权时不读共享 port（只读轮询曾接管
+      // 共享 lease，取消其他工作区的 OAuth）；投影为 portless 配置态——canva 不连接、
+      // everything（共享 lease 上的他人状态）不可见。接线前反例：直接读 raw port，
+      // canva 呈 connecting + authorizationUrl、everything 呈 connected。
       expect(result).toMatchObject({
         statuses: {
-          everything: {
-            status: "connected",
-            toolCount: 9,
-            transport: "stdio",
-          },
           "plugin:canva:canva": {
-            authorization: {
-              authorizationUrl: "https://auth.canva.example.test/authorize",
+            status: "disconnected",
+            transport: "http",
+          },
+        },
+      });
+      expect(result.statuses.everything).toBeUndefined();
+
+      // 默认/connect 模式建立 settings lease（经信任门 guard）后，status-only 轮询
+      // 读取 cached guarded port 的真实运行态——OAuth 轮询语义保留。
+      await requestResult(server, {
+        id: 2,
+        method: zodyProtocolMethods.mcpList,
+        params: {
+          workspace: {
+            workspaceKey: workspacePath,
+            workspacePath,
+          },
+          mcpServers: [
+            {
+              name: "plugin:canva:canva",
+              type: "http",
+              url: "https://mcp.canva.example.test/mcp",
+              headers: [],
+              oauth: {
+                type: "authorization_code",
+                clientName: "ZCode",
+              },
             },
-            status: "connecting",
+          ],
+        },
+      });
+      const afterConnect = await requestResult(server, {
+        id: 3,
+        method: zodyProtocolMethods.mcpList,
+        params: {
+          workspace: {
+            workspaceKey: workspacePath,
+            workspacePath,
+          },
+          mode: "status",
+          mcpServers: [
+            {
+              name: "plugin:canva:canva",
+              type: "http",
+              url: "https://mcp.canva.example.test/mcp",
+              headers: [],
+              oauth: {
+                type: "authorization_code",
+                clientName: "ZCode",
+              },
+            },
+          ],
+        },
+      });
+      expect(afterConnect).toMatchObject({
+        statuses: {
+          "plugin:canva:canva": {
+            status: "connected",
             transport: "http",
           },
         },

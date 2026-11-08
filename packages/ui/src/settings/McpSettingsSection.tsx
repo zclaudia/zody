@@ -617,8 +617,9 @@ interface McpSettingsSectionProps {
   showMarketplaceBreadcrumb?: boolean;
   /**
    * fork（F23，上游 a60ba6a7）：workspace MCP 信任决策服务（spec §8.2 横幅 B 的
-   * 动作面）。services 转发接线在 wiring 卡落地前不注入——行级仍展示审核状态与
-   * 脱敏摘要，但不渲染信任/撤销按钮（接缝定义见 workspaceMcpTrustActions.ts）。
+   * 动作面）。F23④ wiring 后组件内已回退注入非远控的 services.mcpSyncService
+   * （见 workspaceTrustService）；本 prop 仅保留为测试/嵌入方的显式覆盖面
+   * （接缝定义见 workspaceMcpTrustActions.ts）。
    */
   workspaceMcpTrustService?: WorkspaceMcpTrustService;
 }
@@ -1002,12 +1003,21 @@ export function McpSettingsSection({
     services.mcpSyncService,
   ]);
 
+  // fork（F23④ 收尾行，上游 a60ba6a7）：F23④ wiring 落地后 services.mcpSyncService
+  // 已实现 setWorkspaceMcpTrust（结构满足 WorkspaceMcpTrustService，无需 cast），
+  // 组件内回退注入即启用行级信任/撤销按钮；显式 prop 仍可覆盖（测试/嵌入方注入面）。
+  // Web 远控的 mcpSyncService 是 home-only unsupported 桩（homeOnlyServices），按
+  // spec §11「远端只读、不放开 trust 写入」不注入——按钮不渲染，行内仍展示审核
+  // 状态与脱敏摘要。
+  const workspaceTrustService =
+    workspaceMcpTrustService ?? (isWebRemoteControl ? undefined : services.mcpSyncService);
+
   // fork（F23，上游 a60ba6a7）：workspace MCP 信任/撤销（spec §8.2 横幅 B）。决策
   // 绑定行内展示的精确声明摘要；被拒（常见为声明已变）或成功都以 manual 刷新收
   // 尾——行摘要与 trusted 投影必须回到 Host 的当前事实，不能停在本地乐观态。
   const handleWorkspaceTrust = useCallback(
     async (server: ZodyMcpServer, trusted: boolean) => {
-      if (!workspaceMcpTrustService) return;
+      if (!workspaceTrustService) return;
       const target = resolveWorkspaceMcpTrustTarget(
         server,
         activeWorkspacePath,
@@ -1022,7 +1032,7 @@ export function McpSettingsSection({
         return;
       }
       try {
-        const result = await workspaceMcpTrustService.setWorkspaceMcpTrust(target);
+        const result = await workspaceTrustService.setWorkspaceMcpTrust(target);
         if (!result.accepted) {
           toast(
             intl.formatMessage({
@@ -1046,7 +1056,7 @@ export function McpSettingsSection({
       activeWorkspacePath,
       intl,
       requestMcpServerStatusList,
-      workspaceMcpTrustService,
+      workspaceTrustService,
     ],
   );
 
@@ -1735,7 +1745,7 @@ export function McpSettingsSection({
               onEdit={handleEdit}
               onToggle={handleToggle}
               onOpenAuthorization={handleOpenAuthorization}
-              onWorkspaceTrust={workspaceMcpTrustService ? handleWorkspaceTrust : undefined}
+              onWorkspaceTrust={workspaceTrustService ? handleWorkspaceTrust : undefined}
               emptyTitle={intl.formatMessage({ id: "settings.mcp.emptyTitle" })}
               emptyDescription={intl.formatMessage({
                 id: "settings.mcp.emptyDescription",

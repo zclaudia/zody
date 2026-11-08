@@ -1,8 +1,17 @@
 import type { ConfigResult } from "@zody/adapters/config";
+import { createWorkspaceMcpTrustDiscoveryPort } from "@zody/adapters/config";
+import { createFileWorkspaceMcpTrustStorePort } from "@zody/adapters/storage";
 import { GEN_UI_OUTPUT_ROOT_ENV } from "@zody/shared/node";
 import { resolveInitialModelSelection, type ModelSelectionOptions } from "@zody/provider";
-import { resolveBashTimeoutPolicy, type AgentProfile, type AgentRuntimeConfig } from "@zody/core";
+import {
+  createWorkspaceMcpTrust,
+  resolveBashTimeoutPolicy,
+  type AgentProfile,
+  type AgentRuntimeConfig,
+  type WorkspaceMcpTrustContract,
+} from "@zody/core";
 import { type BuiltInSubagentModelSelectionOverrides } from "@zody/shared";
+import type { WorkspaceMcpAdmissionUpdatedPayload } from "@zody/contracts";
 import {
   type CollaborationMode,
   type HookConfigSource,
@@ -107,7 +116,14 @@ export function resolveAppRuntimeConfig(input: {
     // 通用 node_repl 结果被误送进 exact-raster gate，Browser 截图和 console 日志都会失败。
     cuaBridgeServerNames.add("node_repl");
   }
-  // 产品决定 workspace MCP 开箱即用：project 作用域 MCP 默认 trusted，并自动连接。
+  // fork（F23④，上游 a60ba6a7）：workspace MCP 信任门接线后，原「产品决定 workspace
+  // MCP 开箱即用：project 作用域 MCP 默认 trusted，并自动连接」的 fork 决策被 spec
+  // docs/specs/workspace-mcp-trust.md 推翻为 default-deny 信任门。此处不再预过滤
+  // auto-connect 集合（本仓无同步的 workspace 来源标记可判未信任；判定是异步声明发现），
+  // 全量交给 create-app 安装的信任门 guard 在连接准入时拦截：未信任 workspace 声明
+  // 零 spawn/零工具（guard 语义见 core mcp/workspace-mcp-trust.ts）。该集合保留为
+  // 空集：状态投影的未信任形态由 guarded port 的 blocked 状态（pending_trust）承载，
+  // 与上游 runtime-config 的 untrustedProjectMcpServers（同步来源标记）职责不同。
   const untrustedProjectMcpServers = new Set<string>();
   const autoConnectMcpServers = omitMcpServers(
     configuredMcpServers,
@@ -296,4 +312,45 @@ export function runtimeConfigLogContext(
     runtimeFeatureNodeRepl: runtimeConfig.runtimeFeatures?.nodeRepl === true,
     workingDirectory,
   };
+}
+
+/**
+ * fork（F23④，上游 a60ba6a7 createWorkspaceMcpTrust 的 bootstrap 接线单点）：
+ * 组装 workspace MCP 信任门——core 纯域（摘要/decide/allows/guard 单源，
+ * @zody/core mcp/workspace-mcp-trust.ts）+ adapters 声明发现 port（createConfig
+ * project 作用域 + `.agents/mcp.json` fallback）+ adapters 用户域 store port
+ * （hook store 同目录规则、文件锁 + 原子写）。上游把这套逻辑内联在 bootstrap 的
+ * workspace-mcp-trust 模块里；本仓按 spec §4 依赖方向拆为 core 纯域 + port 注入，
+ * 本函数是两侧唯一的组装点（create-app guard 安装、zody-protocol mcp/list 与
+ * workspace/mcp/trust handler 共用，store 是共享状态故多实例安全，上游同构）。
+ */
+export function createAppWorkspaceMcpTrust(params: {
+  workingDirectory: string;
+  /** 身份键 = workspaceIdentity?.trim() || workingDirectory（AGENTS.md 统一规则）。 */
+  workspaceIdentity?: string;
+  env?: Record<string, string | undefined>;
+  userConfigPath?: string;
+  projectConfigPath?: string;
+  skipUserConfig?: boolean;
+  /** 测试注入临时 HOME；生产不传，trust store 落在真实 ~/.zody/security（hook 先例）。 */
+  homeDir?: string;
+  /** 准入状态变化回调（会话事件 WorkspaceMcpAdmissionUpdated 的载荷）。 */
+  onAdmissionChanged?: (state: WorkspaceMcpAdmissionUpdatedPayload) => Promise<void>;
+}): WorkspaceMcpTrustContract {
+  return createWorkspaceMcpTrust({
+    workingDirectory: params.workingDirectory,
+    ...(params.workspaceIdentity ? { workspaceIdentity: params.workspaceIdentity } : {}),
+    discovery: createWorkspaceMcpTrustDiscoveryPort({
+      env: params.env,
+      workingDirectory: params.workingDirectory,
+      ...(params.userConfigPath ? { userConfigPath: params.userConfigPath } : {}),
+      ...(params.projectConfigPath ? { projectConfigPath: params.projectConfigPath } : {}),
+      ...(params.skipUserConfig ? { skipUserConfig: true } : {}),
+    }),
+    store: createFileWorkspaceMcpTrustStorePort({
+      ...(params.userConfigPath ? { userConfigPath: params.userConfigPath } : {}),
+      ...(params.homeDir ? { homeDir: params.homeDir } : {}),
+    }),
+    ...(params.onAdmissionChanged ? { onAdmissionChanged: params.onAdmissionChanged } : {}),
+  });
 }

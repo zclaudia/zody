@@ -2662,10 +2662,14 @@ describe("session persistence", () => {
       expect(resume.messageCount).toBe(3);
       expect(resume.appliedMessageCount).toBe(3);
       expect(result.response).toBe("second answer");
-      // 冷恢复会先补齐持久标题事件，再发布 SessionResumed。
+      // 冷恢复会先补齐持久标题事件，再发布 SessionResumed。fork（F23④，上游
+      // a60ba6a7）：resume 后 MCP 信任门 reannounce 当前准入（无待审声明也重发
+      // pendingCount 0，重建被 SessionResumed 清掉的投影），事件属非活动类
+      // （isNonActivitySessionEvent 黑名单），不影响会话列表活跃时间。
       expect(liveEventTypes).toEqual([
         SessionEventType.SessionTitleUpdated,
         SessionEventType.SessionResumed,
+        SessionEventType.WorkspaceMcpAdmissionUpdated,
       ]);
       expect(capturedMessages.map((message) => message.content)).toEqual([
         expect.stringContaining("You are Zody"),
