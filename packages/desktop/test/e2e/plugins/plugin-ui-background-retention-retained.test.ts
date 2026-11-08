@@ -3,22 +3,22 @@
 // 卸载后必须保留：webview 不销毁、隐藏执行表面（parking + display:block + opacity:0.001）、
 // shell 内插件 iframe 仍挂载；锚点返回后复用同一 guest（webview src 不变，不重新握手）。
 // 来源：上游 v3.17.1 a60ba6a7 F18 保留策略（本仓 spec 驱动差异：断言面为本仓承载层语义）。
-import { skipOccupationOnboardingIfPresent } from "../../../helpers/occupation-onboarding.js";
-import { clearAppData } from "../../../helpers/desktop-app.js";
+import { skipOccupationOnboardingIfPresent } from "../helpers/occupation-onboarding.js";
+import { clearAppData } from "../helpers/desktop-app.js";
 import {
   approveV4Permission,
   prepareV4ConversationE2E,
   scrollV4TimelineToTop,
   sendV4Prompt,
   waitForV4Pane,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 import {
   addMarketplaceSourceThroughUi,
   capturePluginManualReview,
   openPluginSettings,
   requirePluginManualReview,
   waitUntilPluginOverview,
-} from "../../../helpers/plugin-management-lifecycle.js";
+} from "../helpers/plugin-management-lifecycle.js";
 import {
   PLUGIN_UI_RETENTION_MARKETPLACE_ID,
   PLUGIN_UI_RETENTION_TOOL_RETAINED,
@@ -26,7 +26,7 @@ import {
   installAndEnableRetentionPluginThroughUi,
   readPluginUiGuestFrames,
   readPluginUiSurfaces,
-} from "../../../helpers/plugin-ui-background-retention.js";
+} from "../helpers/plugin-ui-background-retention.js";
 
 const CASE_TIMEOUT_MS = 300000;
 /** 卡片卸载所需的填充 turn 数：每条回复约 80 行，3 条足以把工具 turn 推出虚拟窗口。 */

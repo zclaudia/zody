@@ -3,18 +3,18 @@ import { copyFile, mkdir, realpath, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { FileApplicationInfo } from "@zody/shared";
-import { DEFAULT_WORKSPACE } from "../../../helpers/desktop-app.js";
+import { DEFAULT_WORKSPACE } from "../helpers/desktop-app.js";
 import {
   installFileApplicationMenuProbe,
   readFileApplicationMenuProbe,
   restoreFileApplicationMenuProbe,
-} from "../../../helpers/file-application-menu-probe.js";
+} from "../helpers/file-application-menu-probe.js";
 import {
   prepareV4ConversationE2E,
   sendV4Prompt,
   waitForV4AssistantMessageContaining,
   waitForV4Pane,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 
 /**
  * APC15（catalog 2026-11-07 accepted）：按格式打开统一文件菜单。系统关联为唯一
@@ -26,7 +26,7 @@ const CASE_MARKER = "E2E_APC15_OPEN_WITH_SYSTEM_APPS";
 const CASE_ROOT = join(DEFAULT_WORKSPACE, "apc15-open-with");
 const OFFICE_FIXTURE_ROOT = fileURLToPath(
   new URL(
-    "../../../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
+    "../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
     import.meta.url,
   ),
 );

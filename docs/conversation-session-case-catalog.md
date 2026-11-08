@@ -3623,7 +3623,7 @@ Memory MEM08 埋点补充（2026-09-17）：现有 Desktop Memory 用例同时�
 
 组件交互验收入口为 `packages/ui/test/browser/manual-review/pending/image-preview-editor.test.mjs`（manual-review/pending，未转正不计为正式 Desktop 通过；fixture 以假 receiver 断言 append 合同、导出像素与失效路径）。桌面 conversation-session 真实 Composer 保存链路需 `packages/desktop`（不在本卡落点，缺口登记待协调；F28 草稿事务须把附件插入纳入 claim/restore 测试）。已发送 user row、Markdown/工具图片与视频、PDF 不设标注入口；剪枝见 spec。accepted 表示产品合同，不代表已实现。
 
-2026-11-07 执行记录（F15③/④）：browser pending 16/16 通过（PA161-01～09 + PA161-05 真实 Composer 保真变体：`image-annotate-to-draft.fixture.tsx` 挂载真实 ConversationComposer/useComposerAttachments，经真实捕获通道播种→chip 标注→保存→真实附件 store 出现 `shot-edited.png`、零发送；含 390/1100 × 深浅 × 中英文矩阵与自然尺寸像素断言；截图在 `packages/desktop/.e2e-artifacts/image-preview-editor-browser/`）。执行中发现并修复 `ImageAnnotationDialog` 的 tailwind-merge position 冲突缺陷（`relative` 顶掉基类 `fixed` 致弹窗渲染到视口外）。`packages/desktop` 全窗口用例仍为缺口待协调。人工评审与转正未完成。
+2026-11-07 执行记录（F15③/④）：browser pending 16/16 通过（PA161-01～09 + PA161-05 真实 Composer 保真变体：`image-annotate-to-draft.fixture.tsx` 挂载真实 ConversationComposer/useComposerAttachments，经真实捕获通道播种→chip 标注→保存→真实附件 store 出现 `shot-edited.png`、零发送；含 390/1100 × 深浅 × 中英文矩阵与自然尺寸像素断言；截图在 `packages/desktop/.e2e-artifacts/image-preview-editor-browser/`）。执行中发现并修复 `ImageAnnotationDialog` 的 tailwind-merge position 冲突缺陷（`relative` 顶掉基类 `fixed` 致弹窗渲染到视口外）。`packages/desktop` 全窗口用例仍为缺口待协调。2026-11-08 人工评审确认（用户批准转正）：PA161 browser 16/16 与真实 Composer 变体经评审通过；browser 域以 manual-review/pending 为常驻执行入口（无 promote 脚本），catalog 行即正式合同；Desktop 全窗口用例维持缺口登记。
 
 ## PA162. Composer 草稿事务与 IME 安全（F28 基线）
 

@@ -1,8 +1,8 @@
 // PA158：真实审批、混合 Plan 队列及撤回编辑。保持 pending，不代表已通过人工准入。
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { clearAppData } from "../../../helpers/desktop-app.js";
-import { resolveE2ERuntimePath } from "../../../helpers/e2e-runtime-paths.js";
+import { clearAppData } from "../helpers/desktop-app.js";
+import { resolveE2ERuntimePath } from "../helpers/e2e-runtime-paths.js";
 import {
   clickV4QueueItemEdit,
   getV4ConfigProjection,
@@ -16,7 +16,7 @@ import {
   waitForV4PermissionDialog,
   waitForV4QueueCount,
   waitForV4TimelineContaining,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 
 const CASE = "conversation-session-permission-full-access";
 const DIRECTORY = resolveE2ERuntimePath(CASE);

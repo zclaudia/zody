@@ -3,13 +3,13 @@ import { copyFile, mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { TID_PREVIEW_PANE } from "@zody/shared";
-import { DEFAULT_WORKSPACE } from "../../../helpers/desktop-app.js";
+import { DEFAULT_WORKSPACE } from "../helpers/desktop-app.js";
 import {
   prepareV4ConversationE2E,
   sendV4Prompt,
   waitForV4AssistantMessageContaining,
   waitForV4Pane,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 
 /**
  * APC14（catalog 2026-11-07 accepted）：I15 整卡打开。卡片主体（铺满卡片的透明按钮）
@@ -21,7 +21,7 @@ const CASE_MARKER = "E2E_APC14_WHOLE_CARD_OPEN";
 const CASE_ROOT = join(DEFAULT_WORKSPACE, "apc14-whole-card");
 const OFFICE_FIXTURE_ROOT = fileURLToPath(
   new URL(
-    "../../../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
+    "../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
     import.meta.url,
   ),
 );

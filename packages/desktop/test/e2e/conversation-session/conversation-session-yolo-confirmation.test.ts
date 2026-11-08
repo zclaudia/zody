@@ -7,7 +7,7 @@ import {
   getV4ModelConfig,
   prepareV4ConversationE2E,
   switchV4Mode,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 import { TID_CHAT_MODE_SELECT_TRIGGER, TID_CHAT_MODE_SELECT_ITEM, testId } from "@zody/shared";
 
 async function selectYolo() {

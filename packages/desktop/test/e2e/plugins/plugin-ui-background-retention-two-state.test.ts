@@ -5,21 +5,21 @@
 // 这是 §12.2.1/§12.2.2 的即时可观察差异；plain 页 5 分钟定时器到点的 tryRecycle 裁决
 // 在真实 E2E 中不可等待，由单测覆盖（pluginUiPageManager.test.ts 默认页回收族）。
 // 来源：上游 v3.17.1 a60ba6a7 F18。
-import { skipOccupationOnboardingIfPresent } from "../../../helpers/occupation-onboarding.js";
-import { clearAppData } from "../../../helpers/desktop-app.js";
+import { skipOccupationOnboardingIfPresent } from "../helpers/occupation-onboarding.js";
+import { clearAppData } from "../helpers/desktop-app.js";
 import {
   approveV4Permission,
   prepareV4ConversationE2E,
   sendV4Prompt,
   waitForV4Pane,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 import {
   addMarketplaceSourceThroughUi,
   capturePluginManualReview,
   openPluginSettings,
   requirePluginManualReview,
   waitUntilPluginOverview,
-} from "../../../helpers/plugin-management-lifecycle.js";
+} from "../helpers/plugin-management-lifecycle.js";
 import {
   PLUGIN_UI_RETENTION_MARKETPLACE_ID,
   PLUGIN_UI_RETENTION_TOOL_PLAIN,
@@ -27,7 +27,7 @@ import {
   createPluginUiRetentionFixture,
   installAndEnableRetentionPluginThroughUi,
   readPluginUiSurfaces,
-} from "../../../helpers/plugin-ui-background-retention.js";
+} from "../helpers/plugin-ui-background-retention.js";
 
 const CASE_TIMEOUT_MS = 360000;
 const FILL_TURNS = 15;

@@ -7,21 +7,21 @@
 // 的拒绝路径由单测覆盖（packages/ui/src/plugin-ui/app/pluginUiBackgroundRetention.test.ts、
 // pluginUiPageManager.test.ts），E2E 不注入时钟/不驱动 guest 内调用（避免为测试改产品代码）。
 // 来源：上游 v3.17.1 a60ba6a7 F18。
-import { skipOccupationOnboardingIfPresent } from "../../../helpers/occupation-onboarding.js";
-import { clearAppData } from "../../../helpers/desktop-app.js";
+import { skipOccupationOnboardingIfPresent } from "../helpers/occupation-onboarding.js";
+import { clearAppData } from "../helpers/desktop-app.js";
 import {
   approveV4Permission,
   prepareV4ConversationE2E,
   sendV4Prompt,
   waitForV4Pane,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 import {
   addMarketplaceSourceThroughUi,
   capturePluginManualReview,
   openPluginSettings,
   requirePluginManualReview,
   waitUntilPluginOverview,
-} from "../../../helpers/plugin-management-lifecycle.js";
+} from "../helpers/plugin-management-lifecycle.js";
 import {
   PLUGIN_UI_RETENTION_MARKETPLACE_ID,
   PLUGIN_UI_RETENTION_SLOW_DELAY_MS,
@@ -30,7 +30,7 @@ import {
   createPluginUiRetentionFixture,
   installAndEnableRetentionPluginThroughUi,
   readPluginUiSurfaces,
-} from "../../../helpers/plugin-ui-background-retention.js";
+} from "../helpers/plugin-ui-background-retention.js";
 
 const CASE_TIMEOUT_MS = 300000;
 const FILL_TURNS = 15;

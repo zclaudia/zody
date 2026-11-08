@@ -4,13 +4,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ElectronMock } from "@wdio/electron-types";
-import { DEFAULT_WORKSPACE } from "../../../helpers/desktop-app.js";
+import { DEFAULT_WORKSPACE } from "../helpers/desktop-app.js";
 import {
   prepareV4ConversationE2E,
   sendV4Prompt,
   waitForV4AssistantMessageContaining,
   waitForV4Pane,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 
 /**
  * APC16（catalog 2026-11-07 accepted）：统一文件菜单「另存为」分块读取防截断。
@@ -25,7 +25,7 @@ const CASE_MARKER = "E2E_APC16_SAVE_AS_CHUNKED_COPY";
 const CASE_ROOT = join(DEFAULT_WORKSPACE, "apc16-save-as");
 const OFFICE_FIXTURE_ROOT = fileURLToPath(
   new URL(
-    "../../../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
+    "../fixtures/fs/conversation-session/conversation-session-assistant-preview-cards/",
     import.meta.url,
   ),
 );
