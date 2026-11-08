@@ -18,6 +18,12 @@ import {
   createRuntimeAssistantEntry,
   type RuntimeMessageEntry,
 } from "../../agent/message-history.js";
+// 来源上游 a60ba6a7（runtime/methods/turn-model-step.ts）：取消路径提交与终态判断的服务端轮次例外。
+import {
+  createProviderToolRoundEntries,
+  providerToolRoundsCompactGroupKey,
+  withCompactGroupKey,
+} from "../provider-tool-rounds/contract.js";
 import {
   createModelContextExceededFinishError,
   createCompactRapidRefillError,
@@ -422,19 +428,39 @@ async function runModelBackedTurnStepImpl(
         traceContext: modelTraceContext,
       });
       const reasoning = latestStreamSnapshot.reasoning.filter(hasAssistantReasoningContent);
-      if (latestStreamSnapshot.text.length > 0 || reasoning.length > 0) {
+      const modelRef = state.model
+        ? { providerId: state.model.providerId, modelId: state.model.modelId }
+        : undefined;
+      // 已收起的服务端内置工具轮在流中就已落盘，取消时同样要进入 live history。
+      const providerRoundEntries = createProviderToolRoundEntries(
+        latestStreamSnapshot.providerToolRounds,
+        modelRef,
+        hasAssistantReasoningContent,
+      );
+      const hasCurrentRound = latestStreamSnapshot.text.length > 0 || reasoning.length > 0;
+      if (hasCurrentRound || providerRoundEntries.length > 0) {
         // 取消时 durable snapshot 已经持久化，但成功路径的 live history commit
         // 和 historyRoundCount 不会执行，导致当前进程与 cold resume 的 provider history 不一致。
-        commitTurnRequestEntries(this, state.turnRequestState, [
-          createRuntimeAssistantEntry(
-            latestStreamSnapshot.text,
-            undefined,
-            reasoning,
-            state.model
-              ? { providerId: state.model.providerId, modelId: state.model.modelId }
-              : undefined,
+        commitTurnRequestEntries(
+          this,
+          state.turnRequestState,
+          withCompactGroupKey(
+            [
+              ...providerRoundEntries,
+              ...(hasCurrentRound
+                ? [
+                    createRuntimeAssistantEntry(
+                      latestStreamSnapshot.text,
+                      undefined,
+                      reasoning,
+                      modelRef,
+                    ),
+                  ]
+                : []),
+            ],
+            providerToolRoundsCompactGroupKey(latestStreamSnapshot.providerToolRounds),
           ),
-        ]);
+        );
         recordModelHistoryRound(state);
       }
     }
@@ -495,7 +521,15 @@ async function runModelBackedTurnStepImpl(
     this.messageHistory.setCacheHit(result.usage.cacheReadTokens);
   }
 
-  let toolCalls = this.extractToolCallsFromResult(result);
+  // 服务端内置工具在流中已切成独立的前序轮次（各自带结果提交），不是本 step 的最终调用：
+  // 续写、超窗、fileChanges 不计它们；空结果判定仍算作有内容（最后一轮正文可以为空）。
+  // web_search 等未切轮的 provider 调用仍按完整 tool call 处理。来源上游 a60ba6a7。
+  const extractedToolCalls = this.extractToolCallsFromResult(result);
+  const providerRoundCallIds = new Set(
+    (result.providerToolRounds ?? []).map((round) => round.toolCall.id),
+  );
+  let toolCalls = extractedToolCalls.filter((toolCall) => !providerRoundCallIds.has(toolCall.id));
+  const providerExecutedToolCallCount = extractedToolCalls.length - toolCalls.length;
   const providerToolCallCount = toolCalls.length;
   const localTerminalResponse = state.automationCreateLimitReached === true;
   if (state.automationCreateLimitReached && toolCalls.length > 0) {
@@ -571,7 +605,14 @@ async function runModelBackedTurnStepImpl(
   if (
     !localTerminalResponse &&
     outputTokenContinuation === "none" &&
-    isSuspiciousEmptyModelResult(result.finishReason, responseLength, toolCalls.length, usage)
+    // 已切轮的服务端调用虽不算本 step 的调用，但空结果判定仍算有内容：
+    // 全部调用都是服务端轮次时不按 suspicious empty 收口。来源上游 a60ba6a7。
+    isSuspiciousEmptyModelResult(
+      result.finishReason,
+      responseLength,
+      toolCalls.length + providerExecutedToolCallCount,
+      usage,
+    )
   ) {
     this.logger?.warn("Model returned an empty non-stop result", {
       ...traceContextToLogContext(modelTraceContext),

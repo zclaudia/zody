@@ -814,6 +814,17 @@ export type ModelStreamEvent =
       toolCall: ModelToolCall;
     }
   | {
+      /**
+       * Provider 在服务端执行完内置工具（toolCall.providerExecuted）后随流下发的结果。
+       * 客户端不执行这类工具，只用于展示、持久化和下一次请求回放。
+       */
+      type: "provider_tool_result";
+      toolCallId: string;
+      toolName: string;
+      output: unknown;
+      isError: boolean;
+    }
+  | {
       type: "finish";
       finishReason: string;
       providerMetadata?: Record<string, unknown>;

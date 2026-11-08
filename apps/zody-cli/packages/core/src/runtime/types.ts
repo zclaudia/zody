@@ -111,6 +111,8 @@ import type { BashTimeoutPolicy } from "../tool/bash-timeout-policy.js";
 import type { PresentationSurface } from "../context/types.js";
 import type { WorkspaceHookRuntimeAdmissionPort } from "../hooks/workspace-hook-runtime-admission.js";
 import type { CuaSubmissionRuntimeOptions } from "./cua/cua-submission-coordinator.js";
+// 来源上游 a60ba6a7（runtime/types.ts）：服务端内置工具切轮的状态随流快照与最终结果传递。
+import type { ProviderToolRound } from "./provider-tool-rounds/contract.js";
 
 // -----------------------------------------------
 // Agent Runtime
@@ -882,8 +884,11 @@ export interface RunModelTextRequestOptions {
 }
 
 export interface RuntimeModelStreamSnapshot {
+  /** 当前轮（最后一个服务端内置工具之后）的内容；之前的轮在 providerToolRounds。 */
   reasoning: ModelReasoningContentBlock[];
   text: string;
+  /** 服务端内置工具切出的前序轮次；text/reasoning 只保留最后一轮。 */
+  providerToolRounds?: readonly ProviderToolRound[];
 }
 
 export interface StreamedToolExecutionResult {
@@ -898,6 +903,8 @@ export interface RuntimeModelTextResult {
   contextUsageBreakdown?: ContextUsageBreakdownItem[];
   finishReason: string;
   providerMetadata?: Record<string, unknown>;
+  /** 服务端内置工具切出的前序轮次；text/reasoning 只保留最后一轮。来源上游 a60ba6a7。 */
+  providerToolRounds?: ProviderToolRound[];
   reasoning?: ModelReasoningContentBlock[];
   text: string;
   toolCalls?: ModelToolCall[];

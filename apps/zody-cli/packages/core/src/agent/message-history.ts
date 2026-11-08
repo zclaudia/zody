@@ -56,6 +56,12 @@ export interface RuntimeMessageMessageEntry {
   tokens?: TokenUsageInfo;
   /** 仅在当前 query 内生效；不得进入 canonical history 或 Session persistence。 */
   queryScope?: "output_token_continuation";
+  /**
+   * 同一条持久化 assistant 拆出的多条 runtime entry 共用的分组键（服务端内置工具轮次）。
+   * compact 按它把这些 entry 视为一组，与按数据库消息分组的持久化边界保持一致；不会发送到 provider。
+   * 来源上游 a60ba6a7（agent/message-history.ts）。
+   */
+  compactGroupKey?: string;
 }
 
 export interface RuntimeAttachmentEntry {
@@ -422,6 +428,9 @@ export function cloneRuntimeMessageEntry(entry: RuntimeMessageEntry): RuntimeMes
     metadata: cloneRuntimeMessageMetadata(entry.metadata),
     ...(entry.tokens ? { tokens: cloneTokenUsageInfo(entry.tokens) } : {}),
     ...(entry.queryScope ? { queryScope: entry.queryScope } : {}),
+    // 修复原因（上游 a60ba6a7）：compact 分组键此前在防御性克隆时丢失，冷恢复/compact 路径
+    // 会把同一条持久化 assistant 拆出的轮次重新拆组，与 selectPersistedCompactTail 边界不一致。
+    ...(entry.compactGroupKey ? { compactGroupKey: entry.compactGroupKey } : {}),
   };
 }
 

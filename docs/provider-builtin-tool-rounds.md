@@ -3,8 +3,15 @@
 Status: L0 Spec（F20 两步链：① adapters 流兼容层 ② core 切轮；来源上游 a60ba6a7）。
 实施进度：Step ① 已实现（2026-11-07，adapters provider-builtin-tool-compat + anthropic-stream-compat 接线，
 回归见 `apps/zody-cli/packages/adapters/tests/provider-builtin-tool-compat/contract.test.ts` 与
-`apps/zody-cli/packages/adapters/tests/model-execution.test.ts`）；Step ② 未实施——
-被「落点」节登记的 contracts 前置依赖阻塞（需扩展落点后实施）。
+`apps/zody-cli/packages/adapters/tests/model-execution.test.ts`）；
+Step ② 已实现（2026-11-08，用户已授权扩展 contracts 落点：`ModelStreamEvent` 联合新增
+`provider_tool_result` 变体；core `runtime/provider-tool-rounds/` 模块 + model/turn-model-step/
+turn-output-token-continuation/message-history/session-history-hydrator/compact-selection/types 接线，
+回归见 `apps/zody-cli/packages/core/tests/provider-tool-rounds/`（contract、hydration）与
+`apps/zody-cli/packages/adapters/tests/provider-builtin-tool-rounds.test.ts`（fixture e2e：落盘顺序/
+卡片事件/下一次请求 entries/冷恢复一致/中断收口/StreamRecoveryDiscarded 剔除/compact 分组/
+tokens 不挂锚/终态判断例外）。真实 GLM 流量回放仍按「样本登记」节口径待样本（本机 rollout
+model-io 无内置工具调用记录，不以 fixture 冒充）。
 
 上游对应：`apps/zcode-cli/packages/adapters/src/model/provider-builtin-tool-compat/`（GLM 服务端工具流改写）与
 `apps/zcode-cli/packages/core/src/runtime/provider-tool-rounds/`（轮次切分/卡片/回放/compact 分组/tokens），
@@ -153,15 +160,16 @@ compact（compact-selection）：groupRuntimeEntriesByCompactRound 传入 compac
 
 ## 落点（本卡可改范围）
 
-**Step ② 前置依赖（2026-11-07 发现，阻塞）**：adapter→core 的流事件联合 `ModelStreamEvent`
-定义在 `apps/zody-cli/packages/contracts/src/model/index.ts:731`（`Model.streamText` 返回
-`AsyncIterable<ModelEvent>`，`ModelEvent = ModelStreamEvent`，见 `contracts/src/model/model.ts:42,54`）。
-Step ② 必须给该联合新增 `provider_tool_result` 变体（上游 a60ba6a7
-`apps/zcode-cli/packages/contracts/src/model/index.ts:832`，形状
+**Step ② 前置依赖（2026-11-07 发现，曾阻塞；2026-11-08 用户授权扩展落点后已解除）**：
+adapter→core 的流事件联合 `ModelStreamEvent` 定义在 `apps/zody-cli/packages/contracts/src/model/index.ts`
+（`Model.streamText` 返回 `AsyncIterable<ModelEvent>`，`ModelEvent = ModelStreamEvent`，见
+`contracts/src/model/model.ts`）。Step ② 已给该联合新增 `provider_tool_result` 变体（逐行镜像上游
+a60ba6a7 `apps/zcode-cli/packages/contracts/src/model/index.ts`，形状
 `{ type: "provider_tool_result"; toolCallId: string; toolName: string; output: unknown; isError: boolean }`）。
-该文件不在本卡落点内；未经扩展范围不得改动。实测证据：runner-normalization 返回
-`{type:"provider_tool_result"}` 时 `tsc --noEmit` 报
-`TS2322: Type '"provider_tool_result"' is not assignable to type '"error" | "finish" | … | "compact_stream_boundary"'`。
+授权前实测证据：runner-normalization 返回 `{type:"provider_tool_result"}` 时 `tsc --noEmit` 报
+`TS2322: Type '"provider_tool_result"' is not assignable to type '"error" | "finish" | … | "compact_stream_boundary"'`
+（2026-11-08 实施时重录：`pnpm --dir apps/zody-cli/packages/adapters typecheck` exit=2，
+runner-normalization.ts 两处 TS2322；加变体并重建 contracts 后 exit=0）。
 除该联合变体外的其余依赖均已在落点内（`ErrorPayload.type` 为开放 string，卡片错误事件
 `provider_tool_error` 无需 contracts 改动；`ToolCallScheduled/Started/Result` 的 display 字段已就绪）。
 
