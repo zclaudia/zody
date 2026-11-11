@@ -470,6 +470,12 @@ export interface AgentRuntime {
   requestCuaNativeCaptureConfirmation(
     input: CuaNativeCaptureConfirmationInput,
   ): Promise<CuaNativeCaptureConfirmationResult>;
+  /**
+   * mobile-origin 授权轮次（2026-11-10）：持久授权（项目 cua_screenshot_confirm allow /
+   * 会话 full access）是否命中；bootstrap 在为 mobile 新提交登记 live ticket 前调用。
+   * 只是 admission 资格门，每张截图仍在 confirm 时逐张复核规则。
+   */
+  isCuaLiveSubmissionGrantActive(): Promise<boolean>;
   admitPrompt(
     input: string,
     attachments?: TurnState["attachments"],

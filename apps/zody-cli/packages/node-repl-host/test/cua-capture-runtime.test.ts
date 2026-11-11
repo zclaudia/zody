@@ -2,7 +2,11 @@ import { createConnection } from "node:net";
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ComputerUseRuntimeContext } from "@zody/zody-cua";
-import { createNodeReplCuaBroker, type NodeReplCuaBroker } from "../src/cua-broker.js";
+import {
+  createNodeReplCuaBroker,
+  resolveTrustedCuaContext,
+  type NodeReplCuaBroker,
+} from "../src/cua-broker.js";
 import {
   createCuaCaptureComputerUseRuntime,
   type CuaCaptureExpectation,
@@ -160,6 +164,54 @@ describe("CuaCaptureComputerUseRuntime direct candidate", () => {
       }),
     ).rejects.toThrow("disposed");
   });
+
+  it("accepts web-remote-replayable context with a remote session id, keeping id checks", async () => {
+    // mobile-origin 授权轮次（2026-11-10）：授权事实由 admission→candidate→turn scope 链
+    // 承载，本层只做结构可信检查；web-remote-replayable + remoteSessionId 不再无条件拒绝。
+    const calls: Array<{ target: CuaCaptureTarget; expected: CuaCaptureExpectation }> = [];
+    const runtime = createCuaCaptureComputerUseRuntime({
+      async captureOnce(target, options) {
+        calls.push({ target, expected: options.expected });
+        return imageResult();
+      },
+    });
+    const remoteContext: ComputerUseRuntimeContext = {
+      ...CONTEXT,
+      clientMode: "web-remote-replayable",
+      deliveryKind: "web-remote-replayable",
+      remoteSessionId: "remote-session-1",
+    };
+
+    await expect(
+      runtime.execute({
+        toolName: "screenshot",
+        arguments: { target: { pid: 42, windowId: 99 } },
+        context: remoteContext,
+      }),
+    ).resolves.toMatchObject({ content: [{ type: "image" }] });
+    expect(calls).toEqual([
+      {
+        target: { pid: 42, windowId: 99 },
+        expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+      },
+    ]);
+
+    // clientMode 与 deliveryKind 不一致、subagent scope 仍拒绝。
+    await expect(
+      runtime.execute({
+        toolName: "screenshot",
+        arguments: { target: { pid: 42, windowId: 99 } },
+        context: { ...remoteContext, deliveryKind: "desktop-continuous" },
+      }),
+    ).rejects.toThrow("untrusted_context");
+    await expect(
+      runtime.execute({
+        toolName: "screenshot",
+        arguments: { target: { pid: 42, windowId: 99 } },
+        context: { ...remoteContext, runtimeScope: "subagent" },
+      }),
+    ).rejects.toThrow("untrusted_context");
+  });
 });
 
 describe("createCuaCaptureComputerUseRuntime", () => {
@@ -209,8 +261,77 @@ describe("createCuaCaptureComputerUseRuntime", () => {
     ]);
   });
 
-  it("fails closed for forged context, target or unsupported tools", async () => {
-    let captures = 0;
+  it("resolves trusted meta for web-remote-replayable main requests and rejects mismatches", () => {
+    // mobile-origin 授权轮次（2026-11-10）：broker 侧结构检查同样接受
+    // web-remote-replayable + remote_session_id，clientMode/deliveryKind 透传实际值。
+    const remoteMeta = {
+      runtime_scope: "main",
+      client_mode: "web-remote-replayable",
+      delivery_kind: "web-remote-replayable",
+      remote_session_id: "remote-session-1",
+      session_id: "session-1",
+      workspace_identity: "workspace-1",
+      turn_id: "turn-1",
+    };
+    expect(resolveTrustedCuaContext(remoteMeta)).toMatchObject({
+      runtimeScope: "main",
+      clientMode: "web-remote-replayable",
+      deliveryKind: "web-remote-replayable",
+      remoteSessionId: "remote-session-1",
+      sessionId: "session-1",
+      workspaceKey: "workspace-1",
+    });
+
+    expect(
+      resolveTrustedCuaContext({
+        ...remoteMeta,
+        delivery_kind: "desktop-continuous",
+      }),
+    ).toBeUndefined();
+    expect(resolveTrustedCuaContext({ ...remoteMeta, runtime_scope: "subagent" })).toBeUndefined();
+    expect(resolveTrustedCuaContext({ ...remoteMeta, session_id: "" })).toBeUndefined();
+  });
+
+  it("returns the real image through a web-remote-replayable broker capability", async () => {
+    const calls: Array<{ target: CuaCaptureTarget; expected: CuaCaptureExpectation }> = [];
+    broker = createNodeReplCuaBroker({
+      runtime: createCuaCaptureComputerUseRuntime({
+        async captureOnce(target, options) {
+          calls.push({ target, expected: options.expected });
+          return imageResult();
+        },
+      }),
+      platform: process.platform,
+    });
+    await broker.ready;
+    const capability = await broker.mint({
+      invocationId: "inv-remote-1",
+      context: {
+        ...CONTEXT,
+        clientMode: "web-remote-replayable",
+        deliveryKind: "web-remote-replayable",
+        remoteSessionId: "remote-session-1",
+      },
+    });
+
+    const reply = await send(capability.socketPath, {
+      id: "capture-remote-1",
+      token: capability.token,
+      invocationId: "inv-remote-1",
+      method: "screenshot",
+      input: { target: { pid: 42, windowId: 99 } },
+    });
+
+    expect(reply).toMatchObject({ ok: true, result: { content: [{ type: "image" }] } });
+    expect(calls).toEqual([
+      {
+        target: { pid: 42, windowId: 99 },
+        expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+      },
+    ]);
+  });
+
+  it("fails closed for forged context, target or unsupported tools", async () => {    let captures = 0;
     const captureRuntime = createCuaCaptureComputerUseRuntime({
       async captureOnce() {
         captures += 1;

@@ -118,7 +118,7 @@ async function sendText(
     );
   }
   let started;
-  let cuaTicket: ReturnType<typeof registerCuaLiveSubmission> = undefined;
+  let cuaTicket: Awaited<ReturnType<typeof registerCuaLiveSubmission>> = undefined;
   const requestedDelivery =
     payload.requestedDelivery ??
     (routingMode === "guide" ? "guide" : routingMode === "enqueue" ? "queue" : "startNow");
@@ -139,8 +139,10 @@ async function sendText(
       ...(payload.source ? { source: payload.source } : {}),
     });
     // guide/automation/plugin 代发不是可信桌面新提交；其余 desktop 输入才登记 ticket。
+    // mobile-origin 授权轮次（2026-11-10）：mobile 输入在持久授权命中时也登记（见
+    // registerCuaLiveSubmission），因此此处条件保持来源无关。
     if (requestedDelivery !== "guide" && !activeAutomationId && !payload.source) {
-      cuaTicket = registerCuaLiveSubmission(record, envelope, payload.inputOrigin);
+      cuaTicket = await registerCuaLiveSubmission(record, envelope, payload.inputOrigin);
     }
     started = await startPromptTurn(host, record, {
       content: payload.text,

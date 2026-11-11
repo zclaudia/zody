@@ -260,7 +260,18 @@ describe("node_repl CUA broker", () => {
       delivery_kind: "desktop-continuous",
     };
     expect(resolveTrustedCuaContext(meta)).toBeDefined();
-    expect(resolveTrustedCuaContext({ ...meta, remote_session_id: "remote-1" })).toBeUndefined();
+    // mobile-origin 授权轮次（2026-11-10）：remote_session_id 不再无条件拒绝，且
+    // web-remote-replayable 在 client_mode/delivery_kind 一致时放行（remoteSessionId 透传）。
+    const remote = resolveTrustedCuaContext({ ...meta, remote_session_id: "remote-1" });
+    expect(remote).toBeDefined();
+    expect(remote?.remoteSessionId).toBe("remote-1");
+    expect(
+      resolveTrustedCuaContext({
+        ...meta,
+        client_mode: "web-remote-replayable",
+        delivery_kind: "web-remote-replayable",
+      }),
+    ).toBeDefined();
     expect(resolveTrustedCuaContext({ ...meta, runtime_scope: undefined })).toBeUndefined();
     expect(resolveTrustedCuaContext({ ...meta, runtime_scope: "unknown" })).toBeUndefined();
     expect(resolveTrustedCuaContext({ ...meta, client_mode: undefined })).toBeUndefined();

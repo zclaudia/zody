@@ -1,5 +1,61 @@
 # macOS Computer Use 首期集成规格
 
+## 2026-11-10 mobile-origin 授权轮次：持久授权命中后手机发起可截图（用户已批准计划）
+
+2026-11-10 实测：手机远控（web-remote-replayable 链路，inputOrigin="mobile"）发「测试 computer use」指令，截图在授权/抓帧之前即被拒。排查确认 mobile 链路上共有 **5 道 fail-closed 关卡**按序生效，持久授权（项目级 allow_always / 会话 full access）求值位于全部关卡之后，未授权手机发起永远到不了授权判定：
+
+| #   | 位置                                                                                                                                                     | 现状检查                                                                           |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| a   | `apps/zody-cli/packages/bootstrap/src/zody-protocol-v4/commands/cua-live-submission.ts`                                                                  | `inputOrigin !== "desktop"` 不登记 live ticket                                     |
+| b   | `apps/zody-cli/packages/core/src/runtime/cua/cua-submission-coordinator.ts`（registerLiveSubmission / observeAdmission / observeSteer / onTurnStarting） | mobile 一律 `revokeCurrent("mobile-steer")`，不建 candidate                        |
+| b'  | `apps/zody-cli/packages/core/src/runtime/cua/cua-submission-authority.ts`（admitLive）                                                                   | `origin !== "desktop"` → `ineligible_origin`                                       |
+| c   | `createCuaSubmissionTurnScope` + `bootstrap/src/app/cua-runtime-native-capture.ts`                                                                       | 无 candidate → `cua_native_capture_scope_unavailable`                              |
+| d/e | `node-repl-host/src/cua-broker.ts`（resolveTrustedCuaContext）+ `src/cua-capture-runtime.ts`（readTrustedExpectation）                                   | 硬性要求 desktop-continuous 且无 remoteSessionId → `cua_capture_untrusted_context` |
+
+### 语义（本轮规则来源）
+
+- **目标**：手机发起 + 已有持久授权（复用 phase1 既有规则链：项目级 `cua_screenshot_confirm` allow 规则 / 会话 full access=yolo/guarded）→ 截图可用；未授权手机发起仍被拒且错误可观测（非静默）。安全属性不变：每张截图仍过 candidate lineage → turn scope 匹配 → Helper confirm → 规则复核 → 交付前终检全链，与触发来源正交。
+- **决策记录**（计划已获用户批准）：
+  1. 确认弹窗**桌面照弹**：走既有 v4 pendingInteractions + PermissionDialog 链（手机 attach 端可见同一投影），不为手机另建确认路由；手机端专属确认留后续轮次。
+  2. 资格范围**仅放开新 turn submission**：授权命中的 mobile 新输入登记 live ticket、建 candidate（lineage 记录 admission origin=mobile 供审计）；turn 进行中的 mobile steer **即便已授权仍维持 mobile-steer 撤销**（observeSteer 先 dropRegistration 丢弃其 ticket，行为自洽）。
+  3. 未授权手机发起**可观测拒绝，不触发授权流程**：授权只能经既有桌面路径建立（桌面发起一次选「总是允许」，或设置中配置）；`PermissionRuleValue` 不加来源维度（schema/存储/匹配逻辑不动，不发明新机制）。
+  4. 关卡 d/e **结构检查放宽，授权由 candidate 链承载**：readTrustedExpectation / resolveTrustedCuaContext 接受 `web-remote-replayable` + remoteSessionId（保留 runtimeScope=main、id 非空、clientMode===deliveryKind 校验）；授权事实不进 broker context，未授权 remote 在关卡 c 拒（错误码不变、message 附加引导提示）。
+- **授权事实在 admission 的表达 = live ticket 存在性**：ticket 是不可伪造的内存冻结对象，仅 bootstrap 验证持久授权后才产生；`CuaSubmissionAdmissionObservation` 不新增授权字段。
+
+### 状态所有者与事件顺序（不变项加粗）
+
+- 授权规则唯一所有者：**PermissionService + sessionStore**（项目规则经确认弹窗 allow_always 落盘，full access 为会话 yolo/guarded 模式）。CUA 资格唯一所有者：**CuaSubmissionCoordinator ticket/candidate**。两者均不新增所有者或写入路径。
+- 授权查询时机：bootstrap v4 handler（sendText/createSession firstInput）在登记 ticket 前调用 runtime 暴露的 `isCuaLiveSubmissionGrantActive()`，其判定复用 `isCuaConfirmAllowedByPermissionPolicy` 同一规则链（同 PermissionService 实例、同 `cua_screenshot_confirm` toolName、yolo/guarded 自动覆盖）。
+
+```text
+手机 sendText → Host facade 标记 inputOrigin=mobile（可信覆盖，不变）
+  → bootstrap handler：await 授权查询 ──命中──→ register ticket(origin=mobile)
+  │                                          └→ admission/queue promotion 消费凭证
+  │                                             → admitLive(origin=mobile) → candidate
+  │                                             → 截图走 turn scope 匹配 + Helper confirm
+  │                                             → confirm 时逐张规则复核（不变，TOCTOU 兜底）
+  └──未命中──→ 不登记 ticket（现状）→ admission 观察 mobile-steer 撤销（现状，回归不回退）
+  → 截图请求无 candidate → cua_native_capture_scope_unavailable（错误码不变，message 加引导）
+```
+
+- 幂等/撤销边界：mobile candidate 与 desktop candidate 同受既有撤销链约束（user-stop、runtime-dispose、owner-revoked、后续 mobile/unknown 输入的 steer 观察）；mobile steer 撤销语义授权前后均不变，MCU 回归用例不回退。
+- 本地 workspace（desktop-continuous、无 remoteSessionId）的手机发起经同一 admission 授权链自动受益，无需单独分支。
+
+### 修订关系
+
+- §3.2「手机输入混入本地执行」：授权命中的 mobile **新提交**为该节例外（可建 candidate）；该节其余语义（手机 steer 撤销 lineage、纯旁观不触发）与 §7.1 MCU1-24a/24b/24c 用例**不回退**——24b 的「可信 mobile 来源不能被本地 runtime 配置覆盖」仍成立：本地 runtime 配置不产生授权，授权只能来自桌面落盘的项目规则或会话 full access。
+- 2026-10-31「App 内确认弹窗」章：弹窗归属桌面照弹即该章原状，无修订。
+
+### 验收场景
+
+| 场景 | 预期                                                                                                                                |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| MO-1 | 桌面已授权（项目 allow_always 或会话 full access）后，手机远控发起截图成功出图（captured event 链完整）                             |
+| MO-2 | 未授权时手机发起截图被拒，错误可观测（scope_unavailable + 授权引导提示），不静默                                                    |
+| MO-3 | 授权前的 mobile-steer 撤销语义不回退：桌面 CUA 进行中手机 steer 输入（含已授权来源）仍撤销 lineage（revocationReason=mobile-steer） |
+| MO-4 | desktop-continuous 路径全量回归不受影响（既有 coordinator/capture/broker 用例全绿）                                                 |
+
+
 ## 2026-10-31 App 内确认弹窗替代 Helper 原生 NSAlert（用户已批准）
 
 本章为规格先行：把当前每次截图前由固定签名 Helper 弹原生 NSAlert（`packages/desktop/native/macos-cua-desktop-session/src/confirmation.mm`）逐次确认，替换为 Zody App 内确认弹窗，用户已批准该替换。本章是本轮唯一规则来源；对应测试先于行为实现，工作流与验收见 [实施计划](../docs/plans/computer-use-macos-phase1-arm64-screenshot.md) 末尾「App 内确认弹窗轮次」一节。

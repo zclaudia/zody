@@ -95,7 +95,10 @@ export class CuaSubmissionAuthority implements CuaSubmissionProducerPort {
   admitLive(request: CuaLiveAdmissionRequest): CuaSubmissionAdmissionResult {
     if (this.disposed) return { accepted: false, reason: "disposed" };
     if (!isSubmissionOrigin(request.origin)) return { accepted: false, reason: "invalid_input" };
-    if (request.origin !== "desktop") return { accepted: false, reason: "ineligible_origin" };
+    // mobile-origin 授权轮次（2026-11-10）：授权命中的 mobile 新提交由 coordinator 消费
+    // 凭证后进入 admitLive（唯一可信入口，bootstrap 只在持久授权命中时登记 ticket），
+    // authority 不再按来源一票否决；unknown 来源维持拒绝。
+    if (request.origin === "unknown") return { accepted: false, reason: "ineligible_origin" };
     if (!isSubmissionInputKind(request.inputKind)) {
       return { accepted: false, reason: "invalid_input" };
     }
@@ -125,6 +128,7 @@ export class CuaSubmissionAuthority implements CuaSubmissionProducerPort {
       state: "candidate",
       sourceCommandId: request.sourceCommandId,
       queueItemId: request.queueItemId,
+      admissionOrigin: request.origin,
       bindings: new Set(),
     });
     for (const key of dedupKeys) this.dedupKeys.set(key, submissionLineageId);

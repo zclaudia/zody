@@ -92,7 +92,7 @@ async function createSession(
     const admission = commandAdmissionOf(envelope);
     const durableAdmission =
       (await host.admitInputCommand?.(envelope, sessionId, admission)) ?? null;
-    let cuaTicket: ReturnType<typeof registerCuaLiveSubmission> = undefined;
+    let cuaTicket: Awaited<ReturnType<typeof registerCuaLiveSubmission>> = undefined;
     try {
       const attachments = await mapAttachmentRefsToTurnAttachments(
         record.app,
@@ -105,7 +105,7 @@ async function createSession(
         attachmentRefs: payload.firstInput.attachments,
         ...resolveSubmittedExecutionState(record, payload.firstInput),
       });
-      cuaTicket = registerCuaLiveSubmission(record, envelope, payload.firstInput.inputOrigin);
+      cuaTicket = await registerCuaLiveSubmission(record, envelope, payload.firstInput.inputOrigin);
       const started = await startPromptTurn(host, record, {
         content: payload.firstInput.text,
         inputId: envelope.commandId,

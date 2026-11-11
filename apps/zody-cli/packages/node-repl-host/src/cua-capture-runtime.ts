@@ -1,6 +1,7 @@
 import type { ComputerUseRuntime, ComputerUseRuntimeContext } from "@zody/zody-cua";
 
 const DESKTOP_CONTINUOUS = "desktop-continuous";
+const WEB_REMOTE_REPLAYABLE = "web-remote-replayable";
 const SCREENSHOT_METHOD = "screenshot";
 const IMAGE_MIME = /^image\/[a-z0-9.+-]+$/iu;
 
@@ -83,10 +84,16 @@ function readTrustedExpectation(
   context: ComputerUseRuntimeContext,
 ): CuaCaptureExpectation | undefined {
   if (context.runtimeScope !== "main") return undefined;
-  if (context.clientMode !== DESKTOP_CONTINUOUS || context.deliveryKind !== DESKTOP_CONTINUOUS) {
+  // mobile-origin 授权轮次（2026-11-10）：结构检查接受两种 clientMode（desktop-continuous
+  // 与 web-remote-replayable，仍要求二者一致）；remoteSessionId 不再无条件拒绝——授权
+  // 事实由 admission→candidate→turn scope 链承载（captureCuaRuntimeOnce 校验 scope.ref
+  // 与 expected 全等），未授权 remote 无 candidate，在 turn scope 处可观测拒绝。
+  if (
+    (context.clientMode !== DESKTOP_CONTINUOUS && context.clientMode !== WEB_REMOTE_REPLAYABLE) ||
+    context.clientMode !== context.deliveryKind
+  ) {
     return undefined;
   }
-  if (context.remoteSessionId) return undefined;
   const sessionId = trimNonEmpty(context.sessionId);
   const workspaceKey = trimNonEmpty(context.workspaceKey);
   const turnId = trimNonEmpty(context.turnId);

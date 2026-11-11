@@ -97,7 +97,11 @@ export class CuaSubmissionCoordinator {
     input: CuaLiveSubmissionRegistrationRequest,
   ): CuaLiveSubmissionRegistrationResult {
     if (this.#disposed) return { accepted: false, reason: "disposed" };
-    if (input.origin !== "desktop") return { accepted: false, reason: "ineligible_origin" };
+    // mobile-origin 授权轮次（2026-11-10）：mobile ticket 只由可信 bootstrap 在持久授权
+    // 命中后登记（授权事实 = ticket 存在性）；unknown 来源仍拒绝。
+    if (input.origin !== "desktop" && input.origin !== "mobile") {
+      return { accepted: false, reason: "ineligible_origin" };
+    }
     if (input.inputKind !== "new-submission") {
       return { accepted: false, reason: "ineligible_input_kind" };
     }
@@ -156,11 +160,18 @@ export class CuaSubmissionCoordinator {
   /**
    * 在任何 admission 分支前调用。mobile/unknown 只锁存撤销，不消费 desktop 凭证；
    * 该路径只降低权限，不建立 candidate。
+   *
+   * mobile-origin 授权轮次（2026-11-10）例外：带授权凭证（存在 pending registration）的
+   * mobile 提交与 desktop 排队输入一致——排队观察不撤销 current，凭证保留到提升消费；
+   * 未授权 mobile 无凭证，维持 mobile-steer 撤销语义不变。
    */
   observeAdmission(input: CuaSubmissionAdmissionObservation): void {
     if (this.#disposed) return;
     const origin = resolveCuaSubmissionOrigin(input.inputOrigin);
     if (origin === "desktop") return;
+    if (origin === "mobile" && this.hasPendingRegistration(input.sourceCommandId, input.queueItemId)) {
+      return;
+    }
     this.revokeCurrent(origin === "mobile" ? "mobile-steer" : "unknown-input");
     this.dropRegistration(input.sourceCommandId, input.queueItemId);
   }
@@ -187,19 +198,23 @@ export class CuaSubmissionCoordinator {
   /**
    * 只在 admitPrompt 实际开始一个独立 turn（含 queue promotion）时调用。
    * 同一 source/queue 凭证最多消费一次；没有凭证不会新建 candidate。
+   *
+   * mobile-origin 授权轮次（2026-11-10）：带授权凭证的 mobile 提交与 desktop 同路径——
+   * 消费凭证后 admitLive 建 candidate（lineage 记录 admissionOrigin=mobile 供审计）；
+   * 无凭证 mobile（未授权）维持原语义：observeAdmission 锁存 mobile-steer 撤销。
    */
   onTurnStarting(input: CuaSubmissionAdmissionObservation): CuaSubmissionRef | undefined {
     if (this.#disposed) return undefined;
     const origin = resolveCuaSubmissionOrigin(input.inputOrigin);
-    if (origin !== "desktop") {
-      // 新 mobile/unknown 独立 turn 即使没有凭证，也必须先撤销旧 current；仅降低权限。
+    if (origin === "unknown") {
+      // 新 unknown 独立 turn 即使没有凭证，也必须先撤销旧 current；仅降低权限。
       this.observeAdmission(input);
       return undefined;
     }
 
     const sourceCommandId = input.sourceCommandId?.trim();
     if (!sourceCommandId) {
-      this.revokeCurrent("unknown-input");
+      this.revokeCurrent(origin === "mobile" ? "mobile-steer" : "unknown-input");
       return undefined;
     }
     const associationKey = cuaConsumedAssociationKey(sourceCommandId, input.queueItemId);
@@ -212,13 +227,18 @@ export class CuaSubmissionCoordinator {
       ) {
         return this.currentCandidateRef();
       }
+      if (origin === "mobile") {
+        // 未授权 mobile（无凭证）：不建 candidate，按原语义锁存 mobile-steer 撤销。
+        this.observeAdmission(input);
+        return undefined;
+      }
       this.revokeCurrent("unknown-input");
       return undefined;
     }
 
     this.rememberConsumedAssociation(sourceCommandId, input.queueItemId);
     const admission = this.#authority.admitLive({
-      origin: "desktop",
+      origin,
       inputKind: "new-submission",
       sourceCommandId,
       ...(input.queueItemId === undefined ? {} : { queueItemId: input.queueItemId }),
@@ -326,6 +346,23 @@ export class CuaSubmissionCoordinator {
     if (record.queueItemId !== undefined && record.queueItemId !== queueItemId) return undefined;
     this.unlinkRegistration(record);
     return record;
+  }
+
+  /**
+   * mobile-origin 授权轮次（2026-11-10）：授权事实 = pending registration 的存在性
+   * （ticket 不可伪造、仅授权命中后由 bootstrap 登记）。匹配语义与消费/丢弃一致：
+   * sourceCommandId 命中且 queueItemId 精确一致（record 无 queueItemId 时兼容缺省）。
+   */
+  private hasPendingRegistration(
+    sourceCommandId: string | undefined,
+    queueItemId: string | undefined,
+  ): boolean {
+    const source = sourceCommandId?.trim();
+    if (!source) return false;
+    const record = this.#registrations.get(source);
+    if (!record) return false;
+    if (record.queueItemId !== undefined && record.queueItemId !== queueItemId) return false;
+    return true;
   }
 
   private dropRegistration(

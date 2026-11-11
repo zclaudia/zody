@@ -280,11 +280,22 @@ describe("node_repl CUA bridge", () => {
     expect(executions).toBe(0);
   });
 
-  it("keeps CUA admission fail-closed for remote, unknown, and incomplete contexts", () => {
+  it("keeps CUA admission fail-closed for unknown and incomplete contexts", () => {
     expect(resolveTrustedCuaContext(trustedContext)).toBeDefined();
+    // mobile-origin 授权轮次（2026-11-10）：remote_session_id 不再无条件拒绝（授权事实由
+    // admission→candidate→turn scope 链承载），remoteSessionId 透传进 context。
+    const remote = resolveTrustedCuaContext({ ...trustedContext, remote_session_id: "remote-1" });
+    expect(remote).toBeDefined();
+    expect(remote?.remoteSessionId).toBe("remote-1");
+    // web-remote-replayable 需要 client_mode 与 delivery_kind 同时一致才放行。
     expect(
-      resolveTrustedCuaContext({ ...trustedContext, remote_session_id: "remote-1" }),
-    ).toBeUndefined();
+      resolveTrustedCuaContext({
+        ...trustedContext,
+        client_mode: "web-remote-replayable",
+        delivery_kind: "web-remote-replayable",
+        remote_session_id: "remote-1",
+      }),
+    ).toBeDefined();
     expect(
       resolveTrustedCuaContext({ ...trustedContext, runtime_scope: "unknown" as never }),
     ).toBeUndefined();

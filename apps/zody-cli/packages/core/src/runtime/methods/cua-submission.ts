@@ -249,31 +249,75 @@ async function isCuaConfirmAllowedByPermissionPolicy(
   target: CuaNativeCaptureConfirmationInput["target"],
 ): Promise<boolean> {
   try {
-    let projectRules: PermissionRuleset | null = null;
-    const store = runtime.sessionStore;
-    if (store) {
-      const session = await store.getSession(runtime.sessionId);
-      if (session?.permission?.scope === "session") {
-        projectRules = session.permission;
-      } else if (session?.projectID) {
-        projectRules = await store.getProjectPermission(session.projectID);
-      }
-    }
-    const decision = runtime.permissionService.checkPermission(
-      {
-        input: { target: buildCuaConfirmTarget(target) },
-        mode: runtime.getMode(),
-        planEnabled: runtime.getPlanEnabled(),
-        riskLevel: "high",
-        toolName: CUA_SCREENSHOT_CONFIRM_TOOL_NAME,
-      },
-      undefined,
-      projectRules,
-    );
-    return decision.decision === "allow";
+    const projectRules = await readCuaProjectPermissionRules(runtime);
+    return checkCuaConfirmPermission(runtime, projectRules, buildCuaConfirmTarget(target));
   } catch {
     return false;
   }
+}
+
+/**
+ * mobile-origin 授权轮次（2026-11-10）：bootstrap 在为 mobile 新提交登记 live ticket 前
+ * 查询持久授权是否命中。与截图确认免交互（isCuaConfirmAllowedByPermissionPolicy）使用
+ * 同一规则链（同 PermissionService 实例、同 cua_screenshot_confirm toolName；会话
+ * full access=yolo/guarded 自动覆盖）；规则读取失败按未命中（fail-closed）。该查询只是
+ * admission 资格门，每张截图仍在 confirm 时逐张复核规则（isCuaLiveSubmissionGrantActive
+ * 与截图之间规则被删除时，confirm 照常弹窗）。
+ */
+export async function isCuaLiveSubmissionGrantActive(
+  this: AgentRuntimeInternal,
+): Promise<boolean> {
+  try {
+    const projectRules = await readCuaProjectPermissionRules(this);
+    // cua_screenshot_confirm 规则按 toolName 整体匹配（无 ruleContent）；admission 时刻
+    // 还没有截图目标，占位 target 只满足请求形状，不参与规则匹配。
+    return checkCuaConfirmPermission(this, projectRules, CUA_ADMISSION_GRANT_PROBE_TARGET);
+  } catch {
+    return false;
+  }
+}
+
+/** admission 授权探测用的占位 target；cua_screenshot_confirm 规则不含 ruleContent，不读它。 */
+const CUA_ADMISSION_GRANT_PROBE_TARGET: ReturnType<typeof buildCuaConfirmTarget> = Object.freeze({
+  pid: 0,
+  windowId: 0,
+  ownerName: "",
+  windowName: "",
+});
+
+/** 读会话级（scope=session）或项目级 ruleset；无 store/无 project 时为 null（未命中）。 */
+async function readCuaProjectPermissionRules(
+  runtime: AgentRuntimeInternal,
+): Promise<PermissionRuleset | null> {
+  const store = runtime.sessionStore;
+  if (!store) return null;
+  const session = await store.getSession(runtime.sessionId);
+  if (session?.permission?.scope === "session") {
+    return session.permission;
+  }
+  if (session?.projectID) {
+    return await store.getProjectPermission(session.projectID);
+  }
+  return null;
+}
+
+function checkCuaConfirmPermission(
+  runtime: AgentRuntimeInternal,
+  projectRules: PermissionRuleset | null,
+  target: ReturnType<typeof buildCuaConfirmTarget>,
+): boolean {
+  const decision = runtime.permissionService.checkPermission(
+    {
+      input: { target },
+      mode: runtime.getMode(),
+      planEnabled: runtime.getPlanEnabled(),
+      riskLevel: "high",
+      toolName: CUA_SCREENSHOT_CONFIRM_TOOL_NAME,
+    },
+    undefined,
+    projectRules,
+  );
+  return decision.decision === "allow";
 }
 
 /**

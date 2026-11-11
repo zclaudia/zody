@@ -21,6 +21,7 @@ import {
   invalidateCuaSubmissionTurnScopeForForeground,
   invalidateCuaSubmissionTurnScopeForTurn,
   invalidateCuaSubmissionTurnScopeOnDispose,
+  isCuaLiveSubmissionGrantActive,
   requestCuaNativeCaptureConfirmation,
 } from "./cua-submission.js";
 import { getTools } from "./config.js";
@@ -236,6 +237,7 @@ export function installAgentRuntimeMethods(ctor: AgentRuntimeConstructor): void 
   proto.getCurrentCuaSubmissionRef = getCurrentCuaSubmissionRef;
   proto.createCuaSubmissionTurnScope = createCuaSubmissionTurnScope;
   proto.requestCuaNativeCaptureConfirmation = requestCuaNativeCaptureConfirmation;
+  proto.isCuaLiveSubmissionGrantActive = isCuaLiveSubmissionGrantActive;
   proto.invalidateCuaSubmissionTurnScopeForTurn = invalidateCuaSubmissionTurnScopeForTurn;
   proto.invalidateCuaSubmissionTurnScopeForForeground =
     invalidateCuaSubmissionTurnScopeForForeground;

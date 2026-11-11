@@ -135,6 +135,7 @@ describe("Host startup identity to live CommandInbox submission", () => {
       cancelInputCommand: vi.fn(async () => undefined),
       createSessionRecord: createRecord,
       getQueueItem,
+      getRevision: () => 0,
     } as unknown as V4CommandCoreHost;
     return host;
   }
@@ -467,6 +468,101 @@ describe("Host startup identity to live CommandInbox submission", () => {
       const mobileRecord = records.get("created-2");
       if (!mobileRecord) throw new Error("mobile record missing");
       expect(mobileRecord.app.runtime.getCuaSubmissionProjection().status).toBe("unknown");
+    } finally {
+      await Promise.all([...records.values()].map((record) => record.app.close?.()));
+    }
+  });
+
+  it("does not register a mobile ticket when the persistent grant is inactive", async () => {
+    const { app, record } = await createApp({ identity: LAUNCH_IDENTITY, sessionId: "session-mg" });
+    const records = new Map([[String(app.sessionId), record]]);
+    const host = makeHost(records);
+    const inbox = new CommandInbox({ getLogEpoch: () => "epoch-1", getRevision: () => 0 });
+    try {
+      // 未授权：mobile 输入不登记 ticket，先有 desktop candidate 时维持 mobile-steer 撤销。
+      const grantProbe = vi
+        .spyOn(app.runtime, "isCuaLiveSubmissionGrantActive")
+        .mockResolvedValue(false);
+      expect(
+        (await execute(inbox, host, sendText("desktop-first", String(app.sessionId), "desktop")))
+          .result,
+      ).toMatchObject({ type: "inputAccepted" });
+      expect(app.runtime.getCuaSubmissionProjection().status).toBe("candidate");
+      // 等 desktop turn 结束即可；撤销断言与 mobile 输入走 steer 还是 queue 无关
+      // （observeSteer/observeAdmission 对未授权 mobile 都锁存 mobile-steer 撤销）。
+      await waitFor(
+        () => app.runtime.getActiveTurnInfo() === undefined,
+        "desktop turn did not finish",
+      );
+      expect(
+        (await execute(inbox, host, sendText("mobile-denied", String(app.sessionId), "mobile")))
+          .result,
+      ).toMatchObject({ type: "inputAccepted" });
+      expect(app.runtime.getCuaSubmissionProjection()).toMatchObject({
+        status: "revoked",
+        revocationReason: "mobile-steer",
+      });
+      expect(grantProbe).toHaveBeenCalledTimes(1);
+      grantProbe.mockRestore();
+    } finally {
+      await app.close?.();
+    }
+  });
+
+  it("registers a granted mobile live ticket into a candidate submission", async () => {
+    const { app, record } = await createApp({
+      identity: LAUNCH_IDENTITY,
+      sessionId: "session-mg-granted",
+    });
+    const records = new Map([[String(app.sessionId), record]]);
+    const host = makeHost(records);
+    const inbox = new CommandInbox({ getLogEpoch: () => "epoch-1", getRevision: () => 0 });
+    try {
+      // 已授权（项目 allow_always / full access）：mobile 新提交登记 origin=mobile 的
+      // live ticket，独立 turn admission 后建立 candidate（spec 2026-11-10 mobile-origin
+      // 授权轮次）。idle 起步直发，保证走新 turn admission 而非 steer/queue 路径。
+      const grantProbe = vi
+        .spyOn(app.runtime, "isCuaLiveSubmissionGrantActive")
+        .mockResolvedValue(true);
+      expect(
+        (await execute(inbox, host, sendText("mobile-granted", String(app.sessionId), "mobile")))
+          .result,
+      ).toMatchObject({ type: "inputAccepted" });
+      expect(app.runtime.getCuaSubmissionProjection().status).toBe("candidate");
+      expect(grantProbe).toHaveBeenCalledTimes(1);
+      grantProbe.mockRestore();
+    } finally {
+      await app.close?.();
+    }
+  });
+
+  it("registers a granted mobile createSession.firstInput after record creation", async () => {
+    const records = new Map<string, V4SessionRecordView>();
+    let nextSession = 0;
+    const host = makeHost(records, async () => {
+      nextSession += 1;
+      const sessionId = `created-mobile-${nextSession}`;
+      const created = await createApp({ identity: LAUNCH_IDENTITY, sessionId });
+      vi.spyOn(created.app.runtime, "isCuaLiveSubmissionGrantActive").mockResolvedValue(true);
+      records.set(sessionId, created.record);
+      return { sessionId };
+    });
+    const inbox = new CommandInbox({ getLogEpoch: () => "epoch-1", getRevision: () => 0 });
+    try {
+      await execute(inbox, host, {
+        clientId: "mobile",
+        commandId: "create-mobile-granted",
+        issuedAt: 1,
+        payload: {
+          firstInput: { inputOrigin: "mobile", text: "phone input granted" },
+          workspaceId: process.cwd(),
+        },
+        sessionId: null,
+        type: "createSession",
+      } as CommandEnvelope);
+      const mobileRecord = records.get("created-mobile-1");
+      if (!mobileRecord) throw new Error("mobile record missing");
+      expect(mobileRecord.app.runtime.getCuaSubmissionProjection().status).toBe("candidate");
     } finally {
       await Promise.all([...records.values()].map((record) => record.app.close?.()));
     }

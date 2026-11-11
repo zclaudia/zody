@@ -86,6 +86,8 @@ export interface AgentRuntimeCoreMethods {
   requestCuaNativeCaptureConfirmation(
     input: CuaNativeCaptureConfirmationInput,
   ): Promise<CuaNativeCaptureConfirmationResult>;
+  /** mobile-origin 授权轮次（2026-11-10）：mobile 提交登记前的持久授权命中查询。 */
+  isCuaLiveSubmissionGrantActive(): Promise<boolean>;
   invalidateCuaSubmissionTurnScopeForTurn(
     activeTurn: ActiveTurnSteeringState,
     reason: CuaSubmissionTurnInvalidationReason,

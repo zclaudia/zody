@@ -87,6 +87,11 @@ export interface LineageRecord {
   state: "candidate" | "revoked";
   sourceCommandId: string;
   queueItemId?: string;
+  /**
+   * mobile-origin 授权轮次（2026-11-10）：admission 来源（desktop 直连提交 / mobile 持久
+   * 授权命中提交），仅诊断审计用；不参与权限判定，判定仍由 coordinator 凭证消费承载。
+   */
+  admissionOrigin: "desktop" | "mobile";
   producerIncarnation?: string;
   revocationReason?: CuaSubmissionRevokeReason;
   bindings: Set<string>;

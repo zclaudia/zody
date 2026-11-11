@@ -12,6 +12,7 @@ import type { NodeReplCuaBrokerConnection } from "./cua-bridge.js";
 const MAX_REQUEST_BYTES = 1024 * 1024;
 const MAX_RESPONSE_BYTES = 32 * 1024 * 1024;
 const DESKTOP_CONTINUOUS = "desktop-continuous";
+const WEB_REMOTE_REPLAYABLE = "web-remote-replayable";
 
 const brokerRequestSchema = z
   .object({
@@ -54,14 +55,23 @@ export function resolveTrustedCuaContext(
   meta: NodeReplRequestMeta,
 ): ComputerUseRuntimeContext | undefined {
   if (meta.runtime_scope !== "main") return undefined;
-  if (meta.client_mode !== DESKTOP_CONTINUOUS) return undefined;
-  if (meta.delivery_kind !== DESKTOP_CONTINUOUS) return undefined;
+  // mobile-origin 授权轮次（2026-11-10）：结构检查接受 desktop-continuous 与
+  // web-remote-replayable 两种 clientMode（仍要求 delivery_kind 一致）；remote_session_id
+  // 允许存在并透传。授权事实由 admission→candidate→turn scope 链承载，本函数只做
+  // 结构可信检查，不签发原生输入资格。
+  const clientMode = meta.client_mode;
+  if (
+    (clientMode !== DESKTOP_CONTINUOUS && clientMode !== WEB_REMOTE_REPLAYABLE) ||
+    meta.delivery_kind !== clientMode
+  ) {
+    return undefined;
+  }
 
   const stringMeta = (key: string): string | undefined => {
     const value = meta[key];
     return typeof value === "string" && value.trim() ? value.trim() : undefined;
   };
-  if (stringMeta("remote_session_id")) return undefined;
+  const remoteSessionId = stringMeta("remote_session_id");
 
   const sessionId = stringMeta("session_id");
   const workspacePath = stringMeta("workspace_path");
@@ -79,8 +89,9 @@ export function resolveTrustedCuaContext(
     ...(workspacePath ? { workspacePath } : {}),
     ...(workspaceIdentity ? { workspaceIdentity } : {}),
     ...(turnId ? { turnId } : {}),
-    clientMode: DESKTOP_CONTINUOUS,
-    deliveryKind: DESKTOP_CONTINUOUS,
+    clientMode,
+    deliveryKind: clientMode,
+    ...(remoteSessionId ? { remoteSessionId } : {}),
     ...(traceId
       ? {
           trace: {

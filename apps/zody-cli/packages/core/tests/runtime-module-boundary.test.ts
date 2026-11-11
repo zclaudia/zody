@@ -12,6 +12,12 @@ const lineCountExemptFiles = new Set([
     "internal-methods.ts",
     // 6ae791ee 后 methods/index.ts 达 416 行，同为未登记超标；re-export 汇总文件，拆分收益低，登记为债。
     "methods/index.ts",
+    // mobile-origin 授权轮次（2026-11-10）加入凭证短路与 mobile 消费分支后达 435 行；
+    // 与上两条同因（computer-use 线演进），登记为债；拆分（admission 观察器独立文件）待 CUA 线收口。
+    "cua/cua-submission-coordinator.ts",
+    // 同轮在 methods/cua-submission.ts 新增 isCuaLiveSubmissionGrantActive 授权查询
+    // （复用 confirm 规则链）后达 419 行；登记为债，与 confirm 链一起拆分待 CUA 线收口。
+    "methods/cua-submission.ts",
     "internal-turn-methods.ts",
     "types.ts",
     "methods/background.ts",

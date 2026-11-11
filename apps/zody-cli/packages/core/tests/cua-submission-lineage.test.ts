@@ -63,20 +63,37 @@ describe("CuaSubmissionAuthority", () => {
     expect(() => mutateRef(first, "authorizationRevision", 99)).toThrow(TypeError);
   });
 
-  it.each(["mobile", "unknown"] as const)(
-    "rejects %s origin without allocating a lineage",
-    (origin) => {
-      const owner = createOwner();
-      const denied = owner.admitLive({
-        origin,
-        inputKind: "new-submission",
-        sourceCommandId: "command-mobile",
-      });
+  it.each(["unknown"] as const)("rejects %s origin without allocating a lineage", (origin) => {
+    const owner = createOwner();
+    const denied = owner.admitLive({
+      origin,
+      inputKind: "new-submission",
+      sourceCommandId: "command-unknown",
+    });
 
-      expect(denied).toEqual({ accepted: false, reason: "ineligible_origin" });
-      expect(admit(owner, "desktop-after-rejection").authorizationRevision).toBe(1);
-    },
-  );
+    expect(denied).toEqual({ accepted: false, reason: "ineligible_origin" });
+    expect(admit(owner, "desktop-after-rejection").authorizationRevision).toBe(1);
+  });
+
+  it("admits a granted mobile new submission with the same lineage identity rules", () => {
+    // mobile-origin 授权轮次（2026-11-10）：授权命中的 mobile 新提交经 coordinator 消费
+    // 凭证后进入 admitLive；authority 不再按来源拒绝，但只接受 trusted admission 边界
+    // （coordinator）传入的 mobile——steer 对 mobile 仍走撤销（见下方 steer 用例）。
+    const owner = createOwner();
+    const mobile = owner.admitLive({
+      origin: "mobile",
+      inputKind: "new-submission",
+      sourceCommandId: "command-mobile-granted",
+      queueItemId: "queue-mobile-granted",
+    });
+
+    expect(mobile.accepted).toBe(true);
+    if (mobile.accepted) {
+      expect(mobile.ref.authorizationRevision).toBe(1);
+      expect(Object.isFrozen(mobile.ref)).toBe(true);
+      expect(owner.projectNow({ ref: mobile.ref }).status).toBe("candidate");
+    }
+  });
 
   it.each(["retry", "replay", "recovery", "continuation", "steer"] as const)(
     "rejects %s input kind from live admission",

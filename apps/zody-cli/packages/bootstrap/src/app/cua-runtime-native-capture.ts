@@ -81,7 +81,15 @@ export async function captureCuaRuntimeOnce(
 ): Promise<CuaNativeAuthorityImageToolResult> {
   options.signal?.throwIfAborted();
   const scope = runtime.createCuaSubmissionTurnScope();
-  if (!scope) throw new Error("cua_native_capture_scope_unavailable");
+  if (!scope) {
+    // mobile-origin 授权轮次（2026-11-10）：未授权手机发起在 admission 无凭证，这里是
+    // 唯一可观测拒绝点。错误码保持不变（下游按字符串匹配），message 附加授权引导，
+    // 桌面与手机路径统一文案，避免静默失败。
+    throw new Error(
+      "cua_native_capture_scope_unavailable: no live CUA submission credential for this turn; " +
+        "mobile-origin requests require a prior desktop grant (always-allow rule or full access)",
+    );
+  }
   if (
     options.expected &&
     (scope.ref.sessionId !== options.expected.sessionId ||
