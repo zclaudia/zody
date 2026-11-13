@@ -1,13 +1,12 @@
 import { release } from "node:os";
 import type { CuaOsSupport } from "@zody/shared";
 
-// 承诺地板 = max(Helper Info.plist LSMinimumSystemVersion 12.0, SEA 二进制 minos 11.0)。
-// 2026-08 事故：地板检查缺位时，低版本 macOS 用户只看到授权反复无响应
-// （真因是 LaunchServices -10825 拒启 Helper）。
-export const CUA_MINIMUM_MACOS_VERSION = "12.0";
-// 地板与上游 zcode-cua helperAppBundle.ts 的 Info.plist LSMinimumSystemVersion(12.0) 联动，
-// bump 任一侧必须同步其余常量。
-const CUA_MINIMUM_DARWIN_MAJOR = 21; // Darwin major - 9 = macOS major（21↔12, 22↔13）
+// 承诺地板 = 随包窄链 Desktop Session.app 的 target.minimumMacOSVersion（14.2）。
+// 2026-11-09 分发轮次：CUA 能力面收敛为窄链，旧宽链 Helper 的 12.0 地板不再适用；
+// 该值与 cuaNarrowAgentProfile.ts 的 CUA_NARROW_MINIMUM_MACOS_VERSION、
+// macos-cua-narrow-resources-constants.mjs 的 NARROW_TARGET 同步维护。
+export const CUA_MINIMUM_MACOS_VERSION = "14.2";
+const CUA_MINIMUM_DARWIN_MAJOR = 23; // Darwin major - 9 = macOS major（23↔14, 24↔15）
 
 export function darwinMajorToMacosMajor(major: number): number {
   return major - 9;

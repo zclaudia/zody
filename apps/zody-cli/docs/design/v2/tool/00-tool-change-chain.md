@@ -1,5 +1,11 @@
 # Tool Change Chain Spec
 
+## Computer Use 二期 R1 只读观察（2026-11-11）
+
+沿用根 `specs/computer-use-macos-phase2-ax-driver.md` 的 R1 接入合同：真实主代理工具调用经现有 node_repl capability、显式 sealed runtime、既有 live turn scope 和已认证 Helper authority 连接，接入窗口元数据枚举与精确窗口 AX 观察。新增内部 observation bootstrap、`confirmRead`、`observationResult`；不增加模型方法或授权参数。AX 正文读取采用独立 `cua_ax_read_confirm` 的 user-once 审批，含 SDK getApp/elements 静默观察；截图规则、系统 TCC 和 full access 不自动授予正文读取。元数据枚举禁采正文预览。
+
+窗口、冻结元素、state_id 和模型可见 diff 基线唯一归 Helper 观察会话；CLI 只验证同一 ref/turn、授权和有界结果，撤销先于正文交付时丢弃。所有写方法、普通 CLI/server、子代理保持拒绝。Desktop continuous 与 mobile replayable 继续原资格链，手机截图授权不升级正文权限；结果走既有工具结果和媒体通道，不另建队列或 UI 事实。测试先覆盖拒绝零采集、错窗/失效、静默 diff、payload 上限及撤销交错，再补实现；签名冻结产物与真机无干扰验收另记。
+
 ## Chrome 扩展 P2：已有 tab 授权与 locator（2026-10-31）
 
 工具 schema 不新增方法：复用 `browser.user.openTabs()`、`browser.user.claimTab(tab)`、
@@ -1715,7 +1721,28 @@ interrupted result。修复不改变工具 schema、权限、执行时机、协�
 > conversation-quotes 的 bot 材料分支随第三方 IM bot channels 全量删除
 > （specs/bot-channels-removal.md）。conversationQuotes（通用会话引用材料）保留。
 
-
 ### 2026-10-30 真实桌面 CUA 装配续作
 
 用户已批准可信 Host/CLI 迁至固定签名 Node，Electron 仅为 UI；原生 Helper 对每次新的截图授权确认会话与精确窗口。复用同一 CommandInbox、CuaSubmissionAuthority、活动 turn scope、producer 与停止链；candidate → 原生确认 → owner/目标复核 → lease/截图 → 交付复核。确认不是第二 authority，也不能将 remote/mobile 输入转为 desktop。原生等待期间 stop/EOF 必须关闭准入，晚到确认或图片丢弃。图片继续现有 CallToolResult image 到 node_repl_images 路径；未完成可信 launcher/peer/封装资源的 composition 不得开放。详见根 spec 与 desktop-session 计划；placeholder 与默认入口保持禁用。
+
+### 2026-11-11 R1 签名候选的 SDK 资源闭包
+
+公开 bootstrap 仍通过 `ZODY_CUA_PLUGIN_ROOT/scripts/computer-use-client.mjs` 加载 SDK。固定 Helper 将 SDK 与文档作为资源摘要闭包封装；CLI 从签名 Node 的 execPath 推导唯一目录，同句柄校验摘要后，把 SDK/文档快照交给内部 cell 协议。受限 process facade 只增加此固定 root；仅该固定文件 URL 映射为已验证的模块快照，文档也直接读取快照，避免验证后重新开文件。不扩大 cell 环境变量白名单。
+
+内部快照字段严格校验、按 UTF-8 字节计限，SDK 512KiB、文档 256KiB、总请求 1MiB；缺失、篡改或超限均拒绝。普通非封装路径保留原行为。真实 cell 子进程 bootstrap、文档读取与资源缺失/篡改回归已覆盖；真机读取验收仍须独立通过。
+
+### 2026-11-11 R1 元数据枚举容量
+
+用户确认 `list_apps/list_windows` 完整结果单独限 64KiB UTF-8 JSON，正文保持 12KiB。仅可信 composition 中固定为元数据观察的 authority 连接可接收 128KiB 的 observationResult 帧、累计缓冲 256KiB；其他帧及正文/截图连接仍 16KiB 帧、64KiB 缓冲。放宽只承载有界元数据及完整 scope/转义开销，不新增授权、正文字段或截断列表；上限配置只能收紧。native 与 CLI 双端测试边界和全链路 19.6KB 以上数组，真实签名候选继续验收。
+
+R1 读取确认真实验收发现 broker 漏接：`cua_ax_read_confirm` 不能走只登记反向 RPC 的普通工具路径。复用截图合成确认的事件顺序，通过 V4 gateway 发 `PermissionRequested/Resolved`，读取专用请求透传 user-once/no-always-allow，截图仍遵循既有策略；禁止新增 authority 或权限 owner。App 只展示读取语义及精确窗口，不把 raw JSON 用作确认界面。
+
+### 2026-11-12 R1 原生失败诊断
+
+观察失败沿既有 native stderr → Services 审计解析器 → 日志链投影固定 `observation-rejected` JSON。仅允许枚举 `phase/code/ax`，未知原生值归一 unknown，解析器拒绝额外字段和任意文本；不得记录树、标题、路径或 provider 请求。日志不提供 authority，不改变 SDK 错误、读取授权、失败基线清理或重试规则。必须同时验证实际原生 formatter 输出与审计 parser，不能只验证各端的独立字符串。
+
+### 2026-11-12 R1 生命周期验收
+
+03c/03d复用既有读取、authority撤销和V4 Stop，不新增Agent工具或写入口。独立测试控制器只对身份匹配的explicit夹具发SIGUSR1；路径仅传WDIO，不进入sealed CLI/cell环境。旧卡允许后旧引用必须typed拒绝且无正文，新引用重新确认full；待确认Stop必须真实点击、卡清除及工具取消，新user turn再独立确认。实际provider tool_result逐call核对；恢复历史中的旧取消result不能误判为旧turn续跑。工具`stop_computer_control`及允许后/最终交付的Stop竞争仍另列，不能从测试工具或这两个子案推导R2已完成。
+
+独立03c真机轮`v11-lifecycle-rebuild-v5-20261112`已通过旧卡/旧ref双typed拒绝、零正文、新ref默认full及最终响应，保留此前四轮失败；pending未晋升。负例严格按通用MCP固定首行、native错误、returned诊断、DONE四行顺序核验，不能把正常SDK返回投影出的外层isError误判为cell异常；旧ref的通用node工具权限仍独立单次处理，不能与禁止新正文确认混淆。相关18项focused测试、类型、lint及架构检查通过，lint仍有321个既有警告。03d发现等待授权时composer把Stop一起隐藏，尚未实际点击成功；用户已确认等待交互区可见“停止任务”，复用同一Stop命令/撤销路径，保留权限默认拒绝及Esc拒绝，待按二期spec测试先行实现和新候选重跑。R1与二期保持未完成。

@@ -29,6 +29,7 @@ export async function runCellMain(): Promise<number> {
     const execute = createNodeReplSessionExecutor({
       browserDocumentationRoot: request.documentationRoots.browser,
       cuaDocumentationRoot: request.documentationRoots.cua,
+      ...(request.cuaSdk ? { cuaSdk: request.cuaSdk } : {}),
     });
     const result = await execute({
       code: request.code,

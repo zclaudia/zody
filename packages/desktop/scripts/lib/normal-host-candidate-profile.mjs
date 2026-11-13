@@ -1,6 +1,7 @@
 // Build-time startup profile for the normal utility Host candidate.
-// The profile stores only normalized public facts and digests; provider credentials,
-// provider headers, and raw proxy/CA inputs are never archived.
+// 分发轮次（2026-11-09 spec）：profile schemaVersion 2 只保留内容 pin（manifest 字节 +
+// 签名 launcher 摘要）与 darwin/arm64/14.2 最低目标；不再从构建机读取 workspace allowlist
+// 或 provider/network/startup snapshot 事实——那些机器绑定输入已随 v1 语义一起退役。
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import {
@@ -8,14 +9,9 @@ import {
   sha256Bytes,
   sha256File,
 } from "../macos-cua-narrow-resources-base.mjs";
-import {
-  readNetworkProfile,
-  readProviderProfile,
-} from "./normal-host-candidate-provider-profile.mjs";
-import { readStartupSnapshot } from "./normal-host-candidate-startup-snapshot.mjs";
 
 export const NARROW_PROFILE_KIND = "zody-cua-narrow-agent-profile";
-export const NARROW_PROFILE_SCHEMA_VERSION = 1;
+export const NARROW_PROFILE_SCHEMA_VERSION = 2;
 export const NARROW_CAPABILITY = "screenshot.single-window";
 export const NARROW_RESOURCES_SLOT = "cua-narrow";
 export const NARROW_APP_NAME = "Zody CUA Desktop Session.app";
@@ -26,24 +22,12 @@ export const NARROW_MINIMUM_MACOS_VERSION = "14.2";
 // Runtime/source naming aliases kept explicit so candidate assembly and Host runtime
 // review the same contract without importing desktop source into a build script.
 export const CUA_NARROW_PROFILE_KIND = NARROW_PROFILE_KIND;
+export const CUA_NARROW_PROFILE_SCHEMA_VERSION = NARROW_PROFILE_SCHEMA_VERSION;
 export const CUA_NARROW_CAPABILITY = NARROW_CAPABILITY;
 export const CUA_NARROW_RESOURCES_SLOT = NARROW_RESOURCES_SLOT;
 export const CUA_NARROW_APP_NAME = NARROW_APP_NAME;
 export const CUA_NARROW_LAUNCHER_RELATIVE_PATH = NARROW_LAUNCHER_RELATIVE_PATH;
 
-export {
-  digestNormalHostNetwork,
-  digestNormalHostProviderSnapshot,
-  normalizeNormalHostNetwork,
-  normalizeNormalHostSelection,
-  projectNormalHostProviderSnapshot,
-  readNetworkProfile,
-  readProviderProfile,
-} from "./normal-host-candidate-provider-profile.mjs";
-export {
-  parseNormalHostStartupSnapshot,
-  readStartupSnapshot,
-} from "./normal-host-candidate-startup-snapshot.mjs";
 export {
   NORMAL_HOST_CANDIDATE_APP_BUNDLE_NAME,
   NORMAL_HOST_CANDIDATE_BUNDLE_ID,
@@ -52,13 +36,6 @@ export {
   NORMAL_HOST_CANDIDATE_RELEASE_FLAGS,
   rewriteNormalHostCandidateAppIdentity,
 } from "./normal-host-candidate-identity.mjs";
-
-function assertSha256(value, label) {
-  if (typeof value !== "string" || !/^[0-9a-f]{64}$/.test(value)) {
-    throw new NarrowResourceError("normal-host-profile-digest", `${label} must be sha256`);
-  }
-  return value;
-}
 
 function readManifestShape(manifest, manifestPath) {
   if (manifest?.kind !== NARROW_MANIFEST_KIND || manifest?.status !== "pass") {
@@ -86,7 +63,13 @@ function readManifestShape(manifest, manifestPath) {
       `cua-narrow manifest slot is not ${NARROW_RESOURCES_SLOT}/${NARROW_APP_NAME}`,
     );
   }
-  assertSha256(manifest.identity?.signedBinarySha256, "manifest.identity.signedBinarySha256");
+  if (typeof manifest.identity?.signedBinarySha256 !== "string" ||
+    !/^[0-9a-f]{64}$/.test(manifest.identity.signedBinarySha256)) {
+    throw new NarrowResourceError(
+      "normal-host-profile-digest",
+      "manifest.identity.signedBinarySha256 must be sha256",
+    );
+  }
   const stageAppPath = manifest.stage?.appPath;
   if (typeof stageAppPath !== "string" || isAbsolute(stageAppPath)) {
     throw new NarrowResourceError(
@@ -127,53 +110,25 @@ export async function createNormalHostNarrowProfile(options) {
     );
   }
   const shape = readManifestShape(manifest, options.narrowManifest);
-  const hasStartupSnapshot = options.startupSnapshot !== undefined;
-  const hasProviderOrNetworkProfile =
-    options.providerProfile !== undefined || options.networkProfile !== undefined;
-  if (hasStartupSnapshot === hasProviderOrNetworkProfile) {
+  if (shape.minimumMacOSVersion !== NARROW_MINIMUM_MACOS_VERSION) {
     throw new NarrowResourceError(
-      "normal-host-profile-source",
-      "provide exactly one of startupSnapshot or providerProfile+networkProfile",
+      "normal-host-manifest-target",
+      `cua-narrow manifest minimumMacOSVersion must be ${NARROW_MINIMUM_MACOS_VERSION}: ${options.narrowManifest}`,
     );
-  }
-  let provider;
-  let networkDigestSha256;
-  if (hasStartupSnapshot) {
-    const snapshot = await readStartupSnapshot(options.startupSnapshot);
-    provider = {
-      revisionSha256: snapshot.revisionSha256,
-      selection: snapshot.selection,
-    };
-    networkDigestSha256 = snapshot.networkDigestSha256;
-  } else {
-    if (options.providerProfile === undefined || options.networkProfile === undefined) {
-      throw new NarrowResourceError(
-        "normal-host-profile-source",
-        "providerProfile and networkProfile must be provided together",
-      );
-    }
-    provider = await readProviderProfile(options.providerProfile);
-    networkDigestSha256 = (await readNetworkProfile(options.networkProfile)).digestSha256;
   }
   const profile = {
     kind: NARROW_PROFILE_KIND,
     schemaVersion: NARROW_PROFILE_SCHEMA_VERSION,
     capability: NARROW_CAPABILITY,
-    testedTarget: {
+    minimumTarget: {
       os: "darwin",
       arch: "arm64",
-      macOSVersion: options.testedMacOSVersion,
+      minimumMacOSVersion: NARROW_MINIMUM_MACOS_VERSION,
     },
-    workspaceAllowlist: [...options.workspaceAllowlist],
     resourceManifest: {
       sha256: sha256Bytes(manifestBytes),
       launcherSha256: shape.launcherSha256,
     },
-    provider: {
-      revisionSha256: provider.revisionSha256,
-      selection: provider.selection,
-    },
-    network: { digestSha256: networkDigestSha256 },
   };
   return {
     profile,
@@ -183,8 +138,6 @@ export async function createNormalHostNarrowProfile(options) {
     stageAppPath: shape.stageAppPath,
     manifestDir: shape.manifestDir,
     minimumMacOSVersion: shape.minimumMacOSVersion,
-    networkDigestSha256,
-    profileSource: hasStartupSnapshot ? "host-startup-snapshot" : "provider-network-profile",
   };
 }
 

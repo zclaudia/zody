@@ -8,6 +8,36 @@ import { compile, run, sha256File } from "./cua-desktop-session-toolchain.mjs";
 
 const TEST_CASES = [
   {
+    name: "observer-session-status",
+    source: "observer_session_status_test.mm",
+    sources: ["observer_session_status.mm"],
+  },
+  { name: "observer-state", source: "observer_state_test.mm", sources: ["observer_state.mm"] },
+  {
+    name: "observer-session",
+    source: "observer_session_test.mm",
+    sources: [
+      "observer_contract.mm",
+      "observer_source.mm",
+      "observer_session_status.mm",
+      "observer_state.mm",
+      "observer_session.mm",
+      "session_binding.mm",
+      "confirmation.mm",
+      "confirmation_state.mm",
+    ],
+  },
+  {
+    name: "observer-source",
+    source: "observer_source_test.mm",
+    sources: ["observer_source.mm", "observer_session_status.mm"],
+  },
+  {
+    name: "observer-contract",
+    source: "observer_contract_test.mm",
+    sources: ["observer_contract.mm"],
+  },
+  {
     name: "session-binding-confirmation",
     source: "session_binding_test.mm",
     sources: ["session_binding.mm", "confirmation_state.mm"],
@@ -77,6 +107,11 @@ const TEST_CASES = [
       "session_workspace_handoff.mm",
       "session_workspace_runtime.mm",
       "session_supervisor.mm",
+      "observer_contract.mm",
+      "observer_source.mm",
+      "observer_session_status.mm",
+      "observer_state.mm",
+      "observer_session.mm",
       "authority_client.mm",
       "bundle_paths.mm",
       "capture_owner.mm",

@@ -16,6 +16,9 @@ const repoRoot = resolve(import.meta.dirname, "..");
 
 export const OUTPUT_DIR = join(repoRoot, "output");
 export const RECEIPTS_DIR_NAME = "cleanup-receipts";
+// 冻结归档还原目录：持久构建输入（specs/cua-output-retention.md 范围例外），
+// 清理工具任何计划都不得把它当轮次目录或删除其内部 .app。
+export const FROZEN_INPUT_DIR_NAME = "cua-narrow-frozen";
 export const DEFAULT_KEEP = 1;
 const BULKY_EXACT_DIR_NAMES = new Set(["node_modules"]);
 const BULKY_DIR_SUFFIX = ".app";
@@ -36,13 +39,13 @@ export function assertSafeRemoveTarget(targetPath, outputDir) {
   }
 }
 
-// 轮次目录 = output/ 直接子目录；回执目录例外。mtime 降序，同名按字典序稳定排序。
+// 轮次目录 = output/ 直接子目录；回执目录与冻结输入目录例外。mtime 降序，同名按字典序稳定排序。
 export function collectRoundDirs(outputDir) {
   const rounds = [];
   for (const entry of readdirSync(outputDir, { withFileTypes: true })) {
     // 符号链接目录不算轮次：不进入、不清理。
     if (!entry.isDirectory() || entry.isSymbolicLink()) continue;
-    if (entry.name === RECEIPTS_DIR_NAME) continue;
+    if (entry.name === RECEIPTS_DIR_NAME || entry.name === FROZEN_INPUT_DIR_NAME) continue;
     const dir = join(outputDir, entry.name);
     rounds.push({ name: entry.name, dir, mtimeMs: statSync(dir).mtimeMs });
   }

@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-mobile-stop",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-mobile-stop.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-mobile-stop.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r1-stop-title",
+      "description": "R1 lifecycle stop title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+    },
+    {
+      "id": "cua-r1-stop-call-1",
+      "description": "R1 lifecycle stop call 1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+    },
+    {
+      "id": "cua-r1-stop-final",
+      "description": "R1 lifecycle stop final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+    },
+    {
+      "id": "cua-r1-resume-title",
+      "description": "R1 lifecycle resume title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+    },
+    {
+      "id": "cua-r1-resume-call-1",
+      "description": "R1 lifecycle resume call 1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+    },
+    {
+      "id": "cua-r1-resume-final",
+      "description": "R1 lifecycle resume final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+    }
+  ]
+}

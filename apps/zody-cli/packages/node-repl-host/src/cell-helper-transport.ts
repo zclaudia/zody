@@ -3,7 +3,8 @@ import { createConnection } from "node:net";
 import { isAbsolute } from "node:path";
 import type { Duplex } from "node:stream";
 import { StringDecoder } from "node:string_decoder";
-import { MCP_TOOL_META_TIMEOUT_MAX_MS } from "@zody/contracts";
+// 使用 MCP 公开子入口，避免总入口将无关 contracts 装入 cell bundle。
+import { MCP_TOOL_META_TIMEOUT_MAX_MS } from "@zody/contracts/mcp";
 import type { NodeReplRunResult } from "@zody/core/repl";
 import {
   assertTransportAuthenticationKey,
@@ -357,10 +358,7 @@ function* splitBoundedLines(
     let line = rawLine;
     state.buffer = state.buffer.slice(newline + 1);
     if (line.endsWith("\r")) line = line.slice(0, -1);
-    state.bufferedBytes = Math.max(
-      0,
-      state.bufferedBytes - Buffer.byteLength(rawLine, "utf8") - 1,
-    );
+    state.bufferedBytes = Math.max(0, state.bufferedBytes - Buffer.byteLength(rawLine, "utf8") - 1);
     yield line;
     newline = state.buffer.indexOf("\n");
   }

@@ -20,7 +20,6 @@ export const DEFAULT_OUTPUT = join(
   REPO_ROOT,
   "output/cua-arm64-screenshot/host-worker/normal-host-candidate",
 );
-export const DEFAULT_TESTED_MACOS_VERSION = "26.6.2";
 
 export const DESKTOP_HOST_ENTRYPOINTS = Object.freeze({
   "host/index": "src/host/index.ts",
@@ -35,19 +34,24 @@ export { DESKTOP_MAIN_ENTRYPOINTS };
 
 export function usage() {
   return `Usage: node packages/desktop/scripts/build-cua-normal-host-candidate.mjs \\
-  --workspace-allowlist <absolute path[,absolute path...]> \\
-  (--startup-snapshot <absolute bounded JSON> |
-   --provider-profile <absolute json> --network-profile <absolute json>) \\
   --narrow-manifest <absolute prepared cua-narrow manifest.json> \\
   [--app-shell <absolute normal electron-builder --dir .app>] \\
   [--output <absolute output root>] \\
-  [--tested-macos-version <version>] [--no-minify] [--replace]`;
+  [--no-minify] [--replace]
+
+Profile schemaVersion 2 (2026-11-09 分发轮次)：profile 只含内容 pin 与 darwin/arm64/14.2
+最低目标；v1 的 --workspace-allowlist/--startup-snapshot/--provider-profile/--network-profile/
+--tested-macos-version 机器绑定输入已删除。`;
 }
 
 function parseFlag(value, flag) {
   if (value === undefined || value.startsWith("--")) throw new Error(`${flag} requires a value`);
   return value;
 }
+
+// v2 起未知 flag 显式报错：v1 的机器绑定参数已删除，静默吞掉会让调用方
+// 误以为 allowlist/snapshot 等 pin 仍然生效。
+const VALUE_FLAGS = new Set(["--app-shell", "--narrow-manifest", "--output"]);
 
 export function parseArgs(argv) {
   const values = new Map();
@@ -59,6 +63,7 @@ export function parseArgs(argv) {
       continue;
     }
     if (!name?.startsWith("--")) throw new Error(`Unknown argument: ${name ?? ""}`);
+    if (!VALUE_FLAGS.has(name)) throw new Error(`Unknown argument: ${name}`);
     const value = parseFlag(argv[index + 1], name);
     values.set(name, value);
     index += 1;
@@ -71,44 +76,12 @@ export function parseArgs(argv) {
     if (!isAbsolute(raw)) throw new Error(`${name} must be an absolute path`);
     return resolve(raw);
   };
-  const optionalAbsolute = (name) => {
-    const raw = values.get(name)?.trim();
-    if (!raw) return undefined;
-    if (!isAbsolute(raw)) throw new Error(`${name} must be an absolute path`);
-    return resolve(raw);
-  };
-
-  const workspaceRaw = values.get("--workspace-allowlist")?.trim();
-  if (!workspaceRaw) throw new Error("--workspace-allowlist is required");
-  const workspaceAllowlist = workspaceRaw.split(",").map((entry) => entry.trim());
-  if (workspaceAllowlist.length === 0 || workspaceAllowlist.some((entry) => !entry)) {
-    throw new Error("--workspace-allowlist must contain non-empty absolute paths");
-  }
-  if (workspaceAllowlist.some((entry) => !isAbsolute(entry))) {
-    throw new Error("--workspace-allowlist entries must be absolute paths");
-  }
-
-  const startupSnapshot = optionalAbsolute("--startup-snapshot");
-  const providerProfile = optionalAbsolute("--provider-profile");
-  const networkProfile = optionalAbsolute("--network-profile");
-  if (startupSnapshot && (providerProfile || networkProfile)) {
-    throw new Error("--startup-snapshot cannot be combined with provider/network profiles");
-  }
-  if (!startupSnapshot && (!providerProfile || !networkProfile)) {
-    throw new Error("provide --startup-snapshot or both --provider-profile and --network-profile");
-  }
 
   return {
     help: false,
     appShell: absolute("--app-shell", DEFAULT_APP_SHELL),
     narrowManifest: values.get("--narrow-manifest") ? absolute("--narrow-manifest") : undefined,
-    workspaceAllowlist: [...new Set(workspaceAllowlist.map((entry) => resolve(entry)))],
-    startupSnapshot,
-    providerProfile,
-    networkProfile,
     output: absolute("--output", DEFAULT_OUTPUT),
-    testedMacOSVersion:
-      values.get("--tested-macos-version")?.trim() || DEFAULT_TESTED_MACOS_VERSION,
     replace: flags.has("--replace"),
     minify: !flags.has("--no-minify"),
   };

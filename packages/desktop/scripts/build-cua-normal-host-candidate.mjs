@@ -87,11 +87,6 @@ async function assemble(options) {
   const sourceLayout = resolveShellLayout(options.appShell);
   const prepared = await createNormalHostNarrowProfile({
     narrowManifest: manifestPath,
-    workspaceAllowlist: options.workspaceAllowlist,
-    startupSnapshot: options.startupSnapshot,
-    providerProfile: options.providerProfile,
-    networkProfile: options.networkProfile,
-    testedMacOSVersion: options.testedMacOSVersion,
   });
   await assertShellNarrowLauncherMatches(sourceLayout, prepared.launcherSha256);
   const manifestBytes = await readFile(manifestPath);
@@ -298,10 +293,9 @@ if (options.help) {
         status: "built",
         output: result.output,
         app: result.app,
-        workspaceAllowlist: result.profile.workspaceAllowlist,
-        providerDigest: result.profile.provider.revisionSha256,
-        networkDigest: result.profile.network.digestSha256,
+        minimumTarget: result.profile.minimumTarget,
         manifestSha256: result.profile.resourceManifest.sha256,
+        launcherSha256: result.profile.resourceManifest.launcherSha256,
         buildEvidenceInputsSha256: result.candidateManifest.buildEvidence.inputsSha256,
         appAsarArchiveSha256: result.candidateManifest.appAsar.archiveSha256,
         appAsarHeaderSha256: result.candidateManifest.appAsar.headerSha256,

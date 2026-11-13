@@ -65,6 +65,10 @@
     "./producer-control": {
       "types": "./producer-control.d.ts",
       "import": "./producer-control.js"
+    },
+    "./observation-contract": {
+      "types": "./observation-contract.d.ts",
+      "import": "./observation-contract.js"
     }
   },
   "zcodeCuaPlaceholder": true

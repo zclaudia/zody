@@ -36,6 +36,7 @@ namespace zody::cua::desktop_session {
 namespace {
 
 constexpr size_t kAuthorityMaxLineBytes = 16 * 1024;
+constexpr size_t kMetadataObservationMaxLineBytes = 128 * 1024;
 constexpr size_t kAuthorityMaxBufferBytes = 64 * 1024;
 constexpr int kAuthorityIoTimeoutMs = 10'000;
 
@@ -101,6 +102,14 @@ bool AuthorityFdReader::send_frame(NSString* method, NSDictionary* payload,
   }
   std::string line(static_cast<const char*>(data.bytes), data.length);
   line.push_back('\n');
+  // 原因：有界 AX 结果与完整关联相加仍可能越界，必须约束整个 authority 帧。
+  // 中文原因：仅已认证 bootstrap 指定元数据时允许结果帧扩容；其他请求及所有响应保持原上限。
+  size_t limit = metadata_observation_ && [method isEqual:@"observationResult"]
+    ? kMetadataObservationMaxLineBytes : kAuthorityMaxLineBytes;
+  if (line.size() > limit) {
+    error = "authority request exceeds frame bound";
+    return false;
+  }
   return send_all(fd_, line, error);
 }
 
@@ -153,6 +162,17 @@ bool AuthorityFdReader::request(NSString* method, NSDictionary* payload, NSDicti
       cancel_reason_ = "unexpected-authority-frame";
       error = cancel_reason_;
       return false;
+    }
+    if (!bootstrap_seen_) {
+      bootstrap_seen_ = true;
+      id bootstrap = parsed[@"result"];
+      id observation = [bootstrap isKindOfClass:[NSDictionary class]] ? bootstrap[@"observation"] : nil;
+      id observation_method = [observation isKindOfClass:[NSDictionary class]] ? observation[@"method"] : nil;
+      id ok = [bootstrap isKindOfClass:[NSDictionary class]] ? bootstrap[@"ok"] : nil;
+      metadata_observation_ = [method isEqual:@"bootstrap"] && ok &&
+        CFGetTypeID((__bridge CFTypeRef)ok) == CFBooleanGetTypeID() && [ok boolValue] &&
+        [observation_method isKindOfClass:[NSString class]] &&
+        ([observation_method isEqual:@"list_apps"] || [observation_method isEqual:@"list_windows"]);
     }
     if (result != nullptr) *result = parsed[@"result"];
     return true;
@@ -958,6 +978,28 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
     error = "bootstrap: " + bootstrap_error;
     reset_observation();
     return false;
+  }
+  // 原因：AX 观察必须使用独立读取确认，不能伪造截图 target 或继承截图授权。
+  if ([bootstrap isKindOfClass:[NSDictionary class]] && bootstrap[@"observation"] != nil) {
+    const ObserverExchange exchange = [&](NSString* method, NSDictionary* payload, std::string& failure) -> NSDictionary* {
+      if (![method isEqual:@"confirmRead"]) {
+        NSDictionary* response = nil;
+        return reader.request(method, payload, &response, failure) ? response : nil;
+      }
+      // 读取确认与截图确认一样无固定人类响应时限；Stop/EOF 负责收口。
+      std::string request_id;
+      if (!reader.send(method, payload, request_id, failure)) return nil;
+      while (true) {
+        if (poll_confirmation_cancellation(failure)) return nil;
+        const auto response = reader.await_response(request_id, 250);
+        if (response.status == AuthorityFdReader::AwaitStatus::Response) return response.result;
+        if (response.status == AuthorityFdReader::AwaitStatus::Canceled) { failure = response.reason; return nil; }
+      }
+    };
+    const bool observed = observer_.run(bootstrap, launch_.producer_incarnation, exchange,
+      [this](std::string& reason) { return poll_cancellation(reason); }, confirmation_, error);
+    reset_observation();
+    return observed;
   }
   SessionBinding binding;
   if (!binding_from_bootstrap(bootstrap, launch_.producer_incarnation, binding, error)) {

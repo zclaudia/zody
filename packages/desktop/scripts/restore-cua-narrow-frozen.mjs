@@ -195,8 +195,10 @@ const USAGE = `Usage:
   node packages/desktop/scripts/restore-cua-narrow-frozen.mjs --archive <narrow-frozen tar.gz> [--sha256 <hex>] [--repo-root <dir>] [--force]
 
 Restores the pinned cua-narrow frozen materials (prepared manifest + stage app +
-startup snapshot) from a verified archive, then re-runs the default darwin/arm64
-build selection so the restored bytes are proven against the current pins.
+round11 identity pins) from a verified archive, then re-runs the default
+darwin/arm64 build selection so the restored bytes are proven against the current
+pins. Prefer pnpm --dir packages/desktop run fetch:cua-narrow-frozen, which reads
+build/cua-narrow-frozen.json and downloads/verifies the archive first.
 `;
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

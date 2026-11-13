@@ -3,6 +3,7 @@ import type {
   CuaNativeAuthoritySessionOptions,
 } from "./cua-native-authority-contract.js";
 export type {
+  CuaNativeObservationOptions,
   CuaNativeAuthorityCaptureOptions,
   CuaNativeAuthorityImageToolResult,
   CuaNativeCapturePngFacts,

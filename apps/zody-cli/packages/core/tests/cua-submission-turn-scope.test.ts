@@ -101,9 +101,15 @@ describe("CuaSubmissionTurnScope runtime wiring", () => {
     }).toThrow();
     expect(scope.ref).toEqual(candidate.ref);
 
+    expect(scope.bindProducer("producer-first")).toBe(true);
     scope.close();
-    // 关闭后重复创建不能复活旧 turn。
-    expect(held.runtime.createCuaSubmissionTurnScope()).toBeUndefined();
+    // 正常关闭只释放本次绑定；同一 live turn 可继续观察和截图。
+    const next = held.runtime.createCuaSubmissionTurnScope();
+    expect(next).toBeDefined();
+    expect(next).not.toBe(scope);
+    expect(next?.ref).toEqual(scope.ref);
+    expect(next?.bindProducer("producer-first")).toBe(true);
+    next?.close();
     expect(held.runtime.getCuaSubmissionProjection()).toMatchObject({ status: "candidate" });
     await finishHeldTurn(held);
   });

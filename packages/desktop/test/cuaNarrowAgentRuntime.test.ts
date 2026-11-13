@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -11,9 +11,12 @@ import {
   CUA_NARROW_APP_NAME,
   CUA_NARROW_CAPABILITY,
   CUA_NARROW_LAUNCHER_RELATIVE_PATH,
+  CUA_NARROW_MINIMUM_MACOS_VERSION,
   CUA_NARROW_PROFILE_KIND,
+  CUA_NARROW_PROFILE_SCHEMA_VERSION,
   CUA_NARROW_RESOURCES_SLOT,
-  digestCuaNarrowNetworkConfig,
+  compareMacOSVersions,
+  isMacOSVersionAtLeast,
   parseCuaNarrowAgentBuildProfile,
   prepareCuaNarrowAgentRuntime,
   readCuaNarrowAgentBuildProfile,
@@ -86,24 +89,21 @@ const startupContext: ZodyAgentNativeRuntimeStartupContext = {
 
 function createProfile(
   resources: ReturnType<typeof createResources>,
-  workspaceAllowlist: string[],
   patch: object = {},
 ) {
   return {
     kind: CUA_NARROW_PROFILE_KIND,
-    schemaVersion: 1,
+    schemaVersion: CUA_NARROW_PROFILE_SCHEMA_VERSION,
     capability: CUA_NARROW_CAPABILITY,
-    testedTarget: { os: "darwin", arch: "arm64", macOSVersion: "26.6.2" },
-    workspaceAllowlist,
+    minimumTarget: {
+      os: "darwin",
+      arch: "arm64",
+      minimumMacOSVersion: CUA_NARROW_MINIMUM_MACOS_VERSION,
+    },
     resourceManifest: {
       sha256: resources.manifestSha256,
       launcherSha256: resources.launcherSha256,
     },
-    provider: {
-      revisionSha256: startupContext.providerDigestSha256,
-      selection: startupContext.selection,
-    },
-    network: { digestSha256: digestCuaNarrowNetworkConfig(startupContext.network) },
     ...patch,
   };
 }
@@ -126,21 +126,6 @@ function prepare(
   });
 }
 
-function resolverContext(
-  workspace: string,
-  readStartupContext: () => Promise<ZodyAgentNativeRuntimeStartupContext> = async () =>
-    startupContext,
-) {
-  return {
-    commandContext: {
-      workspacePath: workspace,
-      workspaceKey: workspace,
-      presentationSurface: "desktop" as const,
-    },
-    runtimeContext: { readStartupContext },
-  };
-}
-
 function commandContext(workspace: string) {
   return {
     workspacePath: workspace,
@@ -149,50 +134,62 @@ function commandContext(workspace: string) {
   };
 }
 
+describe("macOS version comparison", () => {
+  it("compares numerically across the 26.x jump and short forms", () => {
+    expect(compareMacOSVersions("14.2", "14.2")).toBe(0);
+    expect(compareMacOSVersions("14.2", "14.2.0")).toBe(0);
+    expect(compareMacOSVersions("26.6.2", "14.2")).toBeGreaterThan(0);
+    expect(compareMacOSVersions("14.1.9", "14.2")).toBeLessThan(0);
+    expect(compareMacOSVersions("9.1", "14.2")).toBeLessThan(0);
+    expect(compareMacOSVersions("15.0", "14.2")).toBeGreaterThan(0);
+    expect(isMacOSVersionAtLeast("26.6.2", "14.2")).toBe(true);
+    expect(isMacOSVersionAtLeast("14.1", "14.2")).toBe(false);
+  });
+});
+
 describe("cua narrow agent runtime", () => {
   it("is disabled without a compile-time profile and never reads runtime env", () => {
     const workspace = createWorkspace();
     const resources = createResources();
-    const profile = createProfile(resources, [workspace]);
+    const profile = createProfile(resources);
     process.env.ZODY_CUA_NARROW_AGENT_JSON = JSON.stringify(profile);
 
     expect(readCuaNarrowAgentBuildProfile()).toBeUndefined();
     expect(() => parseCuaNarrowAgentBuildProfile(undefined)).toThrow(/kind/);
   });
 
-  it("accepts only the fixed startup profile shape", () => {
-    const workspace = createWorkspace();
+  it("accepts only the fixed v2 startup profile shape", () => {
     const resources = createResources();
-    const profile = createProfile(resources, [workspace]);
+    const profile = createProfile(resources);
 
     expect(parseCuaNarrowAgentBuildProfile(profile)).toMatchObject({
       kind: CUA_NARROW_PROFILE_KIND,
+      schemaVersion: 2,
       capability: CUA_NARROW_CAPABILITY,
-      workspaceAllowlist: [workspace],
-      provider: {
-        revisionSha256: startupContext.providerDigestSha256,
-        selection: startupContext.selection,
-      },
-      network: { digestSha256: digestCuaNarrowNetworkConfig(startupContext.network) },
+      minimumTarget: { os: "darwin", arch: "arm64", minimumMacOSVersion: "14.2" },
     });
     expect(() =>
       parseCuaNarrowAgentBuildProfile({ ...profile, capability: "screenshot.fullscreen" }),
     ).toThrow(/capability/);
     expect(() =>
-      parseCuaNarrowAgentBuildProfile({ ...profile, workspaceAllowlist: ["relative/path"] }),
-    ).toThrow(/absolute/);
-    expect(() =>
       parseCuaNarrowAgentBuildProfile({
         ...profile,
-        provider: { revisionSha256: "not-a-digest", selection: startupContext.selection },
+        minimumTarget: { ...profile.minimumTarget, minimumMacOSVersion: "12.0" },
       }),
-    ).toThrow(/provider/);
+    ).toThrow(/minimumMacOSVersion/);
     expect(() =>
-      parseCuaNarrowAgentBuildProfile({
-        ...profile,
-        network: { digestSha256: "not-a-digest" },
-      }),
-    ).toThrow(/network/);
+      parseCuaNarrowAgentBuildProfile({ ...profile, workspaceAllowlist: ["/tmp"] }),
+    ).toThrow(/unsupported field/);
+    expect(() =>
+      parseCuaNarrowAgentBuildProfile({ ...profile, provider: { revisionSha256: "a".repeat(64) } }),
+    ).toThrow(/unsupported field/);
+    expect(() =>
+      parseCuaNarrowAgentBuildProfile({ ...profile, network: { digestSha256: "a".repeat(64) } }),
+    ).toThrow(/unsupported field/);
+    // v1（self-use 轮）profile 必须显式失败：schemaVersion 不存在双读路径。
+    expect(() =>
+      parseCuaNarrowAgentBuildProfile({ ...profile, schemaVersion: 1 }),
+    ).toThrow(/schemaVersion/);
   });
 
   it("derives the launcher only from the fixed cua-narrow slot inside resourcesPath", () => {
@@ -201,10 +198,10 @@ describe("cua narrow agent runtime", () => {
     expect(() => resolveCuaNarrowLauncherPath("relative/resources")).toThrow(/absolute/);
   });
 
-  it("does not enable on an untested target or without matching resources", async () => {
+  it("does not enable on an unsupported target, arch, below-minimum macOS, or tampered resources", async () => {
     const workspace = createWorkspace();
     const resources = createResources();
-    const profile = createProfile(resources, [workspace]);
+    const profile = createProfile(resources);
 
     await expect(
       prepare(profile, resources, [workspace], { platform: "linux" }),
@@ -214,8 +211,12 @@ describe("cua narrow agent runtime", () => {
       reason: "target-arch",
     });
     await expect(
-      prepare(profile, resources, [workspace], { macOSVersion: "26.5.0" }),
-    ).resolves.toMatchObject({ status: "unsupported", reason: "target-macos-version" });
+      prepare(profile, resources, [workspace], { macOSVersion: "14.1.9" }),
+    ).resolves.toMatchObject({ status: "unsupported", reason: "macos-below-minimum" });
+    // 跨大版本（26.x 跳跃编号）满足 14.2 下限。
+    await expect(
+      prepare(profile, resources, [workspace], { macOSVersion: "26.6.2" }),
+    ).resolves.toMatchObject({ status: "eligible" });
 
     writeFileSync(resources.launcherPath, "tampered-launcher");
     await expect(prepare(profile, resources, [workspace])).resolves.toMatchObject({
@@ -224,60 +225,40 @@ describe("cua narrow agent runtime", () => {
     });
   });
 
-  it("requires the Host service startup snapshot to match every pinned field", async () => {
+  it("keeps the startup readback as a bounded diagnostic that never gates eligibility", async () => {
     const workspace = createWorkspace();
     const resources = createResources();
-    const profile = createProfile(resources, [workspace]);
-
-    await expect(
-      prepare(profile, resources, [workspace], {
-        startupContext: { ...startupContext, providerDigestSha256: "c".repeat(64) },
-      }),
-    ).resolves.toMatchObject({ status: "unsupported", reason: "provider-revision-mismatch" });
-    await expect(
-      prepare(profile, resources, [workspace], {
-        startupContext: {
-          ...startupContext,
-          selection: { ...startupContext.selection, modelId: "other-model" },
-        },
-      }),
-    ).resolves.toMatchObject({ status: "unsupported", reason: "provider-selection-mismatch" });
-    await expect(
-      prepare(profile, resources, [workspace], {
-        startupContext: {
-          ...startupContext,
-          network: { ...startupContext.network, httpProxy: "http://127.0.0.1:9999" },
-        },
-      }),
-    ).resolves.toMatchObject({ status: "unsupported", reason: "network-digest-mismatch" });
-    await expect(
-      prepare(profile, resources, [workspace], { startupContext: undefined }),
-    ).resolves.toMatchObject({ status: "unsupported", reason: "startup-context-unavailable" });
-  });
-
-  it("emits a bounded startup readback before a profile mismatch", async () => {
-    const workspace = createWorkspace();
-    const resources = createResources();
-    const profile = createProfile(resources, [workspace], {
-      provider: {
-        revisionSha256: "f".repeat(64),
-        selection: startupContext.selection,
-      },
-    });
+    const profile = createProfile(resources);
     const events: unknown[] = [];
 
+    // 任意 provider/network 配置（与任何构建期事实无关）都不得影响 eligibility。
+    for (const context of [
+      startupContext,
+      { ...startupContext, providerDigestSha256: "c".repeat(64) },
+      {
+        ...startupContext,
+        selection: { ...startupContext.selection, modelId: "other-model" },
+      },
+      { ...startupContext, network: { ...startupContext.network, httpProxy: "http://127.0.0.1:9999" } },
+    ]) {
+      await expect(
+        prepare(profile, resources, [workspace], {
+          startupContext: context,
+          report: (event: unknown) => events.push(event),
+        }),
+      ).resolves.toMatchObject({ status: "eligible" });
+    }
+    // 缺 startupContext 只跳过诊断日志，不禁用窄链。
     await expect(
-      prepare(profile, resources, [workspace], {
-        report: (event: unknown) => events.push(event),
-      }),
-    ).resolves.toMatchObject({ status: "unsupported", reason: "provider-revision-mismatch" });
+      prepare(profile, resources, [workspace], { startupContext: undefined }),
+    ).resolves.toMatchObject({ status: "eligible" });
 
     const snapshot = events.find(
       (event) => (event as { kind?: string }).kind === "narrow-runtime-startup-snapshot",
     );
     expect(snapshot).toEqual({
       kind: "narrow-runtime-startup-snapshot",
-      reason: "read-before-eligibility-compare",
+      reason: "diagnostic-readback",
       providerDigestSha256: startupContext.providerDigestSha256,
       selection: startupContext.selection,
       networkDigestSha256: digestZodyAgentNativeRuntimeNetwork(startupContext.network),
@@ -286,92 +267,148 @@ describe("cua narrow agent runtime", () => {
     });
     expect(JSON.stringify(snapshot)).not.toContain("127.0.0.1:7890");
     expect(JSON.stringify(snapshot)).not.toContain("zody-test-ca.pem");
-    expect(digestCuaNarrowNetworkConfig(startupContext.network)).toBe(
-      digestZodyAgentNativeRuntimeNetwork(startupContext.network),
-    );
   });
 
-  it("routes only allowlisted prepared workspaces after the startup snapshot matches", async () => {
+  it("routes only prepared workspaces captured at Host init", async () => {
     const workspace = createWorkspace();
     const otherWorkspace = createWorkspace("other");
     const resources = createResources();
-    const profile = createProfile(resources, [workspace]);
+    const profile = createProfile(resources);
 
     const result = await prepare(profile, resources, [workspace]);
     expect(result.status).toBe("eligible");
     if (result.status !== "eligible") return;
 
-    const matching = resolverContext(workspace);
-    await expect(
-      result.runtime.resolve(matching.commandContext, matching.runtimeContext),
-    ).resolves.toEqual({
+    await expect(result.runtime.resolve(commandContext(workspace))).resolves.toEqual({
       launcherPath: resources.launcherPath,
       entryName: "cli-entry.mjs",
       cliInFd: 6,
       cliOutFd: 7,
       launchMode: "workspace-relay",
     });
-    const other = resolverContext(otherWorkspace);
-    await expect(
-      result.runtime.resolve(other.commandContext, other.runtimeContext),
-    ).resolves.toBeNull();
+    // 未在 Host init 时准备的 workspace（含 Host 启动后才打开的）回退普通 Agent 路径。
+    await expect(result.runtime.resolve(commandContext(otherWorkspace))).resolves.toBeNull();
+    await expect(result.runtime.resolve(commandContext(workspace))).resolves.not.toBeNull();
   });
 
-  it("re-reads the Host service snapshot for every new Agent spawn", async () => {
-    const workspace = createWorkspace();
-    const resources = createResources();
-    const profile = createProfile(resources, [workspace]);
-    const result = await prepare(profile, resources, [workspace]);
-    expect(result.status).toBe("eligible");
-    if (result.status !== "eligible") return;
-
-    const readStartupContext = vi
-      .fn<() => Promise<ZodyAgentNativeRuntimeStartupContext>>()
-      .mockResolvedValueOnce(startupContext)
-      .mockResolvedValueOnce({ ...startupContext, providerDigestSha256: "c".repeat(64) })
-      .mockRejectedValueOnce(new Error("provider service unavailable"))
-      .mockResolvedValueOnce(startupContext);
-    const context = resolverContext(workspace, readStartupContext);
-
-    await expect(
-      result.runtime.resolve(context.commandContext, context.runtimeContext),
-    ).resolves.not.toBeNull();
-    await expect(
-      result.runtime.resolve(context.commandContext, context.runtimeContext),
-    ).resolves.toBeNull();
-    await expect(
-      result.runtime.resolve(context.commandContext, context.runtimeContext),
-    ).resolves.toBeNull();
-    await expect(
-      result.runtime.resolve(context.commandContext, context.runtimeContext),
-    ).resolves.not.toBeNull();
-    expect(readStartupContext).toHaveBeenCalledTimes(4);
-  });
-
-  it("falls back when no spawn-time reader or prepared storage is available", async () => {
+  it("falls back when prepared storage is unavailable for the spawn workspace", async () => {
     const workspace = createWorkspace();
     const unpreparedWorkspace = createWorkspace("unprepared");
     const resources = createResources();
-    const profile = createProfile(resources, [workspace, unpreparedWorkspace]);
+    const profile = createProfile(resources);
 
     const result = await prepare(profile, resources, [workspace]);
     expect(result.status).toBe("eligible");
     if (result.status !== "eligible") return;
-    await expect(result.runtime.resolve(commandContext(workspace))).resolves.toBeNull();
-    const unprepared = resolverContext(unpreparedWorkspace);
     await expect(
-      result.runtime.resolve(unprepared.commandContext, unprepared.runtimeContext),
+      result.runtime.resolve(commandContext(unpreparedWorkspace)),
     ).resolves.toBeNull();
   });
 
-  it("refuses to enable when no allowlisted workspace was prepared before services started", async () => {
-    const workspace = createWorkspace();
+  it("stays eligible with an empty seed set; dynamic preparation admits new workspaces", async () => {
+    // 动态准入（spec 2026-11-09 追加小节）：init 集合为空不再禁用 resolver。
+    const workspace = createWorkspace("late-opened");
     const resources = createResources();
-    const profile = createProfile(resources, [workspace]);
+    const profile = createProfile(resources);
+    // resolver 以 realpath 规范化路径调用 preparer（macOS /var → /private/var）。
+    const canonicalWorkspace = realpathSync(workspace);
+    let prepareCalls = 0;
 
-    await expect(prepare(profile, resources, [])).resolves.toMatchObject({
-      status: "unsupported",
-      reason: "no-prepared-workspace",
+    const result = await prepare(profile, resources, [], {
+      prepareWorkspaceStorage: async (path) => {
+        prepareCalls += 1;
+        expect(path).toBe(canonicalWorkspace);
+        return true;
+      },
     });
+    expect(result.status).toBe("eligible");
+    if (result.status !== "eligible") return;
+
+    // 首次 spawn：现场准备成功 → 路由窄链。
+    await expect(result.runtime.resolve(commandContext(workspace))).resolves.not.toBeNull();
+    // 第二次 spawn：命中集合，不再调用 preparer。
+    await expect(result.runtime.resolve(commandContext(workspace))).resolves.not.toBeNull();
+    expect(prepareCalls).toBe(1);
+  });
+
+  it("deduplicates concurrent storage preparations per canonical workspace", async () => {
+    const workspace = createWorkspace("concurrent");
+    const resources = createResources();
+    const profile = createProfile(resources);
+    let prepareCalls = 0;
+    let releasePreparation: (() => void) | undefined;
+
+    const result = await prepare(profile, resources, [], {
+      prepareWorkspaceStorage: async () => {
+        prepareCalls += 1;
+        await new Promise<void>((resolve) => {
+          releasePreparation = resolve;
+        });
+        return true;
+      },
+    });
+    expect(result.status).toBe("eligible");
+    if (result.status !== "eligible") return;
+
+    const first = result.runtime.resolve(commandContext(workspace));
+    const second = result.runtime.resolve(commandContext(workspace));
+    // 等 preparer 真正被调用（realpath 异步完成）再放行，避免竞态下 no-op 释放。
+    await vi.waitFor(() => {
+      if (prepareCalls === 0) throw new Error("preparation not started yet");
+    });
+    releasePreparation?.();
+    const [firstResult, secondResult] = await Promise.all([first, second]);
+    expect(firstResult).not.toBeNull();
+    expect(secondResult).not.toBeNull();
+    expect(prepareCalls).toBe(1);
+  });
+
+  it("falls back on preparation failure and can retry on a later spawn", async () => {
+    const workspace = createWorkspace("flaky");
+    const resources = createResources();
+    const profile = createProfile(resources);
+    const events: unknown[] = [];
+    let shouldSucceed = false;
+
+    const result = await prepare(profile, resources, [], {
+      prepareWorkspaceStorage: async () => shouldSucceed,
+      report: (event: unknown) => events.push(event),
+    });
+    expect(result.status).toBe("eligible");
+    if (result.status !== "eligible") return;
+
+    await expect(result.runtime.resolve(commandContext(workspace))).resolves.toBeNull();
+    expect(
+      events.some(
+        (event) =>
+          (event as { kind?: string; reason?: string }).kind === "narrow-runtime-fallback" &&
+          (event as { reason?: string }).reason === "workspace-storage-preparation-failed",
+      ),
+    ).toBe(true);
+
+    shouldSucceed = true;
+    await expect(result.runtime.resolve(commandContext(workspace))).resolves.not.toBeNull();
+  });
+
+  it("keeps the not-prepared fallback when no dynamic preparer is wired", async () => {
+    // 无 preparer 的接线（测试/旧路径）保持 v2 初始语义：未命中集合即回退。
+    const workspace = createWorkspace("no-preparer");
+    const resources = createResources();
+    const profile = createProfile(resources);
+    const events: unknown[] = [];
+
+    const result = await prepare(profile, resources, [], {
+      report: (event: unknown) => events.push(event),
+    });
+    expect(result.status).toBe("eligible");
+    if (result.status !== "eligible") return;
+    await expect(result.runtime.resolve(commandContext(workspace))).resolves.toBeNull();
+    expect(
+      events.some(
+        (event) =>
+          (event as { kind?: string }).kind === "narrow-runtime-fallback" &&
+          (event as { reason?: string }).reason === "workspace-storage-not-prepared",
+      ),
+    ).toBe(true);
   });
 });

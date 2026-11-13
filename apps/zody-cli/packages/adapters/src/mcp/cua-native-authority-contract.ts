@@ -4,6 +4,8 @@ import type { CuaSubmissionRef, CuaSubmissionTurnScope } from "@zody/contracts";
 /** 与 R11 native authority 入口相同的帧上限，避免新接口悄悄放宽 wire 合同。 */
 export const CUA_NATIVE_AUTHORITY_MAX_FRAME_BYTES = 16 * 1024;
 export const CUA_NATIVE_AUTHORITY_MAX_PENDING_BYTES = 64 * 1024;
+export const CUA_NATIVE_METADATA_MAX_FRAME_BYTES = 128 * 1024;
+export const CUA_NATIVE_METADATA_MAX_PENDING_BYTES = 256 * 1024;
 export const CUA_NATIVE_AUTHORITY_MAX_FIELD_BYTES = 4 * 1024;
 export const CUA_NATIVE_AUTHORITY_CLOSE_FLUSH_TIMEOUT_MS = 250;
 export const CUA_NATIVE_AUTHORITY_DEFAULT_MAX_PENDING_REQUESTS = 32;
@@ -14,6 +16,8 @@ export type CuaNativeAuthorityMethod =
   | "check"
   | "captureResult"
   | "confirm"
+  | "confirmRead"
+  | "observationResult"
   | "revoke"
   | "close";
 
@@ -98,6 +102,15 @@ export interface CuaNativeAuthorityCaptureOptions {
   onAccepted?(): void;
 }
 
+export interface CuaNativeObservationOptions {
+  readonly request: {
+    readonly method: "list_apps" | "list_windows" | "get_app_state";
+    readonly arguments: Record<string, unknown>;
+  };
+  accept(result: CuaNativeAuthorityImageToolResult): void;
+  onRejected?(reason: string): void;
+}
+
 export interface CuaNativeAuthoritySessionOptions {
   /**
    * 唯一 runtime turn scope。身份只能从这里捕获，adapter 不接受调用方另行传入
@@ -114,6 +127,10 @@ export interface CuaNativeAuthoritySessionOptions {
   readonly producerIncarnation: string;
   /** 只有真实 app 的显式 capture composition 才提供；普通 authority 会话保持缺席。 */
   readonly capture?: CuaNativeAuthorityCaptureOptions;
+  readonly observation?: CuaNativeObservationOptions;
+  readonly confirmReadRequest?: (
+    payload: CuaNativeConfirmRequestPayload,
+  ) => Promise<CuaNativeConfirmRequestOutcome>;
   /**
    * App 内确认弹窗回调（替代 Helper 原生 NSAlert，spec 2026-10-31）：Helper 的 confirm
    * 帧经它发起一次用户交互。会话级交互入口，与 capture 的图像交付选项分开，不混进
@@ -201,6 +218,8 @@ const METHODS = new Set<CuaNativeAuthorityMethod>([
   "check",
   "captureResult",
   "confirm",
+  "confirmRead",
+  "observationResult",
   "revoke",
   "close",
 ]);

@@ -77,6 +77,7 @@ import { createWorkflowFacade } from "./workflow-facade.js";
 import { createInputFacade } from "./input-facade.js";
 import { createCuaRuntimeControlSession } from "./cua-runtime-control.js";
 import { createCuaRuntimeNativeAuthoritySession } from "./cua-runtime-native-authority.js";
+import { createCuaObservationCallbacks } from "./cua-runtime-observation-factory.js";
 import { captureCuaRuntimeOnce } from "./cua-runtime-native-capture.js";
 import { createPluginFacadeForApp } from "./plugin-facade.js";
 import { resolvePluginRuntimeFeatures } from "./plugin-runtime-features.js";
@@ -440,6 +441,9 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
             ...(captureOptions?.expected ? { expected: captureOptions.expected } : {}),
           })
       : undefined;
+    const observationCallbacks = options.cuaNativeCapture
+      ? createCuaObservationCallbacks(getRuntime, options.cuaNativeCapture)
+      : undefined;
     const baseMcpPort =
       options.mcpPort ??
       (runtimeConfig.mcp?.enabled === false
@@ -464,6 +468,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
         ? options.cuaNodeReplMcpPortFactory({
             port: baseMcpPort,
             captureOnce: captureCuaOnce,
+            ...observationCallbacks!,
             closePort: ownsBaseMcpPort,
             ...(nodeReplBrowserBroker
               ? {
@@ -1215,7 +1220,10 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
               ? persistedAttachment.url
               : undefined);
           // 历史 URI 不能被当成普通路径或原文件重新读取。
-          if (persistedAttachment.url.startsWith("zcode-artifact://") || artifactUri?.startsWith("zcode-artifact://")) {
+          if (
+            persistedAttachment.url.startsWith("zcode-artifact://") ||
+            artifactUri?.startsWith("zcode-artifact://")
+          ) {
             throw new Error("fault.attachment.previewRefNotAuthorized");
           }
           ref =
@@ -1225,8 +1233,11 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
         // message row 会先于后续 FilePart 逐条落库；目标 part 尚未可见时仍应
         // 使用已经由当前 projection 授权的 input.ref，不能制造短暂的预览失败窗口。
       }
-      if (ref.startsWith("zcode-artifact://") ||
-          (ref.startsWith("zody-artifact://") && !ref.startsWith(`zody-artifact://${encodeURIComponent(sessionId)}/`))) {
+      if (
+        ref.startsWith("zcode-artifact://") ||
+        (ref.startsWith("zody-artifact://") &&
+          !ref.startsWith(`zody-artifact://${encodeURIComponent(sessionId)}/`))
+      ) {
         throw new Error("fault.attachment.previewRefNotAuthorized");
       }
       return { ref, mediaType, ...(artifactUri ? { artifactUri } : {}) };

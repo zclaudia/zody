@@ -2,12 +2,17 @@ import { inspect } from "node:util";
 
 export const PROCESS_MODULE_IDS = new Set(["process", "node:process"]);
 
-export function createRestrictedProcessFacade(): Readonly<Record<string, unknown>> {
+export function createRestrictedProcessFacade(
+  cuaSdkRoot?: string,
+): Readonly<Record<string, unknown>> {
   return Object.freeze({
     arch: process.arch,
     argv: Object.freeze([...process.argv]),
     cwd: () => process.cwd(),
-    env: Object.freeze({ ...process.env }),
+    env: Object.freeze({
+      ...process.env,
+      ...(cuaSdkRoot ? { ZODY_CUA_PLUGIN_ROOT: cuaSdkRoot } : {}),
+    }),
     execArgv: Object.freeze([...process.execArgv]),
     execPath: process.execPath,
     hrtime: process.hrtime.bind(process),

@@ -4,7 +4,8 @@ import { join } from "node:path";
 
 import {
   NARROW_APP_NAME,
-  NARROW_AUXILIARY_NAMES,
+  NARROW_LEGACY_AUXILIARY_NAMES,
+  NARROW_SDK_NAMES,
   NARROW_ENTRY_NAMES,
   NARROW_EXECUTABLE_NAME,
   NARROW_EXECUTABLE_RELATIVE_PATH,
@@ -77,7 +78,27 @@ export async function verifyNarrowApp({ appPath, pins, deps = {} }) {
   });
 
   const resources = {};
-  for (const name of [...NARROW_ENTRY_NAMES, ...NARROW_AUXILIARY_NAMES]) {
+  // 签名校验先接受旧包或完整 SDK 对；清单与摘要由随后 native audit 精确验证。
+  const sdkPresent = await Promise.all(
+    NARROW_SDK_NAMES.map(async (name) => {
+      try {
+        await (deps.lstat ?? lstat)(join(appPath, "Contents", "Resources", name));
+        return true;
+      } catch (error) {
+        if (error?.code === "ENOENT") return false;
+        throw error;
+      }
+    }),
+  );
+  if (sdkPresent.some(Boolean) && !sdkPresent.every(Boolean))
+    throw new NarrowResourceError(
+      "narrow-entry-mismatch",
+      "cua-narrow Helper SDK resource pair is incomplete",
+    );
+  const auxiliary = sdkPresent.every(Boolean)
+    ? [...NARROW_LEGACY_AUXILIARY_NAMES, ...NARROW_SDK_NAMES]
+    : NARROW_LEGACY_AUXILIARY_NAMES;
+  for (const name of [...NARROW_ENTRY_NAMES, ...auxiliary]) {
     const path = join(appPath, "Contents", "Resources", name);
     const fileInfo = await (deps.lstat ?? lstat)(path);
     if (!fileInfo.isFile() || fileInfo.isSymbolicLink()) {

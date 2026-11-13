@@ -82,6 +82,15 @@ jobs:
           node-version: 24.14.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # darwin/arm64 冻结窄链材料还原（specs/computer-use-macos-phase1.md 2026-11-09 协议漂移
+      # 事故小节）：默认装配已回撤（CUA_NARROW_DEFAULT_ASSEMBLY_ENABLED=false），本步骤仅在
+      # 重建 sealed 轮次并翻回开关时由 repo variable CUA_NARROW_FROZEN_RESTORE=enabled 打开。
+      - name: Restore frozen cua-narrow materials
+        if: matrix.target == 'darwin-arm64' && vars.CUA_NARROW_FROZEN_RESTORE == 'enabled'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: pnpm --dir packages/desktop run fetch:cua-narrow-frozen
       - name: Build unsigned Desktop artifacts
         shell: bash
         env:

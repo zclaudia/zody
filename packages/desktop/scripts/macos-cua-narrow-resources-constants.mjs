@@ -18,7 +18,15 @@ export const NARROW_ENTRY_NAMES = Object.freeze([
   "cli-entry.mjs",
   "session-entry.mjs",
 ]);
-export const NARROW_AUXILIARY_NAMES = Object.freeze(["node-repl-server.mjs"]);
+export const NARROW_LEGACY_AUXILIARY_NAMES = Object.freeze(["node-repl-server.mjs"]);
+export const NARROW_SDK_NAMES = Object.freeze([
+  "computer-use-sdk/scripts/computer-use-client.mjs",
+  "computer-use-sdk/docs/computer-use.md",
+]);
+export const NARROW_AUXILIARY_NAMES = Object.freeze([
+  ...NARROW_LEGACY_AUXILIARY_NAMES,
+  ...NARROW_SDK_NAMES,
+]);
 export const NARROW_TARGET = Object.freeze({
   os: "darwin",
   arch: "arm64",

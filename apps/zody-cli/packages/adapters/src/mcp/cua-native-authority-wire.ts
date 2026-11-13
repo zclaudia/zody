@@ -3,6 +3,8 @@ import type { Duplex } from "node:stream";
 export interface CuaNativeAuthorityWireLimits {
   readonly maxFrameBytes: number;
   readonly maxPendingBytes: number;
+  readonly maxWriteFrameBytes?: number;
+  readonly maxWritePendingBytes?: number;
   readonly maxPendingRequests: number;
   readonly closeTimeoutMs: number;
 }
@@ -116,7 +118,10 @@ export class CuaNativeAuthorityWire {
     }
     const bytes = Buffer.byteLength(line, "utf8");
     const pending = this.#stream.writableLength ?? 0;
-    if (bytes > this.#limits.maxFrameBytes || pending + bytes > this.#limits.maxPendingBytes) {
+    if (
+      bytes > (this.#limits.maxWriteFrameBytes ?? this.#limits.maxFrameBytes) ||
+      pending + bytes > (this.#limits.maxWritePendingBytes ?? this.#limits.maxPendingBytes)
+    ) {
       this.#callbacks.onWriteFailure("output_backlog_exceeded");
       return false;
     }

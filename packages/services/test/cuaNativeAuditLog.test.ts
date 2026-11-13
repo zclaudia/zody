@@ -76,6 +76,7 @@ const captureReasons = [
 ] as const;
 
 const acceptedMarkers = [
+  '[cua-native] observation-rejected {"phase":"ax_windows_status","code":"element_unavailable","ax":"cannot_complete"}',
   '[cua-native] confirmation-presented {"generation":1}',
   '[cua-native] confirmation-resolved {"generation":1,"allowed":true,"reason":"user-approved"}',
   '[cua-native] cell-spawned {"pid":83436,"suspended":true}',
@@ -193,3 +194,141 @@ describe("parseCuaNativeAuditLine", () => {
     ).toBeUndefined();
   });
 });
+
+describe("native observation rejection audit", () => {
+  it("accepts the exact native JSON event and reconstructs field order", () => {
+    expect(
+      parseCuaNativeAuditLine(
+        '[cua-native] observation-rejected {"phase":"node_ax_window","code":"element_unavailable","ax":"success"}',
+      ),
+    ).toBe(
+      '[cua-native] observation-rejected {"phase":"node_ax_window","code":"element_unavailable","ax":"success"}',
+    );
+    expect(
+      parseCuaNativeAuditLine(
+        '[cua-native] observation-rejected {"ax":"unknown","code":"unknown","phase":"unknown"}',
+      ),
+    ).toBe('[cua-native] observation-rejected {"phase":"unknown","code":"unknown","ax":"unknown"}');
+  });
+  it.each([
+    '{"phase":"private title","code":"element_unavailable","ax":"success"}',
+    '{"phase":"read","code":"private error","ax":"success"}',
+    '{"phase":"read","code":"element_unavailable","ax":"private AX description"}',
+    '{"phase":"read","code":"element_unavailable","ax":"success","secret":"private"}',
+    '{"phase":"read","code":"element_unavailable"}',
+    '{"phase":"read","code":1,"ax":"success"}',
+    "not-json",
+  ])("rejects unbounded or malformed payload: %s", (payload) => {
+    expect(parseCuaNativeAuditLine(`[cua-native] observation-rejected ${payload}`)).toBeUndefined();
+  });
+});
+
+it.each([
+  "ax_app_create",
+  "ax_windows_status",
+  "ax_windows_missing",
+  "ax_windows_type",
+  "ax_unique",
+  "eligible",
+  "node_pid",
+  "node_direct_window",
+  "node_ax_window",
+  "node_role",
+  "launch_date",
+  "cg_windows",
+  "cg_unique",
+  "bounds",
+  "resolve_before",
+  "read",
+  "resolve_after",
+  "final_resolve",
+  "read_resolve_before",
+  "read_resolve_after",
+  "metadata_cg_windows",
+  "unknown",
+])("accepts native observation phase %s", (phase) => {
+  const line = `[cua-native] observation-rejected ${JSON.stringify({ phase, code: "element_unavailable", ax: "success" })}`;
+  expect(parseCuaNativeAuditLine(line)).toBe(line);
+});
+it.each([
+  "element_unavailable",
+  "invalid_request",
+  "broker_unavailable",
+  "permission_denied",
+  "not_authorized",
+  "screen_locked",
+  "stale_state",
+  "structured_state_unavailable",
+  "timeout",
+  "unknown",
+])("accepts native observation code %s", (code) => {
+  const line = `[cua-native] observation-rejected ${JSON.stringify({ phase: "read", code, ax: "success" })}`;
+  expect(parseCuaNativeAuditLine(line)).toBe(line);
+});
+it.each([
+  "success",
+  "failure",
+  "illegal_argument",
+  "invalid_element",
+  "cannot_complete",
+  "attribute_unsupported",
+  "no_value",
+  "not_implemented",
+  "unknown",
+])("accepts native AX status %s", (ax) => {
+  const line = `[cua-native] observation-rejected ${JSON.stringify({ phase: "read", code: "element_unavailable", ax })}`;
+  expect(parseCuaNativeAuditLine(line)).toBe(line);
+});
+
+it("接受原生零窗口 ID 的固定审计阶段", () => {
+  const line =
+    '[cua-native] observation-rejected {"phase":"node_direct_window_zero","code":"element_unavailable","ax":"success"}';
+  expect(parseCuaNativeAuditLine(line)).toBe(line);
+});
+
+describe("native observation window conflict audit", () => {
+  it("accepts and canonically reconstructs the fixed conflict facts", () => {
+    const expected =
+      '[cua-native] observation-window-conflict {"atRoot":false,"role":"text","direct":"same_process","axWindow":"target","axWindowIsTargetReference":true}';
+    expect(parseCuaNativeAuditLine(expected)).toBe(expected);
+    expect(
+      parseCuaNativeAuditLine(
+        '[cua-native] observation-window-conflict {"axWindowIsTargetReference":true,"direct":"same_process","axWindow":"target","role":"text","atRoot":false}',
+      ),
+    ).toBe(expected);
+  });
+  it.each([
+    '{"atRoot":false,"role":"private title","direct":"target","axWindow":"target","axWindowIsTargetReference":true}',
+    '{"atRoot":false,"role":"text","direct":"123","axWindow":"target","axWindowIsTargetReference":true}',
+    '{"atRoot":false,"role":"text","direct":"target","axWindow":"123","axWindowIsTargetReference":true}',
+    '{"atRoot":false,"role":"text","direct":"target","axWindow":"target","axWindowIsTargetReference":true,"windowId":123}',
+    '{"atRoot":0,"role":"text","direct":"target","axWindow":"target","axWindowIsTargetReference":true}',
+    '{"atRoot":false,"role":"text","direct":"target","axWindow":"target"}',
+  ])("rejects non-contract fields and values: %s", (payload) => {
+    expect(
+      parseCuaNativeAuditLine(`[cua-native] observation-window-conflict ${payload}`),
+    ).toBeUndefined();
+  });
+});
+
+it.each(["window", "button", "text", "group", "other", "unknown"])(
+  "accepts bounded conflict role %s",
+  (role) => {
+    const line = `[cua-native] observation-window-conflict ${JSON.stringify({ atRoot: true, role, direct: "unknown", axWindow: "unknown", axWindowIsTargetReference: false })}`;
+    expect(parseCuaNativeAuditLine(line)).toBe(line);
+  },
+);
+it.each(["target", "same_process", "other_process", "missing", "unknown"])(
+  "accepts bounded conflict direct %s",
+  (direct) => {
+    const line = `[cua-native] observation-window-conflict ${JSON.stringify({ atRoot: false, role: "unknown", direct, axWindow: "unknown", axWindowIsTargetReference: false })}`;
+    expect(parseCuaNativeAuditLine(line)).toBe(line);
+  },
+);
+it.each(["target", "direct", "other", "missing", "invalid", "unknown"])(
+  "accepts bounded conflict AX window %s",
+  (axWindow) => {
+    const line = `[cua-native] observation-window-conflict ${JSON.stringify({ atRoot: false, role: "unknown", direct: "unknown", axWindow, axWindowIsTargetReference: false })}`;
+    expect(parseCuaNativeAuditLine(line)).toBe(line);
+  },
+);

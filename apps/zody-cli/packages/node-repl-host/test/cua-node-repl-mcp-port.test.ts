@@ -154,6 +154,45 @@ describe("createCuaNodeReplMcpPort", () => {
     expect(base.closed()).toBe(true);
   }, 30_000);
 
+  it("routes observations through the explicitly injected callback in a real cell", async () => {
+    const base = fakeBasePort();
+    const observed: unknown[] = [];
+    const port = createCuaNodeReplMcpPort({
+      port: base.port,
+      closePort: false,
+      serverPath,
+      sourceSnapshot: serverSnapshot,
+      captureOnce: async () => {
+        throw new Error("unexpected screenshot");
+      },
+      observationOnce: async (request, options) => {
+        observed.push({ request, expected: options.expected });
+        return { content: [{ type: "text", text: "observed-apps" }] };
+      },
+    });
+    try {
+      await port.connectConfiguredServers({ node_repl: { type: "stdio" } as never });
+      const result = await port.callTool({
+        ...REQUEST,
+        arguments: {
+          code: "const bridge = globalThis[Symbol.for('zcode.node-repl.computer-use-bridge')]; await bridge.call('list_apps', {});",
+          title: "读取应用",
+        },
+      });
+      expect(result.content).toContainEqual(
+        expect.objectContaining({ type: "text", text: expect.stringContaining("observed-apps") }),
+      );
+      expect(observed).toEqual([
+        {
+          request: { method: "list_apps", arguments: {} },
+          expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+        },
+      ]);
+    } finally {
+      await port.close();
+    }
+  }, 30_000);
+
   it("delegates non-node_repl tools and does not close a borrowed base port", async () => {
     const base = fakeBasePort();
     const port = createCuaNodeReplMcpPort({

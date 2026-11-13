@@ -83,6 +83,9 @@ export interface AgentRuntimeCoreMethods {
   getCuaSubmissionProducerPort(): CuaSubmissionProducerPort | undefined;
   getCurrentCuaSubmissionRef(): CuaSubmissionRef | undefined;
   createCuaSubmissionTurnScope(): CuaSubmissionTurnScope | undefined;
+  requestCuaNativeReadConfirmation(
+    input: CuaNativeCaptureConfirmationInput,
+  ): Promise<CuaNativeCaptureConfirmationResult>;
   requestCuaNativeCaptureConfirmation(
     input: CuaNativeCaptureConfirmationInput,
   ): Promise<CuaNativeCaptureConfirmationResult>;

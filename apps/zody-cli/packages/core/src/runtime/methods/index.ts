@@ -1,3 +1,4 @@
+import { requestCuaNativeReadConfirmation } from "./cua-read-confirmation.js";
 import { sampleModel } from "./sample-model.js";
 import { grantPermissionFullAccess } from "../permission-full-access.js";
 import {
@@ -237,6 +238,7 @@ export function installAgentRuntimeMethods(ctor: AgentRuntimeConstructor): void 
   proto.getCurrentCuaSubmissionRef = getCurrentCuaSubmissionRef;
   proto.createCuaSubmissionTurnScope = createCuaSubmissionTurnScope;
   proto.requestCuaNativeCaptureConfirmation = requestCuaNativeCaptureConfirmation;
+  proto.requestCuaNativeReadConfirmation = requestCuaNativeReadConfirmation;
   proto.isCuaLiveSubmissionGrantActive = isCuaLiveSubmissionGrantActive;
   proto.invalidateCuaSubmissionTurnScopeForTurn = invalidateCuaSubmissionTurnScopeForTurn;
   proto.invalidateCuaSubmissionTurnScopeForForeground =

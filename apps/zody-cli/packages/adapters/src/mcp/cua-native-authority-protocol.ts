@@ -1,7 +1,9 @@
+import { handleObservationFrame } from "./cua-native-authority-observation.js";
 import type { CuaSubmissionRevocationResult, CuaSubmissionTurnScope } from "@zody/contracts";
 import {
   type CuaNativeAuthorityCloseReason,
   type CuaNativeAuthorityCaptureOptions,
+  type CuaNativeObservationOptions,
   type CuaNativeAuthorityRevokeOutcome,
   type CuaNativeConfirmRequestOutcome,
   type CuaNativeConfirmRequestPayload,
@@ -30,6 +32,8 @@ export interface CuaNativeAuthorityProtocolState {
   bootstrapStarted: boolean;
   bootstrapped: boolean;
   captureResultStarted: boolean;
+  observationResultStarted: boolean;
+  readTarget?: { pid: number; windowId: number };
   captureResultAccepted: boolean;
   invalidated: boolean;
   ownerRevoked: boolean;
@@ -50,6 +54,10 @@ export interface CuaNativeAuthorityProtocolContext {
   readonly scope: CuaSubmissionTurnScope;
   readonly producerIncarnation: string;
   readonly capture?: CuaNativeAuthorityCaptureOptions;
+  readonly observation?: CuaNativeObservationOptions;
+  readonly confirmReadRequest?: (
+    payload: CuaNativeConfirmRequestPayload,
+  ) => Promise<CuaNativeConfirmRequestOutcome>;
   /** App 内确认弹窗回调；与 capture 图像选项并列的会话级交互入口。 */
   readonly confirmRequest?: (
     payload: CuaNativeConfirmRequestPayload,
@@ -87,6 +95,10 @@ export async function handleCuaNativeAuthorityLine(
       ctx.reject(frame.requestId, frame.method, "scope_invalidated");
     } else if (frame.method === "revoke") await handleRevoke(ctx, frame, true);
     else if (frame.method === "close") handleClose(ctx, frame);
+    return;
+  }
+  if (frame.method === "confirmRead" || frame.method === "observationResult") {
+    await handleObservationFrame(ctx, frame);
     return;
   }
   if (frame.method === "bootstrap") await handleBootstrap(ctx, frame);
@@ -143,6 +155,7 @@ async function handleBootstrap(
       runId: ctx.scope.runId,
       turnId: ctx.scope.turnId,
       ...(ctx.capture ? { target: ctx.capture.target } : {}),
+      ...(ctx.observation ? { observation: ctx.observation.request } : {}),
       projection,
     },
   });

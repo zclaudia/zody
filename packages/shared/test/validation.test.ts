@@ -18,6 +18,36 @@ it("资源查询取消必须指定 requestId 且不接受附加字段", () => {
   );
 });
 
+it("extension-transport-result 必须接受 main 侧 list 结果携带的 connections", () => {
+  // 回归背景：main 侧 controller 对 op=list 返回 { ok, connections }，desktopHostProcess
+  // 原样展开回传；schema 若漏收 connections，parentPort 守卫会整条拒收，host 侧
+  // pending 只能等满 35s 超时，表现为每次发送消息先卡 35 秒（2026-11-10 实机日志）。
+  const result = {
+    type: "extension-transport-result",
+    requestId: "req-1",
+    ok: true,
+    connections: [
+      {
+        profileInstanceId: "profile-1",
+        browserId: "extension:profile-1",
+        generation: 3,
+        connectionId: "conn-1",
+        windowId: "1",
+      },
+    ],
+  };
+  expect(hostIncomingMessageSchema.safeParse(result).success).toBe(true);
+  // 连接快照字段缺失仍然拒收，保持 strict 语义。
+  expect(
+    hostIncomingMessageSchema.safeParse({
+      ...result,
+      connections: [{ profileInstanceId: "profile-1" }],
+    }).success,
+  ).toBe(false);
+  // 未知字段依旧拒收。
+  expect(hostIncomingMessageSchema.safeParse({ ...result, extra: true }).success).toBe(false);
+});
+
 it("accepts persisted user messages with video attachments", () => {
   expect(
     zodyPersistedMessageSchema.safeParse({

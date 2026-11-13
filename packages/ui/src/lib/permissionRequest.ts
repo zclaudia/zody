@@ -16,6 +16,17 @@ export {
  * 会话支持时另有 Full access）。
  */
 export const CUA_SCREENSHOT_CONFIRM_TOOL_NAME = "cua_screenshot_confirm";
+export const CUA_AX_READ_CONFIRM_TOOL_NAME = "cua_ax_read_confirm";
+
+/** 读取与截图是独立权限，不共享持久授权语义。 */
+export function isCuaReadConfirmRequest(request: { kind?: string | null; raw?: unknown }): boolean {
+  if (normalizeToolName(request.kind) === CUA_AX_READ_CONFIRM_TOOL_NAME) return true;
+  if (!isPlainRecord(request.raw)) return false;
+  return (
+    (normalizeToolName(request.raw.toolName) ?? normalizeToolName(request.raw.tool_name)) ===
+    CUA_AX_READ_CONFIRM_TOOL_NAME
+  );
+}
 
 /** 目标窗口的展示事实；字段畸形（类型不匹配）时对应槽位为 null，不崩溃。 */
 export interface CuaScreenshotConfirmTargetFacts {

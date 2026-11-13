@@ -54,6 +54,11 @@ export interface CuaNodeReplMcpPortFactoryInput {
     target: CuaNativeCaptureTarget,
     options?: CuaNativeCaptureOnceOptions,
   ): Promise<CuaNativeAuthorityImageToolResult>;
+  observationOnce(
+    request: import("./cua-runtime-native-observation.js").CuaObservationRequest,
+    options: import("./cua-runtime-native-observation.js").CuaObservationOptions,
+  ): Promise<import("./cua-runtime-native-observation.js").CuaObservationResult>;
+  verifyObservationScope(expected: CuaNativeCaptureExpectation): boolean;
   /** app 是否拥有原端口；wrapper.close 据此决定是否关闭原端口。 */
   readonly closePort: boolean;
   /** 与现有 node_repl browser bridge 同源的宿主 broker；不改变其所有权。 */

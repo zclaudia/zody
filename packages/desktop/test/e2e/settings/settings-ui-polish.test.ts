@@ -53,11 +53,21 @@ describe("设置页 UI polish E2E", () => {
     await waitForWorkspaceApp(DEFAULT_WORKSPACE, 30000);
   });
 
-  it("ZODY-02: 隐藏不可用的系统 Computer Use，同时保留 Browser Use 设置", async () => {
+  it("ZODY-02: 桌面端如实呈现 Computer Use 能力边界（dev/占位构建显示说明卡），同时保留 Browser Use 设置", async () => {
+    // 2026-11-09 对齐 specs/computer-use-settings-unification.md：桌面平台导航不再隐藏
+    // computerUse 分区；dev/占位构建（无 cua-narrow 资源）整卡说明「此构建不含」，
+    // 不渲染总开关。旧断言「导航不存在」已被该 spec 取代。
     await clickTestIdByDom(TID_TASK_SETTINGS_BUTTON, { timeout: 15000 });
     await $(sel(TID_SETTINGS_PAGE)).waitForDisplayed({ timeout: 15000 });
 
-    expect(await $(sel(testId(TID_SETTINGS_SECTION_NAV, "computerUse"))).isExisting()).toBe(false);
+    const computerUseNav = $(sel(testId(TID_SETTINGS_SECTION_NAV, "computerUse")));
+    await expect(computerUseNav).toBeDisplayed();
+    await computerUseNav.click();
+    // dev 构建恒为 placeholder 能力（cuaBuildCapability fail-closed 到 placeholder）。
+    await expect($(sel(TID_SETTINGS_PAGE))).toHaveText(
+      expect.stringContaining("Computer Use is not included in this build"),
+    );
+
     const browserUseNav = $(sel(testId(TID_SETTINGS_SECTION_NAV, "browser")));
     await expect(browserUseNav).toBeDisplayed();
     await browserUseNav.click();

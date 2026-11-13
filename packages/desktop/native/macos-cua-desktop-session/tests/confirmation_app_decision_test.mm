@@ -553,6 +553,39 @@ int main() {
   @autoreleasepool {
     test_controller_app_decision();
     test_confirm_wire_and_wait();
+    for (NSString* method in @[@"list_apps", @"list_windows", @"get_app_state"]) {
+      FakeAuthorityPeer peer;
+      AuthorityFdReader reader(peer.client_fd());
+      NSString* response = [NSString stringWithFormat:@"{\"requestId\":\"native-1\",\"result\":{\"ok\":true,\"observation\":{\"method\":\"%@\"}}}", method];
+      peer.write_line(response.UTF8String);
+      NSDictionary* bootstrap = nil;
+      std::string error, id;
+      expect(reader.request(@"bootstrap", @{}, &bootstrap, error), "bootstrap response");
+      NSString* large = [@"x" stringByPaddingToLength:19600 withString:@"x" startingAtIndex:0];
+      (void)peer.read_line(100);
+      std::string received;
+      std::thread drain;
+      if (![method isEqual:@"get_app_state"]) drain = std::thread([&] { received = peer.read_line(10000); });
+      bool sent = reader.send(@"observationResult", @{ @"result": large }, id, error);
+      if (drain.joinable()) drain.join();
+      expect(sent == ![method isEqual:@"get_app_state"], "metadata-only result bound");
+      if (sent) {
+        NSDictionary* frame = parse_json_line(received);
+        expect([frame[@"payload"][@"result"] isEqual:large], "large result preserved");
+        expect(!reader.send(@"check", @{ @"data": large }, id, error), "other frames remain bounded");
+      }
+    }
+    {
+      // 单独结果有界仍可能叠加很长的 scope；整个 wire 帧超限时必须零发送。
+      FakeAuthorityPeer peer;
+      AuthorityFdReader reader(peer.client_fd());
+      std::string request_id;
+      std::string error;
+      NSString* large = [@"x" stringByPaddingToLength:16 * 1024 withString:@"x" startingAtIndex:0];
+      expect(!reader.send(@"observationResult", @{ @"result": large }, request_id, error),
+             "oversized full authority frame must be rejected");
+      expect(error == "authority request exceeds frame bound", "full frame limit reason");
+    }
   }
   if (failures != 0) {
     std::fprintf(stderr, "%d failure(s)\n", failures);

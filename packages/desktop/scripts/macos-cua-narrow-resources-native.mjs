@@ -6,6 +6,8 @@ import { join } from "node:path";
 import {
   NARROW_APP_NAME,
   NARROW_AUXILIARY_NAMES,
+  NARROW_LEGACY_AUXILIARY_NAMES,
+  NARROW_SDK_NAMES,
   NARROW_ENTRY_NAMES,
   NARROW_EXECUTABLE_RELATIVE_PATH,
   NARROW_NATIVE_MANIFEST_KIND,
@@ -50,7 +52,11 @@ async function assertExpectedResources({ appPath, descriptors, expectedNames, ki
     );
   }
   const byName = new Map(descriptors.map((entry) => [entry.name, entry]));
-  if (byName.size !== expectedNames.length || expectedNames.some((name) => !byName.has(name))) {
+  if (
+    descriptors.length !== expectedNames.length ||
+    byName.size !== expectedNames.length ||
+    expectedNames.some((name) => !byName.has(name))
+  ) {
     throw new NarrowResourceError(
       "narrow-entry-mismatch",
       `desktop-session native build manifest ${kind} is not the expected entry set`,
@@ -119,10 +125,31 @@ export async function validateNativeBuildManifest({
     expectedNames: NARROW_ENTRY_NAMES,
     kind: "entries",
   });
+  // 只能接受完整的新闭包或原有 server-only 清单，不能将缺失 SDK 降级。
+  const auxiliary = nativeManifest.auxiliaryResources;
+  const expectedAuxiliary =
+    Array.isArray(auxiliary) && auxiliary.length === NARROW_LEGACY_AUXILIARY_NAMES.length
+      ? NARROW_LEGACY_AUXILIARY_NAMES
+      : NARROW_AUXILIARY_NAMES;
+  for (const name of NARROW_SDK_NAMES) {
+    let present = false;
+    try {
+      await lstat(join(appPath, "Contents", "Resources", name));
+      present = true;
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
+    if (present !== expectedAuxiliary.includes(name)) {
+      throw new NarrowResourceError(
+        "narrow-entry-mismatch",
+        `SDK resource ${name} differs from native declaration`,
+      );
+    }
+  }
   await assertExpectedResources({
     appPath,
-    descriptors: nativeManifest.auxiliaryResources,
-    expectedNames: NARROW_AUXILIARY_NAMES,
+    descriptors: auxiliary,
+    expectedNames: expectedAuxiliary,
     kind: "auxiliaryResources",
   });
 

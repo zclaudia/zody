@@ -6,7 +6,36 @@ CUA 验收轮次（computer-use-macos-phase1 系列）每轮在 `output/cua-*` �
 
 ## 规则
 
-- **范围**：仅作用于仓库根的 `output/`（已 gitignore）。`output/` 的每个直接子目录是一个「轮次目录」；`output/cleanup-receipts/` 例外，仅存放清理回执。
+### 2026-11-13 集中验收补充
+
+- 同一份生产源码/资源的测试调整必须复用同一个已签名候选与路径，fresh HOME、夹具和证据目录不要求复制 App。测试 helper、fixture、收据断言变化不触发应用重建。
+- 多项生产改动先在源码/组件验证中收敛，再装配一次候选；确需不同 Host composition 时按其独立支持合同装配，不能通过删除候选保护守卫冒充同一种运行形态。
+- `cua-ax-r1-acceptance` 历史上把多个候选留在同一个受保护轮次，默认轮次清理未删除其中的重复 App。2026-11-13 按用户要求清理该轮次的 29 个过期 `controller-app*` / `controller-build*` / `controller-prepared*` 下 `.app` 构建包；保留 `controller-app-v17`、`controller-prepared-v11`、夹具及全部独立证据文件。清理回执：`output/cua-ax-r1-acceptance/duplicate-app-cleanup-receipt-20261113.json`。这是本轮明确枚举的清理范围，不把任意受保护目录都视为可删。
+
+- 2026-11-13 最终普通 Host 固定槽同时通过六项、手机模拟触摸与截图三项后，v17 特殊候选已被取代；仅删除其旧 `.app`，保留目录内清单和全部历史证据。最终只保留 `normal-host-slot` 运行槽、`controller-prepared-v11` 签名 Helper 构建输入及夹具，不再按测试轮次复制 App。
+
+### 2026-11-13 用户确认的额外缓存清理
+
+用户确认清理已盘点的约 3.5 GiB 旧编译产物和缓存。本次仅按以下精确路径执行，不扩大 `clean:output` 的通用白名单：
+
+- `cua-driver-round9/native-work/target`
+- `cua-driver-round9/controller-final-native/target`
+- `cua-driver-round9/controller-native-checks/target`
+- `cua-driver-round9/controller-final-native/cache`
+- `cua-driver-round9/controller-native-checks/cache`
+- `cua-driver-round9/controller-sdk-probe/module-cache`
+- `cua-driver-round9/native-work/sdk27-final/module-cache`
+- `cua-driver-round9/native-work/sdk27-probe2/module-cache`
+- `zody-rename-main-merge/home/Library/Caches/pnpm`
+- `zody-rename-main-merge/home/Library/pnpm/package-manager-store`
+- `zody-rename-main-merge/xdg/cache/pnpm`
+- `zody-rename-main-merge/xdg/data/pnpm/package-manager-store`
+
+以上均相对于 `output/`。删除前确认不存在路径越界、符号链接祖先或仍使用这些路径的进程；保留删除范围之外的报告、日志、截图、源码快照和 pins，并核对清理前后摘要。当前运行槽、签名 Helper 准备件、冻结输入及归档不在范围内。仍被构建脚本直接引用的 `native-work/cargo-home` 和 `cua-helper-round11/visual-worker/cargo-home` 也不删除。旧轮次如需再次执行，应重新编译或下载缓存。计划及删除后存在性回执保存在 `output/cleanup-receipts/`。
+
+### 通用清理规则
+
+- **范围**：仅作用于仓库根的 `output/`（已 gitignore）。`output/` 的每个直接子目录是一个「轮次目录」；`output/cleanup-receipts/` 例外，仅存放清理回执；`output/cua-narrow-frozen/` 例外，是冻结归档还原出的持久构建输入（见 [computer-use-macos-phase1.md](computer-use-macos-phase1.md) 2026-11-09 分发轮次），任何清理计划都不得触碰、不占保护槽位。
 - **证据永久保留**：清理只删除「构建树」目录，不删除任何文件。json/log/png/md/tar.gz 等证据文件与空目录结构原样保留。
 - **构建树白名单**（仅这两类，可按需在 spec 中扩展后实现）：
   - 目录名以 `.app` 结尾的解包 bundle；

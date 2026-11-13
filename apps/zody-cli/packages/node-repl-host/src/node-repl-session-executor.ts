@@ -1,9 +1,5 @@
 import { resolve } from "node:path";
-import {
-  NodeReplSession,
-  type NodeReplRequestMeta,
-  type NodeReplRunResult,
-} from "@zody/core/repl";
+import { NodeReplSession, type NodeReplRequestMeta, type NodeReplRunResult } from "@zody/core/repl";
 import {
   createBrowserBridgeGlobals,
   type ActiveNodeReplCall,
@@ -37,6 +33,7 @@ export interface NodeReplExecuteInput {
 export type NodeReplExecutor = (input: NodeReplExecuteInput) => Promise<NodeReplRunResult>;
 
 export interface NodeReplSessionExecutorOptions {
+  cuaSdk?: { root: string; clientSource: string; documentationSource: string };
   browserDocumentationRoot?: string;
   cuaDocumentationRoot?: string;
   browserBroker?: NodeReplBrowserBrokerConnection;
@@ -73,9 +70,11 @@ export function createNodeReplSessionExecutor(
           getActiveCall: () => activeCuaCall,
           session: () => session,
           documentationRoot: cuaDocumentationRoot,
+          ...(options.cuaSdk ? { documentationSource: options.cuaSdk.documentationSource } : {}),
         }),
       }),
       restrictProcess: true,
+      ...(options.cuaSdk ? { cuaSdk: options.cuaSdk } : {}),
     });
     activeCall = {
       generation,

@@ -151,6 +151,21 @@ describe("clean-output 保留策略", () => {
     expect(result.removals.some((removal) => removal.path.includes(RECEIPTS_DIR_NAME))).toBe(false);
   });
 
+  it("冻结归档还原目录不参与清理也不占保护槽（持久构建输入）", async () => {
+    await createFixture();
+    const frozenApp = join(outputDir, "cua-narrow-frozen", "controller-prepared", "stage", "Zody CUA Desktop Session.app");
+    await mkdir(join(frozenApp, "Contents", "MacOS"), { recursive: true });
+    await writeFile(join(frozenApp, "Contents", "MacOS", "launcher"), "bin");
+    const now = Date.now();
+    await utimes(join(outputDir, "cua-narrow-frozen"), new Date(now - 90 * 24 * 3600 * 1000), new Date(now - 90 * 24 * 3600 * 1000));
+
+    const names = collectRoundDirs(outputDir).map((round) => round.name);
+    expect(names).not.toContain("cua-narrow-frozen");
+    const result = await runOutputCleanup({ outputDir, apply: true });
+    expect(result.removals.some((removal) => removal.path.includes("cua-narrow-frozen"))).toBe(false);
+    expect(existsSync(join(frozenApp, "Contents", "MacOS", "launcher"))).toBe(true);
+  });
+
   it("当日报告目录不抢占保护槽位", async () => {
     await createFixture();
     const report = join(outputDir, "disk-report-today");

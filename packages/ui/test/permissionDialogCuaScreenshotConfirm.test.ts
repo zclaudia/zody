@@ -113,6 +113,7 @@ function installAnimationFrameController() {
 function renderPermissionDialog(
   request: ZodyPermissionRequest,
   onRespond: (requestId: string, option: ZodyPermissionOption) => void,
+  allowStopExit = false,
 ) {
   const animationFrame = installAnimationFrameController();
   const view = render(
@@ -123,6 +124,7 @@ function renderPermissionDialog(
         request,
         onRespond,
         workspacePath: WORKSPACE_PATH,
+        ...(allowStopExit ? { allowStopExit } : {}),
       }),
     ),
   );
@@ -413,6 +415,84 @@ describe("PermissionDialog cua_screenshot_confirm 展示", () => {
     );
   });
 
+  it("有会话停止入口时允许 Tab 从最后选项离开，不提交权限", () => {
+    const view = renderPermissionDialog(createCuaScreenshotConfirmRequest(), vi.fn(), true);
+    const last = view.getAllByRole("option").at(-1)!;
+    const event = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+    last.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(view.onRespond).not.toHaveBeenCalled();
+  });
+
+  it("有会话停止入口时首项 Shift+Tab 离开且保持默认拒绝", () => {
+    const view = renderPermissionDialog(createCuaScreenshotConfirmRequest(), vi.fn(), true);
+    const options = view.getAllByRole("option");
+    expect(options[2]!.getAttribute("aria-selected")).toBe("true");
+    const event = new KeyboardEvent("keydown", {
+      key: "Tab",
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    options[0]!.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(options[2]!.getAttribute("aria-selected")).toBe("true");
+    expect(view.onRespond).not.toHaveBeenCalled();
+  });
+
+  it("普通权限有停止入口时 Tab 离开且保留默认允许和应答语义", () => {
+    const options: ZodyPermissionOption[] = [
+      {
+        optionId: "allow_once",
+        kind: "allowOnce",
+        name: "Allow once",
+        response: { decision: "allow" },
+      },
+      { optionId: "deny", kind: "deny", name: "Deny", response: { decision: "deny" } },
+    ];
+    const request = createCuaScreenshotConfirmRequest({
+      requestId: "request-bash",
+      kind: "Bash",
+      title: "Bash",
+      options,
+      raw: { toolName: "Bash", input: { command: "ls" } },
+    });
+    const view = renderPermissionDialog(request, vi.fn(), true);
+    const rendered = view.getAllByRole("option");
+    expect(rendered[0]!.getAttribute("aria-selected")).toBe("true");
+    const event = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+    rendered[1]!.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(rendered[0]!.getAttribute("aria-selected")).toBe("true");
+    expect(view.onRespond).not.toHaveBeenCalled();
+    fireEvent.keyDown(rendered[0]!, { key: "Enter" });
+    expect(view.onRespond).toHaveBeenCalledExactlyOnceWith("request-bash", options[0], undefined);
+  });
+
+  it("有会话停止入口时反馈框正向 Tab 不再循环授权选项", () => {
+    const view = renderPermissionDialog(
+      createCuaScreenshotConfirmRequest({ freeText: true }),
+      vi.fn(),
+      true,
+    );
+    const input = view.getByRole("textbox");
+    const event = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+    input.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(view.onRespond).not.toHaveBeenCalled();
+  });
+
+  it("没有停止入口时保留反馈框原有 Tab 循环", () => {
+    const view = renderPermissionDialog(
+      createCuaScreenshotConfirmRequest({ freeText: true }),
+      vi.fn(),
+    );
+    const event = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+    view.getByRole("textbox").dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(view.onRespond).not.toHaveBeenCalled();
+  });
+
   it("Esc 触发拒绝应答", () => {
     const denyOption = standardCuaScreenshotConfirmOptions()[2]!;
     const view = renderPermissionDialog(createCuaScreenshotConfirmRequest(), vi.fn());
@@ -462,5 +542,97 @@ describe("PermissionDialog cua_screenshot_confirm 展示", () => {
     expect(options[1]!.getAttribute("aria-label")).toBe("拒绝");
     expect(queryByText("允许本次截图")).toBeNull();
     expect(queryByText("屏幕截图确认")).toBeNull();
+  });
+});
+
+describe("cua_ax_read_confirm 展示", () => {
+  it("只读确认展示目标与单次授权，隐藏内部工具名和原始 JSON", () => {
+    const request = createCuaScreenshotConfirmRequest({
+      kind: "cua_ax_read_confirm",
+      title: "cua_ax_read_confirm",
+      options: standardCuaScreenshotConfirmOptions().filter(
+        (option) => option.kind !== "allowAlways",
+      ),
+      raw: {
+        target: { ownerName: "TextEdit", windowName: "Untitled.txt", pid: 40077, windowId: 89384 },
+      },
+    });
+    const view = renderPermissionDialog(request, vi.fn());
+    expect(view.getByText("读取窗口内容")).toBeTruthy();
+    expect(view.getByText("TextEdit")).toBeTruthy();
+    expect(view.getByText("Untitled.txt")).toBeTruthy();
+    expect(view.getByText("40077")).toBeTruthy();
+    expect(view.getByText("89384")).toBeTruthy();
+    expect(view.getByRole("option", { name: "允许本次读取" })).toBeTruthy();
+    expect(view.getAllByRole("option")).toHaveLength(2);
+    expect(view.queryByText(/cua_ax_read_confirm/)).toBeNull();
+    expect(view.container.querySelector("pre")).toBeNull();
+    expect(view.getByRole("listbox").closest('[data-cua-confirm-kind="read"]')).not.toBeNull();
+    expect(
+      view
+        .getByRole("listbox")
+        .closest('[data-cua-confirm-kind="read"]')
+        ?.getAttribute("data-permission-request-id"),
+    ).toBe(request.requestId);
+  });
+
+  it("读取卡默认拒绝，Enter 与 Escape 均拒绝", () => {
+    const options = standardCuaScreenshotConfirmOptions().filter(
+      (option) => option.kind !== "allowAlways",
+    );
+    const view = renderPermissionDialog(
+      createCuaScreenshotConfirmRequest({
+        kind: "cua_ax_read_confirm",
+        title: "cua_ax_read_confirm",
+        options,
+      }),
+      vi.fn(),
+    );
+    const deny = view.getAllByRole("option")[1]!;
+    expect(document.activeElement).toBe(deny);
+    expect(deny.getAttribute("aria-selected")).toBe("true");
+    fireEvent.keyDown(deny, { key: "Enter" });
+    expect(view.onRespond).toHaveBeenCalledExactlyOnceWith(
+      "request-cua-confirm",
+      options[1],
+      undefined,
+    );
+    view.onRespond.mockClear();
+    const allow = view.getAllByRole("option")[0]!;
+    act(() => allow.focus());
+    fireEvent.keyDown(allow, { key: "Escape" });
+    expect(view.onRespond).toHaveBeenCalledExactlyOnceWith(
+      "request-cua-confirm",
+      options[1],
+      undefined,
+    );
+  });
+
+  it("英文选项遵循 broker，点击单次读取回传原选项", () => {
+    const options = standardCuaScreenshotConfirmOptions().filter(
+      (option) => option.kind !== "allowAlways",
+    );
+    const request = createCuaScreenshotConfirmRequest({
+      kind: "cua_ax_read_confirm",
+      title: "cua_ax_read_confirm",
+      options,
+      raw: {
+        target: { ownerName: "TextEdit", windowName: "Untitled.txt", pid: 40077, windowId: 89384 },
+      },
+    });
+    const onRespond = vi.fn();
+    const animationFrame = installAnimationFrameController();
+    const view = render(
+      createElement(
+        ZodyIntlProvider,
+        { initialLocale: "en-US" },
+        createElement(PermissionDialog, { request, onRespond, workspacePath: WORKSPACE_PATH }),
+      ),
+    );
+    act(() => animationFrame.flush());
+    expect(view.getByText("Read window content")).toBeTruthy();
+    fireEvent.click(view.getByRole("option", { name: "Allow this read" }));
+    fireEvent.click(view.getByRole("option", { name: "Allow this read" }));
+    expect(onRespond).toHaveBeenCalledWith(request.requestId, options[0], undefined);
   });
 });

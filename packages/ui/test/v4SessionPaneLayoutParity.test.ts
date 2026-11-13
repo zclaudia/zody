@@ -265,7 +265,11 @@ function pendingStructuredUserInputInteraction(): PendingInteraction {
           header: "形式",
           options: [
             { value: "page", label: "独立新页面", description: "通过导航访问" },
-            { value: "widget", label: "独立小工具视图", description: "可复用组件" },
+            {
+              value: "widget",
+              label: "独立小工具视图",
+              description: "可复用组件",
+            },
           ],
         },
       ],
@@ -367,6 +371,15 @@ function renderPane({
 }
 
 describe("SessionPane v4 chat layout parity", () => {
+  it("projects the current snapshot phase on the session pane", () => {
+    const base = makeSnapshot();
+    for (const phase of ["running", "completedInterrupted"] as const) {
+      const html = renderPane({
+        snapshot: { ...base, control: { ...base.control, phase } },
+      });
+      expect(html).toContain(`data-session-id="session-1" data-session-phase="${phase}"`);
+    }
+  });
   it("renders the draft greeting and the composer in the shared timeline viewport", () => {
     const html = renderPane({ sessionId: null });
 
@@ -809,7 +822,11 @@ describe("SessionPane v4 chat layout parity", () => {
         workflowRuns: { revision: 1, runs: [workflowRun] },
       });
 
-      renderPane({ snapshot, onOpenWorkflowRun, onSummaryPanelVariantOverrideChange });
+      renderPane({
+        snapshot,
+        onOpenWorkflowRun,
+        onSummaryPanelVariantOverrideChange,
+      });
       const composerProps = statusPanelCapture.composerProps.at(-1);
       expect(composerProps?.backgroundWorkOpenTarget).toBe("workflow-run");
 
@@ -842,7 +859,11 @@ describe("SessionPane v4 chat layout parity", () => {
         workflowRuns: { revision: 1, runs: [workflowRun] },
       });
 
-      renderPane({ snapshot, onOpenWorkflowRun, onSummaryPanelVariantOverrideChange });
+      renderPane({
+        snapshot,
+        onOpenWorkflowRun,
+        onSummaryPanelVariantOverrideChange,
+      });
       const composerProps = statusPanelCapture.composerProps.at(-1);
       expect(composerProps?.backgroundWorkOpenTarget).toBe("panel");
 

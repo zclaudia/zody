@@ -26,7 +26,7 @@ const enUS: Record<string, string> = {
   "mobileWorkspacePicker.error.too-large": "The folder has more than 1000 subfolders.",
   "mobileWorkspacePicker.error.path-invalid": "Enter a valid absolute path.",
   "mobileWorkspacePicker.error.arbitrary-path-disabled":
-    "\"Allow the phone to open any local folder\" is turned off on the desktop. Enable it in remote access settings.",
+    '"Allow the phone to open any local folder" is turned off on the desktop. Enable it in remote access settings.',
   "mobileWorkspacePicker.error.open-failed": "Could not open the folder: {error}",
   "mobileWorkspacePicker.error.timeout":
     "The desktop did not finish opening within 10 seconds. Please retry.",
@@ -2213,9 +2213,9 @@ const enUS: Record<string, string> = {
   "settings.remoteAccess.config.section": "Gateway configuration",
   "settings.remoteAccess.arbitraryPath.label": "Allow the phone to open any local folder",
   "settings.remoteAccess.arbitraryPath.description":
-    "When enabled, the phone can browse and open any existing local folder on this computer via \"Open another project\". When disabled, the phone can only open recent projects.",
+    'When enabled, the phone can browse and open any existing local folder on this computer via "Open another project". When disabled, the phone can only open recent projects.',
   "settings.remoteAccess.arbitraryPath.saveFailed":
-    "Could not change \"Allow the phone to open any local folder\": {error}",
+    'Could not change "Allow the phone to open any local folder": {error}',
   "settings.remoteAccess.gatewayUrl.label": "Gateway URL",
   "settings.remoteAccess.gatewayUrl.description":
     "The gateway's http(s) address. It is stored only on this computer and has no default.",
@@ -2340,8 +2340,7 @@ const enUS: Record<string, string> = {
     "Zody needs the browser extension to control this Chrome profile. Branded Chrome does not allow one-click installation; load it manually:",
   "settings.browser.extension.install.step1":
     "Open chrome://extensions in Chrome and enable Developer mode.",
-  "settings.browser.extension.install.step2":
-    "Build the extension, then click “Load unpacked”.",
+  "settings.browser.extension.install.step2": "Build the extension, then click “Load unpacked”.",
   "settings.browser.extension.install.step3": "Select the build output directory below.",
   "settings.browser.extension.install.openDirectory": "Open build output directory",
   "settings.browser.extension.install.missing":
@@ -2358,8 +2357,7 @@ const enUS: Record<string, string> = {
   "settings.browser.extension.port.invalid": "Port must be an integer between 1 and 65535.",
   "settings.browser.extension.port.inUse":
     "That port is already in use. The previous port was restored.",
-  "settings.browser.extension.port.failed":
-    "Port change failed. The previous port was restored.",
+  "settings.browser.extension.port.failed": "Port change failed. The previous port was restored.",
   "settings.browser.extension.default.title": "Default browser backend",
   "settings.browser.extension.default.description":
     "Saves a concrete browserId. Without a choice, the built-in browser stays default; if the selected Chrome profile is offline, requests fail closed instead of silently switching back.",
@@ -2380,15 +2378,12 @@ const enUS: Record<string, string> = {
   "settings.browser.extension.pairing.waiting": "Waiting for the extension…",
   "settings.browser.extension.pairing.instructions":
     "Open the Chrome extension popup, verify the pairing session, then enter the pairing code. The code is never shown in other windows.",
-  "settings.browser.extension.pairing.failed":
-    "Could not start pairing. Check the bridge status.",
-  "settings.browser.extension.profile.empty":
-    "No Chrome profile is paired to this window yet.",
+  "settings.browser.extension.pairing.failed": "Could not start pairing. Check the bridge status.",
+  "settings.browser.extension.profile.empty": "No Chrome profile is paired to this window yet.",
   "settings.browser.extension.profile.connected": "Connected · generation {generation}",
   "settings.browser.extension.profile.disconnected": "Paired, currently offline",
   "settings.browser.extension.profile.boundHere": "Bound to this window",
-  "settings.browser.extension.profile.unbound":
-    "Previous window is gone; can be transferred here",
+  "settings.browser.extension.profile.unbound": "Previous window is gone; can be transferred here",
   "settings.browser.extension.transfer": "Transfer to this window",
   "settings.browser.extension.transfer.success":
     "Profile transferred to this window. Re-authorize existing tabs.",
@@ -5178,6 +5173,9 @@ const enUS: Record<string, string> = {
   // follows the standard tool permission policy (allow_once/allow_always/deny, plus
   // Full access when supported); only allow_once keeps a dedicated label. The default
   // action and Esc are both deny.
+  "chat.permission.cua.readConfirm.title": "Read window content",
+  "chat.permission.cua.readConfirm.summary": "The agent requests permission to read this window.",
+  "chat.permission.cua.readConfirm.allowOnce": "Allow this read",
   "chat.permission.cua.screenshotConfirm.title": "Screenshot confirmation",
   "chat.permission.cua.screenshotConfirm.summary":
     "The agent wants to capture a screenshot of this window.",
@@ -5392,8 +5390,7 @@ const enUS: Record<string, string> = {
     "This run exceeded the maximum single-run time. Create a new off-peak task to continue.",
   "zody.error.providerBusiness.2007":
     "The upstream service is temporarily unavailable. Please try again later.",
-  "zody.error.providerBusiness.429":
-    "You're sending requests too quickly. Please try again later.",
+  "zody.error.providerBusiness.429": "You're sending requests too quickly. Please try again later.",
 
   // Debug info bar
   "debugInfo.taskId": "Task ID",

@@ -1,3 +1,5 @@
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { createContext, runInContext, type Context } from "node:vm";
 import { createRequire } from "node:module";
 import { homedir, tmpdir } from "node:os";
@@ -72,6 +74,7 @@ export interface NodeReplSessionOptions {
   injectedGlobals?: Record<PropertyKey, unknown> | (() => Record<PropertyKey, unknown>);
   /** MCP stdio runtime 使用受限 process facade，防止 cell 关闭进程或写坏协议 stdout。 */
   restrictProcess?: boolean;
+  cuaSdk?: { root: string; clientSource: string };
 }
 
 function browserScreenshotIndexResult(
@@ -120,6 +123,7 @@ function latestCuaAppResult(
  */
 export class NodeReplSession {
   private context: Context;
+  private readonly cuaSdk?: { url: string; source: string };
   private readonly createInjectedGlobals: () => Record<PropertyKey, unknown>;
   private readonly restrictedProcess: Readonly<Record<string, unknown>> | undefined;
   private currentSink: NodeReplWriteSink | null = null;
@@ -136,7 +140,15 @@ export class NodeReplSession {
     const injectedGlobals = options.injectedGlobals;
     this.createInjectedGlobals =
       typeof injectedGlobals === "function" ? injectedGlobals : () => injectedGlobals ?? {};
-    this.restrictedProcess = options.restrictProcess ? createRestrictedProcessFacade() : undefined;
+    this.cuaSdk = options.cuaSdk
+      ? {
+          url: pathToFileURL(join(options.cuaSdk.root, "scripts", "computer-use-client.mjs")).href,
+          source: options.cuaSdk.clientSource,
+        }
+      : undefined;
+    this.restrictedProcess = options.restrictProcess
+      ? createRestrictedProcessFacade(options.cuaSdk?.root)
+      : undefined;
     this.executor = new IifeContextExecutor();
     this.context = this.buildContext();
   }
@@ -312,7 +324,11 @@ export class NodeReplSession {
       throw new TypeError("nodeRepl.emitStructuredResult requires a content array");
     }
     for (const block of candidate.content) {
-      if (!block || typeof block !== "object" || typeof (block as { type?: unknown }).type !== "string") {
+      if (
+        !block ||
+        typeof block !== "object" ||
+        typeof (block as { type?: unknown }).type !== "string"
+      ) {
         throw new TypeError("nodeRepl.emitStructuredResult content blocks require a type");
       }
     }
@@ -454,6 +470,12 @@ export class NodeReplSession {
   private async importModule(specifier: string): Promise<unknown> {
     if (this.restrictedProcess && PROCESS_MODULE_IDS.has(specifier)) {
       return { ...this.restrictedProcess, default: this.restrictedProcess };
+    }
+    // 固定 URL 仅映射同句柄核验的 SDK 快照，避免校验后重新打开文件。
+    if (this.cuaSdk && specifier === this.cuaSdk.url) {
+      return await import(
+        `data:text/javascript;base64,${Buffer.from(this.cuaSdk.source).toString("base64")}`
+      );
     }
     return await import(specifier);
   }

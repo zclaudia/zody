@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r1-screenshot",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r1-screenshot.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r1-screenshot.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-shot-deny-title",
+      "description": "CUA screenshot deny title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-deny-call",
+      "description": "CUA screenshot deny call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-deny-final",
+      "description": "CUA screenshot deny final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-allow-title",
+      "description": "CUA screenshot allow title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-allow-call",
+      "description": "CUA screenshot allow call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-allow-final",
+      "description": "CUA screenshot allow final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-read-title",
+      "description": "CUA screenshot read title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-read-call",
+      "description": "CUA screenshot read call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    },
+    {
+      "id": "cua-shot-read-final",
+      "description": "CUA screenshot read final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+    }
+  ]
+}

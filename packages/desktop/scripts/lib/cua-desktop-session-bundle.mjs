@@ -24,7 +24,19 @@ export {
   workspaceSourceCounterpart,
 } from "./cua-desktop-session-workspace-source.mjs";
 
-const BUILTINS = new Set([...builtinModules, ...builtinModules.map((name) => `node:${name}`)]);
+// 中文注释：node:sqlite / node:sea 是 sealed Node v24 支持的 builtin（sqlite 自 v23.4
+// 起默认启用；sea 在非 SEA 二进制下 isSea()=false 正常降级），但不出现在当前构建机
+// Node 的 builtinModules 快照里。2026-11-09 重建轮：session-storage-entry 引入
+// node:sqlite、provider config 链引入 node:sea 后必须显式加入白名单，否则封装备
+// 误报 undeclared non-builtin static imports。
+const BUILTINS = new Set([
+  ...builtinModules,
+  ...builtinModules.map((name) => `node:${name}`),
+  "sqlite",
+  "node:sqlite",
+  "sea",
+  "node:sea",
+]);
 const LICENSE_FILE = /^(license|licence|notice|copying|copyright)([._-].*)?$/i;
 
 export async function loadUnsupportedNativeModules(pinsPath = UNSUPPORTED_NATIVE_PINS) {

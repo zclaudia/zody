@@ -4,24 +4,18 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  digestZodyAgentNativeRuntimeNetwork,
-  digestZodyAgentNativeRuntimeProviderSnapshot,
-} from "@zody/services/node";
-import {
   CUA_NARROW_APP_NAME,
   CUA_NARROW_LAUNCHER_RELATIVE_PATH,
   CUA_NARROW_RESOURCES_SLOT,
+  NARROW_PROFILE_SCHEMA_VERSION,
   NORMAL_HOST_CANDIDATE_APP_BUNDLE_NAME,
   NORMAL_HOST_CANDIDATE_BUNDLE_ID,
   NORMAL_HOST_CANDIDATE_DISPLAY_NAME,
   NORMAL_HOST_CANDIDATE_PACKAGE_NAME,
   NORMAL_HOST_CANDIDATE_RELEASE_FLAGS,
   createNormalHostNarrowProfile,
-  digestNormalHostNetwork,
-  digestNormalHostProviderSnapshot,
-  normalizeNormalHostNetwork,
-  parseNormalHostStartupSnapshot,
-  projectNormalHostProviderSnapshot,
+  assertShellNarrowLauncherMatches,
+  resolveShellLayout,
   rewriteNormalHostCandidateAppIdentity,
 } from "../scripts/lib/normal-host-candidate-profile.mjs";
 import {
@@ -41,57 +35,7 @@ function sha256(value: string | Buffer): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function providerView(revision = 7, modelEnabled = true) {
-  return {
-    revision,
-    providerTemplates: [],
-    providerOrder: ["deepseek-anthropic"],
-    providers: [
-      {
-        providerId: "deepseek-anthropic",
-        providerName: "DeepSeek",
-        templateId: "anthropic",
-        enabled: true,
-        executable: true,
-        effectiveConfig: {
-          group: "standard-personal",
-          visibility: "visible",
-          access: { type: "api-key", apiKey: "must-not-be-archived" },
-          api: {
-            type: "anthropic-messages",
-            baseUrl: "https://api.example.test",
-            headers: { Authorization: "Bearer must-not-be-archived" },
-          },
-          builtinModelIds: ["deepseek-v3.2"],
-          personalModelIds: [],
-          modelOrder: ["deepseek-v3.2"],
-        },
-        effectiveBuiltinConfig: { access: { apiKey: "also-secret" } },
-        personalConfig: { access: { apiKey: "also-secret" } },
-        issues: [],
-        models: [
-          {
-            kind: "candidate",
-            modelId: "deepseek-v3.2",
-            builtin: true,
-            enabled: modelEnabled,
-            executable: true,
-            selectable: true,
-            issues: [],
-            effectiveBuiltinConfig: { enabled: true },
-            effectiveConfig: {
-              enabled: modelEnabled,
-              properties: { contextWindow: 128000 },
-              optionSpecs: { reasoningLevel: { values: ["low", "high"] } },
-            },
-          },
-        ],
-      },
-    ],
-  } as const;
-}
-
-function createFixture() {
+function createFixture(manifestPatch: object = {}) {
   const root = mkdtempSync(join(tmpdir(), "zody-normal-host-profile-"));
   createdRoots.push(root);
   const resourcesPath = join(root, "Resources");
@@ -110,166 +54,65 @@ function createFixture() {
     },
     stage: { appPath: `${CUA_NARROW_RESOURCES_SLOT}/${CUA_NARROW_APP_NAME}` },
     identity: { signedBinarySha256: sha256("signed-launcher") },
+    ...manifestPatch,
   };
   const manifestPath = join(resourcesPath, CUA_NARROW_RESOURCES_SLOT, "manifest.json");
   writeFileSync(manifestPath, JSON.stringify(manifest));
-  const providerProfilePath = join(root, "provider-profile.json");
-  writeFileSync(
-    providerProfilePath,
-    JSON.stringify({
-      providerSettingsView: providerView(),
-      selection: {
-        providerId: " deepseek-anthropic ",
-        modelId: " deepseek-v3.2 ",
-        options: { reasoningLevel: " high " },
-      },
-    }),
-  );
-  const networkProfilePath = join(root, "network-profile.json");
-  writeFileSync(
-    networkProfilePath,
-    JSON.stringify({
-      httpProxy: " http://127.0.0.1:7890 ",
-      noProxy: " localhost,127.0.0.1 ",
-      caCertPath: " /tmp/zody-test-ca.pem ",
-    }),
-  );
-  const workspace = mkdtempSync(join(tmpdir(), "zody-normal-host-workspace-"));
-  createdRoots.push(workspace);
-  return {
-    manifestPath,
-    providerProfilePath,
-    networkProfilePath,
-    workspace,
-  };
+  return { root, manifestPath, manifest, launcherPath, resourcesPath };
 }
 
-describe("normal Host candidate startup profile", () => {
-  it("normalizes provider content without credentials or instance revision", () => {
-    const first = projectNormalHostProviderSnapshot(providerView(1));
-    const second = projectNormalHostProviderSnapshot(providerView(999));
-    expect(first).toEqual(second);
-    const serialized = JSON.stringify(first);
-    expect(serialized).not.toContain("must-not-be-archived");
-    expect(serialized).not.toContain("also-secret");
-    expect(serialized).not.toContain("Authorization");
-    expect(digestNormalHostProviderSnapshot(providerView(1, false))).not.toBe(
-      digestNormalHostProviderSnapshot(providerView(1, true)),
-    );
-  });
-
-  it("normalizes proxy, noProxy, and CA values into one stable network digest", () => {
-    expect(
-      normalizeNormalHostNetwork({
-        httpProxy: " http://127.0.0.1:7890 ",
-        noProxy: " localhost ",
-        caCertPath: " /tmp/ca.pem ",
-        ignored: "must-not-be-used",
-      }),
-    ).toEqual({
-      httpProxy: "http://127.0.0.1:7890",
-      noProxy: "localhost",
-      caCertPath: "/tmp/ca.pem",
-    });
-  });
-
-  it("keeps builder and Host service content digests byte-identical", () => {
-    const network = {
-      httpProxy: "http://127.0.0.1:7890",
-      noProxy: "localhost,127.0.0.1",
-      caCertPath: "/tmp/zody-test-ca.pem",
-    };
-    expect(digestNormalHostProviderSnapshot(providerView())).toBe(
-      digestZodyAgentNativeRuntimeProviderSnapshot(providerView()),
-    );
-    expect(digestNormalHostNetwork(network)).toBe(digestZodyAgentNativeRuntimeNetwork(network));
-  });
-
-  it("uses a bounded Host startup snapshot without archiving raw provider/network data", async () => {
-    const fixture = createFixture();
-    const snapshotPath = join(fixture.workspace, "startup-snapshot.json");
-    const snapshot = {
-      kind: "narrow-runtime-startup-snapshot",
-      reason: "read-before-eligibility-compare",
-      providerDigestSha256: "a".repeat(64),
-      selection: {
-        providerId: "deepseek-anthropic",
-        modelId: "deepseek-v3.2",
-        options: { reasoningLevel: "high" },
-      },
-      networkDigestSha256: "b".repeat(64),
-      snapshotSource: "existing-host-services",
-      taskTimeProviderGuard: false,
-    };
-    writeFileSync(snapshotPath, JSON.stringify(snapshot));
-
-    const { profile, profileSource } = await createNormalHostNarrowProfile({
-      narrowManifest: fixture.manifestPath,
-      workspaceAllowlist: [fixture.workspace],
-      startupSnapshot: snapshotPath,
-      testedMacOSVersion: "26.6.2",
-    });
-    expect(profileSource).toBe("host-startup-snapshot");
-    expect(profile.provider).toEqual({
-      revisionSha256: snapshot.providerDigestSha256,
-      selection: snapshot.selection,
-    });
-    expect(profile.network).toEqual({ digestSha256: snapshot.networkDigestSha256 });
-    expect(JSON.stringify(profile)).not.toContain("127.0.0.1:7890");
-    expect(() =>
-      parseNormalHostStartupSnapshot({ ...snapshot, httpProxy: "http://127.0.0.1:7890" }),
-    ).toThrow(/unsupported field/);
-
-    const options = parseArgs([
-      "--workspace-allowlist",
-      fixture.workspace,
-      "--startup-snapshot",
-      snapshotPath,
-      "--output",
-      join(fixture.workspace, "candidate"),
-    ]);
-    expect(options.startupSnapshot).toBe(snapshotPath);
-    expect(options.providerProfile).toBeUndefined();
-    expect(() =>
-      parseArgs([
-        "--workspace-allowlist",
-        fixture.workspace,
-        "--startup-snapshot",
-        snapshotPath,
-        "--provider-profile",
-        fixture.providerProfilePath,
-        "--network-profile",
-        fixture.networkProfilePath,
-      ]),
-    ).toThrow(/cannot be combined/);
-  });
-
-  it("builds a profile from normalized snapshots and never archives credentials", async () => {
+describe("normal Host candidate startup profile (schemaVersion 2)", () => {
+  it("builds a v2 profile from the prepared manifest alone", async () => {
     const fixture = createFixture();
     const { profile, manifestSha256, launcherSha256 } = await createNormalHostNarrowProfile({
       narrowManifest: fixture.manifestPath,
-      workspaceAllowlist: [fixture.workspace],
-      providerProfile: fixture.providerProfilePath,
-      networkProfile: fixture.networkProfilePath,
-      testedMacOSVersion: "26.6.2",
     });
 
-    expect(profile).toMatchObject({
-      workspaceAllowlist: [fixture.workspace],
-      provider: {
-        revisionSha256: digestNormalHostProviderSnapshot(providerView()),
-        selection: {
-          providerId: "deepseek-anthropic",
-          modelId: "deepseek-v3.2",
-          options: { reasoningLevel: "high" },
-        },
-      },
+    expect(profile).toEqual({
+      kind: "zody-cua-narrow-agent-profile",
+      schemaVersion: NARROW_PROFILE_SCHEMA_VERSION,
+      capability: "screenshot.single-window",
+      minimumTarget: { os: "darwin", arch: "arm64", minimumMacOSVersion: "14.2" },
       resourceManifest: { sha256: manifestSha256, launcherSha256 },
     });
+    expect(manifestSha256).toBe(sha256(readFileSync(fixture.manifestPath)));
+    expect(launcherSha256).toBe(fixture.manifest.identity.signedBinarySha256);
+    // v2 profile 不携带任何构建机事实（路径/provider/network）。
     const serialized = JSON.stringify(profile);
-    expect(serialized).not.toContain("must-not-be-archived");
-    expect(serialized).not.toContain("also-secret");
-    expect(serialized).not.toContain("Authorization");
+    expect(serialized).not.toMatch(/workspaceAllowlist|provider|network|root|Users\//);
+  });
+
+  it("rejects manifests whose minimum macOS floor diverges from the pinned constant", async () => {
+    const fixture = createFixture({
+      target: { os: "darwin", arch: "arm64", minimumMacOSVersion: "12.0" },
+    });
+    await expect(
+      createNormalHostNarrowProfile({ narrowManifest: fixture.manifestPath }),
+    ).rejects.toMatchObject({ code: "normal-host-manifest-target" });
+  });
+
+  it("resolves the shell layout and asserts the shell launcher matches the manifest", async () => {
+    const fixture = createFixture();
+    const layout = resolveShellLayout(join(fixture.root, "Shell.app"));
+    expect(layout.narrowManifestPath).toBe(
+      join(fixture.root, "Shell.app", "Contents", "Resources", CUA_NARROW_RESOURCES_SLOT, "manifest.json"),
+    );
+    // 壳内 launcher 与 manifest 摘要一致时通过，不一致时显式失败。
+    const prepared = await createNormalHostNarrowProfile({
+      narrowManifest: fixture.manifestPath,
+    });
+    const shellRoot = mkdtempSync(join(tmpdir(), "zody-normal-host-shell-"));
+    createdRoots.push(shellRoot);
+    const shellLayout = resolveShellLayout(join(shellRoot, "Shell.app"));
+    mkdirSync(dirname(shellLayout.launcherPath), { recursive: true });
+    writeFileSync(shellLayout.launcherPath, "signed-launcher");
+    await expect(
+      assertShellNarrowLauncherMatches(shellLayout, prepared.launcherSha256),
+    ).resolves.toBe(prepared.launcherSha256);
+    writeFileSync(shellLayout.launcherPath, "tampered");
+    await expect(
+      assertShellNarrowLauncherMatches(shellLayout, prepared.launcherSha256),
+    ).rejects.toMatchObject({ code: "normal-host-shell-launcher" });
   });
 
   it("requires the original prepared manifest instead of minting a pass manifest", () => {
@@ -279,6 +122,30 @@ describe("normal Host candidate startup profile", () => {
     expect(requirePreparedNarrowManifestPath("/tmp/prepared/manifest.json")).toBe(
       "/tmp/prepared/manifest.json",
     );
+  });
+
+  it("drops the v1 machine-bound CLI inputs and rejects them as unknown arguments", () => {
+    const fixture = createFixture();
+    const options = parseArgs([
+      "--app-shell",
+      join(fixture.root, "Zody Preview.app"),
+      "--output",
+      join(fixture.root, "candidate"),
+    ]);
+    expect(options.narrowManifest).toBeUndefined();
+    expect(() => requirePreparedNarrowManifestPath(options.narrowManifest)).toThrow(
+      /prepared cua-narrow manifest/,
+    );
+
+    for (const flag of [
+      "--workspace-allowlist",
+      "--startup-snapshot",
+      "--provider-profile",
+      "--network-profile",
+      "--tested-macos-version",
+    ]) {
+      expect(() => parseArgs([flag, "/tmp/value"])).toThrow(/Unknown argument/);
+    }
   });
 
   it("keeps default-disabled, placeholder, and candidate opt-in separate", () => {
@@ -368,25 +235,5 @@ describe("normal Host candidate startup profile", () => {
       ],
     ]);
     expect(identity.chromiumHelpers).toHaveLength(1);
-  });
-
-  it("parses a manifest option but assembly still requires an original", () => {
-    const fixture = createFixture();
-    const options = parseArgs([
-      "--workspace-allowlist",
-      fixture.workspace,
-      "--provider-profile",
-      fixture.providerProfilePath,
-      "--network-profile",
-      fixture.networkProfilePath,
-      "--app-shell",
-      join(fixture.workspace, "Zody Preview.app"),
-      "--output",
-      join(fixture.workspace, "candidate"),
-    ]);
-    expect(options.narrowManifest).toBeUndefined();
-    expect(() => requirePreparedNarrowManifestPath(options.narrowManifest)).toThrow(
-      /prepared cua-narrow manifest/,
-    );
   });
 });

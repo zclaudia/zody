@@ -295,7 +295,7 @@ function normalizeArch(rawArch) {
 
 export async function parseArgs(
   argv,
-  { env = process.env, repoRoot, validateManifest } = {},
+  { env = process.env, repoRoot, validateManifest, defaultFacts, defaultAssemblyEnabled } = {},
 ) {
   const options = {
     os: env.ZODY_TARGET_OS ?? null,
@@ -398,6 +398,8 @@ export async function parseArgs(
     targetArch: resolvedArch,
     repoRoot,
     validateManifest,
+    defaultFacts,
+    defaultAssemblyEnabled,
   });
   const narrowRequest =
     narrowSelection && (narrowSelection.manifestPath || narrowSelection.profileJson)

@@ -1,6 +1,9 @@
-// Shared build-time defaults for the tested arm64/macOS self-use CUA demo.
-// This module only selects public build inputs and emits a fixed Host profile/resource
-// selection. Runtime eligibility, native confirmation, and Stop remain owned elsewhere.
+// Shared build-time defaults for the distributable arm64/macOS CUA narrow build.
+// 2026-11-09 分发轮次：默认输入改为冻结归档还原目录 output/cua-narrow-frozen/
+// （specs/cua-output-retention.md 范围例外，不由轮次清理触碰），manifest 字节与 sha pin
+// 沿用 2026-10-31 cua-app-icon 轮产物；profile schemaVersion 2 不再读取 workspace/
+// provider/network/startup snapshot 等构建机事实。Runtime eligibility、native
+// confirmation 与 Stop 语义归 Host 与 Helper 所有，本模块只选择公开构建输入。
 import { readFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 import process from "node:process";
@@ -12,37 +15,20 @@ import { createNormalHostNarrowProfile } from "./lib/normal-host-candidate-profi
 
 export const NARROW_AGENT_ENV = "ZODY_CUA_NARROW_AGENT_JSON";
 
+// 2026-11-09 重建轮：sealed 快照已用当前源码（Zody Protocol + rev43）重建并
+// 通过四项验收，默认装配恢复启用。历史：同日晚间曾因协议漂移事故回撤（见
+// specs/computer-use-macos-phase1.md 对应小节）。
+export const CUA_NARROW_DEFAULT_ASSEMBLY_ENABLED = true;
+
+export const CUA_NARROW_FROZEN_RESTORE_HINT =
+  "pnpm --dir packages/desktop run fetch:cua-narrow-frozen";
+
 export const CUA_DEMO_DEFAULT_PUBLIC_FACTS = Object.freeze({
-  testedTarget: Object.freeze({ os: "darwin", arch: "arm64", macOSVersion: "26.6.2" }),
-  workspaceRelativePath: ".",
-  // 中文注释：App 内确认弹窗轮次（cua-inapp-confirm）替换 pin。W8 标准权限策略轮次
-  // （允许一次/总是允许/Full access/拒绝）只改动了 CLI core/bootstrap 与 UI，sealed
-  // host/cli/session entry 输入随之变化；native 源自 W6 后未变，Helper 二进制 hash 的
-  // 变化仅来自 pins 头文件内嵌的 entry SHA-256。签名身份（证书 leaf、DR、Node CDHash）
-  // 沿用 round11 冻结 pins，未做任何改动。
-  // 2026-10-31 图标轮（cua-app-icon）v4：builder 给 Helper bundle 增补
-  // CFBundleIconFile + Contents/Resources/AppIcon.icns（主应用图标原样复制，仅展示资源）。
-  // 相比 v3：host-entry 与 Node 不变；cli/session entry 随当日工作区源码（mobile-remote
-  // 等未提交改动）重新封装，Helper 二进制 hash 变化仅来自 pins 头内嵌 entry SHA-256 与
-  // plist/资源清单；签名身份沿用 round11 冻结 pins，未做任何改动。
-  manifestRelativePath: "output/cua-app-icon/controller-prepared/manifest.json",
-  // 中文注释：用户在本轮开工前修改了 provider 注册表（新增/调整条目），默认选择
-  // （deepseek/deepseek-flash max）与网络摘要未变，但 provider 配置快照 digest 变为
-  // 545008f5…，旧 snapshot pin 触发了设计内的 provider-revision-mismatch 回退。
-  // 这里按同一测量语义重新固定 Host 于 2026-10-31 18:12 实测记录的当前配置快照。
-  // 2026-11-05：startup snapshot 的 provider digest 字段更名（旧名前缀撞 M2 退出标识，
-  // 详见 ZodyAgentNativeRuntimeStartupContext 处注释），snapshot 文件 key 同步改名、
-  // 实测 digest 值不变，startupSnapshotSha256 按新文件字节重新计算。
-  startupSnapshotRelativePath: "output/cua-inapp-confirm/startup-snapshot-current.json",
-  manifestSha256: "48a657bb2883ed18801dd52e13425c360e03c90ae2f66f1f6f77231108af1a10",
-  startupSnapshotSha256: "c3e96129516c7d7c17303e2ee070118076cc98806bb63bd3109f8136c4646b27",
-  providerDigestSha256: "545008f54fef4247ffcaaa7772eebba31d475cca2b0abc7d869a18fcf142a4a2",
-  providerSelection: Object.freeze({
-    providerId: "deepseek",
-    modelId: "deepseek-flash",
-    options: Object.freeze({ reasoningLevel: "max" }),
-  }),
-  networkDigestSha256: "b00aea09d9ade210b21d3acefe42819409f10b035a0779f48d550f77ec55d5fa",
+  // 冻结归档还原位（唯一默认装配输入）。2026-11-09 重建轮：材料由当前源码重建
+  // （Zody Protocol + rev43 provider），manifest/launcher sha 已更新；identity pins
+  // 仍由 round11 controller-signed 的固定路径提供（归档一并携带）。
+  manifestRelativePath: "output/cua-narrow-frozen/controller-prepared/manifest.json",
+  manifestSha256: "9a34469ef6e950d43c69ff5b3d876b293eefbe9c6ee62226434a311ec352318b",
 });
 
 function normalizeTargetOs(rawOs) {
@@ -127,7 +113,6 @@ function assertProfileMatchesManifest(profile, validated) {
       "explicit cua-narrow profile does not match the selected resource manifest",
       {
         expectedManifestSha256,
-        expectedLauncherSha256,
         profileManifest: profile?.resourceManifest,
       },
     );
@@ -141,7 +126,7 @@ async function readPinnedBytes(path, label, expectedSha256) {
   } catch (error) {
     throw new NarrowResourceError(
       "cua-demo-default-resource-missing",
-      `enabled darwin/arm64 CUA build is missing ${label}: ${path}`,
+      `enabled darwin/arm64 CUA build is missing ${label}: ${path}; restore the frozen archive first via ${CUA_NARROW_FROZEN_RESTORE_HINT}`,
       { path, cause: error?.code },
     );
   }
@@ -156,21 +141,12 @@ async function readPinnedBytes(path, label, expectedSha256) {
   return bytes;
 }
 
-async function resolveDefaultSelection({ env, repoRoot, targetPlatform, validateManifest }) {
-  const manifestPath = resolve(repoRoot, CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestRelativePath);
-  const startupSnapshotPath = resolve(
-    repoRoot,
-    CUA_DEMO_DEFAULT_PUBLIC_FACTS.startupSnapshotRelativePath,
-  );
+async function resolveDefaultSelection({ env, repoRoot, targetPlatform, validateManifest, defaultFacts }) {
+  const manifestPath = resolve(repoRoot, defaultFacts.manifestRelativePath);
   await readPinnedBytes(
     manifestPath,
     "cua-narrow manifest",
-    CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256,
-  );
-  await readPinnedBytes(
-    startupSnapshotPath,
-    "startup snapshot",
-    CUA_DEMO_DEFAULT_PUBLIC_FACTS.startupSnapshotSha256,
+    defaultFacts.manifestSha256,
   );
 
   const validated = await validateManifest({
@@ -180,24 +156,12 @@ async function resolveDefaultSelection({ env, repoRoot, targetPlatform, validate
   });
   const prepared = await createNormalHostNarrowProfile({
     narrowManifest: manifestPath,
-    workspaceAllowlist: [repoRoot],
-    startupSnapshot: startupSnapshotPath,
-    testedMacOSVersion: CUA_DEMO_DEFAULT_PUBLIC_FACTS.testedTarget.macOSVersion,
   });
   const profile = prepared.profile;
-  const expectedSelection = CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerSelection;
-  const observedSelection = profile.provider.selection;
-  if (
-    profile.resourceManifest.sha256 !== CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256 ||
-    profile.provider.revisionSha256 !== CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerDigestSha256 ||
-    observedSelection.providerId !== expectedSelection.providerId ||
-    observedSelection.modelId !== expectedSelection.modelId ||
-    observedSelection.options?.reasoningLevel !== expectedSelection.options.reasoningLevel ||
-    profile.network.digestSha256 !== CUA_DEMO_DEFAULT_PUBLIC_FACTS.networkDigestSha256
-  ) {
+  if (profile.resourceManifest.sha256 !== defaultFacts.manifestSha256) {
     throw new NarrowResourceError(
       "cua-demo-default-pin-mismatch",
-      "enabled darwin/arm64 CUA profile does not match the pinned public startup facts",
+      "enabled darwin/arm64 CUA profile does not match the pinned manifest digest",
     );
   }
 
@@ -219,6 +183,10 @@ export async function resolveMacosCuaDemoBuildSelection({
   targetArch,
   repoRoot = REPO_ROOT,
   validateManifest = validateNarrowManifest,
+  // 构建期注入（测试用）：默认选择读取的 pin 事实。产品路径恒为模块常量。
+  defaultFacts = CUA_DEMO_DEFAULT_PUBLIC_FACTS,
+  // 构建期注入（测试用）：默认装配开关。产品路径恒为模块常量。
+  defaultAssemblyEnabled = CUA_NARROW_DEFAULT_ASSEMBLY_ENABLED,
 } = {}) {
   const observedTargetOs = targetOs ?? env.ZODY_TARGET_OS ?? process.platform;
   const observedTargetArch = targetArch ?? env.ZODY_TARGET_ARCH ?? process.arch;
@@ -256,11 +224,15 @@ export async function resolveMacosCuaDemoBuildSelection({
   }
 
   if (!isCuaDemoDefaultTarget(normalizedOs, normalizedArch)) return null;
+  // 止血回撤：开关关闭时不做默认装配（返回 null = 不注入 profile、不带资源），
+  // 显式 manifest/profile 输入不受影响。重建轮验收后翻回模块常量。
+  if (!defaultAssemblyEnabled) return null;
   return resolveDefaultSelection({
     env,
     repoRoot: absoluteRepoRoot,
     targetPlatform,
     validateManifest,
+    defaultFacts,
   });
 }
 

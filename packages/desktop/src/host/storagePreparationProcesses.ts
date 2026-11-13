@@ -12,6 +12,7 @@ import {
   type DatabaseStartupState,
 } from "@zody/shared";
 import { resolveDefaultZodyAgentCommand } from "@zody/services/storage-startup";
+import type { VerifiedHostStorageResources } from "./hostStorageResources.js";
 
 type Phase = NonNullable<DatabaseStartupState["databasePhase"]>;
 const workerMessageSchema = z.discriminatedUnion("type", [
@@ -239,4 +240,48 @@ export async function prepareSessionStorage(options: {
     });
     if (options.signal.aborted) abort();
   });
+}
+
+/**
+ * 窄链动态 workspace 准入（2026-11-09 spec 追加小节）：对 Host init 之后才出现的
+ * workspace，在 agent spawn 的 resolver 阶段现场执行与 init 同一机制的 session 存储
+ * 准备。成功返回 true；任何失败/超时返回 false，调用方回退普通 Agent 路径
+ * （普通 CLI 自带 storage startup，不损失正确性）。只做有界诊断日志，不进入启动 UI 状态。
+ */
+export async function prepareWorkspaceSessionStorage(options: {
+  workspacePath: string;
+  env?: Record<string, string>;
+  storageResources?: VerifiedHostStorageResources;
+  timeoutMs?: number;
+  log?: (message: string, details?: Record<string, unknown>) => void;
+}): Promise<boolean> {
+  const timeoutMs = options.timeoutMs ?? 60_000;
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), timeoutMs);
+  try {
+    await prepareSessionStorage({
+      cwd: options.workspacePath,
+      ...(options.env ? { env: options.env } : {}),
+      ...(options.storageResources
+        ? { storagePreparationEntryUrl: options.storageResources.sessionStorageEntry.workerUrl }
+        : {}),
+      signal: abort.signal,
+      preparedPaths: new Set<string>(),
+      observePath: async () => {},
+      report: (phase, details) => {
+        options.log?.("workspace session storage preparation", {
+          phase,
+          databaseId: details?.databaseId,
+        });
+      },
+    });
+    return true;
+  } catch (error) {
+    options.log?.("workspace session storage preparation failed", {
+      reason: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
 }

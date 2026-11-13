@@ -1,12 +1,10 @@
 import { act, createElement, type ComponentProps, useRef } from "react";
+import { JSDOM } from "jsdom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { ModelSelectionView } from "@zody/services";
 import { useModelSelectionServiceView } from "@/hooks/useModelSelectionView.js";
-import {
-  ZODY_AGENT_PROVIDER_NOT_READY_CODE,
-  type ZCodeWorkspaceStateSnapshot,
-} from "@zody/shared";
+import { ZODY_AGENT_PROVIDER_NOT_READY_CODE, type ZCodeWorkspaceStateSnapshot } from "@zody/shared";
 import type {
   CommandAck,
   CommandEnvelope,
@@ -614,7 +612,7 @@ async function rerenderPane(root: Root, props: Partial<ComponentProps<typeof Ses
   });
 }
 
-async function renderPane(props: Partial<ComponentProps<typeof SessionPane>> = {}) {
+async function renderPane(props: Partial<ComponentProps<typeof SessionPane>> = {}, dom = false) {
   // 本文件 mock 了 Composer owner。仅在 fixture 初始挂载时建立完整草稿，不能再让
   // 生产 Submission helper 从 Snapshot/平铺别名救活缺失的 fixture。
   const seed = {
@@ -648,7 +646,21 @@ async function renderPane(props: Partial<ComponentProps<typeof SessionPane>> = {
       })),
     } as ModelSelectionView;
   }
-  const root: Root = createRoot(installMinimalDom());
+  let container: Element;
+  if (dom) {
+    const jsdom = new JSDOM("<!doctype html><html><body><div id=app></div></body></html>");
+    Object.assign(globalThis, {
+      window: jsdom.window,
+      document: jsdom.window.document,
+      HTMLElement: jsdom.window.HTMLElement,
+      HTMLIFrameElement: jsdom.window.HTMLIFrameElement,
+      Node: jsdom.window.Node,
+    });
+    container = jsdom.window.document.getElementById("app")!;
+  } else {
+    container = installMinimalDom();
+  }
+  const root: Root = createRoot(container);
   await rerenderPane(root, props);
   return root;
 }
@@ -1263,6 +1275,73 @@ describe("SessionPane draft prewarm admission lifecycle", () => {
 });
 
 describe("SessionPane stop foreground execution", () => {
+  it("offers a visible stop during a blocking interaction and dispatches the pane command", async () => {
+    const running = makePlanPendingSnapshot();
+    running.control.activeWorks = [
+      { kind: "goalVerifier", foregroundExecutionId: "foreground-1", startedAt: 10 },
+    ];
+    projectionState.current = {
+      status: "live",
+      snapshot: running,
+      subscriptionId: "sub-1",
+      lastError: null,
+      optimisticCommands: [],
+      loadingOlder: false,
+    };
+    mocks.sendCommand.mockImplementation(async (envelope: CommandEnvelope) =>
+      ackFor(envelope, { status: "accepted" }),
+    );
+    const root = await renderPane({}, true);
+    try {
+      const buttons = [...document.querySelectorAll("button")].filter((button) =>
+        button.textContent?.includes("停止任务"),
+      );
+      expect(buttons).toHaveLength(1);
+      expect(buttons[0]?.closest('[aria-hidden="true"]')).toBeNull();
+      await act(async () => {
+        buttons[0]?.click();
+        await flushMicrotasks();
+      });
+      expect(mocks.sendCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "stop",
+          sessionId: "session-1",
+          payload: { expectedForegroundExecutionId: "foreground-1" },
+        }),
+      );
+      expect(captured.interactionProps?.snapshot.pendingInteractions).toHaveLength(1);
+    } finally {
+      await act(async () => root.unmount());
+    }
+  });
+
+  it.each(["idle", "no interaction", "read only"])(
+    "does not offer the waiting stop for %s",
+    async (scenario) => {
+      const snapshot = makePlanPendingSnapshot();
+      if (scenario === "idle") snapshot.control.canStop = false;
+      if (scenario === "no interaction") snapshot.pendingInteractions = [];
+      projectionState.current = {
+        status: "live",
+        snapshot,
+        subscriptionId: "sub-1",
+        lastError: null,
+        optimisticCommands: [],
+        loadingOlder: false,
+      };
+      const root = await renderPane(scenario === "read only" ? { readOnly: true } : {}, true);
+      try {
+        expect(
+          [...document.querySelectorAll("button")].filter((button) =>
+            button.textContent?.includes("停止任务"),
+          ),
+        ).toHaveLength(0);
+      } finally {
+        await act(async () => root.unmount());
+      }
+    },
+  );
+
   it.each(["button", "escape"] as const)(
     "forwards the execution id and records %s when stopping a goal verifier",
     async (source) => {

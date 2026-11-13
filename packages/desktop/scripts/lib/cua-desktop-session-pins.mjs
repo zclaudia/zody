@@ -49,15 +49,12 @@ const ENTRY_MACROS = {
 
 const RESOURCE_MACROS = {
   "node-repl-server.mjs": "NODE_REPL_SERVER",
+  "computer-use-sdk/scripts/computer-use-client.mjs": "SDK_CLIENT",
+  "computer-use-sdk/docs/computer-use.md": "SDK_DOC",
   "tasks-storage-worker.mjs": "TASKS_STORAGE_WORKER",
 };
 
-export function pinsHeader({
-  nodeSha256,
-  entries,
-  resources = [],
-  identityPins,
-}) {
+export function pinsHeader({ nodeSha256, entries, resources = [], identityPins }) {
   const lines = [
     "#pragma once",
     "// 由 cua-desktop-session builder 生成。身份 pin 复用已签名 R11 证书/DR/Node CDHash；",
@@ -74,10 +71,7 @@ export function pinsHeader({
   for (const entry of entries) {
     const suffix = ENTRY_MACROS[entry.name];
     if (!suffix) {
-      throw new DesktopSessionBuildError(
-        "entry-name",
-        `unsupported entry ${entry.name}`,
-      );
+      throw new DesktopSessionBuildError("entry-name", `unsupported entry ${entry.name}`);
     }
     lines.push(
       `#define CUA_DESKTOP_SESSION_ENTRY_${suffix}_SHA256 "${cString(entry.sha256)}"`,
@@ -87,10 +81,7 @@ export function pinsHeader({
   for (const resource of resources) {
     const suffix = RESOURCE_MACROS[resource.name];
     if (!suffix) {
-      throw new DesktopSessionBuildError(
-        "resource-name",
-        `unsupported resource ${resource.name}`,
-      );
+      throw new DesktopSessionBuildError("resource-name", `unsupported resource ${resource.name}`);
     }
     lines.push(
       `#define CUA_DESKTOP_SESSION_RESOURCE_${suffix}_SHA256 "${cString(resource.sha256)}"`,

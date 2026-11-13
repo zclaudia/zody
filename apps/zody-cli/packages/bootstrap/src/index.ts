@@ -1,6 +1,12 @@
 // Bootstrap public API surface.
 
 export * from "./app/create-app.js";
+export { observeCuaRuntimeOnce } from "./app/cua-runtime-native-observation.js";
+export type {
+  CuaObservationRequest,
+  CuaObservationResult,
+  CuaObservationOptions,
+} from "./app/cua-runtime-native-observation.js";
 export type { CuaControlSessionOptions } from "./app/cua-runtime-control.js";
 export type { CuaNativeAuthorityCompositionOptions } from "./app/cua-runtime-native-authority.js";
 export type {

@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r1-screenshot",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r1-screenshot.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-shot-deny-title",
+      "description": "CUA screenshot deny title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_SHOT_DENY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "toolu_cua_shot_deny_title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA screenshot\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-shot-deny-call",
+      "description": "CUA screenshot deny call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_SHOT_DENY"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_cua_shot_deny",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_shot_deny",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "CUA screenshot deny",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\nconst result = await agent.computerUse.computer.get_app_state({app_ref:ref,include_screenshot:true});\nconst blocks = Array.isArray(result?.content) ? result.content : [];\nconst images = blocks.filter(b => b.type === 'image' && b.mimeType === 'image/png' && typeof b.data === 'string' && b.data.length > 0);\nconst text = typeof result === 'string' ? result : JSON.stringify(blocks.filter(b => b.type === 'text'));\nconst parsed = typeof result === 'object' && !Array.isArray(result?.content) ? result : (() => { try { return JSON.parse(text); } catch { return null; } })();\nif (images.length || parsed?.code !== 'permission_denied' || text.includes(f.targetMarker) || text.includes(f.siblingMarker)) throw new Error('SCREENSHOT_DENY_FAILED');\nnodeRepl.write('CUA_SHOT_DENY_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-shot-deny-final",
+      "description": "CUA screenshot deny final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_SHOT_DENY", "toolu_cua_shot_deny"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "toolu_cua_shot_deny_final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_SHOT_DENY_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-shot-allow-title",
+      "description": "CUA screenshot allow title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_SHOT_ALLOW"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "toolu_cua_shot_allow_title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA screenshot\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-shot-allow-call",
+      "description": "CUA screenshot allow call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_SHOT_ALLOW"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_cua_shot_allow",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_shot_allow",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "CUA screenshot allow",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\nconst result = await agent.computerUse.computer.get_app_state({app_ref:ref,include_screenshot:true});\nconst blocks = Array.isArray(result?.content) ? result.content : [];\nconst images = blocks.filter(b => b.type === 'image' && b.mimeType === 'image/png' && typeof b.data === 'string' && b.data.length > 0);\nconst text = typeof result === 'string' ? result : JSON.stringify(blocks.filter(b => b.type === 'text'));\nconst parsed = typeof result === 'object' && !Array.isArray(result?.content) ? result : (() => { try { return JSON.parse(text); } catch { return null; } })();\nif (images.length !== 1 || !text.includes(f.targetMarker) || text.includes(f.siblingMarker)) throw new Error('SCREENSHOT_ALLOW_FAILED');\nawait nodeRepl.emitImage({base64:images[0].data,mimeType:images[0].mimeType});\nnodeRepl.write('CUA_SHOT_ALLOW_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-shot-allow-final",
+      "description": "CUA screenshot allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_SHOT_ALLOW", "toolu_cua_shot_allow"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_SHOT_READ"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "toolu_cua_shot_allow_final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_SHOT_ALLOW_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-shot-read-title",
+      "description": "CUA screenshot read title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_SHOT_READ"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "toolu_cua_shot_read_title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA screenshot\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-shot-read-call",
+      "description": "CUA screenshot read call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_SHOT_READ"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_cua_shot_read",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_shot_read",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "CUA screenshot read",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\nconst result = await agent.computerUse.computer.get_app_state({app_ref:ref});\nconst parsed = typeof result === 'string' ? (() => { try { return JSON.parse(result); } catch { return null; } })() : result;\nif (parsed?.code !== 'permission_denied' || JSON.stringify(result).includes(f.targetMarker) || JSON.stringify(result).includes(f.siblingMarker) || JSON.stringify(result).includes('AX window state')) throw new Error('READ_ISOLATION_FAILED');\nnodeRepl.write('CUA_SHOT_READ_DENIED_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-shot-read-final",
+      "description": "CUA screenshot read final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 SDK 和签名 Helper；不伪造权限或工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_SHOT_READ", "toolu_cua_shot_read"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "toolu_cua_shot_read_final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_SHOT_READ_DONE"
+        }
+      }
+    }
+  ]
+}

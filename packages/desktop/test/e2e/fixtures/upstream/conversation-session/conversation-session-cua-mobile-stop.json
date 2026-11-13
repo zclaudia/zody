@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-mobile-stop",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-mobile-stop.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-r1-stop-title",
+      "description": "R1 lifecycle stop title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R1_STOP"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-stop-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-stop-call-1",
+      "description": "R1 lifecycle stop call 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R1_STOP"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r1_stop_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R1_STOP"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_stop_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 stop 1",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await agent.computerUse.computer.get_app_state({app_ref:ref,disable_diffing:true});\nif (typeof state !== 'string' || !state.startsWith('AX window state') || !state.includes(f.targetMarker) || state.includes(f.siblingMarker)) throw new Error('R1_FULL_FAILED');\nnodeRepl.write(state); nodeRepl.write('R1_FULL_OK');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-stop-final",
+      "description": "R1 lifecycle stop final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R1_STOP",
+          "toolu_cua_r1_stop_1"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_R1_RESUME"
+        ],
+        "lastUserMessageExcludes": [
+          "E2E_CUA_R1_RESUME"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-stop-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_STOP_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-resume-title",
+      "description": "R1 lifecycle resume title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R1_RESUME"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-resume-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-resume-call-1",
+      "description": "R1 lifecycle resume call 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R1_RESUME"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r1_resume_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R1_RESUME"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_resume_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 resume 1",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await agent.computerUse.computer.get_app_state({app_ref:ref});\nif (typeof state !== 'string' || !state.startsWith('AX window state') || !state.includes(f.targetMarker) || state.includes(f.siblingMarker)) throw new Error('R1_FULL_FAILED');\nnodeRepl.write(state); nodeRepl.write('R1_FULL_OK');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-resume-final",
+      "description": "R1 lifecycle resume final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型调用以控制手机 Stop 与新 turn 的时序；真实工具、授权和结果由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R1_RESUME",
+          "toolu_cua_r1_resume_1"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-resume-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_RESUME_DONE"
+        }
+      }
+    }
+  ]
+}

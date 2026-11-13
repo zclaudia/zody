@@ -1,0 +1,839 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r1-observation",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r1-observation.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-r1-metadata-title",
+      "description": "R1 metadata title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_METADATA"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-metadata-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-metadata-call",
+      "description": "R1 metadata call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_METADATA"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_cua_r1_metadata",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_metadata",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 metadata",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst apps = await invoke('metadata', () => agent.computerUse.computer.list_apps({}));\nconst windows = await invoke('metadata', () => agent.computerUse.computer.list_windows({app_ref:{pid:f.pid}}));\nconst fixtureApps = selectApps(apps), fixtureWindows = selectWindows(windows);\nconst diag = {case:'metadata', apps:safe(apps), windows:safe(windows), fixtureApps, fixtureWindows, targetLeak:JSON.stringify({apps,windows}).includes(f.targetMarker), siblingLeak:JSON.stringify({apps,windows}).includes(f.siblingMarker)};\nreport(diag);\nif (!Array.isArray(apps) || !fixtureApps.length || !Array.isArray(windows) || ![f.targetWindow,f.siblingWindow].every(id=>fixtureWindows.some(w=>w.window_id===id && w.text_preview_is_null)) || diag.targetLeak || diag.siblingLeak) throw new Error('R1_METADATA_FAILED R1_DIAG:'+JSON.stringify(diag));\nnodeRepl.write('E2E_R1_METADATA_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-metadata-final",
+      "description": "R1 metadata final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_METADATA", "toolu_cua_r1_metadata"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-metadata-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_METADATA_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-deny-title",
+      "description": "R1 deny title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_DENY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-deny-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-deny-call",
+      "description": "R1 deny call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_DENY"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_cua_r1_deny",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_deny",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 deny",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst result = await invoke('deny', () => agent.computerUse.computer.get_app_state({app_ref:ref}));\nconst text = JSON.stringify(result) ?? '';\nconst diag = {case:'deny', result:safe(result), targetLeak:text.includes(f.targetMarker), siblingLeak:text.includes(f.siblingMarker)};\nreport(diag);\nif (diag.result.code !== 'permission_denied' || diag.targetLeak || diag.siblingLeak) throw new Error('R1_DENY_FAILED R1_DIAG:'+JSON.stringify(diag));\nnodeRepl.write('E2E_R1_DENIED_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-deny-final",
+      "description": "R1 deny final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_DENY", "toolu_cua_r1_deny"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-deny-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_DENY_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-allow-title",
+      "description": "R1 allow title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_ALLOW"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-allow-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-allow-call",
+      "description": "R1 allow call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_ALLOW"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_cua_r1_allow",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_allow",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 allow",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst windows = await invoke('metadata', () => agent.computerUse.computer.list_windows({app_ref:{pid:f.pid}}));\nconst fixtureWindows = selectWindows(windows);\nconst metadata = JSON.stringify(windows);\nconst metaDiag = {case:'allow_metadata', windows:safe(windows), fixtureWindows, targetLeak:metadata.includes(f.targetMarker), siblingLeak:metadata.includes(f.siblingMarker)};\nreport(metaDiag);\nif (!Array.isArray(windows) || ![f.targetWindow,f.siblingWindow].every(id=>fixtureWindows.some(w=>w.window_id===id && w.text_preview_is_null)) || metaDiag.targetLeak || metaDiag.siblingLeak) throw new Error('R1_ALLOW_METADATA_FAILED R1_DIAG:'+JSON.stringify(metaDiag));\nconst state = await invoke('allow', () => agent.computerUse.computer.get_app_state({app_ref:ref}));\nconst diag = {case:'allow', result:safe(state), fixtureWindows, targetSeen:typeof state === 'string' && state.includes(f.targetMarker), siblingLeak:(JSON.stringify(state) ?? '').includes(f.siblingMarker)};\nreport(diag);\nif (typeof state !== 'string' || !diag.targetSeen || diag.siblingLeak) throw new Error('R1_ALLOW_FAILED R1_DIAG:'+JSON.stringify(diag));\nnodeRepl.write('E2E_R1_ALLOWED_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-allow-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_ALLOW", "toolu_cua_r1_allow"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-allow-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_ALLOW_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-state-title",
+      "description": "R1-03a/03b state title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动同一真实工具单次调用内五次 SDK 观察；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_STATE"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-allow-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-state-final",
+      "description": "R1-03a/03b state final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动同一真实工具单次调用内五次 SDK 观察；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STATE", "toolu_cua_r1_state_5"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-allow-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_STATE_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-state-call-1",
+      "description": "R1-03a/03b SDK observation stage 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STATE"],
+        "bodyExcludes": [
+          "toolu_cua_r1_state_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_CUA_R1_STATE"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_state_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 state 1",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await invoke('state', () => agent.computerUse.computer.get_app_state({app_ref:ref, ...{disable_diffing:true}}));\nconst isText = typeof state === 'string';\nconst full = isText && state.startsWith('AX window state');\nconst diff = isText && state.startsWith('AX window diff');\nconst targetSeen = isText && state.includes(f.targetMarker);\nconst siblingLeak = isText && state.includes(f.siblingMarker);\nconst ok = isText && (true ? full && targetSeen : diff) && !siblingLeak;\nconst diag = {case:'state', index:1, result:safe(state), full, diff, targetSeen, siblingLeak, ok};\nreport(diag);\nif (!ok) throw new Error('R1_STATE_FAILED R1_DIAG:'+JSON.stringify(diag));\nnodeRepl.write(state);\nnodeRepl.write('E2E_R1_STATE_1_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-state-call-2",
+      "description": "R1-03a/03b SDK observation stage 2",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STATE", "toolu_cua_r1_state_1"],
+        "bodyExcludes": [
+          "toolu_cua_r1_state_2",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_state_2",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 state 2",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await invoke('state', () => agent.computerUse.computer.get_app_state({app_ref:ref, ...{}}));\nconst isText = typeof state === 'string';\nconst full = isText && state.startsWith('AX window state');\nconst diff = isText && state.startsWith('AX window diff');\nconst targetSeen = isText && state.includes(f.targetMarker);\nconst siblingLeak = isText && state.includes(f.siblingMarker);\nconst ok = isText && (false ? full && targetSeen : diff) && !siblingLeak;\nconst diag = {case:'state', index:2, result:safe(state), full, diff, targetSeen, siblingLeak, ok};\nreport(diag);\nif (!ok) throw new Error('R1_STATE_FAILED R1_DIAG:'+JSON.stringify(diag));\nnodeRepl.write(state);\nnodeRepl.write('E2E_R1_STATE_2_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-state-call-3",
+      "description": "R1-03a/03b SDK observation stage 3",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STATE", "toolu_cua_r1_state_2"],
+        "bodyExcludes": [
+          "toolu_cua_r1_state_3",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_state_3",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 state 3",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await invoke('state', () => agent.computerUse.computer.get_app_state({app_ref:ref, ...{tree_shown_to_model:false}}));\nconst isText = typeof state === 'string';\nconst full = isText && state.startsWith('AX window state');\nconst diff = isText && state.startsWith('AX window diff');\nconst targetSeen = isText && state.includes(f.targetMarker);\nconst siblingLeak = isText && state.includes(f.siblingMarker);\nconst ok = isText && (true ? full && targetSeen : diff) && !siblingLeak;\nconst diag = {case:'state', index:3, result:safe(state), full, diff, targetSeen, siblingLeak, ok};\nreport(diag);\nif (!ok) throw new Error('R1_STATE_FAILED R1_DIAG:'+JSON.stringify(diag));\n\nnodeRepl.write('E2E_R1_STATE_3_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-state-call-4",
+      "description": "R1-03a/03b SDK observation stage 4",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STATE", "toolu_cua_r1_state_3"],
+        "bodyExcludes": [
+          "toolu_cua_r1_state_4",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_state_4",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 state 4",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await invoke('state', () => agent.computerUse.computer.get_app_state({app_ref:ref, ...{}}));\nconst isText = typeof state === 'string';\nconst full = isText && state.startsWith('AX window state');\nconst diff = isText && state.startsWith('AX window diff');\nconst targetSeen = isText && state.includes(f.targetMarker);\nconst siblingLeak = isText && state.includes(f.siblingMarker);\nconst ok = isText && (true ? full && targetSeen : diff) && !siblingLeak;\nconst diag = {case:'state', index:4, result:safe(state), full, diff, targetSeen, siblingLeak, ok};\nreport(diag);\nif (!ok) throw new Error('R1_STATE_FAILED R1_DIAG:'+JSON.stringify(diag));\nnodeRepl.write(state);\nnodeRepl.write('E2E_R1_STATE_4_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-state-call-5",
+      "description": "R1-03a/03b SDK observation stage 5",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STATE", "toolu_cua_r1_state_4"],
+        "bodyExcludes": [
+          "toolu_cua_r1_state_5",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_state_5",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 state 5",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await invoke('state', () => agent.computerUse.computer.get_app_state({app_ref:ref, ...{}}));\nconst isText = typeof state === 'string';\nconst full = isText && state.startsWith('AX window state');\nconst diff = isText && state.startsWith('AX window diff');\nconst targetSeen = isText && state.includes(f.targetMarker);\nconst siblingLeak = isText && state.includes(f.siblingMarker);\nconst ok = isText && (false ? full && targetSeen : diff) && !siblingLeak;\nconst diag = {case:'state', index:5, result:safe(state), full, diff, targetSeen, siblingLeak, ok};\nreport(diag);\nif (!ok) throw new Error('R1_STATE_FAILED R1_DIAG:'+JSON.stringify(diag));\nnodeRepl.write(state);\nnodeRepl.write('E2E_R1_STATE_5_OK');"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-rebuild-title",
+      "description": "R1 lifecycle rebuild title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成响应驱动真实窗口重建观察；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_REBUILD"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-rebuild-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-rebuild-call-1",
+      "description": "R1 lifecycle rebuild call 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成响应驱动真实窗口重建观察；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_REBUILD"],
+        "bodyExcludes": [
+          "toolu_cua_r1_rebuild_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_CUA_R1_REBUILD"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_rebuild_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 rebuild 1",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await agent.computerUse.computer.get_app_state({app_ref:ref,disable_diffing:true});\nif (typeof state !== 'string' || !state.startsWith('AX window state') || !state.includes(f.targetMarker) || state.includes(f.siblingMarker)) throw new Error('R1_FULL_FAILED');\nnodeRepl.write(state); nodeRepl.write('R1_FULL_OK');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-rebuild-call-2",
+      "description": "R1 lifecycle rebuild call 2",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成调用仅记录真实 SDK 返回的结构化失效错误与正常完成标记；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_REBUILD", "toolu_cua_r1_rebuild_1"],
+        "bodyExcludes": [
+          "toolu_cua_r1_rebuild_2",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_R1_STOP",
+          "E2E_CUA_R1_RESUME"
+        ],
+        "lastUserMessageExcludes": ["E2E_CUA_R1_STOP", "E2E_CUA_R1_RESUME"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_rebuild_2",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 rebuild 2",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst value = await agent.computerUse.computer.get_app_state({app_ref:ref});\nconst shape=safe(value); const valid=value !== null && typeof value === 'object' && !Array.isArray(value) && ['element_unavailable','stale_state'].includes(shape.code);\nif (!valid) throw new Error('R1_LIFECYCLE_INVALID');\nnodeRepl.write('R1_LIFECYCLE:'+JSON.stringify({kind:'window_rejected',stage:2,resultType:'object',code:shape.code,ok:true,outcome:'returned'}));\nnodeRepl.write('R1_LIFECYCLE_DONE:2');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-rebuild-call-3",
+      "description": "R1 lifecycle rebuild call 3",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成调用仅记录真实 SDK 返回的结构化失效错误与正常完成标记；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_REBUILD", "toolu_cua_r1_rebuild_2"],
+        "bodyExcludes": [
+          "toolu_cua_r1_rebuild_3",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_R1_STOP",
+          "E2E_CUA_R1_RESUME"
+        ],
+        "lastUserMessageExcludes": ["E2E_CUA_R1_STOP", "E2E_CUA_R1_RESUME"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_rebuild_3",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 rebuild 3",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst value = await agent.computerUse.computer.get_app_state({app_ref:ref});\nconst shape=safe(value); const valid=value !== null && typeof value === 'object' && !Array.isArray(value) && ['element_unavailable','stale_state'].includes(shape.code);\nif (!valid) throw new Error('R1_LIFECYCLE_INVALID');\nnodeRepl.write('R1_LIFECYCLE:'+JSON.stringify({kind:'window_rejected',stage:3,resultType:'object',code:shape.code,ok:true,outcome:'returned'}));\nnodeRepl.write('R1_LIFECYCLE_DONE:3');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-rebuild-call-4",
+      "description": "R1 lifecycle rebuild call 4",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成调用使用默认观察参数，验证真实返回自然整树；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_REBUILD", "toolu_cua_r1_rebuild_3"],
+        "bodyExcludes": [
+          "toolu_cua_r1_rebuild_4",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_R1_STOP",
+          "E2E_CUA_R1_RESUME"
+        ],
+        "lastUserMessageExcludes": ["E2E_CUA_R1_STOP", "E2E_CUA_R1_RESUME"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_rebuild_4",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 rebuild 4",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/replacement-manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await agent.computerUse.computer.get_app_state({app_ref:ref});\nif (typeof state !== 'string' || !state.startsWith('AX window state') || !state.includes(f.targetMarker) || state.includes(f.siblingMarker)) throw new Error('R1_FULL_FAILED');\nnodeRepl.write(state); nodeRepl.write('R1_FULL_OK');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-rebuild-final",
+      "description": "R1 lifecycle rebuild final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成响应按顺序驱动真实窗口重建观察；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_REBUILD", "toolu_cua_r1_rebuild_4"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_R1_STOP",
+          "E2E_CUA_R1_RESUME"
+        ],
+        "lastUserMessageExcludes": ["E2E_CUA_R1_STOP", "E2E_CUA_R1_RESUME"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-rebuild-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_REBUILD_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-stop-title",
+      "description": "R1 lifecycle stop title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成响应驱动待读取确认的真实 Stop 交互；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_STOP"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-stop-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-stop-call-1",
+      "description": "R1 lifecycle stop call 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成响应驱动待读取确认的真实 Stop 交互；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STOP"],
+        "bodyExcludes": [
+          "toolu_cua_r1_stop_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_CUA_R1_STOP"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_stop_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 stop 1",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await agent.computerUse.computer.get_app_state({app_ref:ref,disable_diffing:true});\nif (typeof state !== 'string' || !state.startsWith('AX window state') || !state.includes(f.targetMarker) || state.includes(f.siblingMarker)) throw new Error('R1_FULL_FAILED');\nnodeRepl.write(state); nodeRepl.write('R1_FULL_OK');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-stop-final",
+      "description": "R1 lifecycle stop final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "旧 Stop turn 意外继续的合成哨兵；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_STOP", "toolu_cua_r1_stop_1"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_R1_RESUME"
+        ],
+        "lastUserMessageExcludes": ["E2E_CUA_R1_RESUME"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-stop-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_STOP_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-resume-title",
+      "description": "R1 lifecycle resume title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成响应驱动 Stop 后新 turn 的真实读取；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_RESUME"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-resume-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r1-resume-call-1",
+      "description": "R1 lifecycle resume call 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成调用使用默认观察参数，验证真实返回自然整树；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_RESUME"],
+        "bodyExcludes": [
+          "toolu_cua_r1_resume_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": ["E2E_CUA_R1_RESUME"]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r1_resume_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 resume 1",
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path');\nconst { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({ globals: globalThis });\nconst { readFile } = await import('node:fs/promises');\nconst f = JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r1/manifest.json', 'utf8'));\nconst ref = { pid: f.pid, window_id: f.targetWindow };\n\nconst knownCodes = new Set(['permission_denied','not_authorized','screen_locked','broker_unavailable','element_unavailable','structured_state_unavailable','action_unavailable','timeout','invalid_request','stale_state','internal']);\nconst safe = (v) => {\n  let o = v;\n  if (typeof v === 'string') { try { o = JSON.parse(v); } catch {} }\n  const code = o && typeof o === 'object' && typeof o.code === 'string' && knownCodes.has(o.code.toLowerCase()) ? o.code.toLowerCase() : null;\n  return {type:Array.isArray(o)?'array':o===null?'null':typeof o, code};\n};\nconst selectApps = (apps) => Array.isArray(apps) ? apps.filter(a => a?.pid === f.pid).map(a => ({pid:a.pid})) : [];\nconst selectWindows = (windows) => Array.isArray(windows) ? windows.filter(w => w?.pid === f.pid && (w.window_id === f.targetWindow || w.window_id === f.siblingWindow)).map(w => ({pid:w.pid,window_id:w.window_id,text_preview_is_null:w.text_preview === null,onscreen:w.onscreen === true,main_type:typeof w.main,focused_type:typeof w.focused,subrole_present:typeof w.subrole === 'string'})) : [];\nconst report = (d) => nodeRepl.write('R1_DIAG:'+JSON.stringify(d));\nconst invoke = async (caseName, fn) => { try { return await fn(); } catch (error) { const diag = {case:caseName, result:safe(error)}; report(diag); throw new Error('R1_SDK_EXCEPTION R1_DIAG:'+JSON.stringify(diag)); } };\nconst state = await agent.computerUse.computer.get_app_state({app_ref:ref});\nif (typeof state !== 'string' || !state.startsWith('AX window state') || !state.includes(f.targetMarker) || state.includes(f.siblingMarker)) throw new Error('R1_FULL_FAILED');\nnodeRepl.write(state); nodeRepl.write('R1_FULL_OK');\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r1-resume-final",
+      "description": "R1 lifecycle resume final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成响应驱动 Stop 后新 turn 的真实读取；不伪造工具结果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_RESUME", "toolu_cua_r1_resume_1"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-resume-final",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_RESUME_DONE"
+        }
+      }
+    }
+  ]
+}

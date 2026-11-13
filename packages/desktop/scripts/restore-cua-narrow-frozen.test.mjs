@@ -23,7 +23,14 @@ test("sha sidecar parsing accepts hex digest and rejects garbage", () => {
 });
 
 test("tar entry guard only accepts repo-relative output/ paths", () => {
-  assert.equal(assertSafeTarEntries(["output/", "output/cua-app-icon/controller-prepared/manifest.json"]), true);
+  assert.equal(
+    assertSafeTarEntries([
+      "output/",
+      "output/cua-narrow-frozen/controller-prepared/manifest.json",
+      "output/cua-helper-round11/controller-signed/identity-pins.json",
+    ]),
+    true,
+  );
   const unsafe = [
     "/etc/passwd",
     "../outside.txt",
@@ -78,8 +85,11 @@ test("restore refuses when archive sha does not match or sha source is missing",
 test("restore refuses to overwrite an existing pinned manifest without --force", async () => {
   const dir = await mkdtemp(join(tmpdir(), "cua-narrow-restore-exists-"));
   try {
-    await mkdir(join(dir, "output", "cua-app-icon", "controller-prepared"), { recursive: true });
-    await writeFile(join(dir, "output", "cua-app-icon", "controller-prepared", "manifest.json"), "{}");
+    await mkdir(join(dir, "output", "cua-narrow-frozen", "controller-prepared"), { recursive: true });
+    await writeFile(
+      join(dir, "output", "cua-narrow-frozen", "controller-prepared", "manifest.json"),
+      "{}",
+    );
     await assert.rejects(
       restoreCuaNarrowFrozen({
         archivePath: join(dir, "missing.tar.gz"),

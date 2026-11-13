@@ -1,3 +1,4 @@
+import type { CuaObservationRequest } from "@zody/zody-cua/observation-contract";
 import type { Logger, McpPort, McpServerConfig } from "@zody/contracts";
 import { type CuaCaptureExpectation, type CuaCaptureImageResult, type CuaCaptureTarget } from "./cua-capture-runtime.js";
 import { type CuaHelperCellTransport } from "./cell-helper-transport.js";
@@ -12,6 +13,8 @@ export interface CuaNodeReplMcpPortInput {
     /** app 的显式 captureCuaOnce 闭包；expected 来自真实主工具调用上下文。 */
     captureOnce(target: CuaCaptureTarget, options: CuaNodeReplMcpPortCaptureOptions): Promise<CuaCaptureImageResult>;
     /** app 是否拥有原端口；true 时 wrapper.close 一并关闭原端口。 */
+    observationOnce?(request: CuaObservationRequest, options: CuaNodeReplMcpPortCaptureOptions): Promise<CuaCaptureImageResult>;
+    verifyObservationScope?(expected: CuaCaptureExpectation): boolean | Promise<boolean>;
     readonly closePort: boolean;
     /** 已打包的 node-repl server bundle 固定资源名；只作诊断，不作为执行路径。 */
     readonly serverPath: string;
@@ -42,6 +45,8 @@ export interface CuaNodeReplMcpPortInput {
 export type CuaNodeReplMcpPortFactory = ((input: {
     readonly port: McpPort;
     captureOnce(target: CuaCaptureTarget, options: CuaNodeReplMcpPortCaptureOptions): Promise<CuaCaptureImageResult>;
+    observationOnce?(request: CuaObservationRequest, options: CuaNodeReplMcpPortCaptureOptions): Promise<CuaCaptureImageResult>;
+    verifyObservationScope?(expected: CuaCaptureExpectation): boolean | Promise<boolean>;
     readonly closePort: boolean;
     readonly browserBroker?: {
         readonly socketPath: string;

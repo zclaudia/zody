@@ -1,10 +1,13 @@
+import type { CuaObservationRequest } from "@zody/zody-cua/observation-contract";
+import { createCuaObservationRuntime } from "./cua-observation-runtime.js";
+// 使用 MCP 公开子入口，避免总入口将无关 contracts 装入 cell bundle。
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import {
   buildZodyMcpDualMetaEntry,
   MCP_TOOL_META_TIMEOUT_MAX_MS,
   MCP_TOOL_META_TIMEOUT_MIN_MS,
   ZODY_MCP_META_KEY_COMPAT,
-} from "@zody/contracts";
+} from "@zody/contracts/mcp";
 import type {
   JsonSchema,
   Logger,
@@ -57,6 +60,11 @@ export interface CuaNodeReplMcpPortInput {
     options: CuaNodeReplMcpPortCaptureOptions,
   ): Promise<CuaCaptureImageResult>;
   /** app 是否拥有原端口；true 时 wrapper.close 一并关闭原端口。 */
+  observationOnce?(
+    request: CuaObservationRequest,
+    options: CuaNodeReplMcpPortCaptureOptions,
+  ): Promise<CuaCaptureImageResult>;
+  verifyObservationScope?(expected: CuaCaptureExpectation): boolean | Promise<boolean>;
   readonly closePort: boolean;
   /** 已打包的 node-repl server bundle 固定资源名；只作诊断，不作为执行路径。 */
   readonly serverPath: string;
@@ -91,6 +99,11 @@ export type CuaNodeReplMcpPortFactory = ((input: {
     target: CuaCaptureTarget,
     options: CuaNodeReplMcpPortCaptureOptions,
   ): Promise<CuaCaptureImageResult>;
+  observationOnce?(
+    request: CuaObservationRequest,
+    options: CuaNodeReplMcpPortCaptureOptions,
+  ): Promise<CuaCaptureImageResult>;
+  verifyObservationScope?(expected: CuaCaptureExpectation): boolean | Promise<boolean>;
   readonly closePort: boolean;
   readonly browserBroker?: { readonly socketPath: string; readonly token: string };
 }) => McpPort) & {
@@ -163,9 +176,15 @@ export function createCuaNodeReplMcpPort(input: CuaNodeReplMcpPortInput): McpPor
   const disconnectedError = () => new Error("cua_node_repl_mcp_port_disconnected");
 
   const createLocal = async (epoch: number): Promise<LocalNodeRepl> => {
-    const cuaRuntime = createCuaCaptureComputerUseRuntime({
-      captureOnce: input.captureOnce,
-    });
+    const cuaRuntime = input.observationOnce
+      ? createCuaObservationRuntime({
+          captureOnce: input.captureOnce,
+          observationOnce: input.observationOnce,
+          ...(input.verifyObservationScope
+            ? { verifyObservationScope: input.verifyObservationScope }
+            : {}),
+        })
+      : createCuaCaptureComputerUseRuntime({ captureOnce: input.captureOnce });
     const runtime = createNodeReplMcpRuntime({
       executeJs: createSubprocessNodeReplExecutor({
         ...input.subprocess,
@@ -517,6 +536,14 @@ export function createCuaNodeReplMcpPortFactory(
   }
   const serverPath = options.serverPath;
   assertNoSubprocessOverrides(options.subprocess);
+  const subprocess = options.subprocess
+    ? {
+        ...options.subprocess,
+        ...(options.subprocess.cuaSdk
+          ? { cuaSdk: Object.freeze({ ...options.subprocess.cuaSdk }) }
+          : {}),
+      }
+    : undefined;
   // 中文原因：factory 在 native ready 前就可能构造；此时 endpoint 尚不存在。
   // 缺少 getter 不等于构造失败，真正 cell 调用时再由 transport fail closed。
   const cellEndpoint = options.cellEndpoint ?? (() => undefined);
@@ -559,12 +586,17 @@ export function createCuaNodeReplMcpPortFactory(
   const factory = ((input) =>
     createCuaNodeReplMcpPort({
       ...portOptions,
+      ...(subprocess ? { subprocess } : {}),
       serverPath,
       sourceSnapshot,
       helperCell,
       timeoutMs: toolTimeoutMs,
       port: input.port,
       captureOnce: input.captureOnce,
+      ...(input.observationOnce ? { observationOnce: input.observationOnce } : {}),
+      ...(input.verifyObservationScope
+        ? { verifyObservationScope: input.verifyObservationScope }
+        : {}),
       closePort: input.closePort,
       ...(input.browserBroker ? { browserBroker: input.browserBroker } : {}),
     })) as CuaNodeReplMcpPortFactory;

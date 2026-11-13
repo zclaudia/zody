@@ -42,9 +42,7 @@ function cuaConfirmRequest(overrides: Record<string, unknown> = {}) {
   } as never;
 }
 
-function makeBrokerContext(options?: {
-  respond?: () => Promise<unknown>;
-}) {
+function makeBrokerContext(options?: { respond?: () => Promise<unknown>; fullAccess?: boolean }) {
   const registry = new V4InteractionRegistry();
   const ingest = vi.fn<(sessionId: string, event: SessionEvent) => void>();
   const requestClient = vi.fn(
@@ -65,7 +63,7 @@ function makeBrokerContext(options?: {
     },
   );
   const context = {
-    deps: {},
+    deps: options?.fullAccess ? { sessionStore: { commitPermissionFullAccess: vi.fn() } } : {},
     requestClient,
     v4Interactions: registry,
     v4Gateway: { ingest },
@@ -291,6 +289,69 @@ describe("cua_screenshot_confirm v4 pending interaction", () => {
 
     await expect(broker.requestPermission(cuaConfirmRequest())).resolves.toMatchObject({
       decision: "allow",
+    });
+  });
+});
+
+describe("cua_ax_read_confirm v4 pending interaction", () => {
+  const request = () =>
+    cuaConfirmRequest({
+      toolName: "cua_ax_read_confirm",
+      approvalMode: "user-once",
+      optionsPolicy: "no-always-allow",
+      suggestedPermissionUpdates: undefined,
+    });
+
+  it.each(["allow", "deny"] as const)("登记并以 %s 结束只读授权", async (decision) => {
+    const { broker, registry, ingest } = makeBrokerContext({ fullAccess: true });
+    const pending = broker.requestPermission(request());
+    await pending.registered;
+    expect(registry.has("cua-confirm-7")).toBe(true);
+    expect(
+      registry.resolve("cua-confirm-7", { optionId: decision === "allow" ? "allowOnce" : "deny" }),
+    ).toBe(true);
+    await expect(pending).resolves.toMatchObject({ decision });
+    expect(registry.has("cua-confirm-7")).toBe(false);
+    const events = ingestedTypes(ingest);
+    const requested = findEvent(events, SessionEventType.PermissionRequested);
+    expect(requested).toMatchObject({
+      payload: {
+        toolName: "cua_ax_read_confirm",
+        approvalMode: "user-once",
+        optionsPolicy: "no-always-allow",
+      },
+    });
+    expect(requested?.payload).not.toHaveProperty("fullAccessSupported");
+    expect(
+      buildProtocolPermissionOptions({
+        toolName: "cua_ax_read_confirm",
+        input: {},
+        approvalMode: "user-once",
+        optionsPolicy: "no-always-allow",
+      }).map((option) => option.kind),
+    ).toEqual(["allow_once", "deny"]);
+    expect(findEvent(events, SessionEventType.PermissionResolved)).toMatchObject({
+      payload: { decision },
+    });
+  });
+
+  it("abort 后解除登记并以 deny 关闭读取确认", async () => {
+    const { broker, registry, ingest } = makeBrokerContext({ fullAccess: true });
+    const controller = new AbortController();
+    const pending = broker.requestPermission(request(), {
+      signal: controller.signal,
+      claimResponse: () => true,
+    });
+    await pending.registered;
+    expect(registry.has("cua-confirm-7")).toBe(true);
+    await expect(registry.resolveFullAccess("cua-confirm-7", "session-cua")).rejects.toThrow(
+      /Full access is not supported/,
+    );
+    controller.abort();
+    await expect(pending).rejects.toThrow();
+    expect(registry.has("cua-confirm-7")).toBe(false);
+    expect(findEvent(ingestedTypes(ingest), SessionEventType.PermissionResolved)).toMatchObject({
+      payload: { decision: "deny" },
     });
   });
 });

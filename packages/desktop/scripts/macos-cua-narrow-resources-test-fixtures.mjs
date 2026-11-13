@@ -1,6 +1,6 @@
 // 窄 CUA 资源测试的共享 fixture：模拟 prepared output（stage app + 受控 pins/native manifest）。
 import { cp, mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 import {
   DEFAULT_IDENTITY_PINS_PATH,
@@ -25,13 +25,7 @@ import {
   sha256File,
 } from "./macos-cua-narrow-resources.mjs";
 
-export const TEST_ROOT = join(
-  REPO_ROOT,
-  "output",
-  "cua-phase1-closeout",
-  "a-worker",
-  "tests",
-);
+export const TEST_ROOT = join(REPO_ROOT, "output", "cua-phase1-closeout", "a-worker", "tests");
 
 export function fixtureIdentity(overrides = {}) {
   return {
@@ -78,10 +72,12 @@ export async function writeFixturePins(root) {
   return path;
 }
 
-export async function makeFixtureApp(root) {
+export async function makeFixtureApp(root, { legacy = false } = {}) {
   const appPath = join(root, "source", NARROW_APP_NAME);
   await mkdir(join(appPath, "Contents", "MacOS"), { recursive: true });
-  await mkdir(join(appPath, "Contents", "Resources", "licenses"), { recursive: true });
+  await mkdir(join(appPath, "Contents", "Resources", "licenses"), {
+    recursive: true,
+  });
   await writeFile(
     join(appPath, "Contents", "Info.plist"),
     `<?xml version="1.0" encoding="UTF-8"?>
@@ -95,7 +91,13 @@ export async function makeFixtureApp(root) {
   );
   await writeFile(join(appPath, "Contents", "MacOS", NARROW_EXECUTABLE_NAME), "fixture helper\n");
   await writeFile(join(appPath, "Contents", "Resources", "node"), "fixture node\n");
-  for (const name of [...NARROW_ENTRY_NAMES, ...NARROW_AUXILIARY_NAMES]) {
+  for (const name of [
+    ...NARROW_ENTRY_NAMES,
+    ...(legacy ? NARROW_AUXILIARY_NAMES.slice(0, 1) : NARROW_AUXILIARY_NAMES),
+  ]) {
+    await mkdir(dirname(join(appPath, "Contents", "Resources", name)), {
+      recursive: true,
+    });
     await writeFile(join(appPath, "Contents", "Resources", name), `fixture ${name}\n`);
   }
   await writeFile(
@@ -105,7 +107,7 @@ export async function makeFixtureApp(root) {
   return { appPath };
 }
 
-export async function makeNativeBuildManifest(root, appPath) {
+export async function makeNativeBuildManifest(root, appPath, { legacy = false } = {}) {
   const path = join(root, "source", "build-manifest.json");
   const describeFile = async (relativePath) => ({
     path: relativePath,
@@ -128,7 +130,10 @@ export async function makeNativeBuildManifest(root, appPath) {
           sha256: await sha256File(join(appPath, "Contents", "Resources", "node")),
           version: "v24.14.0",
         },
-        identityPins: { path: DEFAULT_IDENTITY_PINS_PATH, values: expectedPins() },
+        identityPins: {
+          path: DEFAULT_IDENTITY_PINS_PATH,
+          values: expectedPins(),
+        },
         entries: await Promise.all(
           NARROW_ENTRY_NAMES.map(async (name) => ({
             name,
@@ -137,11 +142,13 @@ export async function makeNativeBuildManifest(root, appPath) {
           })),
         ),
         auxiliaryResources: await Promise.all(
-          NARROW_AUXILIARY_NAMES.map(async (name) => ({
-            name,
-            maxBytes: 64 * 1024 * 1024,
-            ...(await describeFile(`Contents/Resources/${name}`)),
-          })),
+          (legacy ? NARROW_AUXILIARY_NAMES.slice(0, 1) : NARROW_AUXILIARY_NAMES).map(
+            async (name) => ({
+              name,
+              maxBytes: 64 * 1024 * 1024,
+              ...(await describeFile(`Contents/Resources/${name}`)),
+            }),
+          ),
         ),
         artifact: {
           // native manifest 记录的是 unsigned Mach-O；签名后摘要必须单独计算。
@@ -167,7 +174,10 @@ export async function makePreparedLayout({
   const stageRoot = join(outputRoot, "stage");
   const stageAppPath = join(stageRoot, NARROW_APP_NAME);
   await mkdir(stageRoot, { recursive: true });
-  await cp(appPath, stageAppPath, { recursive: true, preserveTimestamps: true });
+  await cp(appPath, stageAppPath, {
+    recursive: true,
+    preserveTimestamps: true,
+  });
   const stagePinsPath = join(stageRoot, "identity-pins.json");
   const stageNativePath = join(stageRoot, "native-build-manifest.json");
   await cp(pinsPath, stagePinsPath);
@@ -204,7 +214,12 @@ export async function makePreparedLayout({
       pinsSha256: await sha256File(stagePinsPath),
     },
     tree,
-    audit: { symlinks: [], hardlinks: [], externalLinks: [], licenses: tree.licenses },
+    audit: {
+      symlinks: [],
+      hardlinks: [],
+      externalLinks: [],
+      licenses: tree.licenses,
+    },
     restrictions: {
       defaultDisabled: true,
       placeholderDefault: true,

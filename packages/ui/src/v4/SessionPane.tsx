@@ -20,6 +20,7 @@ import {
   buildCustomSupplierKey,
   TID_CHAT_EMPTY,
   TID_V4_SESSION_PANE,
+  TID_V4_STOP,
   testId,
   ZODY_AGENT_PROVIDER,
 } from "@zody/shared";
@@ -44,6 +45,7 @@ import { logger } from "@/logger.js";
 import { PluginUiSessionProvider } from "@/plugin-ui/index.js";
 // fork（F4.8）：会话分享发布/导入（错误映射、分享服务类型、回链本地化）随分享功能删除。
 import { toast } from "@/components/ui/toast.js";
+import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { DEFAULT_CODE_PREVIEW_SETTINGS } from "@/lib/codePreviewSettings.js";
@@ -1893,7 +1895,9 @@ export function SessionPane({
             {
               value: "reload",
               recovery: true,
-              description: intl.formatMessage({ id: "chat.slash.app.reload.description" }),
+              description: intl.formatMessage({
+                id: "chat.slash.app.reload.description",
+              }),
               keywords: ["reload", "restart", "重启"],
               run: () =>
                 restartTaskViaHook({
@@ -3993,10 +3997,25 @@ export function SessionPane({
             isWebRemoteControl={compactForRemoteControl}
             provider={provider}
             snapshot={snapshot}
+            allowStopExit={Boolean(blockingInteractionId && snapshot.control.canStop)}
             onPlanInteractionAccepted={
               compactForRemoteControl ? handleMobilePlanInteractionAccepted : undefined
             }
           />
+        ) : null}
+        {/* 阻塞交互会隐藏整个 composer（包括其停止按钮）；在卡片外保留当前 pane 的停止入口。 */}
+        {!readOnly && blockingInteractionId && snapshot?.control.canStop ? (
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              data-testid={TID_V4_STOP}
+              className="[@media(hover:none)_and_(pointer:coarse)]:min-h-11"
+              onClick={handleStopFromButton}
+            >
+              {intl.formatMessage({ id: "chat.toolCall.kind.taskStop" })}
+            </Button>
+          </div>
         ) : null}
         <ConversationComposerSlotBoundary store={composerSlotStore} />
         {/* 办公模式显示主动任务推荐；编程模式保留原有小型场景入口。 */}
@@ -4020,6 +4039,7 @@ export function SessionPane({
       </>
     );
   }, [
+    blockingInteractionId,
     compactForRemoteControl,
     composerSlotStore,
     handleDeleteQueueItem,
@@ -4030,6 +4050,8 @@ export function SessionPane({
     handleReorderQueueItem,
     handleResumeQueue,
     handleSendQueuedNow,
+    handleStopFromButton,
+    intl,
     isDesktop,
     isDraft,
     isOfficeMode,
@@ -4129,6 +4151,7 @@ export function SessionPane({
       <div
         data-testid={testId(TID_V4_SESSION_PANE, paneId)}
         data-session-id={sessionId ?? "draft"}
+        data-session-phase={snapshot?.control.phase}
         data-initial-draft-provider={initialDraftConfigForDiagnostics?.provider ?? ""}
         data-initial-draft-model={initialDraftConfigForDiagnostics?.model ?? ""}
         data-projection-seq={snapshot?.seq ?? ""}

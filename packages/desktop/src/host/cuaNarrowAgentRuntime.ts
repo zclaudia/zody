@@ -7,9 +7,9 @@ import type {
   ZodyAgentNativeRuntimeResolverContext,
   ZodyAgentNativeRuntimeStartupContext,
 } from "@zody/services/node";
+import { digestZodyAgentNativeRuntimeNetwork } from "@zody/services/node";
 import {
-  digestCuaNarrowNetworkConfig,
-  normalizeCuaNarrowSelection,
+  CUA_NARROW_MINIMUM_MACOS_VERSION,
   parseCuaNarrowAgentBuildProfile,
   readCuaNarrowAgentBuildProfile,
   type CuaNarrowAgentBuildProfile,
@@ -18,6 +18,7 @@ import {
   assertManifestShape,
   canonicalize,
   defaultRuntimeFileDependencies,
+  isMacOSVersionAtLeast,
   readMacOSVersion,
   resolveCuaNarrowLauncherPath,
   resolveCuaNarrowManifestPath,
@@ -38,18 +39,20 @@ export type CuaNarrowUnsupportedReason =
   | "invalid-build-profile"
   | "target-platform"
   | "target-arch"
-  | "target-macos-version"
+  | "macos-below-minimum"
   | "resources-path"
   | "launcher-missing"
   | "launcher-digest-mismatch"
   | "manifest-missing"
   | "manifest-digest-mismatch"
-  | "manifest-shape"
-  | "startup-context-unavailable"
-  | "provider-revision-mismatch"
-  | "provider-selection-mismatch"
-  | "network-digest-mismatch"
-  | "no-prepared-workspace";
+  | "manifest-shape";
+
+/**
+ * 动态 workspace 准入（2026-11-09 spec 追加小节）：对未命中 prepared 集合的本地
+ * workspace，由 Host 接线注入「现场 session 存储准备」。返回 true 表示已准备完成，
+ * resolver 将该 workspace 纳入集合并路由窄链；false 表示本次回退普通 Agent。
+ */
+export type CuaNarrowWorkspaceStoragePreparer = (workspacePath: string) => Promise<boolean>;
 
 export interface CuaNarrowDecisionEvent {
   readonly kind:
@@ -63,6 +66,7 @@ export interface CuaNarrowDecisionEvent {
   readonly taskTimeProviderGuard: false;
   // 中文注释：字段旧名前缀撞上 M2 已退出标识，更名详见 ZodyAgentNativeRuntimeStartupContext
   // 处注释；语义是对 provider 配置快照的 SHA-256 digest，与同事件 networkDigestSha256 命名对齐。
+  // v2 起仅随 startup-snapshot 诊断事件出现，不再参与 eligibility 比较。
   readonly providerDigestSha256?: string;
   readonly selection?: ModelSelection | null;
   readonly networkDigestSha256?: string;
@@ -89,44 +93,24 @@ export interface PrepareCuaNarrowAgentRuntimeOptions {
   arch?: string;
   macOSVersion?: string;
   resourcesPath?: string;
+  /** Host init 时已准备的种子集合；resolver 期间动态扩充。 */
   preparedWorkspacePaths?: readonly string[];
-  /** Actual facts read once from the existing Host services before services are published. */
+  /** 未命中集合时的现场存储准备（Host 接线注入；测试可不注入保持回退语义）。 */
+  prepareWorkspaceStorage?: CuaNarrowWorkspaceStoragePreparer;
+  /**
+   * Actual facts read once from the existing Host services. Diagnostic only since profile
+   * schemaVersion 2: the startup snapshot is logged for post-hoc audit of the sealed agent's
+   * effective provider/network config and never compared against build-time pins.
+   */
   startupContext?: ZodyAgentNativeRuntimeStartupContext;
   report?: (event: CuaNarrowDecisionEvent) => void;
   deps?: CuaNarrowRuntimeFileDependencies;
 }
 
-type StartupMismatchReason =
-  | "startup-context-unavailable"
-  | "provider-revision-mismatch"
-  | "provider-selection-mismatch"
-  | "network-digest-mismatch";
-
-function selectionDigest(selection: ModelSelection | null | undefined): string {
-  return JSON.stringify(normalizeCuaNarrowSelection(selection));
-}
-
-function compareStartupContext(
-  profile: CuaNarrowAgentBuildProfile,
-  context: ZodyAgentNativeRuntimeStartupContext | undefined,
-): StartupMismatchReason | null {
-  if (!context) return "startup-context-unavailable";
-  if (context.providerDigestSha256 !== profile.provider.revisionSha256) {
-    return "provider-revision-mismatch";
-  }
-  if (selectionDigest(context.selection) !== selectionDigest(profile.provider.selection)) {
-    return "provider-selection-mismatch";
-  }
-  if (digestCuaNarrowNetworkConfig(context.network) !== profile.network.digestSha256) {
-    return "network-digest-mismatch";
-  }
-  return null;
-}
-
 /**
- * Startup eligibility. The actual provider/model/network values are read from the Host's
- * existing services and compared to the build profile; no values in this object are treated
- * as self-attested proof.
+ * Startup eligibility. Content pins (manifest bytes + signed launcher digest) are the only
+ * integrity anchors; the Host-side workspace gate is the prepared-storage snapshot taken
+ * at Host init. Remote workspaces never route here (caller-side check).
  */
 export async function prepareCuaNarrowAgentRuntime(
   options: PrepareCuaNarrowAgentRuntimeOptions = {},
@@ -143,15 +127,15 @@ export async function prepareCuaNarrowAgentRuntime(
       // Logging is diagnostic only and must not change routing.
     }
   };
-  // Emit the bounded readback even when the pinned profile later mismatches. This lets the
-  // controller rebuild from the real startup facts without copying provider/network config.
+  // 诊断性 readback：无论 eligibility 结果如何都记录一次有界 startup 事实，
+  // 供事后审计 sealed agent 实际运行配置；读取失败只跳过日志，不影响路由。
   if (options.startupContext) {
     reportEvent({
       kind: "narrow-runtime-startup-snapshot",
-      reason: "read-before-eligibility-compare",
+      reason: "diagnostic-readback",
       providerDigestSha256: options.startupContext.providerDigestSha256,
       selection: options.startupContext.selection,
-      networkDigestSha256: digestCuaNarrowNetworkConfig(options.startupContext.network),
+      networkDigestSha256: digestZodyAgentNativeRuntimeNetwork(options.startupContext.network),
       snapshotSource: "existing-host-services",
       taskTimeProviderGuard: false,
     });
@@ -180,16 +164,14 @@ export async function prepareCuaNarrowAgentRuntime(
   }
 
   const platform = options.platform ?? process.platform;
-  if (platform !== profile.testedTarget.os) return unsupported("target-platform");
+  if (platform !== profile.minimumTarget.os) return unsupported("target-platform");
   const arch = options.arch ?? process.arch;
-  if (arch !== profile.testedTarget.arch) return unsupported("target-arch");
+  if (arch !== profile.minimumTarget.arch) return unsupported("target-arch");
   const macOSVersion = options.macOSVersion ?? readMacOSVersion();
-  if (!macOSVersion || macOSVersion !== profile.testedTarget.macOSVersion) {
-    return unsupported("target-macos-version");
+  if (!macOSVersion) return unsupported("macos-below-minimum");
+  if (!isMacOSVersionAtLeast(macOSVersion, CUA_NARROW_MINIMUM_MACOS_VERSION)) {
+    return unsupported("macos-below-minimum");
   }
-
-  const startupMismatch = compareStartupContext(profile, options.startupContext);
-  if (startupMismatch) return unsupported(startupMismatch);
 
   const resourcesPath = options.resourcesPath;
   if (!resourcesPath) return unsupported("resources-path");
@@ -237,22 +219,30 @@ export async function prepareCuaNarrowAgentRuntime(
     return unsupported("manifest-missing");
   }
 
-  const allowlist = new Set(
-    await Promise.all(profile.workspaceAllowlist.map((path) => canonicalize(path, realpathDep))),
-  );
+  // 准入集合：Host init 种子 + spawn 期动态准备（同一 canonical 键 in-flight 去重）。
   const prepared = new Set(
     await Promise.all(
       (options.preparedWorkspacePaths ?? []).map((path) => canonicalize(path, realpathDep)),
     ),
   );
-  let hasPreparedAllowlistedWorkspace = false;
-  for (const workspace of allowlist) {
-    if (prepared.has(workspace)) {
-      hasPreparedAllowlistedWorkspace = true;
-      break;
-    }
-  }
-  if (!hasPreparedAllowlistedWorkspace) return unsupported("no-prepared-workspace");
+  const prepareWorkspaceStorage = options.prepareWorkspaceStorage;
+  const storagePreparations = new Map<string, Promise<boolean>>();
+  const ensureWorkspacePrepared = (canonicalWorkspacePath: string): Promise<boolean> => {
+    if (prepared.has(canonicalWorkspacePath)) return Promise.resolve(true);
+    if (!prepareWorkspaceStorage) return Promise.resolve(false);
+    const inflight = storagePreparations.get(canonicalWorkspacePath);
+    if (inflight) return inflight;
+    const preparation = Promise.resolve(prepareWorkspaceStorage(canonicalWorkspacePath))
+      .then((ok) => {
+        if (ok) prepared.add(canonicalWorkspacePath);
+        return ok;
+      })
+      .finally(() => {
+        storagePreparations.delete(canonicalWorkspacePath);
+      });
+    storagePreparations.set(canonicalWorkspacePath, preparation);
+    return preparation;
+  };
 
   reportEvent({
     kind: "narrow-runtime-prepared",
@@ -263,54 +253,20 @@ export async function prepareCuaNarrowAgentRuntime(
 
   const resolveWorkspace: ZodyAgentNativeRuntimeResolver = async (
     context: ZodyAgentCommandResolverContext,
-    runtimeContext?: ZodyAgentNativeRuntimeResolverContext,
+    _runtimeContext?: ZodyAgentNativeRuntimeResolverContext,
   ): Promise<ZodyAgentNativeRuntimeConfig | null> => {
-    let spawnContext: ZodyAgentNativeRuntimeStartupContext;
-    try {
-      if (!runtimeContext) throw new Error("startup context reader unavailable");
-      spawnContext = await runtimeContext.readStartupContext();
-    } catch {
-      reportEvent({
-        kind: "narrow-runtime-fallback",
-        reason: "startup-context-unavailable",
-        workspacePath: context.workspacePath,
-        snapshotSource: "existing-host-services",
-        taskTimeProviderGuard: false,
-      });
-      return null;
-    }
-    const spawnMismatch = compareStartupContext(profile, spawnContext);
-    if (spawnMismatch) {
-      reportEvent({
-        kind: "narrow-runtime-fallback",
-        reason: spawnMismatch,
-        workspacePath: context.workspacePath,
-        snapshotSource: "existing-host-services",
-        taskTimeProviderGuard: false,
-      });
-      return null;
-    }
-
     let workspacePath: string;
     try {
       workspacePath = await canonicalize(context.workspacePath, realpathDep);
     } catch {
       workspacePath = resolve(context.workspacePath);
     }
-    if (!allowlist.has(workspacePath)) {
+    if (!(await ensureWorkspacePrepared(workspacePath))) {
       reportEvent({
         kind: "narrow-runtime-fallback",
-        reason: "workspace-not-allowlisted",
-        workspacePath: context.workspacePath,
-        snapshotSource: "build-profile",
-        taskTimeProviderGuard: false,
-      });
-      return null;
-    }
-    if (!prepared.has(workspacePath)) {
-      reportEvent({
-        kind: "narrow-runtime-fallback",
-        reason: "workspace-storage-not-prepared",
+        reason: prepareWorkspaceStorage
+          ? "workspace-storage-preparation-failed"
+          : "workspace-storage-not-prepared",
         workspacePath: context.workspacePath,
         snapshotSource: "build-profile",
         taskTimeProviderGuard: false,
@@ -319,7 +275,7 @@ export async function prepareCuaNarrowAgentRuntime(
     }
     reportEvent({
       kind: "narrow-runtime-eligible",
-      reason: "workspace-allowlisted-and-startup-profile-matched",
+      reason: "workspace-prepared",
       workspacePath: context.workspacePath,
       snapshotSource: "existing-host-services",
       taskTimeProviderGuard: false,

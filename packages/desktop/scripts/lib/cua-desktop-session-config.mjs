@@ -93,6 +93,21 @@ export const AUXILIARY_RESOURCES = [
   },
 ];
 
+export const SDK_RESOURCES = [
+  {
+    name: "computer-use-sdk/scripts/computer-use-client.mjs",
+    source: "apps/zody-cli/packages/zody-cua-plugin/scripts/computer-use-client.mjs",
+    definePrefix: "SDK_CLIENT",
+    maxBytes: 512 * 1024,
+  },
+  {
+    name: "computer-use-sdk/docs/computer-use.md",
+    source: "apps/zody-cli/packages/zody-cua-plugin/docs/computer-use.md",
+    definePrefix: "SDK_DOC",
+    maxBytes: 256 * 1024,
+  },
+];
+
 // Hostworker 合同：这两份 worker 的 source 直接以 define 嵌入 host-entry，最终
 // host-entry hash 覆盖它们；不再另造 fd 传输或可替换文件。
 export const EMBEDDED_RESOURCES = [
@@ -115,6 +130,11 @@ export const EMBEDDED_RESOURCES = [
 export const UNSUPPORTED_NATIVE_PINS = join(NATIVE_ROOT, "runtime", "unsupported-native-pins.json");
 
 export const SESSION_SOURCES = [
+  "observer_contract.mm",
+  "observer_source.mm",
+  "observer_state.mm",
+  "observer_session.mm",
+  "observer_session_status.mm",
   "confirmation_state.mm",
   "confirmation.mm",
   "session_binding.mm",

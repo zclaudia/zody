@@ -5,6 +5,8 @@ import {
   CUA_NATIVE_AUTHORITY_DEFAULT_REQUEST_TIMEOUT_MS,
   CUA_NATIVE_AUTHORITY_MAX_FRAME_BYTES,
   CUA_NATIVE_AUTHORITY_MAX_PENDING_BYTES,
+  CUA_NATIVE_METADATA_MAX_FRAME_BYTES,
+  CUA_NATIVE_METADATA_MAX_PENDING_BYTES,
   type CuaNativeAuthorityCloseReason,
   type CuaNativeAuthorityCloseResult,
   type CuaNativeAuthorityDiagnostics,
@@ -49,6 +51,7 @@ function createProtocolState(): CuaNativeAuthorityProtocolState {
     bootstrapped: false,
     captureResultStarted: false,
     captureResultAccepted: false,
+    observationResultStarted: false,
     invalidated: false,
     ownerRevoked: false,
     ownerFactSent: false,
@@ -90,10 +93,18 @@ export class CuaNativeAuthoritySessionImpl implements CuaNativeAuthoritySession 
       options.requestTimeoutMs,
       CUA_NATIVE_AUTHORITY_DEFAULT_REQUEST_TIMEOUT_MS,
     );
+    // 仅可信本次元数据请求扩大接收预算；捕获方法以防调用方随后改写对象。
+    const observation = options.observation
+      ? { ...options.observation, request: { ...options.observation.request } }
+      : undefined;
+    const metadata =
+      observation?.request.method === "list_apps" || observation?.request.method === "list_windows";
     this.#context = {
       scope: this.#scope,
       producerIncarnation: this.#producerIncarnation,
       ...(options.capture ? { capture: options.capture } : {}),
+      ...(observation ? { observation } : {}),
+      ...(options.confirmReadRequest ? { confirmReadRequest: options.confirmReadRequest } : {}),
       ...(options.confirmRequest ? { confirmRequest: options.confirmRequest } : {}),
       requestTimeoutMs: this.#requestTimeoutMs,
       state: this.#state,
@@ -101,21 +112,37 @@ export class CuaNativeAuthoritySessionImpl implements CuaNativeAuthoritySession 
         !this.#state.invalidated &&
         !this.#state.closed &&
         this.#state.bootstrapped &&
-        this.#state.captureResultStarted,
+        (this.#state.captureResultStarted || this.#state.observationResultStarted),
       write: (frame) => this.#write(frame),
       reject: (requestId, method, reason) => this.#reject(requestId, method, reason),
       protocolFailure: (reason) => this.#protocolFailure(reason),
       finish: (reason, graceful) => this.#finish(reason, graceful),
     };
-    // 调用方只能收紧上限，不能突破 R11 wire 合同的固定 hard limit。
+    // 调用方只能收紧上限；只有元数据会话允许更大的完整 observationResult。
     this.#wire = new CuaNativeAuthorityWire(
       options.stream,
       {
-        maxFrameBytes: boundedLimit(options.maxFrameBytes, CUA_NATIVE_AUTHORITY_MAX_FRAME_BYTES),
+        maxFrameBytes: boundedLimit(
+          options.maxFrameBytes,
+          metadata ? CUA_NATIVE_METADATA_MAX_FRAME_BYTES : CUA_NATIVE_AUTHORITY_MAX_FRAME_BYTES,
+        ),
         maxPendingBytes: boundedLimit(
           options.maxPendingBytes,
-          CUA_NATIVE_AUTHORITY_MAX_PENDING_BYTES,
+          metadata ? CUA_NATIVE_METADATA_MAX_PENDING_BYTES : CUA_NATIVE_AUTHORITY_MAX_PENDING_BYTES,
         ),
+        // 元数据的大预算只给输入；native 接收的响应仍遵守 16/64 KiB。
+        ...(metadata
+          ? {
+              maxWriteFrameBytes: boundedLimit(
+                options.maxFrameBytes,
+                CUA_NATIVE_AUTHORITY_MAX_FRAME_BYTES,
+              ),
+              maxWritePendingBytes: boundedLimit(
+                options.maxPendingBytes,
+                CUA_NATIVE_AUTHORITY_MAX_PENDING_BYTES,
+              ),
+            }
+          : {}),
         maxPendingRequests: boundedLimit(
           options.maxPendingRequests,
           CUA_NATIVE_AUTHORITY_DEFAULT_MAX_PENDING_REQUESTS,
@@ -126,7 +153,21 @@ export class CuaNativeAuthoritySessionImpl implements CuaNativeAuthoritySession 
         ),
       },
       {
-        onLine: (line) => handleCuaNativeAuthorityLine(line, this.#context),
+        onLine: async (line) => {
+          if (metadata && Buffer.byteLength(line, "utf8") > CUA_NATIVE_AUTHORITY_MAX_FRAME_BYTES) {
+            let method: unknown;
+            try {
+              method = (JSON.parse(line) as { method?: unknown }).method;
+            } catch {
+              /* 格式错误按普通帧拒绝 */
+            }
+            if (method !== "observationResult") {
+              this.#onWireFailure("frame_too_large");
+              return;
+            }
+          }
+          await handleCuaNativeAuthorityLine(line, this.#context);
+        },
         onFailure: (reason) => this.#onWireFailure(reason),
         onWriteFailure: (reason) => this.#writeFailure(reason),
       },

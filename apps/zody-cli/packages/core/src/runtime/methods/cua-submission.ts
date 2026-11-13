@@ -68,8 +68,10 @@ export function createCuaSubmissionTurnScope(
   const scopes = (this.cuaSubmissionTurnScopesByTurn ??= new WeakMap());
   const existing = scopes.get(activeTurn);
   if (existing) {
-    // 单一 turn 至多一个 handle；已关闭的 handle 不能借重复调用复活旧 turn。
-    return existing.invalidated ? undefined : existing;
+    // 正常 consumer 关闭只释放 binding；同 turn 可为后续观察或截图创建新 handle。
+    // owner 撤销仍是终态，绝不复活旧 lineage。
+    if (!existing.invalidated) return existing;
+    if (existing.terminalReason !== "scope-closed") return undefined;
   }
 
   const scope = new RuntimeCuaSubmissionTurnScope({
@@ -264,9 +266,7 @@ async function isCuaConfirmAllowedByPermissionPolicy(
  * admission 资格门，每张截图仍在 confirm 时逐张复核规则（isCuaLiveSubmissionGrantActive
  * 与截图之间规则被删除时，confirm 照常弹窗）。
  */
-export async function isCuaLiveSubmissionGrantActive(
-  this: AgentRuntimeInternal,
-): Promise<boolean> {
+export async function isCuaLiveSubmissionGrantActive(this: AgentRuntimeInternal): Promise<boolean> {
   try {
     const projectRules = await readCuaProjectPermissionRules(this);
     // cua_screenshot_confirm 规则按 toolName 整体匹配（无 ruleContent）；admission 时刻

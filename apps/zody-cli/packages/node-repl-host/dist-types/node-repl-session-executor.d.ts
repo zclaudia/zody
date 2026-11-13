@@ -15,6 +15,11 @@ export interface NodeReplExecuteInput {
 }
 export type NodeReplExecutor = (input: NodeReplExecuteInput) => Promise<NodeReplRunResult>;
 export interface NodeReplSessionExecutorOptions {
+    cuaSdk?: {
+        root: string;
+        clientSource: string;
+        documentationSource: string;
+    };
     browserDocumentationRoot?: string;
     cuaDocumentationRoot?: string;
     browserBroker?: NodeReplBrowserBrokerConnection;

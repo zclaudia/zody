@@ -10,6 +10,7 @@
 #include "confirmation.h"
 #include "session_binding.h"
 #include "session_launcher.h"
+#include "observer_session.h"
 
 namespace zody::cua::round11 {
 class AuthorityClient;
@@ -68,6 +69,8 @@ class AuthorityFdReader {
   int fd_;
   uint64_t next_request_ = 1;
   std::string buffer_;
+  bool bootstrap_seen_ = false;
+  bool metadata_observation_ = false;
   bool canceled_ = false;
   std::string cancel_reason_;
 };
@@ -142,6 +145,7 @@ class SessionSupervisor {
 
   SessionLaunch& launch_;
   ConfirmationController& confirmation_;
+  ObserverSession observer_;
   std::atomic<bool> stop_{false};
   std::atomic<bool> main_loop_stopped_{false};
   std::mutex stop_mutex_;

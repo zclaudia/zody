@@ -308,9 +308,9 @@ describe("requestCuaNativeCaptureConfirmation", () => {
       ]);
 
       const second = confirmationInput(held, 4);
-      await expect(
-        held.runtime.requestCuaNativeCaptureConfirmation(second.input),
-      ).resolves.toEqual({ allowed: true });
+      await expect(held.runtime.requestCuaNativeCaptureConfirmation(second.input)).resolves.toEqual(
+        { allowed: true },
+      );
       expect(requests).toHaveLength(1);
     } finally {
       await finishHeldTurn(held);
@@ -381,6 +381,51 @@ describe("requestCuaNativeCaptureConfirmation", () => {
       controller.abort();
       await expect(pending).rejects.toMatchObject({ name: "AbortError" });
       expect(broker.listPendingRequests()).toEqual([]);
+    } finally {
+      await finishHeldTurn(held);
+    }
+  });
+});
+
+describe("requestCuaNativeReadConfirmation", () => {
+  it("always asks once without persistent screenshot rules, and rejects mismatched turns", async () => {
+    const requests: PermissionBrokerRequest[] = [];
+    const broker = {
+      requestPermission: async (request: PermissionBrokerRequest) => {
+        requests.push(request);
+        return { decision: "allow" as const };
+      },
+    } as PermissionBrokerPort;
+    const held = await startHeldTurn({
+      key: "cua-read-confirm",
+      id: "cua-read-confirm",
+      permissionBroker: broker,
+      config: { mode: "yolo" },
+    });
+    try {
+      const { input } = confirmationInput(held);
+      expect(await held.runtime.requestCuaNativeReadConfirmation(input)).toEqual({ allowed: true });
+      expect(requests[0]).toMatchObject({
+        toolName: "cua_ax_read_confirm",
+        approvalMode: "user-once",
+        optionsPolicy: "no-always-allow",
+      });
+      expect(requests[0]?.suggestedPermissionUpdates).toBeUndefined();
+      expect(
+        await held.runtime.requestCuaNativeReadConfirmation({ ...input, runId: "other" }),
+      ).toMatchObject({ allowed: false, failureReason: "confirmation-invalid" });
+      for (const invalid of [
+        { generation: 0 },
+        { target: { ...input.target, pid: -1 } },
+        { target: { ...input.target, windowId: 1.5 } },
+        { target: { ...input.target, ownerName: "x".repeat(129) } },
+        { workspaceKey: "other" },
+      ]) {
+        expect(
+          await held.runtime.requestCuaNativeReadConfirmation({ ...input, ...invalid }),
+        ).toMatchObject({ allowed: false, failureReason: "confirmation-invalid" });
+      }
+      expect(requests).toHaveLength(1);
     } finally {
       await finishHeldTurn(held);
     }

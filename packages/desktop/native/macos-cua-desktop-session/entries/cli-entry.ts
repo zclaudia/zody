@@ -11,6 +11,10 @@ import { installFatalReporting } from "./entry-fatal.js";
 
 // builder 在封装 cli-entry 时写入实际 node-repl-server.mjs 的钉值；资源路径只能由
 // 本次实际签名 Node 的 execPath 推导固定同级名，不接受 UI/env/argv 注入。
+declare const __CUA_SDK_CLIENT_SHA256__: string;
+declare const __CUA_SDK_CLIENT_MAX_BYTES__: number;
+declare const __CUA_SDK_DOC_SHA256__: string;
+declare const __CUA_SDK_DOC_MAX_BYTES__: number;
 declare const __CUA_NODE_REPL_SERVER_SHA256__: string;
 declare const __CUA_NODE_REPL_SERVER_MAX_BYTES__: number;
 
@@ -36,6 +40,21 @@ const snapshot = await readSealedResourceSnapshot({
   expectedUid: process.getuid?.(),
 });
 
+// SDK 和文档均在同一固定资源目录以同句柄验证；cell 只接收不可变快照。
+const sdkRoot = join(dirname(process.execPath), "computer-use-sdk");
+const [sdkClient, sdkDoc] = await Promise.all([
+  readSealedResourceSnapshot({
+    path: join(sdkRoot, "scripts", "computer-use-client.mjs"),
+    expectedSha256: __CUA_SDK_CLIENT_SHA256__,
+    maxBytes: __CUA_SDK_CLIENT_MAX_BYTES__,
+  }),
+  readSealedResourceSnapshot({
+    path: join(sdkRoot, "docs", "computer-use.md"),
+    expectedSha256: __CUA_SDK_DOC_SHA256__,
+    maxBytes: __CUA_SDK_DOC_MAX_BYTES__,
+  }),
+]);
+
 // ready 严格解析后才由 Helper 提供私有 cell.sock；factory 只持有 getter，
 // 缺失时 transport 明确 fail closed，不回退到按 serverPath spawn。
 let cellEndpoint: string | undefined;
@@ -49,6 +68,13 @@ await runCuaLaunchSession({
   cuaNodeReplMcpPortFactory: createCuaNodeReplMcpPortFactory({
     serverPath,
     sourceSnapshot: snapshot.source,
+    subprocess: {
+      cuaSdk: {
+        root: sdkRoot,
+        clientSource: sdkClient.source,
+        documentationSource: sdkDoc.source,
+      },
+    },
     cellEndpoint: () => cellEndpoint,
     transportAuthenticationKey: () => transportAuthenticationKey,
   }),

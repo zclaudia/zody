@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { resolve } from "node:path";
 import test from "node:test";
 
@@ -22,6 +23,8 @@ import {
   resolveMacosCuaDemoBuildSelection,
 } from "./macos-cua-demo-defaults.mjs";
 
+const REPO_ROOT = resolve(import.meta.dirname, "../../..");
+
 function validateWithoutKeychain({ manifestPath }) {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   return Promise.resolve({
@@ -32,25 +35,55 @@ function validateWithoutKeychain({ manifestPath }) {
   });
 }
 
-test("default darwin arm64 build selects the pinned narrow profile and manifest", async () => {
-  const repoRoot = resolve(import.meta.dirname, "../../..");
-  const selection = await resolveMacosCuaDemoBuildSelection({
-    env: {},
-    targetOs: "darwin",
-    targetArch: "arm64",
-    repoRoot,
-    validateManifest: validateWithoutKeychain,
-  });
-  assert.equal(selection.source, "default");
-  assert.equal(selection.manifestSha256, CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256);
-  assert.equal(
-    selection.profile.provider.selection.providerId,
-    CUA_DEMO_DEFAULT_PUBLIC_FACTS.providerSelection.providerId,
+function createFixtureRepo() {
+  const root = mkdtempSync(join(tmpdir(), "zody-cua-narrow-build-fixture-"));
+  const manifestRelativePath = "output/cua-narrow-frozen/controller-prepared/manifest.json";
+  const manifestPath = join(root, manifestRelativePath);
+  mkdirSync(dirname(manifestPath), { recursive: true });
+  writeFileSync(
+    manifestPath,
+    JSON.stringify({
+      kind: "zody-cua-narrow-resource-manifest",
+      status: "pass",
+      schemaVersion: 1,
+      target: { os: "darwin", arch: "arm64", minimumMacOSVersion: "14.2" },
+      slot: { resourcesRelativePath: "cua-narrow", appName: "Zody CUA Desktop Session.app" },
+      stage: { appPath: "stage/Zody CUA Desktop Session.app" },
+      identity: { signedBinarySha256: "b".repeat(64) },
+    }),
   );
-  assert.deepEqual(createMacosCuaDemoBuildEnv(selection), {
-    ZODY_CUA_NARROW_MANIFEST: selection.manifestPath,
-    ZODY_CUA_NARROW_AGENT_JSON: selection.profileJson,
-  });
+  return {
+    root,
+    manifestPath,
+    facts: {
+      manifestRelativePath,
+      manifestSha256: createHash("sha256").update(readFileSync(manifestPath)).digest("hex"),
+    },
+  };
+}
+
+test("default darwin arm64 build selects the pinned narrow profile and manifest (fixture)", async () => {
+  const fixture = createFixtureRepo();
+  try {
+    const selection = await resolveMacosCuaDemoBuildSelection({
+      env: {},
+      targetOs: "darwin",
+      targetArch: "arm64",
+      repoRoot: fixture.root,
+      validateManifest: validateWithoutKeychain,
+      defaultFacts: fixture.facts,
+      defaultAssemblyEnabled: true,
+    });
+    assert.equal(selection.source, "default");
+    assert.equal(selection.manifestSha256, fixture.facts.manifestSha256);
+    assert.equal(selection.profile.schemaVersion, 2);
+    assert.deepEqual(createMacosCuaDemoBuildEnv(selection), {
+      ZODY_CUA_NARROW_MANIFEST: fixture.manifestPath,
+      ZODY_CUA_NARROW_AGENT_JSON: selection.profileJson,
+    });
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
 
   assert.equal(
     resolveNarrowBuildRequest({
@@ -63,6 +96,20 @@ test("default darwin arm64 build selects the pinned narrow profile and manifest"
   );
   assert.deepEqual(createNarrowBuildEnv(null), {});
   assert.equal(buildNarrowExtraResource(null), null);
+});
+
+test("default darwin arm64 build stays enabled after the rebuild round", async () => {
+  const { CUA_NARROW_DEFAULT_ASSEMBLY_ENABLED } = await import("./macos-cua-demo-defaults.mjs");
+  assert.equal(CUA_NARROW_DEFAULT_ASSEMBLY_ENABLED, true);
+  const selection = await resolveMacosCuaDemoBuildSelection({
+    env: {},
+    targetOs: "darwin",
+    targetArch: "arm64",
+    repoRoot: REPO_ROOT,
+    validateManifest: validateWithoutKeychain,
+  });
+  assert.notEqual(selection, null);
+  assert.equal(selection.source, "default");
 });
 
 test("explicit narrow manifest is absolute, arm64-only and exported to builder env", async () => {

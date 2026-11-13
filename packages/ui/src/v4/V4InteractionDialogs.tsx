@@ -33,6 +33,7 @@ export interface V4InteractionDialogsProps {
   workspaceIdentity?: string;
   remoteSessionId?: string;
   isWebRemoteControl?: boolean;
+  allowStopExit?: boolean;
   provider?: ZodyProvider;
   snapshot: ConversationSnapshot | null;
   onCommandSettled?: (commandId: string) => void;
@@ -97,6 +98,7 @@ export function V4InteractionDialogs({
   workspaceIdentity,
   remoteSessionId,
   isWebRemoteControl = false,
+  allowStopExit = false,
   provider,
   snapshot,
   onCommandSettled,
@@ -334,6 +336,7 @@ export function V4InteractionDialogs({
       <PermissionDialog
         key={pending.interactionId}
         request={request}
+        allowStopExit={allowStopExit}
         // F26（上游 a60ba6a7）：会话权威模式（snapshot config.mode）传给审批框的
         // yolo 确认门——会话已 yolo 时选完全访问直接应答，不重复弹确认。
         permissionMode={currentSnapshot?.config?.mode}

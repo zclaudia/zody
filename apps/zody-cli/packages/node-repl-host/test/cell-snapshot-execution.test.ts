@@ -76,6 +76,7 @@ function executeSnapshot(input: {
   code?: string;
   signal?: AbortSignal;
   env?: NodeJS.ProcessEnv;
+  cuaSdk?: { root: string; clientSource: string; documentationSource: string };
 }) {
   return createSubprocessNodeReplExecutor({
     serverPath: input.serverPath,
@@ -85,11 +86,15 @@ function executeSnapshot(input: {
     requestMaxBytes: 2 * 1024 * 1024,
     responseMaxBytes: 32 * 1024 * 1024,
     ...(input.env ? { env: input.env } : {}),
+    ...(input.cuaSdk ? { cuaSdk: input.cuaSdk } : {}),
   })({
     code: input.code ?? "1 + 1",
     requestMeta,
     signal: input.signal ?? AbortSignal.timeout(30_000),
     syncTimeoutMs: 20_000,
+    ...(input.cuaSdk
+      ? { cuaBroker: { socketPath: "/unused", token: "test", invocationId: "test" } }
+      : {}),
   });
 }
 
@@ -140,9 +145,41 @@ describe.skipIf(process.platform === "win32")("sealed cell source snapshot execu
 
     expect(value.argv).toEqual([process.execPath, "-", CELL_RUN_FLAG]);
     expect(value.execArgv).toEqual(["--jitless", "--input-type=module"]);
-    expect(Object.keys(value.env).filter((key) => (key.startsWith("ZCODE_") || key.startsWith("ZODY_")))).toEqual([]);
+    expect(
+      Object.keys(value.env).filter((key) => key.startsWith("ZCODE_") || key.startsWith("ZODY_")),
+    ).toEqual([]);
     expect(value.env.NODE_OPTIONS).toBeUndefined();
     expect(JSON.stringify(value)).not.toContain(marker);
+  }, 60_000);
+
+  it("runs the published CUA bootstrap in an isolated real cell", async () => {
+    const code = `const root =
+  process.env.ZODY_CUA_PLUGIN_ROOT ??
+  process.env.ZCODE_PLUGIN_ROOT ??
+  process.env.CLAUDE_PLUGIN_ROOT;
+const { join } = await import("node:path");
+const { pathToFileURL } = await import("node:url");
+const { setupComputerUseRuntime } = await import(
+  pathToFileURL(join(root, "scripts", "computer-use-client.mjs")).href,
+);
+await setupComputerUseRuntime({ globals: globalThis });
+await agent.documentation.get("computer-use")`;
+    const result = await executeSnapshot({
+      serverPath: bundlePath,
+      sourceSnapshot: bundleSource,
+      code,
+      env: { PATH: process.env.PATH, HOME: directory, ZODY_CUA_PLUGIN_ROOT: "/untrusted" },
+      cuaSdk: {
+        root: join(directory, "computer-use-sdk"),
+        clientSource: await readFile(
+          new URL("../../zody-cua-plugin/scripts/computer-use-client.mjs", import.meta.url),
+          "utf8",
+        ),
+        documentationSource: "sealed documentation",
+      },
+    });
+    expect(result.error).toBeUndefined();
+    expect(result.result).toBe("sealed documentation");
   }, 60_000);
 
   it("aborts a real stdin snapshot cell that never returns", async () => {

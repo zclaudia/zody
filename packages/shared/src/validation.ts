@@ -893,11 +893,31 @@ export const hostBrowserExecuteResultMessageSchema = z.object({
 });
 
 // main → host：扩展传输请求结果 / 连接代次 / 扩展主动事件。
+
+/**
+ * 扩展传输连接快照。main 侧 controller（extensionBridge/controllerTypes 的
+ * ExtensionConnectionSnapshot）与 host 侧 extensionTransportClient 的
+ * ExtensionHostConnection 共用该结构；list 结果按此字段回传。
+ */
+export const extensionTransportConnectionSchema = z
+  .object({
+    profileInstanceId: nonEmptyStringSchema,
+    browserId: nonEmptyStringSchema,
+    generation: z.number().int().nonnegative(),
+    connectionId: nonEmptyStringSchema,
+    windowId: nonEmptyStringSchema,
+  })
+  .strict();
+
 export const hostExtensionTransportResultMessageSchema = z
   .object({
     type: z.literal("extension-transport-result"),
     requestId: nonEmptyStringSchema,
     ok: z.boolean(),
+    // 修复依据：b9b8c6ab8 起 main 侧 list 结果就携带 connections，但 strict schema
+    // 漏收该字段，导致 parentPort 守卫整条拒收、host 侧 pending 等满 35s 超时，
+    // 每次发送消息都被扩展发现卡住 35 秒（2026-11-10 实机日志证实）。
+    connections: z.array(extensionTransportConnectionSchema).optional(),
     message: extensionBridgeClientMessageSchema.optional(),
     error: z
       .object({ code: nonEmptyStringSchema, message: nonEmptyStringSchema })

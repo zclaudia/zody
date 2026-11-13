@@ -25,6 +25,11 @@ export type CellRequest = {
     cuaCapability?: CellCuaCapability;
     browserCapability?: CellBrokerCapability;
     documentationRoots: CellDocumentationRoots;
+    cuaSdk?: {
+        root: string;
+        clientSource: string;
+        documentationSource: string;
+    };
 };
 export declare const cellRequestSchema: z.ZodObject<{
     version: z.ZodLiteral<1>;
@@ -45,6 +50,11 @@ export declare const cellRequestSchema: z.ZodObject<{
         browser: z.ZodString;
         cua: z.ZodString;
     }, z.core.$strict>;
+    cuaSdk: z.ZodOptional<z.ZodObject<{
+        root: z.ZodString;
+        clientSource: z.ZodString;
+        documentationSource: z.ZodString;
+    }, z.core.$strict>>;
 }, z.core.$strict>;
 export declare const cellResponseSchema: z.ZodUnion<readonly [z.ZodObject<{
     version: z.ZodLiteral<1>;

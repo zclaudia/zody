@@ -1,15 +1,6 @@
 #!/usr/bin/env node
 // 可信桌面会话候选构建入口。不签名、不请求 TCC、不执行截图。
-import {
-  chmod,
-  copyFile,
-  mkdir,
-  mkdtemp,
-  readFile,
-  rename,
-  rm,
-  writeFile,
-} from "node:fs/promises";
+import { chmod, copyFile, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
@@ -31,6 +22,7 @@ import {
   REPO_ROOT,
   UNSUPPORTED_NATIVE_PINS,
 } from "./lib/cua-desktop-session-config.mjs";
+import { buildSdkResources } from "./lib/cua-desktop-session-sdk.mjs";
 import {
   auditEntry,
   bundleEntry,
@@ -99,7 +91,9 @@ export async function buildCuaDesktopSession(options = {}) {
   const identityPins = await loadIdentityPins(identityPinsPath);
   const unsupportedModules = await loadUnsupportedNativeModules(UNSUPPORTED_NATIVE_PINS);
   const toolchain = await probeToolchain();
-  const nodeVersionResult = await run(nodePath, ["--version"], { timeoutMs: 30_000 });
+  const nodeVersionResult = await run(nodePath, ["--version"], {
+    timeoutMs: 30_000,
+  });
   const nodeVersion = nodeVersionResult.stdout.trim();
   if (nodeVersionResult.code !== 0 || nodeVersion !== "v24.14.0") {
     throw new Error(`expected signed Node v24.14.0, got ${nodeVersion || "unavailable"}`);
@@ -179,6 +173,7 @@ export async function buildCuaDesktopSession(options = {}) {
       await writeEntryAudit(auditRoot, audit);
       auxiliaryResources.push({ ...audit, capability: resource.capability });
     }
+    auxiliaryResources.push(...(await buildSdkResources(resources)));
     const nodeReplServer = auxiliaryResources.find(
       (resource) => resource.name === "node-repl-server.mjs",
     );
@@ -189,6 +184,10 @@ export async function buildCuaDesktopSession(options = {}) {
       __CUA_NODE_REPL_SERVER_SHA256__: JSON.stringify(nodeReplServer.sha256),
       __CUA_NODE_REPL_SERVER_MAX_BYTES__: JSON.stringify(nodeReplServer.maxBytes),
     };
+    for (const resource of auxiliaryResources.filter((item) => item.definePrefix)) {
+      cliDefines[`__CUA_${resource.definePrefix}_SHA256__`] = JSON.stringify(resource.sha256);
+      cliDefines[`__CUA_${resource.definePrefix}_MAX_BYTES__`] = JSON.stringify(resource.maxBytes);
+    }
     const cliAliases = {
       "@zody/node-repl-host/cua-node-repl-mcp-port": await resolvePublicExport(
         join(REPO_ROOT, "apps", "zody-cli", "packages", "node-repl-host"),
@@ -231,9 +230,18 @@ export async function buildCuaDesktopSession(options = {}) {
 
     const nodeSha256 = await sha256File(nodePath);
     const pinsPath = join(stage.srcDir, "cua_desktop_session_pins.h");
-    await writeFile(pinsPath, pinsHeader({ nodeSha256, entries, resources: auxiliaryResources, identityPins }), {
-      mode: 0o600,
-    });
+    await writeFile(
+      pinsPath,
+      pinsHeader({
+        nodeSha256,
+        entries,
+        resources: auxiliaryResources,
+        identityPins,
+      }),
+      {
+        mode: 0o600,
+      },
+    );
     const persistedPinsPath = join(buildRoot, "cua_desktop_session_pins.h");
     await copyFile(pinsPath, persistedPinsPath);
     await chmod(persistedPinsPath, 0o600);
@@ -254,7 +262,10 @@ export async function buildCuaDesktopSession(options = {}) {
     const nodeLicenseSource = join(dirname(nodePath), "licenses", "node-LICENSE.txt");
     const nodeLicensePresent = await pathIsReadable(nodeLicenseSource);
     if (nodeLicensePresent) {
-      await mkdir(join(resources, "licenses"), { recursive: true, mode: 0o700 });
+      await mkdir(join(resources, "licenses"), {
+        recursive: true,
+        mode: 0o700,
+      });
       await copyFile(nodeLicenseSource, join(resources, "licenses", "node-LICENSE.txt"));
     }
     const infoPlistPath = join(appContents, "Info.plist");
@@ -363,9 +374,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   try {
     const manifest = await buildCuaDesktopSession(parsed.options);
-    process.stdout.write(
-      `${JSON.stringify(summarizeBuildManifest(manifest), null, 2)}\n`,
-    );
+    process.stdout.write(`${JSON.stringify(summarizeBuildManifest(manifest), null, 2)}\n`);
   } catch (error) {
     process.stdout.write(
       `${JSON.stringify({ status: "fail", message: error?.message ?? String(error), details: error?.details })}\n`,

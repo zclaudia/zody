@@ -76,9 +76,12 @@ const MUTATING_METHODS = new Set([
 const ERROR_CODE_BY_BROKER = Object.freeze({
   permission_denied: "PERMISSION_DENIED",
   not_authorized: "NOT_AUTHORIZED",
+  screen_locked: "SCREEN_LOCKED",
   launch_failed: "LAUNCH_FAILED",
   invalid_request: "INVALID_APP",
   element_unavailable: "ELEMENT_UNAVAILABLE",
+  stale_state: "STALE_STATE",
+  structured_state_unavailable: "STRUCTURED_STATE_UNAVAILABLE",
   not_settable: "NOT_SETTABLE",
   not_selectable: "NOT_SELECTABLE",
   action_unavailable: "ACTION_UNAVAILABLE",
@@ -282,18 +285,13 @@ function assertOk(methodName, result) {
   const actionSent = receipt.action_sent === true;
   if (!isError && dispatch !== "possibly_sent") return receipt;
   const brokerCode = brokerErrorCodeOf(result);
-  const code = isError
-    ? (ERROR_CODE_BY_BROKER[brokerCode] ?? "INTERNAL")
-    : "TIMEOUT";
-  throw new ComputerUseError(
-    messageOf(result, `${methodName} failed`),
-    {
-      code,
-      actionSent: actionSent || dispatch === "possibly_sent",
-      dispatchStatus: dispatch,
-      details: { method: methodName, ...(brokerCode ? { brokerCode } : {}) },
-    },
-  );
+  const code = isError ? (ERROR_CODE_BY_BROKER[brokerCode] ?? "INTERNAL") : "TIMEOUT";
+  throw new ComputerUseError(messageOf(result, `${methodName} failed`), {
+    code,
+    actionSent: actionSent || dispatch === "possibly_sent",
+    dispatchStatus: dispatch,
+    details: { method: methodName, ...(brokerCode ? { brokerCode } : {}) },
+  });
 }
 
 // ─────────────────────────────────────────────────────────── 目标绑定
@@ -408,14 +406,19 @@ function alternateAppRef(target, windowId) {
  */
 function isAppNotFound(result) {
   if (!result?.isError) return false;
-  return textBlocks(result).some((text) =>
-    /target app is not running/u.test(text),
-  );
+  return textBlocks(result).some((text) => /target app is not running/u.test(text));
 }
 
 const DIRECTIONS = new Set(["up", "down", "left", "right", "u", "d", "l", "r"]);
 const LONG_DIRECTION = { u: "up", d: "down", l: "left", r: "right" };
-const MOUSE_BUTTONS = { left: "left", right: "right", middle: "middle", l: "left", r: "right", m: "middle" };
+const MOUSE_BUTTONS = {
+  left: "left",
+  right: "right",
+  middle: "middle",
+  l: "left",
+  r: "right",
+  m: "middle",
+};
 
 // ─────────────────────────────────────────────────────────── 展示
 
@@ -437,9 +440,7 @@ function emitText(globals, text, options) {
 
 function isFrameAuthorityText(value) {
   const parsed = parseJsonRecord(value);
-  return Boolean(
-    parsed && Object.keys(parsed).length === 1 && Object.hasOwn(parsed, "image_ref"),
-  );
+  return Boolean(parsed && Object.keys(parsed).length === 1 && Object.hasOwn(parsed, "image_ref"));
 }
 
 /**
@@ -450,7 +451,8 @@ function projectToHost(globals, result) {
   const sink = globals.nodeRepl?.emitStructuredResult;
   if (typeof sink !== "function" || !result || !Array.isArray(result.content)) return;
   const media = result.content.filter(
-    (block) => block?.type === "image" || (block?.type === "text" && isFrameAuthorityText(block.text)),
+    (block) =>
+      block?.type === "image" || (block?.type === "text" && isFrameAuthorityText(block.text)),
   );
   if (media.length > 0) {
     // 带图的观察必须**保留**自己的 structuredContent（投影后）。
@@ -522,7 +524,15 @@ function appStateOf(methodName, result) {
   for (const text of textBlocks(result)) {
     const parsed = parseJsonRecord(text);
     if (!parsed) continue;
-    for (const key of ["state_id", "app", "window", "elements", "text", "snapshot_mode", "base_state_id"]) {
+    for (const key of [
+      "state_id",
+      "app",
+      "window",
+      "elements",
+      "text",
+      "snapshot_mode",
+      "base_state_id",
+    ]) {
       if (merged[key] === undefined && parsed[key] !== undefined) merged[key] = parsed[key];
     }
   }
@@ -855,13 +865,30 @@ function resolveTextRange(binding, elementIndex, text, options) {
  * （macOS cmd，Linux / Windows ctrl）。
  */
 const KEY_ALIASES = Object.freeze({
-  return: "return", enter: "return", kp_enter: "return",
-  control_l: "ctrl", control_r: "ctrl", control: "ctrl", ctrl: "ctrl",
-  alt_l: "alt", alt_r: "alt", meta_l: "alt", alt: "alt",
-  shift_l: "shift", shift_r: "shift", shift: "shift",
-  escape: "esc", esc: "esc",
-  prior: "pageup", next: "pagedown",
-  period: ".", comma: ",", greater: ">", slash: "/", minus: "-", equal: "=",
+  return: "return",
+  enter: "return",
+  kp_enter: "return",
+  control_l: "ctrl",
+  control_r: "ctrl",
+  control: "ctrl",
+  ctrl: "ctrl",
+  alt_l: "alt",
+  alt_r: "alt",
+  meta_l: "alt",
+  alt: "alt",
+  shift_l: "shift",
+  shift_r: "shift",
+  shift: "shift",
+  escape: "esc",
+  esc: "esc",
+  prior: "pageup",
+  next: "pagedown",
+  period: ".",
+  comma: ",",
+  greater: ">",
+  slash: "/",
+  minus: "-",
+  equal: "=",
 });
 
 function normalizeKeyChord(chord, platform) {
@@ -1013,8 +1040,14 @@ export async function setupComputerUseRuntime({ globals }) {
         ? state.app.bundle_id
         : undefined;
     if (resolvedPid !== undefined || resolvedBundleId !== undefined) {
+      // 原因：隐式唯一窗口也必须冻结生产端解析出的窗口，避免后续观察转到兄弟窗口。
+      const resolvedWindowId = state.window?.window_id;
       const boundWindowId =
-        typeof appRef?.window_id === "number" ? { window_id: appRef.window_id } : {};
+        typeof appRef?.window_id === "number"
+          ? { window_id: appRef.window_id }
+          : typeof resolvedWindowId === "number"
+            ? { window_id: resolvedWindowId }
+            : {};
       appRef = {
         ...(resolvedPid !== undefined ? { pid: resolvedPid } : {}),
         ...(resolvedBundleId !== undefined ? { bundle_id: resolvedBundleId } : {}),
@@ -1030,7 +1063,11 @@ export async function setupComputerUseRuntime({ globals }) {
     // 于是这道 fail-closed 被整个跳过：Helper 静默降级到最前窗口、只回一句 note，
     // 模型在错窗口上继续操作。两种钉法必须同一套校验。
     const boundWindow = typeof appRef?.window_id === "number" ? appRef.window_id : windowId;
-    if (boundWindow !== undefined && state.window?.window_id_fallback === true) {
+    if (
+      boundWindow !== undefined &&
+      (state.window?.window_id_fallback === true ||
+        (typeof state.window?.window_id === "number" && state.window.window_id !== boundWindow))
+    ) {
       // 现状会静默降级到最前窗口并只回一句 note，模型极易读漏后在错窗口上继续操作。
       throw new ComputerUseError(
         `Window ${boundWindow} of ${label} could not be resolved; the Helper fell back to the frontmost window. Call agent.computerUse.computer.list_windows to pick a fresh window_id.`,
@@ -1189,6 +1226,8 @@ export async function setupComputerUseRuntime({ globals }) {
         if (previousGet) return await previousGet(name);
         throw new Error(`Unknown documentation entry: ${name}`);
       }
+      // 封装态使用同句柄核验的文档快照，避免校验后重新打开路径。
+      if (typeof bridge.documentationSource === "string") return bridge.documentationSource;
       if (typeof bridge.documentationRoot !== "string") {
         throw new Error("Computer Use documentation is unavailable");
       }

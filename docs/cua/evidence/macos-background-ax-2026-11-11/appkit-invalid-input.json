@@ -1,0 +1,85 @@
+{
+  "reason" : "completed",
+  "passed" : false,
+  "before" : {
+    "siblingWindow" : 111332,
+    "targetWindow" : 111330,
+    "siblingValue" : "",
+    "targetValue" : "",
+    "targetClicks" : 0,
+    "siblingClicks" : 0,
+    "pid" : 5359
+  },
+  "driver" : {
+    "set_value_possibly_sent" : true,
+    "press_attempted" : true,
+    "ok" : true,
+    "press_possibly_sent" : true,
+    "set_value_attempted" : true
+  },
+  "verdict" : {
+    "keysInsideAction" : 0,
+    "passed" : false,
+    "checks" : {
+      "driverOk" : true,
+      "frontValid" : true,
+      "snapshotsValid" : true,
+      "stableIdentity" : true,
+      "overlap" : false,
+      "siblingUnchanged" : true,
+      "targetEffect" : true,
+      "traceValid" : false,
+      "focusPreserved" : true,
+      "bracketed" : false
+    }
+  },
+  "fixture" : "appkit",
+  "front" : {
+    "lastInput" : 6179259.6031841254,
+    "focusLosses" : 0,
+    "actionStart" : 6179243.0591792921,
+    "keyTimes" : [
+      6179243.0591306258,
+      6179243.9578559166,
+      6179244.0628699167,
+      6179244.5833915416,
+      6179245.5335003333,
+      6179245.9349480001,
+      6179246.1149044167,
+      6179246.9624400837,
+      6179247.6763207084,
+      6179248.0215728758,
+      6179248.3090251256,
+      6179248.5681650005,
+      6179248.8882607091,
+      6179249.2658384591,
+      6179249.621520875,
+      6179249.9709028751,
+      6179251.5052331667,
+      6179251.7415583339,
+      6179252.5503210006,
+      6179254.0412611673,
+      6179254.3031983757,
+      6179254.8763833754,
+      6179257.1848092508,
+      6179257.6848987089,
+      6179258.8269112501,
+      6179259.6031841254
+    ],
+    "text" : "",
+    "firstInput" : 6179243.0591306258,
+    "actionEnd" : 6179243.96977075,
+    "observed" : true,
+    "keyText" : "??????????????????????????"
+  },
+  "after" : {
+    "siblingWindow" : 111332,
+    "targetWindow" : 111330,
+    "siblingValue" : "",
+    "targetValue" : "probe-value",
+    "targetClicks" : 1,
+    "siblingClicks" : 0,
+    "pid" : 5359
+  },
+  "trial" : "51ED4E48-0FCD-4754-8449-51F556F40172"
+}

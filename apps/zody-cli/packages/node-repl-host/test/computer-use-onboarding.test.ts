@@ -63,3 +63,77 @@ describe("computer-use output policy", () => {
     expect(doc).toMatch(/## Tool arguments/u);
   });
 });
+
+describe("resolved window binding", () => {
+  it("pins the producer window after implicit binding for later hidden observations", async () => {
+    const call = vi.fn(async () => ({
+      content: [{ type: "text", text: "tree" }],
+      structuredContent: {
+        state_id: "1",
+        app: { pid: 42, bundle_id: "app.test" },
+        window: { window_id: 99 },
+        elements: [],
+      },
+    }));
+    const { globals } = await makeGlobals({ call });
+    const app = await globals.agent.computerUse.getApp({ pid: 42 });
+    await app.elements();
+    expect(call.mock.calls[1][1]).toMatchObject({
+      app_ref: { pid: 42, bundle_id: "app.test", window_id: 99 },
+      tree_shown_to_model: false,
+    });
+  });
+  it("rejects a producer that resolves an explicitly bound window to its sibling", async () => {
+    const call = vi.fn(async () => ({
+      content: [{ type: "text", text: "tree" }],
+      structuredContent: {
+        state_id: "1",
+        app: { pid: 42 },
+        window: { window_id: 100 },
+        elements: [],
+      },
+    }));
+    const { globals } = await makeGlobals({ call });
+    await expect(
+      globals.agent.computerUse.getApp({ pid: 42, window_id: 99 }),
+    ).rejects.toMatchObject({ code: "STALE_STATE" });
+  });
+});
+
+it("maps the observation runtime's unavailable write to the SDK error code", async () => {
+  const call = vi.fn(async (method: string) =>
+    method === "get_app_state"
+      ? {
+          content: [{ type: "text", text: "tree" }],
+          structuredContent: {
+            state_id: "1",
+            app: { pid: 42 },
+            window: { window_id: 99 },
+            elements: [],
+          },
+        }
+      : {
+          isError: true,
+          content: [
+            { type: "text", text: JSON.stringify({ error: { code: "action_unavailable" } }) },
+          ],
+        },
+  );
+  const { globals } = await makeGlobals({ call });
+  const app = await globals.agent.computerUse.getApp({ pid: 42 });
+  await expect(app.click(1)).rejects.toMatchObject({ code: "ACTION_UNAVAILABLE" });
+});
+
+it("distinguishes an explicitly locked screen from a general authorization denial", async () => {
+  for (const [brokerCode, code] of [
+    ["screen_locked", "SCREEN_LOCKED"],
+    ["not_authorized", "NOT_AUTHORIZED"],
+  ]) {
+    const call = vi.fn(async () => ({
+      isError: true,
+      content: [{ type: "text", text: JSON.stringify({ code: brokerCode }) }],
+    }));
+    const { globals } = await makeGlobals({ call });
+    await expect(globals.agent.computerUse.getApp({ pid: 42 })).rejects.toMatchObject({ code });
+  }
+});

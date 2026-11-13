@@ -4994,6 +4994,9 @@ const zhCN: Record<string, string> = {
   // 遵循既有工具权限策略（allow_once/allow_always/deny，会话支持时另有 Full access），
   // 仅 allow_once 保留专用文案；默认动作与 Esc 均为拒绝；目标身份四字段来自
   // permission 请求 input.target。
+  "chat.permission.cua.readConfirm.title": "读取窗口内容",
+  "chat.permission.cua.readConfirm.summary": "Agent 请求读取此窗口的内容。",
+  "chat.permission.cua.readConfirm.allowOnce": "允许本次读取",
   "chat.permission.cua.screenshotConfirm.title": "屏幕截图确认",
   "chat.permission.cua.screenshotConfirm.summary": "Agent 请求截取此窗口的屏幕截图。",
   "chat.permission.cua.screenshotConfirm.allowOnce": "允许本次截图",

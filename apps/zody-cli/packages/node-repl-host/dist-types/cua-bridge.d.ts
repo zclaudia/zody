@@ -18,6 +18,7 @@ export interface ComputerUseRuntimeBridge {
     call(method: string, input: unknown): Promise<CallToolResult>;
     assertAvailable(): void;
     documentationRoot: string;
+    documentationSource?: string;
 }
 export declare function createComputerUseBridgeGlobals(input: {
     broker?: NodeReplCuaBrokerConnection;
@@ -25,5 +26,6 @@ export declare function createComputerUseBridgeGlobals(input: {
     getActiveCall: () => ActiveCuaNodeReplCall | undefined;
     session: () => NodeReplSession;
     documentationRoot: string;
+    documentationSource?: string;
 }): Record<PropertyKey, unknown>;
 //# sourceMappingURL=cua-bridge.d.ts.map

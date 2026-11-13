@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r1-observation",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r1-observation.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r1-observation.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r1-metadata-title",
+      "description": "R1 metadata title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-metadata-call",
+      "description": "R1 metadata call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-metadata-final",
+      "description": "R1 metadata final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-deny-title",
+      "description": "R1 deny title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-deny-call",
+      "description": "R1 deny call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-deny-final",
+      "description": "R1 deny final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-allow-title",
+      "description": "R1 allow title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-allow-call",
+      "description": "R1 allow call",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-allow-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "cua-r1-state-title",
+      "description": "R1-03a/03b state title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动同一真实工具单次调用内五次 SDK 观察；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-state-final",
+      "description": "R1-03a/03b state final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动同一真实工具单次调用内五次 SDK 观察；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-state-call-1",
+      "description": "R1-03a/03b SDK observation stage 1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-state-call-2",
+      "description": "R1-03a/03b SDK observation stage 2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-state-call-3",
+      "description": "R1-03a/03b SDK observation stage 3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-state-call-4",
+      "description": "R1-03a/03b SDK observation stage 4",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-state-call-5",
+      "description": "R1-03a/03b SDK observation stage 5",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成模型响应驱动真实 node_repl 工具；逐次交付后才继续，不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-rebuild-title",
+      "description": "R1 lifecycle rebuild title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成响应驱动真实窗口重建观察；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-rebuild-call-1",
+      "description": "R1 lifecycle rebuild call 1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成响应驱动真实窗口重建观察；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-rebuild-call-2",
+      "description": "R1 lifecycle rebuild call 2",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成调用仅记录真实 SDK 返回的结构化失效错误与正常完成标记；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-rebuild-call-3",
+      "description": "R1 lifecycle rebuild call 3",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成调用仅记录真实 SDK 返回的结构化失效错误与正常完成标记；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-rebuild-call-4",
+      "description": "R1 lifecycle rebuild call 4",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成调用使用默认观察参数，验证真实返回自然整树；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-rebuild-final",
+      "description": "R1 lifecycle rebuild final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成响应按顺序驱动真实窗口重建观察；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-stop-title",
+      "description": "R1 lifecycle stop title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成响应驱动待读取确认的真实 Stop 交互；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-stop-call-1",
+      "description": "R1 lifecycle stop call 1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成响应驱动待读取确认的真实 Stop 交互；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-stop-final",
+      "description": "R1 lifecycle stop final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "旧 Stop turn 意外继续的合成哨兵；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-resume-title",
+      "description": "R1 lifecycle resume title",
+      "kind": "common",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成响应驱动 Stop 后新 turn 的真实读取；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-resume-call-1",
+      "description": "R1 lifecycle resume call 1",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成调用使用默认观察参数，验证真实返回自然整树；不伪造工具结果。"
+    },
+    {
+      "id": "cua-r1-resume-final",
+      "description": "R1 lifecycle resume final",
+      "kind": "main",
+      "source": "synthetic",
+      "timingPolicy": "fast-text",
+      "syntheticReason": "合成响应驱动 Stop 后新 turn 的真实读取；不伪造工具结果。"
+    }
+  ]
+}

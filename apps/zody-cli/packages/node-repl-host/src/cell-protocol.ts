@@ -31,6 +31,7 @@ export type CellRequest = {
   cuaCapability?: CellCuaCapability;
   browserCapability?: CellBrokerCapability;
   documentationRoots: CellDocumentationRoots;
+  cuaSdk?: { root: string; clientSource: string; documentationSource: string };
 };
 
 const capabilitySchema = z
@@ -53,6 +54,20 @@ export const cellRequestSchema = z
     cuaCapability: cuaCapabilitySchema.optional(),
     browserCapability: capabilitySchema.optional(),
     documentationRoots: documentationRootsSchema,
+    cuaSdk: z
+      .object({
+        root: z.string().min(1).max(4096),
+        clientSource: z
+          .string()
+          .min(1)
+          .refine((value) => Buffer.byteLength(value) <= 512 * 1024),
+        documentationSource: z
+          .string()
+          .min(1)
+          .refine((value) => Buffer.byteLength(value) <= 256 * 1024),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

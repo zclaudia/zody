@@ -271,7 +271,82 @@ const visualStopGateErrorSchema = z
     requestId: value.requestId,
   }));
 
+// 只记录固定定位事实；此日志不是进程身份或权限授权的证据。
+const observationRejectedSchema = z
+  .object({
+    phase: z.enum([
+      "ax_app_create",
+      "ax_windows_status",
+      "ax_windows_missing",
+      "ax_windows_type",
+      "ax_unique",
+      "eligible",
+      "node_pid",
+      "node_direct_window",
+      "node_direct_window_zero",
+      "node_ax_window",
+      "node_role",
+      "launch_date",
+      "cg_windows",
+      "cg_unique",
+      "bounds",
+      "resolve_before",
+      "read",
+      "resolve_after",
+      "final_resolve",
+      "read_resolve_before",
+      "read_resolve_after",
+      "metadata_cg_windows",
+      "unknown",
+    ]),
+    code: z.enum([
+      "element_unavailable",
+      "invalid_request",
+      "broker_unavailable",
+      "permission_denied",
+      "not_authorized",
+      "screen_locked",
+      "stale_state",
+      "structured_state_unavailable",
+      "timeout",
+      "unknown",
+    ]),
+    ax: z.enum([
+      "success",
+      "failure",
+      "illegal_argument",
+      "invalid_element",
+      "cannot_complete",
+      "attribute_unsupported",
+      "no_value",
+      "not_implemented",
+      "unknown",
+    ]),
+  })
+  .strict()
+  .transform((value) => ({ phase: value.phase, code: value.code, ax: value.ax }));
+
+// 固定分类只辅助诊断，不代表窗口身份验证或授权通过。
+const observationWindowConflictSchema = z
+  .object({
+    atRoot: z.boolean(),
+    role: z.enum(["window", "button", "text", "group", "other", "unknown"]),
+    direct: z.enum(["target", "same_process", "other_process", "missing", "unknown"]),
+    axWindow: z.enum(["target", "direct", "other", "missing", "invalid", "unknown"]),
+    axWindowIsTargetReference: z.boolean(),
+  })
+  .strict()
+  .transform((v) => ({
+    atRoot: v.atRoot,
+    role: v.role,
+    direct: v.direct,
+    axWindow: v.axWindow,
+    axWindowIsTargetReference: v.axWindowIsTargetReference,
+  }));
+
 const markerSchemas = {
+  "observation-window-conflict": observationWindowConflictSchema,
+  "observation-rejected": observationRejectedSchema,
   "confirmation-presented": confirmationPresentedSchema,
   "confirmation-resolved": confirmationResolvedSchema,
   "cell-spawned": cellSpawnedSchema,

@@ -1,0 +1,85 @@
+{
+  "reason" : "completed",
+  "passed" : true,
+  "before" : {
+    "targetWindow" : 111346,
+    "siblingWindow" : 111347,
+    "targetValue" : "",
+    "siblingValue" : "",
+    "targetClicks" : 0,
+    "siblingClicks" : 0,
+    "pid" : 7035
+  },
+  "driver" : {
+    "set_value_possibly_sent" : true,
+    "press_attempted" : true,
+    "ok" : true,
+    "press_possibly_sent" : true,
+    "set_value_attempted" : true
+  },
+  "verdict" : {
+    "keysInsideAction" : 1,
+    "passed" : true,
+    "checks" : {
+      "driverOk" : true,
+      "frontValid" : true,
+      "snapshotsValid" : true,
+      "stableIdentity" : true,
+      "overlap" : true,
+      "siblingUnchanged" : true,
+      "targetEffect" : true,
+      "traceValid" : true,
+      "focusPreserved" : true,
+      "bracketed" : true
+    }
+  },
+  "fixture" : "electron",
+  "front" : {
+    "lastInput" : 6179315.6080883341,
+    "focusLosses" : 0,
+    "actionStart" : 6179289.6165167922,
+    "keyTimes" : [
+      6179289.6164864171,
+      6179289.9868648751,
+      6179290.3255499173,
+      6179291.4050175836,
+      6179291.6572857089,
+      6179294.4209327502,
+      6179294.6878931671,
+      6179295.3618537504,
+      6179295.7859088341,
+      6179296.4345165417,
+      6179296.8698767917,
+      6179299.8808298334,
+      6179304.1958082085,
+      6179304.448057875,
+      6179305.6564225005,
+      6179305.974107584,
+      6179306.4569558334,
+      6179308.5119541669,
+      6179308.9306975007,
+      6179309.3577072918,
+      6179312.244802542,
+      6179312.5546084587,
+      6179313.0433055833,
+      6179314.5829343749,
+      6179314.9944111668,
+      6179315.6080883341
+    ],
+    "text" : "abcdefghijklmnopqrstuvwxyz",
+    "firstInput" : 6179289.6164864171,
+    "actionEnd" : 6179289.9991656253,
+    "observed" : true,
+    "keyText" : "abcdefghijklmnopqrstuvwxyz"
+  },
+  "after" : {
+    "targetWindow" : 111346,
+    "siblingWindow" : 111347,
+    "targetValue" : "probe-value",
+    "siblingValue" : "",
+    "targetClicks" : 1,
+    "siblingClicks" : 0,
+    "pid" : 7035
+  },
+  "trial" : "913F0AA5-5428-4B58-A6EE-DEAAB46C7CE6"
+}

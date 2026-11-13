@@ -15,6 +15,7 @@
  */
 import { createHostDatabaseStartup } from "./hostDatabaseStartup.js";
 import { createHostNetworkCapture } from "./hostNetworkCapture.js";
+import { prepareWorkspaceSessionStorage } from "./storagePreparationProcesses.js";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
 import type * as Electron from "electron";
@@ -125,6 +126,7 @@ import {
   prepareCuaNarrowAgentRuntime,
   readCuaNarrowAgentBuildProfile,
   type CuaNarrowDecisionEvent,
+  type CuaNarrowWorkspaceStoragePreparer,
 } from "./cuaNarrowAgentRuntime.js";
 import type { ZodyAgentNativeRuntimeResolver } from "@zody/services/node";
 import { createTaskRealtimeBridgeForHostInit } from "./taskRealtimeBridge.js";
@@ -1224,6 +1226,7 @@ function createReportingRemoteZodyTaskService<T extends object>(
 
 function resolveLocalNarrowAgentWiring(
   preparedWorkspacePaths: readonly string[],
+  prepareWorkspaceStorage: CuaNarrowWorkspaceStoragePreparer,
 ): { zodyAgentNativeRuntimeResolver: ZodyAgentNativeRuntimeResolver } | undefined {
   if (injectedAgentWiring) return undefined;
   // The compile-time profile is the only opt-in. A normal build never installs a
@@ -1268,17 +1271,23 @@ function resolveLocalNarrowAgentWiring(
         });
         return null;
       }
-      if (!runtimeContext) {
-        logger.warn("cua narrow agent unavailable: startup context reader missing", {
-          reason: "startup-context-unavailable",
-          hostTrust: "ordinary-host-untrusted-transport",
-        });
-        return null;
+      // v2 起 startup context 只驱动诊断 readback 日志（profile 无 provider/network pin），
+      // 读取失败或 reader 缺失不再禁用窄链路由。
+      let startupContext;
+      if (runtimeContext) {
+        try {
+          startupContext = await runtimeContext.readStartupContext();
+        } catch (error) {
+          logger.warn("cua narrow agent startup snapshot read failed (diagnostic only)", {
+            reason: error instanceof Error ? error.message : String(error),
+            hostTrust: "ordinary-host-untrusted-transport",
+          });
+        }
       }
-      const startupContext = await runtimeContext.readStartupContext();
       const result = await prepareCuaNarrowAgentRuntime({
         resourcesPath,
         preparedWorkspacePaths,
+        prepareWorkspaceStorage,
         startupContext,
         report,
       });
@@ -1293,19 +1302,12 @@ function resolveLocalNarrowAgentWiring(
         });
         return null;
       }
-      // Reuse the same snapshot for this spawn. The resolver itself still performs the
-      // strict comparison and never treats build-profile values as runtime proof.
-      const selected = await result.runtime.resolve(context, {
-        readStartupContext: async () => startupContext,
-      });
+      const selected = await result.runtime.resolve(context);
       if (selected) {
         logger.info("cua narrow agent route selected", {
           launcherPath: result.runtime.launcherPath,
           capability: result.runtime.profile.capability,
           workspacePath: context.workspacePath,
-          providerDigestSha256: startupContext.providerDigestSha256,
-          providerSelection: startupContext.selection,
-          networkDigestSha256: result.runtime.profile.network.digestSha256,
           snapshotSource: "existing-host-services",
           taskTimeProviderGuard: false,
           hostTrust: "ordinary-host-untrusted-transport",
@@ -2791,9 +2793,19 @@ parentPort.on("message", async (e: HostParentPortMessageEvent) => {
       initializeServices: async () => {
         logger.info("initializing local services");
         // 先由 Host 完成原 storage preparation，再决定窄 Agent 路由；sealedCLI 的
-        // supportsStorageStartup=false 不能替代这次准备。
+        // supportsStorageStartup=false 不能替代这次准备。动态准入：init 后新开的
+        // workspace 在 spawn 时由同一 storage worker 机制现场准备（spec 2026-11-09
+        // 动态 workspace 准入小节），失败回退普通 Agent 路径。
+        const prepareWorkspaceStorage: CuaNarrowWorkspaceStoragePreparer = (workspacePath) =>
+          prepareWorkspaceSessionStorage({
+            workspacePath,
+            ...(msg.runtimeProcessEnvPatch ? { env: msg.runtimeProcessEnvPatch } : {}),
+            ...(hostStorageResources ? { storageResources: hostStorageResources } : {}),
+            log: (message, details) => logger.info(message, details),
+          });
         const agentWiring =
-          injectedAgentWiring ?? resolveLocalNarrowAgentWiring(preparedWorkspacePaths);
+          injectedAgentWiring ??
+          resolveLocalNarrowAgentWiring(preparedWorkspacePaths, prepareWorkspaceStorage);
         activeSessionRealtimePort = createTaskRealtimeBridgeForHostInit(
           { ...msg, hostId: effectiveHostId },
           parentPort,

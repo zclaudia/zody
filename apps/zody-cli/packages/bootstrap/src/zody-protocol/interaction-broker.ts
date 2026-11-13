@@ -60,6 +60,7 @@ const EXIT_PLAN_MODE_APPROVAL_APPROVE = "approve";
 const INTERACTION_REQUEST_REANNOUNCE_INTERVAL_MS = 1_000;
 /** App 内截图确认的固定 toolName（spec 2026-10-31）；UI 侧按同字面量识别。 */
 const CUA_SCREENSHOT_CONFIRM_TOOL_NAME = "cua_screenshot_confirm";
+const CUA_AX_READ_CONFIRM_TOOL_NAME = "cua_ax_read_confirm";
 
 interface RegisteredRequestOptions extends PermissionBrokerRequestOptions {
   onRegistered?: () => void;
@@ -77,7 +78,8 @@ export function createProtocolInteractionBroker(
           ? requestUserInput(context, request, registeredOptions)
           : request.toolName === EXIT_PLAN_MODE_TOOL_NAME
             ? requestExitPlanModeApproval(context, request, registeredOptions)
-            : request.toolName === CUA_SCREENSHOT_CONFIRM_TOOL_NAME
+            : request.toolName === CUA_SCREENSHOT_CONFIRM_TOOL_NAME ||
+                request.toolName === CUA_AX_READ_CONFIRM_TOOL_NAME
               ? requestCuaScreenshotConfirm(context, request, registeredOptions)
               : requestPermission(context, request, registeredOptions);
       const result = requestResult.catch((error: unknown) => {
@@ -152,7 +154,8 @@ async function requestPermission(
     },
     {
       ...createInteractionRegistrationOptions(request, "other"),
-      ...(request.approvalMode !== "user-once" && !request.origin &&
+      ...(request.approvalMode !== "user-once" &&
+      !request.origin &&
       !request.optionsPolicy &&
       options?.claimResponse &&
       context.deps?.sessionStore?.commitPermissionFullAccess
@@ -188,7 +191,7 @@ async function requestPermission(
 }
 
 /**
- * App 内截图确认（spec 2026-10-31）走与普通 permission 相同的反向 RPC + v4 竞速，
+ * App 内截图与 AX 读取确认走与普通 permission 相同的反向 RPC + v4 竞速，
  * 但通用 requestPermission 只登记 v4Interactions、不产生 PermissionRequested 事件；
  * PermissionDialog 的唯一渲染入口是 v4 snapshot 的 pendingInteractions，所以这里要在
  * 请求发起前合成 PermissionRequested、结束时合成 PermissionResolved（与
@@ -205,30 +208,29 @@ async function requestCuaScreenshotConfirm(
     ...(request.turnId ? { turnId: String(request.turnId) } : {}),
     traceId: String(request.traceId),
   };
-  await ingestSyntheticPermissionEvent(
-    context,
-    scope,
-    SessionEventType.PermissionRequested,
-    {
-      requestId: request.requestId,
-      toolCallId: request.toolCallId,
-      toolName: request.toolName,
-      riskLevel: request.riskLevel,
-      reason: request.reason,
-      input: request.input,
-      // 2026-10-31 用户修订：确认弹窗遵循既有权限策略，不设 approvalMode="user-once"。
-      // 随请求携带项目规则建议，v4 投影据此得到 allow_once + allow_always + deny；
-      // full access 与通用 requestPermission 分支保持同一透传条件。
-      ...(request.suggestedPermissionUpdates
-        ? { suggestedPermissionUpdates: request.suggestedPermissionUpdates }
-        : {}),
-      ...(context.deps?.sessionStore?.commitPermissionFullAccess &&
-      !request.origin &&
-      !request.optionsPolicy
-        ? { fullAccessSupported: true }
-        : {}),
-    },
-  ).catch(() => undefined);
+  await ingestSyntheticPermissionEvent(context, scope, SessionEventType.PermissionRequested, {
+    requestId: request.requestId,
+    toolCallId: request.toolCallId,
+    toolName: request.toolName,
+    riskLevel: request.riskLevel,
+    reason: request.reason,
+    input: request.input,
+    // 2026-10-31 用户修订：确认弹窗遵循既有权限策略，不设 approvalMode="user-once"。
+    // 随请求携带项目规则建议，v4 投影据此得到 allow_once + allow_always + deny；
+    // full access 与通用 requestPermission 分支保持同一透传条件。
+    // AX 读取也需进入 V4 投影；保留单次授权策略以禁止持久放行。
+    ...(request.approvalMode ? { approvalMode: request.approvalMode } : {}),
+    ...(request.optionsPolicy ? { optionsPolicy: request.optionsPolicy } : {}),
+    ...(request.suggestedPermissionUpdates
+      ? { suggestedPermissionUpdates: request.suggestedPermissionUpdates }
+      : {}),
+    ...(context.deps?.sessionStore?.commitPermissionFullAccess &&
+    !request.origin &&
+    !request.optionsPolicy &&
+    request.approvalMode !== "user-once"
+      ? { fullAccessSupported: true }
+      : {}),
+  }).catch(() => undefined);
 
   let decision: PermissionBrokerResult["decision"] | undefined;
   try {
@@ -237,16 +239,11 @@ async function requestCuaScreenshotConfirm(
     return result;
   } finally {
     // abort/异常同样要收口：decision 未落定时按 deny 关闭弹窗（fail-closed）。
-    await ingestSyntheticPermissionEvent(
-      context,
-      scope,
-      SessionEventType.PermissionResolved,
-      {
-        requestId: request.requestId,
-        toolCallId: request.toolCallId,
-        decision: decision === "allow" ? "allow" : "deny",
-      },
-    ).catch(() => undefined);
+    await ingestSyntheticPermissionEvent(context, scope, SessionEventType.PermissionResolved, {
+      requestId: request.requestId,
+      toolCallId: request.toolCallId,
+      decision: decision === "allow" ? "allow" : "deny",
+    }).catch(() => undefined);
   }
 }
 

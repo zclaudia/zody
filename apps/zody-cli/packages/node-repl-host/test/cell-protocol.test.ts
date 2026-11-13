@@ -58,6 +58,23 @@ describe("node_repl cell protocol", () => {
     );
   });
 
+  it("rejects unknown SDK fields and oversized UTF-8 snapshots", () => {
+    const cuaSdk = { root: "/fixed", clientSource: "x", documentationSource: "y" };
+    expect(() =>
+      parseCellRequest(
+        JSON.stringify({ ...request, cuaSdk: { ...cuaSdk, url: "file:///forged" } }),
+      ),
+    ).toThrow(/invalid/u);
+    expect(() =>
+      parseCellRequest(
+        JSON.stringify({
+          ...request,
+          cuaSdk: { ...cuaSdk, documentationSource: "中".repeat(90_000) },
+        }),
+      ),
+    ).toThrow(/invalid/u);
+  });
+
   it("rejects oversized requests before spawning or encoding", () => {
     expect(() =>
       encodeCellRequest({ ...request, code: "x".repeat(CELL_REQUEST_MAX_BYTES) }),

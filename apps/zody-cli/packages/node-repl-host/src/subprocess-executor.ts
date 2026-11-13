@@ -37,6 +37,7 @@ export interface SubprocessNodeReplExecutorOptions {
   env?: NodeJS.ProcessEnv;
   browserBroker?: NodeReplBrowserBrokerConnection;
   documentationRoots?: Partial<CellDocumentationRoots>;
+  cuaSdk?: CellRequest["cuaSdk"];
   requestMaxBytes?: number;
   responseMaxBytes?: number;
   abortGraceMs?: number;
@@ -96,6 +97,8 @@ export function createSubprocessNodeReplExecutor(
           sea: options.isSea?.() ?? isSeaRuntime(),
           ...(options.jitless === undefined ? {} : { jitless: options.jitless }),
         }));
+  // 固定快照在构造时复制，避免调用方稍后改写受信资源。
+  const cuaSdk = options.cuaSdk ? Object.freeze({ ...options.cuaSdk }) : undefined;
   const documentationRoots: CellDocumentationRoots = {
     browser: options.documentationRoots?.browser ?? DEFAULT_BROWSER_DOCUMENTATION_ROOT,
     cua: options.documentationRoots?.cua ?? DEFAULT_CUA_DOCUMENTATION_ROOT,
@@ -115,6 +118,7 @@ export function createSubprocessNodeReplExecutor(
       requestMeta: input.requestMeta,
       syncTimeoutMs: input.syncTimeoutMs,
       documentationRoots,
+      ...(cuaSdk ? { cuaSdk } : {}),
       ...(input.cuaBroker
         ? {
             cuaCapability: {

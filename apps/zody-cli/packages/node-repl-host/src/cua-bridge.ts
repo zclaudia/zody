@@ -26,6 +26,7 @@ export interface ComputerUseRuntimeBridge {
   call(method: string, input: unknown): Promise<CallToolResult>;
   assertAvailable(): void;
   documentationRoot: string;
+  documentationSource?: string;
 }
 
 export function createComputerUseBridgeGlobals(input: {
@@ -34,6 +35,7 @@ export function createComputerUseBridgeGlobals(input: {
   getActiveCall: () => ActiveCuaNodeReplCall | undefined;
   session: () => NodeReplSession;
   documentationRoot: string;
+  documentationSource?: string;
 }): Record<PropertyKey, unknown> {
   const assertActive = (): ActiveCuaNodeReplCall => {
     const active = input.getActiveCall();
@@ -55,6 +57,7 @@ export function createComputerUseBridgeGlobals(input: {
 
   const bridge: ComputerUseRuntimeBridge = {
     documentationRoot: input.documentationRoot,
+    ...(input.documentationSource ? { documentationSource: input.documentationSource } : {}),
     assertAvailable: () => {
       assertAvailable();
     },

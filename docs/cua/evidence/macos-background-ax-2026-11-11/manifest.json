@@ -1,0 +1,40 @@
+{
+  "recordedOn": "2026-11-11",
+  "macOS": "26.6.2",
+  "build": "25G83",
+  "architecture": "arm64",
+  "electron": "41.0.3",
+  "helperIdentifier": "io.github.zclaudia.zody.ax-concurrency-probe",
+  "installedAppCodesignVerification": "codesign --verify --deep --strict exited 0",
+  "results": [
+    {
+      "trial": "51ED4E48-0FCD-4754-8449-51F556F40172",
+      "file": "appkit-invalid-input.json",
+      "sha256": "d223498f99f39e83a16db941c4f275dafc3d6e0041da2c26bdc71b72eaec3f39",
+      "resultFileModifiedAt": "2026-11-11T09:22:57.079901+08:00",
+      "rescoredExactMatch": true
+    },
+    {
+      "trial": "59E543F1-97E5-49FF-AD25-0A99323BB137",
+      "file": "appkit-pass.json",
+      "sha256": "0312ce87fd264154a97f436d86f3ddadaab829280817c26297e4d31562324190",
+      "resultFileModifiedAt": "2026-11-11T09:23:21.078678+08:00",
+      "rescoredExactMatch": true
+    },
+    {
+      "trial": "913F0AA5-5428-4B58-A6EE-DEAAB46C7CE6",
+      "file": "electron-pass.json",
+      "sha256": "efabf152510de20d9bdebccc896725a6b8b6d35e918239e26e0b1e408fe3ec42",
+      "resultFileModifiedAt": "2026-11-11T09:23:53.179631+08:00",
+      "rescoredExactMatch": true
+    }
+  ],
+  "installedArtifactSha256": {
+    "Contents/MacOS/probe": "cb57465ac526a2735b42946da52f96e80b42d6dd5829110a7bb6922cc3e3fefb",
+    "Contents/MacOS/probe-target": "01f7c000015334c41410a8230470a2f1a29a752a9e400639aa3a2abd7ca0083e",
+    "Contents/Resources/electron-target.cjs": "56a820b6cb870d0578e8d0cc2e4207922af18146b303795b12e09f04b97c6a98",
+    "Contents/Resources/electron-preload.cjs": "9344848c00367aff1632eadc6eb3f3e434f663da19a83303c9449c75f12cada6"
+  },
+  "scope": "Independent ObjC++ probe, two synthetic targets, foreground app/window focus and input only",
+  "sourceProvenance": "No build-time source hash manifest was recorded for this candidate; binary hashes above recorded after trials."
+}

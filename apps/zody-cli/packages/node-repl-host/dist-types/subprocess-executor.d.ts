@@ -1,6 +1,6 @@
 import type { NodeReplBrowserBrokerConnection } from "./browser-bridge.js";
 import type { CuaHelperCellTransport } from "./cell-helper-transport.js";
-import { type CellDocumentationRoots } from "./cell-protocol.js";
+import { type CellDocumentationRoots, type CellRequest } from "./cell-protocol.js";
 import { type NodeReplExecutor } from "./node-repl-session-executor.js";
 import { type CellLaunch } from "./subprocess-launch.js";
 export interface SubprocessNodeReplExecutorOptions {
@@ -15,6 +15,7 @@ export interface SubprocessNodeReplExecutorOptions {
     env?: NodeJS.ProcessEnv;
     browserBroker?: NodeReplBrowserBrokerConnection;
     documentationRoots?: Partial<CellDocumentationRoots>;
+    cuaSdk?: CellRequest["cuaSdk"];
     requestMaxBytes?: number;
     responseMaxBytes?: number;
     abortGraceMs?: number;

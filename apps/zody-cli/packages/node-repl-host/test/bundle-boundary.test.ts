@@ -46,6 +46,8 @@ describe("node_repl MCP bundle boundary", () => {
       .map((path) => path.slice(contractRoot.length));
     expect(contractInputs.sort()).toEqual([
       "interfaces/mcp.port.js",
+      // SEA cell 启动复用公开 plugin-host 命令；不引入其他插件实现。
+      "plugins/index.js",
       "tools/json-schema.js",
       "tools/node-repl.js",
     ]);
@@ -55,7 +57,12 @@ describe("node_repl MCP bundle boundary", () => {
     expect(sharedInputs.length).toBeGreaterThan(0);
     // 同一个总入口即使只取常量，也会初始化其它领域的 schema；Worker 会重复承担这份开销。
     expect(
-      sharedInputs.find((path) => !path.startsWith(`${sharedRoot}browser-use/`)),
+      sharedInputs.find(
+        (path) =>
+          !path.startsWith(`${sharedRoot}browser-use/`) &&
+          // Helper 私有传输认证只依赖这一公开协议模块。
+          path !== `${sharedRoot}cua-helper-transport-auth.ts`,
+      ),
     ).toBeUndefined();
   });
 });
