@@ -4994,6 +4994,10 @@ const zhCN: Record<string, string> = {
   // 遵循既有工具权限策略（allow_once/allow_always/deny，会话支持时另有 Full access），
   // 仅 allow_once 保留专用文案；默认动作与 Esc 均为拒绝；目标身份四字段来自
   // permission 请求 input.target。
+  "chat.permission.cua.controlConfirm.title": "控制指定窗口",
+  "chat.permission.cua.controlConfirm.summary":
+    "仅允许此窗口中元素的按钮按下与普通文本赋值；空闲 120 秒或停止任务后失效。",
+  "chat.permission.cua.controlConfirm.allowOnce": "允许本次控制",
   "chat.permission.cua.readConfirm.title": "读取窗口内容",
   "chat.permission.cua.readConfirm.summary": "Agent 请求读取此窗口的内容。",
   "chat.permission.cua.readConfirm.allowOnce": "允许本次读取",

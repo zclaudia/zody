@@ -1,9 +1,7 @@
 // Shared build-time defaults for the distributable arm64/macOS CUA narrow build.
-// 2026-11-09 分发轮次：默认输入改为冻结归档还原目录 output/cua-narrow-frozen/
-// （specs/cua-output-retention.md 范围例外，不由轮次清理触碰），manifest 字节与 sha pin
-// 沿用 2026-10-31 cua-app-icon 轮产物；profile schemaVersion 2 不再读取 workspace/
-// provider/network/startup snapshot 等构建机事实。Runtime eligibility、native
-// confirmation 与 Stop 语义归 Host 与 Helper 所有，本模块只选择公开构建输入。
+// 2026-11-16：默认输入切到已验收R2 AX资源的本地冻结归档；仅更新构建输入pin。
+// 证书leaf/DR/Node身份及runtime授权不变。归档尚未上传，异机还原需显式提供
+// ZODY_CUA_NARROW_FROZEN_ARCHIVE；不把尚不存在的远程release当成可用材料。
 import { readFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 import process from "node:process";
@@ -24,11 +22,10 @@ export const CUA_NARROW_FROZEN_RESTORE_HINT =
   "pnpm --dir packages/desktop run fetch:cua-narrow-frozen";
 
 export const CUA_DEMO_DEFAULT_PUBLIC_FACTS = Object.freeze({
-  // 冻结归档还原位（唯一默认装配输入）。2026-11-09 重建轮：材料由当前源码重建
-  // （Zody Protocol + rev43 provider），manifest/launcher sha 已更新；identity pins
-  // 仍由 round11 controller-signed 的固定路径提供（归档一并携带）。
+  // 唯一默认装配输入：R2 prepared原字节及stage相对路径，身份pins随本地归档携带。
+  // 旧pin已记录到本轮rollback，当前更改不更新已安装App或授予控制权限。
   manifestRelativePath: "output/cua-narrow-frozen/controller-prepared/manifest.json",
-  manifestSha256: "9a34469ef6e950d43c69ff5b3d876b293eefbe9c6ee62226434a311ec352318b",
+  manifestSha256: "9bcea0ea2e21d81a7f4f930a24672839e14ad17b43f29cfaf33b5bf47371cfcd",
 });
 
 function normalizeTargetOs(rawOs) {

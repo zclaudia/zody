@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r1-noninterference",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r1-noninterference.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r1-noninterference.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r1-c-title",
+      "description": "R1 allow title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-1",
+      "description": "R1 C actual read batch 1",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-2",
+      "description": "R1 C actual read batch 2",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-3",
+      "description": "R1 C actual read batch 3",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-4",
+      "description": "R1 C actual read batch 4",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-5",
+      "description": "R1 C actual read batch 5",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-6",
+      "description": "R1 C actual read batch 6",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-7",
+      "description": "R1 C actual read batch 7",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-8",
+      "description": "R1 C actual read batch 8",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-9",
+      "description": "R1 C actual read batch 9",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-call-10",
+      "description": "R1 C actual read batch 10",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    },
+    {
+      "id": "cua-r1-c-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "\u56fa\u5b9a\u5408\u6210\u6a21\u578b\u54cd\u5e94\uff1b\u771f\u5b9e\u5de5\u5177\u8c03\u7528\u53ca\u5176\u7ed3\u679c\u4ecd\u7531\u751f\u4ea7\u94fe\u751f\u6210\u3002"
+    }
+  ]
+}

@@ -431,3 +431,33 @@ describe("requestCuaNativeReadConfirmation", () => {
     }
   });
 });
+
+it("control confirmation is independent and always single-use", async () => {
+  const requests: PermissionBrokerRequest[] = [];
+  const permissionBroker = {
+    requestPermission: async (request: PermissionBrokerRequest) => {
+      requests.push(request);
+      return { decision: "allow" as const };
+    },
+  } as PermissionBrokerPort;
+  const held = await startHeldTurn({
+    key: "control",
+    id: "control",
+    permissionBroker,
+    config: { mode: "yolo" },
+  });
+  try {
+    const { input } = confirmationInput(held);
+    expect(await held.runtime.requestCuaNativeControlConfirmation(input)).toEqual({
+      allowed: true,
+    });
+    expect(requests[0]).toMatchObject({
+      toolName: "cua_ax_control_confirm",
+      approvalMode: "user-once",
+      optionsPolicy: "no-always-allow",
+    });
+    expect(requests[0]?.suggestedPermissionUpdates).toBeUndefined();
+  } finally {
+    await finishHeldTurn(held);
+  }
+});

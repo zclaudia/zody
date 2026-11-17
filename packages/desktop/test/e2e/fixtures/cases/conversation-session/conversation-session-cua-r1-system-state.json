@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r1-system-state",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r1-system-state.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r1-system-state.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r1-system-title",
+      "description": "R1 allow title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-baseline_lock",
+      "description": "Real system BASELINE_LOCK",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-baseline_lock-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-lock",
+      "description": "Real system LOCK",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-lock-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-baseline_sleep",
+      "description": "Real system BASELINE_SLEEP",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-baseline_sleep-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-sleep",
+      "description": "Real system SLEEP",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-sleep-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-baseline_switch",
+      "description": "Real system BASELINE_SWITCH",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-baseline_switch-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-switch",
+      "description": "Real system SWITCH",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-switch-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-recovery_sleep",
+      "description": "Real system RECOVERY_SLEEP",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    },
+    {
+      "id": "r1-system-recovery_sleep-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+    }
+  ]
+}

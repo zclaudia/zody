@@ -93,7 +93,6 @@ describe("CuaSubmissionTurnScope runtime wiring", () => {
     expect(scope.traceId).toBe(activeTurn.traceContext.traceId);
     expect(scope.turnId).toBe(activeTurn.turnId);
     expect(scope.runId).toBe(held.runtime.getActiveForegroundExecutionId());
-    expect(held.runtime.createCuaSubmissionTurnScope()).toBe(scope);
 
     expect(Object.isFrozen(scope)).toBe(true);
     expect(() => {
@@ -372,4 +371,25 @@ describe("CuaSubmissionTurnScope runtime wiring", () => {
     expect(held.runtime.getCuaSubmissionProjection()).toMatchObject({ status: "candidate" });
     await finishHeldTurn(held);
   });
+});
+
+it("keeps a watcher bound when another consumer closes and broadcasts owner revocation", async () => {
+  const held = await startHeldTurn({ key: "cua-multi-consumer", id: "multi-consumer" });
+  const watcher = held.runtime.createCuaSubmissionTurnScope();
+  const call = held.runtime.createCuaSubmissionTurnScope();
+  if (!watcher || !call) throw new Error("missing scope");
+  expect(call).not.toBe(watcher);
+  expect(watcher.bindProducer("producer")).toBe(true);
+  expect(call.bindProducer("producer")).toBe(true);
+  const watcherEvents: string[] = [];
+  const callEvents: string[] = [];
+  watcher.onInvalidated((reason) => watcherEvents.push(reason));
+  call.onInvalidated((reason) => callEvents.push(reason));
+  call.close();
+  expect(callEvents).toEqual(["scope-closed"]);
+  expect(watcherEvents).toEqual([]);
+  expect((await watcher.producerPort.resolve({ ref: watcher.ref })).status).toBe("candidate");
+  await watcher.producerPort.revoke({ ref: watcher.ref, reason: "user-stop" });
+  expect(watcherEvents).toEqual(["owner-revoked"]);
+  await finishHeldTurn(held);
 });

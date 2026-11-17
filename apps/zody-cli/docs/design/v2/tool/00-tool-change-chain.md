@@ -1,5 +1,11 @@
 # Tool Change Chain Spec
 
+## Computer Use R1 只读撤销交付补验（2026-11-14）
+
+延续既有 node_repl → sealed CLI bootstrap → 原 turn scope / runtime authority → 已认证 native observer → `observationResult` → 工具结果链。恢复已声明的“撤销先于正文交付时丢弃”：最终 OS 窗口复核返回后先检查本地取消再发帧，ACK 返回后取消不得提交 diff 基线；CLI 的异步 resolve 返回及同步 ACK 写入返回后均受关闭/撤销锁存约束，迟到 candidate 不恢复旧 scope。owner、模型 schema、只读权限、输出预算和 Desktop continuous 语义沿用原合同。
+
+bootstrap 复用现有 app logger，仅输出带 scope 摘要和进程内序号的 allowed / invalidated / accepted / delivered / discarded 诊断，不包含正文、原始身份、路径或窗口标题，也不参与许可。独立受控 AppKit 夹具阻塞真实 AX 回复，正常桌面真实点击 Stop，读取实际 worker 的 `ZODY_LOG_DIR` JSONL；观察 owner-revoked 后显式释放。新 turn 仍须独立默认拒绝和重新允许。真机只证明迟到 AX 回复及旧 scope 零交付，迟到正文帧和 candidate 由 adapter/bootstrap 回归分层证明；不虚构 authority 时间。R2 闭锁，历史失败与采证超时保留，pending 人工审阅前不晋升。证据索引为根 `output/cua-read-delivery-r1-20261114/independent-acceptance.json`。
+
 ## Computer Use 二期 R1 只读观察（2026-11-11）
 
 沿用根 `specs/computer-use-macos-phase2-ax-driver.md` 的 R1 接入合同：真实主代理工具调用经现有 node_repl capability、显式 sealed runtime、既有 live turn scope 和已认证 Helper authority 连接，接入窗口元数据枚举与精确窗口 AX 观察。新增内部 observation bootstrap、`confirmRead`、`observationResult`；不增加模型方法或授权参数。AX 正文读取采用独立 `cua_ax_read_confirm` 的 user-once 审批，含 SDK getApp/elements 静默观察；截图规则、系统 TCC 和 full access 不自动授予正文读取。元数据枚举禁采正文预览。

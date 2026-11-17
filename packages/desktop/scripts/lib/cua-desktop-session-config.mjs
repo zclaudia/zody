@@ -3,7 +3,10 @@
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+export const REPO_ROOT = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../../..",
+);
 export const NATIVE_ROOT = join(
   REPO_ROOT,
   "packages",
@@ -32,9 +35,15 @@ export const PRODUCT_WIRING_ROOT = join(
   "native",
   "macos-cua-helper-product-wiring",
 );
-export const PRODUCT_BASELINE = join(PRODUCT_WIRING_ROOT, "source-baseline.json");
+export const PRODUCT_BASELINE = join(
+  PRODUCT_WIRING_ROOT,
+  "source-baseline.json",
+);
 export const SESSION_BASELINE = join(NATIVE_ROOT, "source-baseline.json");
-export const KOFFI_PLATFORM_TRIM = join(PRODUCT_WIRING_ROOT, "koffi-unavailable-darwin.mjs");
+export const KOFFI_PLATFORM_TRIM = join(
+  PRODUCT_WIRING_ROOT,
+  "koffi-unavailable-darwin.mjs",
+);
 
 export const DEFAULT_OUTPUT_ROOT = join(
   REPO_ROOT,
@@ -77,11 +86,21 @@ export const APP_NAME = "Zody CUA Desktop Session.app";
 export const APP_BINARY_NAME = "macos-cua-desktop-session";
 // 图标只是 Finder/LaunchServices 展示资源：复制主应用图标，不参与身份 pin 或授权边界。
 export const APP_ICON_FILE = "AppIcon.icns";
-export const APP_ICON_SOURCE = join(REPO_ROOT, "packages", "desktop", "build", "icon.icns");
+export const APP_ICON_SOURCE = join(
+  REPO_ROOT,
+  "packages",
+  "desktop",
+  "build",
+  "icon.icns",
+);
 
 // 单个 sealed entry 的上限；CLI 实测约 30.2MiB，保留 64MiB 有界上限。
 export const MAX_ENTRY_BYTES = 64 * 1024 * 1024;
-export const ENTRY_NAMES = ["host-entry.mjs", "cli-entry.mjs", "session-entry.mjs"];
+export const ENTRY_NAMES = [
+  "host-entry.mjs",
+  "cli-entry.mjs",
+  "session-entry.mjs",
+];
 
 // 真实 Host/CLI composition 需要、但必须由 native 固定资源目录提供的 sealed 字节。
 // 入口只能按固定名从 process.execPath 推导路径，不读取 UI/env。
@@ -89,14 +108,16 @@ export const AUXILIARY_RESOURCES = [
   {
     name: "node-repl-server.mjs",
     source: "apps/zody-cli/packages/node-repl-host/src/server.ts",
-    capability: "node-repl-mcp-and-cell-server; cell owns only per-call broker capability",
+    capability:
+      "node-repl-mcp-and-cell-server; cell owns only per-call broker capability",
   },
 ];
 
 export const SDK_RESOURCES = [
   {
     name: "computer-use-sdk/scripts/computer-use-client.mjs",
-    source: "apps/zody-cli/packages/zody-cua-plugin/scripts/computer-use-client.mjs",
+    source:
+      "apps/zody-cli/packages/zody-cua-plugin/scripts/computer-use-client.mjs",
     definePrefix: "SDK_CLIENT",
     maxBytes: 512 * 1024,
   },
@@ -120,18 +141,29 @@ export const EMBEDDED_RESOURCES = [
   {
     key: "sessionStorageEntry",
     name: "session-storage-entry.mjs",
-    source: "packages/desktop/native/macos-cua-desktop-session/entries/session-storage-entry.ts",
+    source:
+      "packages/desktop/native/macos-cua-desktop-session/entries/session-storage-entry.ts",
     definePrefix: "SESSION_STORAGE_ENTRY",
   },
 ];
 
 // 纯 JS 依赖（undici/yaml/node-forge/yauzl 等）必须全部内联。仅本轮不支持的
 // 原生能力可由 resolve 插件绑定到固定来源的 throw-only shim；禁止运行时按 cwd 解析。
-export const UNSUPPORTED_NATIVE_PINS = join(NATIVE_ROOT, "runtime", "unsupported-native-pins.json");
+export const UNSUPPORTED_NATIVE_PINS = join(
+  NATIVE_ROOT,
+  "runtime",
+  "unsupported-native-pins.json",
+);
 
 export const SESSION_SOURCES = [
+  "control_ax.mm",
+  "control_gate.mm",
+  "control_owner.mm",
+  "control_session.mm",
+  "control_watcher.mm",
   "observer_contract.mm",
   "observer_source.mm",
+  "observer_system_view.mm",
   "observer_state.mm",
   "observer_session.mm",
   "observer_session_status.mm",

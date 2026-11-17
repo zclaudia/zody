@@ -119,7 +119,8 @@ bool SessionBinding::same_scope(const SessionBinding& other) const {
          app_incarnation == other.app_incarnation &&
          host_instance_id == other.host_instance_id &&
          runtime_instance_id == other.runtime_instance_id && session_id == other.session_id &&
-         workspace_key == other.workspace_key &&
+         workspace_key == other.workspace_key && workspace_identity == other.workspace_identity &&
+         remote_session_id == other.remote_session_id &&
          authorization_revision == other.authorization_revision &&
          target.same_identity(other.target);
 }
@@ -162,6 +163,17 @@ bool parse_session_binding(NSDictionary* value, SessionBinding& binding, std::st
     error = "binding-ref-incomplete";
     return false;
   }
+  if (value[@"workspaceIdentity"] &&
+      (!bounded_string_value(value[@"workspaceIdentity"], binding.workspace_identity) ||
+       binding.workspace_identity != binding.workspace_key)) {
+    error = "binding-workspace-identity-invalid";
+    return false;
+  }
+  if (value[@"remoteSessionId"] &&
+      !bounded_string_value(value[@"remoteSessionId"], binding.remote_session_id)) {
+    error = "binding-remote-session-invalid";
+    return false;
+  }
   if (!number_int64(ref[@"authorizationRevision"], binding.authorization_revision)) {
     error = "binding-revision-invalid";
     return false;
@@ -202,16 +214,9 @@ bool parse_session_binding_json(const std::string& json, SessionBinding& binding
 std::string session_binding_json(const SessionBinding& binding) {
   // 中文原因：手工转义容易漏掉 \b/\f/全部 C0 控制字符；统一交给
   // NSJSONSerialization，避免两份 JSON 编码规则漂移。
-  NSDictionary* ref = session_ref_dictionary(binding);
   NSDictionary* target = session_target_dictionary(binding);
-  NSDictionary* root = @{
-    @"traceId" : ns_string(binding.trace_id),
-    @"producerIncarnation" : ns_string(binding.producer_incarnation),
-    @"runId" : ns_string(binding.run_id),
-    @"turnId" : ns_string(binding.turn_id),
-    @"ref" : ref,
-    @"target" : target,
-  };
+  NSMutableDictionary* root = [session_association_dictionary(binding) mutableCopy];
+  root[@"target"] = target;
   NSError* error = nil;
   NSData* data = [NSJSONSerialization dataWithJSONObject:root
                                                 options:NSJSONWritingSortedKeys
@@ -230,6 +235,19 @@ NSDictionary* session_ref_dictionary(const SessionBinding& binding) {
     @"sessionId" : ns_string(binding.session_id),
     @"workspaceKey" : ns_string(binding.workspace_key),
   };
+}
+
+NSDictionary* session_association_dictionary(const SessionBinding& binding) {
+  NSMutableDictionary* association = [@{
+    @"traceId" : ns_string(binding.trace_id),
+    @"producerIncarnation" : ns_string(binding.producer_incarnation),
+    @"runId" : ns_string(binding.run_id),
+    @"turnId" : ns_string(binding.turn_id),
+    @"ref" : session_ref_dictionary(binding),
+  } mutableCopy];
+  if (!binding.workspace_identity.empty()) association[@"workspaceIdentity"] = ns_string(binding.workspace_identity);
+  if (!binding.remote_session_id.empty()) association[@"remoteSessionId"] = ns_string(binding.remote_session_id);
+  return association;
 }
 
 NSDictionary* session_target_dictionary(const SessionBinding& binding) {

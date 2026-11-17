@@ -10,10 +10,15 @@ import {
 /* eslint-disable max-lines -- WDIO 配置需要集中维护 Electron、Xvfb、代理和容器 demo 参数，拆开会让测试入口更难追踪。 */
 import { execFile, execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, realpath, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
+import {
+  usesR3ProductionRendererPreflight,
+  runR3ProductionRendererPreflight,
+} from "./test/e2e/helpers/cua-r3-production-renderer.js";
+import { cuaR1SystemChromeOptions } from "./scripts/lib/cua-r1-system-driver.mjs";
 import {
   captureWorkspaceSources,
   withE2ESourceEvidence,
@@ -3077,14 +3082,21 @@ export const config: WebdriverIO.Config = {
         ],
         appBinaryPath: ELECTRON_APP_BINARY_PATH,
       },
-      "goog:chromeOptions": {
-        // 修复原因：Electron 的 `--app=<main>` 会永久保留一个
-        // chrome-error://chromewebdata/ app target。把 app 暴露给 ChromeDriver 后，
-        // 长批次 session 启停期间 current handle 可能重新落到错误壳；这里只允许
-        // BrowserWindow 对应的 page target，让 session 未就绪时失败而不是绑错窗口。
-        windowTypes: ["page"],
-        args: [...(containerE2E ? containerChromeArgs : [])],
-      },
+      "goog:chromeOptions": cuaR1SystemChromeOptions(
+        {
+          // 修复原因：Electron 的 `--app=<main>` 会永久保留一个
+          // chrome-error://chromewebdata/ app target。把 app 暴露给 ChromeDriver 后，
+          // 长批次 session 启停期间 current handle 可能重新落到错误壳；这里只允许
+          // BrowserWindow 对应的 page target，让 session 未就绪时失败而不是绑错窗口。
+          windowTypes: ["page"],
+          args: [...(containerE2E ? containerChromeArgs : [])],
+        },
+        {
+          platform: process.platform,
+          specs: configuredE2ESpecs,
+          systemRun: process.env.ZODY_CUA_R1_SYSTEM_RUN,
+        },
+      ),
       ...(containerE2E
         ? {
             "wdio:chromedriverOptions": {
@@ -3129,7 +3141,20 @@ export const config: WebdriverIO.Config = {
           "before-suite",
           { specs: currentE2EWorkerSpecs },
           async () => {
-            await runE2ERendererBridgePreflight(currentE2EWorkerSpecs);
+            // 本轮生产renderer本应没有store bridge；限定独立候选/精确spec/仓库外cwd，普通E2E仍沿用原合同。
+            if (
+              usesR3ProductionRendererPreflight({
+                specs: currentE2EWorkerSpecs,
+                packagedApp: E2E_PACKAGED_APP_BINARY_PATH,
+                cwd: await realpath(process.cwd()),
+                repoRoot: await realpath(REPO_ROOT),
+                platform: process.platform,
+              })
+            ) {
+              await runR3ProductionRendererPreflight();
+            } else {
+              await runE2ERendererBridgePreflight(currentE2EWorkerSpecs);
+            }
           },
         );
       },

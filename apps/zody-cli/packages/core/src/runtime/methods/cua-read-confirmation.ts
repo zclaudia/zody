@@ -10,6 +10,21 @@ export async function requestCuaNativeReadConfirmation(
   this: AgentRuntimeInternal,
   input: CuaNativeCaptureConfirmationInput,
 ): Promise<CuaNativeCaptureConfirmationResult> {
+  return requestAxConfirmation.call(this, input, "read");
+}
+
+export async function requestCuaNativeControlConfirmation(
+  this: AgentRuntimeInternal,
+  input: CuaNativeCaptureConfirmationInput,
+): Promise<CuaNativeCaptureConfirmationResult> {
+  return requestAxConfirmation.call(this, input, "control");
+}
+
+async function requestAxConfirmation(
+  this: AgentRuntimeInternal,
+  input: CuaNativeCaptureConfirmationInput,
+  kind: "read" | "control",
+): Promise<CuaNativeCaptureConfirmationResult> {
   if (
     !Number.isSafeInteger(input.generation) ||
     input.generation <= 0 ||
@@ -54,14 +69,14 @@ export async function requestCuaNativeReadConfirmation(
       {
         input: { target: input.target },
         mode: this.config.mode ?? "build",
-        reason: `Read window content: ${input.target.ownerName} — "${input.target.windowName}" (pid ${input.target.pid}, window ${input.target.windowId})`,
-        requestId: `cua-read-confirm-${input.generation}`,
+        reason: `${kind === "read" ? "Read window content" : "Control window with AXPress or text value (120 second idle limit)"}: ${input.target.ownerName} — "${input.target.windowName}" (pid ${input.target.pid}, window ${input.target.windowId})`,
+        requestId: `cua-${kind}-confirm-${input.generation}`,
         requestedAt: new Date(),
         riskLevel: "high",
-        ruleId: "cua-read-confirm",
+        ruleId: `cua-${kind}-confirm`,
         sessionId: input.sessionId as PermissionBrokerRequest["sessionId"],
         toolCallId: input.runId as PermissionBrokerRequest["toolCallId"],
-        toolName: "cua_ax_read_confirm",
+        toolName: `cua_ax_${kind}_confirm`,
         traceId: input.traceId,
         turnId: input.turnId,
         approvalMode: "user-once",
@@ -82,4 +97,16 @@ export async function requestCuaNativeReadConfirmation(
     if (input.signal?.aborted) throw error;
     return { allowed: false, failureReason: "confirmation-unavailable" };
   }
+}
+
+export function matchesCuaContext(
+  this: AgentRuntimeInternal,
+  input: { workspaceIdentity?: string; remoteSessionId?: string },
+): boolean {
+  return (
+    (this.config.workspaceIdentity?.toString().trim() || undefined) ===
+      (input.workspaceIdentity?.trim() || undefined) &&
+    (this.config.remoteSessionId?.trim() || undefined) ===
+      (input.remoteSessionId?.trim() || undefined)
+  );
 }

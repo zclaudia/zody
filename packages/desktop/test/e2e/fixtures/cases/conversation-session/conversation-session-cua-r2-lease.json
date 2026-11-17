@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r2-lease",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r2-lease.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r2-lease.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r2-lease-title",
+      "description": "R2 lease title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+    },
+    {
+      "id": "cua-r2-lease-first",
+      "description": "R2 lease first cell",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+    },
+    {
+      "id": "cua-r2-lease-second",
+      "description": "R2 lease second cell",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+    },
+    {
+      "id": "cua-r2-lease-final",
+      "description": "R2 lease final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+    }
+  ]
+}

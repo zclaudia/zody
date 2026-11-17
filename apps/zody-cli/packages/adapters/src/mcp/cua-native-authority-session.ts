@@ -87,6 +87,17 @@ export class CuaNativeAuthoritySessionImpl implements CuaNativeAuthoritySession 
     if (!options.stream || typeof options.stream.on !== "function") {
       throw new Error("stream must be an explicit private Duplex");
     }
+    const association = options.observation?.association ?? options.capture?.association;
+    if (
+      association &&
+      (Object.keys(association).some(
+        (key) => !["workspaceIdentity", "remoteSessionId"].includes(key),
+      ) ||
+        Object.values(association).some((value) => !isBoundedString(value)) ||
+        (association.workspaceIdentity !== undefined &&
+          association.workspaceIdentity !== options.scope.ref.workspaceKey))
+    )
+      throw new Error("invalid observation association");
     this.#scope = options.scope;
     this.#producerIncarnation = options.producerIncarnation;
     this.#requestTimeoutMs = boundedLimit(
@@ -95,15 +106,29 @@ export class CuaNativeAuthoritySessionImpl implements CuaNativeAuthoritySession 
     );
     // 仅可信本次元数据请求扩大接收预算；捕获方法以防调用方随后改写对象。
     const observation = options.observation
-      ? { ...options.observation, request: { ...options.observation.request } }
+      ? {
+          ...options.observation,
+          ...(association ? { association: Object.freeze({ ...association }) } : {}),
+          request: { ...options.observation.request },
+        }
       : undefined;
     const metadata =
       observation?.request.method === "list_apps" || observation?.request.method === "list_windows";
     this.#context = {
       scope: this.#scope,
       producerIncarnation: this.#producerIncarnation,
-      ...(options.capture ? { capture: options.capture } : {}),
+      ...(options.capture
+        ? {
+            capture: {
+              ...options.capture,
+              ...(association ? { association: Object.freeze({ ...association }) } : {}),
+            },
+          }
+        : {}),
       ...(observation ? { observation } : {}),
+      ...(options.confirmControlRequest
+        ? { confirmControlRequest: options.confirmControlRequest }
+        : {}),
       ...(options.confirmReadRequest ? { confirmReadRequest: options.confirmReadRequest } : {}),
       ...(options.confirmRequest ? { confirmRequest: options.confirmRequest } : {}),
       requestTimeoutMs: this.#requestTimeoutMs,

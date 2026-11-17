@@ -8,6 +8,8 @@
 #include <string>
 
 #include "confirmation.h"
+#include "control_owner.h"
+#include "control_watcher.h"
 #include "session_binding.h"
 #include "session_launcher.h"
 #include "observer_session.h"
@@ -142,10 +144,13 @@ class SessionSupervisor {
   void set_active_generation(uint64_t generation);
   void clear_active_generation(uint64_t generation);
   void markFatal(const std::string& reason);
+  void retain_control_watcher(OwnedFd& connection, AuthorityFdReader& reader, uint64_t generation);
 
   SessionLaunch& launch_;
   ConfirmationController& confirmation_;
   ObserverSession observer_;
+  ControlOwner control_owner_;
+  std::unique_ptr<ControlWatcher> control_watcher_;
   std::atomic<bool> stop_{false};
   std::atomic<bool> main_loop_stopped_{false};
   std::mutex stop_mutex_;

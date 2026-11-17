@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r2-stop",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r2-stop.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r2-stop.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r2-stop-ui-title",
+      "description": "R2 Stop ui title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    },
+    {
+      "id": "cua-r2-stop-ui-call",
+      "description": "R2 Stop ui call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    },
+    {
+      "id": "cua-r2-stop-recover-title",
+      "description": "R2 Stop recover title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    },
+    {
+      "id": "cua-r2-stop-recover-call",
+      "description": "R2 Stop recover call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    },
+    {
+      "id": "cua-r2-stop-recover-final",
+      "description": "R2 Stop recover final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    },
+    {
+      "id": "cua-r2-stop-sdk-title",
+      "description": "R2 Stop sdk title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    },
+    {
+      "id": "cua-r2-stop-sdk-call",
+      "description": "R2 Stop sdk call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    },
+    {
+      "id": "cua-r2-stop-sdk-final",
+      "description": "R2 Stop sdk final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+    }
+  ]
+}

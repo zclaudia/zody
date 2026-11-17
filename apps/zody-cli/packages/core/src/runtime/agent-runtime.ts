@@ -467,6 +467,10 @@ export interface AgentRuntime {
    * App 内确认弹窗（替代 Helper 原生 NSAlert）：经既有 permissionBroker 以 user-once
    * 两选项形态发起一次截图确认；turn/run 不匹配 fail-closed，abort 原样上抛。
    */
+  matchesCuaContext(input: { workspaceIdentity?: string; remoteSessionId?: string }): boolean;
+  requestCuaNativeControlConfirmation(
+    input: CuaNativeCaptureConfirmationInput,
+  ): Promise<CuaNativeCaptureConfirmationResult>;
   requestCuaNativeReadConfirmation(
     input: CuaNativeCaptureConfirmationInput,
   ): Promise<CuaNativeCaptureConfirmationResult>;

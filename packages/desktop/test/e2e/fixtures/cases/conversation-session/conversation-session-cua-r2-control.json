@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r2-control",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r2-control.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r2-control.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r2-left_click-title",
+      "description": "R2 left_click title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+    },
+    {
+      "id": "cua-r2-left_click-call-0",
+      "description": "R2 left_click trial 0",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-left_click-call-1",
+      "description": "R2 left_click trial 1",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-left_click-call-2",
+      "description": "R2 left_click trial 2",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-left_click-final",
+      "description": "R2 left_click final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+    },
+    {
+      "id": "cua-r2-perform_action-title",
+      "description": "R2 perform_action title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+    },
+    {
+      "id": "cua-r2-perform_action-call-0",
+      "description": "R2 perform_action trial 0",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-perform_action-call-1",
+      "description": "R2 perform_action trial 1",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-perform_action-call-2",
+      "description": "R2 perform_action trial 2",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-perform_action-final",
+      "description": "R2 perform_action final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+    },
+    {
+      "id": "cua-r2-set_value-title",
+      "description": "R2 set_value title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+    },
+    {
+      "id": "cua-r2-set_value-call-0",
+      "description": "R2 set_value trial 0",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-set_value-call-1",
+      "description": "R2 set_value trial 1",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-set_value-call-2",
+      "description": "R2 set_value trial 2",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+    },
+    {
+      "id": "cua-r2-set_value-final",
+      "description": "R2 set_value final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+    }
+  ]
+}

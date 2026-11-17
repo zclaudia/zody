@@ -54,6 +54,7 @@ export class RuntimeCuaSubmissionTurnScope implements CuaSubmissionTurnScope {
   #cleanupRef: CuaSubmissionRef;
   #invalidated = false;
   #terminalReason?: CuaSubmissionTurnInvalidationReason;
+  #consumers = 0;
 
   constructor(deps: RuntimeCuaSubmissionTurnScopeDependencies) {
     this.#deps = deps;
@@ -69,6 +70,62 @@ export class RuntimeCuaSubmissionTurnScope implements CuaSubmissionTurnScope {
     // readonly 只是 TS 约束；运行时冻结实例，防止调用方改写 ref/ids/producerPort 后
     // 把已 pin 的 facade 指向别的 lineage。私有字段仍可维护失效状态。
     Object.freeze(this);
+  }
+
+  /** 多个 consumer 共用唯一 owner/binding；每个关闭只释放自身，最后一个才结束 binding。 */
+  acquireConsumer(): CuaSubmissionTurnScope {
+    this.#consumers++;
+    let terminal: CuaSubmissionTurnInvalidationReason | undefined;
+    const listeners = new Set<(reason: CuaSubmissionTurnInvalidationReason) => void>();
+    let unsubscribe = () => {};
+    const finish = (reason: CuaSubmissionTurnInvalidationReason) => {
+      if (terminal) return;
+      terminal = reason;
+      unsubscribe();
+      this.#consumers--;
+      for (const listener of listeners) {
+        try {
+          listener(reason);
+        } catch {
+          /* 隔离消费者 */
+        }
+      }
+      listeners.clear();
+      if (this.#consumers === 0 && !this.#invalidated) this.close();
+    };
+    unsubscribe = this.onInvalidated(finish);
+    return Object.freeze({
+      ref: this.ref,
+      traceId: this.traceId,
+      runId: this.runId,
+      turnId: this.turnId,
+      get invalidated() {
+        return terminal !== undefined;
+      },
+      get terminalReason() {
+        return terminal;
+      },
+      producerPort: Object.freeze({
+        resolve: (request: CuaSubmissionResolveRequest) =>
+          terminal ? Promise.resolve(unknownProjection()) : this.producerPort.resolve(request),
+        revoke: (request: CuaSubmissionRevokeRequest) =>
+          terminal && terminal !== "owner-revoked"
+            ? Promise.resolve(unknownRevocation())
+            : this.producerPort.revoke(request),
+      }),
+      bindProducer: (producer: string) => !terminal && this.bindProducer(producer),
+      onInvalidated: (listener: (reason: CuaSubmissionTurnInvalidationReason) => void) => {
+        if (terminal) {
+          listener(terminal);
+          return () => {};
+        }
+        listeners.add(listener);
+        return () => {
+          listeners.delete(listener);
+        };
+      },
+      close: () => finish("scope-closed"),
+    });
   }
 
   get ref(): CuaSubmissionRef {

@@ -36,6 +36,7 @@ import {
   getPermissionRequestPreview,
   isCuaScreenshotConfirmRequest,
   isCuaReadConfirmRequest,
+  isCuaControlConfirmRequest,
   shouldPreferPermissionOptionName,
   sortPermissionOptions,
   type PermissionRequestScope,
@@ -298,7 +299,11 @@ function resolvePermissionBlockKind(
   // CUA macOS 截图的 App 内确认弹窗（spec：computer-use-macos-phase1「App 内确认弹窗
   // 替代 Helper 原生 NSAlert」）：固定 toolName，请求不是普通工具调用（transcript 无
   // 对应行），fallback 块会把 input raw JSON 摊开；这里分流到专用目标身份展示块。
-  if (isCuaScreenshotConfirmRequest(toolCall) || isCuaReadConfirmRequest(toolCall)) {
+  if (
+    isCuaScreenshotConfirmRequest(toolCall) ||
+    isCuaReadConfirmRequest(toolCall) ||
+    isCuaControlConfirmRequest(toolCall)
+  ) {
     return "cuaScreenshotConfirm";
   }
 
@@ -473,10 +478,12 @@ function CuaScreenshotConfirmPermissionBlock({
   request,
   fallbackReason,
   read = false,
+  control = false,
 }: {
   request: ZodyPermissionRequest;
   fallbackReason: string | null;
   read?: boolean;
+  control?: boolean;
 }) {
   const { intl } = useZodyIntl();
   const target = useMemo(() => getCuaScreenshotConfirmTarget(request), [request]);
@@ -520,13 +527,15 @@ function CuaScreenshotConfirmPermissionBlock({
     () => (
       <span className="min-w-0 text-foreground-subtle">
         {intl.formatMessage({
-          id: read
-            ? "chat.permission.cua.readConfirm.summary"
-            : "chat.permission.cua.screenshotConfirm.summary",
+          id: control
+            ? "chat.permission.cua.controlConfirm.summary"
+            : read
+              ? "chat.permission.cua.readConfirm.summary"
+              : "chat.permission.cua.screenshotConfirm.summary",
         })}
       </span>
     ),
-    [intl, read],
+    [intl, read, control],
   );
   const content = useMemo(() => {
     if (target === null) {
@@ -580,9 +589,11 @@ function CuaScreenshotConfirmPermissionBlock({
       canToggle={false}
       forceOpen
       kindLabel={intl.formatMessage({
-        id: read
-          ? "chat.permission.cua.readConfirm.title"
-          : "chat.permission.cua.screenshotConfirm.title",
+        id: control
+          ? "chat.permission.cua.controlConfirm.title"
+          : read
+            ? "chat.permission.cua.readConfirm.title"
+            : "chat.permission.cua.screenshotConfirm.title",
       })}
       primaryText={primaryText}
       content={content}
@@ -703,8 +714,10 @@ export function PermissionDialog({
   const isWorkflowAsk = blockKind === "workflow";
   // CUA 截图确认窗：专用展示块 + 专用动作文案 + 默认拒绝语义（spec 见块注释）。
   const isCuaReadConfirm = isCuaReadConfirmRequest(request);
-  const isCuaScreenshotConfirm = blockKind === "cuaScreenshotConfirm" && !isCuaReadConfirm;
-  const isCuaWindowConfirm = isCuaScreenshotConfirm || isCuaReadConfirm;
+  const isCuaControlConfirm = isCuaControlConfirmRequest(request);
+  const isCuaScreenshotConfirm =
+    blockKind === "cuaScreenshotConfirm" && !isCuaReadConfirm && !isCuaControlConfirm;
+  const isCuaWindowConfirm = isCuaScreenshotConfirm || isCuaReadConfirm || isCuaControlConfirm;
   const workflowSettings = usePermissionWorkflowSettings(request.requestId);
   const workflowSettingsContent = isWorkflowAsk ? workflowSettings.content : undefined;
   const isOptionBlocked = useCallback(
@@ -925,7 +938,11 @@ export function PermissionDialog({
           // 阻塞授权选项原有 Tab 循环会困住焦点；有会话 Stop 时在边界交回浏览器。
           if (allowStopExit) {
             const index = optionRefs.current.indexOf(event.currentTarget);
-            if ((event.shiftKey && index === 0) || (!event.shiftKey && index === orderedOptions.length - 1)) return;
+            if (
+              (event.shiftKey && index === 0) ||
+              (!event.shiftKey && index === orderedOptions.length - 1)
+            )
+              return;
           }
           // 长命令新增了阅读按钮，旧的选项循环会困住焦点；第一项反向 Tab 交还浏览器，
           // 按 DOM 顺序进入上方命令按钮，其正向 Tab 自然回到当前第一项，不触发授权。
@@ -994,7 +1011,9 @@ export function PermissionDialog({
       ref={rootRef}
       className="w-full shrink-0 relative z-1"
       onKeyDown={handleRootKeyDown}
-      data-cua-confirm-kind={isCuaReadConfirm ? "read" : undefined}
+      data-cua-confirm-kind={
+        isCuaControlConfirm ? "control" : isCuaReadConfirm ? "read" : undefined
+      }
       data-permission-request-id={request.requestId}
     >
       <div className="w-full overflow-hidden rounded-2xl border border-border bg-popover shadow-xs">
@@ -1047,6 +1066,7 @@ export function PermissionDialog({
                 request={request}
                 fallbackReason={displayReason}
                 read={isCuaReadConfirm}
+                control={isCuaControlConfirm}
               />
             ) : (
               <PermissionBlock {...blockContext} />
@@ -1096,12 +1116,15 @@ export function PermissionDialog({
                 // CUA 截图确认的两个动作按 optionId 映射专用文案（仅对该 toolName 生效，
                 // 其他工具的 "Allow once" / "Deny" 展示不受影响），且不附带通用描述。
                 const cuaConfirmLabelMessageId =
-                  isCuaReadConfirm &&
+                  isCuaControlConfirm &&
                   (option.optionId === "allow_once" || option.optionId === "allowOnce")
-                    ? "chat.permission.cua.readConfirm.allowOnce"
-                    : isCuaScreenshotConfirm
-                      ? getCuaScreenshotConfirmOptionLabelMessageId(option.optionId)
-                      : null;
+                    ? "chat.permission.cua.controlConfirm.allowOnce"
+                    : isCuaReadConfirm &&
+                        (option.optionId === "allow_once" || option.optionId === "allowOnce")
+                      ? "chat.permission.cua.readConfirm.allowOnce"
+                      : isCuaScreenshotConfirm
+                        ? getCuaScreenshotConfirmOptionLabelMessageId(option.optionId)
+                        : null;
                 const label = cuaConfirmLabelMessageId
                   ? intl.formatMessage({ id: cuaConfirmLabelMessageId })
                   : ((labelMessageId === "chat.permission.allowCommand"

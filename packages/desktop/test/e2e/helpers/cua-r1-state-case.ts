@@ -83,6 +83,9 @@ export async function runR1StateCells(input: {
     const receipt = inspectStateToolResult(result, input.fixture, stage);
     if (!receipt.ok)
       throw new Error(`R1 stage ${stage}: invalid actual tool_result ${JSON.stringify(receipt)}`);
+    // 中文原因：本机系统远端边界定向轮必须实际看到省略提示，不能用未触发边界的正常树冒充。
+    if (process.env.ZODY_CUA_R1_EXPECT_OPAQUE === "1" && stage >= 4 && !receipt.truncated)
+      throw new Error(`R1 stage ${stage}: opaque system view omission was not visible`);
   }
   if (calls.size !== 5 || confirmations.size !== 5)
     throw new Error("R1 state observations were not distinct");

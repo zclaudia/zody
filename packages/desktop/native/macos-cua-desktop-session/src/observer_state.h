@@ -23,6 +23,10 @@ class ObserverState {
                                 id identity, NSArray* elements, NSArray* handles,
                                 bool truncated, bool shown, bool disable_diffing);
   void commit(const ObserverPreparedState& pending);
+  id frozen_handle(NSString* scope, NSDictionary* window, id identity, NSString* state_id,
+                   NSUInteger index) const;
+  bool can_promote(NSString* scope, NSDictionary* window, id identity, NSString* state_id) const;
+  bool promote(NSString* scope, NSDictionary* window, id identity, NSString* state_id);
   void clear();
   size_t size() const { return entries_.size(); }
  private:

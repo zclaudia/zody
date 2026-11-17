@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CUA_CONTROL_AUDIT_PREFIX, controlAuditSchema } from "./cuaControlAuditSchema.js";
 
 const CUA_NATIVE_AUDIT_PREFIX = "[cua-native] ";
 const CUA_NATIVE_AUDIT_MAX_LINE_CHARS = 4_096;
@@ -153,13 +154,7 @@ const cellPeerVerifiedSchema = z
     cdhash: cdhash40Schema,
     entitlementsEmpty: z.literal(true),
   })
-  .strict()
-  .transform((value) => ({
-    pid: value.pid,
-    identifier: value.identifier,
-    cdhash: value.cdhash,
-    entitlementsEmpty: value.entitlementsEmpty,
-  }));
+  .strict();
 
 const cellReapedSchema = z
   .object({
@@ -186,23 +181,33 @@ const machineLeaseReleasedSchema = z
   .strict()
   .transform((value) => ({ confirmed: value.confirmed }));
 
+// 借用归还是与实际释放互斥的事实，不能把仍由控制会话持有的锁记为已释放。
+const captureDeliveredFields = {
+  sha256: sha256Schema,
+  width: z.number().int().min(1).max(0xffff_ffff),
+  height: z.number().int().min(1).max(0xffff_ffff),
+  bytes: nonNegativeIntegerSchema,
+  resourcesReleased: z.literal(true),
+};
 const captureDeliveredSchema = z
-  .object({
-    sha256: sha256Schema,
-    width: z.number().int().min(1).max(0xffff_ffff),
-    height: z.number().int().min(1).max(0xffff_ffff),
-    bytes: nonNegativeIntegerSchema,
-    resourcesReleased: z.literal(true),
-    machineLeaseReleased: z.literal(true),
-  })
-  .strict()
+  .union([
+    z.object({ ...captureDeliveredFields, machineLeaseReleased: z.literal(true) }).strict(),
+    z
+      .object({
+        ...captureDeliveredFields,
+        machineLeaseReleased: z.literal(false),
+        machineLeaseBorrowReturned: z.literal(true),
+      })
+      .strict(),
+  ])
   .transform((value) => ({
     sha256: value.sha256,
     width: value.width,
     height: value.height,
     bytes: value.bytes,
-    resourcesReleased: true,
-    machineLeaseReleased: true,
+    resourcesReleased: true as const,
+    machineLeaseReleased: value.machineLeaseReleased,
+    ...(!value.machineLeaseReleased ? { machineLeaseBorrowReturned: true as const } : {}),
   }));
 
 const captureRejectedSchema = z
@@ -344,9 +349,16 @@ const observationWindowConflictSchema = z
     axWindowIsTargetReference: v.axWindowIsTargetReference,
   }));
 
+// 中文原因：仅说明远端子树未读取，不包含其正文、身份或可操作索引。
+const observationSystemViewOmittedSchema = z
+  .object({ reason: z.literal("appkit_theme_widget_remote_view") })
+  .strict()
+  .transform(() => ({ reason: "appkit_theme_widget_remote_view" as const }));
+
 const markerSchemas = {
   "observation-window-conflict": observationWindowConflictSchema,
   "observation-rejected": observationRejectedSchema,
+  "observation-system-view-omitted": observationSystemViewOmittedSchema,
   "confirmation-presented": confirmationPresentedSchema,
   "confirmation-resolved": confirmationResolvedSchema,
   "cell-spawned": cellSpawnedSchema,
@@ -384,12 +396,24 @@ export function parseCuaNativeAuditLine(line: string): string | undefined {
   if (
     line.length === 0 ||
     line.length > CUA_NATIVE_AUDIT_MAX_LINE_CHARS ||
-    containsControlCharacter(line) ||
-    !line.startsWith(CUA_NATIVE_AUDIT_PREFIX)
+    containsControlCharacter(line)
   ) {
     return undefined;
   }
 
+  if (line.startsWith(CUA_CONTROL_AUDIT_PREFIX)) {
+    try {
+      const parsed = controlAuditSchema.safeParse(
+        JSON.parse(line.slice(CUA_CONTROL_AUDIT_PREFIX.length)),
+      );
+      return parsed.success
+        ? `${CUA_CONTROL_AUDIT_PREFIX}${JSON.stringify(parsed.data)}`
+        : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+  if (!line.startsWith(CUA_NATIVE_AUDIT_PREFIX)) return undefined;
   const body = line.slice(CUA_NATIVE_AUDIT_PREFIX.length);
   if (body === "machine-lease-acquired") {
     return line;

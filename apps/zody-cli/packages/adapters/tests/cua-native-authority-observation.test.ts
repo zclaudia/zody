@@ -71,6 +71,52 @@ const result = (windowId: number) => ({
   },
 });
 describe("native observation authority", () => {
+  it.each(["invalidated", "closed"] as const)(
+    "latches %s during the accepted ACK before delivery",
+    async (flag) => {
+      const ctx = fixture();
+      await handleObservationFrame(
+        ctx,
+        frame("confirmRead", { ...association, generation: 1, target }),
+      );
+      vi.mocked(ctx.write).mockImplementation(() => {
+        ctx.state[flag] = true;
+        return true;
+      });
+      await handleObservationFrame(
+        ctx,
+        frame("observationResult", { ...association, result: result(8) }),
+      );
+      expect(ctx.observation?.accept).not.toHaveBeenCalled();
+      expect(ctx.finish).not.toHaveBeenCalledWith("adapter-close", true);
+    },
+  );
+  it.each(["invalidated", "closed"] as const)(
+    "rejects a late candidate after %s without reviving delivery",
+    async (flag) => {
+      const ctx = fixture();
+      await handleObservationFrame(
+        ctx,
+        frame("confirmRead", { ...association, generation: 1, target }),
+      );
+      let release!: (value: { status: "candidate"; ref: typeof ref }) => void;
+      vi.spyOn(ctx.scope.producerPort, "resolve").mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            release = resolve;
+          }),
+      );
+      const pending = handleObservationFrame(
+        ctx,
+        frame("observationResult", { ...association, result: result(8) }),
+      );
+      ctx.state[flag] = true;
+      release({ status: "candidate", ref });
+      await pending;
+      expect(ctx.observation?.accept).not.toHaveBeenCalled();
+      expect(ctx.reject).toHaveBeenCalledWith("1", "observationResult", "scope_invalidated");
+    },
+  );
   it("does not re-prompt with a fresh generation after a denied observation", async () => {
     const ctx = fixture();
     vi.mocked(ctx.confirmReadRequest!).mockResolvedValue({ allowed: false });
@@ -197,4 +243,280 @@ describe("native observation authority", () => {
       expect(ctx.observation!.accept).toHaveBeenCalledOnce();
     }
   });
+});
+
+describe("native control authority", () => {
+  it("requires independent control authorization and preserves a sent error receipt", async () => {
+    const ctx = fixture();
+    Object.assign(ctx.observation!.request, {
+      method: "left_click",
+      arguments: {
+        app_ref: { pid: 42, window_id: 8 },
+        target: { type: "element", index: 0 },
+        state_id: "frozen",
+      },
+    });
+    Object.assign(ctx, { confirmControlRequest: vi.fn(async () => ({ allowed: true })) });
+    await handleObservationFrame(
+      ctx,
+      frame("confirmControl", { ...association, generation: 1, target }),
+    );
+    expect(ctx.confirmControlRequest).toHaveBeenCalledOnce();
+    const receipt = {
+      code: "timeout",
+      action_sent: true,
+      dispatch_status: "possibly_sent",
+      state_sync_status: "failed",
+    };
+    await handleObservationFrame(
+      ctx,
+      frame("controlResult", {
+        ...association,
+        result: { isError: true, content: [{ type: "text", text: JSON.stringify(receipt) }] },
+      }),
+    );
+    expect(ctx.observation!.accept).toHaveBeenCalledWith(
+      expect.objectContaining({ content: [{ type: "text", text: JSON.stringify(receipt) }] }),
+    );
+  });
+  it("rejects control results without control authorization", async () => {
+    const ctx = fixture();
+    Object.assign(ctx.observation!.request, {
+      method: "left_click",
+      arguments: {
+        app_ref: { pid: 42, window_id: 8 },
+        target: { type: "element", index: 0 },
+        state_id: "frozen",
+      },
+    });
+    await handleObservationFrame(
+      ctx,
+      frame("controlResult", {
+        ...association,
+        result: {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                action_sent: true,
+                dispatch_status: "sent",
+                state_sync_status: "not_requested",
+              }),
+            },
+          ],
+        },
+      }),
+    );
+    expect(ctx.observation!.accept).not.toHaveBeenCalled();
+  });
+});
+
+describe("control admission guards", () => {
+  it("requires read confirmation before control when returning state", async () => {
+    const ctx = fixture();
+    Object.assign(ctx.observation!.request, {
+      method: "left_click",
+      arguments: {
+        app_ref: { pid: 42, window_id: 8 },
+        target: { type: "element", index: 0 },
+        state_id: "frozen",
+        return_state: "compact",
+      },
+    });
+    Object.assign(ctx, { confirmControlRequest: vi.fn(async () => ({ allowed: true })) });
+    await handleObservationFrame(
+      ctx,
+      frame("confirmControl", { ...association, generation: 1, target }),
+    );
+    expect(ctx.confirmControlRequest).not.toHaveBeenCalled();
+    await handleObservationFrame(
+      ctx,
+      frame("confirmRead", { ...association, generation: 2, target }),
+    );
+    await handleObservationFrame(
+      ctx,
+      frame("confirmControl", { ...association, generation: 1, target }),
+    );
+    expect(ctx.confirmControlRequest).toHaveBeenCalledOnce();
+  });
+  it("does not ask for authorization for an unsupported mouse combination", async () => {
+    const ctx = fixture();
+    Object.assign(ctx.observation!.request, {
+      method: "left_click",
+      arguments: {
+        target: { type: "element", index: 0 },
+        state_id: "frozen",
+        mouse_button: "right",
+      },
+    });
+    Object.assign(ctx, { confirmControlRequest: vi.fn(async () => ({ allowed: true })) });
+    await handleObservationFrame(
+      ctx,
+      frame("confirmControl", { ...association, generation: 1, target }),
+    );
+    expect(ctx.confirmControlRequest).not.toHaveBeenCalled();
+  });
+});
+
+it("retains the authorized lease watcher after acknowledging its result", async () => {
+  const ctx = fixture();
+  Object.assign(ctx.observation!.request, {
+    method: "left_click",
+    arguments: { target: { type: "element", index: 0 }, state_id: "frozen" },
+  });
+  Object.assign(ctx, { confirmControlRequest: vi.fn(async () => ({ allowed: true })) });
+  const onLeaseWatch = vi.fn();
+  Object.assign(ctx.observation!, { onLeaseWatch });
+  await handleObservationFrame(
+    ctx,
+    frame("confirmControl", { ...association, generation: 1, target }),
+  );
+  await handleObservationFrame(
+    ctx,
+    frame("controlResult", {
+      ...association,
+      lease_watch: true,
+      result: {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              action_sent: true,
+              dispatch_status: "sent",
+              state_sync_status: "not_requested",
+            }),
+          },
+        ],
+      },
+    }),
+  );
+  expect(onLeaseWatch).toHaveBeenCalledOnce();
+  expect(ctx.observation!.accept).toHaveBeenCalledOnce();
+  expect(ctx.finish).not.toHaveBeenCalled();
+  expect(ctx.write).toHaveBeenLastCalledWith(
+    expect.objectContaining({ result: { ok: true, accepted: true, lease_watch: true } }),
+  );
+});
+
+describe("native observation remote association", () => {
+  it.each([
+    {},
+    { workspaceIdentity: "remote-wrong", remoteSessionId: "remote-1" },
+    { workspaceIdentity: "remote-workspace", remoteSessionId: "remote-wrong" },
+  ])("rejects missing or mismatched remote identity %j", async (remote) => {
+    const ctx = fixture();
+    Object.assign(ctx.observation!, {
+      association: { workspaceIdentity: "remote-workspace", remoteSessionId: "remote-1" },
+    });
+    await handleObservationFrame(
+      ctx,
+      frame("confirmRead", { ...association, ...remote, generation: 1, target }),
+    );
+    expect(ctx.confirmReadRequest).not.toHaveBeenCalled();
+    expect(ctx.reject).toHaveBeenCalled();
+  });
+  it("preserves complete remote identity during read confirmation", async () => {
+    const ctx = fixture(),
+      remote = { workspaceIdentity: "remote-workspace", remoteSessionId: "remote-1" };
+    Object.assign(ctx.observation!, { association: remote });
+    await handleObservationFrame(
+      ctx,
+      frame("confirmRead", { ...association, ...remote, generation: 1, target }),
+    );
+    expect(ctx.confirmReadRequest).toHaveBeenCalledOnce();
+    expect(ctx.write).toHaveBeenCalled();
+  });
+});
+
+it("preserves controller_busy as definitely not sent", async () => {
+  const ctx = fixture();
+  Object.assign(ctx.observation!.request, {
+    method: "left_click",
+    arguments: {
+      app_ref: { pid: 42, window_id: 8 },
+      target: { type: "element", index: 0 },
+      state_id: "frozen",
+    },
+  });
+  const receipt = {
+    code: "controller_busy",
+    message: "Computer use control failed",
+    action_sent: false,
+    dispatch_status: "not_sent",
+    state_sync_status: "not_requested",
+  };
+  await handleObservationFrame(
+    ctx,
+    frame("controlResult", {
+      ...association,
+      result: { isError: true, content: [{ type: "text", text: JSON.stringify(receipt) }] },
+    }),
+  );
+  expect(ctx.observation!.accept).toHaveBeenCalledWith(expect.objectContaining({ isError: true }));
+  expect(ctx.reject).not.toHaveBeenCalled();
+});
+it("rejects contradictory possibly_sent receipt", async () => {
+  const ctx = fixture();
+  Object.assign(ctx.observation!.request, {
+    method: "left_click",
+    arguments: { target: { type: "element", index: 0 }, state_id: "frozen" },
+  });
+  Object.assign(ctx.state, { controlTarget: { pid: 42, windowId: 8 } });
+  await handleObservationFrame(
+    ctx,
+    frame("controlResult", {
+      ...association,
+      result: {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              action_sent: false,
+              dispatch_status: "possibly_sent",
+              state_sync_status: "failed",
+            }),
+          },
+        ],
+      },
+    }),
+  );
+  expect(ctx.observation!.accept).not.toHaveBeenCalled();
+  expect(ctx.reject).toHaveBeenCalled();
+});
+
+it("accepts internal commit_state receipt without body or another read", async () => {
+  const ctx = fixture();
+  Object.assign(ctx.observation!.request, {
+    method: "commit_state",
+    arguments: { app_ref: { pid: 42, window_id: 8 }, state_id: "frozen" },
+  });
+  await handleObservationFrame(
+    ctx,
+    frame("observationResult", {
+      ...association,
+      result: {
+        content: [{ type: "text", text: JSON.stringify({ committed: true, state_id: "frozen" }) }],
+      },
+    }),
+  );
+  expect(ctx.observation!.accept).toHaveBeenCalledOnce();
+  expect(ctx.confirmReadRequest).not.toHaveBeenCalled();
+});
+it.each([
+  { committed: true, state_id: "wrong" },
+  { committed: true, state_id: "frozen", body: "secret" },
+])("rejects invalid commit_state receipt %j", async (receipt) => {
+  const ctx = fixture();
+  Object.assign(ctx.observation!.request, {
+    method: "commit_state",
+    arguments: { app_ref: { pid: 42, window_id: 8 }, state_id: "frozen" },
+  });
+  await handleObservationFrame(
+    ctx,
+    frame("observationResult", {
+      ...association,
+      result: { content: [{ type: "text", text: JSON.stringify(receipt) }] },
+    }),
+  );
+  expect(ctx.observation!.accept).not.toHaveBeenCalled();
 });

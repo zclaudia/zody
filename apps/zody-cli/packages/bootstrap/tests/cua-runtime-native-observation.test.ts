@@ -1,6 +1,6 @@
 import { duplexPair } from "node:stream";
 import { createInterface } from "node:readline";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { CuaSubmissionTurnScope } from "@zody/contracts";
 import type { AgentRuntime } from "@zody/core";
 import { observeCuaRuntimeOnce } from "../src/app/cua-runtime-native-observation.js";
@@ -187,6 +187,58 @@ function setup() {
   };
 }
 describe("observation composition", () => {
+  it("records real revocation without body or identity and never delivers a late candidate", async () => {
+    const f = setup();
+    const info = vi.fn();
+    const pending = observeCuaRuntimeOnce(f.control.runtime, { ...f.options, logger: { info } });
+    const failed = expect(pending).rejects.toThrow();
+    await f.bootstrap();
+    let release!: (value: { status: "candidate"; ref: typeof f.scope.ref }) => void;
+    vi.spyOn(f.scope.producerPort, "resolve").mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          release = resolve;
+        }),
+    );
+    f.deliver();
+    await expect.poll(() => Boolean(release)).toBe(true);
+    f.scope.invalidate("owner-revoked");
+    release({ status: "candidate", ref: f.scope.ref });
+    await failed;
+    const events = info.mock.calls.map(([message]) =>
+      JSON.parse(String(message).split("cua-read-delivery: ")[1]!),
+    );
+    expect(events.map((e) => e.event)).toEqual(["invalidated", "discarded"]);
+    expect(events[0].reason).toBe("owner-revoked");
+    expect(events[1].sequence).toBeGreaterThan(events[0].sequence);
+    expect(events[0].scopeDigest).toMatch(/^[a-f0-9]{64}$/);
+    expect(Object.keys(events[0]).sort()).toEqual([
+      "event",
+      "observationId",
+      "pid",
+      "reason",
+      "scopeDigest",
+      "sequence",
+    ]);
+    expect(events[0].scopeDigest).toBe(events[1].scopeDigest);
+    f.deliver();
+    f.helper.destroy();
+  });
+  it("diagnostic failure cannot grant or prevent normal authorized delivery", async () => {
+    const f = setup();
+    const pending = observeCuaRuntimeOnce(f.control.runtime, {
+      ...f.options,
+      logger: {
+        info() {
+          throw new Error("logger unavailable");
+        },
+      },
+    });
+    await f.bootstrap();
+    f.deliver();
+    await expect(pending).resolves.toMatchObject({ content: [{ type: "text" }] });
+    f.helper.destroy();
+  });
   it("rejects mismatched expected identity before connecting", async () => {
     const f = setup();
     let connected = false;
@@ -331,4 +383,239 @@ describe("observation composition", () => {
     expect(JSON.stringify(result)).not.toContain("private content");
     f.helper.destroy();
   });
+});
+
+it("returns a control receipt while retaining its authority watcher until owner invalidation", async () => {
+  const f = setup();
+  Object.assign(f.control.runtime, {
+    requestCuaNativeControlConfirmation: async () => ({ allowed: true }),
+  });
+  const invocation = new AbortController();
+  const pending = observeCuaRuntimeOnce(f.control.runtime, {
+    ...f.options,
+    signal: invocation.signal,
+    request: {
+      method: "left_click",
+      arguments: { target: { type: "element", index: 0 }, state_id: "frozen" },
+    },
+  });
+  await f.bootstrap();
+  f.send("c", "confirmControl", {
+    ...f.association,
+    generation: 1,
+    target: {
+      pid: 42,
+      windowId: 8,
+      layer: 0,
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      ownerName: "Fixture",
+      windowName: "Window",
+    },
+  });
+  await expect.poll(() => f.frames.some((frame) => frame.requestId === "c")).toBe(true);
+  f.send("r", "controlResult", {
+    ...f.association,
+    lease_watch: true,
+    result: {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            action_sent: true,
+            dispatch_status: "sent",
+            state_sync_status: "not_requested",
+          }),
+        },
+      ],
+    },
+  });
+  await expect(pending).resolves.toMatchObject({ content: [{ type: "text" }] });
+  expect(f.scope.closed).toBe(false);
+  invocation.abort();
+  await Promise.resolve();
+  expect(f.scope.closed).toBe(false);
+  vi.spyOn(f.scope.producerPort, "revoke").mockResolvedValue({
+    status: "revoked",
+    ref: { ...f.scope.ref, authorizationRevision: 2 },
+    revocationReason: "user-stop",
+    idempotent: true,
+    projection: {
+      status: "revoked",
+      ref: { ...f.scope.ref, authorizationRevision: 2 },
+      revocationReason: "user-stop",
+      nativeFence: "unknown",
+      mobileDelivery: "unknown",
+    },
+  });
+  f.scope.invalidate("owner-revoked");
+  await expect.poll(() => f.frames.some((frame) => frame.method === "revoked")).toBe(true);
+  f.helper.destroy();
+});
+
+it("routes tool Stop to the current owner revoke without opening another native connection", async () => {
+  const f = setup();
+  const revoke = vi.spyOn(f.scope.producerPort, "revoke").mockResolvedValue({
+    status: "revoked",
+    ref: f.scope.ref,
+    revocationReason: "user-stop",
+    idempotent: true,
+    projection: {
+      status: "revoked",
+      ref: f.scope.ref,
+      revocationReason: "user-stop",
+      nativeFence: "unknown",
+      mobileDelivery: "unknown",
+    },
+  });
+  const connect = vi.fn();
+  const callbacks = createCuaObservationCallbacks(() => f.control.runtime, {
+    ...f.options,
+    connect,
+  });
+  const result = await callbacks.observationOnce!(
+    { method: "stop_computer_control", arguments: {} },
+    { expected: f.expected },
+  );
+  expect(result).toMatchObject({ content: [{ type: "text" }] });
+  expect(revoke).toHaveBeenCalledWith({ ref: f.scope.ref, reason: "user-stop" });
+  expect(connect).not.toHaveBeenCalled();
+  f.helper.destroy();
+});
+
+it("treats repeated idle tool Stop as an inactive receipt without a grant", async () => {
+  const f = setup();
+  Object.assign(f.control.runtime, { createCuaSubmissionTurnScope: () => undefined });
+  const callbacks = createCuaObservationCallbacks(() => f.control.runtime, f.options);
+  for (let i = 0; i < 2; i++) {
+    const result = await callbacks.observationOnce!(
+      { method: "stop_computer_control", arguments: {} },
+      { expected: f.expected },
+    );
+    expect(JSON.parse(String(result.content[0]?.text))).toEqual({
+      action_sent: false,
+      dispatch_status: "not_sent",
+      state_sync_status: "not_requested",
+      control_status: "inactive",
+    });
+  }
+  f.helper.destroy();
+});
+
+it("closes a retained watcher before reporting inactive when the owner scope is gone", async () => {
+  const f = setup();
+  Object.assign(f.control.runtime, {
+    requestCuaNativeControlConfirmation: async () => ({ allowed: true }),
+    getActiveForegroundExecutionId: () => f.scope.runId,
+  });
+  const callbacks = createCuaObservationCallbacks(() => f.control.runtime, f.options);
+  const pending = callbacks.observationOnce!(
+    {
+      method: "left_click",
+      arguments: { target: { type: "element", index: 0 }, state_id: "frozen" },
+    },
+    { expected: f.expected },
+  );
+  await f.bootstrap();
+  f.send("c", "confirmControl", {
+    ...f.association,
+    generation: 1,
+    target: {
+      pid: 42,
+      windowId: 8,
+      layer: 0,
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      ownerName: "Fixture",
+      windowName: "Window",
+    },
+  });
+  await expect.poll(() => f.frames.some((frame) => frame.requestId === "c")).toBe(true);
+  f.send("r", "controlResult", {
+    ...f.association,
+    lease_watch: true,
+    result: {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({
+            action_sent: true,
+            dispatch_status: "sent",
+            state_sync_status: "not_requested",
+          }),
+        },
+      ],
+    },
+  });
+  await pending;
+  expect(f.scope.closed).toBe(false);
+  Object.assign(f.control.runtime, { createCuaSubmissionTurnScope: () => undefined });
+  const stopped = await callbacks.observationOnce!(
+    { method: "stop_computer_control", arguments: {} },
+    { expected: f.expected },
+  );
+  expect(f.scope.closed).toBe(true);
+  expect(JSON.parse(String(stopped.content[0]?.text))).toMatchObject({
+    control_status: "inactive",
+  });
+  f.helper.destroy();
+});
+
+it("carries the verified remote association into native bootstrap without changing the submission ref", async () => {
+  const f = setup();
+  Object.assign(f.control.runtime, { matchesCuaContext: () => true });
+  const pending = observeCuaRuntimeOnce(f.control.runtime, {
+    ...f.options,
+    expected: {
+      ...f.expected,
+      workspaceIdentity: f.expected.workspaceKey,
+      remoteSessionId: "remote-session",
+    },
+  });
+  await f.bootstrap();
+  const bootstrap = f.frames.find((frame) => frame.requestId === "b");
+  expect(bootstrap.result).toMatchObject({
+    workspaceIdentity: f.expected.workspaceKey,
+    remoteSessionId: "remote-session",
+    ref: f.scope.ref,
+  });
+  f.scope.invalidate("scope-closed");
+  await expect(pending).rejects.toThrow();
+  f.helper.destroy();
+});
+
+it("uses the existing workspace key for remote association when identity is absent", async () => {
+  const f = setup();
+  Object.assign(f.control.runtime, { matchesCuaContext: () => true });
+  const pending = observeCuaRuntimeOnce(f.control.runtime, {
+    ...f.options,
+    expected: { ...f.expected, remoteSessionId: "remote-session" },
+  });
+  await f.bootstrap();
+  expect(f.frames.find((frame) => frame.requestId === "b").result).toMatchObject({
+    workspaceIdentity: f.expected.workspaceKey,
+    remoteSessionId: "remote-session",
+  });
+  f.scope.invalidate("scope-closed");
+  await expect(pending).rejects.toThrow();
+  f.helper.destroy();
+});
+
+it("rejects a mismatched workspace identity before native connection", async () => {
+  const f = setup();
+  Object.assign(f.control.runtime, { matchesCuaContext: () => true });
+  const connect = vi.fn();
+  await expect(
+    observeCuaRuntimeOnce(f.control.runtime, {
+      ...f.options,
+      connect,
+      expected: { ...f.expected, workspaceIdentity: "different", remoteSessionId: "remote" },
+    }),
+  ).rejects.toThrow("scope_mismatch");
+  expect(connect).not.toHaveBeenCalled();
+  f.helper.destroy();
 });

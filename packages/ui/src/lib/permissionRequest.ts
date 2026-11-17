@@ -28,6 +28,19 @@ export function isCuaReadConfirmRequest(request: { kind?: string | null; raw?: u
   );
 }
 
+/** 控制必须独立明确确认；不能将读取或截图的确认当作控制 grant。 */
+export function isCuaControlConfirmRequest(request: {
+  kind?: string | null;
+  raw?: unknown;
+}): boolean {
+  if (normalizeToolName(request.kind) === "cua_ax_control_confirm") return true;
+  if (!isPlainRecord(request.raw)) return false;
+  return (
+    (normalizeToolName(request.raw.toolName) ?? normalizeToolName(request.raw.tool_name)) ===
+    "cua_ax_control_confirm"
+  );
+}
+
 /** 目标窗口的展示事实；字段畸形（类型不匹配）时对应槽位为 null，不崩溃。 */
 export interface CuaScreenshotConfirmTargetFacts {
   ownerName: string | null;

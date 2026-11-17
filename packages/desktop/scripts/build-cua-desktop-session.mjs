@@ -39,7 +39,6 @@ import { pathIsReadable, runNativeTests } from "./lib/cua-desktop-session-native
 import { describeCandidateFetchMaterial } from "./lib/cua-desktop-session-dependencies.mjs";
 import {
   appInfoPlist,
-  loadIdentityPins,
   pinsHeader,
   prepareSessionSourceStage,
   sessionCompileArgs,
@@ -51,6 +50,7 @@ import {
   run,
   sha256File,
 } from "./lib/cua-desktop-session-toolchain.mjs";
+import { loadIdentityPins } from "./macos-cua-narrow-resources-pins.mjs";
 
 const ENTRY_SOURCES = {
   "host-entry.mjs": "host-entry.ts",
@@ -69,11 +69,25 @@ async function resolvePublicExport(moduleDir, specifier) {
   return join(moduleDir, target);
 }
 
+export async function resolveDesktopSessionIdentityPins(options = {}) {
+  const identityProfile = options.identityProfile ?? "local-self-signed";
+  if (!["local-self-signed", "developer-id"].includes(identityProfile)) {
+    throw new Error(`invalid identity profile: ${identityProfile}`);
+  }
+  if (identityProfile === "developer-id" && !options.identityPinsPath) {
+    throw new Error("developer-id requires explicit --identity-pins");
+  }
+  const identityPinsPath = resolve(options.identityPinsPath ?? DEFAULT_IDENTITY_PINS);
+  const identityPins = await loadIdentityPins({ path: identityPinsPath, identityProfile });
+  return { identityPinsPath, identityPins };
+}
+
 export async function buildCuaDesktopSession(options = {}) {
+  // 中文原因：身份配置必须在运行 Node 或探测工具链之前验证，避免发布构建回退到本地 pin。
+  const { identityPinsPath, identityPins } = await resolveDesktopSessionIdentityPins(options);
   const outputRoot = resolve(options.outputRoot ?? DEFAULT_OUTPUT_ROOT);
   const visualRoot = resolve(options.visualRoot ?? DEFAULT_VISUAL_ROOT);
   const nodePath = resolve(options.nodePath ?? DEFAULT_NODE_PATH);
-  const identityPinsPath = resolve(options.identityPinsPath ?? DEFAULT_IDENTITY_PINS);
   const runTests = options.runTests !== false;
   const staticlib = join(visualRoot, "lib/libcua_macos_visual_round11.a");
   const visualHeader = join(visualRoot, "lib/cua_r11_visual.h");
@@ -88,7 +102,6 @@ export async function buildCuaDesktopSession(options = {}) {
     if (!(await pathIsReadable(path))) throw new Error(`${label} unavailable: ${path}`);
   }
 
-  const identityPins = await loadIdentityPins(identityPinsPath);
   const unsupportedModules = await loadUnsupportedNativeModules(UNSUPPORTED_NATIVE_PINS);
   const toolchain = await probeToolchain();
   const nodeVersionResult = await run(nodePath, ["--version"], {
@@ -335,12 +348,13 @@ Options:
   --output-root <dir>       default ${DEFAULT_OUTPUT_ROOT}
   --visual-root <dir>       default ${DEFAULT_VISUAL_ROOT}
   --node <path>             default ${DEFAULT_NODE_PATH}
-  --identity-pins <path>    default ${DEFAULT_IDENTITY_PINS}
+  --identity-profile <kind> local-self-signed (default) or developer-id
+  --identity-pins <path>    local default ${DEFAULT_IDENTITY_PINS}; required for developer-id
   --skip-tests              compile/package only
 `;
 
-function parseArgs(argv) {
-  const options = {};
+export function parseArgs(argv) {
+  const options = { identityProfile: "local-self-signed" };
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
     if (value === "--help" || value === "-h") return { help: true };
@@ -354,6 +368,12 @@ function parseArgs(argv) {
     else if (value === "--visual-root") options.visualRoot = resolve(next());
     else if (value === "--node") options.nodePath = resolve(next());
     else if (value === "--identity-pins") options.identityPinsPath = resolve(next());
+    else if (value === "--identity-profile") {
+      options.identityProfile = next();
+      if (!["local-self-signed", "developer-id"].includes(options.identityProfile)) {
+        throw new Error(`invalid identity profile: ${options.identityProfile}`);
+      }
+    }
     else if (value === "--skip-tests") options.runTests = false;
     else throw new Error(`unknown argument: ${value}`);
   }

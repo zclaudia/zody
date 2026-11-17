@@ -173,10 +173,16 @@ class AuthorityServer {
             revoked = true;
             write_line(server_fd_, "{\"method\":\"revoked\"}");
           }
-          const char* status = revoked ? "revoked" : "candidate";
-          write_line(server_fd_,
-                     "{\"requestId\":\"" + id + "\",\"result\":{\"ok\":true,\"projection\":{\"status\":\"" +
-                         status + "\"}}}");
+          NSString* status = revoked ? @"revoked" : @"candidate";
+          NSDictionary* payload = frame[@"payload"];
+          if (![payload[@"workspaceIdentity"] isEqual:@"identity"] ||
+              ![payload[@"remoteSessionId"] isEqual:@"remote"]) std::abort();
+          NSMutableDictionary* result = [payload mutableCopy];
+          result[@"ok"] = @YES;
+          result[@"projection"] = @{ @"status":status, @"ref":payload[@"ref"] };
+          NSDictionary* response = @{ @"requestId":frame[@"requestId"], @"result":result };
+          NSData* encoded = [NSJSONSerialization dataWithJSONObject:response options:0 error:nil];
+          write_line(server_fd_, std::string(static_cast<const char*>(encoded.bytes), encoded.length));
         }
         newline = buffer.find('\n');
       }
@@ -345,6 +351,8 @@ struct Harness {
     context.producer_incarnation = @"producer";
     context.run_id = @"run";
     context.turn_id = @"turn";
+    context.workspace_identity = @"identity";
+    context.remote_session_id = @"remote";
     context.output_path = [NSString stringWithUTF8String:output_path.c_str()];
     context.window_id = kWindowId;
     context.pid = kPid;

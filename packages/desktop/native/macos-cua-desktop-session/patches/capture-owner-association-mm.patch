@@ -1,0 +1,45 @@
+--- a/src/capture_owner.mm
++++ b/src/capture_owner.mm
+@@ -54,6 +54,8 @@
+   NSString* producer = nil;
+   NSString* run_id = nil;
+   NSString* turn_id = nil;
++  NSString* workspace_identity = nil;
++  NSString* remote_session_id = nil;
+   cua_r11_visual_request target{};
+ };
+ 
+@@ -112,18 +114,21 @@
+ 
+ bool authority_candidate(AuthorityClient& authority, CheckpointContext& context,
+                          std::string& error) {
+-  NSDictionary* payload = @{
++  NSMutableDictionary* payload = [@{
+     @"traceId" : context.trace_id,
+     @"ref" : context.ref,
+     @"producerIncarnation" : context.producer,
+     @"runId" : context.run_id,
+     @"turnId" : context.turn_id,
+-  };
++  } mutableCopy];
++  if (context.workspace_identity) payload[@"workspaceIdentity"] = context.workspace_identity;
++  if (context.remote_session_id) payload[@"remoteSessionId"] = context.remote_session_id;
+   NSDictionary* result = nil;
+   if (!authority.request(@"check", payload, &result, error)) return false;
+   if (![result[@"ok"] boolValue]) return false;
++  for (NSString* key in payload) if (![result[key] isEqual:payload[key]]) return false;
+   NSDictionary* projection = result[@"projection"];
+-  return [projection[@"status"] isEqualToString:@"candidate"];
++  return [projection[@"status"] isEqualToString:@"candidate"] && [projection[@"ref"] isEqual:context.ref];
+ }
+ 
+ int32_t checkpoint(void* raw, uint64_t operation_id, uint32_t checkpoint_id, uint32_t window_id,
+@@ -273,6 +278,8 @@
+   state->producer = context.producer_incarnation;
+   state->run_id = context.run_id;
+   state->turn_id = context.turn_id;
++  state->workspace_identity = context.workspace_identity;
++  state->remote_session_id = context.remote_session_id;
+   state->target.window_id = context.window_id;
+   state->target.pid = context.pid;
+   state->target.layer = context.layer;

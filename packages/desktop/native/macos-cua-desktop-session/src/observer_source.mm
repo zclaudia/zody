@@ -1,10 +1,12 @@
 #include "observer_source.h"
 #include "observer_session_status.h"
+#include "observer_system_view.h"
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 #include <dlfcn.h>
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 
 namespace zody::cua::desktop_session {
@@ -116,15 +118,15 @@ bool bool_attr(AXUIElementRef e, CFStringRef key, bool& value) {
 }
 using Deadline = std::chrono::steady_clock::time_point;
 // 中文原因：每次 IPC 使用总预算的剩余时间，避免单次 2 秒超时叠加越过观察期限。
-bool prepare_read(AXUIElementRef node, const Deadline& deadline, std::string& error) {
+bool prepare_read(AXUIElementRef node, const Deadline& deadline, std::string& error, const ObserverAXReader* reader=nullptr) {
   auto remaining=std::chrono::duration<double>(deadline-std::chrono::steady_clock::now()).count();
   if (remaining<=0) { error="timeout"; return false; }
-  if (AXUIElementSetMessagingTimeout(node,static_cast<float>(std::min(2.0,remaining)))!=kAXErrorSuccess) { error="structured_state_unavailable"; return false; }
+  if ((reader ? reader->timeout : AXUIElementSetMessagingTimeout)(node,static_cast<float>(std::min(2.0,remaining)))!=kAXErrorSuccess) { error="structured_state_unavailable"; return false; }
   return true;
 }
-id attr(AXUIElementRef e, CFStringRef key, bool required, bool& truncated, std::string& error, const Deadline* deadline=nullptr) {
-  if (deadline && !prepare_read(e,*deadline,error)) return nil;
-  CFTypeRef raw = nullptr; AXError status = AXUIElementCopyAttributeValue(e,key,&raw);
+id attr(AXUIElementRef e, CFStringRef key, bool required, bool& truncated, std::string& error, const Deadline* deadline=nullptr, const ObserverAXReader* reader=nullptr) {
+  if (deadline && !prepare_read(e,*deadline,error,reader)) return nil;
+  CFTypeRef raw = nullptr; AXError status = (reader ? reader->attribute : AXUIElementCopyAttributeValue)(e,key,&raw);
   const auto disposition=observer_attribute_disposition(status,required);
   if (disposition==ObserverAttributeDisposition::Absent) { if (raw) CFRelease(raw); return [NSNull null]; }
   if (disposition==ObserverAttributeDisposition::Failure || !raw) {
@@ -170,83 +172,55 @@ bool eligible_target(NSRunningApplication* app, uint32_t wid, AXUIElementRef win
   if (!observer_eligible(true,true,true,false,app != nil,app.hidden,onscreen && info_for(app.processIdentifier,wid,onscreen),known,minimized)) { error="element_unavailable"; observer_diagnostic("eligible", error); return false; }
   return true;
 }
-// 中文原因：仅在已有错窗拒绝后采集受限归属元数据；失败与超时不覆盖原错误。
-void diagnose_window_conflict(AXUIElementRef node, AXUIElementRef root, pid_t pid, uint32_t wid,
-                              uint32_t direct_id, size_t depth, const Deadline& deadline, GetWindow get_window) {
-  std::string role="unknown", direct="unknown", window="unknown", ignored;
-  bool same_reference=false;
-  if (std::chrono::steady_clock::now() < deadline) {
-    NSArray* all=cg_windows(kCGWindowListOptionAll);
-    if (all) {
-      direct="missing";
-      for (NSDictionary* info in all) if ([info[(__bridge NSString*)kCGWindowNumber] unsignedIntValue] == direct_id) {
-        direct = direct_id == wid ? "target" : [info[(__bridge NSString*)kCGWindowOwnerPID] intValue] == pid ? "same_process" : "other_process";
-        break;
-      }
-    }
-  }
-  if (prepare_read(node, deadline, ignored)) {
-    CFTypeRef raw=nullptr; AXError status=AXUIElementCopyAttributeValue(node,kAXRoleAttribute,&raw);
-    if (status==kAXErrorSuccess && raw && CFGetTypeID(raw)==CFStringGetTypeID()) {
-      if (CFEqual(raw,kAXWindowRole)) role="window";
-      else if (CFEqual(raw,kAXButtonRole)) role="button";
-      else if (CFEqual(raw,kAXStaticTextRole) || CFEqual(raw,kAXTextFieldRole) || CFEqual(raw,kAXTextAreaRole)) role="text";
-      else if (CFEqual(raw,kAXGroupRole)) role="group";
-      else role="other";
-    }
-    if (raw) CFRelease(raw);
-  }
-  if (prepare_read(node, deadline, ignored)) {
-    CFTypeRef raw=nullptr; AXError status=AXUIElementCopyAttributeValue(node,kAXWindowAttribute,&raw);
-    if (status==kAXErrorNoValue || status==kAXErrorAttributeUnsupported || (status==kAXErrorSuccess && !raw)) window="missing";
-    else if (status==kAXErrorSuccess && raw) {
-      if (CFGetTypeID(raw)!=AXUIElementGetTypeID()) window="invalid";
-      else {
-        same_reference=CFEqual(raw,root);
-        pid_t actual_pid=0; uint32_t actual_id=0;
-        if (prepare_read((AXUIElementRef)raw, deadline, ignored) && AXUIElementGetPid((AXUIElementRef)raw,&actual_pid)==kAXErrorSuccess &&
-            std::chrono::steady_clock::now() < deadline && get_window((AXUIElementRef)raw,&actual_id)==kAXErrorSuccess && actual_id) {
-          window = actual_pid == pid && actual_id == wid ? "target" : actual_id == direct_id ? "direct" : "other";
-        }
-      }
-    }
-    if (raw) CFRelease(raw);
-  }
-  observer_conflict_diagnostic(depth==0,role,direct,window,same_reference);
-}
 bool walk(AXUIElementRef node, AXUIElementRef root, pid_t pid, uint32_t wid, size_t depth,
           std::chrono::steady_clock::time_point deadline, NSMutableArray* elements,
-          NSMutableArray* handles, bool& truncated, std::string& error) {
+          NSMutableArray* handles, bool& truncated, std::string& error, const ObserverAXReader& reader) {
   if (std::chrono::steady_clock::now() >= deadline) { error="timeout"; return false; }
   if (!observer_traversal_admit(elements.count,depth,truncated)) return true;
-  if (!prepare_read(node,deadline,error)) return false;
+  if (!prepare_read(node,deadline,error,&reader)) return false;
   pid_t owner=0;
-  AXError pid_status=AXUIElementGetPid(node,&owner);
+  AXError pid_status=reader.pid(node,&owner);
   if (pid_status!=kAXErrorSuccess || !observer_window_matches(pid,owner,false,wid,0)) { error="element_unavailable"; observer_diagnostic("node_pid", error, pid_status); return false; }
-  auto get_window=reinterpret_cast<GetWindow>(dlsym(RTLD_DEFAULT,"_AXUIElementGetWindow"));
+  auto get_window=reader.window;
   if (!get_window) { error="broker_unavailable"; return false; }
-  uint32_t direct_id=0;
-  if (!prepare_read(node,deadline,error)) return false;
-  if (get_window(node,&direct_id)==kAXErrorSuccess && !observer_window_matches(pid,owner,true,wid,direct_id)) { error="element_unavailable"; observer_diagnostic(observer_direct_window_mismatch_phase(direct_id), error); if (direct_id) diagnose_window_conflict(node,root,pid,wid,direct_id,depth,deadline,get_window); return false; }
-  if (!prepare_read(node,deadline,error)) return false;
-  CFTypeRef raw_window=nullptr; AXError window_status=AXUIElementCopyAttributeValue(node,kAXWindowAttribute,&raw_window);
+  uint32_t direct_id=0;pid_t actual_pid=0;
+  if (!prepare_read(node,deadline,error,&reader)) return false;
+  const AXError direct_status=get_window(node,&direct_id);
+  if (!reader.actual_pid || reader.actual_pid(node,&actual_pid)!=kAXErrorSuccess || actual_pid<=0) {
+    error="element_unavailable";observer_diagnostic("node_pid",error);return false;
+  }
+  if (direct_status!=kAXErrorSuccess) { error="element_unavailable";observer_diagnostic("node_direct_window",error,direct_status);return false; }
+  if (actual_pid!=pid) {
+    // 中文原因：跨进程节点只能成为不透明截止边界，永不进入正文/children/actions 或索引。
+    // root、未知服务、身份变化与预算耗尽仍拒绝，签名不是窗口归属授权。
+    if (depth>0 && reader.opaque && reader.opaque(node,pid,wid,actual_pid,direct_id,deadline) &&
+        std::chrono::steady_clock::now()<deadline) {
+      truncated=true;
+      std::fprintf(stderr,"[cua-native] observation-system-view-omitted {\"reason\":\"appkit_theme_widget_remote_view\"}\n");
+      return true;
+    }
+    error="element_unavailable";observer_diagnostic("node_pid",error);return false;
+  }
+  if (!observer_window_matches(pid,owner,true,wid,direct_id)) { error="element_unavailable"; observer_diagnostic(observer_direct_window_mismatch_phase(direct_id), error); return false; }
+  if (!prepare_read(node,deadline,error,&reader)) return false;
+  CFTypeRef raw_window=nullptr; AXError window_status=reader.attribute(node,kAXWindowAttribute,&raw_window);
   if (window_status==kAXErrorSuccess && raw_window) {
-    auto get=reinterpret_cast<GetWindow>(dlsym(RTLD_DEFAULT,"_AXUIElementGetWindow")); uint32_t actual=0;
-    if (CFGetTypeID(raw_window)==AXUIElementGetTypeID() && !prepare_read((AXUIElementRef)raw_window,deadline,error)) { CFRelease(raw_window); return false; }
+    auto get=reader.window; uint32_t actual=0;
+    if (CFGetTypeID(raw_window)==AXUIElementGetTypeID() && !prepare_read((AXUIElementRef)raw_window,deadline,error,&reader)) { CFRelease(raw_window); return false; }
     bool matches=CFGetTypeID(raw_window)==AXUIElementGetTypeID() && get && get((AXUIElementRef)raw_window,&actual)==kAXErrorSuccess && actual==wid;
     CFRelease(raw_window); if (!matches) { error="element_unavailable"; observer_diagnostic("node_ax_window", error, window_status); return false; }
   } else {
     if (raw_window) CFRelease(raw_window);
     if (window_status!=kAXErrorNoValue && window_status!=kAXErrorAttributeUnsupported) { error="structured_state_unavailable"; return false; }
   }
-  id role=attr(node,kAXRoleAttribute,true,truncated,error,&deadline); if (!role) return false;
+  id role=attr(node,kAXRoleAttribute,true,truncated,error,&deadline,&reader); if (!role) return false;
   if ([role isEqualToString:(__bridge NSString*)kAXApplicationRole] ||
       [role isEqualToString:(__bridge NSString*)kAXMenuBarRole]) { error="element_unavailable"; observer_diagnostic("node_role", error); return false; }
-  id title=attr(node,kAXTitleAttribute,false,truncated,error,&deadline); if (!title) return false;
-  id value=attr(node,kAXValueAttribute,false,truncated,error,&deadline); if (!value) return false;
+  id title=attr(node,kAXTitleAttribute,false,truncated,error,&deadline,&reader); if (!title) return false;
+  id value=attr(node,kAXValueAttribute,false,truncated,error,&deadline,&reader); if (!value) return false;
   NSMutableArray* actions = [NSMutableArray array]; CFArrayRef raw_actions = nullptr;
-  if (!prepare_read(node,deadline,error)) return false;
-  AXError actions_status=AXUIElementCopyActionNames(node,&raw_actions);
+  if (!prepare_read(node,deadline,error,&reader)) return false;
+  AXError actions_status=reader.actions(node,&raw_actions);
   if (actions_status==kAXErrorSuccess && raw_actions && CFGetTypeID(raw_actions)==CFArrayGetTypeID()) {
     for (id action in (__bridge NSArray*)raw_actions) {
       if (actions.count >= kMaxElements) { truncated=true; break; }
@@ -258,17 +232,24 @@ bool walk(AXUIElementRef node, AXUIElementRef root, pid_t pid, uint32_t wid, siz
   }
   [elements addObject:@{ @"index": @(elements.count), @"kind": role, @"title": title, @"value": value, @"actions": actions }];
   [handles addObject:(__bridge id)node];
-  if (!prepare_read(node,deadline,error)) return false;
-  CFTypeRef children = nullptr; AXError status = AXUIElementCopyAttributeValue(node,kAXChildrenAttribute,&children);
+  if (!prepare_read(node,deadline,error,&reader)) return false;
+  CFTypeRef children = nullptr; AXError status = reader.attribute(node,kAXChildrenAttribute,&children);
   if (status==kAXErrorNoValue || status==kAXErrorAttributeUnsupported) { if(children) CFRelease(children); return true; }
   if (status!=kAXErrorSuccess || !children || CFGetTypeID(children)!=CFArrayGetTypeID()) { if(children) CFRelease(children); error="structured_state_unavailable"; return false; }
   bool ok=true; CFArrayRef list=(CFArrayRef)children;
   for (CFIndex i=0;i<CFArrayGetCount(list)&&ok;++i) {
     if (elements.count >= kMaxElements) { truncated=true; break; }
-    CFTypeRef child=CFArrayGetValueAtIndex(list,i); if (CFGetTypeID(child)==AXUIElementGetTypeID()) ok=walk((AXUIElementRef)child,root,pid,wid,depth+1,deadline,elements,handles,truncated,error);
+    CFTypeRef child=CFArrayGetValueAtIndex(list,i); if (CFGetTypeID(child)==AXUIElementGetTypeID()) ok=walk((AXUIElementRef)child,root,pid,wid,depth+1,deadline,elements,handles,truncated,error,reader);
   }
   CFRelease(children); return ok;
 }
+}
+bool observer_walk_tree(AXUIElementRef root, pid_t pid, uint32_t wid, ObserverReadDeadline deadline,
+                        NSMutableArray* elements, NSMutableArray* handles, bool& truncated,
+                        std::string& error, const ObserverAXReader& reader) {
+  const bool ok=walk(root,root,pid,wid,0,deadline,elements,handles,truncated,error,reader);
+  if (!ok) { [elements removeAllObjects]; [handles removeAllObjects]; }
+  return ok;
 }
 bool observer_eligible(bool console, bool login, bool lock_known, bool locked, bool hidden_known, bool hidden, bool onscreen, bool min_known, bool minimized) { return console && login && lock_known && !locked && hidden_known && !hidden && onscreen && min_known && !minimized; }
 NSArray* observer_list_apps(std::string& error) {
@@ -332,6 +313,43 @@ bool observer_resolve_window(id ref, ObserverWindow& result, std::string& error)
   result.target.owner_name=std::string((app.localizedName ?: @"").UTF8String); result.target.window_name=std::string(window_name.UTF8String);
   result.app=app_info(app); result.process_started=app.launchDate; result.window=std::shared_ptr<void>((void*)ax,[](void* p){ CFRelease(p); }); error.clear(); return true;
 }
+bool observer_dispatch_eligible(const ObserverWindow& window, std::string& error) {
+  // 跨进程 AX getter 返回后只用系统状态、进程与 CG 窗口事实重验，不做 AX RPC 或重建索引。
+  if (!window.window || !window.process_started || !window.target.identified()) {
+    error="element_unavailable"; return false;
+  }
+  if (!session_ok(error)) return false;
+  NSRunningApplication* app=[NSRunningApplication runningApplicationWithProcessIdentifier:window.target.pid];
+  if (!app || app.terminated || app.hidden || app.processIdentifier!=window.target.pid ||
+      !observer_same_process(window.process_started,app.launchDate)) {
+    error="element_unavailable"; return false;
+  }
+  NSArray* onscreen=cg_windows(kCGWindowListOptionOnScreenOnly);
+  if (!onscreen) { error="broker_unavailable"; return false; }
+  NSDictionary* match=nil; size_t matches=0;
+  for (NSDictionary* row in onscreen) {
+    id pid=row[(__bridge NSString*)kCGWindowOwnerPID];
+    id wid=row[(__bridge NSString*)kCGWindowNumber];
+    if (![pid isKindOfClass:NSNumber.class] || ![wid isKindOfClass:NSNumber.class]) continue;
+    if ([pid intValue]==window.target.pid && [wid unsignedIntValue]==window.target.window_id) {
+      match=row; ++matches;
+    }
+  }
+  CGRect bounds=CGRectZero;
+  id layer=match[(__bridge NSString*)kCGWindowLayer];
+  id rawBounds=match[(__bridge NSString*)kCGWindowBounds];
+  if (matches!=1 || ![layer isKindOfClass:NSNumber.class] || [layer intValue]!=0 ||
+      ![rawBounds isKindOfClass:NSDictionary.class] ||
+      !CGRectMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)rawBounds,&bounds) ||
+      CGRectIsNull(bounds) || CGRectIsEmpty(bounds) || !std::isfinite(bounds.origin.x) ||
+      !std::isfinite(bounds.origin.y) || !std::isfinite(bounds.size.width) ||
+      !std::isfinite(bounds.size.height) || app.terminated || app.hidden ||
+      !observer_same_process(window.process_started,app.launchDate)) {
+    error="element_unavailable"; return false;
+  }
+  if (!session_ok(error)) return false;
+  error.clear(); return true;
+}
 bool observer_read_tree(const ObserverWindow& window, NSMutableArray* elements, NSMutableArray* handles, bool& truncated, std::string& error) {
   truncated=false; if (!window.window || !elements || !handles) { error="structured_state_unavailable"; return false; }
   NSDictionary* ref=@{ @"pid": @(window.target.pid), @"window_id": @(window.target.window_id) }; ObserverWindow before;
@@ -339,8 +357,11 @@ bool observer_read_tree(const ObserverWindow& window, NSMutableArray* elements, 
   if (!observer_same_process(window.process_started,before.process_started) ||
       !CFEqual((CFTypeRef)before.window.get(),(CFTypeRef)window.window.get())) { error="stale_state"; return false; }
   auto deadline=std::chrono::steady_clock::now()+std::chrono::seconds(10);
-  if (!walk((AXUIElementRef)window.window.get(),(AXUIElementRef)window.window.get(),window.target.pid,window.target.window_id,0,
-            deadline,elements,handles,truncated,error)) { [elements removeAllObjects]; [handles removeAllObjects]; return false; }
+  const ObserverAXReader reader={AXUIElementGetPid,
+    reinterpret_cast<GetWindow>(dlsym(RTLD_DEFAULT,"_AXUIElementGetWindow")),
+    reinterpret_cast<AXError(*)(AXUIElementRef,pid_t*)>(dlsym(RTLD_DEFAULT,"_AXUIElementGetActualPid")),AXUIElementSetMessagingTimeout,AXUIElementCopyAttributeValue,AXUIElementCopyActionNames,observer_system_view_opaque};
+  if (!observer_walk_tree((AXUIElementRef)window.window.get(),window.target.pid,window.target.window_id,
+            deadline,elements,handles,truncated,error,reader)) return false;
   if (std::chrono::steady_clock::now() >= deadline) { [elements removeAllObjects]; [handles removeAllObjects]; error="timeout"; return false; }
   ObserverWindow after;
   if (!observer_resolve_window(ref,after,error)) { observer_diagnostic("read_resolve_after", error); [elements removeAllObjects]; [handles removeAllObjects]; return false; }

@@ -511,6 +511,7 @@ function resolveDeployedZodyAgentBinaryCommand(
 
 function resolveElectronRuntimeZodyAgentCommand(
   context: ZodyAgentCommandResolverContext,
+  packagedOnly = false,
 ): ZodyAgentCommand | null {
   // 桌面打包态：host 跑在 Electron utility process 里，process.execPath 指向 Electron Helper，
   // 它内置的 Node runtime 与 zody-cli 目标版本一致（Electron 41 = Node 24.x）。
@@ -521,8 +522,17 @@ function resolveElectronRuntimeZodyAgentCommand(
   if (!process.versions.electron) {
     return null;
   }
-  const bundlePath = findZodyAgentRuntimeNodeBundle();
-  if (!bundlePath) {
+  const resourcesPath = (process as NodeJS.Process & { resourcesPath?: string }).resourcesPath;
+  const bundlePath = packagedOnly
+    ? resourcesPath
+      ? join(
+          resourcesPath,
+          ZODY_AGENT_RUNTIME.bundledResourceDir,
+          ...ZODY_AGENT_RUNTIME.resolveNodeBundleSegments(),
+        )
+      : null
+    : findZodyAgentRuntimeNodeBundle();
+  if (!bundlePath || (packagedOnly && !existsSync(bundlePath))) {
     return null;
   }
   return {
@@ -647,9 +657,10 @@ export function resolveDefaultZodyAgentCommand(
     );
   }
 
-  // 顺序：env 显式覆盖 → monorepo dev 源码/dist（dev 改源码立刻生效，不会被远端历史装的 native binary
-  // 抢先匹配）→ 桌面打包态 Electron Node runtime 跑 zody.cjs → 已部署 native binary（远端 SSH 兜底）。
+  // 修复原因：打包App从仓库cwd启动会误选不完整开发入口，缺少storagePreparationEntry而令存储准备失败。
+  // env显式覆盖 → Electron包内JS → monorepo源码/dist → 旧Electron bundle → native；开发态保持原发现顺序。
   const bundled =
+    resolveElectronRuntimeZodyAgentCommand(context, true) ??
     resolveBundledWorkspaceZodyAgentCommand(context) ??
     resolveElectronRuntimeZodyAgentCommand(context);
   return applyPresentationSurfaceToCommand(

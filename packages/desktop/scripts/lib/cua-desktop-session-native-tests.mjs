@@ -8,20 +8,81 @@ import { compile, run, sha256File } from "./cua-desktop-session-toolchain.mjs";
 
 const TEST_CASES = [
   {
+    name: "capture-delivery-log",
+    source: "capture_delivery_log_test.mm",
+    sources: [],
+  },
+  {
+    name: "capture-association-borrow",
+    source: "capture_association_borrow_test.mm",
+    sources: [
+      "session_binding.mm",
+      "control_owner.mm",
+      "control_gate.mm",
+      "machine_lease.mm",
+    ],
+  },
+  {
+    name: "control-session",
+    source: "control_session_test.mm",
+    sources: [
+      "control_session.mm",
+      "control_owner.mm",
+      "control_gate.mm",
+      "control_ax.mm",
+      "observer_contract.mm",
+      "observer_state.mm",
+      "session_binding.mm",
+      "confirmation.mm",
+      "confirmation_state.mm",
+      "machine_lease.mm",
+    ],
+  },
+  {
+    name: "control-watcher",
+    source: "control_watcher_test.mm",
+    sources: ["control_watcher.mm"],
+  },
+  {
+    name: "control-ax",
+    source: "control_ax_test.mm",
+    sources: ["control_ax.mm"],
+  },
+  {
+    name: "control-owner",
+    source: "control_owner_test.mm",
+    sources: ["control_owner.mm", "control_gate.mm", "machine_lease.mm"],
+  },
+  {
+    name: "control-gate",
+    source: "control_gate_test.mm",
+    sources: ["control_gate.mm"],
+  },
+  {
     name: "observer-session-status",
     source: "observer_session_status_test.mm",
     sources: ["observer_session_status.mm"],
   },
-  { name: "observer-state", source: "observer_state_test.mm", sources: ["observer_state.mm"] },
+  {
+    name: "observer-state",
+    source: "observer_state_test.mm",
+    sources: ["observer_state.mm"],
+  },
   {
     name: "observer-session",
     source: "observer_session_test.mm",
     sources: [
       "observer_contract.mm",
       "observer_source.mm",
+      "observer_system_view.mm",
       "observer_session_status.mm",
       "observer_state.mm",
       "observer_session.mm",
+      "control_session.mm",
+      "control_owner.mm",
+      "control_gate.mm",
+      "control_ax.mm",
+      "machine_lease.mm",
       "session_binding.mm",
       "confirmation.mm",
       "confirmation_state.mm",
@@ -30,7 +91,26 @@ const TEST_CASES = [
   {
     name: "observer-source",
     source: "observer_source_test.mm",
-    sources: ["observer_source.mm", "observer_session_status.mm"],
+    sources: [
+      "observer_source.mm",
+      "observer_system_view.mm",
+      "observer_session_status.mm",
+    ],
+  },
+  {
+    name: "observer-system-view",
+    source: "observer_system_view_test.mm",
+    sources: ["observer_system_view.mm"],
+  },
+  {
+    name: "observer-opaque-view",
+    source: "observer_opaque_view_test.mm",
+    sources: [
+      "observer_source.mm",
+      "observer_system_view.mm",
+      "observer_session_status.mm",
+      "observer_state.mm",
+    ],
   },
   {
     name: "observer-contract",
@@ -75,7 +155,11 @@ const TEST_CASES = [
   {
     name: "session-cell-identity",
     source: "session_cell_identity_test.mm",
-    sources: ["session_node_process.mm", "bundle_paths.mm", "r11_self_identity.mm"],
+    sources: [
+      "session_node_process.mm",
+      "bundle_paths.mm",
+      "r11_self_identity.mm",
+    ],
   },
   {
     name: "session-cell-relay",
@@ -107,8 +191,14 @@ const TEST_CASES = [
       "session_workspace_handoff.mm",
       "session_workspace_runtime.mm",
       "session_supervisor.mm",
+      "control_session.mm",
+      "control_ax.mm",
+      "control_owner.mm",
+      "control_watcher.mm",
+      "control_gate.mm",
       "observer_contract.mm",
       "observer_source.mm",
+      "observer_system_view.mm",
       "observer_session_status.mm",
       "observer_state.mm",
       "observer_session.mm",
@@ -132,7 +222,10 @@ export async function pathIsReadable(path) {
     .catch(() => false);
 }
 
-export async function runNativeTests(toolchain, { srcDir, includeRoot, visualRoot, testRoot }) {
+export async function runNativeTests(
+  toolchain,
+  { srcDir, includeRoot, visualRoot, testRoot },
+) {
   await mkdir(testRoot, { recursive: true, mode: 0o700 });
   // 中文原因：confirmation-app-decision 会编译 session_supervisor.mm，其头文件链
   //（session_launcher.h / session_cell_transport.h / peer_auth.h）引用 R10 的

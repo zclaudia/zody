@@ -15,6 +15,8 @@ export interface CuaCaptureExpectation {
   readonly sessionId: string;
   readonly workspaceKey: string;
   readonly turnId: string;
+  readonly workspaceIdentity?: string;
+  readonly remoteSessionId?: string;
 }
 
 export interface CuaCaptureImageResult {
@@ -98,7 +100,17 @@ function readTrustedExpectation(
   const workspaceKey = trimNonEmpty(context.workspaceKey);
   const turnId = trimNonEmpty(context.turnId);
   if (!sessionId || !workspaceKey || !turnId) return undefined;
-  return Object.freeze({ sessionId, workspaceKey, turnId });
+  return Object.freeze({
+    sessionId,
+    workspaceKey,
+    turnId,
+    ...(trimNonEmpty(context.workspaceIdentity)
+      ? { workspaceIdentity: trimNonEmpty(context.workspaceIdentity) }
+      : {}),
+    ...(trimNonEmpty(context.remoteSessionId)
+      ? { remoteSessionId: trimNonEmpty(context.remoteSessionId) }
+      : {}),
+  });
 }
 
 function readCaptureTarget(value: unknown): CuaCaptureTarget | undefined {

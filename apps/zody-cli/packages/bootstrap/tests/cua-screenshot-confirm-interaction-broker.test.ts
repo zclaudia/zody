@@ -355,3 +355,27 @@ describe("cua_ax_read_confirm v4 pending interaction", () => {
     });
   });
 });
+
+it("projects control confirmation as a single-use interaction even with full access", async () => {
+  const { broker, registry, ingest } = makeBrokerContext({ fullAccess: true });
+  const pending = broker.requestPermission(
+    cuaConfirmRequest({
+      toolName: "cua_ax_control_confirm",
+      approvalMode: "user-once",
+      optionsPolicy: "no-always-allow",
+      suggestedPermissionUpdates: undefined,
+    }),
+  );
+  await pending.registered;
+  expect(registry.resolve("cua-confirm-7", { optionId: "deny" })).toBe(true);
+  await expect(pending).resolves.toMatchObject({ decision: "deny" });
+  const requested = findEvent(ingestedTypes(ingest), SessionEventType.PermissionRequested);
+  expect(requested).toMatchObject({
+    payload: {
+      toolName: "cua_ax_control_confirm",
+      approvalMode: "user-once",
+      optionsPolicy: "no-always-allow",
+    },
+  });
+  expect(requested?.payload).not.toHaveProperty("fullAccessSupported");
+});

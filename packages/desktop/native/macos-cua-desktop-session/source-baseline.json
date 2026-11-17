@@ -35,6 +35,22 @@
       "sha256": "2614f20dc473dd0c1f0bfe337ccc929560f387c0af0e23ffde6665352577ff1a",
       "beforeSha256": "66bac542860bb9fbc17ca0e53aca24db5bc53ea2949197e58461b0f293d292be",
       "afterSha256": "db8abff26208a164590919dfdaa138446f88a56c7c6232b59f486a47f7901116"
+    },
+    {
+      "id": "capture-owner-association-h",
+      "file": "src/capture_owner.h",
+      "path": "patches/capture-owner-association-h.patch",
+      "sha256": "983ba50d93365bf5db48f05fd2de406bfdf399aa9bd344703447dcc5459f2435",
+      "beforeSha256": "27f6b59c3c6e7bcb3804790499c836dcd2972ec978040546333ddb1da5553827",
+      "afterSha256": "fb67ed563bc77f4e6f28eb4ef4a4962a025fbaefdec257ff0fb3fcb5aace6868"
+    },
+    {
+      "id": "capture-owner-association-mm",
+      "file": "src/capture_owner.mm",
+      "path": "patches/capture-owner-association-mm.patch",
+      "sha256": "95a8d6261aad9dbab9783dc7e50cd981f5af61f77bc0af399e350c4f5870acad",
+      "beforeSha256": "db8abff26208a164590919dfdaa138446f88a56c7c6232b59f486a47f7901116",
+      "afterSha256": "f4dd9d052a1e191236c157181259cc7659e9d95fb844d28fde963dae09e57a93"
     }
   ]
 }

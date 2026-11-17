@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r2-lease",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r2-lease.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-r2-lease-title",
+      "description": "R2 lease title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R2_LEASE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "text-r2-lease-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"R2 Lease\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-lease-first",
+      "description": "R2 lease first cell",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R2_LEASE"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_r2_lease_first",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r2_lease_first",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 lease first",
+            "timeout_ms": 110000,
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile,rename}=await import('node:fs/promises');\nconst {performance}=await import('node:perf_hooks');const {setTimeout:pause}=await import('node:timers/promises');\nconst base=join('{{e2eRuntimeRoot}}','cua-r2-lease');const config=JSON.parse(await readFile(join(base,'config.json'),'utf8'));const dir=join(base,config.runId);\nconst f=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8'));const c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst getButton=async()=>{const state=await c.get_app_state({app_ref:ref,disable_diffing:true});if(typeof state!=='string'||!state.includes(f.targetMarker)||state.includes(f.siblingMarker))throw Error('R2_LEASE_STATE_FAILED');const e=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}}).find(x=>(x.title==='R2 Press'||x.title==='E2E_R2_PRESS')&&x.actions?.includes('AXPress'));if(!e||!Number.isSafeInteger(e.index))throw Error('R2_LEASE_BUTTON_MISSING');return e.index;};\nconst unpack=r=>r?.content?JSON.parse(r.content[0].text):r;\nconst index=await getButton();const receipt=unpack(await c.left_click({app_ref:ref,target:{type:'element',index},return_state:'none'}));\nif(receipt?.action_sent!==true||receipt?.dispatch_status!=='sent')throw Error('R2_LEASE_FIRST_NOT_SENT');\nawait writeFile(join(dir,'grant.tmp'),JSON.stringify({receipt,wallTime:Date.now(),monotonic:performance.now()}),{flag:'wx',mode:0o600});await rename(join(dir,'grant.tmp'),join(dir,'grant.json'));\nawait pause(65000);nodeRepl.write('R2_LEASE_FIRST:'+JSON.stringify(receipt));"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-lease-second",
+      "description": "R2 lease second cell",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R2_LEASE",
+          "toolu_r2_lease_first"
+        ],
+        "bodyExcludes": [
+          "toolu_r2_lease_second",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ],
+        "lastUserMessageIncludes": [
+          "R2_LEASE_FIRST:"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r2_lease_second",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 lease second",
+            "timeout_ms": 110000,
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile,rename}=await import('node:fs/promises');\nconst {performance}=await import('node:perf_hooks');const {setTimeout:pause}=await import('node:timers/promises');\nconst base=join('{{e2eRuntimeRoot}}','cua-r2-lease');const config=JSON.parse(await readFile(join(base,'config.json'),'utf8'));const dir=join(base,config.runId);\nconst f=JSON.parse(await readFile(join(dir,'manifest.json'),'utf8'));const c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst getButton=async()=>{const state=await c.get_app_state({app_ref:ref,disable_diffing:true});if(typeof state!=='string'||!state.includes(f.targetMarker)||state.includes(f.siblingMarker))throw Error('R2_LEASE_STATE_FAILED');const e=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}}).find(x=>(x.title==='R2 Press'||x.title==='E2E_R2_PRESS')&&x.actions?.includes('AXPress'));if(!e||!Number.isSafeInteger(e.index))throw Error('R2_LEASE_BUTTON_MISSING');return e.index;};\nconst unpack=r=>r?.content?JSON.parse(r.content[0].text):r;\nconst index=await getButton();const unsupported=unpack(await c.key({app_ref:ref,text:'A'}));\nif((unsupported?.code??unsupported?.error?.code)!=='action_unavailable'||unsupported.action_sent!==false||unsupported.dispatch_status!=='not_sent')throw Error('R2_LEASE_UNSUPPORTED_NOT_REJECTED');\nawait writeFile(join(dir,'observation.tmp'),JSON.stringify({unsupported,wallTime:Date.now(),monotonic:performance.now()}),{flag:'wx',mode:0o600});await rename(join(dir,'observation.tmp'),join(dir,'observation.json'));\nlet probe;for(let i=0;i<850;i++){try{probe=JSON.parse(await readFile(join(dir,'probe-acquired.json'),'utf8'));break}catch{}await pause(100);}\nif(probe?.status!=='acquired'||probe?.elapsedMs<130000)throw Error('R2_LEASE_PROBE_NOT_ACQUIRED');\nconst receipt=unpack(await c.left_click({app_ref:ref,target:{type:'element',index},return_state:'none'}));\nif(receipt?.action_sent!==true||receipt?.dispatch_status!=='sent')throw Error('R2_LEASE_SECOND_NOT_SENT');\nnodeRepl.write('R2_LEASE_SECOND:'+JSON.stringify(receipt));"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-lease-final",
+      "description": "R2 lease final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型只调用实际 SDK；授权、租约竞争、业务效果与原始收据由真实链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R2_LEASE",
+          "toolu_r2_lease_second"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY",
+          "E2E_CUA_R2_LEASE_DONE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "text-r2-lease-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R2_LEASE_DONE"
+        }
+      }
+    }
+  ]
+}

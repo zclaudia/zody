@@ -15,7 +15,8 @@ import {
 import { createNodeReplMcpRuntime, type NodeReplMcpRuntime } from "../src/node-repl-mcp-runtime.js";
 import { createInProcessNodeReplExecutor } from "../src/node-repl-session-executor.js";
 
-const IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lY1J3QAAAABJRU5ErkJggg==";
+const IMAGE_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lY1J3QAAAABJRU5ErkJggg==";
 const CONTEXT: ComputerUseRuntimeContext = {
   runtimeScope: "main",
   sessionId: "session-1",
@@ -91,7 +92,12 @@ describe("CuaCaptureComputerUseRuntime direct candidate", () => {
     expect(calls).toEqual([
       {
         target: { pid: 42, windowId: 99 },
-        expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+        expected: {
+          sessionId: "session-1",
+          workspaceKey: "workspace-1",
+          turnId: "turn-1",
+          workspaceIdentity: "workspace-1",
+        },
       },
     ]);
   });
@@ -192,7 +198,13 @@ describe("CuaCaptureComputerUseRuntime direct candidate", () => {
     expect(calls).toEqual([
       {
         target: { pid: 42, windowId: 99 },
-        expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+        expected: {
+          sessionId: "session-1",
+          workspaceKey: "workspace-1",
+          turnId: "turn-1",
+          workspaceIdentity: "workspace-1",
+          remoteSessionId: "remote-session-1",
+        },
       },
     ]);
 
@@ -256,7 +268,12 @@ describe("createCuaCaptureComputerUseRuntime", () => {
     expect(calls).toEqual([
       {
         target: { pid: 42, windowId: 99 },
-        expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+        expected: {
+          sessionId: "session-1",
+          workspaceKey: "workspace-1",
+          turnId: "turn-1",
+          workspaceIdentity: "workspace-1",
+        },
       },
     ]);
   });
@@ -326,12 +343,19 @@ describe("createCuaCaptureComputerUseRuntime", () => {
     expect(calls).toEqual([
       {
         target: { pid: 42, windowId: 99 },
-        expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+        expected: {
+          sessionId: "session-1",
+          workspaceKey: "workspace-1",
+          turnId: "turn-1",
+          workspaceIdentity: "workspace-1",
+          remoteSessionId: "remote-session-1",
+        },
       },
     ]);
   });
 
-  it("fails closed for forged context, target or unsupported tools", async () => {    let captures = 0;
+  it("fails closed for forged context, target or unsupported tools", async () => {
+    let captures = 0;
     const captureRuntime = createCuaCaptureComputerUseRuntime({
       async captureOnce() {
         captures += 1;
@@ -352,7 +376,10 @@ describe("createCuaCaptureComputerUseRuntime", () => {
       method: "screenshot",
       input: { target: { pid: 1, windowId: 2 } },
     });
-    expect(forgedReply).toMatchObject({ ok: false, error: expect.stringContaining("untrusted_context") });
+    expect(forgedReply).toMatchObject({
+      ok: false,
+      error: expect.stringContaining("untrusted_context"),
+    });
 
     const missingTurn = await broker.mint({
       invocationId: "inv-missing-turn",
@@ -486,11 +513,32 @@ describe("createCuaCaptureComputerUseRuntime", () => {
       expect(calls).toEqual([
         {
           target: { pid: 42, windowId: 99 },
-          expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+          expected: {
+            sessionId: "session-1",
+            workspaceKey: "workspace-1",
+            turnId: "turn-1",
+            workspaceIdentity: "workspace-1",
+          },
         },
       ]);
     } finally {
       await client.close();
     }
   });
+});
+
+it("preserves trusted workspace and remote session association for screenshot capture", async () => {
+  const calls: CuaCaptureExpectation[] = [];
+  const runtime = createCuaCaptureComputerUseRuntime({
+    async captureOnce(_target, options) {
+      calls.push(options.expected);
+      return imageResult();
+    },
+  });
+  await runtime.execute({
+    toolName: "screenshot",
+    arguments: { target: { pid: 42, windowId: 99 } },
+    context: { ...CONTEXT, remoteSessionId: "remote-1" },
+  });
+  expect(calls[0]).toMatchObject({ workspaceIdentity: "workspace-1", remoteSessionId: "remote-1" });
 });

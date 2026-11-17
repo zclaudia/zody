@@ -2,6 +2,7 @@
 #import <Foundation/Foundation.h>
 #import <ApplicationServices/ApplicationServices.h>
 #include <memory>
+#include <chrono>
 #include <string>
 #include "session_binding.h"
 namespace zody::cua::desktop_session {
@@ -18,6 +19,20 @@ ObserverAttributeDisposition observer_attribute_disposition(AXError status, bool
 bool observer_same_process(NSDate* expected, NSDate* actual);
 bool observer_unique_count(size_t count);
 bool observer_window_matches(pid_t expected_pid, pid_t actual_pid, bool has_window_id, uint32_t expected_id, uint32_t actual_id);
+using ObserverReadDeadline = std::chrono::steady_clock::time_point;
+// 生产与回归共用同一遍历；依赖只在调用栈内传入，不引入可变全局或第二状态 owner。
+struct ObserverAXReader {
+  AXError (*pid)(AXUIElementRef, pid_t*);
+  AXError (*window)(AXUIElementRef, uint32_t*);
+  AXError (*actual_pid)(AXUIElementRef, pid_t*);
+  AXError (*timeout)(AXUIElementRef, float);
+  AXError (*attribute)(AXUIElementRef, CFStringRef, CFTypeRef*);
+  AXError (*actions)(AXUIElementRef, CFArrayRef*);
+  bool (*opaque)(AXUIElementRef, pid_t, uint32_t, pid_t, uint32_t, ObserverReadDeadline);
+};
+bool observer_walk_tree(AXUIElementRef root, pid_t pid, uint32_t wid, ObserverReadDeadline deadline,
+                        NSMutableArray* elements, NSMutableArray* handles, bool& truncated,
+                        std::string& error, const ObserverAXReader& reader);
 struct ObserverWindow {
   SessionTarget target;
   NSDictionary* app = nil;
@@ -28,6 +43,8 @@ struct ObserverWindow {
 NSArray* observer_list_apps(std::string& error);
 NSArray* observer_list_windows(id app_ref, std::string& error);
 bool observer_resolve_window(id app_ref, ObserverWindow& result, std::string& error);
+// 最终准入前的非 AX 资格检查，不读取正文、不重新解析 AX 树。
+bool observer_dispatch_eligible(const ObserverWindow& window, std::string& error);
 // 必须仅在本次正文授权后调用；handles 与 elements 索引一一对应。
 bool observer_read_tree(const ObserverWindow& window, NSMutableArray* elements,
                         NSMutableArray* handles, bool& truncated, std::string& error);

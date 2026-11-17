@@ -11,16 +11,19 @@
 #include <unistd.h>
 
 #include <chrono>
+#include <condition_variable>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <thread>
 #include <utility>
 
 #include "authority_client.h"
 #include "capture_owner.h"
+#include "capture_delivery_log.h"
 #include "cua_desktop_session_pins.h"
 #include "machine_lease.h"
 #include "peer_auth.h"
@@ -388,25 +391,20 @@ bool binding_from_bootstrap(NSDictionary* result, const std::string& expected_pr
     error = "bootstrap-ref-or-target-missing";
     return false;
   }
-  NSDictionary* frame = @{
+  NSMutableDictionary* frame = [@{
     @"traceId" : result[@"traceId"] == nil ? @"" : result[@"traceId"],
     @"producerIncarnation" : result[@"producerIncarnation"],
     @"runId" : result[@"runId"] == nil ? @"" : result[@"runId"],
     @"turnId" : result[@"turnId"] == nil ? @"" : result[@"turnId"],
     @"ref" : ref,
     @"target" : target,
-  };
+  } mutableCopy];
+  for (NSString* key in @[@"workspaceIdentity", @"remoteSessionId"]) if (result[key]) frame[key] = result[key];
   return parse_session_binding(frame, binding, error);
 }
 
 NSDictionary* association_payload(const SessionBinding& binding) {
-  return @{
-    @"ref" : session_ref_dictionary(binding),
-    @"traceId" : ns_string(binding.trace_id),
-    @"producerIncarnation" : ns_string(binding.producer_incarnation),
-    @"runId" : ns_string(binding.run_id),
-    @"turnId" : ns_string(binding.turn_id),
-  };
+  return session_association_dictionary(binding);
 }
 
 // 中文原因：ownerName/windowName 来自 OS 窗口事实并最终展示在 App 弹窗里。只过滤
@@ -445,14 +443,9 @@ std::string sanitize_display_name(const std::string& value) {
 
 // confirm 帧 payload：generation + 与 check 帧同源同字段的完整关联 + target 展示事实。
 NSDictionary* confirm_payload(uint64_t generation, const SessionBinding& binding) {
-  return @{
-    @"generation" : @(generation),
-    @"ref" : session_ref_dictionary(binding),
-    @"traceId" : ns_string(binding.trace_id),
-    @"producerIncarnation" : ns_string(binding.producer_incarnation),
-    @"runId" : ns_string(binding.run_id),
-    @"turnId" : ns_string(binding.turn_id),
-    @"target" : @{
+  NSMutableDictionary* payload = [association_payload(binding) mutableCopy];
+  payload[@"generation"] = @(generation);
+  payload[@"target"] = @{
       @"pid" : @(binding.target.pid),
       @"windowId" : @(binding.target.window_id),
       @"layer" : @(binding.target.layer),
@@ -462,8 +455,8 @@ NSDictionary* confirm_payload(uint64_t generation, const SessionBinding& binding
       @"height" : @(binding.target.height),
       @"ownerName" : ns_string(sanitize_display_name(binding.target.owner_name)),
       @"windowName" : ns_string(sanitize_display_name(binding.target.window_name)),
-    },
-  };
+    };
+  return payload;
 }
 
 bool strict_bool_value(id value, bool expected) {
@@ -501,7 +494,7 @@ bool response_matches_binding(NSDictionary* result, const SessionBinding& bindin
     error = "authority-check-ref-missing";
     return false;
   }
-  NSDictionary* frame = @{
+  NSMutableDictionary* frame = [@{
     @"traceId" : result[@"traceId"] == nil ? @"" : result[@"traceId"],
     @"producerIncarnation" :
         result[@"producerIncarnation"] == nil ? @"" : result[@"producerIncarnation"],
@@ -512,7 +505,8 @@ bool response_matches_binding(NSDictionary* result, const SessionBinding& bindin
       @"pid" : @(binding.target.pid),
       @"windowId" : @(binding.target.window_id),
     },
-  };
+  } mutableCopy];
+  for (NSString* key in @[@"workspaceIdentity", @"remoteSessionId"]) if (result[key]) frame[key] = result[key];
   SessionBinding response;
   if (!parse_session_binding(frame, response, error)) return false;
   if (!response.same_scope(binding)) {
@@ -660,12 +654,11 @@ void log_capture_rejected(const std::string& error) {
 }
 
 void log_capture_delivered(const zody::cua::round11::CaptureOutcome& outcome,
-                           size_t png_bytes) {
-  std::fprintf(stderr,
-               "[cua-native] capture-delivered {\"sha256\":\"%s\",\"width\":%u,"
-               "\"height\":%u,\"bytes\":%zu,\"resourcesReleased\":true,"
-               "\"machineLeaseReleased\":true}\n",
-               outcome.png_sha256.c_str(), outcome.width, outcome.height, png_bytes);
+                           size_t png_bytes, bool lease_released) {
+  // 日志与已发送回执使用同一租约事实；归还借用并不代表控制锁已释放。
+  const std::string line = capture_delivery_log_line(outcome.png_sha256, outcome.width,
+                                                     outcome.height, png_bytes, lease_released);
+  std::fprintf(stderr, "%s\n", line.c_str());
   std::fflush(stderr);
 }
 
@@ -709,6 +702,8 @@ int SessionSupervisor::OwnedFd::release() {
 }
 
 void SessionSupervisor::requestStop(const std::string& reason) {
+  // 控制准入必须先关闭，再中断在途 IO；AX 可能阻塞，stop 不等待其完成。
+  control_owner_.shutdown();
   const std::string effective_reason = reason.empty() ? "stopped" : reason;
   {
     std::lock_guard<std::mutex> lock(stop_mutex_);
@@ -834,6 +829,7 @@ void SessionSupervisor::run() {
       }
     }
   }
+  control_owner_.shutdown();
   stop_main_loop_once();
 }
 
@@ -926,6 +922,30 @@ AppConfirmResult request_app_confirmation(AuthorityFdReader& reader, uint64_t ge
   }
 }
 
+void SessionSupervisor::retain_control_watcher(OwnedFd& connection, AuthorityFdReader& reader,
+                                               uint64_t generation) {
+  // 原连接 ACK 后移交唯一 reader；后续工具使用新连接，不能抢读同一 fd。
+  auto owned_fd = std::shared_ptr<int>(new int(connection.release()), [](int* fd) {
+    if (*fd >= 0) ::close(*fd);
+    delete fd;
+  });
+  auto retained_reader = std::make_shared<AuthorityFdReader>(std::move(reader));
+  control_watcher_.reset();
+  control_watcher_ = std::make_unique<ControlWatcher>(
+    [this, generation, owned_fd] {
+      return control_owner_.live(generation, std::chrono::steady_clock::now());
+    },
+    [retained_reader, owned_fd] {
+      std::string reason;
+      return retained_reader->pollCancel(250, reason);
+    },
+    [this, generation, retained_reader, owned_fd] {
+      // 正常 expiry/Stop 走 close/ACK；异常中断则拒绝该 generation。
+      if (!send_bounded_close(*retained_reader)) control_owner_.invalidate(generation);
+    },
+    [this, generation, owned_fd] { control_owner_.invalidate(generation); });
+}
+
 bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& error) {
   if (stop_.load(std::memory_order_acquire)) {
     error = "session-stopping";
@@ -982,7 +1002,7 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
   // 原因：AX 观察必须使用独立读取确认，不能伪造截图 target 或继承截图授权。
   if ([bootstrap isKindOfClass:[NSDictionary class]] && bootstrap[@"observation"] != nil) {
     const ObserverExchange exchange = [&](NSString* method, NSDictionary* payload, std::string& failure) -> NSDictionary* {
-      if (![method isEqual:@"confirmRead"]) {
+      if (![method isEqual:@"confirmRead"] && ![method isEqual:@"confirmControl"]) {
         NSDictionary* response = nil;
         return reader.request(method, payload, &response, failure) ? response : nil;
       }
@@ -996,9 +1016,48 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
         if (response.status == AuthorityFdReader::AwaitStatus::Canceled) { failure = response.reason; return nil; }
       }
     };
+    const auto guard_dispatch = [this, &reader](uint64_t generation, const std::function<void()>& dispatch) {
+      std::atomic<bool> finished{false};
+      std::mutex ready_mutex;
+      std::condition_variable ready_condition;
+      bool ready = false;
+      std::thread monitor([&] {
+        auto poll = [&](int timeout) {
+          std::string reason;
+          if (stop_.load(std::memory_order_acquire) || reader.pollCancel(timeout, reason)) {
+            control_owner_.invalidate(generation);
+            return true;
+          }
+          if (poll_control_cancellation(reason)) {
+            control_owner_.invalidate(generation);
+            requestStop(reason);
+            return true;
+          }
+          return false;
+        };
+        // 中文原因：已排队的撤销必须先进入 gate，不能因监测线程尚未调度而抢先派发。
+        bool revoked = poll(0);
+        {
+          std::lock_guard<std::mutex> lock(ready_mutex);
+          ready = true;
+        }
+        ready_condition.notify_one();
+        while (!revoked && !finished.load(std::memory_order_acquire)) revoked = poll(50);
+      });
+      {
+        std::unique_lock<std::mutex> lock(ready_mutex);
+        ready_condition.wait(lock, [&] { return ready; });
+      }
+      dispatch();
+      finished.store(true, std::memory_order_release);
+      monitor.join();
+    };
+    uint64_t watch_generation = 0;
     const bool observed = observer_.run(bootstrap, launch_.producer_incarnation, exchange,
-      [this](std::string& reason) { return poll_cancellation(reason); }, confirmation_, error);
+      [this](std::string& reason) { return poll_cancellation(reason); }, confirmation_, error,
+      &control_owner_, &watch_generation, guard_dispatch);
     reset_observation();
+    if (observed && watch_generation) retain_control_watcher(connection, reader, watch_generation);
     return observed;
   }
   SessionBinding binding;
@@ -1123,21 +1182,45 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
     return false;
   }
 
-  auto lease = std::make_unique<zody::cua::round11::MachineLease>();
-  const zody::cua::round11::MachineLeaseResult lease_result = lease->acquire();
-  if (!lease_result.acquired()) {
-    error = lease_result.status == zody::cua::round11::MachineLeaseResult::Status::Busy
-                ? "machine-busy"
-                : "machine-lease-invalid";
+  NSData* association_data = [NSJSONSerialization dataWithJSONObject:association_payload(binding)
+                                                              options:NSJSONWritingSortedKeys error:nil];
+  NSString* association_key = association_data ? [[NSString alloc] initWithData:association_data encoding:NSUTF8StringEncoding] : nil;
+  uint64_t borrowed_generation = 0;
+  const bool borrowed = association_key && control_owner_.begin_borrow(
+      association_key.UTF8String ?: "", std::chrono::steady_clock::now(), borrowed_generation);
+  auto owned_lease = std::make_unique<zody::cua::round11::MachineLease>();
+  zody::cua::round11::MachineLease* lease = borrowed ? control_owner_.machine() : owned_lease.get();
+  if (borrowed && !lease) {
+    control_owner_.finish_borrow(borrowed_generation, true, std::chrono::steady_clock::now());
+    error = "machine-lease-invalid";
     send_bounded_close(reader);
     reset_observation();
     return false;
   }
-  log_machine_lease_acquired();
+  if (!borrowed) {
+    const auto lease_result = lease->acquire();
+    if (!lease_result.acquired()) {
+      error = lease_result.status == zody::cua::round11::MachineLeaseResult::Status::Busy
+                  ? "machine-busy" : "machine-lease-invalid";
+      send_bounded_close(reader);
+      reset_observation();
+      return false;
+    }
+    log_machine_lease_acquired();
+  }
+  // 截图借用只占用 owner 的 in-flight token；归还不会续租，也不释放仍有效的控制锁。
+  bool borrowed_lock_released = false;
+  const auto return_lease = [&]() {
+    if (borrowed) {
+      borrowed_lock_released = control_owner_.finish_borrow(borrowed_generation, true, std::chrono::steady_clock::now());
+      return true;
+    }
+    return release_machine_lease_logged(*lease);
+  };
 
   const std::string file_name = capture_file_name();
   if (file_name.empty()) {
-    (void)release_machine_lease_logged(*lease);
+    (void)return_lease();
     error = "capture-file-name-unavailable";
     send_bounded_close(reader);
     reset_observation();
@@ -1151,6 +1234,8 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
   context.producer_incarnation = ns_string(binding.producer_incarnation);
   context.run_id = ns_string(binding.run_id);
   context.turn_id = ns_string(binding.turn_id);
+  context.workspace_identity = binding.workspace_identity.empty() ? nil : ns_string(binding.workspace_identity);
+  context.remote_session_id = binding.remote_session_id.empty() ? nil : ns_string(binding.remote_session_id);
   context.output_path = ns_string(output_path);
   context.window_id = binding.target.window_id;
   context.pid = binding.target.pid;
@@ -1164,7 +1249,7 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
   if (!make_authority_fd_blocking(connection.get(), handoff_error)) {
     // 中文原因：R11 AuthorityClient 的 reader_loop 使用阻塞 recv，看到 EAGAIN
     // 会按读错误关闭；accepted fd 仍是 O_NONBLOCK 时首次 checkpoint 会误失败。
-    (void)release_machine_lease_logged(*lease);
+    (void)return_lease();
     send_bounded_close(reader);
     reset_observation();
     error = "authority-fd-blocking-failed";
@@ -1185,13 +1270,14 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
     // authority；这里释放 C++ owner 但故意泄漏原对象（含 fd/flock），直到进程退出。
     clear_active_connection();
     authority.release();
-    lease.release();
+    if (borrowed) control_owner_.finish_borrow(borrowed_generation, false, std::chrono::steady_clock::now());
+    else owned_lease.release();
     error = "fatal-resource-release-unknown";
     return false;
   }
   if (!outcome.ok) {
     clear_active_connection();
-    (void)release_machine_lease_logged(*lease);
+    (void)return_lease();
     authority->close();
     error = outcome.reason.empty() ? "capture-failed" : outcome.reason;
     return false;
@@ -1202,14 +1288,14 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
   if (!verify_capture_file(launch_.capture_root, output_path, outcome.png_sha256,
                            outcome.width, outcome.height, png_bytes, verify_error)) {
     clear_active_connection();
-    (void)release_machine_lease_logged(*lease);
+    (void)return_lease();
     authority->close();
     (void)unlink(output_path.c_str());
     error = "capture-file-verify: " + verify_error;
     return false;
   }
 
-  if (!release_machine_lease_logged(*lease)) {
+  if (!return_lease()) {
     clear_active_connection();
     authority->close();
     (void)unlink(output_path.c_str());
@@ -1246,26 +1332,22 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
     return false;
   }
 
-  NSDictionary* capture_result = @{
-    @"ref" : session_ref_dictionary(binding),
-    @"traceId" : ns_string(binding.trace_id),
-    @"producerIncarnation" : ns_string(binding.producer_incarnation),
-    @"runId" : ns_string(binding.run_id),
-    @"turnId" : ns_string(binding.turn_id),
-    @"target" : @{
+  NSMutableDictionary* capture_result = [association_payload(binding) mutableCopy];
+  capture_result[@"target"] = @{
       @"pid" : @(binding.target.pid),
       @"windowId" : @(binding.target.window_id),
-    },
-    @"png" : @{
+    };
+  capture_result[@"png"] = @{
       @"path" : ns_string(output_path),
       @"sha256" : ns_string(outcome.png_sha256),
       @"width" : @(outcome.width),
       @"height" : @(outcome.height),
       @"bytes" : @(png_bytes),
-    },
-    @"resourcesReleased" : @YES,
-    @"machineLeaseReleased" : @YES,
-  };
+    };
+  capture_result[@"resourcesReleased"] = @YES;
+  // 借用 token 已归还，但同 scope 控制租约仍持有 flock，不能伪报机器锁释放。
+  capture_result[@"machineLeaseReleased"] = @(!borrowed || borrowed_lock_released);
+  if (borrowed && !borrowed_lock_released) capture_result[@"machineLeaseBorrowReturned"] = @YES;
   NSDictionary* ack = nil;
   std::string ack_error;
   if (!authority->request(@"captureResult", capture_result, &ack, ack_error)) {
@@ -1282,7 +1364,7 @@ bool SessionSupervisor::handle_connection(OwnedFd& connection, std::string& erro
     error = "capture-result-not-accepted";
     return false;
   }
-  log_capture_delivered(outcome, png_bytes);
+  log_capture_delivered(outcome, png_bytes, [capture_result[@"machineLeaseReleased"] boolValue]);
   clear_active_connection();
   (void)unlink(output_path.c_str());
   authority->close();

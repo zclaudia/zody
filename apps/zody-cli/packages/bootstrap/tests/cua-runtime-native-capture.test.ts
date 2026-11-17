@@ -600,7 +600,12 @@ const CONFIRM_FRAME_TARGET = {
   windowName: "Zody Docs",
 };
 
-function sendConfirm(stream: Duplex, requestId: string, scope: CuaSubmissionTurnScope, generation: number): void {
+function sendConfirm(
+  stream: Duplex,
+  requestId: string,
+  scope: CuaSubmissionTurnScope,
+  generation: number,
+): void {
   send(stream, requestId, "confirm", {
     ref: scope.ref,
     traceId: scope.traceId,
@@ -659,17 +664,13 @@ describe("captureCuaRuntimeOnce confirmRequest wiring", () => {
       .poll(() => frames.some((frame) => frame.requestId === "bootstrap-confirm"))
       .toBe(true);
     sendConfirm(helper, "confirm-yes", scope, 1);
-    await expect
-      .poll(() => frames.some((frame) => frame.requestId === "confirm-yes"))
-      .toBe(true);
+    await expect.poll(() => frames.some((frame) => frame.requestId === "confirm-yes")).toBe(true);
     expect(frames.find((frame) => frame.requestId === "confirm-yes")?.result).toEqual({
       ok: true,
       allowed: true,
     });
     sendConfirm(helper, "confirm-no", scope, 2);
-    await expect
-      .poll(() => frames.some((frame) => frame.requestId === "confirm-no"))
-      .toBe(true);
+    await expect.poll(() => frames.some((frame) => frame.requestId === "confirm-no")).toBe(true);
     expect(frames.find((frame) => frame.requestId === "confirm-no")?.result).toEqual({
       ok: true,
       allowed: false,
@@ -826,4 +827,67 @@ describe("captureCuaRuntimeOnce confirmRequest wiring", () => {
     expect(frames.some((frame) => frame.requestId === "confirm-stop")).toBe(false);
     helper.destroy();
   });
+});
+
+it.each([
+  { workspaceIdentity: "/workspace/app-capture", remoteSessionId: undefined },
+  { workspaceIdentity: undefined, remoteSessionId: "remote-session" },
+])("passes the verified capture association to native bootstrap %#", async (association) => {
+  const scope = createScope();
+  const { runtime } = fakeRuntime(scope);
+  Object.assign(runtime, { matchesCuaContext: () => true });
+  const [host, helper] = duplexPair();
+  const frames: Record<string, any>[] = [];
+  createInterface({ input: helper }).on("line", (line) => frames.push(JSON.parse(line)));
+  const pending = captureCuaRuntimeOnce(runtime, {
+    connect: async () => host,
+    producerIncarnation: "producer-app-capture",
+    captureRoot: "/unused",
+    target: { pid: 42, windowId: 99 },
+    expected: {
+      sessionId: scope.ref.sessionId,
+      workspaceKey: scope.ref.workspaceKey,
+      turnId: scope.turnId,
+      ...association,
+    },
+  });
+  const failure = expect(pending).rejects.toThrow();
+  send(helper, "bootstrap-association", "bootstrap", {});
+  await expect
+    .poll(() => frames.find((frame) => frame.requestId === "bootstrap-association"))
+    .toBeDefined();
+  expect(frames.find((frame) => frame.requestId === "bootstrap-association")?.result).toMatchObject(
+    {
+      workspaceIdentity: scope.ref.workspaceKey,
+      ...(association.remoteSessionId ? { remoteSessionId: association.remoteSessionId } : {}),
+    },
+  );
+  scope.invalidate("owner-revoked");
+  await failure;
+  helper.destroy();
+});
+
+it("rejects mismatched runtime capture association before connecting", async () => {
+  const scope = createScope();
+  const { runtime } = fakeRuntime(scope);
+  Object.assign(runtime, { matchesCuaContext: () => false });
+  let connected = false;
+  await expect(
+    captureCuaRuntimeOnce(runtime, {
+      connect: async () => {
+        connected = true;
+        throw new Error("unexpected");
+      },
+      producerIncarnation: "producer",
+      captureRoot: "/unused",
+      target: { pid: 42, windowId: 99 },
+      expected: {
+        sessionId: scope.ref.sessionId,
+        workspaceKey: scope.ref.workspaceKey,
+        turnId: scope.turnId,
+        workspaceIdentity: scope.ref.workspaceKey,
+      },
+    }),
+  ).rejects.toThrow("scope_mismatch");
+  expect(connected).toBe(false);
 });

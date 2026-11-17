@@ -42,6 +42,8 @@ export interface CuaNativeCaptureExpectation {
   readonly sessionId: string;
   readonly workspaceKey: string;
   readonly turnId: string;
+  readonly workspaceIdentity?: string;
+  readonly remoteSessionId?: string;
 }
 
 /**
@@ -99,6 +101,11 @@ export async function captureCuaRuntimeOnce(
     options.expected &&
     (scope.ref.sessionId !== options.expected.sessionId ||
       scope.ref.workspaceKey !== options.expected.workspaceKey ||
+      (options.expected.workspaceIdentity !== undefined &&
+        options.expected.workspaceIdentity !== options.expected.workspaceKey) ||
+      (runtime.matchesCuaContext
+        ? !runtime.matchesCuaContext(options.expected)
+        : Boolean(options.expected.workspaceIdentity || options.expected.remoteSessionId)) ||
       scope.turnId !== options.expected.turnId)
   ) {
     // broker 上下文来自 main 的可信元数据；它与当前 live scope 不符时不能截图到另一轮。
@@ -139,6 +146,18 @@ export async function captureCuaRuntimeOnce(
     const capture: CuaNativeAuthorityCaptureOptions = {
       root: options.captureRoot,
       target: options.target,
+      ...(options.expected &&
+      (options.expected.workspaceIdentity || options.expected.remoteSessionId)
+        ? {
+            association: Object.freeze({
+              workspaceIdentity:
+                options.expected.workspaceIdentity || options.expected.workspaceKey,
+              ...(options.expected.remoteSessionId
+                ? { remoteSessionId: options.expected.remoteSessionId }
+                : {}),
+            }),
+          }
+        : {}),
       async accept(payload, png) {
         preparedResult = await createCuaNativeCaptureToolResult({
           payload,

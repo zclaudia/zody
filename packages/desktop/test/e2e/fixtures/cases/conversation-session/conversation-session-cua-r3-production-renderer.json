@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r3-production-renderer",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r3-production-renderer.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r3-production-renderer.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r3-production-read-title",
+      "description": "R1 allow title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "复用R1单次只读模型响应；验证无E2E store观察桥的生产renderer，真实SDK与原生授权/结果不mock。"
+    },
+    {
+      "id": "cua-r3-production-read-call",
+      "description": "R1 allow call",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "复用R1单次只读模型响应；验证无E2E store观察桥的生产renderer，真实SDK与原生授权/结果不mock。"
+    },
+    {
+      "id": "cua-r3-production-read-final",
+      "description": "R1 allow final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "复用R1单次只读模型响应；验证无E2E store观察桥的生产renderer，真实SDK与原生授权/结果不mock。"
+    }
+  ]
+}

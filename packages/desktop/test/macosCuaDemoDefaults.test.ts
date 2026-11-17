@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -14,10 +15,7 @@ import {
 import { NARROW_MANIFEST_ENV } from "../scripts/macos-cua-narrow-resources.mjs";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
-const FROZEN_MANIFEST_PATH = resolve(
-  REPO_ROOT,
-  CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestRelativePath,
-);
+const FROZEN_MANIFEST_PATH = resolve(REPO_ROOT, CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestRelativePath);
 
 const createdRoots: string[] = [];
 
@@ -68,6 +66,16 @@ function createFixtureRepo() {
 }
 
 describe("macOS CUA distributable build defaults", () => {
+  it("pins the accepted R2 AX manifest in both default selection and frozen archive metadata", async () => {
+    const pin = JSON.parse(
+      await readFile(resolve(REPO_ROOT, "packages/desktop/build/cua-narrow-frozen.json"), "utf8"),
+    );
+    const accepted = "9bcea0ea2e21d81a7f4f930a24672839e14ad17b43f29cfaf33b5bf47371cfcd";
+    expect(CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256).toBe(accepted);
+    expect(pin.manifestSha256).toBe(accepted);
+    expect(pin.manifestRelativePath).toBe(CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestRelativePath);
+  });
+
   it("selects the pinned v2 profile and manifest on darwin/arm64 without opt-in env (fixture)", async () => {
     const fixture = createFixtureRepo();
     let validationCalls = 0;

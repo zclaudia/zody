@@ -5173,6 +5173,10 @@ const enUS: Record<string, string> = {
   // follows the standard tool permission policy (allow_once/allow_always/deny, plus
   // Full access when supported); only allow_once keeps a dedicated label. The default
   // action and Esc are both deny.
+  "chat.permission.cua.controlConfirm.title": "Control the selected window",
+  "chat.permission.cua.controlConfirm.summary":
+    "Allow element button presses and plain text values in this window only. Expires after 120 seconds idle or when the task stops.",
+  "chat.permission.cua.controlConfirm.allowOnce": "Allow this control",
   "chat.permission.cua.readConfirm.title": "Read window content",
   "chat.permission.cua.readConfirm.summary": "The agent requests permission to read this window.",
   "chat.permission.cua.readConfirm.allowOnce": "Allow this read",

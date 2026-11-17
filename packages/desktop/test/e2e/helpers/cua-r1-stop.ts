@@ -11,7 +11,11 @@ import {
   waitForV4TimelineContaining,
 } from "./v4-conversation.js";
 
-export async function runR1Stop(ctx: Context, noContinuation: (id: string) => boolean) {
+export async function runR1Stop(
+  ctx: Context,
+  noContinuation: (id: string) => boolean,
+  delivery?: { beforeStop(requestId: string): Promise<void>; afterStop(): Promise<void> },
+) {
   const calls = new Set<string>();
   const reads = new Set<string>();
   const first = await waitCall(calls);
@@ -52,6 +56,7 @@ export async function runR1Stop(ctx: Context, noContinuation: (id: string) => bo
     `[data-cua-confirm-kind="read"][data-permission-request-id="${request}"]`,
   );
   if (!(await card.isDisplayed())) throw new Error("R1 read card is not in the current pane");
+  await delivery?.beforeStop(request);
   const candidates = await pane.$$('[data-testid="v4-stop"]');
   const visible = [];
   for (const candidate of candidates) {
@@ -96,6 +101,7 @@ export async function runR1Stop(ctx: Context, noContinuation: (id: string) => bo
   } else {
     await visible[0]!.click();
   }
+  await delivery?.afterStop();
   if (originalSize) await setV4ElectronWindowSize(originalSize.width, originalSize.height);
   ctx.receipt.narrowViewport = Boolean(originalSize);
   ctx.receipt.stopClicked = !activation;

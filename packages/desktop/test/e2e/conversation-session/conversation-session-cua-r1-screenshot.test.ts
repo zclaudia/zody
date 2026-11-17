@@ -1,27 +1,27 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
-import { clearAppData } from "../../../helpers/desktop-app.js";
-import { readUpstreamToolResultFromRequest } from "../../../helpers/conversation-session-network.js";
-import type { E2ENetworkCaptureArtifact } from "../../../helpers/network-capture-proxy.js";
-import { waitCall } from "../../../helpers/cua-r1-lifecycle.js";
+import { clearAppData } from "../helpers/desktop-app.js";
+import { readUpstreamToolResultFromRequest } from "../helpers/conversation-session-network.js";
+import type { E2ENetworkCaptureArtifact } from "../helpers/network-capture-proxy.js";
+import { waitCall } from "../helpers/cua-r1-lifecycle.js";
 import {
   CUA_SCREENSHOT_MODEL,
   CUA_SCREENSHOT_PROVIDER,
   seedCuaScreenshotProvider,
-} from "../../../helpers/cua-screenshot-provider.js";
-import { clickR1AllowOnce, readR1PermissionDialog } from "../../../helpers/cua-r1-dialog.js";
-import { parseR1IdentityRows, r1IdentityMatches } from "../../../helpers/cua-r1-receipt.js";
-import { screenshotEvidence } from "../../../helpers/cua-screenshot-evidence.js";
-import { reloadElectronSessionSafely } from "../../../helpers/e2e-electron-reload.js";
+} from "../helpers/cua-screenshot-provider.js";
+import { clickR1AllowOnce, readR1PermissionDialog } from "../helpers/cua-r1-dialog.js";
+import { parseR1IdentityRows, r1IdentityMatches } from "../helpers/cua-r1-receipt.js";
+import { screenshotEvidence } from "../helpers/cua-screenshot-evidence.js";
+import { reloadElectronSessionSafely } from "../helpers/e2e-electron-reload.js";
 import {
   createE2EReplayFixtureVariables,
   resolveE2ERuntimePath,
-} from "../../../helpers/e2e-runtime-paths.js";
+} from "../helpers/e2e-runtime-paths.js";
 import {
   startUpstreamReplayServer,
   type UpstreamReplayServer,
-} from "../../../helpers/upstream-replay-server.js";
-import { selectRegistryProviderModelById } from "../../../helpers/upstream-provider.js";
+} from "../helpers/upstream-replay-server.js";
+import { selectRegistryProviderModelById } from "../helpers/upstream-provider.js";
 import {
   denyV4PermissionWithFeedback,
   getV4PaneSnapshot,
@@ -29,7 +29,7 @@ import {
   sendV4PromptAndWaitAccepted,
   startNewV4Draft,
   waitForV4TimelineContaining,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 
 const NAME = "conversation-session-cua-r1-screenshot";
 const RUNTIME = resolveE2ERuntimePath("cua-r1");

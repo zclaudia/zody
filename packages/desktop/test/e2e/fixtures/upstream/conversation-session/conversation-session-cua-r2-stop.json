@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r2-stop",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r2-stop.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-r2-stop-ui-title",
+      "description": "R2 Stop ui title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R2_STOP_UI"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "text-r2-stop-ui-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"R2 Stop\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-stop-ui-call",
+      "description": "R2 Stop ui call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R2_STOP_UI"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_r2_stop_ui",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r2_stop_ui",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 ui Stop",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst state=await c.get_app_state({app_ref:ref});\nif(typeof state!=='string')throw Error('R2_STOP_STATE:'+JSON.stringify(state));\nconst element=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}}).find(e=>(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!element)throw Error('R2_STOP_BUTTON_MISSING');\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:'none'};\nconst r=await c.left_click(args);nodeRepl.write('R2_UI_UNEXPECTED:'+JSON.stringify(r));"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-stop-recover-title",
+      "description": "R2 Stop recover title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R2_STOP_RECOVER"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "text-r2-stop-recover-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"R2 Stop\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-stop-recover-call",
+      "description": "R2 Stop recover call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R2_STOP_RECOVER"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_r2_stop_recover",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r2_stop_recover",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 recover Stop",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst state=await c.get_app_state({app_ref:ref});\nif(typeof state!=='string')throw Error('R2_STOP_STATE:'+JSON.stringify(state));\nconst element=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}}).find(e=>(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!element)throw Error('R2_STOP_BUTTON_MISSING');\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:'none'};\nconst r=await c.left_click(args);nodeRepl.write('R2_RECOVERY:'+JSON.stringify(r));"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-stop-recover-final",
+      "description": "R2 Stop recover final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R2_STOP_RECOVER",
+          "toolu_r2_stop_recover"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "text-r2-stop-recover-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R2_STOP_RECOVER_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-stop-sdk-title",
+      "description": "R2 Stop sdk title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R2_STOP_SDK"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "text-r2-stop-sdk-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"R2 Stop\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-stop-sdk-call",
+      "description": "R2 Stop sdk call",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R2_STOP_SDK"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_r2_stop_sdk",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r2_stop_sdk",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 sdk Stop",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst state=await c.get_app_state({app_ref:ref});\nif(typeof state!=='string')throw Error('R2_STOP_STATE:'+JSON.stringify(state));\nconst element=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}}).find(e=>(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!element)throw Error('R2_STOP_BUTTON_MISSING');\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:'none'};\nconst pause=ms=>new Promise(done=>setTimeout(done,ms));\nconst directory=join('{{e2eRuntimeRoot}}','cua-r2','fixture-run');\nconst config=JSON.parse(await readFile(join('{{e2eRuntimeRoot}}','cua-r2','fault-config.json'),'utf8'));\nconst pendingFile=join(config.fixtureDirectory,'write-pending.json');\nconst running=c.left_click(args);let pending;\nfor(let i=0;i<500;i++){try{const p=JSON.parse(await readFile(pendingFile,'utf8'));if(p.nonce===f.barrierNonce&&p.sequence===f.target.requests+1){pending=p;break;}}catch{}await pause(3);}\nif(!pending)throw Error('R2_STOP_PENDING_MISSING');\nconst stopped=await c.stop_computer_control({reason:'controlled-r2-test'});\nawait writeFile(join(config.fixtureDirectory,'write-release.json'),JSON.stringify(pending),{mode:0o600});\nconst result=await running;\nconst old=await c.left_click(args);const stoppedAgain=await c.stop_computer_control({reason:'controlled-r2-repeat'});\nnodeRepl.write('R2_STOP_RECEIPTS:'+JSON.stringify({stopped,result,old,stoppedAgain,pending}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-stop-sdk-final",
+      "description": "R2 Stop sdk final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动实际SDK；Stop、真实原生收据、迟到效果和兄弟窗口均由实际链路验证。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R2_STOP_SDK",
+          "toolu_r2_stop_sdk"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "text-r2-stop-sdk-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R2_STOP_SDK_DONE"
+        }
+      }
+    }
+  ]
+}

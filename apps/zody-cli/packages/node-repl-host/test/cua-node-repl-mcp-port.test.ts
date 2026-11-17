@@ -144,7 +144,7 @@ describe("createCuaNodeReplMcpPort", () => {
       expect(captures).toEqual([
         {
           target: { pid: 42, windowId: 99 },
-          expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+          expected: { sessionId: "session-1", workspaceKey: "workspace-1", workspaceIdentity: "workspace-1", turnId: "turn-1" },
         },
       ]);
       expect(base.calls).toEqual([]);
@@ -185,7 +185,7 @@ describe("createCuaNodeReplMcpPort", () => {
       expect(observed).toEqual([
         {
           request: { method: "list_apps", arguments: {} },
-          expected: { sessionId: "session-1", workspaceKey: "workspace-1", turnId: "turn-1" },
+          expected: { sessionId: "session-1", workspaceKey: "workspace-1", workspaceIdentity: "workspace-1", turnId: "turn-1" },
         },
       ]);
     } finally {

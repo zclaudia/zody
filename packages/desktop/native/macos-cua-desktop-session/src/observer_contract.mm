@@ -33,6 +33,45 @@ bool app_ref(id value) {
   return true;
 }
 }
+bool control_request_valid(id request) {
+  if (![request isKindOfClass:[NSDictionary class]] || [request count] != 2 ||
+      !keys(request, [NSSet setWithArray:@[@"method", @"arguments"]])) return false;
+  NSString* method=request[@"method"];
+  NSDictionary* args=request[@"arguments"];
+  if (![method isKindOfClass:[NSString class]] || ![args isKindOfClass:[NSDictionary class]]) return false;
+  if ([method isEqual:@"stop_computer_control"]) {
+    return keys(args,[NSSet setWithObject:@"reason"]) && (!args[@"reason"] || text(args[@"reason"]));
+  }
+  if (![method isEqual:@"left_click"] && ![method isEqual:@"perform_action"] && ![method isEqual:@"set_value"]) return false;
+  if (!keys(args,[NSSet setWithArray:@[@"target",@"app_ref",@"state_id",@"return_state",@"mouse_button",@"click_count",@"modifiers",@"strategy",@"action",@"value"]]) ||
+      !app_ref(args[@"app_ref"]) || !text(args[@"state_id"])) return false;
+  NSDictionary* target=args[@"target"];
+  if (![target isKindOfClass:[NSDictionary class]] || target.count!=2 || !keys(target,[NSSet setWithArray:@[@"type",@"index"]]) ||
+      ![target[@"type"] isEqual:@"element"]) return false;
+  id index=target[@"index"];
+  if (![index isKindOfClass:[NSNumber class]] || boolean(index) || !std::isfinite([index doubleValue]) ||
+      [index doubleValue]<0 || [index doubleValue]>4294967295.0 || std::floor([index doubleValue])!=[index doubleValue]) return false;
+  id ret=args[@"return_state"];
+  if (ret && ![@[@"none",@"compact",@"full"] containsObject:ret]) return false;
+  id strategy=args[@"strategy"];
+  if (strategy && ![@[@"auto",@"a11y"] containsObject:strategy]) return false;
+  if ([method isEqual:@"left_click"]) {
+    if (args[@"action"] || args[@"value"]) return false;
+    if (args[@"mouse_button"] && ![args[@"mouse_button"] isEqual:@"left"]) return false;
+    if (args[@"click_count"] && (!positive_integer(args[@"click_count"]) || [args[@"click_count"] unsignedIntValue]!=1)) return false;
+    if (args[@"modifiers"] && (![args[@"modifiers"] isKindOfClass:[NSArray class]] || [args[@"modifiers"] count]!=0)) return false;
+  } else {
+    if (args[@"mouse_button"] || args[@"click_count"] || args[@"modifiers"]) return false;
+    if ([method isEqual:@"perform_action"]) {
+      if (strategy || args[@"value"] || ![args[@"action"] isEqual:@"AXPress"]) return false;
+    } else {
+      if (args[@"action"] || ![args[@"value"] isKindOfClass:[NSString class]]) return false;
+      NSData* value=[args[@"value"] dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
+      if (!value || value.length>4096) return false;
+    }
+  }
+  return true;
+}
 bool observer_request_valid(id request) {
   if (![request isKindOfClass:[NSDictionary class]]) return false;
   NSDictionary* obj = request;
@@ -40,6 +79,10 @@ bool observer_request_valid(id request) {
       ![obj[@"method"] isKindOfClass:[NSString class]] || ![obj[@"arguments"] isKindOfClass:[NSDictionary class]]) return false;
   NSString* method = obj[@"method"];
   NSDictionary* args = obj[@"arguments"];
+  if ([method isEqualToString:@"commit_state"]) {
+    return args.count == 2 && keys(args, [NSSet setWithArray:@[@"app_ref", @"state_id"]]) &&
+      app_ref(args[@"app_ref"]) && text(args[@"state_id"]);
+  }
   if ([method isEqualToString:@"list_apps"]) return args.count == 0;
   if ([method isEqualToString:@"list_windows"]) {
     return keys(args, [NSSet setWithObject:@"app_ref"]) && (!args[@"app_ref"] || app_ref(args[@"app_ref"]));

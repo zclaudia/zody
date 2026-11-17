@@ -35,6 +35,8 @@ struct SessionBinding {
   std::string runtime_instance_id;
   std::string session_id;
   std::string workspace_key;
+  std::string workspace_identity;
+  std::string remote_session_id;
   int64_t authorization_revision = 0;
   SessionTarget target;
 
@@ -52,6 +54,7 @@ bool parse_session_binding_json(const std::string& json, SessionBinding& binding
 
 std::string session_binding_json(const SessionBinding& binding);
 NSDictionary* session_ref_dictionary(const SessionBinding& binding);
+NSDictionary* session_association_dictionary(const SessionBinding& binding);
 NSDictionary* session_target_dictionary(const SessionBinding& binding);
 
 }  // namespace zody::cua::desktop_session

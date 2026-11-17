@@ -442,7 +442,7 @@ export async function createZodyApp(options: ZodyAppOptions): Promise<ZodyApp> {
           })
       : undefined;
     const observationCallbacks = options.cuaNativeCapture
-      ? createCuaObservationCallbacks(getRuntime, options.cuaNativeCapture)
+      ? createCuaObservationCallbacks(getRuntime, { ...options.cuaNativeCapture, logger })
       : undefined;
     const baseMcpPort =
       options.mcpPort ??

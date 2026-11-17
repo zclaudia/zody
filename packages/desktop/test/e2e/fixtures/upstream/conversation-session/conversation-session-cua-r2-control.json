@@ -1,0 +1,514 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r2-control",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r2-control.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-r2-left_click-title",
+      "description": "R2 left_click title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R2_LEFT_CLICK"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "title-r2-left_click",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R2\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-left_click-call-0",
+      "description": "R2 left_click trial 0",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R2_LEFT_CLICK"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_left_click_0",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_left_click_0",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 left_click trial 0",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"left_click\",method=\"left_click\",trial=0;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst state=await c.get_app_state({app_ref:ref});\nif(typeof state!=='string')throw new Error('R2_STATE_MISSING:'+JSON.stringify({ref,state,windows:await c.list_windows({app_ref:{pid:f.pid}})}));\nconst elements=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}});\nconst element=elements.find(e=>method==='set_value'?e.kind==='AXTextField':(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!element||!Number.isSafeInteger(element.index))throw new Error('R2_ELEMENT_MISSING');\nawait writeFile(indexPath,JSON.stringify({index:element.index}),{mode:0o600});\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-left_click-call-1",
+      "description": "R2 left_click trial 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "mcp__node_repl__js",
+          "toolu_cua_r2_left_click_0",
+          "E2E_CUA_R2_LEFT_CLICK"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_left_click_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_left_click_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 left_click trial 1",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"left_click\",method=\"left_click\",trial=1;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst element=JSON.parse(await readFile(indexPath,'utf8'));\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-left_click-call-2",
+      "description": "R2 left_click trial 2",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "mcp__node_repl__js",
+          "toolu_cua_r2_left_click_1",
+          "E2E_CUA_R2_LEFT_CLICK"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_left_click_2",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_left_click_2",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 left_click trial 2",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"left_click\",method=\"left_click\",trial=2;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst element=JSON.parse(await readFile(indexPath,'utf8'));\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-left_click-final",
+      "description": "R2 left_click final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R2_LEFT_CLICK",
+          "toolu_cua_r2_left_click_2"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "final-r2-left_click",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R2_LEFT_CLICK_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-perform_action-title",
+      "description": "R2 perform_action title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R2_PERFORM_ACTION"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "title-r2-perform_action",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R2\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-perform_action-call-0",
+      "description": "R2 perform_action trial 0",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R2_PERFORM_ACTION"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_perform_action_0",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_perform_action_0",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 perform_action trial 0",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"perform_action\",method=\"perform_action\",trial=0;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst state=await c.get_app_state({app_ref:ref});\nif(typeof state!=='string')throw new Error('R2_STATE_MISSING:'+JSON.stringify({ref,state,windows:await c.list_windows({app_ref:{pid:f.pid}})}));\nconst elements=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}});\nconst element=elements.find(e=>method==='set_value'?e.kind==='AXTextField':(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!element||!Number.isSafeInteger(element.index))throw new Error('R2_ELEMENT_MISSING');\nawait writeFile(indexPath,JSON.stringify({index:element.index}),{mode:0o600});\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-perform_action-call-1",
+      "description": "R2 perform_action trial 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "mcp__node_repl__js",
+          "toolu_cua_r2_perform_action_0",
+          "E2E_CUA_R2_PERFORM_ACTION"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_perform_action_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_perform_action_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 perform_action trial 1",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"perform_action\",method=\"perform_action\",trial=1;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst element=JSON.parse(await readFile(indexPath,'utf8'));\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-perform_action-call-2",
+      "description": "R2 perform_action trial 2",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "mcp__node_repl__js",
+          "toolu_cua_r2_perform_action_1",
+          "E2E_CUA_R2_PERFORM_ACTION"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_perform_action_2",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_perform_action_2",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 perform_action trial 2",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"perform_action\",method=\"perform_action\",trial=2;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst element=JSON.parse(await readFile(indexPath,'utf8'));\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-perform_action-final",
+      "description": "R2 perform_action final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R2_PERFORM_ACTION",
+          "toolu_cua_r2_perform_action_2"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "final-r2-perform_action",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R2_PERFORM_ACTION_DONE"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-set_value-title",
+      "description": "R2 set_value title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "Generate a concise title",
+          "E2E_CUA_R2_SET_VALUE"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "title-r2-set_value",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R2\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-set_value-call-0",
+      "description": "R2 set_value trial 0",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": [
+          "E2E_CUA_R2_SET_VALUE"
+        ],
+        "bodyIncludes": [
+          "mcp__node_repl__js"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_set_value_0",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_set_value_0",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 set_value trial 0",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"set_value\",method=\"set_value\",trial=0;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst state=await c.get_app_state({app_ref:ref});\nif(typeof state!=='string')throw new Error('R2_STATE_MISSING:'+JSON.stringify({ref,state,windows:await c.list_windows({app_ref:{pid:f.pid}})}));\nconst elements=state.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}});\nconst element=elements.find(e=>method==='set_value'?e.kind==='AXTextField':(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!element||!Number.isSafeInteger(element.index))throw new Error('R2_ELEMENT_MISSING');\nawait writeFile(indexPath,JSON.stringify({index:element.index}),{mode:0o600});\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-set_value-call-1",
+      "description": "R2 set_value trial 1",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "mcp__node_repl__js",
+          "toolu_cua_r2_set_value_0",
+          "E2E_CUA_R2_SET_VALUE"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_set_value_1",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_set_value_1",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 set_value trial 1",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"set_value\",method=\"set_value\",trial=1;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst element=JSON.parse(await readFile(indexPath,'utf8'));\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-set_value-call-2",
+      "description": "R2 set_value trial 2",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "每个SDK cell仅一个真实动作；合成模型仅驱动调用，不合成授权、收据或目标业务效果。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "mcp__node_repl__js",
+          "toolu_cua_r2_set_value_1",
+          "E2E_CUA_R2_SET_VALUE"
+        ],
+        "bodyExcludes": [
+          "toolu_cua_r2_set_value_2",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_set_value_2",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 set_value trial 2",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path');const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile,writeFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2/manifest.json','utf8'));\nconst c=agent.computerUse.computer,ref={pid:f.pid,window_id:f.targetWindow};\nconst kind=\"set_value\",method=\"set_value\",trial=2;\nconst indexPath='{{e2eRuntimeRoot}}/cua-r2/'+kind+'-index.json';\nconst element=JSON.parse(await readFile(indexPath,'utf8'));\nconst mode=['none','compact','full'][trial];\nconst args={app_ref:ref,target:{type:'element',index:element.index},return_state:mode};\nif(method==='perform_action')args.action='AXPress';\nif(method==='set_value')args.value='E2E_R2_VALUE_'+trial;\nconst result=await c[method](args);\nconst r=result?.content?JSON.parse(result.content[0].text):result;\nif(mode!=='none'&&(!result?.structuredContent?.state_id||result.structuredContent.app?.pid!==f.pid||result.structuredContent.window?.window_id!==f.targetWindow||JSON.stringify(result.structuredContent).includes(f.siblingMarker)))throw new Error('R2_RETURN_STATE_MISSING');\nif(kind==='deny'){\n if(r?.code!=='permission_denied'||r.action_sent!==false||r.dispatch_status!=='not_sent')throw new Error('R2_DENIAL_MISSING');\n}else if(r?.code||r?.action_sent!==true||r?.dispatch_status!=='sent')throw new Error('R2_WRITE_NOT_PROVEN:'+JSON.stringify(r));\nif(r.state_sync_status!==(mode==='none'?'not_requested':'synced'))throw new Error('R2_RETURN_STATE_STATUS_MISMATCH');\nnodeRepl.write('R2_RECEIPTS:'+JSON.stringify({kind,trial,return_state:mode,receipts:[r]}));\n"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-set_value-final",
+      "description": "R2 set_value final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型仅驱动真实SDK限定动作；授权、原生派发收据及目标业务效果均不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": [
+          "E2E_CUA_R2_SET_VALUE",
+          "toolu_cua_r2_set_value_2"
+        ],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "final-r2-set_value",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R2_SET_VALUE_DONE"
+        }
+      }
+    }
+  ]
+}

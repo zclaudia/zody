@@ -134,6 +134,13 @@ describe("parseCuaNativeAuditLine", () => {
     ).toBe('[cua-native] cell-spawned {"pid":83436,"suspended":true}');
   });
 
+  it("keeps verified peer output in schema order", () => {
+    const raw = `[cua-native] cell-peer-verified ${JSON.stringify({ entitlementsEmpty: true, cdhash: NODE_CDHASH, identifier: NODE_IDENTIFIER, pid: 1 })}`;
+    expect(parseCuaNativeAuditLine(raw)).toBe(
+      `[cua-native] cell-peer-verified ${JSON.stringify({ pid: 1, identifier: NODE_IDENTIFIER, cdhash: NODE_CDHASH, entitlementsEmpty: true })}`,
+    );
+  });
+
   it("rejects unknown markers, malformed JSON, payloads on payload-free markers, and extra fields", () => {
     expect(parseCuaNativeAuditLine('[cua-native] unknown {"pid":1}')).toBeUndefined();
     expect(parseCuaNativeAuditLine('[cua-native] constructor {"pid":1}')).toBeUndefined();
@@ -332,3 +339,76 @@ it.each(["target", "direct", "other", "missing", "invalid", "unknown"])(
     expect(parseCuaNativeAuditLine(line)).toBe(line);
   },
 );
+
+describe("opaque AppKit system view omission audit", () => {
+  it("accepts only the fixed no-content omission record", () => {
+    const line =
+      '[cua-native] observation-system-view-omitted {"reason":"appkit_theme_widget_remote_view"}';
+    expect(parseCuaNativeAuditLine(line)).toBe(line);
+  });
+  it.each([
+    { reason: "other" },
+    { reason: "appkit_theme_widget_remote_view", title: "REMOTE_SECRET" },
+    { reason: "appkit_theme_widget_remote_view", windowId: 99 },
+    { reason: "appkit_theme_widget_remote_view", index: 0 },
+  ])("rejects arbitrary reason, content, identity or handle: %s", (payload) => {
+    expect(
+      parseCuaNativeAuditLine(
+        `[cua-native] observation-system-view-omitted ${JSON.stringify(payload)}`,
+      ),
+    ).toBeUndefined();
+  });
+});
+
+describe("native control dispatch audit", () => {
+  it.each([
+    ["rejected", "not_sent"],
+    ["admitted", "possibly_sent"],
+    ["completed", "sent"],
+    ["completed", "possibly_sent"],
+  ])("accepts and rebuilds bounded %s/%s facts", (event, dispatch_status) => {
+    const input = `[cua-control] ${JSON.stringify({ dispatch_status, scope: "0123456789abcdef", attempt: 5, event })}`;
+    const expected = `[cua-control] ${JSON.stringify({ event, attempt: 5, scope: "0123456789abcdef", dispatch_status })}`;
+    expect(parseCuaNativeAuditLine(input)).toBe(expected);
+  });
+  it.each([
+    { event: "rejected", attempt: 1, scope: "0123456789abcdef", dispatch_status: "sent" },
+    { event: "admitted", attempt: 1, scope: "0123456789abcdef", dispatch_status: "not_sent" },
+    { event: "completed", attempt: 1, scope: "0123456789abcdef", dispatch_status: "not_sent" },
+    { event: "completed", attempt: 0, scope: "0123456789abcdef", dispatch_status: "sent" },
+    {
+      event: "completed",
+      attempt: Number.MAX_SAFE_INTEGER + 1,
+      scope: "0123456789abcdef",
+      dispatch_status: "sent",
+    },
+    { event: "completed", attempt: 1, scope: "invalid", dispatch_status: "sent" },
+    {
+      event: "completed",
+      attempt: 1,
+      scope: "0123456789abcdef",
+      dispatch_status: "sent",
+      title: "private",
+    },
+  ])("rejects inconsistent or unbounded facts: %s", (payload) => {
+    expect(parseCuaNativeAuditLine(`[cua-control] ${JSON.stringify(payload)}`)).toBeUndefined();
+  });
+});
+
+it("records a borrowed screenshot lease without claiming the machine lock was released", () => {
+  const line = `[cua-native] capture-delivered ${JSON.stringify({ sha256: PNG_SHA256, width: 1440, height: 900, bytes: 108925, resourcesReleased: true, machineLeaseReleased: false, machineLeaseBorrowReturned: true })}`;
+  expect(parseCuaNativeAuditLine(line)).toBe(line);
+  expect(
+    parseCuaNativeAuditLine(
+      line.replace('"machineLeaseReleased":false', '"machineLeaseReleased":true'),
+    ),
+  ).toBeUndefined();
+  expect(
+    parseCuaNativeAuditLine(line.replace(',"machineLeaseBorrowReturned":true', "")),
+  ).toBeUndefined();
+  expect(
+    parseCuaNativeAuditLine(
+      line.replace('"machineLeaseBorrowReturned":true', '"machineLeaseBorrowReturned":false'),
+    ),
+  ).toBeUndefined();
+});

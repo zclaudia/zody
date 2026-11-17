@@ -14,6 +14,11 @@ int main() {
     auto unaccepted = state.prepare(@"lineage-1", @{@"pid": @1}, @{@"pid": @1, @"window_id": @2}, window, elements, handles, false, true, false);
     assert([unaccepted.result[@"structuredContent"][@"snapshot_mode"] isEqual:@"full"]);
     state.commit(first);
+    NSString* first_id = first.result[@"structuredContent"][@"state_id"];
+    assert(state.frozen_handle(@"lineage-1", @{@"pid": @1, @"window_id": @2}, window, first_id, 0) == handles[0]);
+    assert(!state.frozen_handle(@"lineage-2", @{@"pid": @1, @"window_id": @2}, window, first_id, 0));
+    assert(!state.frozen_handle(@"lineage-1", @{@"pid": @1, @"window_id": @2}, [NSObject new], first_id, 0));
+    assert(!state.frozen_handle(@"lineage-1", @{@"pid": @1, @"window_id": @2}, window, first_id, 1));
     auto second = state.prepare(@"lineage-1", @{@"pid": @1}, @{@"pid": @1, @"window_id": @2}, window, elements, handles, false, true, false);
     assert([second.result[@"structuredContent"][@"snapshot_mode"] isEqual:@"diff"]);
     assert([second.result[@"structuredContent"][@"base_state_id"] isEqual:first.result[@"structuredContent"][@"state_id"]]);
@@ -21,6 +26,16 @@ int main() {
     assert([moved.result[@"structuredContent"][@"snapshot_mode"] isEqual:@"full"]);
     auto silent = state.prepare(@"lineage-1", @{@"pid": @1}, @{@"pid": @1, @"window_id": @2}, window, elements, handles, false, false, false);
     state.commit(silent);
+    assert(!state.frozen_handle(@"lineage-1", @{@"pid": @1, @"window_id": @2}, window, first_id, 0));
+    NSString* silent_id = silent.result[@"structuredContent"][@"state_id"];
+    assert(!state.can_promote(@"lineage-2", @{@"pid": @1, @"window_id": @2}, window, silent_id));
+    assert(!state.can_promote(@"lineage-1", @{@"pid": @1, @"window_id": @2}, [NSObject new], silent_id));
+    assert(state.can_promote(@"lineage-1", @{@"pid": @1, @"window_id": @2}, window, silent_id));
+    assert(state.promote(@"lineage-1", @{@"pid": @1, @"window_id": @2}, window, silent_id));
+    assert(state.frozen_handle(@"lineage-1", @{@"pid": @1, @"window_id": @2}, window, silent_id, 0) == handles[0]);
+    auto anotherSilent = state.prepare(@"lineage-1", @{@"pid": @1}, @{@"pid": @1, @"window_id": @2}, window, elements, handles, false, false, false);
+    state.commit(anotherSilent);
+    assert(!state.can_promote(@"lineage-1", @{@"pid": @1, @"window_id": @2}, window, silent_id));
     auto after_silent = state.prepare(@"lineage-1", @{@"pid": @1}, @{@"pid": @1, @"window_id": @2}, window, elements, handles, false, true, false);
     assert([after_silent.result[@"structuredContent"][@"snapshot_mode"] isEqual:@"full"]);
     auto rebuilt = state.prepare(@"lineage-1", @{@"pid": @1}, @{@"pid": @1, @"window_id": @2}, [NSObject new], elements, handles, false, true, false);

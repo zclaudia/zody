@@ -930,17 +930,29 @@ export async function setupComputerUseRuntime({ globals }) {
         projectToHost(globals, result);
         return result;
       }
-      if (notReady.retryable !== true || attempt >= NOT_READY_MAX_ATTEMPTS - 1) {
+      const action = MUTATING_METHODS.has(methodName);
+      if (action || notReady.retryable !== true || attempt >= NOT_READY_MAX_ATTEMPTS - 1) {
+        // 写动作即使收到 retryable 也不自动重放；未知派发必须保留原收据事实。
+        const receipt = receiptOf(result);
         // 不可重试，或已等到上限：把 producer 自己的话和 reasonCode 交给模型，
         // 不要替换成通用句子（那正是今天反复出问题的地方）。
         throw new ComputerUseError(
           `${methodName}: ${notReady.message ?? "Computer Use is not ready."}`,
           {
-            code: notReady.retryable === true ? "TIMEOUT" : "CONTROLLER_BUSY",
+            code:
+              receipt.dispatch_status === "possibly_sent"
+                ? "TIMEOUT"
+                : action
+                  ? "CONTROLLER_BUSY"
+                  : notReady.retryable === true
+                    ? "TIMEOUT"
+                    : "CONTROLLER_BUSY",
+            actionSent: receipt.action_sent === true || receipt.dispatch_status === "possibly_sent",
+            dispatchStatus: receipt.dispatch_status,
             details: {
               method: methodName,
               reasonCode: notReady.reasonCode,
-              retryable: notReady.retryable === true,
+              retryable: !action && notReady.retryable === true,
               attempts: attempt + 1,
             },
           },
@@ -1174,7 +1186,12 @@ export async function setupComputerUseRuntime({ globals }) {
     if (excluded.has(methodName)) continue;
     Object.defineProperty(computer, methodName, {
       enumerable: true,
-      value: async (args = {}) => unwrapEnvelope(await call(methodName, args)),
+      value: async (args = {}) => {
+        const result = await call(methodName, args);
+        // 写动作的已授权返回状态不能被单块收据解包丢弃；none 保留原一次解包合同。
+        if (MUTATING_METHODS.has(methodName) && result?.structuredContent) return result;
+        return unwrapEnvelope(result);
+      },
     });
   }
 

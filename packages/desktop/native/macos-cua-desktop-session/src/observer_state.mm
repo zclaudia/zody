@@ -103,5 +103,44 @@ void ObserverState::commit(const ObserverPreparedState& pending) {
   }
   entries_.push_back(std::move(update));
 }
+id ObserverState::frozen_handle(NSString* scope, NSDictionary* window, id identity,
+                                NSString* state_id, NSUInteger index) const {
+  if (!scope || !window || !identity || !state_id || ![scope_ isEqual:scope]) return nil;
+  NSString* key = [NSString stringWithFormat:@"%@:%@", window[@"pid"], window[@"window_id"]];
+  for (const auto& entry : entries_) {
+    // 静默或新映射未交付时旧索引不再可靠，必须等待新的模型可见整树。
+    if (![entry.key isEqual:key] || ![entry.identity isEqual:identity] || entry.force_full ||
+        ![entry.visible_id isEqual:state_id] || index >= entry.visible_handles.count ||
+        index >= entry.visible_elements.count) continue;
+    if (![entry.visible_elements[index][@"index"] isEqual:@(index)]) return nil;
+    return entry.visible_handles[index];
+  }
+  return nil;
+}
+bool ObserverState::can_promote(NSString* scope, NSDictionary* window, id identity, NSString* state_id) const {
+  if (!scope || !window || !identity || !state_id || ![scope_ isEqual:scope]) return false;
+  NSString* key = [NSString stringWithFormat:@"%@:%@", window[@"pid"], window[@"window_id"]];
+  for (const auto& entry : entries_) {
+    NSString* latest = [NSString stringWithFormat:@"%llu", static_cast<unsigned long long>(entry.sequence)];
+    if ([entry.key isEqual:key] && [entry.identity isEqual:identity] && entry.force_full &&
+        [latest isEqual:state_id] && entry.latest_elements && entry.latest_handles &&
+        entry.latest_elements.count == entry.latest_handles.count) return true;
+  }
+  return false;
+}
+bool ObserverState::promote(NSString* scope, NSDictionary* window, id identity, NSString* state_id) {
+  if (!can_promote(scope, window, identity, state_id)) return false;
+  NSString* key = [NSString stringWithFormat:@"%@:%@", window[@"pid"], window[@"window_id"]];
+  for (auto& entry : entries_) {
+    if (![entry.key isEqual:key]) continue;
+    // 像素与正文实际交付、ACK 后才能提升原冻结索引，不重新遍历或更换句柄。
+    entry.visible_elements=entry.latest_elements;
+    entry.visible_handles=entry.latest_handles;
+    entry.visible_id=[state_id copy];
+    entry.force_full=false;
+    return true;
+  }
+  return false;
+}
 void ObserverState::clear() { entries_.clear(); scope_ = nil; }
 }

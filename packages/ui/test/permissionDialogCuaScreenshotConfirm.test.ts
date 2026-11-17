@@ -636,3 +636,72 @@ describe("cua_ax_read_confirm 展示", () => {
     expect(onRespond).toHaveBeenCalledWith(request.requestId, options[0], undefined);
   });
 });
+
+describe("cua_ax_control_confirm 展示", () => {
+  it("独立控制卡展示精确目标、限定动作和租约，默认拒绝", () => {
+    const options = standardCuaScreenshotConfirmOptions().filter(
+      (option) => option.kind !== "allowAlways",
+    );
+    const view = renderPermissionDialog(
+      createCuaScreenshotConfirmRequest({
+        kind: "cua_ax_control_confirm",
+        title: "cua_ax_control_confirm",
+        options,
+        raw: {
+          target: {
+            ownerName: "Controlled Fixture",
+            windowName: "Target",
+            pid: 40077,
+            windowId: 89384,
+          },
+        },
+      }),
+      vi.fn(),
+    );
+    expect(view.getByText("控制指定窗口")).toBeTruthy();
+    expect(
+      view.getByText("仅允许此窗口中元素的按钮按下与普通文本赋值；空闲 120 秒或停止任务后失效。"),
+    ).toBeTruthy();
+    expect(view.getByText("Controlled Fixture")).toBeTruthy();
+    expect(view.getByText("89384")).toBeTruthy();
+    expect(view.getByRole("option", { name: "允许本次控制" })).toBeTruthy();
+    expect(view.getAllByRole("option")).toHaveLength(2);
+    expect(view.container.querySelector("pre")).toBeNull();
+    expect(view.queryByText(/cua_ax_control_confirm/)).toBeNull();
+    const deny = view.getAllByRole("option")[1]!;
+    expect(document.activeElement).toBe(deny);
+    expect(view.getByRole("listbox").closest('[data-cua-confirm-kind="control"]')).not.toBeNull();
+    fireEvent.keyDown(deny, { key: "Enter" });
+    expect(view.onRespond).toHaveBeenCalledExactlyOnceWith(
+      "request-cua-confirm",
+      options[1],
+      undefined,
+    );
+  });
+
+  it("控制卡显式允许回传原选项，Escape 仍拒绝", () => {
+    const options = standardCuaScreenshotConfirmOptions().filter(
+      (option) => option.kind !== "allowAlways",
+    );
+    const view = renderPermissionDialog(
+      createCuaScreenshotConfirmRequest({
+        kind: "cua_ax_control_confirm",
+        title: "cua_ax_control_confirm",
+        options,
+      }),
+      vi.fn(),
+    );
+    const allow = view.getByRole("option", { name: "允许本次控制" });
+    act(() => allow.focus());
+    fireEvent.keyDown(allow, { key: "Escape" });
+    expect(view.onRespond).toHaveBeenCalledExactlyOnceWith(
+      "request-cua-confirm",
+      options[1],
+      undefined,
+    );
+    view.onRespond.mockClear();
+    fireEvent.click(allow);
+    fireEvent.click(allow);
+    expect(view.onRespond).toHaveBeenCalledWith("request-cua-confirm", options[0], undefined);
+  });
+});

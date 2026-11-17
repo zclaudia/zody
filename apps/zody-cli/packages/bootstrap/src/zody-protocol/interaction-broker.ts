@@ -61,6 +61,7 @@ const INTERACTION_REQUEST_REANNOUNCE_INTERVAL_MS = 1_000;
 /** App 内截图确认的固定 toolName（spec 2026-10-31）；UI 侧按同字面量识别。 */
 const CUA_SCREENSHOT_CONFIRM_TOOL_NAME = "cua_screenshot_confirm";
 const CUA_AX_READ_CONFIRM_TOOL_NAME = "cua_ax_read_confirm";
+const CUA_AX_CONTROL_CONFIRM_TOOL_NAME = "cua_ax_control_confirm";
 
 interface RegisteredRequestOptions extends PermissionBrokerRequestOptions {
   onRegistered?: () => void;
@@ -79,7 +80,8 @@ export function createProtocolInteractionBroker(
           : request.toolName === EXIT_PLAN_MODE_TOOL_NAME
             ? requestExitPlanModeApproval(context, request, registeredOptions)
             : request.toolName === CUA_SCREENSHOT_CONFIRM_TOOL_NAME ||
-                request.toolName === CUA_AX_READ_CONFIRM_TOOL_NAME
+                request.toolName === CUA_AX_READ_CONFIRM_TOOL_NAME ||
+                request.toolName === CUA_AX_CONTROL_CONFIRM_TOOL_NAME
               ? requestCuaScreenshotConfirm(context, request, registeredOptions)
               : requestPermission(context, request, registeredOptions);
       const result = requestResult.catch((error: unknown) => {

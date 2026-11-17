@@ -1,6 +1,224 @@
+> 当前执行（2026-11-18）：仅推进Developer ID分发准备第1步：调查并补回缺失build资源/已验收本地冻结pin，完成显式发布身份接线及定向回归。不签名、公证、上传、发布或替换安装；既有本机验收结论保留。
+
+## Developer ID 分发身份接线（2026-11-18）
+
+本地R1/R2/R3证据继续有效，不能视为Developer ID签名身份的验收。当前build目录的23个跟踪资源缺失，仓库clean/clean:output均不删除此目录，具体删除来源未证实。只补缺失的静态资源；冻结metadata按第1/2步验收摘要恢复，禁止直接还原HEAD中的旧R1 pin。现有候选/安装和证据不变。
+
+构建身份选择只有 `local-self-signed`（既有默认）和显式 `developer-id`。发布信任根唯一所有者为仓库受控 `packages/desktop/build/cua-narrow-developer-id.json`，不从资源manifest、自报pins、运行时环境或任意用户文件建立信任。未配置时仅保存schema/kind/status，不伪造证书、Team、CDHash或签名材料；选择发布身份必须失败关闭。配置后需精确绑定TeamIdentifier、证书leaf SHA256/SHA1、Helper/Node固定identifier和各自DR、Node CDHash，DR限定Apple Developer ID Application链和该Team。Helper/Node使用同一发布证书。发布pin、Node签名与Helper编译/签名在后续获授权阶段由真实材料确定。
+
+原native builder增加 `--identity-profile`，复用 `--identity-pins`；发布选择要求显式pins文件。narrow prepare同样提供显式profile/pins选项；validate、打包前/后验证沿 `ZODY_CUA_NARROW_IDENTITY_PROFILE` 的单次构建选择传递。默认不根据manifest或pins自动升级/降级身份；发布profile缺失/未配置/字段不完整、错误Team/leaf/DR/CDHash、manifest/原生编译pins不一致均拒绝。选发布身份时外层electron-builder必须显式开启Developer ID签名并与受控Team匹配，不能使用当前本地冻结默认输入冒充发布输入；要求显式已准备manifest，后续真实冻结完成才更新默认双pin。
+
+所有入口消费同一身份策略加载器，native builder把精确Helper/Node pins写入既有编译头；运行时仍按编译pin验签、audit-token/同二进制/资源摘要复验。代码签名验证在Developer ID分支额外要求正式Authority、精确Team和签名时间戳，保留hardened runtime和既有空entitlements约束。不得放宽authority、控制租约、最终admission、窗口资格或R1不透明边界。
+
+```mermaid
+flowchart LR
+  P[受控仓库身份策略
+唯一发布信任根] --> N[native builder
+显式profile+pins]
+  N --> H[既有编译头
+Helper/Node精确pin]
+  P --> R[narrow prepare/validate
+同一策略加载器]
+  H --> R
+  R --> E[显式发布manifest
+electron-builder签名门禁]
+  E --> V[包后完整树/身份复核]
+  V --> F[后续阶段真实签名/公证/冻结
+本轮不执行]
+```
+
+定向回归先复现Developer ID身份拒绝/未支持，随后覆盖显式选择、默认local兼容、未配置与伪造pin拒绝、Team/证书/DR/CDHash/时间戳/entitlements拒绝、编译头传递与构建入口不降级。只运行受影响资源/identity/build测试、typecheck/lint/架构；本轮不做真机SDK或完整矩阵，不生成或重签候选。缺少发布凭据记录为后续签名阶段前置条件，不为此请求本轮无关的系统授权。
+
+> 当前状态（2026-11-16）：正式pin、正式身份最小本地验收及第3步本机安装切换已完成；旧App与完整本机数据已备份，正常启动与默认cua-narrow装配就绪，主控与Terra复核通过。未公证/上传/发布。见[安装记录](../docs/testing/cua-r3-install-20261116.md)；前轮动作证据复用，不重跑矩阵。
+
+## 本机安装切换（2026-11-16，第3步，已完成）
+
+结果见[本轮记录](../docs/testing/cua-r3-install-20261116.md)：备份逐项一致，已安装完整树等于已验收候选，正常界面与默认Host warmup ready成立。启动9条warning/0条error原样保留，没有新增SDK调用或写动作。
+
+用户已授权备份旧 App 与必要数据后，将 `/Applications/Zody.app` 切换为已验收正式身份候选。复用第1/2步和R1/R2证据，不重建、不重签、不重跑写动作/截图/完整矩阵；不公证、上传、发布或自动提交。
+
+主控串行拥有安装切换。确认无当前Zody进程和数据写入者、无路径覆盖后，完整备份旧App与 `~/.zody`（包含业务数据、SQLite伴随文件和Electron profile），在私有目录保存摘要回执；用户项目文件不属于本次数据备份。先核验备份再同卷暂存候选，验证字节与签名后切换；仅正常启动真实用户profile，核对可见窗口、正常Host启动与默认cua-narrow接线，不提交任务、不派发CUA写入。真实配置或历史会话内容不进入工作区证据。异常时保留事实并使用旧App备份回滚；不得为启动检查修改授权或自动更新。
+
+```mermaid
+sequenceDiagram
+  participant C as 主控（唯一安装所有者）
+  participant B as 私有App/数据备份
+  participant I as /Applications/Zody.app
+  participant H as 正常Host
+  C->>B: 无写入者时备份；复算完整树
+  C->>C: 已验收候选同卷暂存；复算签名与摘要
+  C->>I: 替换旧安装（旧App备份已验证）
+  C->>I: 正常LaunchServices启动，无测试覆盖
+  I->>H: 真实profile与默认冻结接线
+  H-->>C: 正常就绪事件及固定字段
+  C->>C: 安装摘要、备份回执、启动事实独立复核
+```
+
+> 前轮状态（2026-11-16）：用户授权的R3最小发布前准备已完成；以本文“R3按实际差异收敛门槛”及[最终记录](../docs/testing/cua-r3-prepublish-closeout-20261116.md)为准。R1/R2旧闭锁、旧20次/全故障门槛按历史理解；正式pin、公证、上传、发布仍未启动。
+
+# R1 只读撤销交付补验（2026-11-14）
+
+历史 R1 轮只覆盖 macOS 正常桌面，本段“R2 闭锁”表示当时时点。当前 R2 已按下方 2026-11-15 启动合同获授权实施；不恢复 workflow 工作树，不改写历史失败或将默认 03a 的历史安全拒绝记为通过。
+
+只读交付沿用唯一 runtime authority 和不可恢复的 turn scope。最终 authority 往返之后仍须重验原生窗口身份；窗口重验返回后、发送正文前检查本地取消，ACK 返回后、提交 diff 基线前再次检查取消。接收端在异步 authority 检查返回后以及同步 ACK 写入返回后检查关闭/撤销锁存；迟到 candidate、旧结果或成功 ACK 均不能恢复旧 scope。检查失败清除待提交基线，新 turn 必须重新确认且首次输出 full。不得通过增加父链、角色、路径豁免或重复授权查询替代既有守卫。
+
+```mermaid
+sequenceDiagram
+  participant U as 当前会话 Stop
+  participant A as Runtime authority（唯一所有者）
+  participant C as CLI 只读接收端
+  participant N as Native 观察器
+  U->>A: 既有 stop 命令
+  A->>A: 撤销原 turn / revision
+  A->>C: scope invalidated（锁存）
+  C->>N: cancel
+  N-->>C: 迟到 AX 回复或旧结果
+  C->>C: 拒收；零正文；不恢复权限
+```
+
+回归须分别覆盖最终窗口重验内撤销、ACK 期间撤销、异步 resolve 迟到 candidate、旧 scope 结果及同会话新 turn。真机使用独立受控 AppKit 夹具，阻塞真实 AX 回复，显式允许后等待读取屏障，点击正常桌面实际 Stop；以同一 CLI 观察调用的 authority invalidated 事件作为撤销事实，再释放回复。仅 UI 点击/终态时间不能证明 authority 顺序。超时不得记作撤销通过；只观察到迟到 AX 回复时不得声称观察到迟到正文帧。诊断只记录固定事件、局部序号与身份摘要，不记录正文、窗口标题或工作区路径，且不参与授权。新 turn 新授权后重新检查原工具仍 stopped、无正文、无 provider 续跑。
+
 # macOS Computer Use 二期：限定 AX 后台切片
 
-状态（2026-11-13）：R1 只读源码已接线；当前固定签名候选的 metadata、deny、allow、03b、03c、03d 六项整轮 6/6、截图回归 3/3，通过后仍 pending 人工审阅；额外手机 Web 模拟触摸 1/1 不计本期门槛。默认 AppKit 03a、完整无干扰、系统状态故障注入及只读交付撤销交错仍未闭环；历史冷启动问题另列为已知问题，不新增完成门槛；R2/R3 尚未执行，R1 与二期未整体完成。依据 [可行性报告](../docs/cua/2026-11-10-macos-background-control-feasibility.md)、[探针规格](computer-use-macos-background-ax-probe.md) 和 [phase1](computer-use-macos-phase1.md)。14 方法是后续规划，不是本批交付承诺。
+## R2 启动与实现合同（2026-11-15，当前授权）
+
+用户已明确授权在当前未提交 R1 工作区上实施和受控验收 R2。本文及 R1 收尾材料中“R2 闭锁”表示当时状态，不能覆盖本次授权；R3、冻结发布 pin 和最终发布仍不启动。归档五份最终验收文件已经逐项核对 manifest SHA-256/大小，R1 支持范围不扩大。
+
+当前技术证据已齐：租约、截图借锁及两平台18条输入路径完成主控与独立Terra核验；18笔合格/19次真实写尝试，1笔输入取证失败原样保留。用户已确认两轮通过阶段未观察到输入、焦点、鼠标或窗口异常，控制输入用例据此晋升；不追加真机轮次，不启动R3。晋升后的CUA R2真机用例与R1相同，仅显式定向执行，默认全量排除，不进入Docker默认套件；正式目录不代表无需真实夹具、签名候选和人工输入。当前状态及失败解释统一见 [R2验收记录](../docs/testing/cua-r2-acceptance-20261115.md)。
+
+### R2 收敛测试计划（2026-11-15，当前生效）
+
+用户已要求精简验证过程。本节取代此前将发布矩阵完整套用于 R2 的执行要求；产品安全合同不变。R2 证明限定功能接线与关键安全边界，R3 原计划承担发布级重复、冻结与完整系统故障矩阵；该测试数量已由下文2026-11-16“R3按实际差异收敛门槛”取代。R1已完成次数和失败不改记。
+
+| 层次 | 本轮执行范围 | 完成条件 |
+| --- | --- | --- |
+| 确定性回归 | native/CLI 测试承担授权隔离、竞争/120秒边界、Stop/admission 两种排序、旧窗口/索引、迟到、禁止重放、写前读拒绝及写后观察失败、未支持组合 | 复用已通过且未受影响的结果；改动只补和跑受影响回归，不逐条复制成真机故障用例 |
+| 已完成真机 | 复用 UI/SDK Stop、新 turn 恢复、R1 metadata/deny/allow/五步读取、目标忽略效果校准 | 保留各自候选身份和原始结论；记录后续差异的影响，不冒称在新候选上重跑 |
+| 剩余自动真机 | 空闲租约 1 案；控制→截图借锁→再次控制 1 案 | 分别验证真实 busy/到期不续租和真实 PNG/借锁收据/新冻结状态；每案通过一次，不扩大排列 |
+| 集中人工输入 | AppKit、Electron 各 1 轮；每轮 3 操作 × none/compact/full 各 1 次，共 9 笔，两轮合计 18 笔 | 每笔真实业务效果、精确目标、兄弟不变、真实收据及输入无干扰齐全；首笔兼作冒烟，不再单开功能性 20 次轮 |
+| 收尾 | 一次最终差异/证据只读复核；代码冻结后根 typecheck、lint、架构及相关 E2E 类型/fixture 检查 | 真实结果和 warning 记账，必要项齐全后结束 R2 技术验收；用例晋升仍需人审，R3/发布不启动 |
+
+真机前先在实际 node_repl cell 环境完成模板导入、结果解析、权限卡分类和回放匹配的离线自检，不派发 OS 写动作；现有硬编码 20 次的驱动须先改为上述 3 种 return_state 各一次并通过类型/fixture 检查，不能沿用旧数量误跑。验证器失败先保存错误并离线修复，只重跑该案；产品失败先补确定性回归和修复，只回归受影响路径。可能已发送的动作不重放，安全拒绝/效果未知不算成功，也不靠增加试次凑通过数。
+
+人工就绪仅在构建和自动项结束、输入驱动已自检后集中安排，等待放在 SDK 调用前。连续两平台执行中仅在明确转换点暂停/继续，不在开发调试期间请用户持续键入。复用 R1 未变的监测与校准证据；新增 fence 的协议/因果检查用定向测试及本轮真实输入验证，不重做失焦、剪贴板、Space、锁屏、睡眠等整套故障注入。
+
+人工轮驱动只运行三项正例，每项依次 `none/compact/full`，不重跑已通过的 deny。首次 `left_click` 提交前等待操作员就绪及新的硬件按键；每平台使用新的 fixture、monitor 进程和独立目录，屏障与监测命令序号均从零开始。测试驱动是试次序列的唯一所有者，monitor 只报告真实输入和系统状态，fixture 只拥有业务效果；离线模板自检允许模拟 SDK，但不得计入真机证据。三种返回模式分别验证 not_requested/synced/synced 和实际状态身份，可能已发送或缺少证据的试次保留，不自动重试。
+
+输入监测的 `insertedText` 必须根据 begin 时的实际文档与选区、end 时的实际文档推导，并验证选区外前后文未变；不能按原文长度截取末尾、假定光标总在文末，也不能用键盘事件文本合成“实际插入”。无法解释的文档变更输出未知并由原评分器拒绝，不新增监测字段，不调整真实键序/焦点/窗口等判据。Electron已发送但输入取证不一致的失败笔保留，不重放该attempt；后续只执行新明确试次及尚未完成路径，AppKit通过结果不重跑。
+
+```mermaid
+sequenceDiagram
+  participant 操作员
+  participant 驱动
+  participant Monitor
+  participant SDK
+  participant 业务夹具
+  驱动->>操作员: 环境就绪后集中提示
+  操作员->>Monitor: 持续真实键入
+  驱动->>驱动: SDK 外确认就绪及新硬件键
+  loop 三操作 × none/compact/full
+    驱动->>Monitor: begin 与 ACK
+    驱动->>SDK: 允许本笔控制
+    SDK->>业务夹具: 单次实际 AX 写
+    业务夹具-->>驱动: pending
+    驱动->>Monitor: fence 与主线程 ACK
+    操作员->>Monitor: ACK 后新硬件键
+    驱动->>业务夹具: release（700ms 内）
+    SDK-->>驱动: 实际动作及状态收据
+    驱动->>Monitor: end，核对效果与无干扰
+  end
+```
+
+候选复用同一运行槽；只有被封装的产品字节变化才重建/签名/prepare 一次。测试脚本、fixture、报告变化不触发产品重建，未受影响的通过证据继续有效。不得因“更放心”追加新完成门槛；发现真实阻断问题时明确对应合同和受影响用例。执行状态只维护在 [R2 验收记录](../docs/testing/cua-r2-acceptance-20261115.md)，本规格、catalog 和 matrix 不再逐轮复制日志。
+
+实现先完成安全准入，再连接写动作。唯一状态所有者和内部接口如下，公开 SDK 同名同签不变：
+
+- 既有 runtime authority 继续拥有完整 submission ref、producer/run/turn/trace 和撤销事实；控制确认独立使用 `cua_ax_control_confirm` 的单次、默认拒绝、禁止 always/full-access 继承的确认。展示 OS 解析的精确 app/window、限定动作与 120 秒空闲范围；截图、TCC 和读取卡不能授予控制。可信 workspace identity 与 remote session 关联沿原上下文传递并核对。
+- 复用现有认证 authority transport 和 observation request composition，内部请求扩展为三个限定动作及 `stop_computer_control`；`confirmControl` 单独于 `confirmRead`。冻结 state_id 在内部适配层绑定，模型 target 仍是 `{type:"element",index}`，不让模型提供或覆盖原生句柄/身份/授权。
+- Helper 内控制 owner 持有既有 `MachineLease`（跨进程 flock）、完整 scope、精确窗口及进程启动身份、租约 generation 和单调活动时间。观察与正常单次连接关闭不续租；120 秒到期、Stop、owner/turn/session 失效、目标失效封闭准入。未支持/失败/迟到完成不续租。第二会话或 Helper 必须 `CONTROLLER_BUSY`。CLI 同 consumer 的并发重入也必须在 native 调用前返回 controller_busy，并明确 action_sent:false、dispatch_status:not_sent、state_sync_status:not_requested；不能仅返回错误码而遗漏动作事实。
+- `ObserverState` 是已交付冻结元素映射的唯一所有者；只能从同 scope、精确 native window/启动身份和 state_id 查询元素。静默观察、旧窗口重建、索引位移或映射失效不能借新遍历恢复旧索引。系统远端不透明截止保持零正文/零索引/零句柄。
+- 原生 control gate 对撤销与最终 admission 给出单一顺序。在 gate 中取得派发资格并记录 attempt 后仅调用一次受支持 AX 操作；不持锁等待可能阻塞的 AX 回复。Stop 先赢为 `not_sent`/零 AX；admission 先赢保留 `sent` 或 `possibly_sent`，不会承诺取消已送达效果。in-flight 未确认结束前不释放跨 Helper 排他；迟到成功不恢复 grant/generation、不续租。
+- 动作结果使用独立 `controlResult`，严格验证 `action_sent`、`dispatch_status` 和 `state_sync_status`。连接丢失或撤销不得被观察通用脱敏重建成确定未派发；派发未知按 `possibly_sent` 保留且不重放。写后读取失败保留收据；`none` 不做写后观察，`compact/full` 所需读取确认必须在派发前完成，返回读取仍受最终撤销守卫。`set_value` 对当前 AXValue 做字符串类型核验属于必要正文读取，无论 return_state 都先取得本次读取确认再取得控制确认；旧值仅用于 Helper 本地类型判断，不记录或交付。拒绝读取后零 getter/写调用。
+- 所有元素复验失败（包括首次与最终复验）都封闭同 scope 的租约并清除冻结映射；元素恢复也不能复活旧 state_id/index。跨进程 AX getter 可能阻塞，受支持性/可设置性读取结束后须重核原句柄直接 PID/实际 PID/窗口归属，且在 admission 前执行不访问 AX 正文的系统/进程启动身份/hidden/精确 CG onscreen 资格检查；getter 期间发生的锁屏、隐藏、最小化不得沿用之前资格。该检查不重新遍历、不重建索引、不授权 fallback。
+- 仅 AXPress（left_click 为 element/left/1/无修饰键/auto 或 a11y；perform_action 为实际广告 AXPress）及普通文本 AXTextField 的可设置 AXValue。原生 adapter 也校验实际广告/可设置性和精确窗口归属，不开放事件、坐标、键入、剪贴板、滚动、激活或前台 fallback。
+
+```mermaid
+sequenceDiagram
+  participant SDK
+  participant CLI as CLI / 唯一 authority
+  participant H as Helper 控制 owner / MachineLease
+  participant G as 原生 admission gate
+  participant AX as 精确夹具窗口
+  SDK->>CLI: 限定动作 / 冻结索引 / return_state
+  CLI->>H: 完整可信 scope + 内部冻结版本
+  H->>CLI: confirmControl；需要时先 confirmRead
+  CLI-->>H: 独立明确决定（拒绝则零派发）
+  H->>H: 排他租约 / 系统资格 / 原窗口及元素重验
+  par 撤销
+    CLI->>G: Stop / owner 失效，封闭 generation
+  and 最终派发
+    H->>G: 原子 admission，记录 attempt
+  end
+  alt Stop 先赢
+    G-->>CLI: not_sent，零 AX
+  else admission 先赢
+    G->>AX: 唯一一次 AXPress / AXValue
+    AX-->>H: 成功 / 失败 / 无法证明
+    H->>H: 仅当前有效 generation 成功可续租
+    H-->>CLI: 真实 receipt；写后观察独立结果
+  end
+  CLI-->>SDK: receipt + 可交付状态；可能已发送不重放
+```
+
+回归先行：授权拒绝、未支持组合零 native 调用、跨 Helper 竞争、恰好 120 秒失效、Stop 先/后 admission 的确定性屏障、迟到成功、旧 scope/window/index、无重放、return_state 写前读取授权与写后失败收据。真机层按上文收敛计划验证关键接线与业务效果，不重复完整边界矩阵。真实验收仅使用受控 AppKit/Electron 夹具；要求精确目标、同 PID 同标题兄弟窗口不变、真实派发收据与无干扰，不能以 AX 返回成功或安全拒绝代替业务效果。目标忽略效果校准已检出，复用其证据。E2E 先 pending，人审前不晋升；复用单运行槽并保留全部失败。
+
+跨调用失效监听：首次授租的 `controlResult` payload 使用内部 `lease_watch:true`，ACK 回显后将同一认证连接交给租约 owner 的唯一 reader，CLI 保留该 consumer scope 并先返回动作收据。后续工具连接独立关闭不能关闭 watcher；同一 authority owner 广播撤销至所有 consumer。watcher 收到 owner revoked/异常 EOF 立即封闭 gate；120 秒到期正常发送 `close` 再结束该 consumer，不将到期伪装为 control-lost 撤销整个 lineage。Helper 在 in-flight 尚未结束时保持 machine lease。此监听不提供第二条授权路径。
+
+截图与树的组合交付必须先完成两种独立授权及最终 scope 检查；成功后 composition 使用仅内部 `commit_state({app_ref,state_id})` 提交原已采集树的可见性。此方法不是模型工具，不读取新正文、不重建索引，只在同 scope、精确原生窗口及进程启动身份和同 latest sequence 下，经最终 authority/系统资格/窗口重验与 `observationResult` ACK 才提升原元素和句柄；失败不提交。固定成功结果仅含 `committed:true,state_id`。CLI 同时更新冻结目标，使实际已交付的树可用于后续限定写；截图失败、旧版本和撤销不能推进基线。
+
+同完整 association 的截图可借用已有控制 MachineLease；借用保持 in-flight token，归还不续租，Stop/到期后直到截图资源确认释放才允许归还机器锁。异 scope 仍排他拒绝。截图 association 同样贯穿可信 workspaceIdentity/remoteSessionId，并与 control scope 精确相等。截图收据区分真实 OS 锁释放（原 `machineLeaseReleased:true`）与归还借用（`machineLeaseReleased:false,machineLeaseBorrowReturned:true`），两种事实互斥，不能将归还借用伪报成释放仍活跃的控制锁；像素/权限/文件核验语义不变。
+
+SDK raw `computer.*` 遵循原工具结果的一次解包合同：受支持写动作含 `structuredContent`（compact/full）时保留完整结果和真实 receipt，不能因只有一块 receipt text 而丢弃已授权的状态。none 的单块收据仍按原规则解包；高层 Target 同名同签及 void/抛错合同不变，可能发送不得自动重试。
+
+SDK 的 not-ready 退避仅用于非动作调用；写动作即使收到 `retryable:true` 也只调用一次并将错误的 `details.retryable` 收紧为 false。收据里的 action_sent/dispatch_status 继续保留，不能以通用 not-ready 覆盖可能发送事实。
+
+生产审计仅投影 Native 固定事实：`[cua-control]` 的 event（rejected/admitted/completed）、正安全整数 attempt、16 位十六进制 scope 摘要和 dispatch_status，严格拒绝额外字段及事件/派发状态矛盾；rejected 只对应 not_sent，admitted 只对应 possibly_sent，completed 对应 sent/possibly_sent。既有 Host stderr 的受控解析器将这些行提升到生产日志，而不是放宽任意 stderr。截图日志同样按真实借用/释放互斥字段解析。诊断不成为权限或结果所有者，不含值、标题、workspace 路径或原始身份。
+
+R2 验收夹具采用独立 `controlled-ax-write-v1` bundle/目录，不修改 R1 默认或显式只读夹具。AppKit 目标与兄弟窗口同 PID 同标题，分别拥有真实按钮计数和普通文本字段业务模型；按钮 target/action 与字段的原生 accessibility setter 更新模型，独立异步原子持久化业务快照，AX 回显不代替业务证明。夹具自身可显式开启忽略效果校准，只记录真实收到的请求并不更新模型，评分必须失败。无第三方窗口访问、无模拟输入、不读取剪贴板。所有写值为固定验收文本。
+
+真实输入交错可显式启用受控目标的业务效果屏障：目标收到真实 AX 写请求后以当前 run nonce 和单调 request sequence 异步公布 pending，业务模型尚未变化；控制器在独立前台监测就绪且观察到该 pending 后，向监测进程发送只读 `fence` 命令；监测主线程采样当前 keySequence 并经串行 IO 写匹配 trialId/command sequence 的 `key-fence.json`。控制器收到该真实 ACK 后，等待序号严格大于 fence 的硬件键入，再释放同 nonce/sequence。异步 last-key 文件可能晚落盘，不能仅以控制器看到文件的先后证明真实输入交错。目标只消费相符的一次 release，随后完成本次真实业务效果；超时、错 nonce、旧 sequence 均不得被计作成功，不重放动作。IO 在串行后台队列执行，AppKit 主队列仍是业务模型唯一所有者。人工开始/恢复等待在 SDK 外，试次内仅为有界机器屏障，不能自动生成键入。未经屏障的功能性效果轮不宣称证明输入交错。AppKit 屏障在真实 accessibility setter/action 内等待；Electron 的普通 DOM 动作通过 renderer IPC 触达 main 业务 owner，再异步等待屏障。后者仅证明真实业务接纳待提交期间的硬件输入交错，不能以异步审计到达顺序声称 AX RPC 仍被阻塞。两者均必须证明最终实际业务效果与兄弟不变，报告保留该机制差异。
+
+```mermaid
+sequenceDiagram
+  participant U as 用户真实键入 / 前台监测
+  participant C as 主控验收器
+  participant M as 前台监测主线程
+  participant H as 实际 SDK / Helper
+  participant F as 受控目标业务 owner
+  C->>H: 单次限定写调用
+  H->>F: 一次真实 AX 请求
+  F-->>C: pending(run nonce, request sequence)，效果未提交
+  C->>M: 只读 fence(command sequence, trialId)
+  M-->>C: 主线程 keySequence ACK
+  C->>U: 读取当前基线（人工已在 SDK 外就绪）
+  U-->>C: 新硬件 key sequence；前台监测完整
+  C->>F: 一次匹配 release
+  F->>F: 真实业务模型提交
+  F-->>C: 异步原子业务快照
+  H-->>C: 真实派发收据，不重放
+```
+
+状态（2026-11-15）：单用户 macOS 正常桌面 R1-A/B/C 技术验收已齐：默认 03a 有限本地投影五步、撤销交付、AppKit 20/20 与 Electron 20/23 真实输入交错/监测校准、锁屏原生拒绝/恢复及最终 v27 睡眠恢复均已独立核验。远端系统正文仍不读取；旧安全拒绝与所有失败不追认。R1-D 已经用户确认人审，四项本期用例完成正式晋升和晋升后核验，R1 在该单用户正常桌面范围收尾；R2/R3 继续闭锁。此前 metadata、deny/allow、03b/03c/03d 与截图记录按各自历史证据保留，不声称重跑了组合整轮。跨用户切换按用户批准保留未验证限制。详见 [收尾记录](../docs/testing/cua-r1-closeout-20261115.md)。
+
+## 当前执行范围（2026-11-13 修订）
+
+目标：在 macOS 正常桌面窗口内，完成真实 SDK→sealed CLI→签名 Helper→指定目标窗口的只读 AX 观察，再按既有首批合同完成限定 AXPress / 普通文本 AXValue 控制。正常鼠标、键盘操作和既有授权/撤销语义是本期 UI 验收范围。
+
+- 不包含窄屏专项、触屏、手机 Web、Android、gateway/TLS 或远控适配验收。原交接中的窄屏条目已按用户最新反馈退出当前计划；不得把旧交接或历史测试记录重新作为该项授权。
+- 保留已经通过的桌面 Stop、六项整轮和截图回归；仅在相关源码、资源或失败证据有变化时定向复验。正常窗口的键盘 Tab / Enter / Space 可达性仍属桌面交互，继续保留。
+- 历史窄屏与手机成功/失败材料只作附加证据；相关额外 pending 测试不进入本期执行、晋升或完成清单，不自动删除已有文件或改动共享 UI 以追求回滚整齐。
+- 保留窗口归属、系统状态、默认拒绝、Esc 拒绝和唯一状态所有者等既有安全合同。不因缩小界面范围放宽守卫，也不将 03b 的显式夹具通过替代默认 03a。
+- 120 秒控制租约是产品合同，不因测试收敛改变；R2 执行数量以上文收敛计划为准，每组合20次的旧R3数量要求已由2026-11-16按实际差异门槛取代。无干扰仅验证拟支持的 macOS 组合，不附加屏宽/设备维度。
 
 ## 基线与目标
 
@@ -14,16 +232,16 @@
 
 保留 SDK 同名同签、参数和返回合同，不悄悄删除公开方法或更改语义。下列是首批允许执行的组合；其余方法及参数组合必须在任何原生写派发前明确安全拒绝，不能转为坐标、合成事件、前台激活、剪贴板或其他 fallback。拒绝应映射到 SDK 可识别的类型化错误，绝不伪造成功。
 
-| 方法                                                                                                | 首批允许组合与条件                                                                                                                                                                                  |
-| --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `list_apps({})`                                                                                     | 只读运行应用元数据。                                                                                                                                                                                |
-| `list_windows({app_ref?})`                                                                          | 枚举窗口元数据；`text_preview` 属正文，未获相应读取授权时不得采集或返回正文。保持 title 空串/null 和窗口身份合同。                                                                                  |
-| `get_app_state({app_ref, include_screenshot?, disable_diffing?})`                                   | 只读已打开的指定窗口 AX 树；首次正文读取前授权。`include_screenshot=true` 的像素仍经 phase1 截图链及其独立授权，不借此授予正文或控制。内部 `tree_shown_to_model` 语义保留。无法精确映射窗口时拒绝。 |
-| `left_click({target, mouse_button?, click_count?, modifiers?, strategy?, app_ref?, return_state?})` | 仅冻结的 element 目标、左键一次、无修饰键、`auto` 或 `a11y`，且目标实际广告并支持 AXPress；`auto` 在本切片不得回退事件。                                                                            |
-| `perform_action({target, action, app_ref?, return_state?})`                                         | 仅冻结的 element 目标和该元素广告的 `AXPress`。                                                                                                                                                     |
-| `set_value({target, value, strategy?, app_ref?, return_state?})`                                    | 仅普通文本字段的冻结 element 目标、`auto` 或 `a11y`，且 AXValue 可设置并与 SDK 的 value 语义一致；不处理富文本或需要菜单、键入、事件的控件。                                                        |
-| `request_access({capabilities?})`                                                                   | 如实报告实际能力与 grantOwner；不能将系统辅助功能权限当作用户的任务读取或控制授权。                                                                                                                 |
-| `stop_computer_control({reason?})`                                                                  | 始终允许撤销；与 UI Stop 接入同一撤销链。                                                                                                                                                           |
+| 方法                                                                                                | 首批允许组合与条件                                                                                                                                                                                                                        |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list_apps({})`                                                                                     | 只读运行应用元数据。                                                                                                                                                                                                                      |
+| `list_windows({app_ref?})`                                                                          | 枚举窗口元数据；`text_preview` 属正文，未获相应读取授权时不得采集或返回正文。保持 title 空串/null 和窗口身份合同。                                                                                                                        |
+| `get_app_state({app_ref, include_screenshot?, disable_diffing?})`                                   | 只读已打开指定窗口的本地 AX 投影；系统远端边界截止并标 truncated；首次正文读取前授权。`include_screenshot=true` 的像素仍经 phase1 截图链及其独立授权，不借此授予正文或控制。内部 `tree_shown_to_model` 语义保留。无法精确映射窗口时拒绝。 |
+| `left_click({target, mouse_button?, click_count?, modifiers?, strategy?, app_ref?, return_state?})` | 仅冻结的 element 目标、左键一次、无修饰键、`auto` 或 `a11y`，且目标实际广告并支持 AXPress；`auto` 在本切片不得回退事件。                                                                                                                  |
+| `perform_action({target, action, app_ref?, return_state?})`                                         | 仅冻结的 element 目标和该元素广告的 `AXPress`。                                                                                                                                                                                           |
+| `set_value({target, value, strategy?, app_ref?, return_state?})`                                    | 仅普通文本字段的冻结 element 目标、`auto` 或 `a11y`，且 AXValue 可设置并与 SDK 的 value 语义一致；不处理富文本或需要菜单、键入、事件的控件。                                                                                              |
+| `request_access({capabilities?})`                                                                   | 如实报告实际能力与 grantOwner；不能将系统辅助功能权限当作用户的任务读取或控制授权。                                                                                                                                                       |
+| `stop_computer_control({reason?})`                                                                  | 始终允许撤销；与 UI Stop 接入同一撤销链。                                                                                                                                                                                                 |
 
 首批受支持动作均支持 SDK 的 `return_state`：`none`（默认）、`compact`、`full`。返回状态的读取遵守同一正文授权、精确窗口及状态合同，必要授权须在写派发前完成；写后观察失败仍保留动作收据和派发状态，不得重放动作。`type` 是键入，不是 `set_value`。`scroll`、`left_click_drag`、`type`、`select_text`、`key`、`paste`、坐标目标、`event` 策略及其他动作均不在首批。首批八个方法仅支持上表限定组合；其余六个方法规划如下，公开签名和合同继续保留，启用前须各自制定规范、授权、验收及安全派发方案。现有 SDK 的 frame 栅格及其他公开安全合同继续保留，不能因本批不支持坐标而删除。
 
@@ -94,29 +312,92 @@ sequenceDiagram
 
 观察生成结构化状态字段 `state_id` 和内部冻结索引到 native 元素映射；公开 element target 仍为 `{type: "element", index}`，不新增模型参数。动作必须校验状态与精确窗口，不能以同 PID、标题或新的上游 snapshot token 代替身份。模型没看过的树不得成为 diff 基线；元素消失、窗口关闭或重建后旧映射不得用于派发。`possibly_sent` 映射 SDK 的 `actionSent` 和 `dispatchStatus`，不能将不确定性表示为安全重试。
 
-## 实施顺序
+## 修订后的实施顺序（唯一当前执行计划）
 
-1. **R1 观察轮**：测试先行，定义正文授权、窗口身份、状态与拒绝语义；只读路径上线前接入读取授权及撤销后的交付检查，包括正文预览。
-2. **R2 写动作准入轮**：在任何写入口可用之前完成控制授权、排他租约、原子撤销/最终复核、派发收据和 Stop 交错测试；再接限定 AXPress 与 AXValue。原草案 R3 安全边界提前至本轮写动作接入之前。
-3. **R3 产物与验收轮**：整轮构建、签名、冻结、pin 与闭包审计，验证真实 SDK → sealed CLI → 签名 Helper → 目标链；随后进行下列真机验收。后续扩大方法须另行更新规格，不自动开启通用 fallback。
+### AppKit 系统远端视图不透明边界（2026-11-14，用户已授权实施）
 
-### 当前剩余工作（2026-11-13）
+本修订只覆盖 macOS 正常桌面 R1 只读观察，R2 继续闭锁。已留存的真实证据确认：默认 AppKit 缩放按钮下的远端代理，实际 PID 和 CG 窗口 owner 都指向 Apple `com.apple.appkit.xpc.ThemeWidgetControlViewService`。父链、角色、路径位置以及 Apple 签名都不证明它属于已授权窗口，不能据此读取远端正文。
 
-| 阶段 | 未完成项 | 完成判据 |
-| --- | --- | --- |
-| R1-03a | 默认 AppKit 非根 group 的窗口归属冲突 | 查清 other_process / AXWindow 缺失的原因，保持守卫，默认组合真实完成 full/diff/silent/full/diff；03b 不替代该组合 |
-| R1-03 只读交付交错 | 读取允许后、最终正文交付前后的 UI Stop / 撤销 | 实证撤销先于交付时零正文，精确取消终态、迟到结果不恢复权限；03d 只覆盖允许前。工具 Stop、控制租约与原生写派发交错归 R2 |
-| R1-04 | AppKit / Electron 前台持续输入下的完整无干扰验收 | 全部信号和监测故障校准齐全，每支持组合至少 20 次成功且保留全部试次；可见性采样不替代该验收 |
-| R1-05 | 签名候选锁屏/解锁、睡眠、快速用户切换及过渡 | 真实候选在不可用或未知状态拒绝，解锁后独立重新确认；已有一次字段校准不代替故障注入 |
-| 人工审阅 | 已通过 pending 用例的证据审阅 | 按用例生命周期审阅后再晋升，不把自动通过直接当已准入 |
-| R2 | 限定写动作实现与安全准入 | 控制授权、排他租约、120 秒空闲失效、工具 Stop 与原子撤销 / 派发排序、收据及不重放先完成，再接 AXPress / 普通文本 AXValue；含 return_state 与业务效果验证 |
-| R3 | 发布产物与整轮验收 | 正式 build/sign/freeze/pin 和闭包审计，真实 SDK→sealed CLI→签名 Helper→目标全链；限定 App×控件×操作支持矩阵、无干扰重复试次及故障注入通过 |
+读取合同改为“目标窗口本地 AX 内容 + 系统远端视图不透明边界”：正文与元素句柄仍须通过原 public PID、direct window、AXWindow 和本次目标身份检查，并额外要求 ActualPid 明确等于目标 PID。只有非根节点的 public PID 仍为目标、ActualPid 为真实外进程、direct ID 为非零异窗，且下列只读元数据全部完整、前后稳定时，才允许截止该子树：ActualPid 等于单个定向 CG 窗口 owner；进程启动秒/微秒一致；动态代码满足 Apple anchor、精确 code identifier 和系统 AppKit 内 ThemeWidgetControlViewService.xpc 规范路径；节点 ActualPid/direct ID 重采样一致。身份未知、API 缺失、超时、PID 复用、CG owner 变化、签名或标识/路径不符、普通兄弟窗口及其他外进程均整次拒绝。元数据只用于截止，不用于授信或返回窗口内容；无跨次缓存或新状态 owner。
 
-本期范围是 macOS AX 后台切片，不包含实体手机或原生 Android 验收。已有 390px 模拟触摸、模拟只读 Android bridge 与真实 gateway/Host 链仅作为共享 SessionPane 的额外回归证据，不计入 R1 或二期完成门槛，也不建立手机补验待办；其结果不外推为实体手机或原生 Android 支持。未新增 R2 写动作授权。
+命中边界后不调用该节点的 title/value/children/actions，不生成占位元素、索引或 native 句柄，设置现有 `truncated=true` 并发出仅固定原因的 `observation-system-view-omitted` 审计事件。现有 `full` 表示受支持本地投影的完整快照，不承诺原始 AX 树完整；省略必须在实际模型结果中保留现有截断提示，silent 仍不交付树。普通窗口与正文的全部原有守卫、授权/Stop/系统状态、最终交付和冻结索引位移保护不变。此项是明确限定的读取范围修订，不允许通用跳过冲突节点或按角色/父链/路径过滤，不开放远端内容或动作。新候选不继承旧策略的 diff 基线；边界出现/消失仍遵守真实元素和句柄的既有 full/diff 判据。
+
+```mermaid
+flowchart LR
+  A[ObserverSource 本次读取] --> B{节点身份元数据}
+  B -->|本地目标 PID 和窗口匹配| C[读取正文并生成索引]
+  B -->|精确系统服务且元数据稳定| D[截止子树并标记 truncated]
+  B -->|冲突或未知| E[整次拒绝并清空基线]
+```
+
+验收先于实现：在真实遍历代码中复现原先异窗导致整次失败；为远端 title/value/children/actions 安装调用即失败的探针，证明截止前没有读取；注入远端和同 PID 同标题兄弟窗口标记，验证本地结果、diff、silent、索引与句柄均不泄漏，兄弟窗口仍拒绝。覆盖伪造/非 Apple 服务、错误路径或标识、启动身份/CG owner/ActualPid/direct ID 变化、缺失和超时。随后实际验证原默认 AppKit 双窗口五步 full/diff/silent/full/diff、五次独立确认、模型实际结果、truncated 和省略审计。历史安全拒绝继续是失败；新策略通过仅证明有限本地投影读取，不能称为完整远端菜单读取或 R1/R2 完成。
+
+以下按依赖推进；历史章节仅保留事实，不覆盖此处的最新范围。R2/R3 是后续工作，本次计划修订不提前开放写动作。
+
+| 顺序     | 工作                       | 退出条件                                                                                                                                                                                                                                                                        |
+| -------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 / R1-A | 默认 AppKit 03a 归属问题   | 在现有固定候选与原默认夹具上定位非根 group 的 other_process / AXWindow 缺失；明确是夹具、观察映射或系统限制。修复必须先有回归证据且不放宽守卫；同一 turn 的五步 full/diff/silent/full/diff 真实通过，03b 不代替。若无法建立可信归属，保留拒绝并报告支持范围问题，不另造通过组合 |
+| 2 / R1-B | 补齐只读撤销交付边界       | 读取允许后、最终正文交付前后的 UI Stop / 撤销，证明撤销先发生则零正文、迟到结果不恢复权限。已通过的允许前 03d 只作回归，不重新扩成新平台测试                                                                                                                                    |
+| 3 / R1-C | macOS 无干扰与系统状态验收 | 按 R1-04/R1-05 的既有合同完成前台输入与后台读取交错、监测校准、AppKit/Electron 读取组合试次，以及锁屏/解锁、睡眠、用户切换的拒绝和恢复；用户参与的操作集中安排，不逐轮重复索取相同授权                                                                                          |
+| 4 / R1-D | 汇总并人工审阅             | 复核必要证据、相关测试与检查；人工审阅后按生命周期晋升本期用例。额外窄屏/手机证据、历史冷启动问题不新增 R1 完成门槛                                                                                                                                                             |
+| 5 / R2   | 限定写动作与安全准入       | 控制授权、排他租约及失效、工具 Stop、原子撤销/最终派发排序、收据与禁止重放先完成，再接 AXPress / 普通文本 AXValue；验证 return_state、目标业务效果与兄弟窗口不变，拒绝未支持组合，不提供坐标/事件等 fallback                                                                    |
+| 6 / R3   | 产物与最终验收             | 对最终实现集中 build/sign/freeze/pin 和闭包审计；复核真实 SDK 全链、系统授权主体、限定 App×控件×操作支持矩阵、写动作无干扰及故障注入，再完成发布验收。候选签名通过不等于冻结发布已完成                                                                                          |
+
+2026-11-14 本轮结果：先 spec，随后真实生产遍历的旧逻辑回归编译成功、断言 SIGABRT（-6）；实现截止边界后转绿。远端 title/value/children/actions 调用探针均零调用，兄弟窗口、缺失 API、超时和身份变化仍拒绝。18 项 native、180 项解析器/收据测试、全仓 typecheck、桌面 E2E typecheck、lint（0 error / 321 既有 warning）和架构检查均通过。默认双窗口夹具未替换或更改 AX 导出；真实五次独立确认，provider 结果 full/diff/silent/full/diff，第 2/4/5 步带 truncated，第 3 步不交付树，五步无兄弟正文；原始审计 4 次固定省略、0 次拒绝。签名和资源闭包通过，已独立核对候选 native 源摘要；原夹具按身份核验后退出，临时 App 已清理。未创建 workflow 工作树、未恢复旧工作树、未改冻结发布 pin、未提交或晋升用例，R2 继续闭锁。
+
+证据：[独立验收](../output/cua-appkit-opaque-r1-20261114/independent-acceptance.json)、[真实五步收据](../output/cua-ax-r1-acceptance/e2e-evidence-default03a-opaque-v1/r1-receipts.json)、[原始确认与省略审计核验](../output/cua-ax-r1-acceptance/e2e-evidence-default03a-opaque-v1/native-raw-independent-review.json)。历史默认 03a 拒绝、引擎格式失败与 CLI EPERM 仍保留且仍记失败；新通过仅适用于本轮有限本地投影，R1 其余验收和人工审阅继续待完成。
+
+### R1-A 默认 AppKit 03a（本轮有限投影已过，本期人审已通过）
+
+1. 阅读并核对现存 03a 失败收据与当前源码；先确认默认夹具、目标 PID/window ID、进程启动身份及 AX 节点归属事实，不重做已通过的 03b/03c/03d。
+2. 围绕非根 group 的直接窗口映射、AXWindow、父链与目标窗口关系做最小诊断，输出可复现原因；区分已证实事实与假设，不扩大到其他应用或手机路线。
+3. 原因明确后先补对应回归，再做限定修复；仅允许上节已授权的系统远端视图不透明边界，不得通用跳过冲突节点、放宽正文归属判断、默认 full 或替换为显式夹具冒充通过。
+4. 源码确有变化才集中重建所需候选，复用固定路径，核验签名/资源闭包和实际授权；先定向跑 03a，通过后执行受影响的桌面回归并更新证据。
+
+### 执行与完成规则
+
+2026-11-15 用户明确选择按本机单用户 macOS 正常桌面范围收尾。R1-C 不再要求在本机新建或启用第二账户；真实跨用户切换列为未验证支持限制，不能记为通过。既有 console/login/锁屏/电源、窗口身份、只读确认和撤销守卫均保持不变。R2 继续闭锁。
+
+验收器的人工就绪提示须使用完成标准 AppKit 启动的独立夹具；等待就绪在 SDK 调用之外。只有当前轮实际按钮产生的原子答复才算就绪，超时、退出或 LaunchServices 状态不能代替用户答复。LaunchServices 返回异常但已存在当前轮有效答复时，保留启动异常后读取该答复；无答复则失败。受控睡眠故障由验收控制器在就绪后一次调用 `pmset sleepnow`，与被测只读 SDK 分离，不构成 R2 控制能力。
+
+监测校准只在独立前台夹具实施：丢弃一次真实硬件键入、短暂显示自身弹窗再关闭、短暂移动并恢复真实指针。夹具须记录故障已触发的收据和原始监测差异，不伪造 SDK 结果或将校准当作成功读取。剪贴板仅由用户复制夹具测试数字来改变计数，不读取或清空原有剪贴板；Space 由用户切换已有桌面后返回。写动作的“目标忽略效果”校准归属仍闭锁的 R2。
+
+睡眠退出诊断的回调须先实际写入注册收据并由控制器核验，不能把 Electron bridge 返回空值当作注册成功。仅诊断模式不执行系统状态变更、不读取正文，独立标记为非验收证据；正常退出回调只记录，不拦截退出。
+
+睡眠退出归因须区分验收控制器、ChromeDriver 与应用：对齐当前轮实际故障请求、ChromeDriver Quit/Browser.close、应用 JS quit 调用及原生 before-quit、窗口 close/closed、power suspend/resume/lock 通知。诊断只记录元数据与调用栈，退出调用原样转发，不用阻止退出或延长原生超时使测试通过；原始失败先保留，再补能够复现已确认原因的回归与最小修复。
+
+原生退出来源仍不明确时，独立诊断 addon 在 before-quit 中读取当前 AppleEvent 的 class/id、严格类型 sender PID、退出 reason 及该 PID 的可执行路径；不读取事件正文，不替换 AppleEvent 处理器，不发送 AppleEvent。另一个显式诊断开关可旁路记录 HUP/INT/TERM 的内核 sender PID：只包裹已经存在的自定义 handler，保留其 mask/flags，立即原样转发一次；默认/忽略处理不替换，原 handler 改动后的 disposition 不恢复。signal handler 仅用固定结构和 signal-safe write，不使用 UI、JSON、分配或锁。先验证元数据负例、真实子进程信号发送者、原 handler 转发及一次性重置，再用于定位。不修改候选资源、签名、权限或守卫，最终睡眠验收撤下整个诊断 addon。
+
+人工就绪预算与机器调用预算分离：集中真机轮可显式配置 60–1800 秒的人工等待，默认 300 秒。开始按钮等待与故障后人工唤醒/解锁分别使用该预算；CPU 暂停期间不得消耗只有 40 秒的机器恢复资格等待。控制器的预算函数独自计算外层用例（两段人工预算加 300 秒）和监测生命期（外层再加 120 秒，至多 4200 秒），避免外层先销毁候选。SDK、原生读取及取得资格后的新读取时限不变；预算不授予资格，仍须本轮真实 didWake 和当前 allowed。超时保持失败，不能从睡眠通知或等待结束推断恢复。等待到期、暂停或没有当前轮实际按钮答复均不执行睡眠，也不记成功。
+
+2026-11-15 已通过内核信号发送者确认：睡眠定位轮的首个 SIGTERM 来自 ChromeDriver，随后才进入应用既有退出链。验证器不得因浏览器传输中断自动终止候选：仅本机 R1 系统状态用例独立执行时设置 ChromeDriver detach；空选择或与其他 spec 混跑均维持默认配置，显式收尾仍走既有退出与身份校验。先用受控 Electron 窗口主动切断调试传输复现旧配置杀进程、证明新配置保留同一 PID，再接线。系统故障请求先锁存控制器阶段；睡眠/锁屏期间只轮询 SDK 结果和原始系统监测，不发浏览器 UI 命令。唤醒、当前系统资格与本轮 sleep/wake 序号均已证明后才恢复 UI 读取确认；不重放写入或确认，不把新的进程当作恢复。
+
+本轮故障边界在实际 pmset 请求前记录，不能计入此前等待期间的通知。系统监测独自保存最近 sleep/wake 序号并随每个原始样本提供；生命期由同一控制器预算计算，结束样本不得准许 UI。先在 40 秒机器预算内见本轮睡眠与不可用状态再放行 SDK 负例；取得一次真实零正文拒绝后，不重复刷拒绝，而是在独立人工恢复预算内等本轮 didWake 和当前资格恢复，再放行下一次 SDK 调用与新的单次确认。机器探测仍为 40 秒，不用超时或状态恢复本身冒充读取成功。回归必须复现睡眠超过 40 秒、唤醒后仍锁定再解锁的事件顺序，并证明陈旧 wake 或当前 unknown 即使预算有余也不能准许 UI。
+
+系统状态评分不能用故障前的普通权限拒绝充数：只有故障已被原始监测证明、当前 guard 为 locked/unknown 且实际固定错误返回零正文时，才计系统拒绝；睡眠恢复还须同时具备该拒绝、实际 didWake 和新鲜成功读取。单有 sleep/wake 通知不算读取拒绝与恢复通过。
+
+SDK 负例须匹配真实交付层：Native 固定消息是 `Read-only observation failed`，CLI adapter 为防止自由文本携带正文，会重建为 `Computer use observation failed`。验收器只接受这两种已定义消息、严格四字段与零派发事实；不把未抛异常当成功，不接受额外正文或未知字段。未知非树返回留存有界原文，仅供诊断、不计系统拒绝，并等待恢复事实后取新结果，避免刷满试次而错过人工解锁。
+
+睡眠负例 cell 在取得故障后的一个实际返回后立即结束，不把 SDK/node_repl 调用悬挂到人工唤醒之后。控制器在 SDK 外等待本轮 wake 与 allowed，再于同一候选、同一 session 的新 turn 提交单独恢复读取，新卡必须重新单次确认且 requestId 不同。分别保留负例 tool 完成和恢复 tool/full 的原始事实；不得增加 node_repl 的 120 秒上限或恢复已结束的旧授权。确定性回归须证明负例返回后即使没有恢复 ACK 也已结束，真实恢复仍必须另取结果，不能复用故障前 full。
+
+v24 证明 detach 仅保留应用进程，不能恢复已被 ChromeDriver 删除的协议 session。睡眠恢复阶段在任何 UI 命令前显式重新绑定一次验证器：仅使用故障前保存的 loopback debugger 地址、同一候选 PID/可执行路径/启动时间；先以原生只读身份检查和 CDP `SystemInfo.getProcessInfo` 的 browser PID 双重核验，才创建只含 debuggerAddress 的 attach session。禁止传 app binary/启动参数、退出旧应用、调用已有的应用重启 helper 或重放提交/确认。绑定后重建测试 CDP bridge，核对实际 main PID 及启动身份仍一致，再提交新恢复读取。未知身份、端口复用、非回环、连接/核验失败均停止，不搜索其他实例或自动再次重绑；这不是产品授权路径，不改变任何读取守卫。先在实际断连回归中证明旧 session 无效、新 session 指向同一存活进程，再用无睡眠/无正文的签名候选诊断验证 bridge；最后才执行用户参与的睡眠验收。
+
+验证器所启动的候选直接由 ChromeDriver exec，LaunchServices `launchDate` 可能缺失。其传输绑定统一使用独立检查器的内核 `proc_bsdinfo` 启动秒/微秒、实际可执行路径及 bundle ID，不做 LS→内核 fallback；这只识别验收器自己的候选进程。产品 AX 目标身份与 AppKit 夹具的原有窗口/启动时间合同完全不变，不能拿这个传输身份向任何窗口授予读取权限。
+
+R1-D 人审后四项用例可以晋升 formal，但继续只接受显式定向的本机签名候选验收：默认全量 replay 由现有环境用例选择器排除 `conversation-session-cua-r1-*.test.ts`，即使环境残留夹具配置也不自动执行。显式选中时仍保留用例自身缺少 Darwin/候选/当前夹具/证据路径的 fail-closed 行为；晋升不代表进入 Docker 套件，不自动运行真实输入或系统电源变更。
+
+2026-11-14 收尾实施：R1-A/B 复用已经独立核验的最终候选与原始证据，不重新 build/sign，也不重复五步。R1-C 新增独立只读前台监测夹具和 pending 验收驱动，不能复用旧 AX 写 probe 冒充生产读取。监测只采集自身编辑器的真实键入、实际 active/key、指针位置、剪贴板 changeCount、当前 Space、无标题的窗口 ID/层序和系统状态；不采集其他应用正文，不注入键盘字符。控制器仅拥有试次与证据，runtime authority 仍是唯一授权所有者。
+
+每次真实读取以现有 CLI allowed/delivered 事件关联 observationId、完整 scope 摘要和指定窗口。跨进程不比较未校准的时钟：在前台监测就绪后允许读取；先观察 allowed，再记录 witness 的按键序号基线，观察新的真实键入后复查 CLI 尚未 delivered，随后才接收该读取结果，构成可验证的因果交错。各进程仍保留自身单调时间及序号。无输入交错的尝试保留为未证明，不筛掉总试次；缺少监测项、真实干扰、错误窗口或读取未成功均不得计为成功。AppKit/Electron 分别至少 20 次成功，实际人工输入与系统状态操作集中安排；无人参与时不得生成替代输入或伪造完成。R1-D 先形成可审阅的完整证据与差异，再按既有生命周期的人审条件晋升。R2 保持闭锁。
+
+- `normal-host-slot` 是唯一当前运行槽；fresh HOME、新夹具和新证据目录与 App 复制无关。测试 helper/fixture/断言调整不要求重新构建 App；产物变化必须按已有构建和签名流程形成可审计新修订，不热补旧签名件。
+- 每项需要行为改动时先更新相应合同与测试，明确唯一所有者和事件顺序；按变化执行相关测试、E2E 类型检查、全仓 typecheck/lint、架构及 fixture 检查。通过后不为扩大覆盖数字反复重跑。
+- 真实取消、授权、工具结果与派发状态必须来自实际链路；不以 DOM click、直接 Stop RPC、failed、节点消失、超时或没有网络请求替代所需证据。
+- 旧失败、原始收据和清理回执继续保留；已知历史冷启动异常只记录，不推定已修复，也不单独扩张本期门槛。
 
 #### 范围自查与历史问题分类（2026-11-13）
 
-本轮用户明确要求桌面与窄屏可达性；这不等于要求新建手机远控端到端验收。Android bridge 模拟、gateway/TLS/资源代理、专用测试凭证及为此引入另一种 Host 装配，是执行者自行扩大的路线，不是 03d 的必要前置；原有成功/失败证据保留，但不据此新增 R1 或二期门槛。手机源文件仅为额外 pending 测试，不新增产品手机功能。
+最初交接文本含桌面与窄屏可达性，但用户随后明确质疑窄屏是否属于真实目标；当前计划仅保留正常桌面交互，不把窄屏或手机链作为需求。Android bridge 模拟、gateway/TLS/资源代理、专用测试凭证及为此引入另一种 Host 装配，是执行者自行扩大的路线，不是 03d 的必要前置；原有成功/失败证据保留，但不据此新增 R1 或二期门槛。手机源文件仅为额外 pending 测试，不新增产品手机功能。
 
 此前把历史冷启动 protocol timeout / watchdog 放入“R1 稳定性”完成判据，是把已知问题提升为未经确认的新门槛。现只保留已知问题记录：原失败不能追认，admission / ACK 不得猜测、不得自动重发；如再次复现并阻碍既有验收，再针对实际故障处理。它没有被证明已修复，但不独立扩大本轮验收范围。
 
@@ -149,16 +430,16 @@ sequenceDiagram
 
 本轮在独立输出目录重建当前 Helper 全部 JS/native 资源，使用现有本机签名身份，重新 prepare 内容清单并装配独立应用；不覆盖已安装应用，不更新发布冻结 pin。E2E 使用隔离 HOME、仅回环地址的确定性 provider fixture 和无意义测试 key，模型返回真实 node_repl SDK 调用；不 stub 工具结果、不注入 fake authority 或伪造 live ticket。原生夹具使用同 PID、同标题双窗口，正文分别为固定目标/兄弟标记。夹具必须装配为带固定 bundle ID 的 AppKit 应用并经 LaunchServices 启动，预检进程启动时间存在；裸命令行夹具 launchDate=nil 时仍按生产规则拒绝，不能据此放宽 incarnation 校验。验收夹具窗口显式使用 AppKit 的跨 Space 与 fullscreen auxiliary 行为，避免候选切换 Space 后夹具离屏；不激活、移 Space 或绕过生产端 onscreen 校验。每次测试保留夹具窗口 onscreen/隐藏/进程启动时间的前后事实，离屏仍拒绝，不计成功。需要系统辅助功能授权时由用户在系统设置操作，探针权限不代表候选 Helper 权限。
 
-| Case          | 操作与判据                                                                                                                  | 证据状态                                                           |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| CUA-AX-R1-01  | 校验资源、签名与 prepare 闭包；真实 SDK 枚举且无正文预览，旧截图链回归                                                      | 固定槽资源/签名/真实枚举及截图 3/3 通过，pending 审阅              |
-| CUA-AX-R1-02  | 同 PID 同标题窗口，独立读取确认拒绝/允许；精确 PID/window ID 与正文边界                                                     | v6 真机通过：两张独立卡、拒绝无正文、允许仅目标正文                |
-| CUA-AX-R1-03  | 模型可见 full/diff/silent、状态 ID、Stop、窗口关闭重建及失效交错                                                            | 部分：03b/03c/03d 通过；默认03a归属冲突与其他交错未完成  |
-| CUA-AX-R1-03b | 独立显式AX内容夹具，生产守卫下五次独立确认和实际provider结果                                                                | 真机通过full/diff/silent/full/diff；不代替03a或其他门槛，仍pending |
-| CUA-AX-R1-03c | 显式夹具确认等待中关闭重建，旧卡/旧ref拒绝，新ref独立确认默认full                                                           | 独立签名v11真机v5通过；pending人工审阅，前四轮失败保留             |
-| CUA-AX-R1-03d | 待确认读卡上真实WebDriver Stop，取消终态零正文，新turn重新确认                                                              | 固定槽六项 6/6、手机模拟触摸 1/1 通过；pending 人工审阅        |
-| CUA-AX-R1-04  | 持续前台真实输入与后台观察交错；完整无干扰测量、AppKit/Electron 分组，各组合保留总试次与至少 20 次成功                      | 待执行；监测缺项不通过                                             |
-| CUA-AX-R1-05  | 用户参与锁屏/解锁故障注入；同时采样 CGSession 和 IOKit Root 的严格布尔状态、console/login、电源状态，核对未知拒绝和变化时序 | 部分完成：一次用户锁屏校准与纯判定通过；候选锁屏拒绝待验           |
+| Case          | 操作与判据                                                                                                                  | 证据状态                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| CUA-AX-R1-01  | 校验资源、签名与 prepare 闭包；真实 SDK 枚举且无正文预览，旧截图链回归                                                      | 固定槽资源/签名/真实枚举及截图 3/3 通过，pending 审阅                                  |
+| CUA-AX-R1-02  | 同 PID 同标题窗口，独立读取确认拒绝/允许；精确 PID/window ID 与正文边界                                                     | v6 真机通过：两张独立卡、拒绝无正文、允许仅目标正文                                    |
+| CUA-AX-R1-03  | 模型可见 full/diff/silent、状态 ID、Stop、窗口关闭重建及失效交错                                                            | 部分：本轮默认03a有限投影五步通过、pending人审；03b/03c/03d历史通过；其他交错未完成    |
+| CUA-AX-R1-03b | 独立显式AX内容夹具，生产守卫下五次独立确认和实际provider结果                                                                | 真机通过full/diff/silent/full/diff；不代替03a或其他门槛，仍pending                     |
+| CUA-AX-R1-03c | 显式夹具确认等待中关闭重建，旧卡/旧ref拒绝，新ref独立确认默认full                                                           | 独立签名v11真机v5通过；pending人工审阅，前四轮失败保留                                 |
+| CUA-AX-R1-03d | 待确认读卡上真实WebDriver Stop，取消终态零正文，新turn重新确认                                                              | 固定槽六项 6/6 通过；pending 人工审阅，窄屏/手机仅留历史证据                           |
+| CUA-AX-R1-04  | 持续前台真实输入与后台观察交错；完整无干扰测量、AppKit/Electron 分组，各组合保留总试次与至少 20 次成功                      | AppKit 20/20、Electron 20/23 真实交错与完整监测校准已独立核验，本期人审已通过          |
+| CUA-AX-R1-05  | 用户参与锁屏/解锁故障注入；同时采样 CGSession 和 IOKit Root 的严格布尔状态、console/login、电源状态，核对未知拒绝和变化时序 | 锁屏旧原生证据保留；v27 睡眠后锁屏零正文拒绝，新卡 full、同一 PID 恢复，本期人审已通过 |
 
 锁屏观测先收集证据，不先放宽生产准入。当前机器缺失 `CGSSessionScreenIsLocked`，Root `IOConsoleLocked` 则为明确 CFBoolean false；Apple XNU 的 IOService 会结合锁定时间、电源和会话状态写入后者，不能未经校准直接替代认证解锁事实。相关实现变更必须先补规格及负例，保留缺失/类型异常/冲突时拒绝，并在签名候选上核验。
 
@@ -174,7 +455,110 @@ R1 签名候选还必须校验文档中的 SDK bootstrap 可独立运行：cell 
 
 SDK 传输使用可选、严格且有界的内部 `cuaSdk: {root, clientSource, documentationSource}` 快照。root 固定从实际 Helper Resources 的 `computer-use-sdk` 目录导出；客户端至多 512 KiB、文档至多 256 KiB，且仍受 cell request 总计 1 MiB 上限。受限 process facade 只显式提供该 root；虚拟导入只匹配固定 `root/scripts/computer-use-client.mjs` 的 file URL，执行已核验快照，不能扩展为任意导入映射。bridge 的内部文档快照供 SDK 读取，避免校验后按路径重开；普通未注入路径不改变原行为，所有快照均不携带原生 authority。
 
-以下次数是本规格新拟定的候选发布门槛，并非已有观测结果或长期稳定率。每个候选版本、目标应用、控件和允许操作组合分别记录试次与结果。使用同一登录会话中持续输入的前台夹具和预先打开的后台双窗口夹具，兄弟窗口同 PID、同标题、不同业务标记。每组合至少 20 次独立试次，且至少 20 次效果已证实并全程无干扰；不得通过挑选“有效试次”剔除不通过项，安全拒绝可单列但必须保留并报告总试次数；任何一次干扰、错误窗口动作或监测缺失均阻止该组合宣称支持。安全拒绝单独计数，不算成功；效果未知不算成功。分别报告效果已证实且无干扰、安全拒绝、效果未知、发生干扰的次数及比例，并保留原始记录、构建身份和试次 ID；单次探针通过不能换算稳定率。首次授权、冷启动与稳态试次分别记录。
+### R3 发布前准备（2026-11-15，当前授权）
+
+用户已授权先整理R1/R2证据基线并核对分发链缺口，按实际差异处理；不重复已通过测试，不更新正式pin，不公证、上传或发布。本节的准备授权不表示下节发布矩阵已启动或通过。
+
+既有最终收据是验收事实的唯一来源；本轮索引仅记录摘要、制品身份、支持范围和复用限制，不重写原始试次、人审或失败。R1从清理归档按五份指定JSON直接读取并核对manifest；不整体还原。R2关联最终人审/18条路径/19次真实写尝试及原生源码、Helper资源闭包；不把不同候选或不同Host装配的证据合并成一次运行。
+
+默认冻结输入与显式候选输入分别记账。正式pin保持原字节，默认冻结材料缺失只登记为恢复条件，不下载/覆盖旧材料来冒充R1/R2实现。现有R2单槽候选走candidate native Host装配，与正常生产Host及`cua-narrow`资源槽不是同一种制品，已有通过证据不能自动证明生产打包后的接线。
+
+复用现有 `createNormalHostNarrowProfile` 和构建选择器，为R2 prepare manifest生成配对的构建profile，并只执行选择校验/`bundle --dry-run`；不建立新信任根或修改runtime选择规则。仅显式manifest而未提供profile时允许资源装配但不激活Host，这一既有语义不改；准备方案必须同时绑定manifest摘要与签名launcher摘要。后续只有实际封装、入口、签名或产品字节变化才确定受影响验证，不把旧完整真机轮重跑作为默认步骤。
+
+```mermaid
+flowchart LR
+  R1[R1归档最终收据] --> I[本轮证据索引：摘要/身份/范围]
+  R2[R2最终收据与原始失败] --> I
+  M[R2 prepared manifest] --> P[现有profile生成器]
+  M --> S[现有构建选择器：只读核验]
+  P --> S
+  F[正式冻结pin：保持字节不变] --> D[默认分发路径：单列]
+  S --> A[配对输入与dry-run报告]
+  I --> G[实际分发差异与复用边界]
+  D --> G
+  A --> G
+```
+
+准备阶段的交付为可复核证据索引、配对构建输入及分发缺口报告；不生成新签名候选、不操作桌面/TCC、不执行正式freeze/pin。现有每组合20次与完整故障矩阵在该准备时点标为未执行；后续按2026-11-16收敛门槛处置，不把18条R2路径改称旧矩阵通过。
+
+#### 正常生产Host接线验证（后续用户授权）
+
+用户已进一步授权使用上述配对输入构建一个独立候选并验证实际装配差异。此授权取代上段在前一轮准备阶段“不生成候选/不操作桌面”的执行限制，但不开放正式pin、公证、上传或发布。保持R2候选及证据原样，新候选使用独立输出、应用身份和隔离数据目录；只有一个App运行槽。
+
+使用真实生产tsup/打包配置：Host编译匹配profile，Main的candidate NativeHost seam编译为undefined，固定`cua-narrow`槽内manifest与Helper与已验收prepare逐字一致。独立身份只影响应用命名/标识；不改Host、authority、SDK或原生准入行为。构建沿用既有资源完整性和打包后钩子，明确关闭发布与公证；保留签名Helper不重签，仅对新外层候选进行必要本地签名。
+
+先核对静态接线/闭包和可启动环境，再复用一个受控夹具单案验证正常Host→sealed CLI→原生读取/AXPress→截图借锁→再次AXPress的实际接线（2次写，兄弟窗口不变，真实PNG/收据）。这验证新Host装配差异，不重跑R1/R2完整安全、故障、租约或18笔输入矩阵，不要求新人工键入。只有实际OS权限需要用户操作时集中通知，先定位主体与签名，不反复盲试。
+
+2026-11-16正常Host启动缺口：打包Electron从仓库cwd启动时，开发源码自动发现抢在包内CLI前，且源码fallback没有storagePreparationEntry，导致正式存储准备以unsupported_runtime失败。普通utility进程探针已证明Electron版本/resourcesPath存在；不新增资源根注入或环境授权。修复既有命令解析顺序：可信native配置与显式command仍优先；有受支持Electron包内JS时优先包内JS和同源storage worker，仅提前当前process.resourcesPath内实际存在的JS；用户级/仓库staged bundle不提前，缺包内JS时仍按原顺序走开发发现、旧bundle与原生回退。不能从cwd源码或开发缓存来证明发布包闭包。先以“包内CLI存在+仓库仅有源码”的回归复现，再只更新本轮候选受影响Main/Host装配，R2签名Helper及正式pin保持原样。旧SDK前失败和旧进程树不改记为当前接线成功。
+
+2026-11-16执行结果：CUA-AX-R3-01单案通过，68项定向回归及必需检查通过，主控与Terra独立核验完成。正常utility Host经cua-narrow cli-entry产生2条sent收据、目标计数0→2、兄弟不变；620×404 PNG摘要与native审计一致，借锁归还且控制锁未释放。配对输入、正式pin3份、R2最终收据及Helper12份保持原字节。观察renderer与合成provider的范围限制、SDK前历史失败及实际进程对应见[正常Host记录](../docs/testing/cua-r3-normal-host-20261115.md)。D3接线缺口关闭，不新增人工验收或晋升，不代表以下完整发布门槛已满足。
+
+### R3 按实际差异收敛门槛（2026-11-16，当前生效）
+
+用户已授权此最小剩余计划。本节取代旧R3固定“每组合至少20次”和全量真机故障矩阵的必执行要求，收敛测试数量，不改变授权、租约、Stop、窗口归属、远端不透明及收据产品合同。旧矩阵保留为历史方案/风险清单，状态为“未执行、被按差异方案取代”，不记为通过，不换算稳定率。
+
+| 当前门槛 | 已有证据/实际差异 | 最小处理与完成条件 |
+| --- | --- | --- |
+| 原生/CLI/SDK功能及安全边界 | R1最终人审与四项晋升；R2确定性回归、租约、Stop、截图借锁、两平台18条路径/19次写尝试；原生/SDK与Helper12份资源未变 | 复用原身份和失败，不重跑输入、120秒或系统故障；仅真实受影响代码变化触发对应回归 |
+| 正常生产Host装配 | CUA-AX-R3-01真实utility Host→cli-entry、2次AXPress、PNG借锁及兄弟不变已通过；仓库cwd入口缺口已修复且68项定向回归通过 | 复用通过收据；当前Main/Host/profile保持原字节，无追加写动作 |
+| 纯生产renderer | 当前验收renderer启用了E2E观察桥；此前结论不覆盖去桥制品 | CUA-AX-R3-02：同一未封存候选槽仅替换无桥生产renderer、刷新asar integrity并本地重签；Main/Host/manifest/Helper摘要不变。从仓库外cwd、隔离数据冷启动，以普通DOM验证会话可用、发送一次只读请求并独立允许精确目标读取，真实provider tool_result含目标且无兄弟正文。无写动作、截图或人工持续输入 |
+| 候选闭包及收尾 | renderer/asar/外层签名改变，已有Helper/依赖/正式pin基线可复用 | 对最终改动记录摘要与本地签名，验证其余资源不变；形成可复验本地候选清单和证据映射，主控+独立Terra只读复核。测试源码变化仅运行本轮必需类型/lint/架构/E2E类型/fixture检查，不重跑无关功能 |
+| 正式分发 | 正式应用身份、正式pin、分发签名/公证及上传未启动 | 保持待授权；本轮仅可宣称“R3发布前准备完成”，不能宣称正式分发或发布验收完成 |
+
+驱动准备与系统权限人工等待在SDK之外。唯一状态所有者仍为既有Host/runtime authority和Helper；测试只经普通DOM输入/权限卡调用既有产品链，不添加产品测试桥、不直接修改会话store、不从测试环境授予native authority。驱动不得默认跳过全套renderer readiness：无桥分支仅允许精确R3-02用例与独立打包候选，并断言观察桥不存在。一次submit后只等待实际接收与结果，不重发。
+
+```mermaid
+sequenceDiagram
+  participant B as 单槽候选装配
+  participant D as 无桥DOM验收器
+  participant H as 正常Host / authority
+  participant N as 已验收Helper
+  B->>B: 只换renderer，核对Main/Host/Helper不变
+  B->>D: 本地签名后仓库外冷启动
+  D->>D: 检查桥不存在 / 会话就绪
+  D->>H: 普通composer单次提交只读请求
+  H-->>D: 独立读取卡 / 精确PID与window
+  D->>H: 允许本次读取
+  H->>N: 既有完整scope和原生守卫
+  N-->>H: 指定目标正文 / 零兄弟正文
+  H-->>D: 真实tool_result进入合成provider请求
+```
+
+跨用户、长时间休眠等未验证项继续保留；R1三次未证明、R2一次取证失败和所有SDK前失败均不追认。没有新产品字节差异时不追加真机排列或付费模型验收；需要人审晋升的用例仍按现有规则另行办理，不将本轮技术复核冒充人审。
+
+CUA-AX-R3-02执行结果（2026-11-16）：无store观察桥生产renderer单案通过；普通DOM单次提交、一次精确读取授权与真实目标tool_result，兄弟不泄漏且零写。新门禁9项回归及规定代码检查通过，主控重新核对非renderer24214文件/Helper12/原生57/SDK2与旧证据，独立Terra复核无阻断。旧URL验证器失败和两条原生观察拒绝保留，未记为零错误或长期稳定率。当前最小发布前准备完成；详细边界与本地候选清单见[收尾记录](../docs/testing/cua-r3-prepublish-closeout-20261116.md)。
+
+### R3 正式pin与正式身份最小本地验收（2026-11-16追加授权）
+
+构建输入所有者仍为既有 `macos-cua-demo-defaults` 默认选择器和 `cua-narrow-frozen.json` 归档pin；native身份信任根与runtime authority不变。将已验收R2 prepared完整原字节搬到 `output/cua-narrow-frozen/controller-prepared/`，manifest SHA保持 `9bcea0ea…`、launcher SHA保持 `00c91110…`，保留签名、stage文件模式及Helper12资源。同步默认manifest双pin与本地归档实测SHA；不改证书leaf、DR、Node CDHash或SDK方法。旧pin原字节保存为回滚材料，不自动提交。
+
+本地归档以仓库相对 `output/` 条目记录；通过既有本地archive覆盖入口，在隔离repo-root实际restore并用默认选择器、manifest树和codesign复验。远程releaseTag只标识尚未上传的新归档，不能宣称远程已可下载；本轮不访问发布API或上传材料。默认构建不可依靠显式manifest/profile环境覆盖来冒充正式pin生效。
+
+新增CUA-AX-R3-03只验证实际身份差异：使用正式 `Zody` / `io.github.zclaudia.zody`、无store观察桥的生产构建，一个独立输出槽、一套隔离数据、正常utility Host及固定cua-narrow Helper。从仓库外cwd启动，只发送一个受控工具流程：精确目标读取→1次冻结元素AXPress→单独授权截图。断言实际读取/控制/截图确认、目标press/request均+1、同PID同标题兄弟不变、1条真实sent收据、真实PNG及对应capture审计，截图不升级控制权限。复用已有Stop/120秒/18笔输入和R3-01借锁功能证据，不追加第二次写或完整矩阵。
+
+截图沿用既有get_app_state(include_screenshot:true)组合接口，必须保留其必要的再次读取授权，不为凑一次调用省略读取守卫；初始读取和组合截图属于同一个最小流程。
+
+正式身份以Info.plist的CFBundleIdentifier/CFBundleName和codesign核验；WDIO运行名继续采用既有隔离名，避免接管当前同名App单实例和正式协议注册。隔离名不改变Mach-O/bundle签名或TCC主体，不将其描述为正式安装切换。
+
+驱动沿用普通DOM输入、既有权限卡和SDK；无桥readiness分支仅允许精确R3-03spec及本轮独立正式身份App，隔离数据但不冒用candidate bundle ID。SDK外先核对录屏状态与实际Helper身份。当前Helper没有独立AX权限查询接口，不以外层AX权限或operator-ready冒充Helper当前授权；辅助功能沿用字节/签名不变且R3-02读取已通过的证据，当前资格由首笔原生只读验证，失败必须在写前停止并保留零派发收据，再集中处理实际所缺权限。授权等待在SDK之外，可能已派发的动作不自动重放。验收不覆盖现有App、不读取真实用户配置、不切换本机安装；如系统权限实际归属不符先停止并诊断，不盲目重置TCC。
+
+```mermaid
+flowchart LR
+  R2[已验收R2 prepared原字节] --> F[本地冻结归档 / 摘要]
+  F --> P[默认manifest双pin]
+  F --> V[隔离根restore / 默认选择与签名复核]
+  P --> B[无显式覆盖的正式身份构建]
+  B --> T[隔离数据：读取 / AXPress一次 / 截图]
+  V --> E[新旧证据关联与独立核验]
+  T --> E
+  E --> H[仅完成pin与本地验收；安装切换/公证/上传/发布保持关闭]
+```
+
+本轮执行结果：默认manifest双pin已切换到已验收R2原字节，本地归档完成隔离restore/签名核验；CUA-AX-R3-03 v3在正式bundle身份独立目录通过一次读取→1笔AXPress(none)→截图组合，目标业务+1、兄弟不变、真实sent收据及PNG审计一致。v1 SDK外等待超时、v2旧夹具离屏导致的零写读取拒绝均保留，验收器补上SDK前onscreen预检并通过5项离线检查；产品包未为此重建。实际写总数1，未重放已发送动作。默认构建无显式manifest/profile覆盖，Helper12/原生57/SDK2和旧证据不变，安装文件复核未变。完整边界与本地归档可用性见[本轮记录](../docs/testing/cua-r3-formal-local-20261116.md)。
+
+### R3 旧发布矩阵（历史方案，已由2026-11-16按差异门槛取代）
+
+以下保留原候选发布方案用于溯源，固定重复次数和全量真机排列已被上节取代，不再作为本轮必执行清单；旧未执行项不记通过。R2 执行数量和分层以上文“R2 收敛测试计划”为准。以下次数并非已有观测结果或长期稳定率。每个候选版本、目标应用、控件和允许操作组合分别记录试次与结果。使用同一登录会话中持续输入的前台夹具和预先打开的后台双窗口夹具，兄弟窗口同 PID、同标题、不同业务标记。每组合至少 20 次独立试次，且至少 20 次效果已证实并全程无干扰；不得通过挑选“有效试次”剔除不通过项，安全拒绝可单列但必须保留并报告总试次数；任何一次干扰、错误窗口动作或监测缺失均阻止该组合宣称支持。安全拒绝单独计数，不算成功；效果未知不算成功。分别报告效果已证实且无干扰、安全拒绝、效果未知、发生干扰的次数及比例，并保留原始记录、构建身份和试次 ID；单次探针通过不能换算稳定率。首次授权、冷启动与稳态试次分别记录。
 
 | 验证             | 必须通过的判据                                                                                                                                                                                                                                                                                                                 |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -361,7 +745,9 @@ v1/v2/v3分别有14/22/20个预期fixture请求，全部HTTP2xx；窗口采样34
 
 用户已同意在等待交互区增加可见“停止任务”，复用现有会话Stop撤销链。本次授权包含该UI修复、测试及独立签名候选重跑，无需再次确认同一设计。既有失败及未验收边界继续保留。
 
-#### 2026-11-12 实施与验收
+#### 2026-11-12 实施与验收（历史记录）
+
+本节按当时执行保留，包括已退出当前范围的窄屏/手机条目，不再据此安排验证；当前范围与下一步以本文开头的修订计划为准。
 
 等待区在当前 pane 有阻塞交互且 `canStop` 时显示按钮，复用会话停止处理；组件测试先观察旧行为缺少可见按钮，再验证命令路由及门控。v13 为独立重建的 UI 候选，deep strict 签名验证通过，内嵌 Helper 与已准备的 v11 逐文件一致，Helper 签名身份及 CDHash 一致；实际新读取 full 证明该身份在本轮有可用的系统权限。未更改生产守卫或 v11。v12 首轮因 renderer 未启用测试桥而在用例前失败，证据保留。
 
@@ -371,7 +757,7 @@ v13 独立 03d 和后续 fresh HOME、新夹具的六项整轮均通过：前者
 
 后续真实 Tab 测试发现权限选项及反馈框各自截获 Tab：v14 焦点轨迹在选项和反馈框循环，未点击或授权。两处均先以组件测试复现，再按上述边界修复；v15 实际 Tab 到达 Stop 并以 Enter 完成撤销及新 turn，未预设焦点。React 检查又补齐等待区 memo 依赖，最终独立 v16 经 deep strict 校验、Helper 树与 v11 准备件逐文件一致：480×800 独立 03d 真实点击通过，随后 fresh HOME/夹具六项整轮 6/6，26 个 fixture 请求均为预期且 HTTP 2xx。证据 `output/cua-ax-r1-acceptance/e2e-evidence-v16-narrow-20261112/r1-receipts.json`、`output/cua-ax-r1-acceptance/e2e-evidence-v16-full-20261112/r1-receipts.json`；Tab 证据 `output/cua-ax-r1-acceptance/e2e-evidence-v15-key-tab-20261112/r1-receipts.json`。v15 首次窄屏提交未被 renderer 接受、v15 六项启动时 WebDriver 会话删除超时，均保留失败；两轮未到授权。v16 仅增加 memo 依赖，Tab/Space 未重新以 v16 独立重跑。手机 Web 窄屏、实际触屏及签名截图真机回归仍未验证，不能从桌面通过外推；R1、二期仍未完成。
 
-#### 2026-11-13 集中补验范围
+#### 2026-11-13 集中补验范围（历史记录，非当前计划）
 
 本轮连续补齐既有 03d 的手机 Web 触摸视口与签名截图回归：手机页面必须使用当前候选的已校验发布资源，通过真实 gateway 附着同一桌面 Host/session；浏览器可模拟 Android 宿主只读 session-context 和触摸输入，必须明确记账，不能据此宣称实体手机或 Android 原生桥通过。打包 Main 的 HTTPS 守卫保持不变；桌面与 Node 本地测试 TLS 使用任务目录内的独立 CA 显式信任，不关闭其证书校验或修改系统信任。隔离的 Playwright 浏览器为该回环测试使用 `ignoreHTTPSErrors`，该例外不进入产品代码或系统设置，也不证明 Android 的证书实现。390px 页面以真实 tap 命中 Stop，并同时核验桌面精确工具取消、新 turn 默认 full 和最终完成。
 
@@ -395,7 +781,7 @@ LaunchServices native Host 候选的 `candidateRemoteAccess` 合同明确禁止�
 #### 展示与交互
 
 - 当前可交互SessionPane存在阻塞交互（沿用现有`blockingInteractionId`判定），且其权威`snapshot.control.canStop`为true时，在等待交互区提供文字按钮“停止任务”/“Stop task”。入口属于会话，可供读取、截图及其他阻塞交互复用；不在只读子会话、无阻塞交互或不可停止时额外展示。
-- 按钮位于被隐藏composer之外、卡片长内容滚动区之外；同一pane最多一个可见Stop入口。沿用composer保持挂载并隐藏以保护草稿的规则，不能为露出Stop而恢复整个编辑器。桌面及窄屏Web均须可见、可聚焦、可点击，触屏命中区遵守DESIGN.md；复用现有按钮、主题和国际化。
+- 按钮位于被隐藏composer之外、卡片长内容滚动区之外；同一pane最多一个可见Stop入口。沿用composer保持挂载并隐藏以保护草稿的规则，不能为露出Stop而恢复整个编辑器。本期仅要求 macOS 正常桌面窗口内可见、可聚焦、可点击；复用现有按钮、主题和国际化，不增加窄屏或触屏验收门槛。
 - 保留授权卡默认拒绝、拒绝按钮及Esc拒绝语义。Stop是停止当前任务，不是拒绝这次授权，也不授予任何权限；不得因按钮出现或点击而触发allow。按钮焦点上的Enter/Space只激活Stop，不能同时提交授权卡。阻塞交互出现时不抢夺卡片正常焦点。
 - 组件边界补验覆盖存在 Stop 时首项 Shift+Tab 与普通权限卡出口；退出不得应答或改变现有默认选项。
 - 权限选项及反馈框原先循环截获 Tab，无法到达卡片外的停止入口。仅当当前 pane 确有可用 Stop 时，列表首项反向 Tab、末项正向 Tab 和反馈框正向 Tab 交还浏览器；列表内方向键及其他 Tab 循环不变，不在退出时应答或更改默认拒绝。由会话现有 snapshot 决定该布尔投影，不新增授权或会话状态所有者。
@@ -408,9 +794,13 @@ LaunchServices native Host 候选的 `candidateRemoteAccess` 合同明确禁止�
 
 #### 测试与完成门槛
 
-1. 测试先行复现“阻塞交互隐藏composer时Stop不可达”。组件/集成回归覆盖：canStop true/false、阻塞有/无、只读pane、卡片仍默认拒绝、草稿保留、单一可见Stop、正确pane与现有命令路径、键盘焦点/Enter/Space，以及已有截图/普通权限交互。增加桌面与窄屏布局的实际可达性验证，不能以静态HTML或DOM click替代真实点击。
+1. 测试先行复现“阻塞交互隐藏composer时Stop不可达”。组件/集成回归覆盖：canStop true/false、阻塞有/无、只读pane、卡片仍默认拒绝、草稿保留、单一可见Stop、正确pane与现有命令路径、键盘焦点/Enter/Space，以及已有截图/普通权限交互。验证 macOS 正常桌面窗口内鼠标与键盘实际可达，不能以静态HTML或DOM click替代真实点击；窄屏、触屏和手机不计本期门槛。
 2. 更新pending的03d：锁定当前pane和精确读取requestId，确认默认拒绝；从该pane内选择唯一可见、启用、实际可点击的Stop，以WebDriver原生`element.click()`命中。既有`clickV4Stop`/`clickV4StopInPane`的DOM click不能作为本案证据；隐藏composer中的同名按钮不应被误选。
 3. 实际观察原卡清除、原toolCallId进入V4的`stopped`（取消投影）终态、会话退出running；failed、节点消失、超时及仅没有网络请求均不能算取消。旧工具UI输出和provider结果零树、零目标/兄弟正文；恢复前无精确旧call续请求或预设stop-final。恢复后历史携带取消结果可接受，不能误判为旧turn续跑。
 4. 同一session发出新的明确user prompt并核验renderer接受；不同requestId独立允许后，默认`get_app_state`（不设disable_diffing）向实际provider交付仅目标正文的full，最终RESUME_DONE出现。仍按精确toolCallId核验，不从cell代码或本地成功日志推断模型已见结果。
 5. UI修复须形成新候选身份；不得热改已签名v11。按现有构建/prepare/签名工具产生独立候选，核验Helper资源闭包、真实签名和实际系统授权主体，再运行fresh HOME、新夹具及新证据目录的03d；通过后完整重跑metadata/deny/allow/03b/03c/03d六项回归。只有明确相同且已核验的Helper身份才可沿用已有TCC授权；缺失时保留拒绝并按既有规则由用户处理。
 6. 记录所有失败、原始系统/窗口事实、签名摘要、精确进程身份与清理结果。完成E2E类型检查、相关回归、`pnpm typecheck`、`pnpm lint`和架构检查，更新本规格、catalog、matrix及verification索引。pending人工审阅前不晋升；03d成功也不代表其他Stop竞争、默认03a、无干扰门槛、R2/R3或二期完成。
+
+2026-11-14 本轮补验完成（仍为 pending 人工审阅）：先补回归复现最终 AX 重验内取消仍交付，以及 ACK 同步关闭后仍 accept；最小修复保留全部窗口/进程/authority 守卫。签名候选正常桌面 R1-B 真机第三轮通过：原 scope 的 CLI 原始 JSONL 为 allowed → owner-revoked → discarded，随后受控夹具显式释放真实迟到 AX 回复；无旧 scope accepted/delivered，原工具 stopped、completedInterrupted、UI/provider 无正文且无续跑。同会话新 turn 新卡默认拒绝，独立允许后 full，原工具复查仍 stopped。前两轮因采证目录错误未到 Stop、夹具超时，全部保留为失败；不把超时算撤销通过。
+
+同一最终产品源码与签名候选另行复验未改动的默认 AppKit 03a 五步通过（full → diff → 静默 → full → diff，5 次独立确认，无兄弟正文）；历史 03a 安全拒绝不改记。18 项 native、59 项相关 Vitest、根/CLI/E2E 类型检查、lint 和架构结果及独立核验见 `output/cua-read-delivery-r1-20261114/independent-acceptance.json`。未恢复 workflow 工作树，R1 总体未完成，R2 继续闭锁；本轮不扩展窄屏或手机。

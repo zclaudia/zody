@@ -15,6 +15,35 @@ import {
 } from "./e2e/helpers/cua-r1-receipt.js";
 
 describe("R1 state receipt", () => {
+  it("只从实际结果保留截断布尔，不把省略标记当作成功树", () => {
+    const fixture = {
+      pid: 1,
+      targetWindow: 2,
+      siblingWindow: 3,
+      targetMarker: "TARGET",
+      siblingMarker: "SIBLING",
+    };
+    const content =
+      "AX window diff\n[truncated: only returned indices are available]\nE2E_R1_STATE_5_OK";
+    const receipt = inspectStateToolResult(
+      { content, isError: false, toolCallId: "call" },
+      fixture,
+      5,
+    );
+    expect(receipt.truncated).toBe(true);
+    expect(receipt.ok).toBe(true);
+    expect(
+      inspectStateToolResult(
+        {
+          content: "[truncated: only returned indices are available]",
+          isError: false,
+          toolCallId: "call",
+        },
+        fixture,
+        5,
+      ).ok,
+    ).toBe(false);
+  });
   it("保留五次状态的安全布尔事实而不保留正文", () => {
     const expectedModes = ["full", "diff", "full", "full", "diff"];
     const content =

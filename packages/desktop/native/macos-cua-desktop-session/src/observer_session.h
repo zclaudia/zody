@@ -4,10 +4,12 @@
 #include "confirmation.h"
 #include <functional>
 namespace zody::cua::desktop_session {
+class ControlOwner;
 struct ObserverSource {
   std::function<NSArray*(std::string&)> apps = observer_list_apps;
   std::function<NSArray*(id, std::string&)> windows = observer_list_windows;
   std::function<bool(id, ObserverWindow&, std::string&)> resolve = observer_resolve_window;
+  std::function<bool(const ObserverWindow&, std::string&)> dispatch_eligible = observer_dispatch_eligible;
   std::function<bool(const ObserverWindow&, NSMutableArray*, NSMutableArray*, bool&, std::string&)> read = observer_read_tree;
 };
 using ObserverExchange = std::function<NSDictionary*(NSString*, NSDictionary*, std::string&)>;
@@ -18,7 +20,9 @@ class ObserverSession {
   explicit ObserverSession(ObserverSource source = {}) : source_(std::move(source)) {}
   bool run(NSDictionary* bootstrap, const std::string& expected_producer,
            const ObserverExchange& exchange, const ObserverCancelled& cancelled,
-           ConfirmationController& confirmation, std::string& error);
+           ConfirmationController& confirmation, std::string& error,
+           ControlOwner* control = nullptr, uint64_t* watch_generation = nullptr,
+           std::function<void(uint64_t, const std::function<void()>&)> guard = {});
  private:
   ObserverSource source_;
   ObserverState state_;

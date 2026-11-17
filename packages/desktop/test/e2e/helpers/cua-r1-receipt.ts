@@ -16,6 +16,8 @@ export function identifyR1FixtureProfile(value: unknown) {
   if (value === undefined) return { kind: "default-appkit", caseId: "CUA-AX-R1-03a" } as const;
   if (value === "explicit-ax-content-v1")
     return { kind: "explicit-ax-content-v1", caseId: "CUA-AX-R1-03b" } as const;
+  if (value === "controlled-read-delivery-v1")
+    return { kind: "controlled-read-delivery-v1", caseId: "CUA-AX-R1-B" } as const;
   throw new Error("Unsupported R1 fixture profile");
 }
 
@@ -133,6 +135,7 @@ export function inspectStateToolResult(
     diff,
     targetSeen,
     siblingLeak,
+    truncated: text.includes("[truncated: only returned indices are available]"),
     marker,
     ok: Boolean(
       result &&

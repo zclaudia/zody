@@ -1,20 +1,16 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
-import { clearAppData } from "../../../helpers/desktop-app.js";
+import { clearAppData } from "../helpers/desktop-app.js";
 import {
   readUpstreamToolResultFromRequest,
   type UpstreamToolResultSnapshot,
-} from "../../../helpers/conversation-session-network.js";
-import type { E2ENetworkCaptureArtifact } from "../../../helpers/network-capture-proxy.js";
+} from "../helpers/conversation-session-network.js";
+import type { E2ENetworkCaptureArtifact } from "../helpers/network-capture-proxy.js";
 import {
   listToolCallBlocks,
   waitForToolCallBlockByToolName,
-} from "../../../helpers/conversation-session-tool.js";
-import {
-  CUA_R1_MODEL,
-  CUA_R1_PROVIDER,
-  seedCuaR1Provider,
-} from "../../../helpers/cua-r1-provider.js";
+} from "../helpers/conversation-session-tool.js";
+import { CUA_R1_MODEL, CUA_R1_PROVIDER, seedCuaR1Provider } from "../helpers/cua-r1-provider.js";
 import {
   safeReceipt,
   projectR1NetworkStats,
@@ -22,33 +18,34 @@ import {
   r1NoStoppedContinuation,
   snapshotR1Fixture,
   type R1Fixture,
-} from "../../../helpers/cua-r1-receipt.js";
-import { readR1PermissionDialog, clickR1AllowOnce } from "../../../helpers/cua-r1-dialog.js";
+} from "../helpers/cua-r1-receipt.js";
+import { readR1PermissionDialog, clickR1AllowOnce } from "../helpers/cua-r1-dialog.js";
 import {
   runR1Rebuild,
   inspectR1FixtureLaunch,
   refreshR1Fixture,
-} from "../../../helpers/cua-r1-lifecycle.js";
-import { runR1Stop } from "../../../helpers/cua-r1-stop.js";
-import { runR1StateCells } from "../../../helpers/cua-r1-state-case.js";
-import { inspectStateToolResult } from "../../../helpers/cua-r1-receipt.js";
-import { reloadElectronSessionSafely } from "../../../helpers/e2e-electron-reload.js";
+} from "../helpers/cua-r1-lifecycle.js";
+import { createR1DeliveryBarrier } from "../helpers/cua-r1-delivery-barrier.js";
+import { runR1Stop } from "../helpers/cua-r1-stop.js";
+import { runR1StateCells } from "../helpers/cua-r1-state-case.js";
+import { inspectStateToolResult } from "../helpers/cua-r1-receipt.js";
+import { reloadElectronSessionSafely } from "../helpers/e2e-electron-reload.js";
 import {
   createE2EReplayFixtureVariables,
   resolveE2ERuntimePath,
-} from "../../../helpers/e2e-runtime-paths.js";
+} from "../helpers/e2e-runtime-paths.js";
 import {
   startUpstreamReplayServer,
   type UpstreamReplayServer,
-} from "../../../helpers/upstream-replay-server.js";
-import { selectRegistryProviderModelById } from "../../../helpers/upstream-provider.js";
+} from "../helpers/upstream-replay-server.js";
+import { selectRegistryProviderModelById } from "../helpers/upstream-provider.js";
 import {
   denyV4PermissionWithFeedback,
   prepareV4ConversationE2E,
   sendV4PromptAndWaitAccepted,
   startNewV4Draft,
   waitForV4TimelineContaining,
-} from "../../../helpers/v4-conversation.js";
+} from "../helpers/v4-conversation.js";
 
 const NAME = "conversation-session-cua-r1-observation";
 const FIXTURES = resolve(process.cwd(), "test/e2e/fixtures/upstream");
@@ -65,6 +62,7 @@ let evidenceDir = "";
 const lifecycleReceipts: Record<string, Record<string, unknown>> = {
   rebuild: { caseId: "CUA-AX-R1-03c", executed: false, passed: false },
   stop: { caseId: "CUA-AX-R1-03d", executed: false, passed: false },
+  delivery: { caseId: "CUA-AX-R1-B", executed: false, passed: false },
 };
 const stateToolIds: string[] = [];
 const caseToolIds: Partial<Record<"metadata" | "deny" | "allow" | "state", string>> = {};
@@ -401,7 +399,30 @@ describe("CUA AX R1 signed candidate observation", () => {
       receipt.passed = true;
     });
   }
-  it.skip("CUA-AX-R1-03: remaining Stop delivery race remains unverified", () => {});
+  it("CUA-AX-R1-B: allowed read Stop before delivery", async function () {
+    this.timeout(300_000);
+    if (fixtureProfile.kind !== "controlled-read-delivery-v1") this.skip();
+    const receipt = lifecycleReceipts.delivery!;
+    receipt.executed = true;
+    await startNewV4Draft();
+    await selectR1Model();
+    await sendV4PromptAndWaitAccepted(
+      "E2E_CUA_R1_STOP: run the controlled observation fixture.",
+      "E2E_CUA_R1_STOP",
+      "R1 delivery submission not accepted",
+    );
+    const context = {
+      fixture,
+      manifestPath: process.env.ZODY_CUA_R1_FIXTURE_MANIFEST!,
+      runtimeManifest: resolve(RUNTIME, "manifest.json"),
+      latestResult,
+      receipt,
+    };
+    const barrier = createR1DeliveryBarrier(context, evidenceDir);
+    await runR1Stop(context, (id) => r1NoStoppedContinuation(captured, id), barrier);
+    await barrier.verify();
+    receipt.passed = true;
+  });
 });
 
 async function selectR1Model() {

@@ -8,6 +8,7 @@ import {
   CUA_NATIVE_CAPTURE_MAX_PNG_BYTES,
   CUA_NATIVE_CAPTURE_MODEL_IMAGE_MAX_BASE64_BYTES,
   hasCuaNativeCaptureImage,
+  parseCuaNativeCaptureResult,
   readCuaNativeCaptureFile,
 } from "../src/mcp/cua-native-authority-capture.js";
 import type { CuaNativeCaptureResultPayload } from "../src/mcp/cua-native-authority-contract.js";
@@ -70,7 +71,11 @@ async function fixture(options: { mode?: number; width?: number; height?: number
 
 function read(input: Awaited<ReturnType<typeof fixture>>, isLive = () => true) {
   return readCuaNativeCaptureFile({
-    capture: { root: input.root, target: { pid: 42, windowId: 99 }, accept: async () => ({ content: [] }) },
+    capture: {
+      root: input.root,
+      target: { pid: 42, windowId: 99 },
+      accept: async () => ({ content: [] }),
+    },
     payload: input.payload,
     isLive,
   });
@@ -103,7 +108,10 @@ describe("readCuaNativeCaptureFile", () => {
     const nestedPath = join(nestedDir, "capture.png");
     await writeFile(nestedPath, nested.bytes);
     nested.payload = { ...nested.payload, png: { ...nested.payload.png, path: nestedPath } };
-    await expect(read(nested)).resolves.toMatchObject({ ok: false, reason: "png_not_direct_child" });
+    await expect(read(nested)).resolves.toMatchObject({
+      ok: false,
+      reason: "png_not_direct_child",
+    });
 
     const badSha = await fixture();
     badSha.payload = { ...badSha.payload, png: { ...badSha.payload.png, sha256: "a".repeat(64) } };
@@ -164,6 +172,69 @@ describe("readCuaNativeCaptureFile", () => {
           },
         ],
       }),
+    ).toBe(false);
+  });
+});
+
+describe("capture control lease borrowing receipt", () => {
+  it("distinguishes returning a borrow token from releasing the machine lease", async () => {
+    const input = await fixture();
+    const payload = {
+      ...input.payload,
+      machineLeaseReleased: false,
+      machineLeaseBorrowReturned: true,
+    };
+    const binding = {
+      scope: { ref, traceId: payload.traceId, runId: payload.runId, turnId: payload.turnId },
+      producerIncarnation: payload.producerIncarnation,
+      target: payload.target,
+    };
+    expect(
+      parseCuaNativeCaptureResult(
+        payload,
+        binding as Parameters<typeof parseCuaNativeCaptureResult>[1],
+      ),
+    ).toMatchObject({
+      ok: true,
+      payload: { machineLeaseReleased: false, machineLeaseBorrowReturned: true },
+    });
+  });
+  it("rejects contradictory released and borrowed receipt", async () => {
+    const input = await fixture();
+    const payload = { ...input.payload, machineLeaseBorrowReturned: true };
+    const binding = {
+      scope: { ref, traceId: payload.traceId, runId: payload.runId, turnId: payload.turnId },
+      producerIncarnation: payload.producerIncarnation,
+      target: payload.target,
+    };
+    expect(
+      parseCuaNativeCaptureResult(
+        payload,
+        binding as Parameters<typeof parseCuaNativeCaptureResult>[1],
+      ).ok,
+    ).toBe(false);
+  });
+  it("requires the same full optional workspace and remote association", async () => {
+    const input = await fixture();
+    const association = { workspaceIdentity: ref.workspaceKey, remoteSessionId: "remote-exact" };
+    const payload = { ...input.payload, ...association };
+    const binding = {
+      scope: { ref, traceId: payload.traceId, runId: payload.runId, turnId: payload.turnId },
+      producerIncarnation: payload.producerIncarnation,
+      target: payload.target,
+      association,
+    };
+    expect(
+      parseCuaNativeCaptureResult(
+        payload,
+        binding as Parameters<typeof parseCuaNativeCaptureResult>[1],
+      ).ok,
+    ).toBe(true);
+    expect(
+      parseCuaNativeCaptureResult(
+        { ...payload, remoteSessionId: "remote-wrong" },
+        binding as Parameters<typeof parseCuaNativeCaptureResult>[1],
+      ).ok,
     ).toBe(false);
   });
 });

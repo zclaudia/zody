@@ -1,0 +1,452 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r1-system-state",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r1-system-state.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-r1-system-title",
+      "description": "R1 allow title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R1_SYSTEM"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "cua-r1-system-title",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R1\"}"
+        }
+      }
+    },
+    {
+      "id": "r1-system-baseline_lock",
+      "description": "Real system BASELINE_LOCK",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_SYSTEM_BASELINE_LOCK"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_r1_system_baseline_lock",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r1_system_baseline_lock",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 system BASELINE_LOCK",
+            "timeout_ms": 120000,
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path'); const { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href); await setupComputerUseRuntime({ globals: globalThis });\nconst { readFile, writeFile, rename } = await import('node:fs/promises');\nconst directory = '{{e2eRuntimeRoot}}/cua-r1-system';\nconst f = JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8'));\nconst pause = ms => new Promise(r => setTimeout(r, ms));\nconst control = async name => { try { return JSON.parse(await readFile(join(directory,name),'utf8')); } catch (e) { if(e.code==='ENOENT') return null; throw e; } };\nlet result;try{const value=await agent.computerUse.computer.get_app_state({app_ref:{pid:f.pid,window_id:f.targetWindow},disable_diffing:true,tree_shown_to_model:false});const text=typeof value==='string'?value:(JSON.stringify(value)??String(value));let native=value;if(typeof value==='string'){try{native=JSON.parse(value);}catch{}};const nativeError=native&&typeof native==='object'&&Object.keys(native).sort().join(',')==='action_sent,code,dispatch_status,message'&&typeof native.code==='string'&&['Read-only observation failed','Computer use observation failed'].includes(native.message)&&native.action_sent===false&&native.dispatch_status==='not_sent';result=nativeError?{phase:'lock',received:true,error:true,mode:'returned-error',nativeError:native,brokerCode:native.code,method:'get_app_state',actionSent:false,dispatchStatus:'not_sent',targetSeen:false,siblingSeen:false}:{phase:'lock',received:true,full:text.includes('AX window state'),targetSeen:text.includes(f.targetMarker),siblingSeen:text.includes(f.siblingMarker),error:false,...(text.includes('AX window state')?{}:{unclassifiedNativeReply:text.slice(0,16384),unclassifiedTruncated:text.length>16384})};}catch(error){result={phase:'lock',received:true,error:true,name:error?.name,code:error?.code,brokerCode:error?.details?.brokerCode,method:error?.details?.method,actionSent:error?.actionSent,dispatchStatus:error?.dispatchStatus,targetSeen:String(error?.message??'').includes(f.targetMarker),siblingSeen:String(error?.message??'').includes(f.siblingMarker)};}const path=join(directory,'baseline-lock.json');await writeFile(path+'.tmp',JSON.stringify(result));await rename(path+'.tmp',path);nodeRepl.write('R1_BASELINE_RESULT:'+JSON.stringify(result));"
+          }
+        }
+      }
+    },
+    {
+      "id": "r1-system-baseline_lock-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_SYSTEM_BASELINE_LOCK", "toolu_r1_system_baseline_lock"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "r1-system-baseline_lock-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_SYSTEM_BASELINE_LOCK_DONE"
+        }
+      }
+    },
+    {
+      "id": "r1-system-lock",
+      "description": "Real system LOCK",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_SYSTEM_LOCK"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_r1_system_lock",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r1_system_lock",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 system LOCK",
+            "timeout_ms": 120000,
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path'); const { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href); await setupComputerUseRuntime({ globals: globalThis });\nconst { readFile, writeFile, rename } = await import('node:fs/promises');\nconst directory = '{{e2eRuntimeRoot}}/cua-r1-system';\nconst f = JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8'));\nconst pause = ms => new Promise(r => setTimeout(r, ms));\nconst control = async name => { try { return JSON.parse(await readFile(join(directory,name),'utf8')); } catch (e) { if(e.code==='ENOENT') return null; throw e; } };\nconst phase='lock';for(let index=0;index<100;index++){if((await control(`complete-${phase}.json`))?.complete===true)break;const key=`${phase}-${index}`;let result;try{const value=await agent.computerUse.computer.get_app_state({app_ref:{pid:f.pid,window_id:f.targetWindow},disable_diffing:true,tree_shown_to_model:false});const text=typeof value==='string'?value:(JSON.stringify(value)??String(value));let native=value;if(typeof value==='string'){try{native=JSON.parse(value);}catch{}};const nativeError=native&&typeof native==='object'&&Object.keys(native).sort().join(',')==='action_sent,code,dispatch_status,message'&&typeof native.code==='string'&&['Read-only observation failed','Computer use observation failed'].includes(native.message)&&native.action_sent===false&&native.dispatch_status==='not_sent';result=nativeError?{phase:'lock',received:true,error:true,mode:'returned-error',nativeError:native,brokerCode:native.code,method:'get_app_state',actionSent:false,dispatchStatus:'not_sent',targetSeen:false,siblingSeen:false}:{phase:'lock',received:true,full:text.includes('AX window state'),targetSeen:text.includes(f.targetMarker),siblingSeen:text.includes(f.siblingMarker),error:false,...(text.includes('AX window state')?{}:{unclassifiedNativeReply:text.slice(0,16384),unclassifiedTruncated:text.length>16384})};}catch(error){result={phase:'lock',received:true,error:true,name:error?.name,code:error?.code,brokerCode:error?.details?.brokerCode,method:error?.details?.method,actionSent:error?.actionSent,dispatchStatus:error?.dispatchStatus,targetSeen:String(error?.message??'').includes(f.targetMarker),siblingSeen:String(error?.message??'').includes(f.siblingMarker)};}const path=join(directory,`result-${key}.json`);await writeFile(path+'.tmp',JSON.stringify({...result,index}));await rename(path+'.tmp',path);nodeRepl.write('R1_SYSTEM:'+JSON.stringify({...result,index}));for(let n=0;;n++){if(await control(`ack-${key}.json`))break;if(n>2000)throw Error('R1_SYSTEM_CONTROLLER_TIMEOUT');await pause(25);}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "r1-system-lock-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_SYSTEM_LOCK", "toolu_r1_system_lock"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "r1-system-lock-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_SYSTEM_LOCK_DONE"
+        }
+      }
+    },
+    {
+      "id": "r1-system-baseline_sleep",
+      "description": "Real system BASELINE_SLEEP",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_SYSTEM_BASELINE_SLEEP"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_r1_system_baseline_sleep",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r1_system_baseline_sleep",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 system BASELINE_SLEEP",
+            "timeout_ms": 120000,
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path'); const { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href); await setupComputerUseRuntime({ globals: globalThis });\nconst { readFile, writeFile, rename } = await import('node:fs/promises');\nconst directory = '{{e2eRuntimeRoot}}/cua-r1-system';\nconst f = JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8'));\nconst pause = ms => new Promise(r => setTimeout(r, ms));\nconst control = async name => { try { return JSON.parse(await readFile(join(directory,name),'utf8')); } catch (e) { if(e.code==='ENOENT') return null; throw e; } };\nlet result;try{const value=await agent.computerUse.computer.get_app_state({app_ref:{pid:f.pid,window_id:f.targetWindow},disable_diffing:true,tree_shown_to_model:false});const text=typeof value==='string'?value:(JSON.stringify(value)??String(value));let native=value;if(typeof value==='string'){try{native=JSON.parse(value);}catch{}};const nativeError=native&&typeof native==='object'&&Object.keys(native).sort().join(',')==='action_sent,code,dispatch_status,message'&&typeof native.code==='string'&&['Read-only observation failed','Computer use observation failed'].includes(native.message)&&native.action_sent===false&&native.dispatch_status==='not_sent';result=nativeError?{phase:'sleep',received:true,error:true,mode:'returned-error',nativeError:native,brokerCode:native.code,method:'get_app_state',actionSent:false,dispatchStatus:'not_sent',targetSeen:false,siblingSeen:false}:{phase:'sleep',received:true,full:text.includes('AX window state'),targetSeen:text.includes(f.targetMarker),siblingSeen:text.includes(f.siblingMarker),error:false,...(text.includes('AX window state')?{}:{unclassifiedNativeReply:text.slice(0,16384),unclassifiedTruncated:text.length>16384})};}catch(error){result={phase:'sleep',received:true,error:true,name:error?.name,code:error?.code,brokerCode:error?.details?.brokerCode,method:error?.details?.method,actionSent:error?.actionSent,dispatchStatus:error?.dispatchStatus,targetSeen:String(error?.message??'').includes(f.targetMarker),siblingSeen:String(error?.message??'').includes(f.siblingMarker)};}const path=join(directory,'baseline-sleep.json');await writeFile(path+'.tmp',JSON.stringify(result));await rename(path+'.tmp',path);nodeRepl.write('R1_BASELINE_RESULT:'+JSON.stringify(result));"
+          }
+        }
+      }
+    },
+    {
+      "id": "r1-system-baseline_sleep-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_SYSTEM_BASELINE_SLEEP", "toolu_r1_system_baseline_sleep"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "r1-system-baseline_sleep-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_SYSTEM_BASELINE_SLEEP_DONE"
+        }
+      }
+    },
+    {
+      "id": "r1-system-sleep",
+      "description": "Real system SLEEP",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_SYSTEM_SLEEP"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_r1_system_sleep",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r1_system_sleep",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 system SLEEP",
+            "timeout_ms": 120000,
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path'); const { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href); await setupComputerUseRuntime({ globals: globalThis });\nconst { readFile, writeFile, rename } = await import('node:fs/promises');\nconst directory = '{{e2eRuntimeRoot}}/cua-r1-system';\nconst f = JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8'));\nconst pause = ms => new Promise(r => setTimeout(r, ms));\nconst control = async name => { try { return JSON.parse(await readFile(join(directory,name),'utf8')); } catch (e) { if(e.code==='ENOENT') return null; throw e; } };\nconst phase='sleep';for(let index=0;index<100;index++){if((await control(`complete-${phase}.json`))?.complete===true)break;const key=`${phase}-${index}`;let result;try{const value=await agent.computerUse.computer.get_app_state({app_ref:{pid:f.pid,window_id:f.targetWindow},disable_diffing:true,tree_shown_to_model:false});const text=typeof value==='string'?value:(JSON.stringify(value)??String(value));let native=value;if(typeof value==='string'){try{native=JSON.parse(value);}catch{}};const nativeError=native&&typeof native==='object'&&Object.keys(native).sort().join(',')==='action_sent,code,dispatch_status,message'&&typeof native.code==='string'&&['Read-only observation failed','Computer use observation failed'].includes(native.message)&&native.action_sent===false&&native.dispatch_status==='not_sent';result=nativeError?{phase:'sleep',received:true,error:true,mode:'returned-error',nativeError:native,brokerCode:native.code,method:'get_app_state',actionSent:false,dispatchStatus:'not_sent',targetSeen:false,siblingSeen:false}:{phase:'sleep',received:true,full:text.includes('AX window state'),targetSeen:text.includes(f.targetMarker),siblingSeen:text.includes(f.siblingMarker),error:false,...(text.includes('AX window state')?{}:{unclassifiedNativeReply:text.slice(0,16384),unclassifiedTruncated:text.length>16384})};}catch(error){result={phase:'sleep',received:true,error:true,name:error?.name,code:error?.code,brokerCode:error?.details?.brokerCode,method:error?.details?.method,actionSent:error?.actionSent,dispatchStatus:error?.dispatchStatus,targetSeen:String(error?.message??'').includes(f.targetMarker),siblingSeen:String(error?.message??'').includes(f.siblingMarker)};}const path=join(directory,`result-${key}.json`);await writeFile(path+'.tmp',JSON.stringify({...result,index}));await rename(path+'.tmp',path);nodeRepl.write('R1_SYSTEM:'+JSON.stringify({...result,index}));if(index>0)break;for(let n=0;;n++){if(await control(`ack-${key}.json`))break;if(n>2000)throw Error('R1_SYSTEM_CONTROLLER_TIMEOUT');await pause(25);}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "r1-system-sleep-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_SYSTEM_SLEEP", "toolu_r1_system_sleep"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "r1-system-sleep-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_SYSTEM_SLEEP_DONE"
+        }
+      }
+    },
+    {
+      "id": "r1-system-baseline_switch",
+      "description": "Real system BASELINE_SWITCH",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_SYSTEM_BASELINE_SWITCH"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_r1_system_baseline_switch",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r1_system_baseline_switch",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 system BASELINE_SWITCH",
+            "timeout_ms": 120000,
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path'); const { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href); await setupComputerUseRuntime({ globals: globalThis });\nconst { readFile, writeFile, rename } = await import('node:fs/promises');\nconst directory = '{{e2eRuntimeRoot}}/cua-r1-system';\nconst f = JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8'));\nconst pause = ms => new Promise(r => setTimeout(r, ms));\nconst control = async name => { try { return JSON.parse(await readFile(join(directory,name),'utf8')); } catch (e) { if(e.code==='ENOENT') return null; throw e; } };\nlet result;try{const value=await agent.computerUse.computer.get_app_state({app_ref:{pid:f.pid,window_id:f.targetWindow},disable_diffing:true,tree_shown_to_model:false});const text=typeof value==='string'?value:(JSON.stringify(value)??String(value));let native=value;if(typeof value==='string'){try{native=JSON.parse(value);}catch{}};const nativeError=native&&typeof native==='object'&&Object.keys(native).sort().join(',')==='action_sent,code,dispatch_status,message'&&typeof native.code==='string'&&['Read-only observation failed','Computer use observation failed'].includes(native.message)&&native.action_sent===false&&native.dispatch_status==='not_sent';result=nativeError?{phase:'switch',received:true,error:true,mode:'returned-error',nativeError:native,brokerCode:native.code,method:'get_app_state',actionSent:false,dispatchStatus:'not_sent',targetSeen:false,siblingSeen:false}:{phase:'switch',received:true,full:text.includes('AX window state'),targetSeen:text.includes(f.targetMarker),siblingSeen:text.includes(f.siblingMarker),error:false,...(text.includes('AX window state')?{}:{unclassifiedNativeReply:text.slice(0,16384),unclassifiedTruncated:text.length>16384})};}catch(error){result={phase:'switch',received:true,error:true,name:error?.name,code:error?.code,brokerCode:error?.details?.brokerCode,method:error?.details?.method,actionSent:error?.actionSent,dispatchStatus:error?.dispatchStatus,targetSeen:String(error?.message??'').includes(f.targetMarker),siblingSeen:String(error?.message??'').includes(f.siblingMarker)};}const path=join(directory,'baseline-switch.json');await writeFile(path+'.tmp',JSON.stringify(result));await rename(path+'.tmp',path);nodeRepl.write('R1_BASELINE_RESULT:'+JSON.stringify(result));"
+          }
+        }
+      }
+    },
+    {
+      "id": "r1-system-baseline_switch-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_SYSTEM_BASELINE_SWITCH", "toolu_r1_system_baseline_switch"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "r1-system-baseline_switch-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_SYSTEM_BASELINE_SWITCH_DONE"
+        }
+      }
+    },
+    {
+      "id": "r1-system-switch",
+      "description": "Real system SWITCH",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_SYSTEM_SWITCH"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_r1_system_switch",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r1_system_switch",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 system SWITCH",
+            "timeout_ms": 120000,
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path'); const { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href); await setupComputerUseRuntime({ globals: globalThis });\nconst { readFile, writeFile, rename } = await import('node:fs/promises');\nconst directory = '{{e2eRuntimeRoot}}/cua-r1-system';\nconst f = JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8'));\nconst pause = ms => new Promise(r => setTimeout(r, ms));\nconst control = async name => { try { return JSON.parse(await readFile(join(directory,name),'utf8')); } catch (e) { if(e.code==='ENOENT') return null; throw e; } };\nconst phase='switch';for(let index=0;index<100;index++){if((await control(`complete-${phase}.json`))?.complete===true)break;const key=`${phase}-${index}`;let result;try{const value=await agent.computerUse.computer.get_app_state({app_ref:{pid:f.pid,window_id:f.targetWindow},disable_diffing:true,tree_shown_to_model:false});const text=typeof value==='string'?value:(JSON.stringify(value)??String(value));let native=value;if(typeof value==='string'){try{native=JSON.parse(value);}catch{}};const nativeError=native&&typeof native==='object'&&Object.keys(native).sort().join(',')==='action_sent,code,dispatch_status,message'&&typeof native.code==='string'&&['Read-only observation failed','Computer use observation failed'].includes(native.message)&&native.action_sent===false&&native.dispatch_status==='not_sent';result=nativeError?{phase:'switch',received:true,error:true,mode:'returned-error',nativeError:native,brokerCode:native.code,method:'get_app_state',actionSent:false,dispatchStatus:'not_sent',targetSeen:false,siblingSeen:false}:{phase:'switch',received:true,full:text.includes('AX window state'),targetSeen:text.includes(f.targetMarker),siblingSeen:text.includes(f.siblingMarker),error:false,...(text.includes('AX window state')?{}:{unclassifiedNativeReply:text.slice(0,16384),unclassifiedTruncated:text.length>16384})};}catch(error){result={phase:'switch',received:true,error:true,name:error?.name,code:error?.code,brokerCode:error?.details?.brokerCode,method:error?.details?.method,actionSent:error?.actionSent,dispatchStatus:error?.dispatchStatus,targetSeen:String(error?.message??'').includes(f.targetMarker),siblingSeen:String(error?.message??'').includes(f.siblingMarker)};}const path=join(directory,`result-${key}.json`);await writeFile(path+'.tmp',JSON.stringify({...result,index}));await rename(path+'.tmp',path);nodeRepl.write('R1_SYSTEM:'+JSON.stringify({...result,index}));for(let n=0;;n++){if(await control(`ack-${key}.json`))break;if(n>2000)throw Error('R1_SYSTEM_CONTROLLER_TIMEOUT');await pause(25);}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "r1-system-switch-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_SYSTEM_SWITCH", "toolu_r1_system_switch"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "r1-system-switch-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_SYSTEM_SWITCH_DONE"
+        }
+      }
+    },
+    {
+      "id": "r1-system-recovery_sleep",
+      "description": "Real system RECOVERY_SLEEP",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R1_SYSTEM_RECOVERY_SLEEP"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_r1_system_recovery_sleep",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_r1_system_recovery_sleep",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R1 system RECOVERY_SLEEP",
+            "timeout_ms": 120000,
+            "code": "const root = process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst { join } = await import('node:path'); const { pathToFileURL } = await import('node:url');\nconst { setupComputerUseRuntime } = await import(pathToFileURL(join(root, 'scripts', 'computer-use-client.mjs')).href); await setupComputerUseRuntime({ globals: globalThis });\nconst { readFile, writeFile, rename } = await import('node:fs/promises');\nconst directory = '{{e2eRuntimeRoot}}/cua-r1-system';\nconst f = JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8'));\nconst pause = ms => new Promise(r => setTimeout(r, ms));\nconst control = async name => { try { return JSON.parse(await readFile(join(directory,name),'utf8')); } catch (e) { if(e.code==='ENOENT') return null; throw e; } };\nlet result;try{const value=await agent.computerUse.computer.get_app_state({app_ref:{pid:f.pid,window_id:f.targetWindow},disable_diffing:true,tree_shown_to_model:false});const text=typeof value==='string'?value:(JSON.stringify(value)??String(value));let native=value;if(typeof value==='string'){try{native=JSON.parse(value);}catch{}};const nativeError=native&&typeof native==='object'&&Object.keys(native).sort().join(',')==='action_sent,code,dispatch_status,message'&&typeof native.code==='string'&&['Read-only observation failed','Computer use observation failed'].includes(native.message)&&native.action_sent===false&&native.dispatch_status==='not_sent';result=nativeError?{phase:'sleep',received:true,error:true,mode:'returned-error',nativeError:native,brokerCode:native.code,method:'get_app_state',actionSent:false,dispatchStatus:'not_sent',targetSeen:false,siblingSeen:false}:{phase:'sleep',received:true,full:text.includes('AX window state'),targetSeen:text.includes(f.targetMarker),siblingSeen:text.includes(f.siblingMarker),error:false,...(text.includes('AX window state')?{}:{unclassifiedNativeReply:text.slice(0,16384),unclassifiedTruncated:text.length>16384})};}catch(error){result={phase:'sleep',received:true,error:true,name:error?.name,code:error?.code,brokerCode:error?.details?.brokerCode,method:error?.details?.method,actionSent:error?.actionSent,dispatchStatus:error?.dispatchStatus,targetSeen:String(error?.message??'').includes(f.targetMarker),siblingSeen:String(error?.message??'').includes(f.siblingMarker)};}const path=join(directory,'recovery-sleep.json');await writeFile(path+'.tmp',JSON.stringify(result));await rename(path+'.tmp',path);nodeRepl.write('R1_BASELINE_RESULT:'+JSON.stringify(result));"
+          }
+        }
+      }
+    },
+    {
+      "id": "r1-system-recovery_sleep-final",
+      "description": "R1 allow final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "固定合成模型响应；真实工具调用及其结果仍由生产链生成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R1_SYSTEM_RECOVERY_SLEEP", "toolu_r1_system_recovery_sleep"],
+        "bodyExcludes": ["Generate a concise title", "CRITICAL: Respond with TEXT ONLY"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "r1-system-recovery_sleep-final",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R1_SYSTEM_RECOVERY_SLEEP_DONE"
+        }
+      }
+    }
+  ]
+}

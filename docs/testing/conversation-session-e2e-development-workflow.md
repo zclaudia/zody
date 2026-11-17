@@ -2,6 +2,30 @@
 
 本文定义 conversation session 从“覆盖面枚举”到“正式 E2E”的开发流水线。目标是让新增 case 能按固定步骤推进，避免在转正时临时修改共享 replay fixture、反复等待长 E2E 才发现数据不匹配。
 
+## macOS R3正式pin与正式身份追加验收（2026-11-16）
+
+用户已追加授权正式pin更新和CUA-AX-R3-03独立正式身份最小本地验收。沿用普通DOM与合成provider/真实SDK，默认pin必须独立生效；只1次读取/1笔AXPress/1次截图，旧完整矩阵与人工18笔不重跑。系统权限等待在SDK外集中处理，旧安装/真实数据不替换。正式pin旧状态按历史理解，公证/上传/发布仍关闭。
+
+本轮CUA-AX-R3-03已按独立正式bundle身份完成机器验收。窗口环境检查必须用新鲜onscreen事实，OptionAll中的旧ID存在不能替代；用户授权等待超时或夹具失效仍记真实失败，不自动重放可能已发送动作。正式pin更新不代表安装切换或公证发布，远程归档未上传。详见[本轮记录](cua-r3-formal-local-20261116.md)。
+
+## macOS R3 当前按差异执行规则（2026-11-16）
+
+用户已授权最小剩余计划；以[spec当前门槛](../../specs/computer-use-macos-phase2-ax-driver.md)为准，取代旧固定20次/完整故障重跑要求，产品安全合同保持。复用R1/R2及CUA-AX-R3-01证据，仅执行CUA-AX-R3-02无桥生产renderer的一次冷启动/只读授权交付，并记录最终闭包与独立复核。普通DOM驱动不读取/注入session store或Lexical测试桥；不能为通过验收重新启用观察桥。正式pin、公证、上传、发布仍关闭，未执行旧矩阵和历史失败不改记。
+
+## macOS R2 当前收敛执行规则（2026-11-15）
+
+依用户要求，按 [spec 的 R2 收敛测试计划](../../specs/computer-use-macos-phase2-ax-driver.md) 和 [唯一执行状态清单](cua-r2-acceptance-20261115.md) 收尾。安全排列留在native/CLI确定性测试；真机范围仅租约、截图借锁及两平台18条输入路径，目前已完成独立核对和用户对通过输入轮的人审，控制输入用例已晋升。R2 formal与R1相同仅显式定向，默认全量排除，不进入Docker默认套件；晋升后复用真实通过运行，仅校验移动后的类型/fixture/准入，不再要求人工重复回放。每组合20次及完整系统故障排列归回R3发布验收，本期不执行。
+
+先对实际node_repl模板导入、结果解析、权限分类、回放及数量/模式映射做离线自检，再运行单案。验证器失败不得触发产品重建或全套重跑；产品修复只回归受影响路径。已通过的Stop、R1读取及忽略效果校准按变更影响复用，保留原候选身份。测试脚本/fixture/文档变化不重新build/sign；封装产品字节变化才一次重建当前单槽候选。
+
+人工输入在自动项结束、驱动就绪后集中安排两轮；SDK调用前等待就绪，轮间只明确提示暂停/继续。未变的R1监测校准复用，不重新注入锁屏、睡眠、剪贴板、Space等故障。最后一次性运行规定检查并独立复核证据；人审后才晋升，历史失败与未验证限制保留，不再追加发布级门槛。
+
+CUA R1 真机用例另见 [2026-11-15 收尾记录](cua-r1-closeout-20261115.md)。本期四项 R1 用例已完成人审并晋升至 conversation-session 正式目录，但仍仅显式定向执行；仅用同一签名候选、隔离 HOME、当前轮绝对路径夹具及证据目录执行；不恢复 workflow 工作树，不进入 Docker 默认套件。`ZODY_CUA_R1_SYSTEM_RUN` 指向原始电源/会话监测，`ZODY_CUA_R1_SYSTEM_PHASES` 显式限定本轮阶段，`ZODY_CUA_R1_OPERATOR_PROMPT` 指向就绪提示夹具。人工等待在 SDK 调用外；`ZODY_CUA_R1_OPERATOR_WAIT_SECONDS` 支持 60–1800 秒、默认 300 秒，分别用于开始按钮和故障后的人工唤醒/解锁。`r1SystemWaitBudgets` 唯一计算 WDIO 外层预算（该秒数乘 2000 再加 300000）及监测生命期（外层再加 120 秒）；调用方须使用同一值。故障后的人工恢复不使用 40 秒机器探测预算；SDK 和原生读取超时不变，恢复成功仍须新授权后的真实 full。就绪提示只接受当前轮真实按钮，超时不执行睡眠。硬件按键重复可作为真实输入，自动生成输入不得替代。用户确认单用户范围只排除跨用户切换，不把跨用户切换或长时间休眠记为已验证。
+
+系统睡眠验收仅在 darwin、绝对路径 `ZODY_CUA_R1_SYSTEM_RUN` 且显式选中 `conversation-session-cua-r1-system-state.test.ts` 时设置 ChromeDriver `detach: true`，避免调试传输失败主动终止候选；其他用例沿用原配置。故障锁存后停止 UI 命令，直到本轮 sleep/wake 序号有序且当前 guard 为 allowed，才允许新单次读取确认。通过必须同时具备真实零正文拒绝、新鲜目标 full、零兄弟正文及同一候选 PID 恢复；未知回复不能充数。收尾仍显式退出并按身份清理。
+
+调试传输回归入口是 `packages/desktop/scripts/test-cua-r1-driver-disconnect.mjs --help`。它要求新建证据目录、Electron/ChromeDriver 可执行文件、由本仓库 `inspect_driver_fixture.mm` 编译的身份检查器和 `quit_origin_addon.mm` 编译的诊断 addon 的绝对路径。回归启动独立测试壳与隔离 profile，主动切断本地调试代理；旧配置须复现来自 driver PID 的 SIGTERM，新配置须保留同一进程。它不执行系统睡眠，不替代真实睡眠恢复验收；最终真机验收不加载诊断 addon。
+
 ## 两条流水线
 
 ### 覆盖面生成
@@ -134,12 +158,12 @@ conversation-session/<case>.test.ts   canonical formal target 成为当前文件
 
 录制时可以全量 capture；转成 fixture 时只把必要请求纳入合同。
 
-| 分类 | 含义 | 处理 |
-| --- | --- | --- |
-| `main` | case 核心断言依赖的请求，例如 edit rerun、compact summary、goal verifier | 放入 case-local fixture |
-| `common` | 多个 case 稳定需要的辅助请求，例如标题生成 | 放入 common fixture |
-| `ignore` | capture 中出现但不属于测试合同的请求 | 不进入 case-local fixture，必要时在 manifest 说明 |
-| `synthetic` | 真实 capture 不稳定或不能构造的时序/故障，例如慢流、断流、429 | 放入 case-local fixture，并写 `syntheticReason` |
+| 分类        | 含义                                                                     | 处理                                              |
+| ----------- | ------------------------------------------------------------------------ | ------------------------------------------------- |
+| `main`      | case 核心断言依赖的请求，例如 edit rerun、compact summary、goal verifier | 放入 case-local fixture                           |
+| `common`    | 多个 case 稳定需要的辅助请求，例如标题生成                               | 放入 common fixture                               |
+| `ignore`    | capture 中出现但不属于测试合同的请求                                     | 不进入 case-local fixture，必要时在 manifest 说明 |
+| `synthetic` | 真实 capture 不稳定或不能构造的时序/故障，例如慢流、断流、429            | 放入 case-local fixture，并写 `syntheticReason`   |
 
 工具可以基于 marker、path、prompt 内容和请求顺序自动建议分类，但产品语义由开发者 review。
 
@@ -147,12 +171,12 @@ conversation-session/<case>.test.ts   canonical formal target 成为当前文件
 
 不同 case 使用不同回放策略，避免所有测试都被慢流拖慢，也避免性能 case 被一次性 body 回放冲掉价值。
 
-| 策略 | 适用场景 |
-| --- | --- |
-| `fast-text` | 普通功能断言，快速返回即可 |
-| `controlled-stream` | stop、queue、interrupted 等需要稳定 streaming 窗口的 case |
-| `recorded-stream` | 性能、Markdown 渲染、流式节奏相关 case，需要保留真实 `responseEvents` / `responseChunkTimeline` |
-| `fault-stream` | 断流、半包、socket destroy 等故障注入 |
+| 策略                | 适用场景                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `fast-text`         | 普通功能断言，快速返回即可                                                                      |
+| `controlled-stream` | stop、queue、interrupted 等需要稳定 streaming 窗口的 case                                       |
+| `recorded-stream`   | 性能、Markdown 渲染、流式节奏相关 case，需要保留真实 `responseEvents` / `responseChunkTimeline` |
+| `fault-stream`      | 断流、半包、socket destroy 等故障注入                                                           |
 
 synthetic 的 controlled/fault stream 必须说明原因。典型例子：真实模型太快，无法稳定覆盖 stop window。
 
@@ -289,3 +313,5 @@ fault-stream、性能/时序敏感、会污染全局配置或依赖特殊网络/
 6. 提供 `e2e:docker:admit` Docker 准入脚手架，减少维护 preset 和准入文档的重复操作。
 
 后续再补 capture-to-fixture，把 capture artifact 自动转换成待 review 的 main/common/ignore/synthetic 草稿。
+
+2026-11-15 R1 晋升完成：原始真机证据按用户要求复用，不重复物理操作。正式四项 fixture check、类型/lint/架构及 coverage 审计通过。默认全量通过现有 `resolveEnvironmentGatedFormalSpecExcludes` 排除 CUA R1 真机用例，即使有残留夹具环境也不自动执行；显式定向仍由用例自身严格校验实际环境。未作 Docker admission，R2 继续闭锁。

@@ -33,6 +33,9 @@ export interface CuaNativeAuthorityProtocolState {
   bootstrapped: boolean;
   captureResultStarted: boolean;
   observationResultStarted: boolean;
+  controlTarget?: { pid: number; windowId: number };
+  controlConfirmSeen?: boolean;
+  leaseWatch?: boolean;
   readTarget?: { pid: number; windowId: number };
   captureResultAccepted: boolean;
   invalidated: boolean;
@@ -55,6 +58,9 @@ export interface CuaNativeAuthorityProtocolContext {
   readonly producerIncarnation: string;
   readonly capture?: CuaNativeAuthorityCaptureOptions;
   readonly observation?: CuaNativeObservationOptions;
+  readonly confirmControlRequest?: (
+    payload: CuaNativeConfirmRequestPayload,
+  ) => Promise<CuaNativeConfirmRequestOutcome>;
   readonly confirmReadRequest?: (
     payload: CuaNativeConfirmRequestPayload,
   ) => Promise<CuaNativeConfirmRequestOutcome>;
@@ -86,6 +92,10 @@ export async function handleCuaNativeAuthorityLine(
     return;
   }
   const frame = parsed.frame;
+  if (ctx.state.leaseWatch && frame.method !== "revoke" && frame.method !== "close") {
+    ctx.reject(frame.requestId, frame.method, "lease-watch-only");
+    return;
+  }
   if (ctx.state.invalidated) {
     // owner 事实已经锁存后只允许仍能返回真实回执的 revoke/close；晚到截图明确拒绝，不复活 scope。
     if (frame.method === "captureResult") {
@@ -97,7 +107,12 @@ export async function handleCuaNativeAuthorityLine(
     else if (frame.method === "close") handleClose(ctx, frame);
     return;
   }
-  if (frame.method === "confirmRead" || frame.method === "observationResult") {
+  if (
+    frame.method === "confirmRead" ||
+    frame.method === "confirmControl" ||
+    frame.method === "controlResult" ||
+    frame.method === "observationResult"
+  ) {
     await handleObservationFrame(ctx, frame);
     return;
   }
@@ -154,8 +169,10 @@ async function handleBootstrap(
       producerIncarnation: ctx.producerIncarnation,
       runId: ctx.scope.runId,
       turnId: ctx.scope.turnId,
-      ...(ctx.capture ? { target: ctx.capture.target } : {}),
-      ...(ctx.observation ? { observation: ctx.observation.request } : {}),
+      ...(ctx.capture ? { target: ctx.capture.target, ...ctx.capture.association } : {}),
+      ...(ctx.observation
+        ? { observation: ctx.observation.request, ...ctx.observation.association }
+        : {}),
       projection,
     },
   });
@@ -186,6 +203,7 @@ async function handleCaptureResult(
     scope: ctx.scope,
     producerIncarnation: ctx.producerIncarnation,
     target: ctx.capture.target,
+    ...(ctx.capture.association ? { association: ctx.capture.association } : {}),
   });
   if (!parsed.ok) {
     rejectCapture(ctx, frame, parsed.reason);
@@ -278,7 +296,11 @@ async function handleCheck(
   if (
     frame.payload.producerIncarnation !== ctx.producerIncarnation ||
     frame.payload.runId !== ctx.scope.runId ||
-    frame.payload.turnId !== ctx.scope.turnId
+    frame.payload.turnId !== ctx.scope.turnId ||
+    frame.payload.workspaceIdentity !==
+      (ctx.observation?.association ?? ctx.capture?.association)?.workspaceIdentity ||
+    frame.payload.remoteSessionId !==
+      (ctx.observation?.association ?? ctx.capture?.association)?.remoteSessionId
   ) {
     ctx.reject(frame.requestId, frame.method, "association_mismatch");
     return;
@@ -304,6 +326,7 @@ async function handleCheck(
       producerIncarnation: ctx.producerIncarnation,
       runId: ctx.scope.runId,
       turnId: ctx.scope.turnId,
+      ...(ctx.observation?.association ?? ctx.capture?.association),
       projection,
     },
   });
@@ -331,7 +354,11 @@ async function handleConfirm(
     !sameCuaSubmissionRef(ref, ctx.scope.ref) ||
     frame.payload.producerIncarnation !== ctx.producerIncarnation ||
     frame.payload.runId !== ctx.scope.runId ||
-    frame.payload.turnId !== ctx.scope.turnId
+    frame.payload.turnId !== ctx.scope.turnId ||
+    frame.payload.workspaceIdentity !==
+      (ctx.observation?.association ?? ctx.capture?.association)?.workspaceIdentity ||
+    frame.payload.remoteSessionId !==
+      (ctx.observation?.association ?? ctx.capture?.association)?.remoteSessionId
   ) {
     ctx.reject(frame.requestId, frame.method, "confirmation-invalid");
     return;

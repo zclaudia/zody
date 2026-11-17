@@ -29,11 +29,15 @@ const CAPTURE_KEYS = new Set([
   "png",
   "resourcesReleased",
   "machineLeaseReleased",
+  "machineLeaseBorrowReturned",
+  "workspaceIdentity",
+  "remoteSessionId",
 ]);
 const PNG_KEYS = new Set(["path", "sha256", "width", "height", "bytes"]);
 const TARGET_KEYS = new Set(["pid", "windowId"]);
 
 export interface CuaNativeCaptureBinding {
+  readonly association?: { readonly workspaceIdentity?: string; readonly remoteSessionId?: string };
   readonly scope: CuaSubmissionTurnScope;
   readonly producerIncarnation: string;
   readonly target: CuaNativeCaptureTarget;
@@ -81,7 +85,9 @@ export function parseCuaNativeCaptureResult(
   if (
     payload.producerIncarnation !== binding.producerIncarnation ||
     payload.runId !== binding.scope.runId ||
-    payload.turnId !== binding.scope.turnId
+    payload.turnId !== binding.scope.turnId ||
+    payload.workspaceIdentity !== binding.association?.workspaceIdentity ||
+    payload.remoteSessionId !== binding.association?.remoteSessionId
   ) {
     return reject("association_mismatch");
   }
@@ -92,7 +98,12 @@ export function parseCuaNativeCaptureResult(
   const png = readPngFacts(payload.png);
   if (!png) return reject("invalid_png");
   if (payload.resourcesReleased !== true) return reject("resources_not_released");
-  if (payload.machineLeaseReleased !== true) return reject("machine_lease_not_released");
+  // 中文原因：归还截图借用不等于释放仍活跃的控制租约，收据必须保留互斥的真实事实。
+  const borrowed =
+    payload.machineLeaseReleased === false && payload.machineLeaseBorrowReturned === true;
+  const released =
+    payload.machineLeaseReleased === true && payload.machineLeaseBorrowReturned === undefined;
+  if (!borrowed && !released) return reject("machine_lease_not_released");
   return {
     ok: true,
     payload: Object.freeze({
@@ -104,7 +115,9 @@ export function parseCuaNativeCaptureResult(
       target,
       png,
       resourcesReleased: true,
-      machineLeaseReleased: true,
+      machineLeaseReleased: released,
+      ...(borrowed ? { machineLeaseBorrowReturned: true as const } : {}),
+      ...binding.association,
     }),
   };
 }

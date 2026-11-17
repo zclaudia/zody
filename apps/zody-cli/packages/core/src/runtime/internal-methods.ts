@@ -83,6 +83,10 @@ export interface AgentRuntimeCoreMethods {
   getCuaSubmissionProducerPort(): CuaSubmissionProducerPort | undefined;
   getCurrentCuaSubmissionRef(): CuaSubmissionRef | undefined;
   createCuaSubmissionTurnScope(): CuaSubmissionTurnScope | undefined;
+  matchesCuaContext(input: { workspaceIdentity?: string; remoteSessionId?: string }): boolean;
+  requestCuaNativeControlConfirmation(
+    input: CuaNativeCaptureConfirmationInput,
+  ): Promise<CuaNativeCaptureConfirmationResult>;
   requestCuaNativeReadConfirmation(
     input: CuaNativeCaptureConfirmationInput,
   ): Promise<CuaNativeCaptureConfirmationResult>;

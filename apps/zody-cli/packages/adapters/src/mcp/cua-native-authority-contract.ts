@@ -17,6 +17,8 @@ export type CuaNativeAuthorityMethod =
   | "captureResult"
   | "confirm"
   | "confirmRead"
+  | "confirmControl"
+  | "controlResult"
   | "observationResult"
   | "revoke"
   | "close";
@@ -76,7 +78,10 @@ export interface CuaNativeCaptureResultPayload {
   readonly target: CuaNativeCaptureTarget;
   readonly png: CuaNativeCapturePngFacts;
   readonly resourcesReleased: true;
-  readonly machineLeaseReleased: true;
+  readonly machineLeaseReleased: boolean;
+  readonly machineLeaseBorrowReturned?: true;
+  readonly workspaceIdentity?: string;
+  readonly remoteSessionId?: string;
 }
 
 export interface CuaNativeAuthorityImageToolResult {
@@ -87,6 +92,7 @@ export interface CuaNativeAuthorityImageToolResult {
 }
 
 export interface CuaNativeAuthorityCaptureOptions {
+  readonly association?: { readonly workspaceIdentity?: string; readonly remoteSessionId?: string };
   /** native 私有 0700 目录；PNG 只允许是该目录直属普通文件。 */
   readonly root: string;
   /** 调用方显式给出的本次截图目标；bootstrap 必须回送同一 target。 */
@@ -103,11 +109,22 @@ export interface CuaNativeAuthorityCaptureOptions {
 }
 
 export interface CuaNativeObservationOptions {
+  readonly association?: { readonly workspaceIdentity?: string; readonly remoteSessionId?: string };
   readonly request: {
-    readonly method: "list_apps" | "list_windows" | "get_app_state";
+    readonly method:
+      | "list_apps"
+      | "list_windows"
+      | "get_app_state"
+      | "commit_state"
+      | "left_click"
+      | "perform_action"
+      | "set_value"
+      | "stop_computer_control";
     readonly arguments: Record<string, unknown>;
   };
   accept(result: CuaNativeAuthorityImageToolResult): void;
+  /** 本连接保持为 native lease 撤销观察器；调用方不得正常关闭它。 */
+  onLeaseWatch?(): void;
   onRejected?(reason: string): void;
 }
 
@@ -128,6 +145,9 @@ export interface CuaNativeAuthoritySessionOptions {
   /** 只有真实 app 的显式 capture composition 才提供；普通 authority 会话保持缺席。 */
   readonly capture?: CuaNativeAuthorityCaptureOptions;
   readonly observation?: CuaNativeObservationOptions;
+  readonly confirmControlRequest?: (
+    payload: CuaNativeConfirmRequestPayload,
+  ) => Promise<CuaNativeConfirmRequestOutcome>;
   readonly confirmReadRequest?: (
     payload: CuaNativeConfirmRequestPayload,
   ) => Promise<CuaNativeConfirmRequestOutcome>;
@@ -219,6 +239,8 @@ const METHODS = new Set<CuaNativeAuthorityMethod>([
   "captureResult",
   "confirm",
   "confirmRead",
+  "confirmControl",
+  "controlResult",
   "observationResult",
   "revoke",
   "close",
@@ -232,6 +254,8 @@ const REF_STRING_FIELDS = [
   "workspaceKey",
 ] as const;
 const CONFIRM_PAYLOAD_KEYS = new Set([
+  "workspaceIdentity",
+  "remoteSessionId",
   "ref",
   "traceId",
   "producerIncarnation",
@@ -345,6 +369,12 @@ export function readCuaNativeConfirmRequestPayload(
   value: unknown,
 ): CuaNativeConfirmRequestPayload | undefined {
   if (!isObject(value) || !hasOnlyKeys(value, CONFIRM_PAYLOAD_KEYS)) return undefined;
+  if (
+    ["workspaceIdentity", "remoteSessionId"].some(
+      (key) => value[key] !== undefined && !isBoundedString(value[key]),
+    )
+  )
+    return undefined;
   if (!isPositiveSafeInteger(value.generation)) return undefined;
   const target = readCuaNativeConfirmTarget(value.target);
   if (!target) return undefined;

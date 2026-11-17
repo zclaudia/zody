@@ -1,5 +1,6 @@
 #include "observer_session.h"
 #include "observer_contract.h"
+#include "control_session.h"
 #import <CoreFoundation/CoreFoundation.h>
 #include <cmath>
 namespace zody::cua::desktop_session {
@@ -22,6 +23,13 @@ NSDictionary* association(NSDictionary* bootstrap, const std::string& producer) 
     if (!bounded_string(bootstrap[key])) return nil;
     value[key] = bootstrap[key];
   }
+  // 远端标识来自已认证 runtime bootstrap，并参与同一 scope 关联，不能由动作参数提供。
+  for (NSString* key in @[@"workspaceIdentity", @"remoteSessionId"]) {
+    if (bootstrap[key]) {
+      if (!bounded_string(bootstrap[key])) return nil;
+      value[key] = bootstrap[key];
+    }
+  }
   NSString* expected = [[NSString alloc] initWithBytes:producer.data() length:producer.size() encoding:NSUTF8StringEncoding];
   if (![value[@"producerIncarnation"] isEqual:expected]) return nil;
   NSDictionary* ref = bootstrap[@"ref"];
@@ -33,6 +41,7 @@ NSDictionary* association(NSDictionary* bootstrap, const std::string& producer) 
   if (![revision isKindOfClass:[NSNumber class]] || boolean(revision, true) || boolean(revision, false)) return nil;
   double raw = [revision doubleValue];
   if (!std::isfinite(raw) || raw < 1 || std::floor(raw) != raw || raw > 9007199254740991.0) return nil;
+  if (value[@"workspaceIdentity"] && ![value[@"workspaceIdentity"] isEqual:ref[@"workspaceKey"]]) return nil;
   value[@"ref"] = ref;
   return value;
 }
@@ -79,7 +88,9 @@ NSDictionary* metadata_result(NSArray* rows) {
 }
 bool ObserverSession::run(NSDictionary* bootstrap, const std::string& expected_producer,
                           const ObserverExchange& exchange, const ObserverCancelled& cancelled,
-                          ConfirmationController& confirmation, std::string& error) {
+                          ConfirmationController& confirmation, std::string& error,
+                          ControlOwner* control, uint64_t* watch_generation,
+                          std::function<void(uint64_t, const std::function<void()>&)> guard) {
   NSDictionary* scope = association(bootstrap, expected_producer);
   if (!scope || !response_live(bootstrap, scope)) { error = "observation-binding-invalid"; return false; }
   const auto check = [&]() {
@@ -88,20 +99,55 @@ bool ObserverSession::run(NSDictionary* bootstrap, const std::string& expected_p
     return response_live(response, scope) && !cancelled(error);
   };
   const auto send_result = [&](NSDictionary* result) {
+    // 中文原因：最终 AX 重验可能阻塞；其间到达的取消必须在发帧前读取，不能泄露已采集正文。
+    if (cancelled(error)) { state_.clear(); return false; }
     NSMutableDictionary* payload = [scope mutableCopy];
     payload[@"result"] = result;
     NSDictionary* ack = exchange(@"observationResult", payload, error);
-    return [ack isKindOfClass:[NSDictionary class]] && ack.count == 2 && boolean(ack[@"ok"], true) && boolean(ack[@"accepted"], true);
+    return [ack isKindOfClass:[NSDictionary class]] && ack.count == 2 && boolean(ack[@"ok"], true) && boolean(ack[@"accepted"], true) && !cancelled(error);
   };
   const auto deliver = [&](NSDictionary* result) {
     if (!result || !check()) { state_.clear(); return false; }
     return send_result(result);
   };
   NSDictionary* request = bootstrap[@"observation"];
+  NSString* requested_method = [request isKindOfClass:[NSDictionary class]] ? request[@"method"] : nil;
+  if ([@[@"left_click", @"perform_action", @"set_value", @"stop_computer_control"] containsObject:requested_method]) {
+    if (!control || !watch_generation || !guard) { error = "control-not-configured"; return false; }
+    const auto result = control_session_run(request, scope, state_, *control, source_, exchange,
+                                            cancelled, confirmation, error, control_ax_system(),
+                                            [] { return std::chrono::steady_clock::now(); }, guard);
+    *watch_generation = result.watch_generation;
+    return result.delivered;
+  }
   if (!observer_request_valid(request)) return deliver(failure_result("invalid_request"));
   if (!check()) { state_.clear(); return false; }
   NSDictionary* args = request[@"arguments"];
   NSString* method = request[@"method"];
+  if ([method isEqual:@"commit_state"]) {
+    ObserverWindow window, current;
+    if (!source_.resolve(args[@"app_ref"], window, error) || !window.window || !window.process_started) {
+      state_.clear(); return deliver(failure_result(error));
+    }
+    NSDictionary* exact = @{ @"pid": @(window.target.pid), @"window_id": @(window.target.window_id) };
+    NSDictionary* state_window = @{ @"pid": @(window.target.pid), @"window_id": @(window.target.window_id), @"window_id_fallback": @NO };
+    NSData* bytes = [NSJSONSerialization dataWithJSONObject:scope options:NSJSONWritingSortedKeys error:nil];
+    NSString* key = [[NSString alloc] initWithData:bytes encoding:NSUTF8StringEncoding];
+    NSArray* identity = @[(__bridge id)window.window.get(), window.process_started];
+    if (!state_.can_promote(key, state_window, identity, args[@"state_id"])) return deliver(failure_result("stale_state"));
+    if (!check()) { state_.clear(); return false; }
+    if (!source_.resolve(exact, current, error) || !current.window || !current.process_started ||
+        ![current.process_started isEqual:window.process_started] ||
+        !CFEqual(static_cast<CFTypeRef>(current.window.get()), static_cast<CFTypeRef>(window.window.get()))) {
+      state_.clear(); return send_result(failure_result("stale_state"));
+    }
+    NSData* receipt = [NSJSONSerialization dataWithJSONObject:@{ @"committed": @YES, @"state_id": args[@"state_id"] } options:0 error:nil];
+    NSDictionary* result = receipt ? @{ @"content": @[@{ @"type": @"text", @"text": [[NSString alloc] initWithData:receipt encoding:NSUTF8StringEncoding] }] } : nil;
+    if (!result || !send_result(result)) { state_.clear(); return false; }
+    // 中文原因：只有像素及正文已由可信 composition 交付且 ACK 后才提升冻结映射。
+    if (!state_.promote(key, state_window, identity, args[@"state_id"])) { state_.clear(); return false; }
+    return true;
+  }
   if (![method isEqual:@"get_app_state"]) {
     NSArray* rows = [method isEqual:@"list_apps"] ? source_.apps(error) : source_.windows(args[@"app_ref"], error);
     NSDictionary* result = rows ? metadata_result(rows) : nil;

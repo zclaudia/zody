@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r3-formal-local",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r3-formal-local.test.ts",
+  "providerFixtures": [
+    "./test/e2e/fixtures/upstream/common.json",
+    "./test/e2e/fixtures/upstream/conversation-session/conversation-session-cua-r3-formal-local.json"
+  ],
+  "fileFixtures": [],
+  "requests": [
+    {
+      "id": "cua-r3-formal-local-title",
+      "description": "R3 formal identity title",
+      "kind": "common",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型只触发真实 SDK 调用；权限、原生截图、收据和业务效果不合成。"
+    },
+    {
+      "id": "cua-r3-formal-local-call",
+      "description": "R3 formal identity borrow live SDK",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型只触发真实 SDK 调用；权限、原生截图、收据和业务效果不合成。"
+    },
+    {
+      "id": "cua-r3-formal-local-final",
+      "description": "R3 formal identity final",
+      "kind": "main",
+      "timingPolicy": "fast-text",
+      "source": "synthetic",
+      "syntheticReason": "合成模型只触发真实 SDK 调用；权限、原生截图、收据和业务效果不合成。"
+    }
+  ]
+}

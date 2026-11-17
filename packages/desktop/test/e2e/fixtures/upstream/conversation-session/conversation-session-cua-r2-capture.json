@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "caseName": "conversation-session-cua-r2-capture",
+  "spec": "./test/e2e/conversation-session/conversation-session-cua-r2-capture.test.ts",
+  "fixtures": [
+    {
+      "id": "cua-r2-capture-title",
+      "description": "R2 capture title",
+      "metadata": {
+        "kind": "common",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型只触发真实 SDK 调用；权限、原生截图、收据和业务效果不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["Generate a concise title", "E2E_CUA_R2_CAPTURE"]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "title-r2-capture",
+          "inputTokens": 64,
+          "outputTokens": 8,
+          "text": "{\"title\":\"CUA R2 capture\"}"
+        }
+      }
+    },
+    {
+      "id": "cua-r2-capture-call",
+      "description": "R2 capture borrow live SDK",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型只触发真实 SDK 调用；权限、原生截图、收据和业务效果不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "lastUserMessageIncludes": ["E2E_CUA_R2_CAPTURE"],
+        "bodyIncludes": ["mcp__node_repl__js"],
+        "bodyExcludes": [
+          "toolu_cua_r2_capture",
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "toolUse": {
+          "id": "toolu_cua_r2_capture",
+          "name": "mcp__node_repl__js",
+          "input": {
+            "title": "R2 control screenshot borrow",
+            "code": "const root=process.env.ZODY_CUA_PLUGIN_ROOT ?? process.env.ZCODE_PLUGIN_ROOT ?? process.env.CLAUDE_PLUGIN_ROOT;\nconst {join}=await import('node:path'); const {pathToFileURL}=await import('node:url');\nconst {setupComputerUseRuntime}=await import(pathToFileURL(join(root,'scripts','computer-use-client.mjs')).href);\nawait setupComputerUseRuntime({globals:globalThis});\nconst {readFile}=await import('node:fs/promises');\nconst f=JSON.parse(await readFile('{{e2eRuntimeRoot}}/cua-r2-capture/manifest.json','utf8'));\nconst c=agent.computerUse.computer, ref={pid:f.pid,window_id:f.targetWindow};\nconst initial=await c.get_app_state({app_ref:ref});\nif(typeof initial!=='string' || !initial.includes(f.targetMarker) || initial.includes(f.siblingMarker)) throw new Error('R2_CAPTURE_INITIAL_STATE_INVALID');\nconst elements=initial.split('\\n').flatMap(line=>{try{return [JSON.parse(line)]}catch{return []}});\nconst button=elements.find(e=>(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!button||!Number.isSafeInteger(button.index))throw new Error('R2_CAPTURE_INITIAL_BUTTON_MISSING');\nconst first=await c.left_click({app_ref:ref,target:{type:'element',index:button.index},return_state:'compact'});\nconst firstReceipt=first?.content?JSON.parse(first.content[0].text):first;\nconst firstState=first?.structuredContent;\nif(firstReceipt?.action_sent!==true||firstReceipt.dispatch_status!=='sent'||typeof firstState?.state_id!=='string'||firstState?.app?.pid!==f.pid||firstState?.window?.window_id!==f.targetWindow)throw new Error('R2_CAPTURE_FIRST_ACTION_INVALID');\nconst shot=await c.get_app_state({app_ref:ref,include_screenshot:true});\nconst blocks=Array.isArray(shot?.content)?shot.content:[];\nconst images=blocks.filter(b=>b.type==='image'&&b.mimeType==='image/png'&&typeof b.data==='string'&&b.data.length>0);\nconst tree=blocks.filter(b=>b.type==='text').map(b=>b.text).join('\\n');\nconst state=shot?.structuredContent;\nif(images.length!==1||tree.includes(f.siblingMarker)||typeof state?.state_id!=='string'||state.state_id===firstState.state_id||state?.app?.pid!==f.pid||state?.window?.window_id!==f.targetWindow||!Array.isArray(state.elements)||!JSON.stringify(state.elements).includes(f.targetMarker)||JSON.stringify(state.elements).includes(f.siblingMarker))throw new Error('R2_CAPTURE_COMBINED_STATE_INVALID');\nconst afterButton=state.elements.find(e=>(e.title==='R2 Press'||e.title==='E2E_R2_PRESS')&&e.actions?.includes('AXPress'));\nif(!afterButton||!Number.isSafeInteger(afterButton.index))throw new Error('R2_CAPTURE_COMBINED_BUTTON_MISSING');\nconst second=await c.left_click({app_ref:ref,target:{type:'element',index:afterButton.index},return_state:'none'});\nconst secondReceipt=second?.content?JSON.parse(second.content[0].text):second;\nif(secondReceipt?.action_sent!==true||secondReceipt.dispatch_status!=='sent')throw new Error('R2_CAPTURE_SECOND_ACTION_INVALID');\nawait nodeRepl.emitImage({base64:images[0].data,mimeType:images[0].mimeType});\nnodeRepl.write('R2_CAPTURE_RECEIPT:'+JSON.stringify({pid:f.pid,windowId:f.targetWindow,firstStateId:firstState.state_id,combinedStateId:state.state_id,combinedIndex:afterButton.index,receipts:[firstReceipt,secondReceipt]}));"
+          }
+        }
+      }
+    },
+    {
+      "id": "cua-r2-capture-final",
+      "description": "R2 capture final",
+      "metadata": {
+        "kind": "main",
+        "timingPolicy": "fast-text",
+        "source": "synthetic",
+        "syntheticReason": "合成模型只触发真实 SDK 调用；权限、原生截图、收据和业务效果不合成。"
+      },
+      "maxMatches": 1,
+      "match": {
+        "method": "POST",
+        "pathIncludes": "/messages",
+        "bodyIncludes": ["E2E_CUA_R2_CAPTURE", "toolu_cua_r2_capture"],
+        "bodyExcludes": [
+          "Generate a concise title",
+          "CRITICAL: Respond with TEXT ONLY"
+        ]
+      },
+      "response": {
+        "statusCode": 200,
+        "text": {
+          "id": "final-r2-capture",
+          "inputTokens": 80,
+          "outputTokens": 8,
+          "text": "E2E_CUA_R2_CAPTURE_DONE"
+        }
+      }
+    }
+  ]
+}

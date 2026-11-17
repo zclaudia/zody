@@ -137,3 +137,54 @@ it("distinguishes an explicitly locked screen from a general authorization denia
     await expect(globals.agent.computerUse.getApp({ pid: 42 })).rejects.toMatchObject({ code });
   }
 });
+
+it("preserves return_state and the receipt through the actual SDK raw action", async () => {
+  const state = {
+    state_id: "after",
+    app: { pid: 42 },
+    window: { pid: 42, window_id: 99 },
+    elements: [],
+    text: "AX window state",
+  };
+  const result = {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify({
+          action_sent: true,
+          dispatch_status: "sent",
+          state_sync_status: "synced",
+        }),
+      },
+    ],
+    structuredContent: state,
+  };
+  const { globals, bridge } = await makeGlobals({ call: vi.fn(async () => result) });
+  const returned = await globals.agent.computerUse.computer.left_click({
+    target: { type: "element", index: 0 },
+    return_state: "full",
+  });
+  expect(returned).toEqual(result);
+  expect(bridge.call).toHaveBeenCalledTimes(1);
+});
+
+it("never retries a mutating SDK call even if not-ready claims retryable", async () => {
+  const call = vi.fn(async () => ({
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify({
+          kind: "CUA_NOT_READY",
+          retryable: true,
+          reasonCode: "broker_not_accepting",
+          message: "not ready",
+        }),
+      },
+    ],
+  }));
+  const { globals } = await makeGlobals({ call });
+  await expect(
+    globals.agent.computerUse.computer.left_click({ target: { type: "element", index: 0 } }),
+  ).rejects.toMatchObject({ code: "CONTROLLER_BUSY", details: { retryable: false, attempts: 1 } });
+  expect(call).toHaveBeenCalledTimes(1);
+});

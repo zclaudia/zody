@@ -70,7 +70,7 @@ export function createCuaSubmissionTurnScope(
   if (existing) {
     // 正常 consumer 关闭只释放 binding；同 turn 可为后续观察或截图创建新 handle。
     // owner 撤销仍是终态，绝不复活旧 lineage。
-    if (!existing.invalidated) return existing;
+    if (!existing.invalidated) return existing.acquireConsumer();
     if (existing.terminalReason !== "scope-closed") return undefined;
   }
 
@@ -104,7 +104,7 @@ export function createCuaSubmissionTurnScope(
     unsubscribe();
     if (this.cuaSubmissionTurnScope === scope) this.cuaSubmissionTurnScope = undefined;
   });
-  return scope;
+  return scope.acquireConsumer();
 }
 
 /** 真实 turn 结束时同步失效；正常结束只释放 binding，不撤销仍有效的 lineage。 */
