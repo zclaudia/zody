@@ -25,8 +25,7 @@ function resolvePnpmCliPath(env) {
   const npmExecPath = env.npm_execpath;
   if (
     npmExecPath &&
-    (npmExecPath.toLowerCase().includes("\\pnpm\\") ||
-      npmExecPath.toLowerCase().includes("/pnpm/"))
+    (npmExecPath.toLowerCase().includes("\\pnpm\\") || npmExecPath.toLowerCase().includes("/pnpm/"))
   ) {
     return npmExecPath;
   }
@@ -51,6 +50,8 @@ function run(command, args, options = {}) {
     encoding: "utf8",
     env: options.env,
     stdio: options.stdio ?? ["ignore", "pipe", "pipe"],
+    // 首次推送可能含上万个路径；默认1MiB会ENOBUFS，不能把截断列表当Git失败。
+    maxBuffer: 64 * 1024 * 1024,
   };
 
   if (process.platform === "win32" && command === "pnpm") {
@@ -69,7 +70,11 @@ function run(command, args, options = {}) {
 function runGit(args, options = {}) {
   const result = run("git", args, options);
   if (result.status !== 0 && options.required !== false) {
-    const detail = result.stderr?.trim() || result.stdout?.trim();
+    // spawn错误优先，普通Git失败只保留有界诊断，避免整段NUL文件列表刷入日志。
+    const detail = (result.error?.message || result.stderr?.trim() || result.stdout?.trim())?.slice(
+      0,
+      2048,
+    );
     throw new Error(`git ${args.join(" ")} failed${detail ? `: ${detail}` : ""}`);
   }
   return result.status === 0 ? result.stdout.trim() : "";
