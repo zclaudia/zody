@@ -12,14 +12,17 @@ import {
   NARROW_TARGET,
 } from "./macos-cua-narrow-resources-constants.mjs";
 import { createNarrowManifest } from "./macos-cua-narrow-resources.mjs";
+import { resolveIdentityProfileName } from "./macos-cua-narrow-identity-profile.mjs";
 
 export function usage() {
   return `Usage: node packages/desktop/scripts/macos-cua-narrow-resources-prepare.mjs \\
   --app <absolute signed Zody CUA Desktop Session.app> \\
   --native-build-manifest <absolute desktop-session build-manifest.json> \\
-  [--output <absolute output root>] [--replace]
+  [--output <absolute output root>] [--replace] \\
+  [--identity-profile local-self-signed|developer-id] [--identity-pins <absolute path>]
 
-Identity pins are always read from output/cua-helper-round11/controller-signed/identity-pins.json.`;
+Local identity defaults to the R11 pins. Developer ID requires explicit pins and the configured repository trust root.
+This command verifies and copies existing signed material; it never signs or notarizes.`;
 }
 
 export function parsePrepareArgs(argv) {
@@ -33,6 +36,17 @@ export function parsePrepareArgs(argv) {
     }
     if (name === "--help" || name === "-h") return { help: true };
     if (!name.startsWith("--")) throw new Error(`Unknown argument: ${name}`);
+    if (
+      ![
+        "--app",
+        "--native-build-manifest",
+        "--output",
+        "--identity-profile",
+        "--identity-pins",
+      ].includes(name)
+    )
+      throw new Error(`Unknown argument: ${name}`);
+    if (values.has(name)) throw new Error(`Duplicate argument: ${name}`);
     const value = argv[index + 1];
     if (!value || value.startsWith("--")) throw new Error(`${name} requires a value`);
     values.set(name, value);
@@ -44,12 +58,16 @@ export function parsePrepareArgs(argv) {
     if (!isAbsolute(value)) throw new Error(`${name} must be an absolute path`);
     return resolve(value);
   };
+  const identityProfile = resolveIdentityProfileName(values.get("--identity-profile"));
+  if (identityProfile === "developer-id" && !values.has("--identity-pins"))
+    throw new Error("developer-id requires explicit --identity-pins");
   return {
     help: false,
     appPath: absolute("--app"),
     nativeBuildManifestPath: absolute("--native-build-manifest"),
     outputRoot: absolute("--output", DEFAULT_OUTPUT_ROOT),
-    pinsPath: DEFAULT_IDENTITY_PINS_PATH,
+    identityProfile,
+    pinsPath: absolute("--identity-pins", DEFAULT_IDENTITY_PINS_PATH),
     replace,
   };
 }

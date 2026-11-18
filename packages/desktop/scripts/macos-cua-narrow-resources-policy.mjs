@@ -20,6 +20,9 @@ function assertIdentityField(actual, expected, field) {
 
 export function expectedIdentityFromPins(pins) {
   return {
+    ...(pins.identityProfile === "developer-id"
+      ? { identityProfile: pins.identityProfile, teamIdentifier: pins.teamIdentifier }
+      : {}),
     helperIdentifier: PINNED_HELPER_IDENTIFIER,
     nodeIdentifier: pins.nodeIdentifier,
     leafSha256: pins.leafSha256,
@@ -52,6 +55,8 @@ export function assertIdentityAgainstPins(identity, pins) {
 
 export function assertIdentityMatches(actual, expected) {
   for (const field of [
+    "identityProfile",
+    "teamIdentifier",
     "helperIdentifier",
     "nodeIdentifier",
     "leafSha256",

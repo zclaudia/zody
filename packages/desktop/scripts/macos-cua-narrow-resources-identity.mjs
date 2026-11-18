@@ -7,10 +7,7 @@ import { join } from "node:path";
 import process from "node:process";
 import { promisify } from "node:util";
 
-import {
-  CANDIDATE_HOST_LAUNCH_ENV,
-  REPO_ROOT,
-} from "./macos-cua-narrow-resources-constants.mjs";
+import { CANDIDATE_HOST_LAUNCH_ENV, REPO_ROOT } from "./macos-cua-narrow-resources-constants.mjs";
 import { NarrowResourceError, sha1Bytes, sha256Bytes } from "./macos-cua-narrow-resources-base.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -57,6 +54,8 @@ function parseCodesignDisplay(output) {
     cdhash: line(/^CDHash=(.+)$/m),
     authority: line(/^Authority=(.+)$/m),
     signature: line(/^Signature=(.+)$/m),
+    teamIdentifier: line(/^TeamIdentifier=(.+)$/m),
+    timestamp: line(/^Timestamp=(.+)$/m),
     flags,
     hardenedRuntime: Boolean(flags && flags & 0x10000),
     adhoc: /Signature=adhoc|flags=.*\badhoc\b/i.test(output),
@@ -78,11 +77,7 @@ export async function readLeafCertificateDer(path, deps = {}) {
   const directory = await mkdtemp(join(tmpdir(), "zody-cua-narrow-cert-"));
   try {
     const prefix = join(directory, "leaf");
-    const result = await run("/usr/bin/codesign", [
-      "-d",
-      `--extract-certificates=${prefix}`,
-      path,
-    ]);
+    const result = await run("/usr/bin/codesign", ["-d", `--extract-certificates=${prefix}`, path]);
     if (result.code !== 0) {
       throw new NarrowResourceError(
         "narrow-signature-invalid",
@@ -119,6 +114,8 @@ export async function verifyCodeIdentity({
   expectedLeafSha256,
   expectedLeafSha1,
   expectedCdhash,
+  expectedIdentityProfile = "local-self-signed",
+  expectedTeamIdentifier,
   deps = {},
 }) {
   const run = deps.run ?? defaultRun;
@@ -133,11 +130,10 @@ export async function verifyCodeIdentity({
   }
   const display = parseCodesignDisplay(`${displayResult.stdout}${displayResult.stderr}`);
   if (display.identifier !== expectedIdentifier) {
-    throw new NarrowResourceError(
-      "narrow-identity-mismatch",
-      `${label} identifier mismatch`,
-      { actual: display.identifier, expected: expectedIdentifier },
-    );
+    throw new NarrowResourceError("narrow-identity-mismatch", `${label} identifier mismatch`, {
+      actual: display.identifier,
+      expected: expectedIdentifier,
+    });
   }
 
   const requirementResult = await run("/usr/bin/codesign", ["-d", "-r-", path]);
@@ -145,7 +141,10 @@ export async function verifyCodeIdentity({
     throw new NarrowResourceError(
       "narrow-signature-invalid",
       `${label} designated requirement cannot be inspected`,
-      { code: requirementResult.code, stderr: requirementResult.stderr.slice(-2_000) },
+      {
+        code: requirementResult.code,
+        stderr: requirementResult.stderr.slice(-2_000),
+      },
     );
   }
   const designatedRequirement = parseDesignatedRequirement(
@@ -155,8 +154,27 @@ export async function verifyCodeIdentity({
     throw new NarrowResourceError(
       "narrow-designated-requirement-mismatch",
       `${label} designated requirement mismatch`,
-      { actual: designatedRequirement, expected: expectedDesignatedRequirement },
+      {
+        actual: designatedRequirement,
+        expected: expectedDesignatedRequirement,
+      },
     );
+  }
+  // Developer ID 必须同时证明 Apple 发布链、团队和签名时间，不能只凭 Team 自报。
+  if (
+    expectedIdentityProfile === "developer-id" &&
+    (!display.authority?.startsWith("Developer ID Application:") ||
+      !expectedTeamIdentifier ||
+      display.teamIdentifier !== expectedTeamIdentifier ||
+      !display.timestamp)
+  ) {
+    throw new NarrowResourceError(
+      "narrow-signature-invalid",
+      `${label} Developer ID authority, team or timestamp mismatch`,
+    );
+  }
+  if (!["local-self-signed", "developer-id"].includes(expectedIdentityProfile)) {
+    throw new NarrowResourceError("narrow-signature-invalid", `${label} unknown identity profile`);
   }
   if (display.adhoc) {
     throw new NarrowResourceError("narrow-signature-invalid", `${label} is ad-hoc signed`);
@@ -168,11 +186,10 @@ export async function verifyCodeIdentity({
     );
   }
   if (expectedCdhash && display.cdhash !== expectedCdhash) {
-    throw new NarrowResourceError(
-      "narrow-identity-mismatch",
-      `${label} CDHash mismatch`,
-      { actual: display.cdhash, expected: expectedCdhash },
-    );
+    throw new NarrowResourceError("narrow-identity-mismatch", `${label} CDHash mismatch`, {
+      actual: display.cdhash,
+      expected: expectedCdhash,
+    });
   }
 
   const verifyResult = await run("/usr/bin/codesign", [
@@ -189,12 +206,7 @@ export async function verifyCodeIdentity({
     );
   }
 
-  const entitlementResult = await run("/usr/bin/codesign", [
-    "-d",
-    "--entitlements",
-    ":-",
-    path,
-  ]);
+  const entitlementResult = await run("/usr/bin/codesign", ["-d", "--entitlements", ":-", path]);
   if (entitlementResult.code !== 0) {
     throw new NarrowResourceError(
       "narrow-signature-invalid",
@@ -212,13 +224,19 @@ export async function verifyCodeIdentity({
   if (leaf.sha256 !== expectedLeafSha256 || leaf.sha1 !== expectedLeafSha1) {
     throw new NarrowResourceError(
       "narrow-identity-mismatch",
-      `${label} leaf certificate does not match the fixed local-self-signed certificate`,
+      `${label} leaf certificate does not match the selected trusted certificate`,
       { actualSha256: leaf.sha256, expectedSha256: expectedLeafSha256 },
     );
   }
 
   return {
     identifier: display.identifier,
+    ...(expectedIdentityProfile === "developer-id"
+      ? {
+          identityProfile: expectedIdentityProfile,
+          teamIdentifier: display.teamIdentifier,
+        }
+      : {}),
     designatedRequirement,
     cdhash: display.cdhash,
     leafSha256: leaf.sha256,

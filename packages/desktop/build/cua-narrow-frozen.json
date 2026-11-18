@@ -1,7 +1,7 @@
 {
-  "releaseTag": "cua-narrow-frozen-2026-11-09-rebuild",
+  "releaseTag": "cua-narrow-frozen-2026-11-16-r2-local",
   "archiveAsset": "cua-narrow-frozen.tar.gz",
-  "archiveSha256": "a71e72c2ac0be63df1d42d3442015637331c6587c353ff8792ea74c6a20231c5",
+  "archiveSha256": "2bd974c781ffcd4819a3ef4a9066d247d8f057b3b050f8a87594af248e250c77",
   "manifestRelativePath": "output/cua-narrow-frozen/controller-prepared/manifest.json",
-  "manifestSha256": "9a34469ef6e950d43c69ff5b3d876b293eefbe9c6ee62226434a311ec352318b"
+  "manifestSha256": "9bcea0ea2e21d81a7f4f930a24672839e14ad17b43f29cfaf33b5bf47371cfcd"
 }

@@ -23,7 +23,9 @@ import {
   getNarrowSignIgnorePatterns,
   writeNarrowBuildAudit,
 } from "./scripts/macos-cua-narrow-resources.mjs";
-import { resolveMacosCuaDemoBuildSelection } from "./scripts/macos-cua-demo-defaults.mjs";
+import { resolveMacosCuaDemoBuildSelection } from "./scripts/macos-cua-build-selection.mjs";
+import { assertMacosCuaSigningSelection } from "./scripts/macos-cua-distribution-policy.mjs";
+import { resolvePrivateMacSigning, signPrivateMacApp } from "./scripts/macos-private-signing.mjs";
 import { getTargetPlatform } from "./scripts/target-platform.mjs";
 import {
   resolveDesktopArtifactSuffix,
@@ -85,6 +87,12 @@ const macSigningIdentity =
   rawMacSigningIdentity?.replace(/^Developer ID Application:\s*/, "") ?? null;
 const shouldEnableMacSigning =
   process.env.ZODY_ENABLE_MAC_SIGN === "1" && Boolean(macSigningIdentity);
+assertMacosCuaSigningSelection({ env: process.env, validated: narrowValidated });
+const privateMacSigning = resolvePrivateMacSigning({
+  targetPlatform,
+  validated: narrowValidated,
+  env: process.env,
+});
 const workspaceRoot = resolve(import.meta.dirname, "../..");
 const desktopPackageRoot = import.meta.dirname;
 // 移动 Remote UI 与桌面同版交付：构建产物在 packages/web/dist-mobile-remote，
@@ -949,12 +957,28 @@ export default {
     // z-code 之前只有本地未签名打包配置，CI 即使注入了证书变量，
     // electron-builder 也不会自动切到 hardened runtime / entitlement 这套发布参数。
     // 这里显式收拢到环境开关，保证本地开发不被签名配置绑死，CI 发布时再按需打开。
-    identity: shouldEnableMacSigning ? macSigningIdentity : null,
+    // 自定义整包hook不依赖Apple证书发现；identity必须非null才能由builder调用。
+    identity: privateMacSigning
+      ? "Zody Local Computer Use"
+      : shouldEnableMacSigning
+        ? macSigningIdentity
+        : null,
+    ...(privateMacSigning
+      ? {
+          sign: async (options) =>
+            signPrivateMacApp({
+              appPath: options.app,
+              bundleId: desktopProductIdentity.appId,
+              manifestPath: narrowValidated.manifestPath,
+              env: process.env,
+            }),
+        }
+      : {}),
     // macOS 产物采用“build 阶段签名 + 独立公证阶段”的两段式流水线。
     // 如果这里不显式关闭 electron-builder 内置 notarize，它会在 build 阶段读取 Apple 凭据后直接尝试公证，
     // 并强制要求 APPLE_APP_SPECIFIC_PASSWORD，导致 build 还没产出 DMG 就提前失败。
     notarize: false,
-    hardenedRuntime: shouldEnableMacSigning,
+    hardenedRuntime: Boolean(privateMacSigning) || shouldEnableMacSigning,
     gatekeeperAssess: false,
     entitlements: "build/entitlements.mac.plist",
     entitlementsInherit: "build/entitlements.mac.inherit.plist",
@@ -1024,6 +1048,8 @@ export default {
     fpm: ["-d", "mesa-libgbm", "-d", "alsa-lib"],
   },
   dmg: {
+    // 私有路线签App，不调用只认识Apple开发者身份的DMG自动签名。
+    ...(privateMacSigning ? { sign: false } : {}),
     // 当前安装包携带的运行时资源（尤其 agent node_modules）体积已超过默认 DMG 估算值。
     // 之前依赖自动容量时，生成的 DMG 挂载卷只有约 1.9Gi，复制 .app 过程中会因为空间耗尽
     // 丢失 Electron Framework 主二进制，安装后启动直接报 DYLD Library missing。

@@ -1,5 +1,5 @@
 // 窄 CUA manifest 的可搬迁校验与打包后复核。固定代码 pins 是信任根；
-// manifest 自报内容只用于一致性比对，不能建立新身份。
+// manifest 自报内容只用于一致性比对，不能替代代码/受控发布策略建立新身份。
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, resolve, sep } from "node:path";
 import process from "node:process";
@@ -25,6 +25,7 @@ import {
 import { assertTreeMatches, inspectNarrowTree } from "./macos-cua-narrow-resources-tree.mjs";
 import { validateNativeBuildManifest } from "./macos-cua-narrow-resources-native.mjs";
 import { verifyNarrowApp } from "./macos-cua-narrow-resources-verify-app.mjs";
+import { resolveIdentityProfileName } from "./macos-cua-narrow-identity-profile.mjs";
 
 function resolveControlledPath(manifestDir, relativePath, label) {
   if (typeof relativePath !== "string" || !relativePath.trim() || isAbsolute(relativePath)) {
@@ -48,9 +49,11 @@ export async function validateNarrowManifest({
   manifestPath,
   targetPlatform,
   env = process.env,
+  identityProfile = env.ZODY_CUA_NARROW_IDENTITY_PROFILE,
   deps = {},
 }) {
   assertNoCandidateHostLaunchSeam(env);
+  identityProfile = resolveIdentityProfileName(identityProfile);
   if (typeof manifestPath !== "string" || !isAbsolute(manifestPath)) {
     throw new NarrowResourceError(
       "narrow-manifest-required-absolute",
@@ -116,7 +119,7 @@ export async function validateNarrowManifest({
   await assertControlledFile(pinsPath, "cua-narrow identity pins", deps);
   await assertControlledFile(nativeBuildManifestPath, "cua-narrow native build manifest", deps);
 
-  const pins = await loadIdentityPins({ path: pinsPath, deps });
+  const pins = await loadIdentityPins({ path: pinsPath, identityProfile, deps });
   const verifyApp = deps.verifyNarrowApp ?? verifyNarrowApp;
   const liveIdentity = await verifyApp({ appPath: stageAppPath, pins, deps });
   const tree = await inspectNarrowTree(stageAppPath, deps);
@@ -186,12 +189,14 @@ export async function assertPackagedNarrowResource({
   resourcesDir,
   manifestPath,
   env = process.env,
+  identityProfile = env.ZODY_CUA_NARROW_IDENTITY_PROFILE,
   deps = {},
 }) {
   const validated = await validateNarrowManifest({
     manifestPath,
     targetPlatform: { os: NARROW_TARGET.os, arch: NARROW_TARGET.arch },
     env,
+    identityProfile,
     deps,
   });
   const packagedManifestPath = join(resourcesDir, NARROW_SLOT, "manifest.json");
@@ -261,6 +266,9 @@ export async function writeNarrowBuildAudit({
     signedBinarySha256: validated.identity.signedBinarySha256,
     nativeUnsignedBinarySha256: validated.identity.nativeUnsignedBinarySha256,
     identity: {
+      ...(validated.pins.identityProfile === "developer-id"
+        ? { identityProfile: "developer-id", teamIdentifier: validated.pins.teamIdentifier }
+        : {}),
       helperIdentifier: validated.identity.helperIdentifier,
       nodeIdentifier: validated.identity.nodeIdentifier,
       leafSha256: validated.identity.leafSha256,

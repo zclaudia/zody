@@ -51,6 +51,7 @@ import {
   sha256File,
 } from "./lib/cua-desktop-session-toolchain.mjs";
 import { loadIdentityPins } from "./macos-cua-narrow-resources-pins.mjs";
+import { resolveIdentityProfileName } from "./macos-cua-narrow-identity-profile.mjs";
 
 const ENTRY_SOURCES = {
   "host-entry.mjs": "host-entry.ts",
@@ -70,10 +71,7 @@ async function resolvePublicExport(moduleDir, specifier) {
 }
 
 export async function resolveDesktopSessionIdentityPins(options = {}) {
-  const identityProfile = options.identityProfile ?? "local-self-signed";
-  if (!["local-self-signed", "developer-id"].includes(identityProfile)) {
-    throw new Error(`invalid identity profile: ${identityProfile}`);
-  }
+  const identityProfile = resolveIdentityProfileName(options.identityProfile);
   if (identityProfile === "developer-id" && !options.identityPinsPath) {
     throw new Error("developer-id requires explicit --identity-pins");
   }
@@ -369,12 +367,8 @@ export function parseArgs(argv) {
     else if (value === "--node") options.nodePath = resolve(next());
     else if (value === "--identity-pins") options.identityPinsPath = resolve(next());
     else if (value === "--identity-profile") {
-      options.identityProfile = next();
-      if (!["local-self-signed", "developer-id"].includes(options.identityProfile)) {
-        throw new Error(`invalid identity profile: ${options.identityProfile}`);
-      }
-    }
-    else if (value === "--skip-tests") options.runTests = false;
+      options.identityProfile = resolveIdentityProfileName(next());
+    } else if (value === "--skip-tests") options.runTests = false;
     else throw new Error(`unknown argument: ${value}`);
   }
   return { help: false, options };

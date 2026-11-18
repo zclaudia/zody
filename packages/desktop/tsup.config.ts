@@ -16,7 +16,7 @@ const { loadBuiltinProviderConfig } = await import(
 // import.meta.dirname 从 scripts 目录重定位，REPO_ROOT 随之错误。保持与上面构建工具一致的
 // 动态 absolute URL 加载，让 defaults 作为独立模块按真实文件位置解析。
 const { resolveMacosCuaDemoBuildSelection } = await import(
-  pathToFileURL(resolve(import.meta.dirname, "scripts/macos-cua-demo-defaults.mjs")).href
+  pathToFileURL(resolve(import.meta.dirname, "scripts/macos-cua-build-selection.mjs")).href
 );
 const { resolveBuildTimeConfig, createBuildTimeConfigDefines } = await import(
   pathToFileURL(resolve(import.meta.dirname, "../../scripts/build-time-config.mjs")).href

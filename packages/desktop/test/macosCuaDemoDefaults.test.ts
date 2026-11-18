@@ -119,19 +119,11 @@ describe("macOS CUA distributable build defaults", () => {
     });
   });
 
-  it("default assembly stays enabled after the rebuild round (product constant)", async () => {
-    // 2026-11-09 重建轮验收后恢复默认装配：开关为 true 且默认选择真实冻结材料
-    // （非 null）。协议漂移回撤期间该断言曾为 false，见 spec 对应小节。
+  it("default assembly stays enabled after the rebuild round (product constant)", () => {
+    // 2026-11-09重建轮恢复默认开关；选择器的材料校验由fixture及单独实物门禁证明。
     expect(CUA_NARROW_DEFAULT_ASSEMBLY_ENABLED).toBe(true);
-    const selection = await resolveMacosCuaDemoBuildSelection({
-      env: {},
-      targetOs: "darwin",
-      targetArch: "arm64",
-      repoRoot: REPO_ROOT,
-      validateManifest: validateWithoutKeychain,
-    });
-    expect(selection?.source).toBe("default");
-    expect(selection?.manifestSha256).toBe(CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestSha256);
+    // CI validate在Linux干净checkout上运行；默认行为已由上方fixture验证，
+    // 真实冻结材料只由下方显式可用用例及macOS prepare/打包门禁校验。
   });
 
   it.skipIf(!existsSync(FROZEN_MANIFEST_PATH))(
@@ -173,10 +165,10 @@ describe("macOS CUA distributable build defaults", () => {
   it("loads defaults dynamically in tsup config so config bundling keeps REPO_ROOT anchored", () => {
     const source = readFileSync(resolve(REPO_ROOT, "packages/desktop/tsup.config.ts"), "utf8");
     expect(source).not.toMatch(
-      /import\s*\{[^}]*resolveMacosCuaDemoBuildSelection[^}]*\}\s*from\s*["'][^"']*macos-cua-demo-defaults\.mjs["']/s,
+      /import\s*\{[^}]*resolveMacosCuaDemoBuildSelection[^}]*\}\s*from\s*["'][^"']*macos-cua-(?:demo-defaults|build-selection)\.mjs["']/s,
     );
     expect(source).toContain(
-      'pathToFileURL(resolve(import.meta.dirname, "scripts/macos-cua-demo-defaults.mjs")).href',
+      'pathToFileURL(resolve(import.meta.dirname, "scripts/macos-cua-build-selection.mjs")).href',
     );
   });
 

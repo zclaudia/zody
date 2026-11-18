@@ -85,6 +85,7 @@ export async function restoreCuaNarrowFrozen({
   targetOs = "darwin",
   targetArch = "arm64",
   deps = {},
+  env = process.env,
 }) {
   if (process.platform !== "darwin") {
     throw new NarrowFrozenRestoreError(
@@ -104,11 +105,15 @@ export async function restoreCuaNarrowFrozen({
     );
   }
   if (!archiveInfo.isFile()) {
-    throw new NarrowFrozenRestoreError("restore-archive-missing", `archive is not a file: ${absoluteArchive}`);
+    throw new NarrowFrozenRestoreError(
+      "restore-archive-missing",
+      `archive is not a file: ${absoluteArchive}`,
+    );
   }
-  let expected = typeof expectedSha256 === "string" && expectedSha256.trim()
-    ? expectedSha256.trim().toLowerCase()
-    : null;
+  let expected =
+    typeof expectedSha256 === "string" && expectedSha256.trim()
+      ? expectedSha256.trim().toLowerCase()
+      : null;
   if (!expected) {
     try {
       expected = parseSha256File(await readFile(`${absoluteArchive}.sha256`, "utf8"));
@@ -133,7 +138,12 @@ export async function restoreCuaNarrowFrozen({
     absoluteRepoRoot,
     CUA_DEMO_DEFAULT_PUBLIC_FACTS.manifestRelativePath,
   );
-  if (!force && (await access(manifestDestination, fsConstants.F_OK).then(() => true).catch(() => false))) {
+  if (
+    !force &&
+    (await access(manifestDestination, fsConstants.F_OK)
+      .then(() => true)
+      .catch(() => false))
+  ) {
     throw new NarrowFrozenRestoreError(
       "restore-destination-exists",
       `pinned manifest already exists at ${manifestDestination}; pass --force to overwrite`,
@@ -144,7 +154,10 @@ export async function restoreCuaNarrowFrozen({
     maxBuffer: 16 * 1024 * 1024,
   });
   assertSafeTarEntries(
-    list.stdout.split("\n").map((line) => line.trim()).filter(Boolean),
+    list.stdout
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean),
   );
   await (deps.execFile ?? execFile)("tar", ["-xzf", absoluteArchive, "-C", absoluteRepoRoot]);
 
@@ -154,6 +167,7 @@ export async function restoreCuaNarrowFrozen({
     targetOs,
     targetArch,
     repoRoot: absoluteRepoRoot,
+    env,
   });
   if (!selection || selection.source !== "default") {
     throw new NarrowFrozenRestoreError(

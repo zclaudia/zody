@@ -1,8 +1,48 @@
-> 当前执行（2026-11-18）：仅推进Developer ID分发准备第1步：调查并补回缺失build资源/已验收本地冻结pin，完成显式发布身份接线及定向回归。不签名、公证、上传、发布或替换安装；既有本机验收结论保留。
+> 当前状态（2026-11-19）：macOS arm64本地/CI自动准备与外层私有签名代码接线完成；隔离实物冷还原、配置加载、84项定向Node及8项相关Vitest与根检查通过。真实CI与签名仍未执行，待两个Secrets及冻结归档来源就绪；不注册Developer ID、不公证、不上传/发布/替换安装。见[接线与配置记录](../docs/testing/cua-build-auto-private-20261119.md)。
+
+## macOS arm64 自动准备与私有签名（2026-11-19）
+
+默认打包必须携带现有冻结CUA Helper、sealed Node、SDK与正常Host profile。本地bundle、直接tsup、electron-builder和prepare:runtime-assets消费同一构建准备入口。保留既有纯选择/验证器供restore与离线用例调用，避免defaults→fetch→restore递归。显式manifest/profile仍按原合同验证，不触发默认下载；非darwin/arm64不扩展当前CUA支持范围。dry-run保持只读，不获取或发布材料。
+
+准备器是自动材料发布的唯一owner。先走纯选择器验证已存在的材料，成功则复用且零下载；仅默认manifest明确ENOENT且冻结目录缺失时取档。存在但损坏/不完整、摘要或代码身份不匹配时失败关闭，禁止自动force或覆盖。复用fetch/restore的归档/manifest/代码身份校验，在同卷隔离临时repo还原并完成验证后，才将完整 `output/cua-narrow-frozen` 目录原子发布。跨进程允许独立准备临时树，只有完整树可发布；发布区用独占mkdir锁，锁内重新检查，任何已有目录（含空目录）均不覆盖。胜方已发布时验证同pin结果再复用；活跃竞争明确返回busy，不等待、不重放、不强拆或按超时宣称成功。持锁者finally清理自己的锁及临时树；崩溃残留锁只提示确认无活跃构建后手动清理。纯restore不调用自动准备器。
+
+当前归档仍只有本地验收材料。默认按pin从同仓库release取档，`ZODY_CUA_NARROW_FROZEN_ARCHIVE` 可指定本地文件；本轮不上传归档、不触发GitHub工作流。CI去除旧可选restore变量，darwin-arm64始终执行公共prepare入口并校验；其他matrix条目保持已有构建行为。CI相同仓库使用自带contents:read token，不能静默改用未pin的下载源。
+
+外层私有签名仅适用于darwin/arm64、local-self-signed CUA装配；默认开启，显式 `ZODY_MAC_PRIVATE_SIGN=0` 仅供需明确无签名的构建使用，CI arm64强制1。开发者身份分支仍独立显式选择。私有hook通过固定leaf SHA1选择 `Zody Local Computer Use`，可显式限定 `ZODY_MAC_PRIVATE_KEYCHAIN`，不信任electron-builder自动发现的其他证书。签署顺序复用已验收流程：Frameworks下的app（inherit entitlements）→framework→外层App（产品bundle id+固定leaf DR+主entitlements），runtime且timestamp=none。禁止施签 --deep、禁止遍历/重签cua-narrow；前后完整资源校验、最终deep/strict只用于验证。DMG封装不宣称已签名或公证，显式关闭dmg.sign，ZIP/DMG内部App保持同一已签字节。
+
+CI只在darwin-arm64导入用户提供的P12到runner私有临时keychain，signer显式传该路径，不修改用户/系统默认keychain、search list或信任设置。输入为Secrets `ZODY_MAC_PRIVATE_CERT_P12_BASE64`、`ZODY_MAC_PRIVATE_CERT_PASSWORD`；keychain解锁口令runner随机生成。输出不得包含P12、私钥、任何口令或带秘密的命令/错误。always清理临时keychain、P12和状态。缺配置明确失败并给固定提示，不要求Developer ID。当前只实现并模拟测试导入/清理，不实际导入或导出私钥。
+
+```mermaid
+sequenceDiagram
+  participant B as bundle / tsup / builder / prepare
+  participant O as 自动准备owner
+  participant F as 固定归档源
+  participant P as 已验证冻结目录
+  participant S as 私有签名hook
+  B->>O: 默认arm64选择
+  O->>P: 纯校验，成功直接复用
+  opt 目录完全缺失
+    O->>F: 获取固定摘要归档
+    O->>O: 同卷隔离还原/身份及闭包校验
+    O->>P: 原子发布完整树；竞争则验证胜方
+  end
+  O-->>B: 默认manifest和正常Host profile
+  B->>S: 封装后签外层，Helper签名保持
+  S->>S: 有限签署列表；验证签名与Helper完整树
+  S-->>B: 已签App供DMG/ZIP封装
+```
+
+先补能复现缺材料提前失败和local签名被拒的回归，再实现。定向测试覆盖缓存复用、缺失自动还原、损坏/失败不覆盖、竞争发布、显式选择/非目标/dry-run不下载；私签mock检查固定身份、顺序、entitlements、Helper前后校验和失败传播；CI临时keychain生命周期/秘密不落盘日志及workflow接线。只读复用R1/R2/R3，不重跑完整矩阵或18笔。完成根typecheck/lint/架构与独立审阅；真实CI未执行、Secret未配置和归档未上传均如实列明。
+
+> 当前决策（2026-11-18，用户最新指示）：采用现有私有证书 `Zody Local Computer Use` / `local-self-signed`，不注册 Developer ID Application。缺少该身份、对应策略未配置及 Apple 公证未完成不阻塞当前私有签名路径；除非用户明确改变目标，不重复要求申请。私有签名的精确身份、资源闭包、权限和原生守卫保持。此决策不执行签名、公证、上传、发布或安装替换。
+
+> 前一阶段结果（2026-11-18）：Developer ID可选接线已完成，23个build输入与已验收本地冻结pin复原；79项离线回归及根检查通过。Developer ID分支保留为未来显式选择，当前未配置状态不作为私有签名的blocker。见[历史阶段记录](../docs/testing/cua-developer-id-wiring-20261118.md)。
 
 ## Developer ID 分发身份接线（2026-11-18）
 
-本地R1/R2/R3证据继续有效，不能视为Developer ID签名身份的验收。当前build目录的23个跟踪资源缺失，仓库clean/clean:output均不删除此目录，具体删除来源未证实。只补缺失的静态资源；冻结metadata按第1/2步验收摘要恢复，禁止直接还原HEAD中的旧R1 pin。现有候选/安装和证据不变。
+本节记录此前Developer ID准备合同。用户后续已选择私有签名，故本节关于Developer ID证书/私钥和公证的要求仅适用于未来显式选择该分支，不是当前分发门槛；既有local默认及其验收证据继续复用。
+
+本地R1/R2/R3证据继续有效，不能视为Developer ID签名身份的验收。开工时build目录的23个跟踪资源缺失，仓库clean/clean:output均不删除此目录，具体删除来源未证实。只补缺失的静态资源；冻结metadata按第1/2步验收摘要恢复，禁止直接还原HEAD中的旧R1 pin。现有候选/安装和证据不变。
 
 构建身份选择只有 `local-self-signed`（既有默认）和显式 `developer-id`。发布信任根唯一所有者为仓库受控 `packages/desktop/build/cua-narrow-developer-id.json`，不从资源manifest、自报pins、运行时环境或任意用户文件建立信任。未配置时仅保存schema/kind/status，不伪造证书、Team、CDHash或签名材料；选择发布身份必须失败关闭。配置后需精确绑定TeamIdentifier、证书leaf SHA256/SHA1、Helper/Node固定identifier和各自DR、Node CDHash，DR限定Apple Developer ID Application链和该Team。Helper/Node使用同一发布证书。发布pin、Node签名与Helper编译/签名在后续获授权阶段由真实材料确定。
 

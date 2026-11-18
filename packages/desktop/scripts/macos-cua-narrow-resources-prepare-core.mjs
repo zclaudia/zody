@@ -60,6 +60,7 @@ export async function createNarrowManifest({
   nativeBuildManifestPath,
   outputRoot,
   pinsPath,
+  identityProfile = "local-self-signed",
   replace = false,
   deps = {},
 }) {
@@ -78,7 +79,7 @@ export async function createNarrowManifest({
     );
   }
   const resolvedPinsPath = resolve(pinsPath);
-  const pins = await loadIdentityPins({ path: resolvedPinsPath, deps });
+  const pins = await loadIdentityPins({ path: resolvedPinsPath, identityProfile, deps });
   const verifyApp = deps.verifyNarrowApp ?? verifyNarrowApp;
   const sourceIdentity = await verifyApp({ appPath, pins, deps });
   const sourceNativeInfo = await validateNativeBuildManifest({
@@ -116,7 +117,7 @@ export async function createNarrowManifest({
   await cp(resolvedPinsPath, stagePinsPath);
   await cp(nativeBuildManifestPath, stageNativePath);
 
-  const stagePins = await loadIdentityPins({ path: stagePinsPath, deps });
+  const stagePins = await loadIdentityPins({ path: stagePinsPath, identityProfile, deps });
   const stageIdentity = await verifyApp({ appPath: stageAppPath, pins: stagePins, deps });
   const stageNativeInfo = await validateNativeBuildManifest({
     appPath: stageAppPath,

@@ -31,7 +31,7 @@ import {
 import {
   createMacosCuaDemoBuildEnv,
   resolveMacosCuaDemoBuildSelection,
-} from "./macos-cua-demo-defaults.mjs";
+} from "./macos-cua-build-selection.mjs";
 
 const desktopRoot = resolve(import.meta.dirname, "..");
 const workspaceRoot = resolve(desktopRoot, "../..");
@@ -295,7 +295,14 @@ function normalizeArch(rawArch) {
 
 export async function parseArgs(
   argv,
-  { env = process.env, repoRoot, validateManifest, defaultFacts, defaultAssemblyEnabled } = {},
+  {
+    env = process.env,
+    repoRoot,
+    validateManifest,
+    defaultFacts,
+    defaultAssemblyEnabled,
+    ensureFrozenInputs,
+  } = {},
 ) {
   const options = {
     os: env.ZODY_TARGET_OS ?? null,
@@ -400,13 +407,16 @@ export async function parseArgs(
     validateManifest,
     defaultFacts,
     defaultAssemblyEnabled,
+    ensureFrozenInputs,
+    autoPrepare: !options.dryRun,
   });
   const narrowRequest =
     narrowSelection && (narrowSelection.manifestPath || narrowSelection.profileJson)
       ? {
-          ...(narrowSelection.manifestPath
-            ? { manifestPath: narrowSelection.manifestPath }
+          ...(narrowSelection.identityProfile === "developer-id"
+            ? { identityProfile: "developer-id" }
             : {}),
+          ...(narrowSelection.manifestPath ? { manifestPath: narrowSelection.manifestPath } : {}),
           ...(narrowSelection.profileJson ? { profileJson: narrowSelection.profileJson } : {}),
         }
       : null;

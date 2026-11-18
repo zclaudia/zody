@@ -1,6 +1,12 @@
 # macOS DMG Signing And Notarization
 
+> 当前用户选择（2026-11-18）：使用现有私有签名，不注册Developer ID Application；Developer ID和Apple公证不是当前私有分发的完成门槛。以下Developer ID/公证材料只在用户未来明确选择该路径时适用，不据此重复提出身份准备blocker。
+
+2026-11-19：本地/CI自动准备与私有签名hook已接通，实际CI尚待Secrets和冻结归档来源；当前命令与一次性配置清单见[接线记录](../testing/cua-build-auto-private-20261119.md)。
+
 > **历史说明（当前分支）**：本文所述 `scripts/notarize-macos.sh` 和 GitLab 公证流程已不在当前仓库，以下内容不是当前可执行步骤。现有 `scripts/doctor-macos-release-app.sh` 独立入口使用 `ZODY_CUA_REQUIRE_HELPER`、`ZODY_CUA_HELPER_APP_PATH` 和 `ZODY_HOME`；真实签名与公证需另按现行流程确认。以下正文保留历史记录。
+
+2026-11-18：限定AX链的Developer ID身份接线已完成，当前信任策略未配置，签名/公证流水线尚未执行或补齐。现行接口与证据见[分发身份接线记录](../testing/cua-developer-id-wiring-20261118.md)，不使用下方历史Helper路径和脚本替代当前cua-narrow链。
 
 ## 背景
 

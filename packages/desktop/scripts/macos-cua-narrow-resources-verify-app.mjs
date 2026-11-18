@@ -53,6 +53,8 @@ export async function verifyNarrowApp({ appPath, pins, deps = {} }) {
     expectedDesignatedRequirement: pins.designatedRequirement,
     expectedLeafSha256: pins.leafSha256,
     expectedLeafSha1: pins.leafSha1,
+    expectedIdentityProfile: pins.identityProfile,
+    expectedTeamIdentifier: pins.teamIdentifier,
     deps,
   });
   const node = await verifyCodeIdentity({
@@ -63,6 +65,8 @@ export async function verifyNarrowApp({ appPath, pins, deps = {} }) {
     expectedLeafSha256: pins.nodeLeafSha256,
     expectedLeafSha1: pins.nodeLeafSha1,
     expectedCdhash: pins.nodeCdhash,
+    expectedIdentityProfile: pins.identityProfile,
+    expectedTeamIdentifier: pins.teamIdentifier,
     deps,
   });
   const helperMachO = await verifyMachO(executablePath, {
@@ -115,6 +119,9 @@ export async function verifyNarrowApp({ appPath, pins, deps = {} }) {
   }
 
   return {
+    ...(pins.identityProfile === "developer-id"
+      ? { identityProfile: pins.identityProfile, teamIdentifier: pins.teamIdentifier }
+      : {}),
     helperIdentifier: helper.identifier,
     nodeIdentifier: node.identifier,
     leafSha256: helper.leafSha256,

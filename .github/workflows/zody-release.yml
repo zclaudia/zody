@@ -43,6 +43,7 @@ jobs:
       - run: pnpm --dir apps/zody-cli typecheck
       - run: pnpm --dir apps/zody-cli lint
       - run: node --test scripts/zody-distribution-runner.test.mjs scripts/zody-distribution.test.mjs scripts/zody-distribution-smoke.test.mjs
+      - run: pnpm --dir packages/desktop run test:macos-cua-build
 
   desktop:
     needs: validate
@@ -82,22 +83,35 @@ jobs:
           node-version: 24.14.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # darwin/arm64 冻结窄链材料还原（specs/computer-use-macos-phase1.md 2026-11-09 协议漂移
-      # 事故小节）：默认装配已回撤（CUA_NARROW_DEFAULT_ASSEMBLY_ENABLED=false），本步骤仅在
-      # 重建 sealed 轮次并翻回开关时由 repo variable CUA_NARROW_FROZEN_RESTORE=enabled 打开。
-      - name: Restore frozen cua-narrow materials
-        if: matrix.target == 'darwin-arm64' && vars.CUA_NARROW_FROZEN_RESTORE == 'enabled'
+      # 与本地bundle/tsup/builder共用准备器；缺归档或pin不匹配必须失败，不能静默漏装。
+      - name: Prepare frozen macOS arm64 CUA
+        if: matrix.target == 'darwin-arm64'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: pnpm --dir packages/desktop run fetch:cua-narrow-frozen
-      - name: Build unsigned Desktop artifacts
+          ZODY_TARGET_OS: mac
+          ZODY_TARGET_ARCH: arm64
+        run: pnpm --dir packages/desktop run prepare:macos-cua
+      - name: Prepare private macOS signing keychain
+        if: matrix.target == 'darwin-arm64'
+        shell: bash
+        env:
+          ZODY_MAC_PRIVATE_CERT_P12_BASE64: ${{ secrets.ZODY_MAC_PRIVATE_CERT_P12_BASE64 }}
+          ZODY_MAC_PRIVATE_CERT_PASSWORD: ${{ secrets.ZODY_MAC_PRIVATE_CERT_PASSWORD }}
+        run: node packages/desktop/scripts/macos-private-keychain.mjs setup
+      - name: Build Desktop artifacts
         shell: bash
         env:
           ZODY_ENV: production
           ZODY_ENABLE_MAC_SIGN: "0"
+          ZODY_MAC_PRIVATE_SIGN: ${{ matrix.target == 'darwin-arm64' && '1' || '0' }}
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          GH_TOKEN: ${{ github.token }}
         run: pnpm --dir packages/desktop run bundle --os "${{ matrix.os }}" --arch "${{ matrix.arch }}"
+      - name: Remove private macOS signing keychain
+        if: ${{ always() && matrix.target == 'darwin-arm64' }}
+        shell: bash
+        run: node packages/desktop/scripts/macos-private-keychain.mjs cleanup
       - name: Collect Desktop artifacts
         shell: bash
         run: node scripts/zody-distribution/collect-desktop-artifact.mjs "${{ matrix.target }}" "$RUNNER_TEMP/zody-assets"

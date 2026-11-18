@@ -28,6 +28,9 @@ function assertPinValues(rawValues, pins) {
     );
   }
   for (const field of [
+    ...(pins.identityProfile === "developer-id"
+      ? ["identityProfile", "teamIdentifier", "helperIdentifier", "leafSha1", "nodeLeafSha1"]
+      : []),
     "leafSha256",
     "nodeLeafSha256",
     "designatedRequirement",

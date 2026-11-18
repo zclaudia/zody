@@ -10,6 +10,8 @@ import { NarrowResourceError, sha256Bytes } from "./macos-cua-narrow-resources-b
 import { NARROW_MANIFEST_ENV, REPO_ROOT } from "./macos-cua-narrow-resources-constants.mjs";
 import { validateNarrowManifest } from "./macos-cua-narrow-resources-validate.mjs";
 import { createNormalHostNarrowProfile } from "./lib/normal-host-candidate-profile.mjs";
+import { resolveIdentityProfileName } from "./macos-cua-narrow-identity-profile.mjs";
+import { assertMacosCuaReleaseRequest } from "./macos-cua-distribution-policy.mjs";
 
 export const NARROW_AGENT_ENV = "ZODY_CUA_NARROW_AGENT_JSON";
 
@@ -138,13 +140,15 @@ async function readPinnedBytes(path, label, expectedSha256) {
   return bytes;
 }
 
-async function resolveDefaultSelection({ env, repoRoot, targetPlatform, validateManifest, defaultFacts }) {
+async function resolveDefaultSelection({
+  env,
+  repoRoot,
+  targetPlatform,
+  validateManifest,
+  defaultFacts,
+}) {
   const manifestPath = resolve(repoRoot, defaultFacts.manifestRelativePath);
-  await readPinnedBytes(
-    manifestPath,
-    "cua-narrow manifest",
-    defaultFacts.manifestSha256,
-  );
+  await readPinnedBytes(manifestPath, "cua-narrow manifest", defaultFacts.manifestSha256);
 
   const validated = await validateManifest({
     manifestPath,
@@ -190,21 +194,41 @@ export async function resolveMacosCuaDemoBuildSelection({
   const normalizedOs = normalizeTargetOs(observedTargetOs);
   const normalizedArch = normalizeTargetArch(observedTargetArch);
   const targetPlatform = { os: normalizedOs, arch: normalizedArch };
+  const identityProfile = resolveIdentityProfileName(env.ZODY_CUA_NARROW_IDENTITY_PROFILE);
   const manifestPath = readExplicitManifestPath({ cliManifestPath, env });
+  assertMacosCuaReleaseRequest({ identityProfile, manifestPath, targetPlatform });
   const explicitProfile = readExplicitProfile(env);
   const absoluteRepoRoot = resolve(repoRoot);
 
   if (manifestPath) {
-    const validated = await validateManifest({ manifestPath, targetPlatform, env });
+    const validated = await validateManifest({
+      manifestPath,
+      targetPlatform,
+      env,
+      identityProfile,
+    });
+    if (identityProfile === "developer-id" && validated.pins?.identityProfile !== identityProfile)
+      throw new NarrowResourceError(
+        "narrow-identity-mismatch",
+        "release build validation returned another identity profile",
+      );
     if (explicitProfile) assertProfileMatchesManifest(explicitProfile.profile, validated);
+    // 发布身份也必须实际编译正常 Host profile，不能只装资源而让 Host 保持 undefined。
+    const profile =
+      explicitProfile?.profile ??
+      (identityProfile === "developer-id"
+        ? (await createNormalHostNarrowProfile({ narrowManifest: manifestPath })).profile
+        : null);
+    if (profile) assertProfileMatchesManifest(profile, validated);
     return {
       source: "explicit",
+      ...(identityProfile === "developer-id" ? { identityProfile } : {}),
       manifestPath,
       manifestSha256: validated.manifestSha256,
       launcherSha256: validated.identity.signedBinarySha256,
       validated,
-      profile: explicitProfile?.profile ?? null,
-      profileJson: explicitProfile?.profileJson ?? null,
+      profile,
+      profileJson: explicitProfile?.profileJson ?? (profile ? JSON.stringify(profile) : null),
     };
   }
 
@@ -236,6 +260,9 @@ export async function resolveMacosCuaDemoBuildSelection({
 export function createMacosCuaDemoBuildEnv(selection) {
   if (!selection) return {};
   return {
+    ...(selection.identityProfile === "developer-id"
+      ? { ZODY_CUA_NARROW_IDENTITY_PROFILE: "developer-id" }
+      : {}),
     ...(selection.manifestPath ? { [NARROW_MANIFEST_ENV]: selection.manifestPath } : {}),
     ...(selection.profileJson ? { [NARROW_AGENT_ENV]: selection.profileJson } : {}),
   };

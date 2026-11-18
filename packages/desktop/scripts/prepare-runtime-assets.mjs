@@ -7,11 +7,14 @@ import { resolveNativeSearchReleasePlan } from "../../../scripts/native-search-t
 import { runCommand } from "../../../scripts/spawn-command.mjs";
 import { getTargetPlatform } from "./target-platform.mjs";
 import { isRealComputerUseProducerInstalled } from "./computer-use-producer.mjs";
+import { resolveMacosCuaDemoBuildSelection } from "./macos-cua-build-selection.mjs";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const desktopRoot = resolve(scriptDir, "..");
 const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 const target = getTargetPlatform();
+// prepare 与直接 bundle/tsup/builder 使用同一owner，不能各自解包或覆盖冻结槽。
+await resolveMacosCuaDemoBuildSelection({ targetOs: target.os, targetArch: target.arch });
 const nativeSearchReleasePlan = resolveNativeSearchReleasePlan({
   platform: target.os,
   arch: target.arch,

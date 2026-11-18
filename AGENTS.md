@@ -10,6 +10,12 @@
 - Zody 独立发展，不再常规审查或移植上游；按需评估安全修复，保留来源 SHA、路径、适配理由与验证。
 - 按 [上游维护规则](docs/fork/upstream-sync-policy.md) 执行；不默认整版合并或 rebase。
 
+## macOS 当前签名与分发选择（用户决定，2026-11-18）
+
+- 当前采用现有私有证书 `Zody Local Computer Use` / `local-self-signed`，不注册 Developer ID Application 身份；除非用户明确改变目标，不再要求其申请该身份。
+- Developer ID 证书/私钥缺失、对应发布策略未配置及 Apple 公证未完成，不作为当前私有签名路径的 blocker。Developer ID 接线仅保留为未来显式选择，不能自动升级为必需门槛。
+- 私有签名仍须保留真实证书、leaf/DR/Node CDHash、资源摘要及既有权限/原生准入校验；不将其宣称为 Developer ID 或 Apple 公证。实际签名、上传、发布和安装替换按用户对相应动作的授权执行。
+
 ## 命令与仓库结构
 
 开工前运行 `node scripts/check-workspace-freshness.mjs` 检查基线。Node 版本以 `mise.toml` 为准。

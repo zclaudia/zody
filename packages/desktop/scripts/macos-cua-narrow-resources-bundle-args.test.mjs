@@ -107,14 +107,18 @@ test("default darwin arm64 bundle request selects the pinned v2 profile (fixture
   }
 });
 
-test("default darwin arm64 bundle request stays enabled after the rebuild round", async () => {
-  const parsed = await parseArgs(["--os", "mac", "--arch", "arm64"], {
-    env: {},
-    validateManifest: validateWithoutKeychain,
-  });
-  assert.notEqual(parsed.narrowRequest, null);
-  assert.equal(typeof parsed.narrowRequest.profileJson, "string");
-});
+test(
+  "real frozen darwin arm64 bundle request stays enabled when materials are present",
+  { skip: !existsSync(DEFAULT_MANIFEST_PATH) },
+  async () => {
+    const parsed = await parseArgs(["--os", "mac", "--arch", "arm64"], {
+      env: {},
+      validateManifest: validateWithoutKeychain,
+    });
+    assert.notEqual(parsed.narrowRequest, null);
+    assert.equal(typeof parsed.narrowRequest.profileJson, "string");
+  },
+);
 
 test("unsupported bundle targets keep the narrow request disabled", async () => {
   const parsed = await parseArgs(["--os", "linux", "--arch", "arm64"], { env: {} });

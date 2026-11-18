@@ -8,7 +8,7 @@ import { execFile as execFileCallback } from "node:child_process";
 import { createHash } from "node:crypto";
 import { access, constants as fsConstants, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 
@@ -55,25 +55,51 @@ export function parseFrozenPinFile(raw) {
   if (typeof pin !== "object" || pin === null || Array.isArray(pin)) {
     throw new FetchFrozenError("frozen-pin-json", "cua-narrow-frozen.json must be a JSON object");
   }
-  const fields = ["releaseTag", "archiveAsset", "archiveSha256", "manifestRelativePath", "manifestSha256"];
+  const fields = [
+    "releaseTag",
+    "archiveAsset",
+    "archiveSha256",
+    "manifestRelativePath",
+    "manifestSha256",
+  ];
   for (const field of fields) {
     if (typeof pin[field] !== "string" || !pin[field].trim()) {
-      throw new FetchFrozenError("frozen-pin-json", `cua-narrow-frozen.json field ${field} must be a non-empty string`);
+      throw new FetchFrozenError(
+        "frozen-pin-json",
+        `cua-narrow-frozen.json field ${field} must be a non-empty string`,
+      );
     }
   }
   for (const digestField of ["archiveSha256", "manifestSha256"]) {
     if (!/^[0-9a-f]{64}$/.test(pin[digestField])) {
-      throw new FetchFrozenError("frozen-pin-json", `cua-narrow-frozen.json ${digestField} must be a lowercase sha256 digest`);
+      throw new FetchFrozenError(
+        "frozen-pin-json",
+        `cua-narrow-frozen.json ${digestField} must be a lowercase sha256 digest`,
+      );
     }
   }
   return pin;
 }
 
-async function downloadArchiveWithGh(pin, downloadDir) {
+async function downloadArchiveWithGh(pin, downloadDir, { env, cwd }) {
   try {
-    await execFile("gh", ["release", "download", pin.releaseTag, "--pattern", pin.archiveAsset, "--output", join(downloadDir, pin.archiveAsset), "--clobber"], {
-      env: process.env,
-    });
+    await execFile(
+      "gh",
+      [
+        "release",
+        "download",
+        pin.releaseTag,
+        "--pattern",
+        pin.archiveAsset,
+        "--output",
+        join(downloadDir, pin.archiveAsset),
+        "--clobber",
+      ],
+      {
+        env,
+        cwd,
+      },
+    );
   } catch (error) {
     throw new FetchFrozenError(
       "frozen-archive-download",
@@ -110,7 +136,10 @@ export async function fetchCuaNarrowFrozen({
     }
   } else {
     downloadDir = await mkdtemp(join(tmpdir(), "zody-cua-narrow-fetch-"));
-    archivePath = await (deps.downloadArchive ?? downloadArchiveWithGh)(pin, downloadDir);
+    archivePath = await (deps.downloadArchive ?? downloadArchiveWithGh)(pin, downloadDir, {
+      env,
+      cwd: resolve(dirname(pinFilePath), "../../.."),
+    });
   }
 
   try {
@@ -127,6 +156,7 @@ export async function fetchCuaNarrowFrozen({
       expectedSha256: pin.archiveSha256,
       repoRoot: absoluteRepoRoot,
       force,
+      env,
     });
     if (result.manifestSha256 !== pin.manifestSha256) {
       throw new FetchFrozenError(
