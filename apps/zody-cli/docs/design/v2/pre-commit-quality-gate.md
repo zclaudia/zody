@@ -1,5 +1,7 @@
 # Pre-commit Quality Gate
 
+> 历史设计。当前根仓库已停止安装 Husky，日常检查使用手动命令，发布检查由标签 CI 执行。见 [手动推送前检查](../../../../../docs/testing/pre-push-hook.md)。
+
 ## 文档定位
 
 本文定义仓库级 Git pre-commit 质量门，成熟度为 `L1 Local Workflow Contract`。它服务于开发提交前的快速防线，不改变运行时 agent loop、tool runtime、权限系统或发布路径。
