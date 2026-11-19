@@ -1,13 +1,9 @@
-import { OnboardingMeshBackground } from "@/onboarding/OnboardingMeshBackground.js";
+import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { useEffect, useState } from "react";
 import { logger } from "@/logger.js";
 import { usePlatform } from "@/hooks/usePlatform.js";
 import { resolveWorkspaceShellPanelRadiusPx } from "@/app-shell/workspaceShellWindowChrome.js";
-import { ZodyStartupLogoBadge } from "@/root/RootStartupLoading.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
-import { cn } from "@/components/lib/utils.js";
-import { useResolvedThemeHeroPalette } from "@/openWorkspacePageThemeHero.js";
-import "@/onboarding/onboardingLogoSweep.css";
 
 export function OccupationOnboardingVisual({
   isMacDesktop,
@@ -38,39 +34,21 @@ export function OccupationOnboardingVisual({
     macOSMajorVersion,
   });
   const { intl } = useZodyIntl();
-  const palette = useResolvedThemeHeroPalette();
   return (
     <aside
       style={{ borderRadius }}
-      className="relative hidden min-h-0 flex-col items-center overflow-y-auto bg-surface-hover px-[clamp(64px,4vw,72px)] py-[clamp(32px,4vw,72px)] dark:bg-background-alt lg:flex"
+      className="zody-brand-grid relative hidden min-h-0 flex-col overflow-y-auto border border-brand-panel-line bg-brand-panel px-12 py-12 text-brand-panel-foreground lg:flex xl:px-16"
     >
-      <OnboardingMeshBackground />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-10 rounded-[inherit] border border-border"
-      />
-      <div className="relative my-auto flex w-full max-w-[640px] shrink-0 flex-col items-start [container-type:inline-size]">
-        <div aria-hidden="true" className="relative mb-10 rounded-3xl">
-          <ZodyStartupLogoBadge animated={false} />
-          <div className="onboarding-logo-sweep">
-            <div />
-          </div>
-        </div>
-        <h2
-          className={cn(
-            "whitespace-nowrap text-[clamp(24px,7cqw,48px)] leading-[1.15] font-semibold tracking-[-0.035em]",
-            palette.heading,
-          )}
-        >
+      <div className="flex items-center gap-2.5 font-mono text-ui-lg font-semibold tracking-tight">
+        <img src={zodyLogoUrl} alt="" width={36} height={36} className="size-9 shrink-0" />
+        {ZODY_BRAND_NAME}
+      </div>
+      <div className="my-auto flex w-full max-w-md shrink-0 flex-col items-start gap-5 py-10">
+        <div aria-hidden="true" className="h-1 w-10 rounded-full bg-brand-panel-accent" />
+        <h2 className="text-ui-display font-semibold leading-tight tracking-tight">
           {intl.formatMessage({ id: "occupationOnboarding.heroTitle" })}
         </h2>
-        <p
-          className={cn(
-            "mt-6 w-full whitespace-pre-line text-[16px] leading-[26px]",
-            palette.description,
-            "dark:text-slate-200",
-          )}
-        >
+        <p className="text-ui-base leading-relaxed text-brand-panel-muted">
           {intl.formatMessage({ id: "occupationOnboarding.heroDescription" })}
         </p>
       </div>

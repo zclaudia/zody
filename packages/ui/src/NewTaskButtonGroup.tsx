@@ -1,4 +1,4 @@
-import { MessageCirclePlus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { TID_TASK_NEW_BUTTON } from "@zody/shared";
 import { cn } from "@/components/lib/utils.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
@@ -15,9 +15,9 @@ export function NewTaskButtonGroup({
   const { intl } = useZodyIntl();
   const newTaskShortcutLabel = useShortcutCommandLabel("newTask");
   return (
-    <div
-      role="group"
-      aria-disabled={disabled}
+    <button
+      type="button"
+      disabled={disabled}
       data-testid={TID_TASK_NEW_BUTTON}
       onClick={() => {
         if (!disabled) {
@@ -30,18 +30,19 @@ export function NewTaskButtonGroup({
         }
       }}
       className={cn(
-        "group w-full h-8 rounded-lg inline-flex shrink-0 items-center justify-stretch gap-2 overflow-hidden pl-2.5 pr-2.5 hover:bg-surface-hover hover:text-foreground active:translate-y-0 cursor-pointer",
-        disabled &&
-          "cursor-not-allowed text-foreground-subtlest hover:bg-transparent hover:text-foreground-subtlest",
+        "inline-flex h-9 w-full shrink-0 items-center gap-2 rounded-md border px-2.5 text-left text-ui-base font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+        disabled
+          ? "cursor-not-allowed border-border bg-surface text-foreground-subtle"
+          : "cursor-pointer border-transparent bg-primary text-primary-foreground hover:bg-primary/90",
       )}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2 text-ui-base">
-        <MessageCirclePlus className="h-4 w-4 shrink-0" />
-        <span className="truncate">{intl.formatMessage({ id: "taskList.newThread" })}</span>
-        <span className="ml-auto shrink-0 text-ui-xs font-normal text-foreground-subtlest">
+      <Plus aria-hidden="true" className="size-4 shrink-0" />
+      <span className="truncate">{intl.formatMessage({ id: "taskList.newThread" })}</span>
+      {newTaskShortcutLabel ? (
+        <kbd className="ml-auto shrink-0 rounded-sm border border-current/30 px-1 font-mono text-ui-xs font-normal">
           {newTaskShortcutLabel}
-        </span>
-      </div>
-    </div>
+        </kbd>
+      ) : null}
+    </button>
   );
 }

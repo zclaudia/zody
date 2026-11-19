@@ -11,13 +11,13 @@
 
 欢迎页是全窗口 overlay，采用左右分栏：
 
-- **左侧品牌栏**（`md` 及以上可见）：`bg-sidebar` + 右侧 `border-border` 分隔。自上而下为品牌行（新 logo + 名称 `zcoder`）、主标语、三条价值说明（任意 provider / 密钥只保存在本机 / 按会话切换模型），底部是一张纯装饰的终端预览卡（`aria-hidden`）。价值说明图标使用 `--color-logo-accent`，该 token 取自新 logo 的薄荷绿，只用于品牌强调，不得替代语义色。
-- **右侧表单栏**：垂直居中，最大宽度 `max-w-sm`。标题 `login.title`（“Welcome to zcoder”）、副标题 `login.description`，下方是 `LoginApiKeyForm`。
-- **窄窗口 / 手机 Web**（`md` 以下）：隐藏左侧品牌栏，表单栏顶部改为展示品牌行（logo + `zcoder`），DOM 顺序保持“品牌 → 标题 → 表单”。
-- 背景为纯 `bg-background`，不再叠加主题 hero 渐变；不使用装饰性渐变。
+- **左侧品牌栏**（`md` 及以上可见）：使用深松绿品牌表面、细点阵及薄荷标记。展示 Zody 标识、主标语、三条价值说明（任意 provider / 密钥只保存在本机 / 按会话切换模型）及纯装饰的终端预览卡（`aria-hidden`）。
+- **右侧表单栏**：在普通应用画布内垂直居中，使用独立卡片承载 `login.title`、`login.description` 及既有 `LoginApiKeyForm`。
+- **窄窗口 / 手机 Web**（`md` 以下）：隐藏左侧品牌栏，表单栏顶部展示 Zody 品牌行，DOM 顺序保持“品牌 → 标题 → 表单”。
+- 品牌面与应用画布在浅色、深色主题下保持区分，不使用大面积色彩渐变。
 - Windows / Linux 继续复用 `DesktopOverlayWindowControls` 与顶部拖拽层，规则见 `DESIGN.md` 的 Full-page desktop overlays。
 
-品牌名 `zcoder` 与新 logo（`packages/ui/src/assets/brand/zcoder-logo.png`，源自 `public/logo/icons/128x128.png`）目前只用于欢迎页；其它界面的品牌替换不在本规则范围内。品牌名是专有名词，不进入 i18n，各语言一致。
+Zody 品牌名和标识通过 `packages/ui/src/brand.ts` 统一提供。品牌名是专有名词，不进入 i18n，各语言一致。
 
 ## API Key 表单
 
@@ -39,7 +39,7 @@
 
 ## 验收场景
 
-1. 首启无 provider：桌面宽窗口展示左右分栏，左侧有 `zcoder` 品牌行与三条价值说明；右侧标题为“Welcome to zcoder”/“欢迎使用 zcoder”。
+1. 首启无 provider：桌面宽窗口展示左右分栏，左侧有 Zody 品牌行与三条价值说明；右侧标题为“Welcome to Zody”/“欢迎使用 Zody”。
 2. 未选择 provider：下拉框展示占位文案，API key 输入框禁用，继续按钮禁用；跳过按钮显示“Skip for now”/“暂时跳过”而非 i18n key。
 3. 选择带 `apiKeyManagementUrl` 的模板：输入框可用并显示“Get API Key”；输入密钥后链接隐藏、继续按钮可用。
 4. 窗口宽度低于 `md`（含手机 Web）：左侧品牌栏隐藏，表单上方展示品牌行。

@@ -13,7 +13,7 @@ This file is meant for coding agents. When generating or editing UI in this repo
 
 The dedicated `text-ui-*` scale is a mandatory repository-wide constraint for application interface typography:
 
-- UI components must use `text-ui-xl`, `text-ui-lg`, `text-ui-base`, `text-ui-caption`, `text-ui-sm`, or `text-ui-xs`.
+- UI components must use `text-ui-xl`, `text-ui-lg`, `text-ui-base`, `text-ui-caption`, `text-ui-sm`, or `text-ui-xs`. `text-ui-display` is reserved for standalone brand-panel headings, not operational UI.
 - Do not introduce Tailwind's built-in `text-base`, `text-sm`, or `text-xs` for application UI.
 - Do not introduce arbitrary UI font sizes such as `text-[13px]` or inline `font-size` values.
 - The only content-level exceptions are code, Diff, and terminal rendering that consume their independent numeric font-size settings. Their surrounding controls, labels, headers, and metadata must still use `text-ui-*`.
@@ -43,6 +43,10 @@ Avoid:
 - playful gradients as the default UI language
 - bright full-surface brand fills
 - ambiguous hierarchy between background, card, and popover surfaces
+
+### Zody Workbench
+
+Zody’s visual identity pairs a warm paper canvas in light mode and deep green-graphite in dark mode with a restrained jade accent. The existing fork logo is the shared mark across setup, personalization, and the new-task surface. Use quiet structural surfaces for persistent tools and reserve jade fills for primary actions; warnings, permissions, and diff states keep their semantic colors. Brand panels can use a fine dot grid, but never a decorative color wash. Workspace metadata uses compact monospace labels and visible rules; the draft heading aligns to the composer rather than floating above a watermark.
 
 ## Theme Modes
 
