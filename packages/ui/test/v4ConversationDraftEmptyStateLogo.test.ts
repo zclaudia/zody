@@ -3,8 +3,9 @@
 import { createElement } from "react";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import darkEmptyStateLogoUrl from "@/assets/Z.svg";
+import { zodyLogoUrl } from "@/brand.js";
 import { ZodyIntlProvider } from "@/i18n/IntlProvider.js";
+import zhCN from "@/i18n/locales/zh-CN.js";
 import { ConversationDraftEmptyState } from "@/v4/ConversationDraftEmptyState.js";
 
 afterEach(() => {
@@ -12,7 +13,7 @@ afterEach(() => {
 });
 
 describe("ConversationDraftEmptyState logo", () => {
-  it("uses the supplied Z.svg asset only in dark mode", () => {
+  it("uses one decorative Zody logo and a localized label in both themes", () => {
     const { container } = render(
       createElement(
         ZodyIntlProvider,
@@ -21,24 +22,13 @@ describe("ConversationDraftEmptyState logo", () => {
       ),
     );
 
-    const lightLogo = container.querySelector("svg");
-    const darkLogo = container.querySelector('[data-v4-draft-logo="dark"]');
-    const logoContainer = darkLogo?.parentElement;
-    const lightLogoClassName = lightLogo?.getAttribute("class") ?? "";
-    const darkLogoClassName = darkLogo?.getAttribute("class") ?? "";
-    const logoContainerClassName = logoContainer?.getAttribute("class") ?? "";
+    const logos = container.querySelectorAll("img");
 
-    expect(lightLogo).not.toBeNull();
-    expect(lightLogoClassName).toContain("dark:hidden");
-    expect(lightLogoClassName).toContain("opacity-70");
-    expect(lightLogoClassName).toContain("mask-image:linear-gradient");
-    expect(darkLogo).not.toBeNull();
-    expect(darkLogo?.getAttribute("src")).toBe(darkEmptyStateLogoUrl);
-    expect(darkLogoClassName).toContain("hidden");
-    expect(darkLogoClassName).toContain("dark:block");
-    expect(darkLogoClassName).not.toContain("opacity-70");
-    expect(darkLogoClassName).not.toContain("mask-image:linear-gradient");
-    expect(logoContainerClassName).not.toContain("opacity-70");
-    expect(logoContainerClassName).not.toContain("mask-image:linear-gradient");
+    expect(logos).toHaveLength(1);
+    expect(logos[0]?.getAttribute("src")).toBe(zodyLogoUrl);
+    expect(logos[0]?.getAttribute("alt")).toBe("");
+    expect(container.querySelector("svg")).toBeNull();
+    expect(container.textContent).toContain("Zody");
+    expect(container.textContent).toContain(zhCN["taskList.newThread"]);
   });
 });

@@ -121,11 +121,13 @@ describe("WelcomeScreen（fork BYOK 引导）", () => {
     const html = renderToStaticMarkup(createElement(WelcomeScreen, { onComplete: vi.fn() }));
 
     expect(html).toContain("overflow-hidden bg-background");
-    // 左侧品牌栏：md 以下隐藏，使用 sidebar 结构色与价值说明。
-    expect(html).toContain("data-testid=\"welcome-brand-panel\"");
+    // 左侧品牌栏：md 以下隐藏，与个性化引导共用品牌表面。
+    expect(html).toContain('data-testid="welcome-brand-panel"');
     expect(html).toContain("hidden");
     expect(html).toContain("md:flex");
-    expect(html).toContain("bg-sidebar");
+    expect(html).toContain("bg-brand-panel");
+    expect(html).toContain("zody-brand-grid");
+    expect(html).toContain("border-card-border bg-card");
     expect(html).toContain("login.hero.title");
     expect(html).toContain("login.hero.anyProvider.title");
     expect(html).toContain("login.hero.localKeys.title");

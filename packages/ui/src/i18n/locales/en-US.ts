@@ -79,9 +79,9 @@ const enUS: Record<string, string> = {
   "occupationOnboarding.error": "Failed to save. Please try again.",
   "occupationOnboarding.stepRole": "Your work",
   "occupationOnboarding.stepPreferences": "Preferences",
-  "occupationOnboarding.heroTitle": "Simple, Fast, Vibe‑Ready!",
+  "occupationOnboarding.heroTitle": "A workspace that works your way.",
   "occupationOnboarding.heroDescription":
-    "Tackle complex goals with multiple agents.\nStay in control, wherever you are.",
+    "Choose how much detail you want to see while Zody works. You can change your preferences anytime.",
   "occupationOnboarding.title": "What do you do?",
   "occupationOnboarding.description": "Choose the closest match to your everyday work.",
   "occupationOnboarding.office": "Office professional",

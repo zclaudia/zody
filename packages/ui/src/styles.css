@@ -211,6 +211,11 @@ html[data-document-hidden] *::after {
   }
 }
 
+@utility zody-brand-grid {
+  background-image: radial-gradient(circle, color-mix(in oklab, var(--color-brand-panel-line) 70%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 /* === 主题变量 === */
 
 @theme {
@@ -219,7 +224,13 @@ html[data-document-hidden] *::after {
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", monospace;
+  --text-ui-display: calc(var(--ui-font-size) + 18px);
   --text-ui-xl: calc(var(--ui-font-size) + 4px);
+  --color-brand-panel: #172a24;
+  --color-brand-panel-foreground: #edf6ef;
+  --color-brand-panel-muted: #b7c9bf;
+  --color-brand-panel-accent: #9ce9c6;
+  --color-brand-panel-line: #425b4f;
   --text-ui-lg: calc(var(--ui-font-size) + 2px);
   --text-ui-base: var(--ui-font-size);
   --text-ui-caption: calc(var(--ui-font-size) - 1px);
@@ -545,11 +556,12 @@ html[data-document-hidden] *::after {
 .theme-zai-light {
   --animated-gradient-text-strong: rgba(13, 13, 13, 1);
   --animated-gradient-text-soft: rgba(13, 13, 13, 0.22);
-  --color-background: #f8f8f8;
-  --color-background-win-alt: #ececee;
-  --color-background-alt: color-mix(in oklab, var(--color-background) 70%, transparent);
-  --color-brand: #000000;
-  --color-logo-accent: #047857;
+  --color-background: #f8f7f2;
+  --color-background-win-alt: #eeeee5;
+  --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 88%, transparent);
+  --color-brand: #14604b;
+  --color-logo-accent: var(--color-brand);
+  --color-ring: var(--color-brand);
   --color-trajectory-user: #2563eb;
   --color-trajectory-assistant: #0f766e;
   --color-trajectory-reasoning: #7c3aed;
@@ -558,16 +570,16 @@ html[data-document-hidden] *::after {
   --color-workflow-rule: rgba(13, 13, 13, 0.055);
   --color-workflow-trace: rgba(13, 13, 13, 0.3);
   --color-workflow-trace-strong: rgba(13, 13, 13, 0.55);
-  --color-accent: #ebf4ff;
+  --color-accent: #e0f0e7;
   --color-find-highlight: #fff4eb;
   --color-find-highlight-active: #ffb26b;
-  --color-border: rgba(13, 13, 13, 0.1);
-  --color-border-hover: rgba(13, 13, 13, 0.15);
-  --color-hover: rgba(13, 13, 13, 0.05);
-  --color-selected: rgba(13, 13, 13, 0.05);
-  --color-header: #ffffff;
-  --color-panel: #ffffff;
-  --color-sidebar: #f0f0f0;
+  --color-border: #dadfd5;
+  --color-border-hover: #bac7bb;
+  --color-hover: rgba(28, 60, 45, 0.06);
+  --color-selected: #dbe9df;
+  --color-header: #fffefa;
+  --color-panel: #fffefa;
+  --color-sidebar: #eeeee5;
   --color-surface: rgba(13, 13, 13, 0.03);
   --color-surface-hover: rgba(13, 13, 13, 0.05);
   --color-card: #ffffff;
@@ -627,18 +639,18 @@ html[data-document-hidden] *::after {
   --color-tab-border: var(--color-border);
   --color-menu: #ffffff;
   --color-menu-hover: #f0f0f0;
-  --color-primary: #000000;
+  --color-primary: #14604b;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #e6e6e6;
+  --color-secondary: #e7ebe2;
   --color-interaction-ask-surface: #ebf4ff;
   --color-interaction-ask-foreground: #0066dd;
   --color-interaction-ask-fill: rgba(70, 191, 114, 0.2);
   --color-interaction-confirmation-surface: #eaf7ee;
   --color-interaction-confirmation-foreground: #166b32;
-  --color-foreground: var(--color-neutral-800);
-  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-800) 60%, transparent);
-  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-800) 40%, transparent);
-  --lucide-subtlest-opacity: 0.4;
+  --color-foreground: #202d26;
+  --color-foreground-subtle: #4f6056;
+  --color-foreground-subtlest: #5e6d62;
+  --lucide-subtlest-opacity: 0.55;
   --color-foreground-inverse: #ffffff;
   --color-success: #1e8a3e;
   --color-success-foreground: #ffffff;
@@ -692,11 +704,12 @@ html[data-document-hidden] *::after {
 .theme-zai-dark {
   --animated-gradient-text-strong: rgba(255, 255, 255, 1);
   --animated-gradient-text-soft: rgba(255, 255, 255, 0.22);
-  --color-background: #161616;
-  --color-background-win-alt: #2b2b2b;
-  --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 60%, transparent);
-  --color-brand: #ffffff;
-  --color-logo-accent: #6ee7b7;
+  --color-background: #151d1a;
+  --color-background-win-alt: #202b26;
+  --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 80%, transparent);
+  --color-brand: #9ce9c6;
+  --color-logo-accent: var(--color-brand);
+  --color-ring: var(--color-brand);
   --color-trajectory-user: #60a5fa;
   --color-trajectory-assistant: #2dd4bf;
   --color-trajectory-reasoning: #a78bfa;
@@ -705,30 +718,30 @@ html[data-document-hidden] *::after {
   --color-workflow-rule: rgba(255, 255, 255, 0.065);
   --color-workflow-trace: rgba(255, 255, 255, 0.35);
   --color-workflow-trace-strong: rgba(255, 255, 255, 0.6);
-  --color-accent: #001d3d;
+  --color-accent: #263e33;
   --color-find-highlight: #542500;
   --color-find-highlight-active: #ff8a30;
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-hover: rgba(255, 255, 255, 0.15);
-  --color-hover: rgba(255, 255, 255, 0.05);
-  --color-selected: rgba(255, 255, 255, 0.1);
-  --color-header: #202020;
-  --color-panel: #202020;
-  --color-sidebar: #161616;
-  --color-surface: rgba(255, 255, 255, 0.05);
-  --color-surface-hover: rgba(255, 255, 255, 0.1);
-  --color-card: #2b2b2b;
+  --color-border: #35463d;
+  --color-border-hover: #577164;
+  --color-hover: rgba(211, 246, 225, 0.06);
+  --color-selected: #31493d;
+  --color-header: #202b26;
+  --color-panel: #202b26;
+  --color-sidebar: #202b26;
+  --color-surface: rgba(211, 246, 225, 0.05);
+  --color-surface-hover: rgba(211, 246, 225, 0.09);
+  --color-card: #26332d;
   --color-card-selected: var(--color-input);
   --color-card-border: var(--color-border);
-  --color-popover: #2b2b2b;
+  --color-popover: #26332d;
   --color-popover-foreground: var(--color-foreground);
-  --color-popover-header: #202020;
+  --color-popover-header: var(--color-header);
   --color-popover-border: var(--color-border);
-  --color-input: #2b2b2b;
+  --color-input: #26332d;
   --color-input-focused: var(--color-input);
   --color-input-border: var(--color-border);
   --color-input-border-hover: var(--color-border-hover);
-  --color-input-border-focused: var(--color-border-hover);
+  --color-input-border-focused: var(--color-brand);
   --color-terminal-bg: var(--color-background);
   --color-terminal-fg: var(--color-foreground);
   --color-terminal-cursor: #f8f8f8;
@@ -774,18 +787,18 @@ html[data-document-hidden] *::after {
   --color-tab-border: var(--color-border);
   --color-menu: #2b2b2b;
   --color-menu-hover: #363636;
-  --color-primary: #ffffff;
-  --color-primary-foreground: #000000;
-  --color-secondary: #363636;
+  --color-primary: #9ce9c6;
+  --color-primary-foreground: #112c21;
+  --color-secondary: #314238;
   --color-interaction-ask-surface: #001d3d;
   --color-interaction-ask-foreground: #80beff;
   --color-interaction-ask-fill: rgba(70, 191, 114, 0.24);
   --color-interaction-confirmation-surface: rgba(70, 191, 114, 0.16);
   --color-interaction-confirmation-foreground: #87d9a4;
-  --color-foreground: var(--color-neutral-300);
-  --color-foreground-subtle: color-mix(in oklab, var(--color-neutral-300) 60%, transparent);
-  --color-foreground-subtlest: color-mix(in oklab, var(--color-neutral-300) 30%, transparent);
-  --lucide-subtlest-opacity: 0.3;
+  --color-foreground: #edf3ee;
+  --color-foreground-subtle: #b3c2b8;
+  --color-foreground-subtlest: #9bac9f;
+  --lucide-subtlest-opacity: 0.55;
   --color-foreground-inverse: #000000;
   --color-success: #46bf72;
   --color-success-foreground: #000000;

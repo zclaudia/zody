@@ -33,8 +33,8 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
       <div className="pointer-events-none absolute left-0 top-0 right-0 z-10 flex h-12 items-center [app-region:drag] platform-windows-desktop:right-[134px] platform-linux-desktop:right-[134px]" />
       <DesktopOverlayWindowControls />
       <WelcomeBrandPanel />
-      <section className="relative z-0 flex min-w-0 flex-1 items-center justify-center overflow-y-auto px-4 py-12 sm:px-6">
-        <div className="flex w-full max-w-sm flex-col gap-8">
+      <section className="relative z-0 flex min-w-0 flex-1 overflow-y-auto px-4 py-12 sm:px-8">
+        <div className="m-auto flex w-full max-w-md flex-col gap-7 rounded-xl border border-card-border bg-card px-5 py-7 sm:px-9 sm:py-9">
           <LoginPanel active onComplete={onComplete} />
         </div>
       </section>
@@ -47,11 +47,11 @@ function WelcomeBrandPanel() {
   return (
     <aside
       data-testid="welcome-brand-panel"
-      className="relative z-0 hidden w-[min(600px,46%)] shrink-0 flex-col justify-between gap-10 overflow-y-auto border-r border-border bg-sidebar px-12 pb-12 pt-24 md:flex lg:px-16"
+      className="zody-brand-grid relative z-0 m-3 hidden w-[min(650px,46%)] shrink-0 flex-col gap-10 overflow-y-auto rounded-xl border border-brand-panel-line bg-brand-panel px-8 pb-8 pt-12 text-brand-panel-foreground md:flex lg:px-14 lg:pb-10 lg:pt-16"
     >
-      <div className="flex flex-col gap-9">
-        <BrandMark />
-        <h2 className="text-3xl font-semibold leading-tight tracking-tight text-foreground">
+      <BrandMark />
+      <div className="my-auto flex flex-col gap-7">
+        <h2 className="max-w-sm text-ui-display font-semibold leading-tight tracking-tight">
           {intl.formatMessage({ id: "login.hero.title" })}
         </h2>
         <ul className="flex flex-col gap-5">
@@ -75,11 +75,16 @@ function WelcomeBrandPanel() {
       {/* 纯装饰的会话预览，读屏无需朗读。 */}
       <div
         aria-hidden="true"
-        className="rounded-lg border border-card-border bg-background px-4 py-3.5 font-mono text-ui-sm/relaxed text-foreground-subtle"
+        className="rounded-lg border border-brand-panel-line bg-brand-panel px-4 py-3.5 font-mono text-ui-sm/relaxed text-brand-panel-muted"
       >
+        <div className="mb-2 flex items-center gap-1 border-b border-brand-panel-line pb-2">
+          <span className="size-1.5 rounded-full bg-brand-panel-accent" />
+          <span className="size-1.5 rounded-full bg-brand-panel-line" />
+          <span className="size-1.5 rounded-full bg-brand-panel-line" />
+        </div>
         <div>
-          <span className="text-logo-accent">›</span>{" "}
-          <span className="text-foreground">
+          <span className="text-brand-panel-accent">›</span>{" "}
+          <span className="text-brand-panel-foreground">
             {intl.formatMessage({ id: "login.hero.preview.prompt" })}
           </span>
         </div>
@@ -107,13 +112,13 @@ function BrandFeature({
     <li className="flex gap-3.5">
       <span
         aria-hidden="true"
-        className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-card-border bg-card text-logo-accent"
+        className="flex size-8 shrink-0 items-center justify-center rounded-md border border-brand-panel-line bg-brand-panel text-brand-panel-accent"
       >
         {icon}
       </span>
       <div className="flex flex-col gap-0.5">
-        <span className="text-ui-base font-medium text-foreground">{title}</span>
-        <span className="text-ui-caption/relaxed text-foreground-subtle">{description}</span>
+        <span className="text-ui-base font-medium">{title}</span>
+        <span className="text-ui-caption/relaxed text-brand-panel-muted">{description}</span>
       </div>
     </li>
   );
@@ -123,7 +128,7 @@ function BrandMark({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <img src={zodyLogoUrl} alt="" width={36} height={36} className="size-9 shrink-0" />
-      <span className="text-ui-lg font-semibold tracking-tight text-foreground">
+      <span className="font-mono text-ui-lg font-semibold tracking-tight">
         {ZODY_BRAND_NAME}
       </span>
     </div>

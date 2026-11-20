@@ -1450,7 +1450,7 @@ export const WorkspaceSidebar = memo(function WorkspaceSidebarComponent({
         >
           <div
             className={cn(
-              "flex flex-col gap-1 px-2",
+              "mx-2 mb-2 flex flex-col gap-1 border-b border-border px-1",
               isWindowsDesktop ? "py-2" : "py-3",
               isWebRemoteControlSidebar && "max-md:pt-11",
             )}
