@@ -30,6 +30,9 @@ import {
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const baselinePath = resolve(repoRoot, "scripts/official-refs-baseline.json");
+// 修复原因：pnpm 10 会把 `--` 原样传给脚本，提示里的 `-- --update-baseline`
+// 会以 Unknown option: -- 失败；直接写 flag，保证建议的命令可执行。
+const updateBaselineHint = "pnpm check:official-refs --update-baseline";
 
 const textExtensions = new Set([
   ".cjs",
@@ -375,7 +378,7 @@ function printBaselineOutcome(report) {
   if (decreases.length > 0) {
     console.log("");
     console.log(
-      `baseline can be tightened: ${decreases.length} file(s) decreased; run \`pnpm check:official-refs -- --update-baseline\``,
+      `baseline can be tightened: ${decreases.length} file(s) decreased; run \`${updateBaselineHint}\``,
     );
     for (const decrease of decreases.slice(0, 30)) {
       console.log(`  ${decrease.path}: ${decrease.count} < ${decrease.baseline}`);
@@ -416,7 +419,7 @@ function main() {
   const baseline = readBaseline();
   if (baseline === null) {
     console.error(
-      `baseline missing: ${relative(repoRoot, baselinePath)}; run \`pnpm check:official-refs -- --update-baseline\` first`,
+      `baseline missing: ${relative(repoRoot, baselinePath)}; run \`${updateBaselineHint}\` first`,
     );
     process.exitCode = 1;
     return;
