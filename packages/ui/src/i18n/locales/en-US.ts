@@ -326,6 +326,7 @@ const enUS: Record<string, string> = {
   "welcome.login": "Login",
   "welcome.loggingIn": "Logging in...",
   "welcome.loginFailed": "Login failed",
+  "login.setup.eyebrow": "Workspace setup",
   "login.title": "Welcome to Zody",
   "login.description": "Connect a model provider to start your first session.",
   "login.hero.title": "Your models, your keys, one workspace.",

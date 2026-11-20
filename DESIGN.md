@@ -46,7 +46,7 @@ Avoid:
 
 ### Zody Workbench
 
-Zody’s visual identity pairs a warm paper canvas in light mode and deep green-graphite in dark mode with a restrained jade accent. The existing fork logo is the shared mark across setup, personalization, and the new-task surface. Use quiet structural surfaces for persistent tools and reserve jade fills for primary actions; warnings, permissions, and diff states keep their semantic colors. Brand panels can use a fine dot grid, but never a decorative color wash. Workspace metadata uses compact monospace labels and visible rules; the draft heading aligns to the composer rather than floating above a watermark.
+Zody Blueprint pairs a cool paper canvas in light mode and ink-blue graphite in dark mode with a focused cobalt accent. Persistent tools use quiet structural surfaces; cobalt is reserved for primary actions, selection, and keyboard focus. Warnings, permissions, and diff states retain their semantic colors. The existing fork logo is shared across setup, personalization, and the new-task surface. Use branch geometry, a fine registration grid on brand surfaces, and compact monospace labels with ruled dividers; never use a decorative color wash. The draft heading aligns to the composer rather than floating above a watermark.
 
 ## Theme Modes
 

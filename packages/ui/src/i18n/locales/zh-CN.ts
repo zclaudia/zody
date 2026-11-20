@@ -311,6 +311,7 @@ const zhCN: Record<string, string> = {
   "welcome.login": "登录",
   "welcome.loggingIn": "登录中...",
   "welcome.loginFailed": "登录失败",
+  "login.setup.eyebrow": "工作台设置",
   "login.title": "欢迎使用 Zody",
   "login.description": "连接一个模型提供方，开始你的第一个会话。",
   "login.hero.title": "你的模型，你的密钥，一个工作区。",

@@ -11,9 +11,9 @@
 
 欢迎页是全窗口 overlay，采用左右分栏：
 
-- **左侧品牌栏**（`md` 及以上可见）：使用深松绿品牌表面、细点阵及薄荷标记。展示 Zody 标识、主标语、三条价值说明（任意 provider / 密钥只保存在本机 / 按会话切换模型）及纯装饰的终端预览卡（`aria-hidden`）。
-- **右侧表单栏**：在普通应用画布内垂直居中，使用独立卡片承载 `login.title`、`login.description` 及既有 `LoginApiKeyForm`。
-- **窄窗口 / 手机 Web**（`md` 以下）：隐藏左侧品牌栏，表单栏顶部展示 Zody 品牌行，DOM 顺序保持“品牌 → 标题 → 表单”。
+- **左侧品牌栏**（`md` 及以上可见）：使用墨夜品牌表面、细点阵及钴蓝强调。展示 Zody 标识、主标语、三条价值说明（任意 provider / 密钥只保存在本机 / 按会话切换模型）及纯装饰的终端预览卡（`aria-hidden`）。
+- **右侧表单栏**：在普通应用画布内垂直居中，使用独立卡片承载带编号的设置标题、`login.description` 及既有 `LoginApiKeyForm`。保留醒目的主操作和更轻的跳过入口，键盘焦点有独立描边。
+- **窄窗口 / 手机 Web**（`md` 以下）：隐藏左侧品牌栏，表单卡片顶部使用同款墨夜点阵、Zody 品牌行及装饰性分支图。DOM 顺序保持“品牌 → 标题 → 表单”。
 - 品牌面与应用画布在浅色、深色主题下保持区分，不使用大面积色彩渐变。
 - Windows / Linux 继续复用 `DesktopOverlayWindowControls` 与顶部拖拽层，规则见 `DESIGN.md` 的 Full-page desktop overlays。
 
