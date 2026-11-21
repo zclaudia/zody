@@ -213,7 +213,10 @@ export function ConversationDraftEmptyState({
         <span className="min-w-0 font-mono text-ui-caption text-foreground-subtle">
           {intl.formatMessage({ id: "taskList.newThread" })}
         </span>
-        <span aria-hidden="true" className="ml-2 h-px min-w-2 flex-1 bg-border" />
+        <span aria-hidden="true" className="ml-2 flex min-w-2 flex-1 items-center">
+          <span className="size-1.5 shrink-0 rotate-45 border border-brand" />
+          <span className="h-px grow bg-border" />
+        </span>
       </div>
       <p
         ref={greetingContainerRef}

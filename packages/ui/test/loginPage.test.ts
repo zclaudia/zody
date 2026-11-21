@@ -128,6 +128,11 @@ describe("WelcomeScreen（fork BYOK 引导）", () => {
     expect(html).toContain("bg-brand-panel");
     expect(html).toContain("zody-brand-grid");
     expect(html).toContain("border-card-border bg-card");
+    expect(html).toContain("welcome-setup-header");
+    expect(html).toContain("login.setup.eyebrow");
+    expect(html.indexOf("login.setup.eyebrow")).toBeLessThan(
+      html.indexOf('data-testid="login-api-key-provider-trigger"'),
+    );
     expect(html).toContain("login.hero.title");
     expect(html).toContain("login.hero.anyProvider.title");
     expect(html).toContain("login.hero.localKeys.title");

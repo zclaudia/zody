@@ -16,7 +16,7 @@ import {
   TID_LOGIN_API_KEY_SKIP_BUTTON,
   testId,
 } from "@zody/shared";
-import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
+import { ArrowRightIcon, Loader2Icon, TriangleAlertIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
@@ -251,21 +251,25 @@ export function LoginApiKeyForm({ onSaved, onSkipped }: LoginApiKeyFormProps) {
         </Alert>
       ) : null}
 
-      <div className="space-y-2">
+      <div className="flex flex-col gap-1 border-t border-border pt-4">
         <Button
           type="button"
-          className="h-10 w-full text-ui-base"
+          className="h-11 w-full justify-between px-3.5 text-ui-base has-data-[icon=inline-end]:pr-3.5 disabled:bg-accent disabled:text-foreground-subtle disabled:opacity-100"
           size="lg"
           data-testid={TID_LOGIN_API_KEY_CONTINUE_BUTTON}
           disabled={!apiKeyValue.trim() || !selectedTemplate || busy}
           onClick={() => void saveApiKeyProvider()}
         >
-          {saving ? <Loader2Icon className="size-4 animate-spin" /> : null}
           {intl.formatMessage({ id: "login.apiKey.continue" })}
+          {saving ? (
+            <Loader2Icon aria-hidden="true" data-icon="inline-end" className="animate-spin" />
+          ) : (
+            <ArrowRightIcon aria-hidden="true" data-icon="inline-end" />
+          )}
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           className="h-10 w-full text-ui-base"
           size="lg"
           data-testid={TID_LOGIN_API_KEY_SKIP_BUTTON}

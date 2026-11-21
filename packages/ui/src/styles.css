@@ -212,8 +212,35 @@ html[data-document-hidden] *::after {
 }
 
 @utility zody-brand-grid {
-  background-image: radial-gradient(circle, color-mix(in oklab, var(--color-brand-panel-line) 70%, transparent) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-image: radial-gradient(circle, color-mix(in oklab, var(--color-brand-panel-line) 60%, transparent) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.welcome-setup-header {
+  background-color: var(--color-brand-panel);
+  color: var(--color-brand-panel-foreground);
+}
+
+@media (min-width: 48rem) {
+  .welcome-setup-header {
+    background: none;
+    color: var(--color-foreground);
+  }
+}
+
+.welcome-setup-form :is(button, input):focus-visible {
+  outline: 2px solid var(--color-ring) !important;
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+.welcome-setup-form :is(input, [role="combobox"]):enabled {
+  border-color: var(--color-input-border-hover);
+}
+
+.welcome-setup-form :is(button, input):focus-visible {
+    outline-color: Highlight !important;
+  }
 }
 
 /* === 主题变量 === */
@@ -226,11 +253,11 @@ html[data-document-hidden] *::after {
     "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", monospace;
   --text-ui-display: calc(var(--ui-font-size) + 18px);
   --text-ui-xl: calc(var(--ui-font-size) + 4px);
-  --color-brand-panel: #172a24;
-  --color-brand-panel-foreground: #edf6ef;
-  --color-brand-panel-muted: #b7c9bf;
-  --color-brand-panel-accent: #9ce9c6;
-  --color-brand-panel-line: #425b4f;
+  --color-brand-panel: #121a30;
+  --color-brand-panel-foreground: #f4f6ff;
+  --color-brand-panel-muted: #b6c2df;
+  --color-brand-panel-accent: #a7baff;
+  --color-brand-panel-line: #334365;
   --text-ui-lg: calc(var(--ui-font-size) + 2px);
   --text-ui-base: var(--ui-font-size);
   --text-ui-caption: calc(var(--ui-font-size) - 1px);
@@ -556,10 +583,10 @@ html[data-document-hidden] *::after {
 .theme-zai-light {
   --animated-gradient-text-strong: rgba(13, 13, 13, 1);
   --animated-gradient-text-soft: rgba(13, 13, 13, 0.22);
-  --color-background: #f8f7f2;
-  --color-background-win-alt: #eeeee5;
+  --color-background: #f3f5f9;
+  --color-background-win-alt: #e9edf4;
   --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 88%, transparent);
-  --color-brand: #14604b;
+  --color-brand: #344fd0;
   --color-logo-accent: var(--color-brand);
   --color-ring: var(--color-brand);
   --color-trajectory-user: #2563eb;
@@ -570,16 +597,16 @@ html[data-document-hidden] *::after {
   --color-workflow-rule: rgba(13, 13, 13, 0.055);
   --color-workflow-trace: rgba(13, 13, 13, 0.3);
   --color-workflow-trace-strong: rgba(13, 13, 13, 0.55);
-  --color-accent: #e0f0e7;
+  --color-accent: #e9eeff;
   --color-find-highlight: #fff4eb;
   --color-find-highlight-active: #ffb26b;
-  --color-border: #dadfd5;
-  --color-border-hover: #bac7bb;
-  --color-hover: rgba(28, 60, 45, 0.06);
-  --color-selected: #dbe9df;
-  --color-header: #fffefa;
-  --color-panel: #fffefa;
-  --color-sidebar: #eeeee5;
+  --color-border: #d5ddea;
+  --color-border-hover: #a6b3ca;
+  --color-hover: rgba(23, 39, 76, 0.06);
+  --color-selected: #e2e9ff;
+  --color-header: #fafbfe;
+  --color-panel: #fafbfe;
+  --color-sidebar: var(--color-background-win-alt);
   --color-surface: rgba(13, 13, 13, 0.03);
   --color-surface-hover: rgba(13, 13, 13, 0.05);
   --color-card: #ffffff;
@@ -634,22 +661,22 @@ html[data-document-hidden] *::after {
   --color-usage-heatmap-2: color-mix(in oklab, #0b7fff 36%, var(--color-surface));
   --color-usage-heatmap-3: color-mix(in oklab, #0b7fff 58%, var(--color-surface));
   --color-usage-heatmap-4: color-mix(in oklab, #0066dd 82%, var(--color-surface));
-  --color-tab: #f0f0f0;
-  --color-tab-active: #ffffff;
+  --color-tab: var(--color-background-win-alt);
+  --color-tab-active: var(--color-card);
   --color-tab-border: var(--color-border);
-  --color-menu: #ffffff;
-  --color-menu-hover: #f0f0f0;
-  --color-primary: #14604b;
+  --color-menu: var(--color-popover);
+  --color-menu-hover: var(--color-accent);
+  --color-primary: var(--color-brand);
   --color-primary-foreground: #ffffff;
-  --color-secondary: #e7ebe2;
+  --color-secondary: #e8edf6;
   --color-interaction-ask-surface: #ebf4ff;
   --color-interaction-ask-foreground: #0066dd;
   --color-interaction-ask-fill: rgba(70, 191, 114, 0.2);
   --color-interaction-confirmation-surface: #eaf7ee;
   --color-interaction-confirmation-foreground: #166b32;
-  --color-foreground: #202d26;
-  --color-foreground-subtle: #4f6056;
-  --color-foreground-subtlest: #5e6d62;
+  --color-foreground: #172138;
+  --color-foreground-subtle: #4d5b74;
+  --color-foreground-subtlest: #5f6c83;
   --lucide-subtlest-opacity: 0.55;
   --color-foreground-inverse: #ffffff;
   --color-success: #1e8a3e;
@@ -704,10 +731,10 @@ html[data-document-hidden] *::after {
 .theme-zai-dark {
   --animated-gradient-text-strong: rgba(255, 255, 255, 1);
   --animated-gradient-text-soft: rgba(255, 255, 255, 0.22);
-  --color-background: #151d1a;
-  --color-background-win-alt: #202b26;
+  --color-background: #111624;
+  --color-background-win-alt: #171e2e;
   --color-background-alt: color-mix(in oklab, var(--color-background-win-alt) 80%, transparent);
-  --color-brand: #9ce9c6;
+  --color-brand: #a7baff;
   --color-logo-accent: var(--color-brand);
   --color-ring: var(--color-brand);
   --color-trajectory-user: #60a5fa;
@@ -718,26 +745,26 @@ html[data-document-hidden] *::after {
   --color-workflow-rule: rgba(255, 255, 255, 0.065);
   --color-workflow-trace: rgba(255, 255, 255, 0.35);
   --color-workflow-trace-strong: rgba(255, 255, 255, 0.6);
-  --color-accent: #263e33;
+  --color-accent: #222d4d;
   --color-find-highlight: #542500;
   --color-find-highlight-active: #ff8a30;
-  --color-border: #35463d;
-  --color-border-hover: #577164;
-  --color-hover: rgba(211, 246, 225, 0.06);
-  --color-selected: #31493d;
-  --color-header: #202b26;
-  --color-panel: #202b26;
-  --color-sidebar: #202b26;
-  --color-surface: rgba(211, 246, 225, 0.05);
-  --color-surface-hover: rgba(211, 246, 225, 0.09);
-  --color-card: #26332d;
+  --color-border: #303b52;
+  --color-border-hover: #647497;
+  --color-hover: rgba(216, 225, 255, 0.07);
+  --color-selected: #2a3962;
+  --color-header: #1d2536;
+  --color-panel: #1a2232;
+  --color-sidebar: var(--color-background-win-alt);
+  --color-surface: rgba(216, 225, 255, 0.05);
+  --color-surface-hover: rgba(216, 225, 255, 0.09);
+  --color-card: #1c2435;
   --color-card-selected: var(--color-input);
   --color-card-border: var(--color-border);
-  --color-popover: #26332d;
+  --color-popover: #222c41;
   --color-popover-foreground: var(--color-foreground);
   --color-popover-header: var(--color-header);
   --color-popover-border: var(--color-border);
-  --color-input: #26332d;
+  --color-input: #171f30;
   --color-input-focused: var(--color-input);
   --color-input-border: var(--color-border);
   --color-input-border-hover: var(--color-border-hover);
@@ -782,22 +809,22 @@ html[data-document-hidden] *::after {
   --color-usage-heatmap-2: color-mix(in oklab, #4099ff 42%, var(--color-surface));
   --color-usage-heatmap-3: color-mix(in oklab, #4099ff 62%, var(--color-surface));
   --color-usage-heatmap-4: color-mix(in oklab, #80beff 78%, var(--color-surface));
-  --color-tab: #202020;
-  --color-tab-active: #161616;
+  --color-tab: var(--color-header);
+  --color-tab-active: var(--color-background);
   --color-tab-border: var(--color-border);
-  --color-menu: #2b2b2b;
-  --color-menu-hover: #363636;
-  --color-primary: #9ce9c6;
-  --color-primary-foreground: #112c21;
-  --color-secondary: #314238;
+  --color-menu: var(--color-popover);
+  --color-menu-hover: #2d3953;
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: #141e3c;
+  --color-secondary: #29354e;
   --color-interaction-ask-surface: #001d3d;
   --color-interaction-ask-foreground: #80beff;
   --color-interaction-ask-fill: rgba(70, 191, 114, 0.24);
   --color-interaction-confirmation-surface: rgba(70, 191, 114, 0.16);
   --color-interaction-confirmation-foreground: #87d9a4;
-  --color-foreground: #edf3ee;
-  --color-foreground-subtle: #b3c2b8;
-  --color-foreground-subtlest: #9bac9f;
+  --color-foreground: #edf1fc;
+  --color-foreground-subtle: #b9c4dc;
+  --color-foreground-subtlest: #9ba9c5;
   --lucide-subtlest-opacity: 0.55;
   --color-foreground-inverse: #000000;
   --color-success: #46bf72;

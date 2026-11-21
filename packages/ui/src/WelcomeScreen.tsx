@@ -9,7 +9,7 @@
  * （spec: docs/ui/login-page.md）。
  */
 import type { ReactNode } from "react";
-import { ArrowLeftRightIcon, CpuIcon, LockIcon } from "lucide-react";
+import { ArrowLeftRightIcon, CpuIcon, GitForkIcon, LockIcon } from "lucide-react";
 import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { cn } from "@/components/lib/utils.js";
 import { DesktopOverlayWindowControls } from "@/DesktopOverlayWindowControls.js";
@@ -33,8 +33,8 @@ export function WelcomeScreen({ onComplete }: WelcomeScreenProps) {
       <div className="pointer-events-none absolute left-0 top-0 right-0 z-10 flex h-12 items-center [app-region:drag] platform-windows-desktop:right-[134px] platform-linux-desktop:right-[134px]" />
       <DesktopOverlayWindowControls />
       <WelcomeBrandPanel />
-      <section className="relative z-0 flex min-w-0 flex-1 overflow-y-auto px-4 py-12 sm:px-8">
-        <div className="m-auto flex w-full max-w-md flex-col gap-7 rounded-xl border border-card-border bg-card px-5 py-7 sm:px-9 sm:py-9">
+      <section className="relative z-0 flex min-w-0 flex-1 overflow-y-auto px-5 py-12 sm:px-8">
+        <div className="m-auto flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-card-border bg-card">
           <LoginPanel active onComplete={onComplete} />
         </div>
       </section>
@@ -147,19 +147,32 @@ export function LoginPanel({ active, onComplete }: LoginPanelProps) {
   void active;
   return (
     <>
-      <header className="flex flex-col gap-6">
+      <header className="welcome-setup-header zody-brand-grid relative isolate flex flex-col gap-6 overflow-hidden border-b border-brand-panel-line px-6 pb-7 pt-5 sm:px-9 md:border-card-border md:pt-8">
+        <GitForkIcon
+          aria-hidden="true"
+          strokeWidth={0.8}
+          className="pointer-events-none absolute -right-3 -top-3 -z-10 size-36 -rotate-90 text-brand-panel-line md:hidden"
+        />
         {/* 窄窗口隐藏左侧品牌栏，品牌行移到表单上方，DOM 顺序保持“品牌 → 标题 → 表单”。 */}
         <BrandMark className="md:hidden" />
-        <div className="flex flex-col gap-1.5">
-          <h1 className="text-ui-xl font-semibold tracking-tight text-foreground">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2.5 font-mono text-ui-xs font-semibold uppercase tracking-widest text-brand-panel-accent md:text-brand">
+            <span aria-hidden="true" className="rounded-sm border border-current px-1.5 py-0.5">
+              01
+            </span>
+            <span>{intl.formatMessage({ id: "login.setup.eyebrow" })}</span>
+          </div>
+          <h1 className="text-ui-display font-semibold leading-tight tracking-tight">
             {intl.formatMessage({ id: "login.title" })}
           </h1>
-          <p className="text-ui-base/relaxed text-foreground-subtle">
+          <p className="max-w-xs text-ui-base/relaxed text-brand-panel-muted md:text-foreground-subtle">
             {intl.formatMessage({ id: "login.description" })}
           </p>
         </div>
       </header>
-      <LoginApiKeyForm onSaved={() => onComplete("apiKey")} onSkipped={() => onComplete("skip")} />
+      <div className="welcome-setup-form px-6 pb-5 pt-6 sm:px-9">
+        <LoginApiKeyForm onSaved={() => onComplete("apiKey")} onSkipped={() => onComplete("skip")} />
+      </div>
     </>
   );
 }
