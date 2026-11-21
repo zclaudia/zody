@@ -49,7 +49,7 @@ import {
 } from "@/lib/settingsNavigation.js";
 import { runWorkspaceVisibleCommand } from "@/lib/workspaceVisibleCommand.js";
 import { ZODY_PRODUCT_DOCS_URL } from "@/lib/productDocs.js";
-import appLogoUrl from "@/assets/provider-icons/logo-zai.svg";
+import { zodyLogoUrl } from "@/brand.js";
 import { resolveTheme } from "@/useTheme.js";
 import { WorkspaceShellLayout } from "@/app-shell/WorkspaceShellLayout.js";
 import { useAppChromeState } from "@/app-shell/useAppChromeState.js";
@@ -1267,7 +1267,7 @@ export function App({
           fileChangeFindNavigationRequestId={fileChangeFindState.navigationRequestId}
           fileChangeFindQuery={fileChangeFindState.query}
           onFileChangeFindMatchCountChange={setFileChangeFindMatchCount}
-          appLogoUrl={appLogoUrl}
+          appLogoUrl={zodyLogoUrl}
           platform={platform}
           reloadSessionDisabled={reloadSessionDisabled}
           reloadSessionPending={reloadSessionPending}

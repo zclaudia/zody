@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { zodyLogoUrl } from "@/brand.js";
 
 vi.mock("@/components/ai-elements/message.js", () => ({
   MessageResponse: ({ children }: { children: unknown }) =>
@@ -10,10 +11,6 @@ vi.mock("@/components/ai-elements/message.js", () => ({
 vi.mock("@/components/ui/button.js", () => ({
   Button: ({ children }: { children: unknown }) =>
     createElement("button", { type: "button" }, children),
-}));
-
-vi.mock("@/components/ui/GlmMonochromeIcon.js", () => ({
-  GlmMonochromeIcon: () => createElement("span", { "data-testid": "glm-icon" }),
 }));
 
 vi.mock("@/components/ui/dialog.js", () => ({
@@ -58,6 +55,7 @@ describe("PostUpdateReleaseNotesDialog", () => {
     );
 
     expect(html).toContain('data-testid="post-update-release-notes-dialog"');
+    expect(html).toContain(`src="${zodyLogoUrl}" alt="Zody"`);
     expect(html).toContain("Release v0.1.25");
     expect(html).toContain("## New Features");
     expect(html).toContain("I know");

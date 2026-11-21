@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Zody Robot Z app icon</title>
+  <path fill="#344FD0" d="M85 25h86c46 0 60 14 60 60v86c0 46-14 60-60 60H85c-46 0-60-14-60-60V85c0-46 14-60 60-60Z"/>
+  <path fill="#FFFFFF" fill-rule="evenodd" transform="translate(0 9)"
+        d="M118 76V58a10 10 0 0 1 20 0v18h31a23 23 0 0 1 23 23v12h6a9 9 0 0 1 9 9v18a9 9 0 0 1-9 9h-6v12a23 23 0 0 1-23 23H87a23 23 0 0 1-23-23v-12h-6a9 9 0 0 1-9-9v-18a9 9 0 0 1 9-9h6V99a23 23 0 0 1 23-23Z
+           M83 99h90v15l-56 34h48l8 8v7H83v-15l56-34H91l-8-8Z
+           M99 131a8 8 0 1 0-16 0 8 8 0 1 0 16 0Z
+           M173 131a8 8 0 1 0-16 0 8 8 0 1 0 16 0Z"/>
+</svg>

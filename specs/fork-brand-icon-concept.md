@@ -1,5 +1,7 @@
 # Fork 独立品牌图标提案
 
+本文记录早期“分叉向前”设计。当前应用图标采用「机器人 Z」，接入方式见 [应用图标接入](fork-app-icon-integration.md)。
+
 ## 目标与范围
 
 为基于 ZCode 独立迭代的项目设计新的应用图标。当前尚未确定独立品牌名，采用无文字符号。初轮设计提案 PNG 保存在 `docs/brand/`。用户已选定缩小主体后的第一版，并授权替换 Desktop 与 Android 应用图标；接入规则见 [应用图标接入](fork-app-icon-integration.md)。

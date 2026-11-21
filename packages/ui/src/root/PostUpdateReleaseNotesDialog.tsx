@@ -1,8 +1,8 @@
 import type { PostUpdateReleaseNotesPayload } from "@zody/shared";
+import { ZODY_BRAND_NAME, zodyLogoUrl } from "@/brand.js";
 import { MessageResponse } from "@/components/ai-elements/message.js";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/components/lib/utils.js";
-import { GlmMonochromeIcon } from "@/components/ui/GlmMonochromeIcon.js";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog.js";
 import { useZodyIntl } from "@/i18n/IntlProvider.js";
 import { useZodyStoreWithDefault } from "@/store/StoreProvider.js";
@@ -45,7 +45,7 @@ export function PostUpdateReleaseNotesDialog({
       >
         <div className="flex flex-col px-8 py-6">
           <div className="flex min-w-0 shrink-0 items-center gap-2.5">
-            <GlmMonochromeIcon className="size-5 shrink-0" alt="Zody" />
+            <img src={zodyLogoUrl} alt={ZODY_BRAND_NAME} className="size-5 shrink-0" />
             <div className="min-w-0 flex-1">
               <DialogTitle className="text-lg leading-snug tracking-tight text-foreground">
                 {dialogHeading}
