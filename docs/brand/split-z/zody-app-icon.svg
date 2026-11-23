@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+  <title id="title">Zody app icon</title>
+  <path fill="#344FD0" d="M85 25h86c46 0 60 14 60 60v86c0 46-14 60-60 60H85c-46 0-60-14-60-60V85c0-46 14-60 60-60Z"/>
+  <g fill="#FFFFFF" transform="translate(27.2 27.2) scale(.7875)">
+    <path d="M52 60h152v28l-56 46-25-24 22-18H68L52 76Z"/>
+    <path d="M204 196H52v-28l56-46 25 24-22 18h77l16 16Z"/>
+  </g>
+</svg>
