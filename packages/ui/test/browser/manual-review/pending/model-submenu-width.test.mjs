@@ -61,15 +61,30 @@ for (const width of [390, 1200]) {
   for (const theme of ["light", "dark"]) {
     for (const name of ["short", "long", "extreme"]) {
       test(`model submenu ${width}/${theme}/${name}`, async () => {
-        const page = await browser.newPage({ viewport: { width, height: 700 } });
+        const isMobile = width === 390;
+        const page = await browser.newPage({
+          viewport: { width, height: 700 },
+          isMobile,
+          hasTouch: isMobile,
+        });
         const errors = [];
         page.on("pageerror", (error) => errors.push(error.message));
         try {
           await page.goto(`${origin}fixture?theme=${theme}&name=${name}`);
-          await page.getByRole("button", { name: "Models", exact: true }).click();
+          const trigger = page.getByRole("button", { name: "Models", exact: true });
           const provider = page.locator("[data-model-provider-key=custom]");
-          await provider.focus();
-          await page.keyboard.press("ArrowRight");
+          if (isMobile) {
+            await trigger.tap();
+            await provider.tap();
+          } else {
+            await trigger.click();
+            if (name === "short") {
+              await provider.hover();
+            } else {
+              await provider.focus();
+              await page.keyboard.press("ArrowRight");
+            }
+          }
           const menu = page.locator('[data-slot="dropdown-menu-sub-content"]');
           await menu.waitFor();
           await menu.evaluate(async (element) => {
@@ -109,7 +124,13 @@ for (const width of [390, 1200]) {
           }
           await mkdir(artifacts, { recursive: true });
           await page.screenshot({ path: join(artifacts, `${width}-${theme}-${name}.png`) });
-          await menu.getByRole("menuitemradio").last().click();
+          // 通过真实命中验证模型项没有被主菜单裁掉。
+          const model = menu.getByRole("menuitemradio").last();
+          if (isMobile) {
+            await model.tap();
+          } else {
+            await model.click();
+          }
           await page.getByTestId("selected").filter({ hasText: "vision" }).waitFor();
           assert.deepEqual(errors, []);
         } finally {
