@@ -486,23 +486,51 @@ describe("ModelTrajectoryPaneParts", () => {
       "utf8",
     );
     const stylesSource = readFileSync("packages/ui/src/styles.css", "utf8");
-    for (const token of [
-      "--color-trajectory-user",
-      "--color-trajectory-assistant",
-      "--color-trajectory-reasoning",
-      "--color-trajectory-tool-call",
-      "--color-trajectory-tool-result",
-    ]) {
-      expect(stylesSource.match(new RegExp(`${token}:`, "g"))).toHaveLength(4);
-    }
-    expect(stylesSource.match(/--color-trajectory-assistant: #0f766e/g)).toHaveLength(2);
-    expect(stylesSource.match(/--color-trajectory-assistant: #2dd4bf/g)).toHaveLength(2);
-    expect(stylesSource.match(/--color-trajectory-reasoning: #7c3aed/g)).toHaveLength(2);
-    expect(stylesSource.match(/--color-trajectory-reasoning: #a78bfa/g)).toHaveLength(2);
-    expect(stylesSource.match(/--color-trajectory-tool-call: #d97706/g)).toHaveLength(2);
-    expect(stylesSource.match(/--color-trajectory-tool-call: #f59e0b/g)).toHaveLength(2);
-    expect(stylesSource.match(/--color-trajectory-tool-result: #0284c7/g)).toHaveLength(2);
-    expect(stylesSource.match(/--color-trajectory-tool-result: #38bdf8/g)).toHaveLength(2);
+    // Cloud Iris 为轨迹角色定义了各自的配色，按样式作用域校验回退主题与实际主题。
+    const trajectoryThemeBlocks = stylesSource.matchAll(
+      /^(@theme|\.dark|\.theme-zai-(?:light|dark))\s*\{([^}]*)\}/gm,
+    );
+    const trajectoryColorsByTheme = Object.fromEntries(
+      Array.from(trajectoryThemeBlocks, ([, selector, declarations]) => [
+        selector,
+        Object.fromEntries(
+          Array.from(
+            declarations.matchAll(/^\s*--color-trajectory-([\w-]+):\s*([^;]+);/gm),
+            ([, role, color]) => [role, color.trim()],
+          ),
+        ),
+      ]),
+    );
+    expect(trajectoryColorsByTheme).toEqual({
+      "@theme": {
+        user: "#2563eb",
+        assistant: "#0f766e",
+        reasoning: "#7c3aed",
+        "tool-call": "#d97706",
+        "tool-result": "#0284c7",
+      },
+      ".dark": {
+        user: "#60a5fa",
+        assistant: "#2dd4bf",
+        reasoning: "#a78bfa",
+        "tool-call": "#f59e0b",
+        "tool-result": "#38bdf8",
+      },
+      ".theme-zai-light": {
+        user: "#5e548e",
+        assistant: "#2f7d6d",
+        reasoning: "#7a66a8",
+        "tool-call": "#b97524",
+        "tool-result": "#3b7ea1",
+      },
+      ".theme-zai-dark": {
+        user: "#a59dc9",
+        assistant: "#5fb8a3",
+        reasoning: "#b4a2d9",
+        "tool-call": "#d9a45b",
+        "tool-result": "#78b3d4",
+      },
+    });
     expect(sectionTitleSource).not.toContain("SquareArrowRightEnterIcon");
     expect(sectionTitleSource).not.toContain("SquareArrowRightExitIcon");
     expect(sectionTitleSource).not.toContain("ArrowDownToLineIcon");

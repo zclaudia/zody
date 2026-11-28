@@ -445,7 +445,7 @@ describe("ProviderModelMetadataDialog", () => {
     expect(html).not.toContain("启用");
     expect(html).not.toContain('data-model-identity-enabled-layout="true"');
     expect(html).toContain('data-no-model-drag="true"');
-    expect(html).toContain("max-h-[min(48rem,calc(100vh-4rem))]");
+    expect(html).toContain("max-h-[min(48rem,calc(100dvh-4rem))]");
     const orderedGroups = ["basic", "tokens", "modalities", "capabilities"];
     const indexes = orderedGroups.map((group) =>
       html.indexOf(`data-model-settings-group="${group}"`),

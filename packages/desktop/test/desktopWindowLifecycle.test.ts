@@ -1,3 +1,4 @@
+import { InternalChannels } from "@zody/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("../src/main/databaseStartupRelay.js", () => ({
   getDatabaseStartupPortPayload: () => ({ databaseStartupId: "window-host-test" }),
@@ -216,7 +217,7 @@ describe("desktopWindowLifecycle createWindow", () => {
       [expect.objectContaining({ id: "port-2" })],
     );
     expect(webContents.postMessage).toHaveBeenCalledWith(
-      "zcode:service-port",
+      InternalChannels.ServicePort,
       { databaseStartupId: "window-host-test" },
       [expect.objectContaining({ id: "port-1" })],
     );

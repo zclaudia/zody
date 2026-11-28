@@ -85,6 +85,7 @@ const settingsMock = vi.hoisted(() => ({
       enabled: true,
       gatewayUrl: "https://gateway.example.com/",
       namespace: "zcode",
+      allowMobileOpenArbitraryPath: undefined as boolean | undefined,
     },
   },
 }));
@@ -149,6 +150,7 @@ function renderSection() {
 describe("RemoteAccessSection", () => {
   beforeEach(() => {
     remoteAccessStatusMock.status = makeStatus();
+    settingsMock.settings.remoteAccess.allowMobileOpenArbitraryPath = undefined;
   });
 
   afterEach(() => {
@@ -178,10 +180,15 @@ describe("RemoteAccessSection", () => {
     expect(platformMock.getRemoteAccessCredentialStatus).toHaveBeenCalled();
   });
 
-  it("保存配置时归一化地址并整对象写回 remoteAccess", async () => {
+  it.each([
+    { label: "旧配置未记录开关", saved: undefined, expected: true },
+    { label: "已关闭任意目录访问", saved: false, expected: false },
+  ])("保存配置时归一化地址并整对象写回 remoteAccess（$label）", async ({ saved, expected }) => {
+    settingsMock.settings.remoteAccess.allowMobileOpenArbitraryPath = saved;
     const view = renderSection();
-    const gatewayUrlInput = view.getByTestId("remote-access-gateway-url");
-    fireEvent.change(gatewayUrlInput, { target: { value: "https://gateway.example.com/" } });
+    fireEvent.change(view.getByTestId("remote-access-gateway-url"), {
+      target: { value: "https://gateway.example.com/" },
+    });
 
     fireEvent.click(view.getByTestId("remote-access-save-config"));
 
@@ -191,6 +198,7 @@ describe("RemoteAccessSection", () => {
           enabled: true,
           gatewayUrl: "https://gateway.example.com",
           namespace: "zcode",
+          allowMobileOpenArbitraryPath: expected,
         },
       }),
     );
