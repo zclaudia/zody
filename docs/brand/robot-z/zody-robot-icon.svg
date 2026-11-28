@@ -2,19 +2,19 @@
   <title id="title">Zody folded-paper robot Z</title>
   <defs>
     <linearGradient id="crease" x2="0" y2="1" gradientUnits="objectBoundingBox">
-      <stop stop-color="#BCC5DD"/>
-      <stop offset=".45" stop-color="#E9EBF2"/>
+      <stop stop-color="#D0C6E3"/>
+      <stop offset=".45" stop-color="#F0EAF8"/>
       <stop offset="1" stop-color="#FFFFFF"/>
     </linearGradient>
   </defs>
-  <path id="tile" fill="#4163B5" d="M410 125H870Q1155 125 1155 388V892Q1155 1155 884 1155H396Q125 1155 125 892V388Q125 125 410 125Z"/>
+  <path id="tile" fill="#9A8EBE" d="M410 125H870Q1155 125 1155 388V892Q1155 1155 884 1155H396Q125 1155 125 892V388Q125 125 410 125Z"/>
   <g id="robot" transform="translate(29 25) scale(.9765625)">
     <path fill="#FFFFFF" d="M607 360v-45a45 45 0 1 1 34 0v45h177l80 80q17 17 17 44v68q0 24-18 40L612 825h243l53 54v51l-47 44H402q-35 0-49-23-8-12-8-32v-62q0-24 17-43l282-235H407l-68-66v-84l68-69Z"/>
     <path fill="url(#crease)" d="M644 579h261q-4 8-13 17l-26 21H599Z"/>
-    <path fill="#B0C0F5" d="M778 579l131-120q6 12 6 25v68q0 16-8 27Z"/>
-    <path fill="#B0C0F5" d="M345 857q0-32 30-32h128L354 947q-9-13-9-28Z"/>
-    <rect x="409" y="403" width="420" height="130" rx="65" fill="#192D3E"/>
-    <g fill="#BDE9F6">
+    <path fill="#DAD1EF" d="M778 579l131-120q6 12 6 25v68q0 16-8 27Z"/>
+    <path fill="#DAD1EF" d="M345 857q0-32 30-32h128L354 947q-9-13-9-28Z"/>
+    <rect x="409" y="403" width="420" height="130" rx="65" fill="#272239"/>
+    <g fill="#EEE7FA">
       <rect x="512" y="427" width="48" height="78" rx="24"/>
       <rect x="689" y="427" width="48" height="78" rx="24"/>
     </g>

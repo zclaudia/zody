@@ -2,7 +2,7 @@
 
 ## 产品规则
 
-采用用户选定的微圆角折纸 Z 机器人。`docs/brand/robot-z/zody-robot-icon.svg` 是应用图标母版，中蓝底板上，白色纸带折成 Z，上横嵌入深色面罩和冰蓝双眼。右上、左下折返处采用小圆角，浅蓝三角折面的内侧保持直线。`docs/brand/robot-z/zody-robot-mark.svg` 提供同一机器人的单色镂空轮廓，供 Android 主题图标使用。图标沿用现有资源路径、应用名称和包标识。
+采用用户选定的微圆角折纸 Z 机器人。`docs/brand/robot-z/zody-robot-icon.svg` 是应用图标母版，使用与 Cloud Iris 主题协调的低饱和淡紫底板。白色纸带折成 Z，上横嵌入深紫灰面罩和浅紫双眼。右上、左下折返处采用小圆角，浅紫三角折面的内侧保持直线。`docs/brand/robot-z/zody-robot-mark.svg` 提供同一机器人的单色镂空轮廓，供 Android 主题图标使用。图标沿用现有资源路径、应用名称和包标识。
 
 macOS 入口沿用 1024×1024 画布中的 824px 底板和 100px 透明边距，直接使用母版构图。其他满版资源按母版底板边界裁剪透明留白，并保留圆角外的透明区域。
 
@@ -13,7 +13,7 @@ macOS 入口沿用 1024×1024 画布中的 824px 底板和 100px 透明边距，
 - Web 预渲染启动页读取 Web 公共目录中的同一份 128px 品牌图。桌面自定义“关于”窗口将启动壳品牌 PNG 内嵌为 data URL，兼容窗口的内容安全策略。
 - 应用内其他品牌入口：Windows 标题区、折叠侧栏及更新说明直接复用 UI 包 `brand.ts` 提供的应用图标。供应商图标继续用于模型和供应商相关界面。
 - 公共资源：`public/logo/icons/` 与 `public/icon_512@2x.png` 从同一母版导出。Web favicon 与 `index.html` 内嵌的 32px PNG 同步更新，保持现有同源约束。
-- Android 沿用 Manifest 的 `@mipmap/ic_launcher` 和 `@mipmap/ic_launcher_round`。API 24–25 使用 mdpi 到 xxxhdpi 的静态 WebP，分别为圆角底板和圆形底板。API 26+ 由系统裁切中蓝背景，彩色前景保留面罩、眼睛与折面；主题图标以镂空面罩和实心双眼表达同一 Z 形。
+- Android 沿用 Manifest 的 `@mipmap/ic_launcher` 和 `@mipmap/ic_launcher_round`。API 24–25 使用 mdpi 到 xxxhdpi 的静态 WebP，分别为圆角底板和圆形底板。API 26+ 由系统裁切与母版同色的淡紫背景，彩色前景保留面罩、眼睛与折面；主题图标以镂空面罩和实心双眼表达同一 Z 形。
 - Android adaptive 图层为 108dp 画布。机器人约 44dp 宽，等比放置于中央，完整主体位于直径 66dp 的安全圆内。
 
 ## 验收场景

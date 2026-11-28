@@ -50,6 +50,7 @@ Zody adopts the **Cloud Iris** design language: a calm, modern frosted-glass wor
 
 - **Light mode (Cloud Iris Light)**: Pairs a pearl-mist canvas with delicate lavender-tinted outer chrome and translucent glass overlays. A muted iris accent (`--color-brand`) carries primary actions, active indicators, and keyboard focus without bright corporate-blue saturation.
 - **Dark mode (Cloud Iris Dark)**: Uses clean, low-noise graphite glass surfaces with no neon or colorful background glow. Primary actions use a soft mist-white fill (`--color-primary` with dark ink foreground) to avoid harsh glowing buttons, while muted iris (`--color-brand`) is reserved for subtle focus rings, active dots, links, and fine accents.
+- **App icon**: The folded-paper Z robot uses a muted lavender tile, white paper, and a dark iris visor across both themes.
 - **Glass & fallback discipline**: Apply frosted translucency (`backdrop-blur`) to window shells (macOS vibrancy), menus, popovers, and dialogs; keep primary reading canvases, code blocks, and terminals crisp and high-contrast. Windows, Linux, and Web use opaque low-noise tinted bases so surfaces never muddy or wash out.
 - Warnings, permissions, and diff states retain their semantic colors. Brand panels (setup, onboarding, workspace hero) share the same graphite-glass + soft mist-dot treatment rather than high-contrast blueprint blue. Align the draft heading to the composer.
 
