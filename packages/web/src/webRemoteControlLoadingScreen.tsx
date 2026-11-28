@@ -93,9 +93,9 @@ export function WebRemoteControlLoadingScreen({
 }) {
   const copy = resolveWebRemoteControlLoadingCopy(state);
   return (
-    <div className="h-dvh min-h-dvh w-screen bg-background text-foreground">
+    <div className="h-dvh min-h-dvh w-screen bg-background zody-window-atmosphere text-foreground">
       <div className="mx-auto flex h-full w-full max-w-lg items-center px-4">
-        <section className="w-full rounded-xl border border-card-border bg-card p-5">
+        <section className="w-full rounded-2xl border border-popover-border bg-popover backdrop-blur-xl p-5 shadow-md">
           {/* settings-4：弱网等待时这是全屏唯一内容，原先整卡 text-ui-xs（10px）手机上辨识吃力；
               按角色提到 title=text-ui-base、描述/步骤=text-ui-sm（DESIGN.md 字号语义表）。 */}
           <div className="flex items-center gap-3">

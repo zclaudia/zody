@@ -405,10 +405,10 @@ export function WebRemoteControlFailureScreen({
 
   return (
     <div
-      className="flex min-h-screen items-center justify-center bg-background px-4 py-8 text-foreground"
+      className="flex min-h-dvh items-center justify-center bg-background zody-window-atmosphere px-4 py-8 text-foreground"
       style={{ minHeight: "100dvh" }}
     >
-      <main className="w-full max-w-md rounded-xl border border-card-border bg-card p-5 shadow-sm">
+      <main className="w-full max-w-md rounded-2xl border border-popover-border bg-popover backdrop-blur-xl p-5 shadow-md">
         <div className="flex items-start gap-3">
           <div
             className={`flex size-10 shrink-0 items-center justify-center rounded-lg border text-ui-lg font-semibold ${toneClassName.icon}`}

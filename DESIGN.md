@@ -44,9 +44,14 @@ Avoid:
 - bright full-surface brand fills
 - ambiguous hierarchy between background, card, and popover surfaces
 
-### Zody Workbench
+### Zody Workbench (Cloud Iris)
 
-Zody Blueprint pairs a cool paper canvas in light mode and ink-blue graphite in dark mode with a focused cobalt accent. Persistent tools use quiet structural surfaces; cobalt is reserved for primary actions, selection, and keyboard focus. Warnings, permissions, and diff states retain their semantic colors. The white folded-paper Z robot on a medium-blue tile is shared across setup, personalization, and the new-task surface. Use a fine registration grid on brand surfaces and compact monospace labels with ruled dividers. Align the draft heading to the composer.
+Zody adopts the **Cloud Iris** design language: a calm, modern frosted-glass workspace with soft surface layering and restrained low-saturation accents.
+
+- **Light mode (Cloud Iris Light)**: Pairs a pearl-mist canvas with delicate lavender-tinted outer chrome and translucent glass overlays. A muted iris accent (`--color-brand`) carries primary actions, active indicators, and keyboard focus without bright corporate-blue saturation.
+- **Dark mode (Cloud Iris Dark)**: Uses clean, low-noise graphite glass surfaces with no neon or colorful background glow. Primary actions use a soft mist-white fill (`--color-primary` with dark ink foreground) to avoid harsh glowing buttons, while muted iris (`--color-brand`) is reserved for subtle focus rings, active dots, links, and fine accents.
+- **Glass & fallback discipline**: Apply frosted translucency (`backdrop-blur`) to window shells (macOS vibrancy), menus, popovers, and dialogs; keep primary reading canvases, code blocks, and terminals crisp and high-contrast. Windows, Linux, and Web use opaque low-noise tinted bases so surfaces never muddy or wash out.
+- Warnings, permissions, and diff states retain their semantic colors. Brand panels (setup, onboarding, workspace hero) share the same graphite-glass + soft mist-dot treatment rather than high-contrast blueprint blue. Align the draft heading to the composer.
 
 ## Theme Modes
 
@@ -64,10 +69,10 @@ minimize, and close-page versus close-window behavior.
 User-facing theme choices are:
 
 - System
-- Light Theme, backed by Zai Light
-- Dark Theme, backed by Zai Dark
+- Light Theme (Cloud Iris Light, mapped onto the internal `.theme-zai-light` token class for persistence/test compatibility)
+- Dark Theme (Cloud Iris Dark, mapped onto the internal `.theme-zai-dark` token class for persistence/test compatibility)
 
-Default light and dark CSS variables still exist as fallback foundations, but new UI should be validated against Zai Light and Zai Dark as the active light/dark experiences.
+Default light and dark CSS variables still exist as fallback foundations, but new UI should be validated against the active Cloud Iris Light and Cloud Iris Dark experiences.
 
 ## Color Palette
 
@@ -548,19 +553,19 @@ Overlay rules:
 
 ## Elevation and Depth
 
-Zody should use restrained depth. Layer primarily through background contrast, borders, and radius before relying on heavy shadows.
+Zody should use restrained glass depth. Layer primarily through translucent surface contrast, crisp hairline borders, and nested radii before relying on heavy shadows.
 
 Recommended elevation levels:
 
-- **Base**: no shadow, structure comes from background contrast
-- **Surface**: very subtle border-led separation
-- **Overlay**: `shadow-md` for menus, popovers, dialogs
+- **Base**: no shadow, structure comes from subtle tinted shell vs. crisp workspace canvas contrast
+- **Surface**: very subtle hairline border-led separation
+- **Overlay**: translucent frosted surface (`bg-popover` / `bg-menu` with `backdrop-blur-xl`), `border-popover-border`, and `shadow-md` for menus, popovers, dialogs
 - **Attention**: `shadow-lg` only for toast, important floating cards, or rare emphasized panels
 
 Depth rules:
 
 - Do not rely on large soft shadows for ordinary layout.
-- Menus and dialogs can feel elevated, but still compact and controlled.
+- Menus and dialogs should feel airy yet precise—frosted translucency must always preserve high text contrast in both light and dark modes.
 - Background layering is usually more important than shadow strength.
 
 ## Motion

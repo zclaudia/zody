@@ -40,7 +40,9 @@ export const DesktopWindowFrame = memo(function DesktopWindowFrameComponent({
           "rounded-[16px] [clip-path:inset(0_round_16px)] platform-linux-window-maximized:rounded-none platform-linux-window-maximized:[clip-path:inset(0)]",
         // Web/Windows/Linux 都没有 macOS vibrancy 作为透明底层兜底，
         // 如果继续走半透明 alt 背景，会和浏览器或系统窗口底色混出异常灰块。
-        usesOpaqueRootSurface ? "bg-background-win-alt" : "bg-background-alt",
+        usesOpaqueRootSurface
+          ? "bg-background-win-alt zody-window-atmosphere"
+          : "bg-background-alt",
       )}
       data-desktop-window-frame="true"
     >

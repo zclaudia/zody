@@ -65,12 +65,12 @@ describe("web remote control bootstrap shell", () => {
     const loadingRule = readCssRule(html, ".zcode-boot-loading");
 
     expect(loadingRule).toContain("background: var(--zcode-bootstrap-bg");
-    expect(loadingRule).toContain("#0f172a");
+    expect(loadingRule).toContain("#17171c");
   });
 
   it.each([
-    ["zai-dark", "dark", "#161616"],
-    ["zai-light", "light", "#f8f8f8"],
+    ["zai-dark", "dark", "#17171c"],
+    ["zai-light", "light", "#faf9fc"],
   ] as const)(
     "在业务 bundle 执行前把 %s 同步到浏览器主题表面",
     (storedTheme, resolvedTheme, expectedColor) => {

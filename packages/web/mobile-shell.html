@@ -11,7 +11,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
     />
-    <meta name="theme-color" content="#161616" />
+    <meta name="theme-color" content="#17171c" />
     <meta name="color-scheme" content="dark" />
     <title>Zody</title>
     <script>
@@ -19,8 +19,8 @@
         // 与 index.html 相同的首屏主题兜底：bundle 执行前先按本地偏好决定底色和 color-scheme，
         // 避免深色主题用户在手机 WebView 里看到一帧白底。
         const BROWSER_THEME_COLORS = {
-          dark: "#161616",
-          light: "#f8f8f8",
+          dark: "#17171c",
+          light: "#faf9fc",
         };
 
         const normalizeResolvedTheme = (theme) => {
@@ -69,8 +69,8 @@
       }
 
       body {
-        background: var(--zcode-bootstrap-bg, var(--color-background, #0f172a));
-        color: var(--zcode-bootstrap-fg, var(--color-foreground, #e2e8f0));
+        background: var(--zcode-bootstrap-bg, var(--color-background, #17171c));
+        color: var(--zcode-bootstrap-fg, var(--color-foreground, #ecebf2));
         font-family:
           Inter,
           -apple-system,
@@ -84,13 +84,13 @@
       html[data-zcode-browser-theme-surface] #root {
         /* 与 index.html 同因：共享 UI 样式为 Electron vibrancy 强制透明根背景，
            浏览器/WebView 入口必须用语义背景覆盖，否则手机会露出系统白底。 */
-        background: var(--color-background, var(--zcode-bootstrap-bg, #161616)) !important;
+        background: var(--color-background, var(--zcode-bootstrap-bg, #17171c)) !important;
       }
 
       html[data-zcode-browser-theme-surface="light"],
       html[data-zcode-browser-theme-surface="light"] body,
       html[data-zcode-browser-theme-surface="light"] #root {
-        background: var(--color-background, var(--zcode-bootstrap-bg, #f8f8f8)) !important;
+        background: var(--color-background, var(--zcode-bootstrap-bg, #faf9fc)) !important;
       }
 
       .zcode-boot-loading {
@@ -102,13 +102,13 @@
         font-size: 14px;
         letter-spacing: 0.08em;
         /* 预渲染壳自己承接主题背景，避免 bundle 执行前露出默认白底。 */
-        background: var(--zcode-bootstrap-bg, var(--color-background, #0f172a));
-        color: var(--zcode-bootstrap-fg, var(--color-foreground, #e2e8f0));
+        background: var(--zcode-bootstrap-bg, var(--color-background, #17171c));
+        color: var(--zcode-bootstrap-fg, var(--color-foreground, #ecebf2));
       }
 
       html[data-zcode-bootstrap-theme="light"] .zcode-boot-loading {
-        background: var(--zcode-bootstrap-bg, var(--color-background, #f8fafc));
-        color: var(--zcode-bootstrap-fg, var(--color-foreground, #334155));
+        background: var(--zcode-bootstrap-bg, var(--color-background, #faf9fc));
+        color: var(--zcode-bootstrap-fg, var(--color-foreground, #1d1b26));
       }
     </style>
   </head>

@@ -10,7 +10,7 @@ export function showMobileNotificationNotice(options: {
 }): () => void {
   const dialog = document.createElement("dialog");
   dialog.className =
-    "m-auto max-w-md rounded-2xl border border-popover-border bg-popover p-6 text-foreground shadow-lg";
+    "m-auto max-w-md rounded-2xl border border-popover-border bg-popover backdrop-blur-xl p-6 text-foreground shadow-lg";
   dialog.style.width = "calc(100% - 2rem)";
   dialog.style.pointerEvents = "auto";
   dialog.setAttribute("aria-labelledby", "mobile-notification-error-title");

@@ -12,8 +12,8 @@
  */
 (() => {
   const BROWSER_THEME_COLORS = {
-    dark: "#161616",
-    light: "#f8f8f8",
+    dark: "#17171c",
+    light: "#faf9fc",
   };
 
   const normalizeResolvedTheme = (theme) => {

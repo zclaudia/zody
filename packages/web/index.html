@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#161616" />
+    <meta name="theme-color" content="#17171c" />
     <meta name="color-scheme" content="dark" />
     <!-- Bugfix: Chrome dev 下可能不发 favicon 网络请求；内嵌小尺寸 App 图标，避免标签页回退到默认图标。 -->
     <link
@@ -20,8 +20,8 @@
         const STORAGE_KEY = "zody-theme";
         const DEFAULT_THEME = "zai-dark";
         const BROWSER_THEME_COLORS = {
-          dark: "#161616",
-          light: "#f8f8f8",
+          dark: "#17171c",
+          light: "#faf9fc",
         };
         const BOOTSTRAP_SNAPSHOT_KEY = "zody:web-remote-control:bootstrap-shell";
 
@@ -57,16 +57,16 @@
                   typeof snapshot.background === "string"
                     ? snapshot.background
                     : normalizedTheme === "dark"
-                      ? "#0f172a"
-                      : "#f8fafc",
+                      ? "#17171c"
+                      : "#faf9fc",
                 );
                 document.documentElement.style.setProperty(
                   "--zcode-bootstrap-fg",
                   typeof snapshot.foreground === "string"
                     ? snapshot.foreground
                     : normalizedTheme === "dark"
-                      ? "#e2e8f0"
-                      : "#334155",
+                      ? "#ecebf2"
+                      : "#1d1b26",
                 );
                 if (typeof snapshot.border === "string") {
                   document.documentElement.style.setProperty(
@@ -117,8 +117,8 @@
       }
 
       body {
-        background: var(--zcode-bootstrap-bg, var(--color-background, #0f172a));
-        color: var(--zcode-bootstrap-fg, var(--color-foreground, #e2e8f0));
+        background: var(--zcode-bootstrap-bg, var(--color-background, #17171c));
+        color: var(--zcode-bootstrap-fg, var(--color-foreground, #ecebf2));
         font-family:
           Inter,
           -apple-system,
@@ -128,8 +128,8 @@
       }
 
       html[data-zcode-bootstrap-theme="light"] body {
-        background: var(--zcode-bootstrap-bg, var(--color-background, #f8fafc));
-        color: var(--zcode-bootstrap-fg, var(--color-foreground, #334155));
+        background: var(--zcode-bootstrap-bg, var(--color-background, #faf9fc));
+        color: var(--zcode-bootstrap-fg, var(--color-foreground, #1d1b26));
       }
 
       html[data-zcode-browser-theme-surface],
@@ -137,13 +137,13 @@
       html[data-zcode-browser-theme-surface] #root {
         /* 修复原因：共享 UI 样式为 Electron vibrancy 强制透明根背景；浏览器入口必须用语义背景
            覆盖该桌面专属行为，否则浏览器工具栏、overscroll 和页面画布会回退为系统白色。 */
-        background: var(--color-background, var(--zcode-bootstrap-bg, #161616)) !important;
+        background: var(--color-background, var(--zcode-bootstrap-bg, #17171c)) !important;
       }
 
       html[data-zcode-browser-theme-surface="light"],
       html[data-zcode-browser-theme-surface="light"] body,
       html[data-zcode-browser-theme-surface="light"] #root {
-        background: var(--color-background, var(--zcode-bootstrap-bg, #f8f8f8)) !important;
+        background: var(--color-background, var(--zcode-bootstrap-bg, #faf9fc)) !important;
       }
 
       .zcode-boot-loading {
@@ -153,13 +153,13 @@
         width: 100%;
         height: 100%;
         /* Bugfix: UI 全局样式会把 body/#root 置为透明，预渲染壳必须自己承接主题背景，否则深色主题会露出浏览器白底。 */
-        background: var(--zcode-bootstrap-bg, var(--color-background, #0f172a));
-        color: var(--zcode-bootstrap-fg, var(--color-foreground, #e2e8f0));
+        background: var(--zcode-bootstrap-bg, var(--color-background, #17171c));
+        color: var(--zcode-bootstrap-fg, var(--color-foreground, #ecebf2));
       }
 
       html[data-zcode-bootstrap-theme="light"] .zcode-boot-loading {
-        background: var(--zcode-bootstrap-bg, var(--color-background, #f8fafc));
-        color: var(--zcode-bootstrap-fg, var(--color-foreground, #334155));
+        background: var(--zcode-bootstrap-bg, var(--color-background, #faf9fc));
+        color: var(--zcode-bootstrap-fg, var(--color-foreground, #1d1b26));
       }
 
       @media (prefers-reduced-motion: no-preference) {

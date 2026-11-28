@@ -375,13 +375,13 @@ export function WebRemoteControlMobileShell({
                 >
                   <button
                     type="button"
-                    className="absolute inset-0 bg-background/60 backdrop-blur-[1px]"
+                    className="absolute inset-0 bg-background/55 backdrop-blur-xs"
                     aria-label={intl.formatMessage({ id: "sidePane.collapse" })}
                     onClick={onCloseSidePane}
                   />
                   <div
                     className={[
-                      "absolute top-0 right-0 h-full w-[min(88vw,28rem)] max-w-full border-l border-border bg-background shadow-2xl transition-transform duration-200 ease-out",
+                      "absolute top-0 right-0 h-full w-[min(88vw,28rem)] max-w-full border-l border-popover-border bg-popover backdrop-blur-xl shadow-2xl transition-transform duration-200 ease-out",
                       isSidePaneOpen ? "translate-x-0" : "translate-x-full",
                     ].join(" ")}
                   >
@@ -439,11 +439,11 @@ export function WebRemoteControlMobileShell({
       ) : null}
       {switchingWorkspace ? (
         <div
-          className="absolute inset-0 z-40 flex items-center justify-center bg-background/72 backdrop-blur-[1px]"
+          className="absolute inset-0 z-40 flex items-center justify-center bg-background/60 backdrop-blur-sm"
           aria-live="polite"
           aria-busy="true"
         >
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-ui-base text-foreground-subtle shadow-sm">
+          <div className="flex items-center gap-2 rounded-xl border border-popover-border bg-popover backdrop-blur-xl px-3.5 py-2 text-ui-base text-foreground-subtle shadow-md">
             <LoaderIcon className="size-4 animate-spin" />
             {intl.formatMessage({ id: "common.loading" })}
           </div>

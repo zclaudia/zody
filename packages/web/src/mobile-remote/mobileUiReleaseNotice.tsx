@@ -183,7 +183,7 @@ export function showMobileUiReleaseNotice(controller: ReleaseNoticeController): 
       <div
         role="status"
         aria-live="polite"
-        className="min-w-0 rounded-xl border border-popover-border bg-popover p-4 text-foreground shadow-lg"
+        className="min-w-0 rounded-xl border border-popover-border bg-popover backdrop-blur-xl p-4 text-foreground shadow-lg"
       >
         <ReleaseNotice
           status={status}
