@@ -46,7 +46,7 @@ Avoid:
 
 ### Zody Workbench
 
-Zody Blueprint pairs a cool paper canvas in light mode and ink-blue graphite in dark mode with a focused cobalt accent. Persistent tools use quiet structural surfaces; cobalt is reserved for primary actions, selection, and keyboard focus. Warnings, permissions, and diff states retain their semantic colors. The flat cobalt-and-white Robot Z icon is shared across setup, personalization, and the new-task surface. Use a fine registration grid on brand surfaces and compact monospace labels with ruled dividers. Align the draft heading to the composer.
+Zody Blueprint pairs a cool paper canvas in light mode and ink-blue graphite in dark mode with a focused cobalt accent. Persistent tools use quiet structural surfaces; cobalt is reserved for primary actions, selection, and keyboard focus. Warnings, permissions, and diff states retain their semantic colors. The white folded-paper Z robot on a medium-blue tile is shared across setup, personalization, and the new-task surface. Use a fine registration grid on brand surfaces and compact monospace labels with ruled dividers. Align the draft heading to the composer.
 
 ## Theme Modes
 

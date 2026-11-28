@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   createAboutSnapshot,
@@ -9,6 +10,9 @@ import {
 import { createCustomAboutDialogHtml } from "../src/main/aboutWindow.js";
 
 describe("about", () => {
+  const logoBase64 = readFileSync(
+    new URL("../src/renderer/public/brand/zody-logo.png", import.meta.url),
+  ).toString("base64");
   const appleSiliconSnapshot = createAboutSnapshot({
     appVersion: "0.1.7",
     environment: "production",
@@ -74,6 +78,7 @@ describe("about", () => {
 
   it("应生成参考图样式的自定义 About 内容", () => {
     const html = createCustomAboutDialogHtml({
+      logoBase64,
       applicationName: "Zody",
       appVersion: appleSiliconSnapshot.appVersion,
       copyright: "Copyright © 2026 zclaudia",
@@ -89,8 +94,7 @@ describe("about", () => {
     expect(html).toContain("class=\"ok-button\"");
     expect(html).toContain(">OK</button>");
     expect(html).toContain("class=\"app-logo\"");
-    expect(html).toContain("viewBox=\"0 0 256 218\"");
-    expect(html).toContain("linear-gradient(180deg, #000000 0%, #151718 100%)");
+    expect(html).toContain(`src="data:image/png;base64,${logoBase64}"`);
     expect(html).toContain("class=\"about-window\"");
     expect(html).toContain("border-radius: 0");
     expect(html).toContain("background: var(--about-primary)");
@@ -103,6 +107,7 @@ describe("about", () => {
 
   it("应生成中文自定义 About 内容", () => {
     const html = createCustomAboutDialogHtml({
+      logoBase64,
       applicationName: "Zody",
       appVersion: appleSiliconSnapshot.appVersion,
       copyright: "版权所有 © 2026 zclaudia。",

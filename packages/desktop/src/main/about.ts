@@ -4,6 +4,7 @@ import type {
   MessageBoxReturnValue,
 } from "electron";
 import { existsSync, readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { arch, hostname, platform, release, type, version as osVersion } from "node:os";
 import { join } from "node:path";
 import {
@@ -249,6 +250,11 @@ export async function showAboutDialog(
   // 问题原因：各平台原生消息框的排版、图标和按钮样式差异很大，无法复用 macOS 参考样式。
   // 这里统一使用自绘 modal，保证 About 的品牌展示和多语言文案在三端一致。
   const iconPath = resolveAboutIconPath(app.isPackaged);
+  const brandDirectory = app.isPackaged ? "../renderer/brand" : "../../src/renderer/public/brand";
+  const logoBase64 = await readFile(
+    join(import.meta.dirname, brandDirectory, "zody-logo.png"),
+    "base64",
+  );
   const aboutWindow = new BrowserWindow({
     width: ABOUT_WINDOW_WIDTH,
     height: ABOUT_WINDOW_HEIGHT,
@@ -276,6 +282,7 @@ export async function showAboutDialog(
   void aboutWindow.loadURL(
     `data:text/html;charset=utf-8,${encodeURIComponent(
       createCustomAboutDialogHtml({
+        logoBase64,
         applicationName: ABOUT_APPLICATION_NAME,
         appVersion: snapshot.appVersion,
         copyright: formatAboutCopyright(undefined, locale),

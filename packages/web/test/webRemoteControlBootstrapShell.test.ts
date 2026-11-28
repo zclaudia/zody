@@ -51,6 +51,15 @@ describe("web remote control bootstrap shell", () => {
     );
   });
 
+  it("预渲染启动图与共享应用品牌图一致", () => {
+    const document = new JSDOM(readWebIndexHtml()).window.document;
+    const logo = document.querySelector(".zcode-boot-loading img");
+    expect(logo?.getAttribute("src")).toBe("/brand/zody-logo.png");
+    expect(readWorkspaceFile("packages/web/public/brand/zody-logo.png")).toEqual(
+      readWorkspaceFile("packages/ui/src/assets/brand/zody-logo.png"),
+    );
+  });
+
   it("预渲染 loading 容器自身兜底主题背景，避免全局透明 body 露出白底", () => {
     const html = readWebIndexHtml();
     const loadingRule = readCssRule(html, ".zcode-boot-loading");

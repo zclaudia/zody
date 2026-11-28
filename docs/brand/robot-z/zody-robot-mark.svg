@@ -1,8 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="40 34 176 176" role="img" aria-labelledby="title">
-  <title id="title">Zody Robot Z mark</title>
-  <path fill="#344FD0" fill-rule="evenodd"
-        d="M118 76V58a10 10 0 0 1 20 0v18h31a23 23 0 0 1 23 23v12h6a9 9 0 0 1 9 9v18a9 9 0 0 1-9 9h-6v12a23 23 0 0 1-23 23H87a23 23 0 0 1-23-23v-12h-6a9 9 0 0 1-9-9v-18a9 9 0 0 1 9-9h6V99a23 23 0 0 1 23-23Z
-           M83 99h90v15l-56 34h48l8 8v7H83v-15l56-34H91l-8-8Z
-           M99 131a8 8 0 1 0-16 0 8 8 0 1 0 16 0Z
-           M173 131a8 8 0 1 0-16 0 8 8 0 1 0 16 0Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="255 230 744 744" role="img" aria-labelledby="title">
+  <title id="title">Zody folded-paper robot Z monochrome mark</title>
+  <path fill="#FFFFFF" fill-rule="evenodd"
+        d="M607 360v-45a45 45 0 1 1 34 0v45h177l80 80q17 17 17 44v68q0 24-18 40L612 825h243l53 54v51l-47 44H402q-35 0-49-23-8-12-8-32v-62q0-24 17-43l282-235H407l-68-66v-84l68-69Z
+           M474 403h290a65 65 0 0 1 0 130H474a65 65 0 0 1 0-130Z"/>
+  <g fill="#FFFFFF">
+    <rect x="512" y="427" width="48" height="78" rx="24"/>
+    <rect x="689" y="427" width="48" height="78" rx="24"/>
+  </g>
 </svg>
